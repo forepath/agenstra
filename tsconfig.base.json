@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@forepath/devkit": ["tools/devkit/src/index.ts"],
+      "@agenstra/code": ["tools/code/src/index.ts"],
       "@forepath/framework/backend": [
         "libs/domains/framework/backend/index.ts"
       ],

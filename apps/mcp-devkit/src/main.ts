@@ -1,8 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { z } from 'zod';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 const server = new McpServer({
   name: 'devkit',
@@ -16,9 +16,9 @@ async function readDevkitPackageName(devkitRoot: string): Promise<string> {
       'utf-8',
     );
     const pkgJson = JSON.parse(pkgJsonRaw) as { name?: string };
-    return pkgJson.name ?? '@forepath/devkit';
+    return pkgJson.name ?? '@agenstra/code';
   } catch {
-    return '@forepath/devkit';
+    return '@agenstra/code';
   }
 }
 

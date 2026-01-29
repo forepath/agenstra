@@ -20,7 +20,7 @@ This guide defines the **REQUIRED** steps and best practices for planning new fe
 
 - You **MUST** break down the feature into actionable tasks and subcomponents.
 - You **MUST** use Nx generators and tooling where applicable to scaffold new libraries, components, or modules.
-  - You **SHOULD** prefer the usage of generators from the package `@forepath/devkit`.
+  - You **SHOULD** prefer the usage of generators from the package `@agenstra/code`.
   - You **MAY** use other nx generators if the functionality is not sufficient.
 - You **MUST** determine the appropriate location (application, domain, library) for each part of the feature, following naming and structure conventions.
 - You **SHOULD** create or update an issue or RFC describing the planned changes, including acceptance criteria.

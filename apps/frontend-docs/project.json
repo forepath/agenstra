@@ -13,7 +13,7 @@
         "{workspaceRoot}/dist/apps/frontend-docs-temp/public/docs"
       ],
       "options": {
-        "command": "mkdir -p dist/apps/frontend-docs-temp/assets/docs dist/apps/frontend-docs-temp/public/docs dist/tools/docs-generator && npx tsc tools/docs-generator/generate-docs.ts --outDir dist/tools/docs-generator --module esnext --moduleResolution node --target es2020 --esModuleInterop --skipLibCheck --resolveJsonModule && node dist/tools/docs-generator/generate-docs.js",
+        "command": "mkdir -p dist/apps/frontend-docs-temp/assets/docs dist/apps/frontend-docs-temp/public/docs dist/tools/docs && npx tsc tools/docs/generate-docs.ts --outDir dist/tools/docs --module esnext --moduleResolution node --target es2020 --esModuleInterop --skipLibCheck --resolveJsonModule && node dist/tools/docs/generate-docs.js",
         "cwd": "{workspaceRoot}",
         "cache": false
       }
