@@ -39,7 +39,7 @@ describe('transform', () => {
     expect(result.results).toHaveLength(1);
     expect(result.results[0].tool).toBe('cursor');
     expect(result.results[0].fileCount).toBeGreaterThan(0);
-    const cursorRules = path.join(outputDir, 'cursor', '.cursor', 'rules', 'main.mdc');
+    const cursorRules = path.join(outputDir, '.cursor', 'rules', 'main.mdc');
     expect(fs.existsSync(cursorRules)).toBe(true);
     expect(fs.readFileSync(cursorRules, 'utf-8')).toContain('# Main');
   });
@@ -53,7 +53,7 @@ describe('transform', () => {
     });
     expect(result.success).toBe(true);
     expect(result.results[0].fileCount).toBeGreaterThan(0);
-    expect(fs.existsSync(path.join(outputDir, 'cursor'))).toBe(false);
+    expect(fs.existsSync(path.join(outputDir, '.cursor'))).toBe(false);
   });
 
   it('should return errors when source is invalid', () => {

@@ -15,6 +15,11 @@
         "assets": [
           "tools/ai/*.md",
           {
+            "input": "./tools/ai/src/scripts",
+            "glob": "agenstra.js",
+            "output": "."
+          },
+          {
             "input": "./tools/ai/src",
             "glob": "**/!(*.ts)",
             "output": "./src"

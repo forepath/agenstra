@@ -74,12 +74,11 @@ export function transform(options: TransformOptions): TransformResult {
     const mergedContext = mergeComponentsForTransformer({ ...context }, transformer);
     const output = transformer.transform(mergedContext);
     const fileCount = output.size;
-    const toolOutDir = path.join(baseOut, toolName);
 
     const merged = transformer.needsFallbackMerge();
     const resultEntry: TransformResult['results'][0] = {
       tool: toolName,
-      path: toolOutDir,
+      path: baseOut,
       fileCount,
       merged: merged.length > 0 ? merged : undefined,
     };
@@ -90,7 +89,7 @@ export function transform(options: TransformOptions): TransformResult {
 
     if (!dryRun && !returnOutputs && fileCount > 0) {
       try {
-        emitToolOutput(toolOutDir, output);
+        emitToolOutput(baseOut, output);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         errors.push(`Failed to write ${toolName} output: ${msg}`);
