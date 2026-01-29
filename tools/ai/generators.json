@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "context": {
+      "factory": "./src/generators/context/context",
+      "schema": "./src/generators/context/schema.json",
+      "description": "context generator"
+    }
+  }
+}
