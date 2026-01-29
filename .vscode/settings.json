@@ -1,5 +1,4 @@
 {
-  // ESLint Configuration
   "eslint.validate": [
     "javascript",
     "javascriptreact",
@@ -12,19 +11,13 @@
   "eslint.workingDirectories": ["."],
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
-
-  // Prettier Configuration
   "prettier.enable": true,
   "prettier.requireConfig": true,
   "prettier.useEditorConfig": true,
-
-  // TypeScript Configuration
   "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.suggest.autoImports": true,
   "typescript.updateImportsOnFileMove.enabled": "always",
   "typescript.preferences.includePackageJsonAutoImports": "on",
-
-  // Editor Configuration
   "editor.formatOnSave": false,
   "editor.formatOnPaste": false,
   "editor.formatOnType": false,
@@ -41,8 +34,6 @@
   "editor.rulers": [80, 120],
   "editor.wordWrap": "wordWrapColumn",
   "editor.wordWrapColumn": 120,
-
-  // File Configuration
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
@@ -60,8 +51,6 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true
   },
-
-  // Search Configuration
   "search.exclude": {
     "**/node_modules": true,
     "**/dist": true,
@@ -71,30 +60,20 @@
     "**/coverage": true,
     "**/.nyc_output": true
   },
-
-  // Nx Configuration
   "nx.enableLibraryImports": true,
   "nx.showAffected": true,
-
-  // Git Configuration
   "git.autofetch": true,
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
   "git.postCommitCommand": "none",
-
-  // Terminal Configuration
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.defaultProfile.linux": "zsh",
   "terminal.integrated.cwd": "${workspaceFolder}",
-
-  // Markdown Configuration
   "markdown.preview.fontSize": 14,
   "markdown.preview.lineHeight": 1.6,
   "markdown.preview.breaks": true,
   "markdown.preview.linkify": true,
-
-  // JSON Configuration
   "json.schemas": [
     {
       "fileMatch": ["package.json"],
@@ -105,22 +84,14 @@
       "url": "https://raw.githubusercontent.com/nrwl/nx/master/packages/nx/schemas/nx-schema.json"
     }
   ],
-
-  // Emmet Configuration
   "emmet.includeLanguages": {
     "typescript": "html",
     "javascript": "html"
   },
-
-  // Bracket Pair Colorization
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
-
-  // Minimap Configuration
   "editor.minimap.enabled": true,
   "editor.minimap.maxColumn": 120,
-
-  // Performance Configuration
   "extensions.ignoreRecommendations": false,
   "workbench.enableExperiments": false,
   "telemetry.telemetryLevel": "off"

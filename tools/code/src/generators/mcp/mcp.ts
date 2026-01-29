@@ -1,10 +1,4 @@
-import {
-  formatFiles,
-  generateFiles,
-  OverwriteStrategy,
-  Tree,
-  updateJson,
-} from '@nx/devkit';
+import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
 import { applicationGenerator as generatorFn } from '@nx/node';
 import * as path from 'path';
 import { McpGeneratorSchema } from './schema';
@@ -20,22 +14,17 @@ export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
   });
 
   updateJson(tree, '.eslintrc.json', (json) => {
-    const depConstraints =
-      json.overrides[1].rules['@nx/enforce-module-boundaries'][1]
-        .depConstraints || [];
+    const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];
     const scopeTag = `scope:backend`;
 
-    if (
-      !depConstraints.some((constraint) => constraint.sourceTag === scopeTag)
-    ) {
+    if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
       depConstraints.push({
         sourceTag: scopeTag,
         onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
       });
     }
 
-    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints =
-      depConstraints;
+    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints = depConstraints;
 
     return json;
   });

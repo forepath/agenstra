@@ -50,7 +50,10 @@
         "libs/domains/framework/frontend/util-docs-parser/src/index.ts"
       ],
       "@forepath/identity/backend": ["libs/domains/identity/backend/index.ts"],
-      "@forepath/identity/frontend": ["libs/domains/identity/frontend/index.ts"]
+      "@forepath/identity/frontend": [
+        "libs/domains/identity/frontend/index.ts"
+      ],
+      "@agenstra/ai": ["tools/ai/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

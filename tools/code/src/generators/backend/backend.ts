@@ -3,10 +3,7 @@ import { applicationGenerator as generatorFn } from '@nx/nest';
 import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
 import { BackendGeneratorSchema } from './schema';
 
-export async function backendGenerator(
-  tree: Tree,
-  options: BackendGeneratorSchema,
-) {
+export async function backendGenerator(tree: Tree, options: BackendGeneratorSchema) {
   const appName = `backend-${options.name}`;
   const appRoot = `apps/${appName}`;
 
@@ -43,11 +40,10 @@ export async function backendGenerator(
 
   updateJson(tree, `${appRoot}/project.json`, (json) => {
     if (json.targets?.build?.options?.webpackConfig) {
-      json.targets.build.options.webpackConfig =
-        json.targets.build.options.webpackConfig.replace(
-          'webpack.config.js',
-          'webpack.config.cjs',
-        );
+      json.targets.build.options.webpackConfig = json.targets.build.options.webpackConfig.replace(
+        'webpack.config.js',
+        'webpack.config.cjs',
+      );
     }
     return json;
   });
@@ -62,10 +58,7 @@ export async function backendGenerator(
 
   if (tree.exists(dockerfilePath)) {
     const dockerfileContent = tree.read(dockerfilePath, 'utf-8');
-    const updatedContent = dockerfileContent.replace(
-      'COPY dist .',
-      'COPY . /app',
-    );
+    const updatedContent = dockerfileContent.replace('COPY dist .', 'COPY . /app');
 
     tree.write(dockerfilePath, updatedContent);
   }
@@ -90,22 +83,17 @@ export async function backendGenerator(
   });
 
   updateJson(tree, '.eslintrc.json', (json) => {
-    const depConstraints =
-      json.overrides[1].rules['@nx/enforce-module-boundaries'][1]
-        .depConstraints || [];
+    const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];
     const scopeTag = `scope:backend`;
 
-    if (
-      !depConstraints.some((constraint) => constraint.sourceTag === scopeTag)
-    ) {
+    if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
       depConstraints.push({
         sourceTag: scopeTag,
         onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
       });
     }
 
-    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints =
-      depConstraints;
+    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints = depConstraints;
 
     return json;
   });
