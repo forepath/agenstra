@@ -120,8 +120,11 @@ export class CursorTransformer extends BaseTransformer {
       out.set(`${CURSOR_DIR}/skills/${name}/SKILL.md`, skillToCursorSkill(name, content));
     }
 
-    // Primary agents → .cursor/agents/*.md (both as markdown with frontmatter)
+    // Primary agents → .cursor/agents/*.md, subagents → .cursor/agents/*.md (both as markdown with frontmatter)
     for (const [id, config] of Object.entries(context.agents)) {
+      out.set(`${CURSOR_DIR}/agents/${id}.md`, agentToCursorAgentMd(id, config));
+    }
+    for (const [id, config] of Object.entries(context.subagents)) {
       out.set(`${CURSOR_DIR}/agents/${id}.md`, agentToCursorAgentMd(id, config));
     }
 

@@ -330,6 +330,7 @@ sequenceDiagram
 - **[WebSocket Communication](../features/websocket-communication.md)** - Real-time communication details
 - **[Client Management](../features/client-management.md)** - Client operations
 - **[Agent Management](../features/agent-management.md)** - Agent operations
+
 ---
 
 _For implementation details, see the application and feature docs linked in this section._

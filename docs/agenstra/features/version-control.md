@@ -110,6 +110,7 @@ For detailed API documentation, see the application and API reference docs linke
 
 - **[File Management](./file-management.md)** - File operations
 - **[Agent Management](./agent-management.md)** - Agent containers
+
 ---
 
 _For detailed VCS operation information, see the application docs linked below._

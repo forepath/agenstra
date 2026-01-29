@@ -96,6 +96,7 @@ sequenceDiagram
 
 - **[WebSocket Communication](./websocket-communication.md)** - Real-time communication details
 - **[Agent Management](./agent-management.md)** - Agent authentication
+
 ---
 
 _For detailed chat functionality, see the application and feature docs linked below._

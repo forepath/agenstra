@@ -59,11 +59,31 @@ function buildCopilotInstructions(context: AgenstraContext): string {
   return parts.join('');
 }
 
+function agentBody(config: { description?: string; constraints?: string[] }): string {
+  const description = config.description ?? '';
+  const constraints = config.constraints ?? [];
+  const body = [description, '', ...constraints.map((c) => `- ${c}`)].filter(Boolean).join('\n');
+  return body || '';
+}
+
 /** GitHub Copilot does not support subagents; emit only primary agents. */
 function buildAgentsFallback(context: AgenstraContext): string {
   const lines = ['# Agents\n'];
   for (const [id, a] of Object.entries(context.agents)) {
-    lines.push(`## ${(a as { name?: string }).name ?? id}\n**ID:** ${id}\n`);
+    const config = a as { name?: string; description?: string; constraints?: string[] };
+    const name = config.name ?? id;
+    lines.push(`## ${name}\n\n**ID:** ${id}\n\n`);
+    const body = agentBody(config);
+    if (body) lines.push(body, '\n\n');
+  }
+  lines.push('\n');
+  lines.push('# Subagents\n');
+  for (const [id, a] of Object.entries(context.subagents)) {
+    const config = a as { name?: string; description?: string; constraints?: string[] };
+    const name = config.name ?? id;
+    lines.push(`## ${name} (subagent)\n\n**ID:** ${id}\n\n`);
+    const body = agentBody(config);
+    if (body) lines.push(body, '\n\n');
   }
   return lines.join('\n');
 }

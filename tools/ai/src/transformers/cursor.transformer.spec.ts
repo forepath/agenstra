@@ -43,6 +43,7 @@ describe('CursorTransformer', () => {
     expect(skillContent).toContain('# Design Patterns');
 
     expect(out.get('.cursor/agents/architect.md')).toBeDefined();
+    expect(out.get('.cursor/agents/general.md')).toBeDefined();
     const mcpContent = out.get('.cursor/mcp.json') as string;
     expect(mcpContent).toBeDefined();
     expect(JSON.parse(mcpContent)).toHaveProperty('mcpServers');

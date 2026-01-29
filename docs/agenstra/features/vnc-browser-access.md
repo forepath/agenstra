@@ -333,6 +333,7 @@ The Chromium browser in the VNC container:
 
 - **[Agent Management](./agent-management.md)** - Agent lifecycle and management
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** - Application details
+
 ---
 
 _For detailed technical specifications, see the application and feature docs linked below._

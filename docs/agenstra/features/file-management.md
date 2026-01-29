@@ -122,6 +122,7 @@ For detailed API documentation, see the application and API reference docs linke
 - **[Web IDE](./web-ide.md)** - Monaco Editor integration
 - **[Version Control](./version-control.md)** - Git operations
 - **[Agent Management](./agent-management.md)** - Agent containers
+
 ---
 
 _For detailed file operation information, see the application docs linked below._
