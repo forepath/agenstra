@@ -299,10 +299,7 @@ sequenceDiagram
 
 - **[Components](./components.md)** - Detailed component breakdown
 - **[Data Flow](./data-flow.md)** - Detailed data flow patterns
-- **[Agent Controller Library](../../../libs/domains/framework/backend/feature-agent-controller/docs/overview.mmd)** - Visual overview diagram
-- **[Agent Manager Library](../../../libs/domains/framework/backend/feature-agent-manager/docs/overview.mmd)** - Visual overview diagram
-- **[Lifecycle Diagrams](../../../libs/domains/framework/backend/feature-agent-controller/docs/lifecycle.mmd)** - End-to-end sequence diagrams
 
 ---
 
-_For implementation details, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-controller/README.md) and [application documentation](../applications/backend-agent-controller.md)._
+_For implementation details, see the [application documentation](../applications/backend-agent-controller.md) below._

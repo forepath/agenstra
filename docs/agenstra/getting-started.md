@@ -274,8 +274,6 @@ If you encounter issues:
 ## Additional Resources
 
 - **[API Reference](./api-reference/README.md)** - Complete OpenAPI and AsyncAPI specifications
-- **[WebSocket Events](../../libs/domains/framework/backend/feature-agent-controller/README.md#websocket-gateway)** - WebSocket event specifications
-- **[Visual Diagrams](../../libs/domains/framework/backend/feature-agent-controller/docs/)** - Sequence diagrams and architecture diagrams
 
 ---
 

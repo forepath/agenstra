@@ -56,7 +56,7 @@ We believe in recognizing security researchers who help keep this framework secu
 ### For Developers
 
 - **Keep Dependencies Updated** - Regularly update all dependencies
-- **Follow Security Guidelines** - Adhere to our [Code Quality Guidelines](./docs/best-practices/code-quality.md)
+- **Follow Security Guidelines** - Adhere to the project’s code quality and security practices
 - **Use Secure Coding Practices** - Follow secure coding principles
 - **Regular Security Audits** - Perform regular security audits of your code
 
@@ -89,9 +89,7 @@ This framework includes several built-in security features:
 
 ### Documentation
 
-- [Code Quality Guidelines](./docs/best-practices/code-quality.md) - Development best practices including security
-- [Monorepo Structure](./docs/architecture/monorepo-structure.md) - Architecture patterns and security considerations
-- [Development Workflows](./docs/development-workflows/) - Secure development processes
+- [Project overview and docs](./docs/agenstra/README.md) - Architecture, deployment, and setup
 
 ### External Resources
 

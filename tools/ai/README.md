@@ -23,8 +23,8 @@ const result = transform({
   target: ['cursor', 'opencode', 'github-copilot'],
   outputDir: 'generated',
   dryRun: false,
-  strictValidation: true,   // default: fail on validation errors
-  returnOutputs: false,     // set true to get output maps without writing (e.g. for Nx Tree)
+  strictValidation: true, // default: fail on validation errors
+  returnOutputs: false, // set true to get output maps without writing (e.g. for Nx Tree)
 });
 // result: { success, results: [{ tool, path, fileCount, merged?, output? }], errors }
 

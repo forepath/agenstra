@@ -96,8 +96,6 @@ sequenceDiagram
 
 - **[WebSocket Communication](./websocket-communication.md)** - Real-time communication details
 - **[Agent Management](./agent-management.md)** - Agent authentication
-- **[Chat Sequence Diagrams](../../../libs/domains/framework/backend/feature-agent-manager/docs/sequence-ws-chat.mmd)** - Detailed sequence diagrams
-
 ---
 
-_For detailed chat functionality, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md#websocket-gateway)._
+_For detailed chat functionality, see the application and feature docs linked below._

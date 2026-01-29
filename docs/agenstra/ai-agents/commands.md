@@ -14,16 +14,16 @@ Commands define repeatable workflows (e.g. refactor, test generation, code revie
 
 ## Schema
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Command identifier (optional; defaults to filename stem) |
-| `name` | string | Display name |
-| `description` | string | Short description for the UI |
-| `prompt` | string | The prompt text (can use placeholders like `{{pattern}}`) |
-| `variables` | string[] | Optional list of variable names used in the prompt |
-| `context` | string[] | Optional references (e.g. `["rules/architecture.md"]`) |
-| `agent` | string | Optional agent id to run the command with |
-| `model` | string | Optional model override (OpenCode) |
+| Field         | Type     | Description                                               |
+| ------------- | -------- | --------------------------------------------------------- |
+| `id`          | string   | Command identifier (optional; defaults to filename stem)  |
+| `name`        | string   | Display name                                              |
+| `description` | string   | Short description for the UI                              |
+| `prompt`      | string   | The prompt text (can use placeholders like `{{pattern}}`) |
+| `variables`   | string[] | Optional list of variable names used in the prompt        |
+| `context`     | string[] | Optional references (e.g. `["rules/architecture.md"]`)    |
+| `agent`       | string   | Optional agent id to run the command with                 |
+| `model`       | string   | Optional model override (OpenCode)                        |
 
 ## Example
 

@@ -4,7 +4,12 @@
   "description": "Read and write files in the workspace",
   "version": "1.0",
   "type": "local",
-  "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "${workspaceFolder}"],
+  "command": [
+    "npx",
+    "-y",
+    "@modelcontextprotocol/server-filesystem",
+    "${workspaceFolder}"
+  ],
   "environment": {},
   "enabled": true
 }

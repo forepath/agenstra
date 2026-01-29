@@ -16,27 +16,27 @@ MCP definitions describe how to run or connect to MCP servers (e.g. file system,
 
 **Common fields**:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Server identifier (optional; defaults to filename stem) |
-| `name` | string | Display name |
-| `description` | string | Short description |
-| `type` | string | `"local"` or `"remote"` |
-| `enabled` | boolean | Optional; default true |
+| Field         | Type    | Description                                             |
+| ------------- | ------- | ------------------------------------------------------- |
+| `id`          | string  | Server identifier (optional; defaults to filename stem) |
+| `name`        | string  | Display name                                            |
+| `description` | string  | Short description                                       |
+| `type`        | string  | `"local"` or `"remote"`                                 |
+| `enabled`     | boolean | Optional; default true                                  |
 
 **Local servers** (run a command on the machine):
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `command` | string \| string[] | Command to run. If array, first element is the command, rest are args |
-| `environment` | object | Optional env vars for the process |
-| `env` | object | Alias for `environment` (Cursor uses `env`) |
+| Field         | Type               | Description                                                           |
+| ------------- | ------------------ | --------------------------------------------------------------------- |
+| `command`     | string \| string[] | Command to run. If array, first element is the command, rest are args |
+| `environment` | object             | Optional env vars for the process                                     |
+| `env`         | object             | Alias for `environment` (Cursor uses `env`)                           |
 
 **Remote servers** (connect to a URL):
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `url` | string | MCP server URL |
+| Field     | Type   | Description                                  |
+| --------- | ------ | -------------------------------------------- |
+| `url`     | string | MCP server URL                               |
 | `headers` | object | Optional HTTP headers (e.g. `Authorization`) |
 
 ## Example (local)

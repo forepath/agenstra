@@ -107,7 +107,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `ClientsGateway` - WebSocket event forwarding
 - `ProvisioningService` - Server provisioning (Hetzner, DigitalOcean)
 
-**Documentation**: [Agent Controller Library README](../../../libs/domains/framework/backend/feature-agent-controller/README.md)
+**Implementation**: Backend Agent Controller library
 
 ### Feature Agent Manager
 
@@ -125,7 +125,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `AgentProvider` - Plugin interface for agent providers
 - `CursorAgentProvider` - Cursor-agent implementation
 
-**Documentation**: [Agent Manager Library README](../../../libs/domains/framework/backend/feature-agent-manager/README.md)
+**Implementation**: Backend Agent Manager library
 
 ## Frontend Libraries
 
@@ -143,7 +143,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `FileEditorComponent` - Monaco Editor integration
 - Route definitions
 
-**Documentation**: [Frontend Feature Library README](../../../libs/domains/framework/frontend/feature-agent-console/README.md)
+**Implementation**: Frontend Feature Agent Console library
 
 ### Data Access Agent Console
 
@@ -170,7 +170,7 @@ This document provides a detailed breakdown of all system components, their resp
 - **Effects**: NgRx effects for side effects
 - **Selectors**: State selectors
 
-**Documentation**: [Frontend Data Access Library README](../../../libs/domains/framework/frontend/data-access-agent-console/README.md)
+**Implementation**: Frontend Data Access Agent Console library
 
 ## Component Dependencies
 

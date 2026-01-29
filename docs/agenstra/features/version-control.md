@@ -104,14 +104,12 @@ sequenceDiagram
 - `DELETE /api/clients/:id/agents/:agentId/vcs/branches/:branch` - Delete a branch
 - `POST /api/clients/:id/agents/:agentId/vcs/conflicts/resolve` - Resolve merge conflicts
 
-For detailed API documentation, see the [Agent Controller Library](../../../libs/domains/framework/backend/feature-agent-controller/README.md#api-endpoints) and [Agent Manager Library](../../../libs/domains/framework/backend/feature-agent-manager/README.md#api-endpoints).
+For detailed API documentation, see the application and API reference docs linked below.
 
 ## Related Documentation
 
 - **[File Management](./file-management.md)** - File operations
 - **[Agent Management](./agent-management.md)** - Agent containers
-- **[VCS Sequence Diagrams](../../../libs/domains/framework/backend/feature-agent-manager/docs/sequence-http-vcs.mmd)** - Detailed sequence diagrams
-
 ---
 
-_For detailed VCS operation information, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md#api-endpoints)._
+_For detailed VCS operation information, see the application docs linked below._

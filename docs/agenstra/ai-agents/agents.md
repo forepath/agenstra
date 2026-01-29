@@ -15,19 +15,19 @@ The **filename stem** (e.g. `architect` from `architect.agent.json`) is the agen
 
 ## Agent schema (primary)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Optional identifier (output key is filename stem) |
-| `name` | string | Display name |
-| `description` | string | Short description for the model and UI |
-| `mode` | string | `"primary"` for main agents |
-| `rules` | string[] | Paths to rules (e.g. `["rules/architecture.md"]`) |
-| `skills` | string[] | Paths to skills (e.g. `["skills/design-patterns.skill.md"]`) |
-| `constraints` | string[] | Hard constraints the agent must follow |
-| `temperature` | number | Optional; model temperature |
-| `tools` | object \| string | Tool access (e.g. `"*"` or `{ "write": true, "edit": true }`) |
-| `mcp` | string[] | Optional MCP server ids |
-| `handoffAgents` | string[] | Optional ids of agents this agent can hand off to |
+| Field           | Type             | Description                                                   |
+| --------------- | ---------------- | ------------------------------------------------------------- |
+| `id`            | string           | Optional identifier (output key is filename stem)             |
+| `name`          | string           | Display name                                                  |
+| `description`   | string           | Short description for the model and UI                        |
+| `mode`          | string           | `"primary"` for main agents                                   |
+| `rules`         | string[]         | Paths to rules (e.g. `["rules/architecture.md"]`)             |
+| `skills`        | string[]         | Paths to skills (e.g. `["skills/design-patterns.skill.md"]`)  |
+| `constraints`   | string[]         | Hard constraints the agent must follow                        |
+| `temperature`   | number           | Optional; model temperature                                   |
+| `tools`         | object \| string | Tool access (e.g. `"*"` or `{ "write": true, "edit": true }`) |
+| `mcp`           | string[]         | Optional MCP server ids                                       |
+| `handoffAgents` | string[]         | Optional ids of agents this agent can hand off to             |
 
 ## Subagent schema
 
@@ -43,10 +43,7 @@ Same idea as primary agents; use `mode: "subagent"`. Subagents often have broade
   "mode": "primary",
   "rules": ["rules/architecture.md", "rules/coding-standards.md"],
   "skills": ["skills/design-patterns.skill.md"],
-  "constraints": [
-    "Do not implement features; only design them",
-    "Always justify technology selections"
-  ],
+  "constraints": ["Do not implement features; only design them", "Always justify technology selections"],
   "temperature": 0.2
 }
 ```

@@ -57,6 +57,11 @@ documentation.json
 repomix-output.xml
 .claude/
 .github/copilot-instructions.md
+.github/instructions/
+.cursor/
+.opencode/
+AGENTS.md
+opencode.json
 
 # Nx
 *.env

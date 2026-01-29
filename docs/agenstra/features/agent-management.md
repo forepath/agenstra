@@ -107,7 +107,7 @@ To add a new agent type, implement the `AgentProvider` interface:
 2. Register the provider in `AgentsModule`
 3. Update DTO validation to include the new type
 
-See the [Agent Manager Library](../../../libs/domains/framework/backend/feature-agent-manager/README.md#agent-provider-plugin-system) for details.
+See the application and feature docs linked below for details.
 
 ## Agent Operations
 
@@ -170,7 +170,7 @@ Monitor container resource usage:
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent
 
-For detailed API documentation, see the [Agent Controller Library](../../../libs/domains/framework/backend/feature-agent-controller/README.md#api-endpoints) and [Agent Manager Library](../../../libs/domains/framework/backend/feature-agent-manager/README.md#api-endpoints).
+For detailed API documentation, see the application and API reference docs linked below.
 
 ## Related Documentation
 
@@ -183,4 +183,4 @@ For detailed API documentation, see the [Agent Controller Library](../../../libs
 
 ---
 
-_For detailed agent lifecycle information, see the [lifecycle diagrams](../../../libs/domains/framework/backend/feature-agent-manager/docs/lifecycle.mmd)._
+_For detailed agent lifecycle information, see the application and feature docs linked below._

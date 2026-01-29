@@ -163,15 +163,6 @@ Access a Chromium browser running in a virtual workspace container via VNC. XFCE
 
 ## Related Documentation
 
-### Library Documentation
-
-For detailed technical specifications, see the library documentation:
-
-- **[Agent Controller Library](../../libs/domains/framework/backend/feature-agent-controller/README.md)** - Client management and proxying functionality
-- **[Agent Manager Library](../../libs/domains/framework/backend/feature-agent-manager/README.md)** - Agent management core functionality
-- **[Frontend Feature Library](../../libs/domains/framework/frontend/feature-agent-console/README.md)** - Frontend components and features
-- **[Frontend Data Access Library](../../libs/domains/framework/frontend/data-access-agent-console/README.md)** - State management (NgRx)
-
 ### Application Documentation
 
 For application-specific information, see the application documentation:

@@ -115,15 +115,13 @@ This enables real-time collaboration and ensures all clients see the latest file
 - `DELETE /api/clients/:id/agents/:agentId/files/:path` - Delete file or directory
 - `PATCH /api/clients/:id/agents/:agentId/files/:path` - Move file or directory
 
-For detailed API documentation, see the [Agent Controller Library](../../../libs/domains/framework/backend/feature-agent-controller/README.md#api-endpoints) and [Agent Manager Library](../../../libs/domains/framework/backend/feature-agent-manager/README.md#api-endpoints).
+For detailed API documentation, see the application and API reference docs linked below.
 
 ## Related Documentation
 
 - **[Web IDE](./web-ide.md)** - Monaco Editor integration
 - **[Version Control](./version-control.md)** - Git operations
 - **[Agent Management](./agent-management.md)** - Agent containers
-- **[File Operation Sequence Diagrams](../../../libs/domains/framework/backend/feature-agent-manager/docs/sequence-http-files.mmd)** - Detailed sequence diagrams
-
 ---
 
-_For detailed file operation information, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md)._
+_For detailed file operation information, see the application docs linked below._

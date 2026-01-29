@@ -86,4 +86,4 @@ The editor can be configured with:
 
 ---
 
-_For detailed editor integration, see the [frontend feature library](../../../libs/domains/framework/frontend/feature-agent-console/README.md)._
+_For detailed editor integration, see the feature and deployment docs linked below._

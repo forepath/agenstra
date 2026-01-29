@@ -48,16 +48,15 @@
 
 ### Compliance
 
-- [ ] All commits follow [Conventional Commit Guidelines](.cursor/rules/conventional_commits.mdc)
-- [ ] Application/library boundaries and dependencies are valid per [Application](.cursor/rules/applications.mdc) and [Domain/Library Guidelines](.cursor/rules/domains_and_libraries.mdc)
-- [ ] Code follows [Software Development Principles](.cursor/rules/software_develoment_principals.mdc)
-- [ ] Nx workflows are used per [Agent Guidelines](.cursor/rules/agents.mdc)
+- [ ] All commits use conventional commit format (e.g. `feat:`, `fix:`, `docs:`)
+- [ ] Application and library boundaries and dependencies are valid
+- [ ] Code follows the project’s style and quality practices
+- [ ] Nx is used for build, test, and lint (e.g. `nx prepush`, `nx affected`)
 
 ### Documentation
 
-- [ ] Documentation has been updated to reflect changes
-- [ ] README files have been updated (if applicable)
-- [ ] API documentation has been updated (if applicable)
+- [ ] Relevant docs and READMEs have been updated to reflect changes
+- [ ] API or public contract changes are documented (if applicable)
 
 ## Additional Notes
 
