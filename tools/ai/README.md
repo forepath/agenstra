@@ -1,11 +1,95 @@
-# ai
+# @agenstra/ai
 
-This library was generated with [Nx](https://nx.dev).
+Transforms `.agenstra/` context into tool-specific agent configs for Cursor, OpenCode, and GitHub Copilot. This package does **not** scaffold `.agenstra/`; use the example context in this repo's `.agenstra/` as reference.
 
-## Building
+## Transformer
 
-Run `nx build ai` to build the library.
+Read `.agenstra/`, validate, and emit tool-specific output:
 
-## Running unit tests
+- **Cursor** – `.cursor/rules/*.mdc` (frontmatter: description, globs, alwaysApply), `.cursor/commands/*.md` (plain Markdown), `.cursor/skills/<name>/SKILL.md` (frontmatter: name, description), `.cursor/agents/*.md` (primary agents), `.cursor/subagents/*.md` (subagents), single `.cursor/mcp.json` with `mcpServers` object
+- **OpenCode** – `AGENTS.md` (aggregated rules from `.agenstra/rules/`), `.opencode/commands/*.md` (frontmatter: description, agent, model), `.opencode/agents/*.md` (frontmatter: description, mode, model, temperature, tools), `opencode.json` (includes top-level `mcp` object for MCP servers)
+- **GitHub Copilot** – `.github/copilot-instructions.md`, `.github/instructions/NAME.instructions.md` (path-specific with `applyTo` frontmatter). Primary agents only (subagents are not supported by Copilot); skills are merged into instructions
 
-Run `nx test ai` to execute the unit tests via [Jest](https://jestjs.io).
+Agents and subagents are keyed by **filename stem** (e.g. `architect.agent.json` → `architect`). Tools that do not support separate skills (GitHub Copilot) receive skills merged into instructions automatically.
+
+### Programmatic API
+
+```ts
+import { transform, listTools, readContext, validateContext } from '@agenstra/ai';
+
+// Transform .agenstra to one or more tools (sync)
+const result = transform({
+  source: '.agenstra',
+  target: ['cursor', 'opencode', 'github-copilot'],
+  outputDir: 'generated',
+  dryRun: false,
+  strictValidation: true,   // default: fail on validation errors
+  returnOutputs: false,     // set true to get output maps without writing (e.g. for Nx Tree)
+});
+// result: { success, results: [{ tool, path, fileCount, merged?, output? }], errors }
+
+// List supported tools
+listTools(); // ['cursor', 'opencode', 'github-copilot']
+
+// Read context only (no transform)
+const context = readContext('.agenstra');
+
+// Validate context (returns validation results; does not throw)
+const validation = validateContext(context);
+```
+
+### Nx executor
+
+Run the transformer via the `transform` executor. Add the target to a project's `project.json`:
+
+```json
+{
+  "targets": {
+    "agenstra-transform": {
+      "executor": "@agenstra/ai:transform",
+      "options": {
+        "source": ".",
+        "target": ["cursor", "opencode", "github-copilot"],
+        "outputDir": "generated"
+      }
+    }
+  }
+}
+```
+
+Then run:
+
+```bash
+nx run my-app:agenstra-transform --target=cursor,opencode,github-copilot
+nx run my-app:agenstra-transform --target=cursor --outputDir=./generated --dryRun
+```
+
+Executor options: `source` (default `"."`), `target` (required), `outputDir` (default `"generated"`), `dryRun` (default `false`). The executor always runs with strict validation; use the programmatic API for `strictValidation` or `returnOutputs`.
+
+## Generator: context
+
+Validates that a `.agenstra/` context exists and optionally runs the transformer, writing output into the Nx tree:
+
+```bash
+nx generate @agenstra/ai:context --path=.
+nx generate @agenstra/ai:context --project=my-app
+nx generate @agenstra/ai:context --path=. --target=cursor,github-copilot --outputDir=generated
+nx generate @agenstra/ai:context --path=. --dryRun
+```
+
+Generator options: `project` (Nx project name; `.agenstra/` at project root), `path` (default `"."` when not using `project`), `target` (optional; when set, runs transform and writes under `outputDir`), `outputDir` (default `"generated"`), `dryRun` (default `false`; only validate, do not transform or write).
+
+## Example context
+
+See the repository root `.agenstra/` for an example context (rules, commands, skills, agents, subagents, MCP definitions). Copy or adapt it for your project.
+
+## Building and testing
+
+- `nx build ai` – build the library
+- `nx test ai` – run unit tests
+
+## Exports
+
+- **API**: `transform`, `readContext`, `validateContext`, `listTools`, `emitToolOutput`, `getTransformer`, `mergeComponentsForTransformer`
+- **Transformers**: `CursorTransformer`, `OpenCodeTransformer`, `GithubCopilotTransformer`, `BaseTransformer`
+- **Types**: `TransformOptions`, `TransformResult`, `AgenstraContext`, `AgenstraAgent`, `AgenstraSubagent`, `AgenstraMetadata`, `ToolName`, `ToolOutput`, `ToolTransformResult`, `TransformationReport`, `ComponentType`, `ValidationResult`

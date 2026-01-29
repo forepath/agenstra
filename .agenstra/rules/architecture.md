@@ -1,0 +1,13 @@
+# Architecture
+
+## Patterns and Decisions
+
+- Prefer domain-driven structure where it fits the problem
+- Separate UI, feature, data-access, and util layers clearly
+- Prefer composition over inheritance
+- Document significant architectural decisions (e.g. ADRs)
+
+## Dependencies
+
+- Respect dependency boundaries (e.g. no frontend importing backend)
+- Use shared contracts or APIs for cross-boundary communication

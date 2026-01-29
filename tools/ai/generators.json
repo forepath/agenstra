@@ -4,6 +4,11 @@
       "factory": "./src/generators/context/context",
       "schema": "./src/generators/context/schema.json",
       "description": "context generator"
+    },
+    "transform": {
+      "factory": "./src/generators/transform/executor",
+      "schema": "./src/generators/transform/schema.json",
+      "description": "transform executor"
     }
   }
 }

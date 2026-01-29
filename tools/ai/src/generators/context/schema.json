@@ -2,26 +2,36 @@
   "$schema": "https://json-schema.org/schema",
   "$id": "Context",
   "title": "Context Generator",
-  "description": "Nx generator for creating a new context for AI tools",
+  "description": "Validates .agenstra/ context and optionally transforms to tool-specific configs (Cursor, OpenCode, GitHub Copilot). When target is set, runs the transformer and writes output into the tree.",
   "type": "object",
   "properties": {
+    "project": {
+      "type": "string",
+      "description": "Nx project name. .agenstra/ is expected at the project root."
+    },
     "path": {
       "type": "string",
-      "description": "",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      },
-      "x-prompt": "What path would you like to use?",
-      "default": "./.agenstra"
+      "description": "Directory that contains .agenstra/. Used when --project is not set.",
+      "default": "."
     },
-    "tool": {
+    "target": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["cursor", "opencode", "github-copilot"]
+      },
+      "description": "Target tools to generate config for. When provided, runs the transformer and writes output under outputDir."
+    },
+    "outputDir": {
       "type": "string",
-      "description": "",
-      "enum": ["all", "generic", "claude", "github-copilot", "cursor"],
-      "default": "all",
-      "x-prompt": "What tool would you like to use?"
+      "description": "Base output directory for transformed configs. Each tool gets a subdir (e.g. outputDir/cursor).",
+      "default": "generated"
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Only validate; do not run transform or write files.",
+      "default": false
     }
   },
-  "required": ["path", "tool"]
+  "required": []
 }

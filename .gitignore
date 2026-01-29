@@ -3,6 +3,8 @@
 # compiled output
 dist
 tmp
+tmp-generated
+generated
 out-tsc
 
 # dependencies

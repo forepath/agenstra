@@ -41,6 +41,17 @@ Detailed documentation for each application:
 - [Backend Agent Manager](./applications/backend-agent-manager.md) - Agent management system with HTTP REST API and WebSocket gateway
 - [Frontend Agent Console](./applications/frontend-agent-console.md) - Web-based IDE and chat interface
 
+### [AI Agents Context](./ai-agents/README.md)
+
+Configuration for AI coding assistants (Cursor, OpenCode, GitHub Copilot) from a single, tool-agnostic source:
+
+- [Overview](./ai-agents/README.md) - Single source of truth for rules, commands, skills, and agents; transformation to tool-specific configs
+- [Rules](./ai-agents/rules.md) - Project-wide instructions (coding standards, architecture, testing, security)
+- [Commands](./ai-agents/commands.md) - Reusable slash-style commands and prompts
+- [Skills](./ai-agents/skills.md) - Domain-specific knowledge and patterns
+- [Agents](./ai-agents/agents.md) - Primary agents and subagents configuration
+- [MCP Definitions](./ai-agents/mcp-definitions.md) - Model Context Protocol server definitions
+
 ### [Features](./features/README.md)
 
 Comprehensive feature documentation:

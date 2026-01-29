@@ -1,0 +1,14 @@
+# Testing
+
+## Strategy
+
+- Unit tests for business logic and utilities
+- Integration tests for APIs and data flow
+- E2E tests for critical user journeys
+- Aim for a defined minimum coverage on production code (e.g. 80%)
+
+## Conventions
+
+- Test layout mirrors source layout where practical
+- Use descriptive test names; use arrange/act/assert where helpful
+- Mock or stub external dependencies in unit tests

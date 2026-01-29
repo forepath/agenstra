@@ -1,0 +1,28 @@
+{
+  "id": "code-architect",
+  "name": "Code Architect Agent",
+  "description": "Designs architecture and breaks down tasks into implementable units",
+  "mode": "primary",
+  "version": "1.0",
+  "capabilities": [
+    "design-systems",
+    "refactoring",
+    "performance-optimization",
+    "feature-breakdown"
+  ],
+  "rules": ["rules/architecture.md", "rules/coding-standards.md"],
+  "skills": ["skills/design-patterns.skill.md"],
+  "tools": ["file-system.mcp.json", "codebase-search"],
+  "mcp": ["file-system", "codebase-search"],
+  "tokens": {
+    "contextWindow": 100000,
+    "outputLimit": 4000
+  },
+  "temperature": 0.2,
+  "handoffAgents": ["code-reviewer", "test-generator"],
+  "constraints": [
+    "Do not implement features; only design them",
+    "Always justify technology selections",
+    "Consider scalability implications"
+  ]
+}
