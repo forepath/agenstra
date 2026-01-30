@@ -50,6 +50,10 @@ jobs:
         if: steps.semantic-release.outputs.new_release_published == 'true'
         run: npx nx run-many --target=build --configuration=production --parallel=3 || echo "No projects for build"
 
+      - name: Generate binaries
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        run: npx nx run-many --target=scripts-binary --parallel=3 || echo "No projects for scripts binary build"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: steps.semantic-release.outputs.new_release_published == 'true'
@@ -391,3 +395,28 @@ jobs:
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
         run: |
           aws s3 cp release/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }} --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+
+  publish-agentctx:
+    name: Publish agentctx to R2
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+    if: needs.publish.outputs.new_release_published == 'true'
+    environment: production
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Upload agentctx to Cloudflare R2 bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+        run: |
+          aws s3 cp dist/tools/ai/bin/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/agentctx/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          aws s3 cp dist/tools/ai/bin/ s3://${{ secrets.AWS_BUCKET }}/agentctx/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
