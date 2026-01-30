@@ -333,9 +333,7 @@ The Chromium browser in the VNC container:
 
 - **[Agent Management](./agent-management.md)** - Agent lifecycle and management
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** - Application details
-- **[Architecture Diagrams](../../../libs/domains/framework/backend/feature-agent-manager/docs/architecture-vnc.mmd)** - VNC architecture diagrams
-- **[VNC Setup Sequence](../../../libs/domains/framework/backend/feature-agent-manager/docs/sequence-vnc-setup.mmd)** - VNC container creation sequence
 
 ---
 
-_For detailed technical specifications, see the [Agent Manager Library](../../../libs/domains/framework/backend/feature-agent-manager/README.md)._
+_For detailed technical specifications, see the application and feature docs linked below._

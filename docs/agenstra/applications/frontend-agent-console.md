@@ -215,8 +215,6 @@ Before deploying to production:
 
 ## Related Documentation
 
-- **[Frontend Feature Library](../../../libs/domains/framework/frontend/feature-agent-console/README.md)** - Feature components
-- **[Frontend Data Access Library](../../../libs/domains/framework/frontend/data-access-agent-console/README.md)** - State management
 - **[Chat Interface Feature](../features/chat-interface.md)** - Chat functionality guide
 - **[Web IDE Feature](../features/web-ide.md)** - Code editor guide
 - **[File Management Feature](../features/file-management.md)** - File operations guide
@@ -224,4 +222,4 @@ Before deploying to production:
 
 ---
 
-_For detailed component documentation, see the [frontend feature library](../../../libs/domains/framework/frontend/feature-agent-console/README.md)._
+_For detailed component documentation, see the feature and deployment docs linked above._

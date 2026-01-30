@@ -43,25 +43,23 @@ We welcome contributions of all kinds:
    nx prepush
    ```
 
-4. **Read the Documentation**
-   - Start with [Getting Started Guide](./docs/development-workflows/getting-started.md)
-   - Review [Architecture Overview](./docs/architecture/monorepo-structure.md)
-   - Check [Development Workflows](./docs/development-workflows/getting-started.md)
+4. **Review project setup and structure**
+   - Run through local setup and run the app (see [project docs](./docs/agenstra/README.md) for entry points)
+   - Understand the repository layout and how to run tests and builds
 
 ## Development Guidelines
 
 ### Code Quality Standards
 
-- Follow our [Code Quality Guidelines](./docs/best-practices/code-quality.md)
-- Adhere to [Software Development Principles](./.cursor/rules/software_develoment_principals.mdc)
-- Use [Conventional Commits](./.cursor/rules/conventional_commits.mdc) for commit messages
+- Follow the project’s code quality and security practices
+- Use conventional commits for commit messages (e.g. `feat:`, `fix:`, `docs:`)
 - Ensure all tests pass and code is properly formatted
 
 ### Architecture Guidelines
 
-- Respect [Application Guidelines](./.cursor/rules/applications.mdc)
-- Follow [Domain and Library Guidelines](./.cursor/rules/domains_and_libraries.mdc)
-- Use Nx workflows as defined in [Agent Guidelines](./.cursor/rules/agents.mdc)
+- Respect application and library boundaries
+- Follow domain and dependency rules
+- Use Nx for all build, test, and lint tasks
 
 ### Nx Workflow
 
@@ -112,7 +110,7 @@ We welcome contributions of all kinds:
 - Use our [Pull Request Template](./.github/PULL_REQUEST_TEMPLATE.md)
 - Include tests for new functionality
 - Update relevant documentation
-- Follow our [Agent Guidelines](./.cursor/rules/agents.mdc)
+- Follow the project’s contribution and workflow guidelines
 
 ## Bug Reports
 
@@ -167,7 +165,7 @@ We value documentation improvements:
 ### Community Support
 
 - [GitHub Discussions](https://github.com/forepath/agenstra/discussions)
-- [Documentation](./docs/README.md)
+- [Project overview and docs](./docs/agenstra/README.md)
 - [Issue Tracker](https://github.com/forepath/agenstra/issues)
 
 ### Direct Support
@@ -182,7 +180,7 @@ We value documentation improvements:
 Contributors will be recognized in:
 
 - Release notes for significant contributions
-- Contributors section in documentation
+- Contributors section in the project
 - Special mentions for exceptional contributions
 
 ## License

@@ -1,0 +1,88 @@
+---
+id: java
+name: Java Best Practices (Oracle Conventions)
+description: Java coding standards following Oracle conventions and modern practices
+globs: ["**/*.java"]
+alwaysApply: false
+---
+# Java Best Practices
+
+## Naming Conventions
+
+- **Classes:** PascalCase (e.g., UserService, DatabaseConnection)
+- **Interfaces:** PascalCase (optional Interface suffix)
+- **Methods:** camelCase (e.g., getUserById, validateInput)
+- **Variables:** camelCase (e.g., userName, isActive)
+- **Constants:** UPPER_SNAKE_CASE (e.g., MAX_CONNECTION_POOL_SIZE)
+- **Packages:** reverse domain (e.g., com.company.module.submodule)
+
+## File Organization
+
+- **One Class per File:** Each public class in its own file
+- **Package Declaration:** First non-comment line
+- **Imports:** Organized in groups:
+  1. Java standard library
+  2. Third-party imports
+  3. Local imports
+- **Class Members Order:**
+  1. Static variables (fields)
+  2. Instance variables (fields)
+  3. Constructors
+  4. Methods (public, then protected, then private)
+  5. Static methods
+
+## Visibility and Access Modifiers
+
+- **Explicit Visibility:** Always declare visibility (public, protected, private)
+- **Least Privilege:** Use most restrictive visibility possible
+- **Visibility Order:** public, protected, private (then other modifiers like static, final)
+- **Fields Private:** Keep fields private; expose through methods when needed
+- **Immutability:** Prefer `final` for fields that shouldn't change
+
+## Types and Variables
+
+- **Type Inference:** Use `var` keyword for local variables where type is obvious (Java 10+)
+- **Avoid Magic Numbers:** Use constants or named variables
+- **No Underscore in Numeric:** Don't use underscores in numeric literals (use for readability if supported)
+- **Prefer Primitives:** Use primitive types where appropriate
+- **Collections:** Use interfaces (List, Map, Set) not concrete classes
+
+## Methods
+
+- **Short Methods:** Methods should be short and focused (SRP)
+- **Clear Names:** Method names should describe what they do
+- **Parameter Count:** Limit to 3-4 parameters; use objects for many parameters
+- **No Null Returns:** Use Optional<T> or throw exceptions instead
+- **Javadoc:** Document public methods with JavaDoc
+
+## Exception Handling
+
+- **Specific Exceptions:** Catch specific exceptions, not generic Exception
+- **Meaningful Messages:** Include context in exception messages
+- **Stack Traces:** Log full stack traces for debugging
+- **Recovery:** Implement retry logic for transient failures
+- **Fail Fast:** Detect errors as early as possible
+
+## Collections and Streams
+
+- **Generics:** Always use generics (e.g., `List<User>` not raw `List`)
+- **Streams:** Use Stream API for collection operations (filter, map, reduce)
+- **forEach:** Use forEach for simple iteration; streams for transformations
+- **Lambdas:** Use lambda expressions for functional interfaces
+- **Null Handling:** Use Optional instead of null checks
+
+## Testing
+
+- **JUnit 5:** Use modern testing framework
+- **Test Naming:** `test_<method>_<scenario>_<expected>`
+- **Assertions:** Use AssertJ or Hamcrest for expressive assertions
+- **Mocking:** Use Mockito for mocking dependencies
+- **Coverage:** Aim for 80%+ coverage on critical code
+
+## Performance
+
+- **String Concatenation:** Use StringBuilder for loops, not `+`
+- **Collection Sizing:** Pre-size collections when size is known
+- **Avoid Auto-boxing:** Be aware of boxing/unboxing costs
+- **Synchronization:** Use ConcurrentHashMap over synchronized collections
+- **Profiling:** Use JProfiler or YourKit for performance analysis

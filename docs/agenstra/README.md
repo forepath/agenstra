@@ -41,6 +41,18 @@ Detailed documentation for each application:
 - [Backend Agent Manager](./applications/backend-agent-manager.md) - Agent management system with HTTP REST API and WebSocket gateway
 - [Frontend Agent Console](./applications/frontend-agent-console.md) - Web-based IDE and chat interface
 
+### [AI Agents Context](./ai-agents/README.md)
+
+Configuration for AI coding assistants (Cursor, OpenCode, GitHub Copilot) from a single, tool-agnostic source:
+
+- [Overview](./ai-agents/README.md) - Single source of truth for rules, commands, skills, and agents; transformation to tool-specific configs
+- [Rules](./ai-agents/rules.md) - Project-wide instructions (coding standards, architecture, testing, security)
+- [Commands](./ai-agents/commands.md) - Reusable slash-style commands and prompts
+- [Skills](./ai-agents/skills.md) - Domain-specific knowledge and patterns
+- [Agents](./ai-agents/agents.md) - Primary agents and subagents configuration
+- [MCP Definitions](./ai-agents/mcp-definitions.md) - Model Context Protocol server definitions
+- [Perplexity plan prompt](./ai-agents/perplexity-plan-prompt.md) - Prompt for Perplexity to research best practices and output a plan file to generate .agenstra contents
+
 ### [Features](./features/README.md)
 
 Comprehensive feature documentation:
@@ -151,15 +163,6 @@ Monitor agent containers, view logs, and manage container lifecycle. Real-time c
 Access a Chromium browser running in a virtual workspace container via VNC. XFCE4 desktop environment with auto-started browser, accessible through a web-based noVNC client.
 
 ## Related Documentation
-
-### Library Documentation
-
-For detailed technical specifications, see the library documentation:
-
-- **[Agent Controller Library](../../libs/domains/framework/backend/feature-agent-controller/README.md)** - Client management and proxying functionality
-- **[Agent Manager Library](../../libs/domains/framework/backend/feature-agent-manager/README.md)** - Agent management core functionality
-- **[Frontend Feature Library](../../libs/domains/framework/frontend/feature-agent-console/README.md)** - Frontend components and features
-- **[Frontend Data Access Library](../../libs/domains/framework/frontend/data-access-agent-console/README.md)** - State management (NgRx)
 
 ### Application Documentation
 

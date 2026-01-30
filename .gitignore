@@ -3,6 +3,8 @@
 # compiled output
 dist
 tmp
+tmp-generated
+generated
 out-tsc
 
 # dependencies
@@ -55,6 +57,16 @@ documentation.json
 repomix-output.xml
 .claude/
 .github/copilot-instructions.md
+!.agenstra/overrides/.github/copilot-instructions.md
+.github/instructions/
+!.agenstra/overrides/.github/instructions/
+.cursor/
+!.agenstra/overrides/.cursor/
+.opencode/
+!.agenstra/overrides/.opencode/
+AGENTS.md
+!.agenstra/overrides/AGENTS.md
+opencode.json
 
-# Nx
+# Environment variables
 *.env

@@ -208,8 +208,7 @@ sequenceDiagram
 - **[Agent Management](./agent-management.md)** - Agent authentication
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** - Controller WebSocket details
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** - Manager WebSocket details
-- **[AsyncAPI Specifications](../../../libs/domains/framework/backend/feature-agent-controller/spec/asyncapi.yaml)** - Complete WebSocket specification
 
 ---
 
-_For detailed WebSocket event specifications, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-controller/README.md#websocket-gateway)._
+_For detailed WebSocket event specifications, see the application and API reference docs linked below._

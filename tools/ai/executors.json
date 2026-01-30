@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "transform": {
+      "implementation": "./src/executors/transform/executor",
+      "schema": "./src/executors/transform/schema.json",
+      "description": "Transform .agenstra/ context to tool-specific configs (cursor, opencode, github-copilot)"
+    }
+  }
+}

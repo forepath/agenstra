@@ -4,7 +4,7 @@
   "sourceRoot": "apps/mcp-devkit/src",
   "projectType": "application",
   "tags": ["type:app", "scope:backend"],
-  "implicitDependencies": ["@forepath/devkit"],
+  "implicitDependencies": ["@agenstra/code"],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",

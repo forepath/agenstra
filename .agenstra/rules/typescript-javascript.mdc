@@ -1,0 +1,77 @@
+---
+id: typescript-javascript
+name: TypeScript and JavaScript Best Practices
+description: Language-specific standards for TypeScript and JavaScript projects
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+alwaysApply: false
+---
+# TypeScript and JavaScript Best Practices
+
+## Type Safety (TypeScript)
+
+- **Strict Mode:** Enable all strict compiler options
+  ```json
+  {
+    "compilerOptions": {
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "strictPropertyInitialization": true,
+      "noImplicitThis": true,
+      "alwaysStrict": true
+    }
+  }
+  ```
+
+- **Avoid `any`:** Never use `any` type; use `unknown` with type guards instead
+- **Explicit Types:** Always provide explicit types for function parameters and returns
+- **Type Inference:** Let TypeScript infer types from context where appropriate
+- **Null Checks:** Use `strictNullChecks`; handle null/undefined explicitly
+
+## Modern Language Features
+
+- **ES2022 Target:** Use `target: "ES2022"` in tsconfig.json
+- **Async/Await:** Use async/await over Promise.then()
+- **Arrow Functions:** Prefer arrow functions for callbacks
+- **Template Literals:** Use template literals for string interpolation
+- **Destructuring:** Use object and array destructuring
+- **Spread Operator:** Use spread syntax for cleaner code
+- **Optional Chaining:** Use `?.` for safe property access
+- **Nullish Coalescing:** Use `??` instead of `||` for null/undefined checks
+
+## Module System
+
+- **ES Modules:** Use modern import/export syntax
+- **Named Exports:** Prefer named exports over default exports
+- **Dynamic Imports:** Use `import()` for code splitting and lazy loading
+- **Path Aliases:** Configure path aliases in tsconfig.json for cleaner imports
+
+## React-Specific (if applicable)
+
+- **Functional Components:** Use functional components with hooks
+- **TypeScript Props:** Type component props with interfaces
+- **Hooks Rules:** Follow all React hooks rules
+- **Performance:** Use useMemo, useCallback, React.memo appropriately
+- **State Management:** Consider Zustand, Redux, or Context based on complexity
+
+## Testing
+
+- **Jest/Vitest:** Use modern test frameworks
+- **Test Naming:** Use descriptive test names: `test('should validate email correctly')`
+- **Isolation:** Mock external dependencies
+- **Async Tests:** Properly handle async operations in tests
+
+## Code Organization
+
+- **Folder Structure:** Organize by feature or domain
+- **Index Files:** Use index.ts for clean exports
+- **Constants:** Define constants in separate files
+- **Utilities:** Extract shared utilities to lib directories
+
+## Performance
+
+- **Bundle Analysis:** Monitor bundle size with webpack-bundle-analyzer
+- **Code Splitting:** Split bundles by route or feature
+- **Lazy Loading:** Use dynamic imports for non-critical features
+- **Tree Shaking:** Ensure unused code is eliminated

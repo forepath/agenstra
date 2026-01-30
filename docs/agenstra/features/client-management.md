@@ -93,7 +93,7 @@ This configuration allows you to discover which agent types are available on eac
 - `POST /api/clients/:id` - Update an existing client
 - `DELETE /api/clients/:id` - Delete a client
 
-For detailed API documentation, see the [Agent Controller Library](../../../libs/domains/framework/backend/feature-agent-controller/README.md#api-endpoints).
+For detailed API documentation, see the application and API reference docs linked below.
 
 ## Related Documentation
 
@@ -104,4 +104,4 @@ For detailed API documentation, see the [Agent Controller Library](../../../libs
 
 ---
 
-_For detailed API specifications, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-controller/README.md)._
+_For detailed API specifications, see the application docs linked below._

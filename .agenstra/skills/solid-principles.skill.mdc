@@ -1,0 +1,180 @@
+---
+id: solid-principles
+name: SOLID Principles Application
+description: How to apply SOLID principles in practice
+---
+# SOLID Principles in Practice
+
+## Single Responsibility Principle (SRP)
+
+**Definition:** A class should have only one reason to change.
+
+**Recognizing SRP Violations:**
+- Class doing too many things
+- Difficulty naming the class
+- Changes to different requirements affect same class
+- Test requires mocking many dependencies
+
+**Example Violation:**
+```java
+class User {
+  void saveToDatabase() { }
+  void sendEmail() { }
+  void generateReport() { }
+}
+```
+
+**Solution - Separate Concerns:**
+```java
+class User { /* user data only */ }
+class UserRepository { void save(User) { } }
+class EmailService { void sendEmail(String) { } }
+class ReportGenerator { void generate(User) { } }
+```
+
+## Open/Closed Principle (OCP)
+
+**Definition:** Open for extension, closed for modification.
+
+**Recognizing OCP Violations:**
+- Adding new features requires modifying existing classes
+- Switch statements checking types
+- Conditional logic based on type
+
+**Example Violation:**
+```java
+class PaymentProcessor {
+  void process(Payment payment) {
+    if (payment instanceof CreditCard) { /* process CC */ }
+    else if (payment instanceof PayPal) { /* process PayPal */ }
+  }
+}
+```
+
+**Solution - Use Polymorphism:**
+```java
+interface PaymentMethod {
+  void process(Payment payment);
+}
+
+class CreditCardProcessor implements PaymentMethod { }
+class PayPalProcessor implements PaymentMethod { }
+
+class PaymentProcessor {
+  void process(PaymentMethod method, Payment payment) {
+    method.process(payment);
+  }
+}
+```
+
+## Liskov Substitution Principle (LSP)
+
+**Definition:** Derived classes should be substitutable for base classes.
+
+**Recognizing LSP Violations:**
+- Downcasting required
+- Subclass throws different exceptions
+- Subclass changes semantics of base method
+- Tests fail when swapping implementations
+
+**Example Violation:**
+```java
+class Bird {
+  void fly() { }
+}
+
+class Penguin extends Bird {
+  @Override
+  void fly() {
+    throw new UnsupportedOperationException("Cannot fly");
+  }
+}
+```
+
+**Solution - Correct Abstraction:**
+```java
+interface Flyer {
+  void fly();
+}
+
+interface Swimmer {
+  void swim();
+}
+
+class Bird implements Flyer { }
+class Penguin implements Swimmer { }
+```
+
+## Interface Segregation Principle (ISP)
+
+**Definition:** Clients should depend on small, focused interfaces.
+
+**Recognizing ISP Violations:**
+- Interfaces with many methods
+- Implementations that throw NotImplementedError
+- Clients don't use all interface methods
+
+**Example Violation:**
+```java
+interface Worker {
+  void work();
+  void eat();
+  void sleep();
+}
+```
+
+**Solution - Segregate Interfaces:**
+```java
+interface Workable {
+  void work();
+}
+
+interface Eatable {
+  void eat();
+}
+
+interface Sleepable {
+  void sleep();
+}
+
+class Robot implements Workable { }
+class Human implements Workable, Eatable, Sleepable { }
+```
+
+## Dependency Inversion Principle (DIP)
+
+**Definition:** Depend on abstractions, not concrete implementations.
+
+**Recognizing DIP Violations:**
+- Creating dependencies with `new`
+- Hard to test due to tight coupling
+- Difficult to swap implementations
+- Changes to implementation affect consumers
+
+**Example Violation:**
+```java
+class UserService {
+  private MySQLDatabase db = new MySQLDatabase();
+
+  void saveUser(User user) {
+    db.save(user);
+  }
+}
+```
+
+**Solution - Inject Abstractions:**
+```java
+class UserService {
+  private Database db;
+
+  UserService(Database db) {
+    this.db = db;
+  }
+
+  void saveUser(User user) {
+    db.save(user);
+  }
+}
+
+// Can now inject any Database implementation
+```

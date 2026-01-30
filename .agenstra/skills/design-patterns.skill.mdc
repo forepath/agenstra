@@ -1,0 +1,227 @@
+---
+id: design-patterns
+name: Design Patterns and When to Use Them
+description: Common design patterns, their purposes, and practical examples
+---
+# Design Patterns Guide
+
+## Creational Patterns (Object Creation)
+
+### Factory Pattern
+
+**Purpose:** Create objects without specifying exact classes.
+
+**When to Use:**
+- Object creation complex
+- Multiple ways to create similar objects
+- Dependency on specific classes should be avoided
+
+**Example:**
+```typescript
+interface Logger {
+  log(message: string): void;
+}
+
+class ConsoleLogger implements Logger {
+  log(message: string) { console.log(message); }
+}
+
+class FileLogger implements Logger {
+  log(message: string) { /* write to file */ }
+}
+
+class LoggerFactory {
+  static create(type: 'console' | 'file'): Logger {
+    if (type === 'console') return new ConsoleLogger();
+    if (type === 'file') return new FileLogger();
+    throw new Error('Unknown logger type');
+  }
+}
+```
+
+### Builder Pattern
+
+**Purpose:** Construct complex objects step by step.
+
+**When to Use:**
+- Objects with many optional parameters
+- Complex initialization logic
+- Want fluent, readable construction
+
+**Example:**
+```java
+class User {
+  private String name;
+  private String email;
+  private int age;
+  private boolean isActive;
+
+  private User(Builder builder) {
+    this.name = builder.name;
+    this.email = builder.email;
+    this.age = builder.age;
+    this.isActive = builder.isActive;
+  }
+
+  static class Builder {
+    private String name;
+    private String email;
+    private int age;
+    private boolean isActive = true;
+
+    Builder name(String name) { this.name = name; return this; }
+    Builder email(String email) { this.email = email; return this; }
+    Builder age(int age) { this.age = age; return this; }
+    Builder inactive() { this.isActive = false; return this; }
+
+    User build() {
+      if (name == null) throw new IllegalArgumentException("Name required");
+      return new User(this);
+    }
+  }
+}
+
+// Usage
+User user = new User.Builder()
+  .name("John")
+  .email("john@example.com")
+  .age(30)
+  .build();
+```
+
+## Structural Patterns (Object Composition)
+
+### Strategy Pattern
+
+**Purpose:** Define interchangeable algorithms.
+
+**When to Use:**
+- Multiple ways to perform an operation
+- Want to avoid if-else chains
+- Algorithms change at runtime
+
+**Example:**
+```typescript
+interface SortingStrategy {
+  sort<T>(items: T[]): T[];
+}
+
+class QuickSort implements SortingStrategy {
+  sort<T>(items: T[]): T[] { /* quick sort */ }
+}
+
+class MergeSort implements SortingStrategy {
+  sort<T>(items: T[]): T[] { /* merge sort */ }
+}
+
+class DataProcessor {
+  private strategy: SortingStrategy;
+
+  constructor(strategy: SortingStrategy) {
+    this.strategy = strategy;
+  }
+
+  process(items: any[]) {
+    return this.strategy.sort(items);
+  }
+}
+```
+
+### Decorator Pattern
+
+**Purpose:** Add behavior to objects dynamically.
+
+**When to Use:**
+- Add responsibilities to individual objects without affecting others
+- Inheritance would create too many subclasses
+- Want to compose behaviors
+
+**Example:**
+```java
+interface DataSource {
+  String read();
+}
+
+class FileDataSource implements DataSource {
+  public String read() { /* read file */ }
+}
+
+abstract class DataSourceDecorator implements DataSource {
+  protected DataSource wrappedSource;
+
+  DataSourceDecorator(DataSource source) {
+    this.wrappedSource = source;
+  }
+}
+
+class CompressionDecorator extends DataSourceDecorator {
+  public String read() {
+    String data = wrappedSource.read();
+    return compress(data);
+  }
+
+  private String compress(String data) { /* compress */ }
+}
+
+class EncryptionDecorator extends DataSourceDecorator {
+  public String read() {
+    String data = wrappedSource.read();
+    return encrypt(data);
+  }
+
+  private String encrypt(String data) { /* encrypt */ }
+}
+
+// Usage: Stack decorators
+DataSource source = new EncryptionDecorator(
+  new CompressionDecorator(
+    new FileDataSource()
+  )
+);
+```
+
+## Behavioral Patterns (Object Collaboration)
+
+### Observer Pattern
+
+**Purpose:** Notify multiple objects about state changes.
+
+**When to Use:**
+- Changes to one object affect others, but count is unknown
+- Object shouldn't assume who receives notifications
+- Loose coupling needed
+
+**Example:**
+```typescript
+interface Observer {
+  update(subject: Subject): void;
+}
+
+class Subject {
+  private observers: Observer[] = [];
+  private state: any;
+
+  attach(observer: Observer) {
+    this.observers.push(observer);
+  }
+
+  detach(observer: Observer) {
+    this.observers = this.observers.filter(o => o !== observer);
+  }
+
+  notify() {
+    for (const observer of this.observers) {
+      observer.update(this);
+    }
+  }
+
+  setState(state: any) {
+    this.state = state;
+    this.notify();
+  }
+}
+
+class ConcreteObserver implements Observer {
+  update(subject: Subject) { /* react to change */ }
+}
+```

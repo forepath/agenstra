@@ -1,0 +1,56 @@
+---
+id: error-handling
+name: Error Handling and Logging
+description: Comprehensive error handling and structured logging practices
+globs: []
+alwaysApply: true
+---
+# Error Handling and Logging
+
+## Exception Handling
+
+- **Specific Exceptions:** Always catch specific exceptions, never generic `Exception` or `Throwable`
+- **Handle or Propagate:** Either handle meaningfully or propagate up; no silent failures
+- **Global Handlers:** Implement global exception handlers to catch unexpected errors
+- **Fail Safe/Closed:** Default to denying access or rolling back operations on errors
+- **User Messages:** Provide helpful, generic messages to users; log details internally
+- **Recovery:** Implement retry logic for transient failures (network timeouts)
+- **Logging:** Log the full exception context for debugging
+
+## Logging Best Practices
+
+### Log Levels (Use Consistently)
+
+- **DEBUG:** Detailed information for developers during debugging; only when explicitly enabled
+- **INFO:** Expected operations and state changes; informative and not alarming
+- **WARN:** Unexpected but recoverable situations; may need attention
+- **ERROR:** Error conditions that don't prevent application operation
+- **FATAL/CRITICAL:** Application cannot recover and must shut down
+
+### Structured Logging
+
+- **Format:** Use structured format (JSON) for easier parsing and analysis
+- **Correlation IDs:** Include request correlation IDs to trace across services
+- **Context:** Include user ID, request ID, operation name, and outcome
+- **Consistency:** Log context consistently across application
+
+### Security in Logging
+
+- **Sensitive Data:** NEVER log passwords, tokens, PII, or credit card numbers
+- **Masking:** Mask sensitive fields (show only last 4 digits of cards, first 2 chars of emails)
+- **Encryption:** Encrypt logs containing any sensitive information
+- **Access Control:** Restrict log file access to authorized personnel
+
+### Performance
+
+- **Async Logging:** Use asynchronous logging to avoid blocking request processing
+- **Sampling:** Sample repetitive logs (e.g., health checks) to reduce volume
+- **Ring Buffers:** Use ring buffers to capture debug info only when errors occur
+- **Log Rotation:** Implement log rotation to manage disk space
+
+## Monitoring and Alerting
+
+- **Key Metrics:** Monitor error rates, response times, and business metrics
+- **Alerting:** Set up alerts for critical errors and anomalies
+- **Dashboards:** Create dashboards for operational visibility
+- **SLOs/SLIs:** Define and track service level objectives

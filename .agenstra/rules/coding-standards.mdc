@@ -1,0 +1,50 @@
+---
+id: coding-standards
+name: Coding Standards and Style Guidelines
+description: Universal coding standards that apply across all programming languages
+globs: []
+alwaysApply: true
+---
+# Coding Standards and Style Guidelines
+
+## Naming Conventions
+
+**Universal Rules:**
+- Use meaningful, descriptive names that reveal intent
+- Avoid single-letter variables except for loop counters
+- Avoid abbreviations unless universally understood (e.g., HTTP, URL)
+- Use domain-specific terminology appropriately
+- Variable/method names: lowercase with word separators appropriate to language
+- Class/type names: PascalCase/StudlyCaps
+- Constants: SCREAMING_SNAKE_CASE (when applicable to language)
+
+## Code Organization
+
+- One class/module per file (exceptions: closely related enums, interfaces)
+- Group related functionality together
+- Keep files focused on a single responsibility
+- Organize imports/requires: language standard library first, then third-party, then local modules
+- Use clear file and folder structures that mirror code organization
+
+## Formatting Standards
+
+- **Indentation:** 4 spaces consistently (never tabs)
+- **Line length:** Maximum 120 characters for code, 80 for documentation
+- **Blank lines:** Use to separate logical sections; never multiple consecutive blank lines
+- **Brace placement:** Follow language conventions (Allman for C#, Egyptian for most others)
+- **Spacing:** Consistent spacing around operators and after keywords
+
+## Comments and Documentation
+
+- Comment WHY, not WHAT (code shows what, comments explain why)
+- Keep comments up-to-date with code changes
+- Use documentation generation tools where available (JSDoc, Javadoc, XML comments in C#)
+- Write self-documenting code; minimize need for comments
+- Use meaningful commit messages following conventional commits
+
+## Code Duplication
+
+- Follow DRY (Don't Repeat Yourself) principle
+- Extract common logic into reusable functions/methods
+- Use composition over code duplication
+- Avoid copy-paste programming

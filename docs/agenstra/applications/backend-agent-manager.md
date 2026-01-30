@@ -76,7 +76,7 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 - `DELETE /api/agents/:agentId/vcs/branches/:branch` - Delete a branch
 - `POST /api/agents/:agentId/vcs/conflicts/resolve` - Resolve merge conflicts
 
-For complete API endpoint documentation, request/response schemas, and authentication requirements, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md#api-endpoints).
+For complete API endpoint documentation, request/response schemas, and authentication requirements, see the application and API reference docs linked below.
 
 ## WebSocket Gateway
 
@@ -96,7 +96,7 @@ The Socket.IO WebSocket gateway is available at `http://localhost:8080/agents` (
 - `chatMessage` - Broadcasted to all connected clients when a chat message is sent
 - `error` - Emitted on authorization or processing errors
 
-For complete WebSocket event specifications, authentication flow, and usage examples, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md#websocket-gateway).
+For complete WebSocket event specifications, authentication flow, and usage examples, see the application and API reference docs linked below.
 
 ## Authentication
 
@@ -117,7 +117,7 @@ All HTTP endpoints are protected by Keycloak authentication by default. If `STAT
 
 The WebSocket gateway uses database-backed authentication. Agents authenticate using their UUID or name along with their password.
 
-For detailed authentication requirements, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md#authentication).
+For detailed authentication requirements, see the application and API reference docs linked below.
 
 ## Rate Limiting
 
@@ -152,7 +152,7 @@ CORS is configured via the `CORS_ORIGIN` environment variable:
 
 ## Environment Variables
 
-See the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md#environment-variables) for complete environment variable documentation.
+See the application docs and environment configuration for complete environment variable documentation.
 
 **Application-specific:**
 
@@ -180,7 +180,7 @@ See the [library documentation](../../../libs/domains/framework/backend/feature-
 
 ## Database Setup
 
-The application uses TypeORM and requires a database connection to be configured. See the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md#database-setup) for database setup requirements and entity schema.
+The application uses TypeORM and requires a database connection to be configured. See the application docs for database setup requirements and entity schema.
 
 ## Docker Deployment
 
@@ -232,7 +232,6 @@ Before deploying to production, ensure:
 
 ## Related Documentation
 
-- **[Library Documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md)** - Complete library reference
 - **[Agent Management Feature](../features/agent-management.md)** - Agent management guide
 - **[VNC Browser Access Feature](../features/vnc-browser-access.md)** - VNC browser access guide
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** - WebSocket communication guide
@@ -246,4 +245,4 @@ Copyright (c) 2025 IPvX UG (haftungsbeschränkt)
 
 ---
 
-_For detailed technical specifications, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-manager/README.md)._
+_For detailed technical specifications, see the application and API reference docs linked below._

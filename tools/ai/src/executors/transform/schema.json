@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Path to .agenstra directory or directory containing .agenstra. Default: project root or workspace root.",
+      "default": "."
+    },
+    "target": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["cursor", "opencode", "github-copilot"]
+      },
+      "description": "Target tools to generate config for."
+    },
+    "outputDir": {
+      "type": "string",
+      "description": "Base output directory. Each tool gets a subdir.",
+      "default": "generated"
+    },
+    "dryRun": {
+      "type": "boolean",
+      "default": false,
+      "description": "Do not write files."
+    }
+  },
+  "required": ["target"]
+}

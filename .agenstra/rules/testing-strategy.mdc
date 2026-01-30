@@ -1,0 +1,58 @@
+---
+id: testing-strategy
+name: Testing Strategy and Best Practices
+description: Implement comprehensive testing following the testing pyramid model
+globs: []
+alwaysApply: true
+---
+# Testing Strategy
+
+## Testing Pyramid (2025 Best Practice)
+
+**Distribution Target:**
+- **70% Unit Tests:** Fast, isolated, comprehensive coverage of business logic
+- **20% Integration Tests:** Verify component interactions and data flow
+- **10% E2E Tests:** Test critical user journeys and business-critical flows
+
+**Rationale:** Unit tests provide rapid feedback; integration tests catch interaction issues; E2E tests verify real-world usage.
+
+## Unit Testing
+
+- **Isolation:** Each test should be independent; use mocks/stubs for external dependencies
+- **Naming:** Describe what is tested and expected outcome (e.g., `test_ValidEmail_ReturnsTrue`)
+- **Single Assertion:** Focus each test on one behavior (use multiple asserts for same feature sparingly)
+- **Setup/Teardown:** Use before/after hooks to initialize and clean up test state
+- **Coverage Target:** Aim for 80%+ line coverage on critical paths; don't obsess over 100%
+- **Test Data:** Use factories or builders for consistent test data generation
+
+## Integration Testing
+
+- **Scope:** Test interactions between modules, with databases, APIs, message queues
+- **Test Environment:** Use test databases or containerized services (Docker)
+- **Transaction Rollback:** Roll back database changes after each test
+- **Configuration:** Use separate config files for test environments
+- **Minimal Setup:** Keep setup as simple as possible; focus on testing the integration point
+
+## End-to-End Testing
+
+- **Critical Paths:** Only test user journeys critical to business (auth, checkout, core features)
+- **CI Integration:** Run E2E tests after unit and integration tests
+- **Flakiness:** Reduce flakiness with proper waits and retry logic
+- **Maintenance:** E2E tests require more maintenance; keep them focused and minimal
+
+## Test-Driven Development (TDD)
+
+- **Red-Green-Refactor:** Write failing test → implement code → refactor
+- **Benefits:** Better design, faster feedback, higher confidence in refactoring
+- **Adoption:** Recommended for critical business logic and new features
+
+## Testing Best Practices
+
+- Tests should document expected behavior
+- Avoid testing implementation details; test behavior
+- Use meaningful assertion messages to help debugging
+- Keep test data realistic and minimal
+- Group related tests in describe/context blocks
+- Automate test execution in CI/CD pipeline
+- Test error conditions and edge cases explicitly
+- Never skip tests (`.skip()`, `.pending()`); delete or fix them

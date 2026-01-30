@@ -1,0 +1,126 @@
+---
+id: security-patterns
+name: Security Patterns and Practices
+description: Common security patterns and how to implement them
+---
+# Security Patterns and Implementation
+
+## Authentication Patterns
+
+### Password Hashing
+
+**Pattern:** Never store plain passwords; hash and salt.
+
+**Implementation:**
+- Use bcrypt, scrypt, or Argon2 (not MD5, SHA1)
+- Use random salt (framework handles this)
+- Verify with time-constant comparison
+
+```java
+// Password hashing
+String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
+
+// Verification (always use constant-time comparison)
+boolean matches = BCrypt.checkpw(plainPassword, hashedPassword);
+```
+
+### Multi-Factor Authentication (MFA)
+
+**Pattern:** Require multiple verification factors.
+
+**Implementation:**
+- Time-based One-Time Password (TOTP)
+- SMS or email codes
+- Hardware tokens
+- Biometrics
+
+```javascript
+// TOTP Implementation using speakeasy
+const secret = speakeasy.generateSecret({ name: 'App (user@example.com)' });
+const token = speakeasy.totp({ secret: secret.base32 });
+const verified = speakeasy.totp.verify({
+  secret: secret.base32,
+  token: userProvidedToken,
+  window: 2 // Allow time drift
+});
+```
+
+## Data Protection Patterns
+
+### Encryption at Rest
+
+**Pattern:** Encrypt sensitive data stored in database.
+
+**Implementation:**
+- Use AES-256-GCM for symmetric encryption
+- Store encryption keys securely (vault, KMS)
+- Implement key rotation
+
+### Encryption in Transit
+
+**Pattern:** Encrypt data sent between systems.
+
+**Implementation:**
+- Use TLS 1.2+ for all connections
+- Use HTTPS, not HTTP
+- Use mutual TLS for service-to-service communication
+
+## Authorization Patterns
+
+### Role-Based Access Control (RBAC)
+
+**Pattern:** Grant permissions based on user roles.
+
+**Implementation:**
+- Define roles (Admin, User, Viewer)
+- Assign permissions to roles
+- Check role membership before granting access
+
+```java
+@RequireRole("ADMIN")
+public void deleteUser(String userId) { }
+
+// In authorization check
+public static void checkRole(User user, String requiredRole) {
+  if (!user.hasRole(requiredRole)) {
+    throw new AuthorizationException("Insufficient permissions");
+  }
+}
+```
+
+### Attribute-Based Access Control (ABAC)
+
+**Pattern:** Grant permissions based on attributes.
+
+**Implementation:**
+- Define attributes (department, location, resource type)
+- Create policies based on attributes
+- Evaluate policies at access time
+
+## Input Validation Patterns
+
+### Validation at Boundaries
+
+**Pattern:** Validate all input at system boundaries.
+
+**Implementation:**
+- Validate at controller/handler level
+- Use centralized validation service
+- Reject invalid data immediately
+- Log validation failures for security monitoring
+
+```typescript
+// At boundary (controller/API)
+@Post('/users')
+createUser(@Body() userData: any) {
+  // Validate at boundary
+  const validation = UserSchema.safeParse(userData);
+  if (!validation.success) {
+    throw new BadRequestError('Invalid user data');
+  }
+
+  // Pass validated data to service
+  const user = validation.data;
+  this.userService.create(user);
+}
+```

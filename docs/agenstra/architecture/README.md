@@ -87,15 +87,6 @@ Agenstra uses a three-tier architecture:
 - **[Docker Deployment](../deployment/docker-deployment.md)** - Containerized architecture
 - **[Production Checklist](../deployment/production-checklist.md)** - Production architecture considerations
 
-## Visual Diagrams
-
-For detailed visual documentation, see the library documentation:
-
-- **[Agent Controller Overview](../../libs/domains/framework/backend/feature-agent-controller/docs/overview.mmd)** - High-level flowchart
-- **[Agent Controller Lifecycle](../../libs/domains/framework/backend/feature-agent-controller/docs/lifecycle.mmd)** - End-to-end sequence diagram
-- **[Agent Manager Overview](../../libs/domains/framework/backend/feature-agent-manager/docs/overview.mmd)** - High-level flowchart
-- **[Agent Manager Lifecycle](../../libs/domains/framework/backend/feature-agent-manager/docs/lifecycle.mmd)** - End-to-end sequence diagram
-
 ## Architecture Principles
 
 ### Scalability
@@ -125,4 +116,4 @@ For detailed visual documentation, see the library documentation:
 
 ---
 
-_For detailed implementation information, see the [library documentation](../../libs/domains/framework/backend/feature-agent-controller/README.md) and [application documentation](../applications/backend-agent-controller.md)._
+_For detailed implementation information, see the [application documentation](../applications/backend-agent-controller.md) and feature docs linked above._

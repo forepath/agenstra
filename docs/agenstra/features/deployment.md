@@ -21,7 +21,7 @@ The deployment feature follows the same provider pattern used throughout Agenstr
 - **Deployment Service** - Orchestrates pipeline operations
 - **Database Storage** - Stores deployment configurations and run history
 
-See the [deployment architecture diagram](../../libs/domains/framework/backend/feature-agent-manager/docs/deployment-architecture.mmd) for detailed component relationships.
+See the application and deployment docs for detailed component relationships.
 
 ## Supported Providers
 
@@ -348,9 +348,3 @@ Deployment configuration can be included when creating or updating agents:
 
 - [Agent Management](./agent-management.md) - Agent lifecycle management
 - [Server Provisioning](./server-provisioning.md) - Automated server provisioning
-
-## Architecture Diagrams
-
-- [Deployment Architecture](../../libs/domains/framework/backend/feature-agent-manager/docs/deployment-architecture.mmd) - Component relationships
-- [Deployment Sequence](../../libs/domains/framework/backend/feature-agent-manager/docs/sequence-deployment.mmd) - Request flow
-- [Deployment Proxy Sequence](../../libs/domains/framework/backend/feature-agent-controller/docs/sequence-deployment-proxy.mmd) - Proxy request flow

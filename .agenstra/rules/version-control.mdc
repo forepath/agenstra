@@ -1,0 +1,58 @@
+---
+id: version-control
+name: Version Control and Git Workflow
+description: Git workflow, branching strategy, and collaboration practices
+globs: []
+alwaysApply: true
+---
+# Version Control and Git Workflow
+
+## Repository Setup
+
+- **`.gitignore`:** Maintain comprehensive `.gitignore` for:
+  - Dependency directories (node_modules, vendor, target)
+  - Build artifacts
+  - IDE/editor files
+  - OS-specific files
+  - Secrets and environment variables
+- **No Secrets:** Never commit secrets, passwords, or API keys
+- **No Large Files:** Keep repository size manageable; use Git LFS for large binary files
+- **README.md:** Comprehensive setup and contribution instructions
+
+## Branching Strategy
+
+- **Main Branch:** Protected branch requiring code review and passing tests
+- **Development Branch:** Optional staging branch for integration
+- **Feature Branches:** Create from main, name: `feature/description` or `feat/description`
+- **Bug Branches:** Name: `bugfix/description` or `fix/description`
+- **Release Branches:** Name: `release/version`
+- **Hotfix Branches:** Name: `hotfix/description`
+
+## Commit Practices
+
+- **Atomic Commits:** One logical change per commit
+- **Conventional Commits:** Use format: `type(scope): description`
+  - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+- **Descriptive Messages:** First line ≤50 chars; body explains why, not what
+- **Frequency:** Commit frequently; small, logical units
+- **No Merge Commits:** Use rebase or squash to keep history clean
+
+## Pull Request Process
+
+- **Size Limit:** Keep PRs to 200-400 lines of code
+- **Single Responsibility:** Each PR should address one concern
+- **Description:** Provide clear description of changes and rationale
+- **Tests:** Include test coverage for new functionality
+- **No WIP Merges:** Don't merge incomplete work
+- **Code Review:** Require at least one approval before merging
+- **CI Checks:** All automated checks must pass
+
+## Code Review Standards
+
+See `code-review` rule for detailed code review practices.
+
+## Merge Strategy
+
+- **Squash for Features:** Squash feature branch commits before merging
+- **Preserve Release Commits:** Preserve release commit history
+- **Delete Branches:** Delete merged feature branches

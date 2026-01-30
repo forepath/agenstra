@@ -141,15 +141,13 @@ The system will:
 - `GET /api/clients/:id/provisioning/info` - Get server information for a provisioned client
 - `DELETE /api/clients/:id/provisioning` - Delete a provisioned server and its associated client
 
-For detailed API documentation, see the [Agent Controller Library](../../../libs/domains/framework/backend/feature-agent-controller/README.md#api-endpoints).
+For detailed API documentation, see the application and API reference docs linked below.
 
 ## Related Documentation
 
 - **[Client Management](./client-management.md)** - Managing clients
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** - Application details
-- **[Provisioning Architecture Diagram](../../../libs/domains/framework/backend/feature-agent-controller/docs/provisioning-architecture.mmd)** - Visual architecture diagram
-- **[Provisioning Sequence Diagram](../../../libs/domains/framework/backend/feature-agent-controller/docs/server-provisioning-sequence.mmd)** - Detailed sequence diagram
 
 ---
 
-_For detailed provisioning information, see the [library documentation](../../../libs/domains/framework/backend/feature-agent-controller/README.md#server-provisioning)._
+_For detailed provisioning information, see the application docs linked below._
