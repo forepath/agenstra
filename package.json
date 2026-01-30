@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky",
-    "preinstall": "npx -y only-allow npm"
+    "preinstall": "npx -y only-allow npm",
+    "postinstall": "patch-package"
   },
   "private": true,
   "type": "module",

@@ -79,18 +79,32 @@
         "parallel": false
       },
       "configurations": {
-        "development": {
+        "development-linux": {
           "commands": [
             "nx build native-agent-console --configuration=development",
-            "cd dist/apps/native-agent-console && npx electron-forge make"
+            "cd dist/apps/native-agent-console && npx electron-forge make --platform linux"
           ]
         },
-        "production": {
+        "development-windows": {
+          "commands": [
+            "nx build native-agent-console --configuration=development",
+            "cd dist/apps/native-agent-console && npx electron-forge make --platform win32"
+          ]
+        },
+        "production-linux": {
           "commands": [
             "nx build native-agent-console --configuration=production",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/package.json",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/server/package.json",
-            "cd dist/apps/native-agent-console && npx electron-forge make"
+            "cd dist/apps/native-agent-console && npx electron-forge make --platform linux"
+          ]
+        },
+        "production-windows": {
+          "commands": [
+            "nx build native-agent-console --configuration=production",
+            "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/package.json",
+            "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/server/package.json",
+            "cd dist/apps/native-agent-console && npx electron-forge make --platform win32"
           ]
         }
       },

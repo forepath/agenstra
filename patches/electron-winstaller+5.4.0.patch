@@ -1,0 +1,27 @@
+diff --git a/node_modules/electron-winstaller/lib/index.js b/node_modules/electron-winstaller/lib/index.js
+index 3bfd305..862fc8c 100644
+--- a/node_modules/electron-winstaller/lib/index.js
++++ b/node_modules/electron-winstaller/lib/index.js
+@@ -119,11 +119,20 @@ function createWindowsInstaller(options) {
+                     if (!(process.platform !== 'win32')) return [3 /*break*/, 2];
+                     useMono = true;
+                     return [4 /*yield*/, Promise.all([
+-                            checkIfCommandExists(wineExe),
++                            (function () {
++                                var we = ['arm64', 'x64'].includes(process.arch) ? 'wine64' : 'wine';
++                                return checkIfCommandExists(we).then(function (h) {
++                                    if (h) return [true, we];
++                                    if (['arm64', 'x64'].includes(process.arch)) {
++                                        return checkIfCommandExists('wine').then(function (h2) { return [h2, 'wine']; });
++                                    }
++                                    return [false, we];
++                                });
++                            })(),
+                             checkIfCommandExists(monoExe)
+                         ])];
+                 case 1:
+-                    _a = _f.sent(), hasWine = _a[0], hasMono = _a[1];
++                    _a = _f.sent(), hasWine = _a[0][0], wineExe = _a[0][1], hasMono = _a[1];
+                     if (!hasWine || !hasMono) {
+                         throw new Error('You must install both Mono and Wine on non-Windows');
+                     }
