@@ -59,10 +59,14 @@ export class GithubCopilotTransformer extends BaseTransformer {
       for (const { name, entry } of rules) {
         parts.push(`## ${name}\n\n`, entry.content, '\n\n');
       }
-      const safeName = applyTo
-        .replace(/[^a-zA-Z0-9-,]/g, '-')
-        .replace(/-+/g, '-')
-        .toLowerCase();
+      // Use rule name(s) for filename so we get e.g. csharp.instructions.md, not -cs.instructions.md
+      const namePart = rules.map((r) => r.name).join('-');
+      const safeName =
+        namePart
+          .replace(/[^a-zA-Z0-9-]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .toLowerCase() || 'path-specific';
       out.set(
         `${GITHUB_DIR}/instructions/${safeName}.instructions.md`,
         withApplyToFrontmatter(parts.join(''), applyTo),

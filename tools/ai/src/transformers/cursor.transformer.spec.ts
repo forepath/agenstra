@@ -30,6 +30,7 @@ describe('CursorTransformer', () => {
     const out = transformer.transform(context);
 
     const ruleContent = out.get('.cursor/rules/coding-standards.mdc') as string;
+    expect(ruleContent).toContain('name:');
     expect(ruleContent).toContain('description:');
     expect(ruleContent).toContain('globs: []');
     expect(ruleContent).toContain('alwaysApply: false');

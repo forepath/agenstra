@@ -3,7 +3,7 @@ id: java
 name: Java Best Practices (Oracle Conventions)
 description: Java coding standards following Oracle conventions and modern practices
 globs: ["**/*.java"]
-alwaysApply: true
+alwaysApply: false
 ---
 # Java Best Practices
 

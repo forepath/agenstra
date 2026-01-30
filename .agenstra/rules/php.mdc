@@ -3,7 +3,7 @@ id: php
 name: PHP Best Practices (PSR-12)
 description: PHP coding standards following PSR-12 specification
 globs: ["**/*.php"]
-alwaysApply: true
+alwaysApply: false
 ---
 # PHP Best Practices (PSR-12)
 

@@ -3,7 +3,7 @@ id: typescript-javascript
 name: TypeScript and JavaScript Best Practices
 description: Language-specific standards for TypeScript and JavaScript projects
 globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
-alwaysApply: true
+alwaysApply: false
 ---
 # TypeScript and JavaScript Best Practices
 

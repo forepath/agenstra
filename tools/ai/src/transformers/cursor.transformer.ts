@@ -11,13 +11,15 @@ function yamlEscape(s: string): string {
 }
 
 /**
- * Build Cursor rule .mdc with frontmatter (description, globs, alwaysApply).
+ * Build Cursor rule .mdc with frontmatter (name, description, globs, alwaysApply).
  * Use .mdc with frontmatter for control; globs optional for "Apply to Specific Files".
+ * Explicit `name` ensures Cursor displays the rule correctly and avoids misparsing globs as the rule name.
  * @see https://cursor.com/docs/context/rules
  */
 function ruleToMdc(name: string, entry: import('../types').RuleEntry): string {
   const content = entry.content;
   const firstLine = content.trim().split('\n')[0]?.replace(/^#\s*/, '') || name;
+  const displayName = entry.name || name;
   const description = entry.description || (firstLine.length > 80 ? firstLine.slice(0, 77) + '...' : firstLine);
   const globs = entry.globs ?? [];
   const alwaysApply = entry.alwaysApply ?? false;
@@ -25,6 +27,7 @@ function ruleToMdc(name: string, entry: import('../types').RuleEntry): string {
   const globsYaml = globs.length === 0 ? ' []' : `\n${globs.map((g) => `  - ${yamlEscape(g)}`).join('\n')}`;
 
   return `---
+name: ${yamlEscape(displayName)}
 description: ${yamlEscape(description)}
 globs:${globsYaml}
 alwaysApply: ${alwaysApply}

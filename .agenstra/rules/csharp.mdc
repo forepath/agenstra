@@ -3,7 +3,7 @@ id: csharp
 name: C# Best Practices (.NET Conventions)
 description: C# coding standards following Microsoft .NET conventions
 globs: ["**/*.cs"]
-alwaysApply: true
+alwaysApply: false
 ---
 # C# Best Practices (.NET Conventions)
 
