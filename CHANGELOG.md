@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.26.0](https://github.com/forepath/agenstra/compare/v1.25.0...v1.26.0) (2026-01-30)
+
+
+### Features
+
+* automatic ai context generation ([#182](https://github.com/forepath/agenstra/issues/182)) ([2898c17](https://github.com/forepath/agenstra/commit/2898c17e4382c872308645ea63b790d351025195))
+
+
+### Bug Fixes
+
+* favicon fallback ([#179](https://github.com/forepath/agenstra/issues/179)) ([909d8ed](https://github.com/forepath/agenstra/commit/909d8edc5bc7b73258d0ba2fc08287f998c3be72))
+
+
+### Chores
+
+* example development container configuration ([#178](https://github.com/forepath/agenstra/issues/178)) ([4625fcf](https://github.com/forepath/agenstra/commit/4625fcf8aa1dea46eff70f2f0515081abbd55284))
+
 ## [1.25.0](https://github.com/forepath/agenstra/compare/v1.24.1...v1.25.0) (2026-01-18)
 
 
