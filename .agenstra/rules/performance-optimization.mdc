@@ -1,0 +1,68 @@
+---
+id: performance-optimization
+name: Performance Optimization
+description: Strategies for optimizing application performance
+globs: []
+alwaysApply: true
+---
+# Performance Optimization
+
+## Backend Optimization
+
+### Database Performance
+
+- **Indexing:** Create appropriate indexes on frequently queried columns
+- **Query Optimization:** Avoid N+1 queries; use joins and batch operations
+- **Connection Pooling:** Reuse database connections efficiently
+- **Caching:** Implement query result caching (Redis, Memcached)
+- **Pagination:** Use pagination for large result sets
+- **Lazy Loading:** Load related data only when needed
+
+### API Performance
+
+- **Response Compression:** Enable gzip/brotli compression
+- **HTTP/2 or HTTP/3:** Use modern protocol versions
+- **Caching Headers:** Set appropriate Cache-Control headers
+- **CDN:** Use CDN for static assets and API responses
+- **Rate Limiting:** Implement rate limiting to protect from abuse
+- **Timeout:** Set reasonable timeouts for external calls
+
+### Code Optimization
+
+- **Algorithm Efficiency:** Use efficient algorithms; understand Big O complexity
+- **Memory Management:** Avoid memory leaks; profile and optimize
+- **String Operations:** Use StringBuilder/concatenation appropriately
+- **Loop Optimization:** Avoid expensive operations in loops
+
+## Frontend Optimization
+
+### Asset Optimization
+
+- **Image Formats:** Use WebP/AVIF for 30-50% reduction vs JPEG
+- **Responsive Images:** Serve appropriate image sizes for device
+- **Lazy Loading:** Defer off-screen images and non-critical content
+- **Minification:** Minify CSS, JavaScript, and HTML
+- **Code Splitting:** Break large bundles into smaller chunks
+
+### JavaScript Performance
+
+- **Dynamic Imports:** Use dynamic imports for feature-gated code
+- **Tree Shaking:** Remove unused code during bundling
+- **Compression:** Enable gzip/brotli compression
+- **Async/Defer:** Use async/defer attributes for script loading
+- **Web Workers:** Offload heavy computation to workers
+
+### Rendering Strategy
+
+- **Lazy Rendering:** Render only visible content initially
+- **Virtual Lists:** Use virtualization for large lists
+- **Memoization:** Memoize expensive computations
+- **Debouncing:** Debounce frequent events (scroll, resize)
+
+## Monitoring Performance
+
+- **Real User Monitoring (RUM):** Track actual user experience metrics
+- **Synthetic Monitoring:** Automated performance tests from multiple locations
+- **Core Web Vitals:** Monitor LCP, FID, CLS, TTFB
+- **Application Metrics:** Track business metrics and user flows
+- **Profiling Tools:** Use browser DevTools and server profilers

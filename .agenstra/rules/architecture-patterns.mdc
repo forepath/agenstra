@@ -1,0 +1,73 @@
+---
+id: architecture-patterns
+name: Architecture and Design Patterns
+description: Guidance on choosing and implementing architecture patterns
+globs: []
+alwaysApply: true
+---
+# Architecture and Design Patterns
+
+## Architectural Approaches
+
+### Monolithic Architecture
+
+**When to Use:**
+- Small to medium-sized applications
+- Single team or closely coordinated team
+- Consistent technology stack requirements
+- Simple initial development needs
+- Limited scalability requirements
+
+**Advantages:**
+- Simpler development and deployment initially
+- Easier debugging and testing
+- Better performance for tightly integrated features
+- Simpler deployment process
+
+**Disadvantages:**
+- Tight coupling makes changes risky
+- Scaling entire application required
+- Technology stack locked in
+- Large teams slow down development
+
+### Microservices Architecture
+
+**When to Use:**
+- Large, complex applications
+- Multiple independent teams
+- Varied technology requirements per service
+- Need for independent scaling
+- Continuous deployment required
+
+**Advantages:**
+- Independent scaling and deployment
+- Technology flexibility per service
+- Team autonomy
+- Fault isolation
+- Easier to understand individual services
+
+**Disadvantages:**
+- Increased operational complexity
+- Network communication overhead
+- Data consistency challenges
+- Testing complexity
+
+## Design Patterns
+
+- **Creational:** Factory, Builder, Singleton (use carefully), Prototype
+- **Structural:** Adapter, Decorator, Facade, Proxy, Bridge
+- **Behavioral:** Strategy, Command, Observer, State, Template Method, Visitor
+
+**General Guidance:**
+- Use patterns to solve real problems, not for theoretical elegance
+- Avoid over-engineering with excessive abstractions
+- Ensure patterns solve the current problem, not hypothetical future needs
+- YAGNI (You Aren't Gonna Need It) principle applies to patterns too
+
+## Modularity
+
+- **Clear Boundaries:** Define module boundaries and responsibilities explicitly
+- **Stable Interfaces:** Design stable APIs between modules
+- **Loose Coupling:** Minimize dependencies between modules
+- **High Cohesion:** Keep related functionality together
+- **Testability:** Design modules to be independently testable

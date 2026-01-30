@@ -95,6 +95,10 @@ transform({
 
 Output is written under `outputDir/<tool>/` (e.g. `generated/cursor/`, `generated/opencode/`, `generated/github-copilot/`). Copy or symlink the generated folders into your project root as needed (e.g. `generated/cursor/.cursor` → `.cursor`).
 
+## Research and plan file
+
+**[Perplexity plan prompt](./perplexity-plan-prompt.md)** – A prompt you can feed into Perplexity (or similar tools) so it researches current programming best practices and outputs a **plan file** you can use to create or update `.agenstra/` contents (rules, commands, skills, agents). The plan format is designed to be consumed to generate the actual `.mdc` and config files.
+
 ## Related documentation
 
 - **[Applications](../applications/README.md)** – Backend and frontend applications

@@ -1,0 +1,62 @@
+---
+id: security-standards
+name: Security and Input Validation Standards
+description: OWASP-aligned security practices for preventing common vulnerabilities
+globs: []
+alwaysApply: true
+---
+# Security and Input Validation Standards
+
+## Input Validation (OWASP Critical)
+
+- **Server-Side Only:** ALWAYS validate on server side; never trust client-side validation
+- **Allowlist Approach:** Use allowlist (whitelist) validation—specify what IS allowed
+- **Reject Invalid:** All validation failures result in immediate input rejection
+- **Character Sets:** Specify UTF-8 and validate after decoding
+- **Canonicalization:** Normalize data to standard form before validation
+- **Specific Types:** Validate for expected data types, not just format
+- **Range & Length:** Check both data range and length constraints
+- **Centralized Validation:** Use a single validation library/framework across application
+
+## Output Encoding
+
+- **Context-Aware:** Encode based on output context (HTML, JSON, URL, CSS)
+- **Prevent XSS:** Encode user-generated content before rendering to prevent cross-site scripting
+- **Library Use:** Use framework-provided encoding functions, not manual escaping
+
+## Authentication & Session Management
+
+- **Strong Passwords:** Enforce minimum length and complexity; support passphrases
+- **Multi-Factor Authentication (MFA):** Implement MFA for sensitive operations
+- **Secure Cookies:** Use HttpOnly and Secure flags on session cookies
+- **Session Timeout:** Implement appropriate session timeout based on risk level
+- **No Sensitive Data in URLs:** Never include passwords or tokens in URLs
+
+## Secrets Management
+
+- **Never Hardcode:** Secrets must NEVER be hardcoded in source
+- **Environment Variables:** Use environment variables or secure vaults (HashiCorp Vault, AWS Secrets Manager)
+- **Rotation:** Implement secret rotation policies
+- **Access Control:** Limit access to secrets based on role
+
+## Dependency Management
+
+- **Vulnerability Scanning:** Regularly scan dependencies for known vulnerabilities
+- **Tools:** Use Snyk, OWASP Dependency-Check, or GitHub Dependabot
+- **Updates:** Keep dependencies current; prioritize security patches
+- **Minimal Dependencies:** Avoid unnecessary dependencies; evaluate each for maintenance and security
+
+## Error Handling & Information Disclosure
+
+- **Generic Messages:** Show users generic error messages (e.g., "Invalid credentials")
+- **Detailed Logging:** Log detailed error information internally for debugging
+- **No Stack Traces:** Never expose stack traces to end users or in logs visible to untrusted parties
+- **Security Errors:** Log security-related errors (auth failures, validation failures) for detection systems
+- **Fail Closed:** Default to denying access; grant only when verified
+
+## Logging
+
+- **Avoid Sensitive Data:** Never log passwords, PII, tokens, or credit card numbers
+- **Masking:** Mask or anonymize sensitive data that must be logged
+- **Context:** Include timestamp, user ID (anonymized), action, and outcome
+- **Structured Format:** Use structured logging (JSON) for easier analysis

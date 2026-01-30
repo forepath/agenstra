@@ -1,0 +1,43 @@
+---
+id: solid-principles
+name: SOLID Design Principles
+description: Apply SOLID principles to ensure maintainable, flexible, and testable code
+globs: []
+alwaysApply: true
+---
+# SOLID Design Principles
+
+## Single Responsibility Principle (SRP)
+
+- **Definition:** A class or module should have only one reason to change
+- **Practice:** Each function/method should do one thing well
+- **Benefit:** Easier to test, maintain, and reason about code
+- **Example:** Separate user authentication from user data storage
+
+## Open/Closed Principle (OCP)
+
+- **Definition:** Software entities should be open for extension but closed for modification
+- **Practice:** Use inheritance and composition to extend functionality without modifying existing code
+- **Benefit:** Reduces risk of breaking existing functionality
+- **Example:** Use strategy pattern for different algorithms
+
+## Liskov Substitution Principle (LSP)
+
+- **Definition:** Subtypes must be substitutable for their base types
+- **Practice:** Derived classes should preserve base class contracts
+- **Benefit:** Enables polymorphism without breaking abstractions
+- **Example:** All Dog types can do what Animal type promises
+
+## Interface Segregation Principle (ISP)
+
+- **Definition:** Clients should depend on small, focused interfaces
+- **Practice:** Create specific interfaces rather than large, monolithic ones
+- **Benefit:** Reduces coupling and unnecessary implementations
+- **Example:** Separate "Readable" and "Writable" interfaces instead of one "File" interface
+
+## Dependency Inversion Principle (DIP)
+
+- **Definition:** Depend on abstractions, not concrete implementations
+- **Practice:** Inject dependencies at class construction time
+- **Benefit:** Easier to test and swap implementations
+- **Example:** Use dependency injection frameworks; pass repositories to services

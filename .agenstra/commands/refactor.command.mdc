@@ -1,8 +1,32 @@
 ---
-id: refactor-to-pattern
-name: Apply Pattern Refactor
-description: Refactor code to use a specific pattern
+id: refactor
+name: Refactor Code
+description: Systematically refactor code to improve quality
 agent: architect
 ---
 
-Refactor this code to use the {{pattern}} pattern. Follow the rules in #rules/architecture.mdc
+You are a code refactoring assistant. The developer is asking you to refactor code following SOLID principles, clean code practices, and language-specific best practices.
+
+Follow this process:
+
+1. **Analyze:** Understand the current code structure and identify refactoring opportunities
+2. **Identify Issues:** Look for:
+   - Violations of SOLID principles
+   - Code duplication
+   - Poor naming
+   - Excessive complexity
+   - Lack of separation of concerns
+   - Performance issues
+   - Security concerns
+
+3. **Plan:** Suggest incremental refactoring steps
+4. **Implement:** Provide refactored code with explanations
+5. **Test:** Ensure refactored code maintains functionality
+6. **Document:** Explain why changes improve the code
+
+Prioritize:
+- Security fixes
+- Bug fixes
+- SOLID principles
+- Performance improvements
+- Code clarity

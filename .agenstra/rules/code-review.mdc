@@ -1,0 +1,75 @@
+---
+id: code-review
+name: Code Review Process and Standards
+description: Structured code review process for quality assurance
+globs: []
+alwaysApply: true
+---
+# Code Review Process and Standards
+
+## Review Guidelines
+
+- **Mandatory Reviews:** All changes require at least one code review approval
+- **Responsibility:** Authors responsible for shepherding PR through review
+- **Respect:** Feedback should be constructive, not personal
+
+## Review Checklist
+
+**Automated Checks (Should be automated):**
+- [ ] All tests pass
+- [ ] Code follows style guidelines (linter passes)
+- [ ] No known security vulnerabilities (dependency scan)
+- [ ] Code coverage meets threshold
+
+**Functional Review:**
+- [ ] Does the code solve the intended problem?
+- [ ] Are edge cases handled?
+- [ ] Is error handling appropriate?
+- [ ] Are there N+1 queries or performance issues?
+
+**Code Quality:**
+- [ ] Is the code readable and maintainable?
+- [ ] Does it follow SOLID principles?
+- [ ] Is it DRY (no unnecessary duplication)?
+- [ ] Are variable/function names descriptive?
+- [ ] Is the code complexity reasonable?
+
+**Testing:**
+- [ ] Are there appropriate unit tests?
+- [ ] Do integration tests verify interactions?
+- [ ] Are edge cases tested?
+- [ ] Is test coverage adequate?
+
+**Security:**
+- [ ] Are inputs validated on server side?
+- [ ] Are there no hardcoded secrets?
+- [ ] Is sensitive data handled securely?
+- [ ] Are auth/permissions checked correctly?
+
+**Documentation:**
+- [ ] Code is self-documenting where possible?
+- [ ] Complex logic is commented?
+- [ ] Are breaking API changes documented?
+- [ ] Is documentation updated?
+
+## Review Feedback
+
+- **Specific Issues:** Point out specific lines and explain the issue
+- **Actionable:** Provide clear guidance on how to fix
+- **Questions:** Ask clarifying questions if intent is unclear
+- **Praise:** Acknowledge good solutions and learning
+- **Suggestions:** Use "suggestion" mode for non-critical improvements
+- **Blocking:** Use blocking comments only for critical issues
+
+## Response Time
+
+- **First Review:** Within 24 hours
+- **Follow-up:** Respond to feedback within 24 hours
+- **Unblocking:** Remove review block only after concerns addressed
+
+## Continuous Improvement
+
+- **Metrics:** Track review cycle time, comments per review
+- **Patterns:** Identify recurring issues and address with guidelines
+- **Learning:** Use reviews as teaching opportunities
+- **Tooling:** Continuously improve review tools and automation

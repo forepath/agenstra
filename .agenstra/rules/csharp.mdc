@@ -1,0 +1,115 @@
+---
+id: csharp
+name: C# Best Practices (.NET Conventions)
+description: C# coding standards following Microsoft .NET conventions
+globs: ["**/*.cs"]
+alwaysApply: true
+---
+# C# Best Practices (.NET Conventions)
+
+## Naming Conventions
+
+- **Classes:** PascalCase (e.g., UserService, DatabaseConnection)
+- **Interfaces:** PascalCase with I prefix (e.g., IUserRepository, IDataAccess)
+- **Methods:** PascalCase (e.g., GetUserById, ValidateInput)
+- **Properties:** PascalCase (e.g., UserName, IsActive)
+- **Local Variables:** camelCase (e.g., userName, isActive)
+- **Private Fields:** camelCase with leading underscore (e.g., _userName, _isActive)
+- **Constants:** PascalCase for public constants, camelCase for private
+- **Namespaces:** PascalCase (e.g., Company.Module.Submodule)
+- **Parameters:** camelCase (e.g., userId, userName)
+
+## File Organization
+
+- **One Class per File:** Each public class in its own file
+- **Namespace:** Declare at file top
+- **Using Statements:** Group and sort:
+  1. System
+  2. System.Collections, etc.
+  3. Third-party
+  4. Local
+- **Class Members Order:**
+  1. Fields
+  2. Properties
+  3. Constructors
+  4. Methods
+  5. Nested types
+
+## Formatting and Braces
+
+- **Brace Style:** Allman style (opening brace on new line)
+  ```csharp
+  if (condition)
+  {
+      // code
+  }
+  else
+  {
+      // code
+  }
+  ```
+- **Indentation:** 4 spaces (never tabs)
+- **Line Length:** Maximum 120 characters
+- **Blank Lines:** Between logical sections
+
+## Modern C# Features
+
+- **Target Latest:** Target modern .NET versions
+- **Nullable Reference Types:** Enable and use appropriately
+- **Records:** Use for immutable data types
+- **Pattern Matching:** Use switch expressions and patterns
+- **Top-Level Statements:** Use for simple console apps
+- **Target-typed Expressions:** Leverage type inference
+- **Init-only Properties:** Use `{ get; init; }` for immutable properties
+
+## Properties vs Fields
+
+- **Properties:** Use for public access; implement logic as needed
+- **Auto-properties:** `{ get; set; }` or `{ get; private set; }`
+- **Init-only:** Use `{ get; init; }` for immutable properties
+- **Fields Private:** Keep fields private or protected
+- **Computed Properties:** Implement complex getters
+
+## Async/Await
+
+- **Async I/O:** Use async/await for I/O-bound operations
+- **ConfigureAwait:** Use `.ConfigureAwait(false)` in libraries
+- **Avoiding Deadlocks:** Don't block on async code (`.Result`, `.Wait()`)
+- **Task Returning:** Methods should return Task/Task<T>, not void (except events)
+
+## Exception Handling
+
+- **Specific Exceptions:** Catch specific exceptions, not generic Exception
+- **Type Casting:** Avoid casting; use pattern matching
+- **Null Checks:** Use null-coalescing (??) and null-conditional (?.) operators
+- **Logging:** Log full exception context
+- **Meaningful Messages:** Include context in exception messages
+
+## LINQ Usage
+
+- **Preferred:** Use LINQ for collection operations
+- **Readability:** Chain methods for clarity; use method or query syntax consistently
+- **Performance:** Be aware of performance implications (lazy evaluation)
+- **Null Handling:** Use .Where(x => x != null) or filtering appropriately
+
+## Testing
+
+- **xUnit:** Preferred testing framework for .NET
+- **Naming:** `<Method>_<Scenario>_<Expected>`
+- **Assertions:** Use FluentAssertions for expressive assertions
+- **Mocking:** Use Moq for mocking dependencies
+- **Coverage:** Use OpenCover for coverage measurement
+
+## EditorConfig
+
+- **Configuration:** Use `.editorconfig` file to enforce standards
+- **Roslyn Analyzers:** Use for style enforcement
+- **dotnet-format:** Automated formatting tool
+
+## Performance
+
+- **Async Over Sync:** Prefer async for I/O operations
+- **Collection Initialization:** Pre-size collections when size known
+- **String Operations:** Use StringBuilder for concatenation in loops
+- **Boxing:** Be aware of boxing costs for value types
+- **Memory Profiling:** Use dotMemory or similar tools

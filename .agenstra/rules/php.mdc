@@ -1,0 +1,74 @@
+---
+id: php
+name: PHP Best Practices (PSR-12)
+description: PHP coding standards following PSR-12 specification
+globs: ["**/*.php"]
+alwaysApply: true
+---
+# PHP Best Practices (PSR-12)
+
+## File Structure
+
+- **Opening Tag:** Start with `<?php` (never `<?`)
+- **No Closing Tag:** Omit closing `?>` for files containing only PHP
+- **Line Endings:** Use Unix LF line endings only
+- **Encoding:** UTF-8 encoding, no BOM
+- **One Namespace:** Only one namespace declaration per file
+- **Declare Strict Types:** Use `declare(strict_types=1);` after namespace
+
+## Naming Conventions
+
+- **Classes:** PascalCase (StudlyCaps)
+- **Methods:** camelCase
+- **Functions:** snake_case or camelCase (team choice)
+- **Constants:** UPPER_SNAKE_CASE
+- **Private Properties:** Prefix with underscore (optional but recommended)
+- **Interface Names:** PascalCase, often with `Interface` suffix
+- **Traits:** PascalCase, often with `Trait` suffix
+
+## Indentation and Spacing
+
+- **Indentation:** 4 spaces (never tabs)
+- **Line Length:** Maximum 120 characters
+- **Long Lines:** Break into multiple lines if necessary
+- **Binary Operators:** Place at beginning of next line when wrapping
+- **Method Chaining:** Each call on new line, indented once more
+
+## Control Structures
+
+- **Keywords:** All PHP reserved keywords in lowercase (if, while, foreach, etc.)
+- **Keyword Spacing:** One space after keyword before parenthesis
+- **Brace Placement:** Opening brace on same line, closing on new line
+- **Elseif:** Use `elseif` (not `else if`)
+- **Short Form:** `?:` operator acceptable, `??` for null coalescing
+
+## Type Declarations
+
+- **Scalar Types:** Use short form (bool not boolean, int not integer)
+- **Return Types:** Declare return types for all methods
+- **Parameter Types:** Type hint all parameters when possible
+- **Nullable Types:** Use `?Type` for nullable parameters/returns
+- **Union Types:** Use `Type1|Type2` syntax (PHP 8.0+)
+
+## Classes and Properties
+
+- **Properties:** Declare visibility (public, protected, private) for all properties
+- **Constants:** Use class constants for class-scoped constants
+- **Visibility Order:** Group by visibility: public, protected, private
+- **Initialization:** Initialize properties with default values
+- **Methods:** Declare visibility explicitly
+
+## Error Handling
+
+- **Type Errors:** Throw `TypeError`, `ValueError` for input errors
+- **Logic Errors:** Throw `LogicException` for logic errors
+- **Exception Handling:** Always catch specific exceptions
+- **No Silent Failures:** Log or rethrow exceptions meaningfully
+
+## Testing
+
+- **Unit Tests:** Use PHPUnit or similar
+- **Test Naming:** `test_<method>_<scenario>_<expected>`
+- **Test Organization:** Mirror class structure in tests
+- **Mocking:** Use prophecy or mocks for dependencies
+- **Assertions:** Use descriptive assertion messages

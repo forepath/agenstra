@@ -1,0 +1,52 @@
+---
+id: accessibility
+name: Accessibility Standards (WCAG 2.2)
+description: Web Content Accessibility Guidelines Level AA compliance
+globs: []
+alwaysApply: true
+---
+# Accessibility Standards (WCAG 2.2)
+
+## Four Core Principles (POUR)
+
+### 1. Perceivable
+
+- **Images:** Provide descriptive alt text for all meaningful images
+- **Color:** Don't convey information by color alone; use text/patterns
+- **Captions:** Provide captions for video and audio content
+- **Readable Text:** Use sufficient contrast (4.5:1 for normal text, 3:1 for large)
+- **Resizable:** Allow text resizing up to 200% without loss of function
+- **Multiple Formats:** Provide content in multiple formats
+
+### 2. Operable
+
+- **Keyboard Navigation:** Ensure all functionality is keyboard accessible
+- **Focus Visible:** Always show visible focus indicator
+- **Skip Links:** Provide skip-to-content links
+- **No Seizure Risks:** Avoid content that flashes more than 3x per second
+- **No Keyboard Traps:** Users shouldn't get stuck in keyboard navigation
+- **Touch Targets:** Make touch targets at least 44x44 pixels
+- **Timing:** Don't use strict time limits; provide extensions
+
+### 3. Understandable
+
+- **Language:** Identify page language; mark language changes
+- **Predictable:** Navigation and structure should be predictable
+- **Help Available:** Provide help, labels, and instructions
+- **Error Prevention:** Prevent errors where possible; provide recovery
+- **Error Messages:** Clear error messages identifying the problem
+
+### 4. Robust
+
+- **Valid HTML:** Write valid, semantic HTML
+- **ARIA Correctly:** Use ARIA only when semantic HTML unavailable
+- **Device Support:** Test with multiple browsers and assistive technologies
+- **Compatibility:** Ensure compatibility with current and future user agents
+
+## Implementation
+
+- **Semantic HTML:** Use proper heading hierarchy, `<button>` for buttons, `<label>` for forms
+- **ARIA Labels:** Add ARIA labels when semantic HTML insufficient
+- **Testing:** Test with keyboard navigation and screen readers (NVDA, JAWS, VoiceOver)
+- **Automated Tools:** Use Axe, WAVE, or Lighthouse for automated checks
+- **Manual Testing:** Supplement automated testing with manual testing

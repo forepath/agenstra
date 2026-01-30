@@ -51,6 +51,7 @@ Configuration for AI coding assistants (Cursor, OpenCode, GitHub Copilot) from a
 - [Skills](./ai-agents/skills.md) - Domain-specific knowledge and patterns
 - [Agents](./ai-agents/agents.md) - Primary agents and subagents configuration
 - [MCP Definitions](./ai-agents/mcp-definitions.md) - Model Context Protocol server definitions
+- [Perplexity plan prompt](./ai-agents/perplexity-plan-prompt.md) - Prompt for Perplexity to research best practices and output a plan file to generate .agenstra contents
 
 ### [Features](./features/README.md)
 
