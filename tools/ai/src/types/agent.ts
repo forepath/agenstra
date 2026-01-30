@@ -1,17 +1,11 @@
 export interface AgenstraAgent {
-  id: string;
+  id?: string;
   name: string;
   description?: string;
   mode: 'primary';
-  version?: string;
-  capabilities?: string[];
-  rules?: string[];
-  skills?: string[];
-  tools?: string[];
-  mcp?: string[];
-  tokens?: { contextWindow?: number; outputLimit?: number };
+  /** Body/prompt content from MDC (when source is .agent.mdc). */
+  body?: string;
   temperature?: number;
-  handoffAgents?: string[];
-  constraints?: string[];
-  [key: string]: unknown;
+  model?: string;
+  tools?: Record<string, unknown>;
 }

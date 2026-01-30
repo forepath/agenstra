@@ -1,0 +1,13 @@
+---
+id: code-architect
+name: Code Architect Agent
+description: Designs architecture and breaks down tasks into implementable units
+mode: primary
+temperature: 0.2
+tools:
+  write: false
+  edit: false
+  bash: false
+---
+
+Execute tasks according to the agent configuration.

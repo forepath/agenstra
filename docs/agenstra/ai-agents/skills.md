@@ -1,6 +1,6 @@
 # Skills
 
-Domain-specific knowledge (patterns, best practices) as separate Markdown files in `.agenstra/skills/`.
+Domain-specific knowledge (patterns, best practices) as **MDC** (`.skill.mdc`) in `.agenstra/skills/`.
 
 ## Purpose
 
@@ -9,10 +9,20 @@ Skills document reusable expertise (e.g. TypeScript patterns, testing strategies
 ## Structure
 
 - **Location**: `.agenstra/skills/`
-- **Format**: Markdown (`.skill.md`)
-- **Naming**: Descriptive name (e.g. `design-patterns.skill.md`, `testing-patterns.skill.md`)
+- **Format**: MDC (`.skill.mdc`) – YAML frontmatter + body
+- **Naming**: Descriptive name (e.g. `design-patterns.skill.mdc`, `testing-patterns.skill.mdc`)
 
-The filename stem (without `.skill.md`) is the skill identifier. Agents reference skills in their config via paths like `skills/design-patterns.skill.md`.
+The **filename stem** (without `.skill.mdc`) is the skill key. The **body** is the skill content emitted by the transformers.
+
+## Frontmatter (metadata)
+
+Optional metadata between `---` is read by the reader and available in the context; transformers do not use it (they derive descriptions from content as needed).
+
+| Field         | Type   | Description                                |
+| ------------- | ------ | ------------------------------------------ |
+| `id`          | string | Optional identifier (key is filename stem) |
+| `name`        | string | Optional display name                      |
+| `description` | string | Optional short description                 |
 
 ## Content guidelines
 
@@ -22,17 +32,17 @@ The filename stem (without `.skill.md`) is the skill identifier. Agents referenc
 
 ## Example
 
-```markdown
+```mdc
+---
+id: design-patterns
+name: Design Patterns
+description: Reusable patterns and trade-offs
+---
 # Design Patterns
 
 ## Factory Pattern
 
 **When to use:** Creating objects of similar types with varying logic.
-
-### Example structure
-
-- Define a creator interface and concrete creators.
-- Keep product creation in one place.
 
 ### Trade-offs
 
@@ -42,11 +52,11 @@ The filename stem (without `.skill.md`) is the skill identifier. Agents referenc
 ## Output by tool
 
 - **Cursor** – One folder per skill under `.cursor/skills/<name>/` with a `SKILL.md` file (frontmatter: `name`, `description`).
-- **OpenCode** – Skills remain available via the tool’s skill mechanism; see OpenCode docs.
-- **GitHub Copilot** – Skills are merged into path-specific instructions (e.g. `.github/instructions/skills.instructions.md`) because Copilot does not support separate skill files.
+- **OpenCode** – Skills are not emitted by the transformer; see OpenCode docs for native skill configuration.
+- **GitHub Copilot** – Skills are merged into `.github/instructions/skills.instructions.md` (repository-wide) because Copilot does not support separate skill files.
 
 ## Related
 
-- [Agents](./agents.md) – Agents reference skills via `skills: ["skills/design-patterns.skill.md", ...]`
+- [Agents](./agents.md) – Agents reference skills
 - [Rules](./rules.md) – Rules vs. skills: rules are project instructions; skills are reusable knowledge
 - [README](./README.md) – Overview of `.agenstra/` and transformation

@@ -15,13 +15,19 @@ function yamlEscape(s: string): string {
  * Use .mdc with frontmatter for control; globs optional for "Apply to Specific Files".
  * @see https://cursor.com/docs/context/rules
  */
-function ruleToMdc(name: string, content: string): string {
+function ruleToMdc(name: string, entry: import('../types').RuleEntry): string {
+  const content = entry.content;
   const firstLine = content.trim().split('\n')[0]?.replace(/^#\s*/, '') || name;
-  const description = firstLine.length > 80 ? firstLine.slice(0, 77) + '...' : firstLine;
+  const description = entry.description || (firstLine.length > 80 ? firstLine.slice(0, 77) + '...' : firstLine);
+  const globs = entry.globs ?? [];
+  const alwaysApply = entry.alwaysApply ?? false;
+
+  const globsYaml = globs.length === 0 ? ' []' : `\n${globs.map((g) => `  - ${yamlEscape(g)}`).join('\n')}`;
+
   return `---
 description: ${yamlEscape(description)}
-globs: []
-alwaysApply: false
+globs:${globsYaml}
+alwaysApply: ${alwaysApply}
 ---
 
 ${content}`;
@@ -55,19 +61,19 @@ ${content}`;
 
 /**
  * Build Cursor agent/subagent as .md with YAML frontmatter (name, description) and prompt body.
+ * Uses MDC body when present; otherwise description.
  * @see https://cursor.com/docs/context/subagents
  */
 function agentToCursorAgentMd(id: string, config: AgenstraAgent | AgenstraSubagent): string {
   const name = (config.name as string) ?? id;
   const description = (config.description as string) ?? '';
-  const constraints = (config.constraints as string[] | undefined) ?? [];
-  const body = [description, '', ...constraints.map((c) => `- ${c}`)].filter(Boolean).join('\n');
+  const bodyContent = (config.body as string)?.trim() ?? description;
   return `---
 name: ${name}
 description: ${yamlEscape(description || name)}
 ---
 
-${body || 'Execute tasks according to the agent configuration.'}\n`;
+${bodyContent || 'Execute tasks according to the agent configuration.'}\n`;
 }
 
 /**
@@ -107,17 +113,18 @@ export class CursorTransformer extends BaseTransformer {
   transform(context: AgenstraContext): ToolOutput {
     const out = new Map<string, string>();
 
-    for (const [name, content] of Object.entries(context.rules)) {
+    for (const [name, entry] of Object.entries(context.rules)) {
       if (name.startsWith('_')) continue;
-      out.set(`${CURSOR_DIR}/rules/${name}.mdc`, ruleToMdc(name, content));
+      const ruleEntry = typeof entry === 'string' ? { content: entry } : entry;
+      out.set(`${CURSOR_DIR}/rules/${name}.mdc`, ruleToMdc(name, ruleEntry));
     }
 
     for (const [id, cmd] of Object.entries(context.commands)) {
       out.set(`${CURSOR_DIR}/commands/${id}.md`, commandToMarkdown(id, cmd));
     }
 
-    for (const [name, content] of Object.entries(context.skills)) {
-      out.set(`${CURSOR_DIR}/skills/${name}/SKILL.md`, skillToCursorSkill(name, content));
+    for (const [name, entry] of Object.entries(context.skills)) {
+      out.set(`${CURSOR_DIR}/skills/${name}/SKILL.md`, skillToCursorSkill(name, entry.content));
     }
 
     // Primary agents → .cursor/agents/*.md, subagents → .cursor/agents/*.md (both as markdown with frontmatter)

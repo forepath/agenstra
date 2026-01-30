@@ -12,25 +12,27 @@ MCP definitions describe how to run or connect to MCP servers (e.g. file system,
 - **Format**: JSON (`.mcp.json`)
 - **Naming**: Descriptive name (e.g. `file-system.mcp.json`); the filename stem or `id` inside the JSON is the server id
 
-## Schema
+## Schema (properties read by the reader)
+
+Only the following JSON properties are read; all others are ignored. `id`, `name`, and `description` are kept by design (name/description are not emitted by transformers).
 
 **Common fields**:
 
 | Field         | Type    | Description                                             |
 | ------------- | ------- | ------------------------------------------------------- |
 | `id`          | string  | Server identifier (optional; defaults to filename stem) |
-| `name`        | string  | Display name                                            |
-| `description` | string  | Short description                                       |
+| `name`        | string  | Display name (read only; not emitted)                   |
+| `description` | string  | Short description (read only; not emitted)              |
 | `type`        | string  | `"local"` or `"remote"`                                 |
 | `enabled`     | boolean | Optional; default true                                  |
 
 **Local servers** (run a command on the machine):
 
-| Field         | Type               | Description                                                           |
-| ------------- | ------------------ | --------------------------------------------------------------------- |
-| `command`     | string \| string[] | Command to run. If array, first element is the command, rest are args |
-| `environment` | object             | Optional env vars for the process                                     |
-| `env`         | object             | Alias for `environment` (Cursor uses `env`)                           |
+| Field         | Type               | Description                                                                     |
+| ------------- | ------------------ | ------------------------------------------------------------------------------- |
+| `command`     | string \| string[] | Command to run. If array, first element is the command, rest are args           |
+| `environment` | object             | Optional env vars (Cursor uses `env`; may be written as `environment` or `env`) |
+| `env`         | object             | Alias for `environment`                                                         |
 
 **Remote servers** (connect to a URL):
 
@@ -39,13 +41,13 @@ MCP definitions describe how to run or connect to MCP servers (e.g. file system,
 | `url`     | string | MCP server URL                               |
 | `headers` | object | Optional HTTP headers (e.g. `Authorization`) |
 
+The `args` field (for local commands when `command` is a string) is also read.
+
 ## Example (local)
 
 ```json
 {
   "id": "file-system",
-  "name": "File System",
-  "description": "Read and write files in the workspace",
   "type": "local",
   "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "${workspaceFolder}"],
   "environment": {},
@@ -60,7 +62,6 @@ Cursor resolves `${workspaceFolder}` from the project that contains `.cursor/mcp
 ```json
 {
   "id": "my-api",
-  "name": "My API",
   "type": "remote",
   "url": "https://api.example.com/mcp",
   "headers": {

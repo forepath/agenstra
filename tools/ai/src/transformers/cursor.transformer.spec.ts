@@ -6,10 +6,10 @@ describe('CursorTransformer', () => {
 
   it('should output rules as .mdc with frontmatter, commands as .md, skills as folder/SKILL.md, agents as .md, mcp as .json', () => {
     const context: AgenstraContext = {
-      metadata: { version: '1.0', appName: 'test' },
-      rules: { 'coding-standards': '# Coding Standards\n' },
+      metadata: { appName: 'test' },
+      rules: { 'coding-standards': { content: '# Coding Standards\n' } },
       commands: { refactor: { id: 'refactor', name: 'Refactor', prompt: 'Refactor this' } },
-      skills: { 'design-patterns': '# Design Patterns\n' },
+      skills: { 'design-patterns': { content: '# Design Patterns\n' } },
       agents: {
         architect: {
           id: 'architect',

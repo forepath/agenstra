@@ -21,10 +21,10 @@ export function mergeComponentsForTransformer(context: AgenstraContext, transfor
   return next;
 }
 
-function mergeSkillsIntoMarkdown(skills: Record<string, string>): string {
+function mergeSkillsIntoMarkdown(skills: Record<string, import('../types').SkillEntry>): string {
   const parts: string[] = ['# Merged Skills\n', 'The following sections are merged from .agenstra/skills/.\n'];
-  for (const [name, content] of Object.entries(skills)) {
-    parts.push(`\n## ${name}\n\n`, content);
+  for (const [name, entry] of Object.entries(skills)) {
+    parts.push(`\n## ${name}\n\n`, entry.content);
   }
   return parts.join('');
 }

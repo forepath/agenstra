@@ -1,0 +1,12 @@
+---
+id: general
+name: General Agent
+description: General agent for general tasks
+mode: subagent
+tools:
+  write: true
+  edit: true
+  bash: true
+---
+
+General instructions here.

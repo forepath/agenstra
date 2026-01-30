@@ -4,6 +4,8 @@ export type {
   AgenstraMetadata,
   AgenstraSubagent,
   ComponentType,
+  RuleEntry,
+  SkillEntry,
   ToolName,
   ToolOutput,
   ToolTransformResult,

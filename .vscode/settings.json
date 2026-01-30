@@ -92,7 +92,7 @@
   "editor.guides.bracketPairs": true,
   "editor.minimap.enabled": true,
   "editor.minimap.maxColumn": 120,
-  "extensions.ignoreRecommendations": false,
+  "extensions.ignoreRecommendations": true,
   "workbench.enableExperiments": false,
   "telemetry.telemetryLevel": "off"
 }

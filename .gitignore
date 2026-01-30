@@ -61,6 +61,7 @@ repomix-output.xml
 .cursor/
 .opencode/
 AGENTS.md
+!.agenstra/overrides/AGENTS.md
 opencode.json
 
 # Nx

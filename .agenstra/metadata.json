@@ -1,12 +1,4 @@
 {
   "version": "1.0",
-  "appName": "agenstra",
-  "description": "AI context for Agenstra monorepo",
-  "team": "",
-  "defaultModel": "claude-3.5-sonnet",
-  "contextWindow": 200000,
-  "tags": ["monorepo"],
-  "tools": ["cursor", "opencode", "github-copilot"],
-  "agents": ["architect", "code-reviewer", "test-generator"],
-  "subagents": ["general", "explore"]
+  "appName": "agenstra"
 }

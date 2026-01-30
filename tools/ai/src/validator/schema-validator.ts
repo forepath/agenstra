@@ -13,8 +13,8 @@ export function validateContext(context: AgenstraContext): ValidationResult[] {
   const results: ValidationResult[] = [];
   const { metadata, rules, commands, skills, agents, subagents } = context;
 
-  if (!metadata.version || !metadata.appName) {
-    results.push({ level: 'error', message: 'metadata.json must have version and appName', path: 'metadata.json' });
+  if (!metadata.appName) {
+    results.push({ level: 'error', message: 'metadata must have appName', path: 'metadata.json' });
   }
 
   if (Object.keys(rules).length === 0) {

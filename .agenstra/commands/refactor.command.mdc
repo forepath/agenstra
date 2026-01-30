@@ -1,0 +1,8 @@
+---
+id: refactor-to-pattern
+name: Apply Pattern Refactor
+description: Refactor code to use a specific pattern
+agent: architect
+---
+
+Refactor this code to use the {{pattern}} pattern. Follow the rules in #rules/architecture.mdc

@@ -19,7 +19,7 @@ describe('transform', () => {
       JSON.stringify({ version: '1.0', appName: 'test-app' }),
       'utf-8',
     );
-    fs.writeFileSync(path.join(agenstraDir, 'rules', 'main.md'), '# Main\n', 'utf-8');
+    fs.writeFileSync(path.join(agenstraDir, 'rules', 'main.mdc'), '---\n---\n\n# Main\n', 'utf-8');
   });
 
   afterEach(() => {

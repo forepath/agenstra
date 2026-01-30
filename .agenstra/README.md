@@ -4,16 +4,17 @@ This directory (`.agenstra/`) is the single source of truth for AI coding assist
 
 ## Structure
 
-- **schema-version.txt** – Schema version for compatibility checks
-- **metadata.json** – Project metadata, default model, target tools
-- **rules/** – Instruction-based rules (Markdown)
-- **commands/** – Reusable command definitions (JSON)
-- **skills/** – Reusable skill documentation (Markdown)
-- **agents/** – Primary agent configurations (JSON)
-- **subagents/** – Subagent configurations (JSON)
-- **AGENTS.md** – Generic agent documentation (fallback for tools without specific transformers)
-- **mcp-definitions/** – MCP (Model Context Protocol) tool definitions (JSON)
+- **metadata.json** – Project metadata (required: `version`, `appName`; optional: `description`)
+- **rules/** – Instruction-based rules (`.mdc`)
+- **commands/** – Reusable command definitions (`.command.mdc`)
+- **skills/** – Reusable skill documentation (`.skill.mdc`)
+- **agents/** – Primary agent configs (`.agent.mdc`: YAML frontmatter + body)
+- **subagents/** – Subagent configs (`.subagent.mdc`: YAML frontmatter + body)
+- **mcp-definitions/** – MCP (Model Context Protocol) server definitions (JSON)
+- **overrides/** – Manual overrides (copied last, can overwrite generated content)
 
 ## Usage
 
 This folder is the **example context** for the repo. The `@agenstra/ai` tool acts as a **transformer** from `.agenstra/` to tool-specific configs (e.g. `.cursor/`, OpenCode, GitHub Copilot). Run the transformer when implemented (e.g. `agenstra transform --path=.agenstra --target=cursor`). Do not remove or overwrite existing `.cursor` contents when copying context manually.
+
+**Overrides**: Files in `overrides/` are copied to the output directory after transformation, allowing you to manually override or extend generated content. The override structure mirrors the output structure (e.g., `overrides/.cursor/...` → `generated/.cursor/...`).

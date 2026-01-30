@@ -1,3 +1,8 @@
+---
+id: security
+name: Security and Compliance
+description: Input validation, secrets, and least privilege
+---
 # Security and Compliance
 
 ## Guidelines

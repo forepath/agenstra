@@ -30,32 +30,27 @@ function commandToMarkdown(id: string, cmd: Record<string, unknown>): string {
 
 /**
  * Build OpenCode agent .md with YAML frontmatter (description, mode, model, temperature, tools) and prompt body.
- * @see https://opencode.ai/docs/agents/
+ * Uses MDC body when present; otherwise description. Emits tools object for OpenCode per https://opencode.ai/docs/agents/#markdown
  */
 function agentToOpenCodeMd(id: string, config: AgenstraAgent | AgenstraSubagent): string {
-  const description = config.description ?? (config.name as string) ?? id;
+  const description = config.description ?? config.name ?? id;
   const mode = (config.mode as string) ?? 'subagent';
   const temperature = config.temperature ?? undefined;
-  const model = (config as Record<string, unknown>).model as string | undefined;
-  const constraints = (config.constraints as string[] | undefined) ?? [];
-  const body = [description, '', ...constraints.map((c) => `- ${c}`)].filter(Boolean).join('\n');
+  const model = config.model;
+  const bodyContent = (config.body as string)?.trim() ?? description;
 
   const lines = ['---', `description: ${yamlValue(description)}`, `mode: ${mode}`];
   if (model) lines.push(`model: ${model}`);
   if (temperature != null) lines.push(`temperature: ${temperature}`);
-  const tools = (config as Record<string, unknown>).tools;
-  if (tools !== undefined) {
-    if (typeof tools === 'object' && tools !== null && !Array.isArray(tools)) {
-      lines.push('tools:');
-      for (const [k, v] of Object.entries(tools as Record<string, unknown>)) {
-        lines.push(`  ${k}: ${v}`);
-      }
-    } else if (tools === '*' || (Array.isArray(tools) && tools.length === 0)) {
-      lines.push('tools:', '  write: true', '  edit: true', '  bash: true');
+  const tools = config.tools;
+  if (tools !== undefined && typeof tools === 'object' && tools !== null) {
+    lines.push('tools:');
+    for (const [k, v] of Object.entries(tools)) {
+      lines.push(`  ${k}: ${v}`);
     }
   }
   lines.push('---', '');
-  lines.push(body || 'Execute tasks according to the agent configuration.');
+  lines.push(bodyContent || 'Execute tasks according to the agent configuration.');
   return lines.join('\n');
 }
 
@@ -95,8 +90,9 @@ export class OpenCodeTransformer extends BaseTransformer {
  */
 function buildRulesAggregate(context: AgenstraContext): string {
   const parts: string[] = [];
-  for (const [name, content] of Object.entries(context.rules)) {
+  for (const [name, entry] of Object.entries(context.rules)) {
     if (name.startsWith('_')) continue;
+    const content = typeof entry === 'string' ? entry : entry.content;
     const title = name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
     parts.push(`## ${title}\n\n`, content.trim(), '\n\n');
   }

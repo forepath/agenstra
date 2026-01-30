@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/schema",
   "$id": "Context",
   "title": "Context Generator",
-  "description": "Validates .agenstra/ context and optionally transforms to tool-specific configs (Cursor, OpenCode, GitHub Copilot). When target is set, runs the transformer and writes output into the tree.",
+  "description": "Validates .agenstra/ context and transforms to tool-specific configs (Cursor, OpenCode, GitHub Copilot). Defaults to all targets when target is not set; writes output under outputDir.",
   "type": "object",
   "properties": {
     "project": {
@@ -20,11 +20,11 @@
         "type": "string",
         "enum": ["cursor", "opencode", "github-copilot"]
       },
-      "description": "Target tools to generate config for. When provided, runs the transformer and writes output under outputDir."
+      "description": "Target tools to generate config for. When not set, all targets (cursor, opencode, github-copilot) are generated. Output is written under outputDir."
     },
     "outputDir": {
       "type": "string",
-      "description": "Base output directory for transformed configs. Each tool gets a subdir (e.g. outputDir/cursor).",
+      "description": "Base output directory for transformed configs (e.g. outputDir/.cursor/, outputDir/.opencode/, outputDir/.github/).",
       "default": "generated"
     },
     "dryRun": {

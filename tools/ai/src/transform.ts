@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { emitToolOutput } from './emitter';
+import { copyOverrides, emitToolOutput } from './emitter';
 import { readContext } from './reader';
 import { getTransformer, mergeComponentsForTransformer } from './transformers';
 import type { ToolName, ToolOutput } from './types';
@@ -10,7 +10,7 @@ export interface TransformOptions {
   source: string;
   /** One or more target tools. */
   target: ToolName | ToolName[];
-  /** Base directory for output. Each tool gets a subdir (e.g. outputDir/cursor). Default: ./generated */
+  /** Base directory for output (e.g. outputDir/.cursor/, outputDir/.opencode/, outputDir/.github/). Default: ./generated */
   outputDir?: string;
   /** If true, do not write files; return results only. */
   dryRun?: boolean;
@@ -90,6 +90,8 @@ export function transform(options: TransformOptions): TransformResult {
     if (!dryRun && !returnOutputs && fileCount > 0) {
       try {
         emitToolOutput(baseOut, output);
+        // Copy overrides last so they can overwrite auto-generated content
+        copyOverrides(agenstraPath, toolName, baseOut);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         errors.push(`Failed to write ${toolName} output: ${msg}`);

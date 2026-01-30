@@ -5,12 +5,34 @@ import * as path from 'path';
 import { contextGenerator } from './context';
 
 describe('context generator', () => {
-  it('should pass when .agenstra exists at path', async () => {
-    const tree = createTreeWithEmptyWorkspace();
-    tree.write('apps/my-app/.agenstra/schema-version.txt', '1.0\n');
-    tree.write('apps/my-app/.agenstra/metadata.json', JSON.stringify({ version: '1.0', appName: 'my-app' }));
+  it('should default to all targets when target is not set', async () => {
+    const base = path.join(process.cwd(), 'tmp-context-gen-' + Date.now());
+    const agenstraDir = path.join(base, '.agenstra');
+    const rulesDir = path.join(agenstraDir, 'rules');
+    fs.mkdirSync(rulesDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(agenstraDir, 'metadata.json'),
+      JSON.stringify({ version: '1.0', appName: 'test-app' }),
+      'utf-8',
+    );
+    fs.writeFileSync(path.join(rulesDir, 'main.mdc'), '---\n---\n\n# Main\n', 'utf-8');
 
-    await expect(contextGenerator(tree, { path: 'apps/my-app' })).resolves.toBeUndefined();
+    const tree = createTreeWithEmptyWorkspace();
+    const relativeBase = path.relative(process.cwd(), base);
+    tree.write(
+      path.join(relativeBase, '.agenstra/metadata.json'),
+      JSON.stringify({ version: '1.0', appName: 'test-app' }),
+    );
+    tree.write(path.join(relativeBase, '.agenstra/rules/main.mdc'), '---\n---\n\n# Main\n');
+
+    await contextGenerator(tree, { path: relativeBase, outputDir: 'generated' });
+
+    // All three targets should be generated when target is omitted (output directly under outputDir)
+    expect(tree.exists(path.join(relativeBase, 'generated/.cursor/rules/main.mdc'))).toBe(true);
+    expect(tree.exists(path.join(relativeBase, 'generated/AGENTS.md'))).toBe(true);
+    expect(tree.exists(path.join(relativeBase, 'generated/.github/copilot-instructions.md'))).toBe(true);
+
+    fs.rmSync(base, { recursive: true, force: true });
   });
 
   it('should run transform and write tool output to tree when target is set', async () => {
@@ -23,16 +45,15 @@ describe('context generator', () => {
       JSON.stringify({ version: '1.0', appName: 'test-app' }),
       'utf-8',
     );
-    fs.writeFileSync(path.join(agenstraDir, 'schema-version.txt'), '1.0\n', 'utf-8');
-    fs.writeFileSync(path.join(rulesDir, 'main.md'), '# Main\n', 'utf-8');
+    fs.writeFileSync(path.join(rulesDir, 'main.mdc'), '---\n---\n\n# Main\n', 'utf-8');
 
     const tree = createTreeWithEmptyWorkspace();
     const relativeBase = path.relative(process.cwd(), base);
-    tree.write(path.join(relativeBase, '.agenstra/schema-version.txt'), '1.0\n');
     tree.write(
       path.join(relativeBase, '.agenstra/metadata.json'),
       JSON.stringify({ version: '1.0', appName: 'test-app' }),
     );
+    tree.write(path.join(relativeBase, '.agenstra/rules/main.mdc'), '---\n---\n\n# Main\n');
 
     await contextGenerator(tree, {
       path: relativeBase,
@@ -40,7 +61,7 @@ describe('context generator', () => {
       outputDir: 'generated',
     });
 
-    const cursorRulePath = path.join(relativeBase, 'generated/cursor/.cursor/rules/main.mdc');
+    const cursorRulePath = path.join(relativeBase, 'generated/.cursor/rules/main.mdc');
     expect(tree.exists(cursorRulePath)).toBe(true);
     expect(tree.read(cursorRulePath, 'utf-8')).toContain('# Main');
 
@@ -53,17 +74,36 @@ describe('context generator', () => {
     await expect(contextGenerator(tree, { path: 'apps/my-app' })).rejects.toThrow(/No .agenstra context/);
   });
 
-  it('should pass when project is set and has .agenstra', async () => {
-    const tree = createTreeWithEmptyWorkspace();
-    addProjectConfiguration(tree, 'backend-api', {
-      root: 'apps/backend-api',
-      projectType: 'application',
-      sourceRoot: 'apps/backend-api/src',
-    });
-    tree.write('apps/backend-api/.agenstra/schema-version.txt', '1.0\n');
-    tree.write('apps/backend-api/.agenstra/metadata.json', JSON.stringify({ version: '1.0' }));
+  it('should default to all targets when project is set and target omitted', async () => {
+    const base = path.join(process.cwd(), 'tmp-context-gen-project-' + Date.now());
+    const agenstraDir = path.join(base, '.agenstra');
+    fs.mkdirSync(agenstraDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(agenstraDir, 'metadata.json'),
+      JSON.stringify({ version: '1.0', appName: 'backend-api' }),
+      'utf-8',
+    );
 
-    await expect(contextGenerator(tree, { project: 'backend-api' })).resolves.toBeUndefined();
+    const tree = createTreeWithEmptyWorkspace();
+    const relativeBase = path.relative(process.cwd(), base);
+    addProjectConfiguration(tree, 'backend-api', {
+      root: relativeBase,
+      projectType: 'application',
+      sourceRoot: path.join(relativeBase, 'src'),
+    });
+    tree.write(
+      path.join(relativeBase, '.agenstra/metadata.json'),
+      JSON.stringify({ version: '1.0', appName: 'backend-api' }),
+    );
+
+    await contextGenerator(tree, { project: 'backend-api', outputDir: 'generated' });
+
+    // All targets emit at least one file (output directly under outputDir)
+    expect(tree.exists(path.join(relativeBase, 'generated/.cursor/mcp.json'))).toBe(true);
+    expect(tree.exists(path.join(relativeBase, 'generated/AGENTS.md'))).toBe(true);
+    expect(tree.exists(path.join(relativeBase, 'generated/.github/copilot-instructions.md'))).toBe(true);
+
+    fs.rmSync(base, { recursive: true, force: true });
   });
 
   it('should throw when project is set but .agenstra is missing', async () => {
@@ -79,8 +119,7 @@ describe('context generator', () => {
 
   it('should pass with dryRun when .agenstra exists', async () => {
     const tree = createTreeWithEmptyWorkspace();
-    tree.write('libs/foo/.agenstra/schema-version.txt', '1.0\n');
-    tree.write('libs/foo/.agenstra/metadata.json', JSON.stringify({ version: '1.0' }));
+    tree.write('libs/foo/.agenstra/metadata.json', JSON.stringify({ version: '1.0', appName: 'foo' }));
 
     await expect(contextGenerator(tree, { path: 'libs/foo', dryRun: true })).resolves.toBeUndefined();
   });
