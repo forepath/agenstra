@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.27.0](https://github.com/forepath/agenstra/compare/v1.26.0...v1.27.0) (2026-01-31)
+
+
+### Features
+
+* random bundled webserver port ([#185](https://github.com/forepath/agenstra/issues/185)) ([5a8eae8](https://github.com/forepath/agenstra/commit/5a8eae8114661483a02e480cee1900b552b579e0))
+* windows native application release ([#184](https://github.com/forepath/agenstra/issues/184)) ([e7b6f4a](https://github.com/forepath/agenstra/commit/e7b6f4a264264361ebeb694516846e6bc3c8f41f))
+
+
+### Bug Fixes
+
+* remove duplicate releases ([#186](https://github.com/forepath/agenstra/issues/186)) ([ffe5b09](https://github.com/forepath/agenstra/commit/ffe5b09cd277079b67c7a4db54777f1c9cc2d8e4))
+
+
+### Chores
+
+* unified publish paths ([#183](https://github.com/forepath/agenstra/issues/183)) ([33b8e22](https://github.com/forepath/agenstra/commit/33b8e2231cf4e8c1f073c50ce65dbc21d1e64fcd))
+
 ## [1.26.0](https://github.com/forepath/agenstra/compare/v1.25.0...v1.26.0) (2026-01-30)
 
 
