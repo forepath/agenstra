@@ -128,4 +128,3 @@ On success, agentctx prints one line per target and exits with code 0. On valida
 - [Rules](./rules.md) – Project instructions in `.agenstra/rules/`
 - [Commands](./commands.md) – Slash-style commands in `.agenstra/commands/`
 - [Agents](./agents.md) – Agents and subagents in `.agenstra/agents/` and `subagents/`
-- [tools/ai README](../../../tools/ai/README.md) – Programmatic API, Nx executor, and generator
