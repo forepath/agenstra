@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.27.2](https://github.com/forepath/agenstra/compare/v1.27.1...v1.27.2) (2026-01-31)
+
+
+### Chores
+
+* remove invalid link ([#188](https://github.com/forepath/agenstra/issues/188)) ([9d8d6ae](https://github.com/forepath/agenstra/commit/9d8d6aec234719f7acbc05867762383e6340f42d))
+
 ## [1.27.1](https://github.com/forepath/agenstra/compare/v1.27.0...v1.27.1) (2026-01-31)
 
 
