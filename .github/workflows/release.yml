@@ -448,7 +448,6 @@ jobs:
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
         run: |
           aws s3 cp release/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/desktop/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-          aws s3 cp release/ s3://${{ secrets.AWS_BUCKET }}/desktop/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
 
   publish-agentctx:
     name: Publish agentctx to R2
