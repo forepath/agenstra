@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.27.1](https://github.com/forepath/agenstra/compare/v1.27.0...v1.27.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* ai tool path identification ([#187](https://github.com/forepath/agenstra/issues/187)) ([fefb93b](https://github.com/forepath/agenstra/commit/fefb93bdf297a26dc85f82d2300d607ef4701577))
+
 ## [1.27.0](https://github.com/forepath/agenstra/compare/v1.26.0...v1.27.0) (2026-01-31)
 
 
