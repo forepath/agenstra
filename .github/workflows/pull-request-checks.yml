@@ -313,7 +313,7 @@ jobs:
         env:
           ELECTRON_FORGE_PLATFORM: linux
         run: |
-          xvfb-run -a npx nx affected --target=package --configuration=development-linux --parallel=3 || echo "No projects for native applications build"
+          npx nx affected --target=package --configuration=development-linux --parallel=3 || echo "No projects for native applications build"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -354,6 +354,7 @@ jobs:
       - name: Build binaries
         env:
           ELECTRON_FORGE_PLATFORM: win32
+          DEBUG: electron-windows-installer*
         run: |
           xvfb-run -a npx nx affected --target=package --configuration=development-windows --parallel=3 || echo "No projects for native applications build"
 

@@ -1,8 +1,16 @@
 diff --git a/node_modules/electron-winstaller/lib/index.js b/node_modules/electron-winstaller/lib/index.js
-index 3bfd305..862fc8c 100644
+index 3bfd305..f899c40 100644
 --- a/node_modules/electron-winstaller/lib/index.js
 +++ b/node_modules/electron-winstaller/lib/index.js
-@@ -119,11 +119,20 @@ function createWindowsInstaller(options) {
+@@ -66,6 +66,7 @@ exports.createWindowsInstaller = exports.convertVersion = void 0;
+ var asar = __importStar(require("@electron/asar"));
+ var temp_utils_1 = require("./temp-utils");
+ var fs = __importStar(require("fs-extra"));
++var crypto = require("crypto");
+ var path = __importStar(require("path"));
+ var os = __importStar(require("os"));
+ var child_process_1 = require("child_process");
+@@ -119,11 +120,20 @@ function createWindowsInstaller(options) {
                      if (!(process.platform !== 'win32')) return [3 /*break*/, 2];
                      useMono = true;
                      return [4 /*yield*/, Promise.all([
@@ -25,3 +33,56 @@ index 3bfd305..862fc8c 100644
                      if (!hasWine || !hasMono) {
                          throw new Error('You must install both Mono and Wine on non-Windows');
                      }
+@@ -260,11 +270,40 @@ function createWindowsInstaller(options) {
+                     _d.apply(void 0, [_f.sent()]);
+                     _f.label = 18;
+                 case 18:
++                    if (useMono) {
++                        return [4 /*yield*/, (function () {
++                                return (0, temp_utils_1.createTempDir)('squirrel-extract-')
++                                    .then(function (extractDir) {
++                                        return (0, spawn_promise_1.default)('unzip', ['-o', nupkgPath, '-d', extractDir]).then(function () { return extractDir; });
++                                    })
++                                    .then(function (extractDir) {
++                                        var fullNupkgPath = path.join(outputDirectory, metadata.name + '-' + metadata.version + '-full.nupkg');
++                                        return (0, spawn_promise_1.default)('zip', ['-r', fullNupkgPath, '.'], { cwd: extractDir }).then(function () { return fullNupkgPath; });
++                                    })
++                                    .then(function (fullNupkgPath) {
++                                        return fs.readFile(fullNupkgPath).then(function (fullNupkgBuf) {
++                                            var hash = crypto.createHash('sha1').update(fullNupkgBuf).digest('hex').toUpperCase();
++                                            var fullNupkgName = metadata.name + '-' + metadata.version + '-full.nupkg';
++                                            return fs.writeFile(path.join(outputDirectory, 'RELEASES'), hash + ' ' + fullNupkgName + ' ' + fullNupkgBuf.length + '\n').then(function () { return fullNupkgPath; });
++                                        });
++                                    })
++                                    .then(function (fullNupkgPath) {
++                                        return fs.copy(path.join(vendorPath, 'Setup.exe'), path.join(outputDirectory, 'Setup.exe')).then(function () { return fullNupkgPath; });
++                                    })
++                                    .then(function (fullNupkgPath) {
++                                        return (0, spawn_promise_1.default)(wineExe, [path.join(vendorPath, 'WriteZipToSetup.exe'), path.join(outputDirectory, 'Setup.exe'), path.resolve(fullNupkgPath)]);
++                                    });
++                            })()];
++                    }
+                     cmd = path.join(vendorPath, 'Squirrel.exe');
++                    // Under Mono, use absolute paths so Squirrel resolves files correctly (avoids "Root element is missing" XML parse errors).
++                    var releasifyNupkg = useMono ? path.resolve(nupkgPath) : nupkgPath;
++                    var releasifyOutDir = useMono ? path.resolve(outputDirectory) : outputDirectory;
++                    var releasifyGif = useMono ? path.resolve(loadingGif) : loadingGif;
+                     args = [
+-                        '--releasify', nupkgPath,
+-                        '--releaseDir', outputDirectory,
+-                        '--loadingGif', loadingGif
++                        '--releasify', releasifyNupkg,
++                        '--releaseDir', releasifyOutDir,
++                        '--loadingGif', releasifyGif
+                     ];
+                     if (useMono) {
+                         args.unshift(path.join(vendorPath, 'Squirrel-Mono.exe'));
+@@ -315,6 +354,8 @@ function createWindowsInstaller(options) {
+                     _e = log;
+                     return [4 /*yield*/, (0, spawn_promise_1.default)(cmd, args)];
+                 case 24:
++                    if (useMono)
++                        return [3 /*break*/, 25];
+                     _e.apply(void 0, [_f.sent()]);
+                     if (!(options.fixUpPaths !== false)) return [3 /*break*/, 29];
+                     log('Fixing up paths');

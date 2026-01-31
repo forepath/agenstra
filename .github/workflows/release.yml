@@ -347,7 +347,7 @@ jobs:
           ELECTRON_FORGE_PLATFORM: linux
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          xvfb-run -a npx nx run-many --target=package --configuration=production-linux --parallel=3 || echo "No projects for native applications build"
+          npx nx run-many --target=package --configuration=production-linux --parallel=3 || echo "No projects for native applications build"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -394,6 +394,7 @@ jobs:
       - name: Build binaries
         env:
           ELECTRON_FORGE_PLATFORM: win32
+          DEBUG: electron-windows-installer*
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
           xvfb-run -a npx nx run-many --target=package --configuration=production-windows --parallel=3 || echo "No projects for native applications build"
