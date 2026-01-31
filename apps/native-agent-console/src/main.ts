@@ -141,8 +141,7 @@ function startSSRServer(): Promise<void> {
 
     const cwd = path.dirname(ssrPath);
 
-    const onStderr = (data: Buffer | string): void =>
-      console.error(`Application server error: ${data}`);
+    const onStderr = (data: Buffer | string): void => console.error(`Application server error: ${data}`);
     const onError = (err: unknown): void => {
       const msg = err instanceof Error ? err.message : String(err);
       debugLog('SSR process error:', msg, err);
@@ -553,10 +552,7 @@ function createMenu(): void {
 }
 
 function showStartupError(message: string, detail?: string): void {
-  dialog.showErrorBox(
-    'Agenstra Agent Console – Startup Error',
-    detail ? `${message}\n\n${detail}` : message
-  );
+  dialog.showErrorBox('Agenstra Agent Console – Startup Error', detail ? `${message}\n\n${detail}` : message);
   console.error('[Main Process] Startup error:', message, detail ?? '');
 }
 
@@ -603,7 +599,10 @@ app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createWin
 process.on('uncaughtException', (err) => {
   debugLog('uncaughtException:', err.message, err);
   try {
-    dialog.showErrorBox('Uncaught Exception', `${err.message}\n\nSee logs in: ${app.getPath('userData')}/logs/main.log`);
+    dialog.showErrorBox(
+      'Uncaught Exception',
+      `${err.message}\n\nSee logs in: ${app.getPath('userData')}/logs/main.log`,
+    );
   } catch {
     // ignore
   }
@@ -613,7 +612,7 @@ process.on('unhandledRejection', (reason, promise) => {
   try {
     dialog.showErrorBox(
       'Unhandled Rejection',
-      `${String(reason)}\n\nSee logs in: ${app.getPath('userData')}/logs/main.log`
+      `${String(reason)}\n\nSee logs in: ${app.getPath('userData')}/logs/main.log`,
     );
   } catch {
     // ignore
