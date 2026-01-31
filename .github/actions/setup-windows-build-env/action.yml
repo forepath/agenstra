@@ -10,7 +10,3 @@ runs:
         sudo dpkg --add-architecture i386
         sudo apt-get update
         sudo apt-get install -y wine64 wine32 mono-complete xvfb zip unzip
-    - name: Ensure electron-winstaller 7z binaries
-      shell: bash
-      run: |
-        cd node_modules/electron-winstaller && node script/select-7z-arch.js
