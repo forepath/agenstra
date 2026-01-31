@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky",
-    "preinstall": "npx -y only-allow npm"
+    "preinstall": "npx -y only-allow npm",
+    "postinstall": "patch-package"
   },
   "private": true,
   "type": "module",
@@ -28,9 +29,6 @@
     "@commitlint/config-conventional": "20.0.0",
     "@electron-forge/cli": "7.10.2",
     "@electron-forge/maker-deb": "7.10.2",
-    "@electron-forge/maker-msix": "7.10.2",
-    "@electron-forge/maker-rpm": "7.10.2",
-    "@electron-forge/maker-squirrel": "7.10.2",
     "@electron-forge/maker-zip": "7.10.2",
     "@electron-forge/plugin-auto-unpack-natives": "7.10.2",
     "@modelcontextprotocol/inspector": "0.16.8",

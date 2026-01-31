@@ -66,3 +66,9 @@ runs:
       shell: bash
       working-directory: ./node_modules/electron
       run: npm run postinstall || node install.js || true
+
+    - name: Patch package
+      shell: bash
+      run: |
+        npm install -g patch-package
+        patch-package

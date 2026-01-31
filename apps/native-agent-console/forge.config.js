@@ -1,7 +1,8 @@
-const isLinux = process.platform === 'linux';
-const isWindows = process.platform === 'win32';
-const isMac = process.platform === 'darwin';
-
+// Support cross-building (e.g. Windows on Linux via Wine)
+const buildPlatform = process.env.ELECTRON_FORGE_PLATFORM || process.platform;
+const isLinux = buildPlatform === 'linux';
+const isWindows = buildPlatform === 'win32';
+const isMac = buildPlatform === 'darwin';
 module.exports = {
   packagerConfig: {
     asar: true,
@@ -13,27 +14,32 @@ module.exports = {
     ...(isWindows
       ? [
           {
-            name: '@electron-forge/maker-squirrel',
-            config: { name: 'agenstra', exe: 'agenstra_installer.exe' },
+            name: '@electron-forge/maker-zip',
+            platforms: ['win32'],
           },
-          { name: '@electron-forge/maker-zip', platforms: ['win32'] },
         ]
       : []),
-    ...(isMac ? [{ name: '@electron-forge/maker-zip', platforms: ['darwin'] }] : []),
+    ...(isMac
+      ? [
+          {
+            name: '@electron-forge/maker-zip',
+            platforms: ['darwin'],
+          },
+        ]
+      : []),
     ...(isLinux
       ? [
-          { name: '@electron-forge/maker-zip', platforms: ['linux'] },
+          {
+            name: '@electron-forge/maker-zip',
+            platforms: ['linux'],
+          },
           {
             name: '@electron-forge/maker-deb',
             config: { name: 'agenstra' },
+            platforms: ['linux'],
           },
         ]
       : []),
   ],
-  plugins: [
-    {
-      name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {},
-    },
-  ],
+  plugins: [],
 };

@@ -5,6 +5,7 @@
   "description": "Forepath Agent Console",
   "main": "./main.js",
   "private": true,
+  "author": "Forepath",
   "scripts": {
     "start": "NODE_ENV=development electron ./main.js",
     "electron": "electron ./main.js",
