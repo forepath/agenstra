@@ -4,9 +4,13 @@ description: Setup Windows build environment for the GitHub Actions workflow.
 runs:
   using: 'composite'
   steps:
-    - name: Install Wine and Mono
+    - name: Install Wine, Mono and Xvfb
       shell: bash
       run: |
         sudo dpkg --add-architecture i386
         sudo apt-get update
-        sudo apt-get install -y wine64 wine32 mono-complete
+        sudo apt-get install -y wine64 wine32 mono-complete xvfb
+    - name: Ensure electron-winstaller 7z binaries
+      shell: bash
+      run: |
+        cd node_modules/electron-winstaller && node script/select-7z-arch.js
