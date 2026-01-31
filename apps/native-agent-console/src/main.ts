@@ -1,10 +1,25 @@
 import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain, Menu } from 'electron';
 import * as fs from 'fs';
 import { ChildProcess, spawn } from 'node:child_process';
+import * as net from 'node:net';
 import * as path from 'node:path';
 
 const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
-const ssrPort = process.env.PORT || 4200;
+/** Resolved in whenReady: from PORT env or a free port. */
+let ssrPort = 0;
+
+function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.listen(0, '127.0.0.1', () => {
+      const addr = server.address();
+      const port = typeof addr === 'object' && addr !== null && 'port' in addr ? addr.port : 0;
+      console.log('[Main Process] Found free port:', port);
+      server.close(() => resolve(port));
+    });
+    server.once('error', reject);
+  });
+}
 let ssrProcess: ChildProcess | null = null;
 let mainWindow: BrowserWindow | null = null;
 
@@ -176,7 +191,7 @@ app.on('browser-window-created', (_event, window) => {
 });
 
 // IPC handlers for window controls
-ipcMain.handle('window-minimize', (event) => {
+ipcMain.handle('window-minimize', (event: any) => {
   console.log('[Main Process] window-minimize IPC received');
   const window = BrowserWindow.fromWebContents(event.sender);
   if (window) {
@@ -188,7 +203,7 @@ ipcMain.handle('window-minimize', (event) => {
   return false;
 });
 
-ipcMain.handle('window-maximize', (event) => {
+ipcMain.handle('window-maximize', (event: any) => {
   console.log('[Main Process] window-maximize IPC received');
   const window = BrowserWindow.fromWebContents(event.sender);
   if (window) {
@@ -205,7 +220,7 @@ ipcMain.handle('window-maximize', (event) => {
   return false;
 });
 
-ipcMain.handle('window-close', (event) => {
+ipcMain.handle('window-close', (event: any) => {
   console.log('[Main Process] window-close IPC received');
   const window = BrowserWindow.fromWebContents(event.sender);
   if (window) {
@@ -217,7 +232,7 @@ ipcMain.handle('window-close', (event) => {
   return false;
 });
 
-ipcMain.handle('window-is-maximized', (event) => {
+ipcMain.handle('window-is-maximized', (event: any) => {
   const window = BrowserWindow.fromWebContents(event.sender);
   return window?.isMaximized() ?? false;
 });
@@ -227,7 +242,7 @@ ipcMain.handle('get-config-url', () => {
   return getConfigUrl();
 });
 
-ipcMain.handle('set-config-url', async (event, url: string | null) => {
+ipcMain.handle('set-config-url', async (event: any, url: string | null) => {
   const config = readConfig();
   if (url && url.trim()) {
     config.configUrl = url.trim();
@@ -453,6 +468,11 @@ function createMenu(): void {
 }
 
 app.whenReady().then(async () => {
+  ssrPort =
+    process.env.PORT !== undefined && process.env.PORT !== '' ? parseInt(process.env.PORT, 10) : await getFreePort();
+  if (!Number.isInteger(ssrPort) || ssrPort <= 0) {
+    ssrPort = await getFreePort();
+  }
   createMenu();
   startSSRServer().then(() => {
     createWindow();
