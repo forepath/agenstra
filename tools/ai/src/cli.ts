@@ -15,7 +15,7 @@ function parseArgv(argv: string[]): {
 } {
   let pathOpt = '.';
   let targetOpt: ToolName[] = [...ALL_TARGETS];
-  let outputDir = 'generated';
+  let outputDir = '.';
   let dryRun = false;
   let help = false;
 
@@ -54,14 +54,14 @@ Usage: agentctx [options]
 Options:
   -p, --path <dir>     Directory that contains .agenstra/ (default: .)
   -t, --target <list>  Comma-separated targets: cursor, opencode, github-copilot (default: all)
-  -o, --outputDir <dir> Base output directory for generated configs (default: generated)
+  -o, --outputDir <dir> Base output directory for generated configs (default: .)
   --dry-run            Only validate; do not write files
   -h, --help           Show this help
 
 Examples:
   agentctx
   agentctx --path .
-  agentctx --target cursor,opencode --outputDir generated
+  agentctx --target cursor,opencode --outputDir .
   agentctx --dry-run
 `);
 }
@@ -105,8 +105,15 @@ function main(): void {
     process.exit(1);
   }
 
+  const toolOutputDir: Record<(typeof result.results)[0]['tool'], string> = {
+    cursor: '.cursor',
+    opencode: '.opencode',
+    'github-copilot': '.github',
+  };
   for (const r of result.results) {
-    console.log(`[agenstra:context] ${r.tool}: ${r.fileCount} file(s) -> ${path.join(outputDir, r.tool)}`);
+    console.log(
+      `[agenstra:context] ${r.tool}: ${r.fileCount} file(s) -> ${path.join(outputDir, toolOutputDir[r.tool])}`,
+    );
   }
   process.exit(0);
 }
