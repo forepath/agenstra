@@ -13,10 +13,11 @@ module.exports = {
   makers: [
     ...(isWindows
       ? [
-          {
-            name: '@electron-forge/maker-zip',
+          /*{
+            name: '@electron-forge/maker-squirrel',
+            config: { name: 'agenstra' },
             platforms: ['win32'],
-          },
+          },*/
           {
             name: '@electron-forge/maker-zip',
             platforms: ['win32'],
