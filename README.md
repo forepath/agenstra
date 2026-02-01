@@ -13,7 +13,7 @@
 
 **A centralized control plane for managing distributed AI agent infrastructure.**
 
-Agenstra is a full-stack platform that enables you to manage multiple AI agent instances from a single web-based console. Connect to remote agent-manager services, interact with AI agents in real-time, edit code directly in containers, and automate server provisioning—all from one unified interface.
+Agenstra is a full-stack platform that enables you to manage multiple AI agent instances from a single web-based console. Connect to remote agent-manager services, interact with AI agents in real-time, edit code directly in containers, and automate server provisioning - all from one unified interface.
 
 ## What is Agenstra?
 
@@ -21,7 +21,7 @@ Agenstra provides a complete solution for managing distributed AI agent infrastr
 
 - **Centralized Management** - Connect to and control multiple remote agent-manager services from a single console
 - **Real-time AI Interaction** - WebSocket-based bidirectional communication with AI agents for instant responses
-- **Integrated Code Editor** - Edit files directly in agent containers with Monaco Editor—read, write, and manage code in real-time
+- **Integrated Code Editor** - Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time
 - **Automated Server Provisioning** - Provision cloud servers (Hetzner Cloud, DigitalOcean) with automated Docker and agent-manager deployment
 - **Version Control Integration** - Full Git operations (status, branches, commit, push, pull, rebase) directly from the web interface
 - **Container Management** - Monitor and interact with agent containers, view logs, and manage container lifecycle

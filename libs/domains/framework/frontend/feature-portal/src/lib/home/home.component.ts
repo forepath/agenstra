@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -7,6 +7,7 @@ import {
   HostListener,
   inject,
   OnInit,
+  PLATFORM_ID,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -24,6 +25,7 @@ import { RouterModule } from '@angular/router';
 export class PortalHomeComponent implements OnInit, AfterViewInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly platformId = inject(PLATFORM_ID);
 
   @ViewChild('pricingCarousel') pricingCarousel!: ElementRef<HTMLDivElement>;
   @ViewChild('enterpriseCard') enterpriseCard!: ElementRef<HTMLDivElement>;
@@ -50,7 +52,7 @@ export class PortalHomeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (this.pricingCarousel.nativeElement) {
+    if (this.pricingCarousel.nativeElement && isPlatformBrowser(this.platformId)) {
       this.pricingCarousel.nativeElement.scrollBy({
         left: this.enterpriseCard.nativeElement.offsetLeft,
         behavior: 'smooth',

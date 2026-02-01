@@ -1,6 +1,6 @@
 # AgentCTX
 
-**AgentCTX (Agent Context)** is the command-line binary that generates tool-specific agent config from a `.agenstra/` context. It is built from the `@agenstra/ai` package in `tools/ai` and provides the same transformation logic as the [Nx executor](./README.md#generating-tool-configs) and the [programmatic API](../../../tools/ai/README.md#programmatic-api)—useful when you want to run the transform without Nx or from a standalone install.
+**AgentCTX (Agent Context)** is the command-line binary that generates tool-specific agent config from a `.agenstra/` context. It is built from the `@agenstra/ai` package in `tools/ai` and provides the same transformation logic as the [Nx executor](./README.md#generating-tool-configs) and the [programmatic API](../../../tools/ai/README.md#programmatic-api) - useful when you want to run the transform without Nx or from a standalone install.
 
 ## Purpose
 
@@ -40,13 +40,13 @@ The `tools/ai/install.sh` script installs the **agentctx** binary to `/usr/bin/a
 **One-liner** (download and run; requires sudo):
 
 ```bash
-curl -fsSL https://downloads.agenstra.com/agentctx/install.sh | sudo sh
+curl -fsSL https://downloads.agenstra.com/agentctx/install.sh | bash
 ```
 
 To use a custom binary download URL:
 
 ```bash
-AGENTCTX_INSTALL_URL=https://example.com/agentctx curl -fsSL https://downloads.agenstra.com/agentctx/install.sh | sudo sh
+AGENTCTX_INSTALL_URL=https://example.com/agentctx curl -fsSL https://downloads.agenstra.com/agentctx/install.sh | bash
 ```
 
 The install script will attempt to install Node.js and curl if they are missing (via the system package manager). On unsupported systems, install [Node.js](https://nodejs.org/) and curl/wget manually, then run the script again.
@@ -64,7 +64,7 @@ agentctx [options]
 | `--path <dir>`      | `-p`  | Directory that contains `.agenstra/` (default: `.`)                                  |
 | `--target <list>`   | `-t`  | Comma-separated targets: `cursor`, `opencode`, `github-copilot` (default: all three) |
 | `--outputDir <dir>` | `-o`  | Base output directory for generated configs (default: `.`)                           |
-| `--dry-run`         | —     | Only validate that `.agenstra/` exists; do not write files                           |
+| `--dry-run`         | -     | Only validate that `.agenstra/` exists; do not write files                           |
 | `--help`            | `-h`  | Show help and exit                                                                   |
 
 ### Prerequisites

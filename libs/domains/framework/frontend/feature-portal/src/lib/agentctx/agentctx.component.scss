@@ -1,0 +1,177 @@
+// Section spacing
+section {
+  scroll-margin-top: 80px; // Account for sticky header
+}
+
+// Image styling
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+// Card hover effect (matches home)
+.card {
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+}
+
+// Gradient overlays for sections with tertiary backgrounds (matches home)
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.gradient-overlay-hero {
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(122, 63, 255, 0.12) 0%,
+      rgba(122, 63, 255, 0.04) 25%,
+      transparent 50%,
+      rgba(122, 63, 255, 0.06) 75%,
+      rgba(122, 63, 255, 0.14) 100%
+    ),
+    linear-gradient(to right, transparent 0%, transparent 40%, rgba(122, 63, 255, 0.15) 100%),
+    linear-gradient(rgba(122, 63, 255, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122, 63, 255, 0.15) 1px, transparent 1px);
+  background-size:
+    200% 200%,
+    100% 100%,
+    80px 80px,
+    80px 80px;
+  background-position:
+    0% 0%,
+    0 0,
+    0 0,
+    0 0;
+  mask-image: linear-gradient(to right, transparent 0%, transparent 40%, black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 40%, black 100%);
+}
+
+.gradient-overlay-features {
+  background-image:
+    radial-gradient(
+      ellipse at 30% 50%,
+      rgba(122, 63, 255, 0.15) 0%,
+      rgba(122, 63, 255, 0.06) 30%,
+      transparent 60%,
+      rgba(122, 63, 255, 0.1) 100%
+    ),
+    radial-gradient(circle, rgba(122, 63, 255, 0.3) 1.5px, transparent 1.5px);
+  background-size:
+    150% 150%,
+    30px 30px;
+  background-position:
+    30% 50%,
+    0 0;
+  mask-image: linear-gradient(to right, black 0%, black 25%, transparent 45%, transparent 55%, black 75%, black 100%);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black 25%,
+    transparent 45%,
+    transparent 55%,
+    black 75%,
+    black 100%
+  );
+}
+
+// CTA / ecosystem section - same as Security & Data on home (grid + vertical fade)
+.gradient-overlay-compliance {
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.35) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.4) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size:
+    160% 160%,
+    160% 160%,
+    90px 90px,
+    90px 90px;
+  background-position:
+    0 0,
+    100% 100%,
+    0 0,
+    0 0;
+  opacity: 0.6;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+// Hero install command card
+.hero-install-card {
+  .hero-install-pre {
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--bs-body-color);
+    white-space: pre-wrap;
+    word-break: break-all;
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+}
+
+// Diagram placeholder (replace with final .agenstra → tools graphic)
+.agentctx-diagram-wrapper {
+  min-height: 200px;
+}
+
+.agentctx-diagram-placeholder {
+  // Inner container and SVG fill at least 50% of the wrapper width
+  > div {
+    max-height: 300px;
+    width: 50%;
+
+    @media (max-width: 991px) {
+      width: 100%;
+    }
+  }
+}
+
+.agentctx-diagram-svg {
+  min-width: 50%;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+// Partner / tool logo styling (matches home)
+.logo-partner {
+  &:hover {
+    filter: grayscale(0%) opacity(1) !important;
+    transform: scale(1.05);
+  }
+}
+
+.logo-partner-text {
+  .badge {
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: var(--bs-primary) !important;
+      color: white !important;
+      transform: scale(1.05);
+    }
+  }
+}
+
+code {
+  color: var(--bs-primary);
+}
