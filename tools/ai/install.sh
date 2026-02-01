@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Install script for agentctx – supports common Linux distros and macOS.
-# Usage (one-liner, requires sudo): curl -fsSL <url> | sudo sh
+# Usage (one-liner, requires sudo): curl -fsSL <url> | bash
 # Usage (from file): curl -fsSL <url> -o install.sh && chmod +x install.sh && sudo ./install.sh
 
 set -e

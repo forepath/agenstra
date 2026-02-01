@@ -10,7 +10,7 @@ alwaysApply: true
 ## Input Validation (OWASP Critical)
 
 - **Server-Side Only:** ALWAYS validate on server side; never trust client-side validation
-- **Allowlist Approach:** Use allowlist (whitelist) validation—specify what IS allowed
+- **Allowlist Approach:** Use allowlist (whitelist) validation - specify what IS allowed
 - **Reject Invalid:** All validation failures result in immediate input rejection
 - **Character Sets:** Specify UTF-8 and validate after decoding
 - **Canonicalization:** Normalize data to standard form before validation
