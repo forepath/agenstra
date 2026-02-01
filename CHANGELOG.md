@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.28.0](https://github.com/forepath/agenstra/compare/v1.27.2...v1.28.0) (2026-02-01)
+
+
+### Features
+
+* agentctx landingpage ([#189](https://github.com/forepath/agenstra/issues/189)) ([468bfac](https://github.com/forepath/agenstra/commit/468bfacb9e58ffb0d60adaf2cc7d5baf4e4c599e))
+
 ## [1.27.2](https://github.com/forepath/agenstra/compare/v1.27.1...v1.27.2) (2026-01-31)
 
 
