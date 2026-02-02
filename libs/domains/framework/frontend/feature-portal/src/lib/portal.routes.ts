@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import { PortalAgentCtxComponent } from './agentctx/agentctx.component';
 import { PortalContainerComponent } from './container/container.component';
+import { PortalDesktopComponent } from './desktop/desktop.component';
 import { PortalHomeComponent } from './home/home.component';
 import { PortalLegalDisclosureComponent } from './legal/disclosure/disclosure.component';
 import { PortalLegalPrivacyComponent } from './legal/privacy/privacy.component';
@@ -17,6 +18,10 @@ export const portalRoutes: Route[] = [
       {
         path: 'agentctx',
         component: PortalAgentCtxComponent,
+      },
+      {
+        path: 'desktop',
+        component: PortalDesktopComponent,
       },
       {
         path: 'legal/disclosure',
