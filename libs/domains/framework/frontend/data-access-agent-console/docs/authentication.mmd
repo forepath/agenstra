@@ -1,0 +1,45 @@
+flowchart TB
+    subgraph STATE["📦 Authentication State"]
+        direction TB
+        STATE_AUTH["Core Auth<br/>isAuthenticated, authenticationType, user<br/>loading, error"]
+        STATE_USERS["Users Auth Sub-states<br/>registering, confirmingEmail<br/>requestingPasswordReset, resettingPassword<br/>changingPassword"]
+        STATE_ADMIN["Admin Users Management<br/>users[], usersLoading, usersError<br/>creatingUser, updatingUser, deletingUser"]
+    end
+
+    subgraph FACADE["🎭 AuthenticationFacade"]
+        direction TB
+        FACADE_AUTH["Core: login(), logout(), checkAuthentication()<br/>user$, isAuthenticated$, isAdmin$"]
+        FACADE_USERS["Users: register(), confirmEmail()<br/>requestPasswordReset(), resetPassword()<br/>changePassword()"]
+        FACADE_ADMIN["Admin: loadUsers(), createUser()<br/>updateUser(), deleteUser()<br/>users$, usersLoading$, usersError$"]
+    end
+
+    subgraph ACTIONS["📤 Actions"]
+        direction TB
+        ACT_AUTH["[Authentication] Login, Logout<br/>Check Authentication"]
+        ACT_USERS["[Authentication] Register, Confirm Email<br/>Request/Reset Password, Change Password"]
+        ACT_ADMIN["[Admin] Load/Create/Update/Delete Users"]
+    end
+
+    subgraph EFFECTS["⚡ Effects"]
+        direction TB
+        EFF_API["API key: localStorage"]
+        EFF_KEYCLOAK["Keycloak: KeycloakService"]
+        EFF_USERS["Users: AuthService → REST API<br/>JWT stored in localStorage"]
+    end
+
+    subgraph SERVICE["🌐 AuthService"]
+        direction TB
+        SVC_AUTH["login(), register(), confirmEmail()<br/>requestPasswordReset(), resetPassword()<br/>changePassword()"]
+        SVC_ADMIN["listUsers(), getUser()<br/>createUser(), updateUser(), deleteUser()"]
+    end
+
+    STATE --> FACADE
+    FACADE --> ACTIONS
+    ACTIONS --> EFFECTS
+    EFFECTS --> SERVICE
+
+    style STATE fill:#e6f0ff,stroke:#4a90e2
+    style FACADE fill:#fff4e6,stroke:#ff8c42
+    style ACTIONS fill:#f0e6ff,stroke:#8c42ff
+    style EFFECTS fill:#e6ffe6,stroke:#4a9e2
+    style SERVICE fill:#ffe6f0,stroke:#e24a9e

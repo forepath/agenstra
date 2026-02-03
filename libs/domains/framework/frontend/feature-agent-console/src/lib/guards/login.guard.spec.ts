@@ -262,6 +262,72 @@ describe('loginGuard', () => {
     });
   });
 
+  describe('when authentication type is users', () => {
+    beforeEach(() => {
+      mockEnvironment = {
+        ...mockEnvironment,
+        authentication: {
+          type: 'users',
+        },
+      };
+    });
+
+    it('should redirect to dashboard if valid JWT exists in localStorage', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      const exp = Math.floor((Date.now() + 3600000) / 1000);
+      const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
+      const jwt = `header.${payload}.signature`;
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === 'agent-controller-users-jwt' ? jwt : null,
+      );
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
+
+      const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+
+      expect(result).toBe(mockUrlTree);
+      expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+    });
+
+    it('should allow access if no JWT exists in localStorage', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+
+      const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+
+      expect(result).toBe(true);
+      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+    });
+
+    it('should allow access if JWT is expired', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      const exp = Math.floor((Date.now() - 3600000) / 1000);
+      const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
+      const jwt = `header.${payload}.signature`;
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === 'agent-controller-users-jwt' ? jwt : null,
+      );
+
+      const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+
+      expect(result).toBe(true);
+      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+    });
+  });
+
   describe('when authentication type is unknown', () => {
     it('should allow access to login', () => {
       const injector = setupTestBed({

@@ -2,6 +2,12 @@ import {
   checkAuthentication,
   checkAuthenticationFailure,
   checkAuthenticationSuccess,
+  clearError,
+  clearSuccessMessage,
+  loadUsers,
+  loadUsersBatch,
+  loadUsersFailure,
+  loadUsersSuccess,
   login,
   loginFailure,
   loginSuccess,
@@ -73,6 +79,23 @@ describe('authenticationReducer', () => {
       expect(newState.isAuthenticated).toBe(true);
       expect(newState.authenticationType).toBe('keycloak');
       expect(newState.loading).toBe(false);
+    });
+
+    it('should set user when provided for users authentication', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        loading: true,
+      };
+
+      const newState = authenticationReducer(
+        state,
+        loginSuccess({
+          authenticationType: 'users',
+          user: { id: 'user-1', email: 'test@example.com', role: 'user' },
+        }),
+      );
+
+      expect(newState.user).toEqual({ id: 'user-1', email: 'test@example.com', role: 'user' });
     });
   });
 
@@ -220,6 +243,24 @@ describe('authenticationReducer', () => {
       expect(newState.authenticationType).toBe('keycloak');
       expect(newState.loading).toBe(false);
     });
+
+    it('should set user when provided for users authentication', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        loading: true,
+      };
+
+      const newState = authenticationReducer(
+        state,
+        checkAuthenticationSuccess({
+          isAuthenticated: true,
+          authenticationType: 'users',
+          user: { id: 'user-1', email: 'test@example.com', role: 'admin' },
+        }),
+      );
+
+      expect(newState.user).toEqual({ id: 'user-1', email: 'test@example.com', role: 'admin' });
+    });
   });
 
   describe('checkAuthenticationFailure', () => {
@@ -233,6 +274,96 @@ describe('authenticationReducer', () => {
 
       expect(newState.error).toBe('Check failed');
       expect(newState.loading).toBe(false);
+    });
+  });
+
+  describe('clearError', () => {
+    it('should clear error', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        error: 'Previous error',
+      };
+
+      const newState = authenticationReducer(state, clearError());
+
+      expect(newState.error).toBeNull();
+    });
+  });
+
+  describe('clearSuccessMessage', () => {
+    it('should clear successMessage', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        successMessage: 'Registration successful',
+      };
+
+      const newState = authenticationReducer(state, clearSuccessMessage());
+
+      expect(newState.successMessage).toBeNull();
+    });
+  });
+
+  describe('loadUsers', () => {
+    it('should clear users, set usersLoading to true and clear usersError', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        users: [{ id: 'u1', email: 'a@b.com', role: 'user', createdAt: '', updatedAt: '' }],
+        usersError: 'Previous error',
+      };
+
+      const newState = authenticationReducer(state, loadUsers({}));
+
+      expect(newState.users).toEqual([]);
+      expect(newState.usersLoading).toBe(true);
+      expect(newState.usersError).toBeNull();
+    });
+  });
+
+  describe('loadUsersBatch', () => {
+    it('should set users to accumulatedUsers and keep usersLoading true', () => {
+      const accumulatedUsers = [{ id: 'u1', email: 'a@b.com', role: 'user' as const, createdAt: '', updatedAt: '' }];
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        users: [],
+        usersLoading: true,
+      };
+
+      const newState = authenticationReducer(state, loadUsersBatch({ offset: 10, accumulatedUsers }));
+
+      expect(newState.users).toEqual(accumulatedUsers);
+      expect(newState.usersLoading).toBe(true);
+      expect(newState.usersError).toBeNull();
+    });
+  });
+
+  describe('loadUsersSuccess', () => {
+    it('should set users and set usersLoading to false', () => {
+      const users = [{ id: 'u1', email: 'a@b.com', role: 'user' as const, createdAt: '', updatedAt: '' }];
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        users: [],
+        usersLoading: true,
+      };
+
+      const newState = authenticationReducer(state, loadUsersSuccess({ users }));
+
+      expect(newState.users).toEqual(users);
+      expect(newState.usersLoading).toBe(false);
+      expect(newState.usersError).toBeNull();
+    });
+  });
+
+  describe('loadUsersFailure', () => {
+    it('should set usersError and set usersLoading to false', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        usersLoading: true,
+      };
+
+      const newState = authenticationReducer(state, loadUsersFailure({ error: 'Load failed' }));
+
+      expect(newState.usersError).toBe('Load failed');
+      expect(newState.usersLoading).toBe(false);
     });
   });
 });

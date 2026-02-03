@@ -201,7 +201,7 @@ describe('UsersService', () => {
         'user-uuid',
         expect.objectContaining({
           email: 'updated@example.com',
-          emailConfirmedAt: undefined,
+          emailConfirmedAt: null,
           emailConfirmationToken: expect.any(String),
         }),
       );

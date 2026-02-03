@@ -16,12 +16,27 @@ import { Observable } from 'rxjs';
 })
 export class AgentConsoleLoginComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly authFacade = inject(AuthenticationFacade);
+  protected readonly authFacade = inject(AuthenticationFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   loginForm!: FormGroup;
   loading$: Observable<boolean> = this.authFacade.loading$;
   error$: Observable<string | null> = this.authFacade.error$;
+  successMessage$: Observable<string | null> = this.authFacade.successMessage$;
+
+  /**
+   * Whether the current authentication type is user-based (email/password)
+   */
+  get isUsersAuth(): boolean {
+    return this.environment.authentication.type === 'users';
+  }
+
+  /**
+   * Whether the current authentication type is API key
+   */
+  get isApiKeyAuth(): boolean {
+    return this.environment.authentication.type === 'api-key';
+  }
 
   /**
    * Get the API base hostname from the environment configuration.
@@ -40,15 +55,29 @@ export class AgentConsoleLoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loginForm = this.fb.group({
-      apiKey: ['', [Validators.required]],
-    });
+    if (this.isUsersAuth) {
+      this.loginForm = this.fb.group({
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required]],
+      });
+    } else {
+      this.loginForm = this.fb.group({
+        apiKey: ['', [Validators.required]],
+      });
+    }
   }
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      const apiKey = this.loginForm.get('apiKey')?.value;
-      this.authFacade.login(apiKey);
+      if (this.isUsersAuth) {
+        const email = this.loginForm.get('email')?.value;
+        const password = this.loginForm.get('password')?.value;
+        this.authFacade.login(undefined, email, password);
+      } else {
+        const apiKey = this.loginForm.get('apiKey')?.value;
+        this.authFacade.login(apiKey);
+      }
+      this.loginForm.reset();
     } else {
       // Mark all fields as touched to show validation errors
       Object.keys(this.loginForm.controls).forEach((key) => {

@@ -752,7 +752,7 @@
 
         <!-- Socket reconnection status (main socket) -->
         @if (socketReconnecting$ | async) {
-          <div class="alert alert-warning alert-dismissible m-3" role="alert">
+          <div class="alert alert-warning m-3" role="alert">
             <div class="d-flex align-items-center">
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               <span>
@@ -768,7 +768,7 @@
         <!-- Remote connection reconnection status (per clientId) -->
         @if (remoteReconnecting$ | async) {
           @if (activeClientId$ | async) {
-            <div class="alert alert-warning alert-dismissible m-3" role="alert">
+            <div class="alert alert-warning m-3" role="alert">
               <div class="d-flex align-items-center">
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 <span>Reconnecting to workspace...</span>
@@ -780,7 +780,7 @@
         <!-- Remote connection error (only shown when not reconnecting) -->
         @if (remoteConnectionError$ | async; as remoteError) {
           @if (remoteError && !(remoteReconnecting$ | async)) {
-            <div class="alert alert-danger alert-dismissible m-3" role="alert">
+            <div class="alert alert-danger m-3" role="alert">
               <i class="bi bi-exclamation-triangle-fill me-2"></i>
               Workspace connection failed: {{ remoteError }}
             </div>
@@ -790,7 +790,7 @@
         <!-- Socket error (only shown when not reconnecting) -->
         @if (socketError$ | async; as socketError) {
           @if (!(socketReconnecting$ | async)) {
-            <div class="alert alert-danger alert-dismissible m-3" role="alert">
+            <div class="alert alert-danger m-3" role="alert">
               <i class="bi bi-exclamation-triangle-fill me-2"></i>
               {{ socketError }}
             </div>

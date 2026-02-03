@@ -71,11 +71,6 @@ export class AuthService {
       };
     }
 
-    const { token, hash } = createTokenWithUserId(created.id);
-    const tokenHash = await hash;
-    await this.usersRepository.update(created.id, { emailConfirmationToken: tokenHash });
-    await this.emailService.sendConfirmationEmail(created.email, token);
-
     return {
       user: { id: created.id, email: created.email, role: created.role },
       message:

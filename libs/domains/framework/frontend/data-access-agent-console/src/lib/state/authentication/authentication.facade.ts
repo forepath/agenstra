@@ -1,57 +1,135 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { checkAuthentication, login, logout } from './authentication.actions';
+import {
+  changePassword,
+  checkAuthentication,
+  clearError,
+  clearSuccessMessage,
+  confirmEmail,
+  createUser,
+  deleteUser,
+  loadUsers,
+  login,
+  logout,
+  register,
+  requestPasswordReset,
+  resetPassword,
+  updateUser,
+} from './authentication.actions';
 import {
   selectAuthenticationError,
   selectAuthenticationLoading,
   selectAuthenticationType,
+  selectCanAccessUserManager,
+  selectChangingPassword,
+  selectConfirmingEmail,
+  selectCreatingUser,
+  selectDeletingUser,
+  selectIsAdmin,
   selectIsAuthenticated,
   selectIsNotAuthenticated,
+  selectRegistering,
+  selectRequestingPasswordReset,
+  selectResettingPassword,
+  selectSuccessMessage,
+  selectUpdatingUser,
+  selectUser,
+  selectUsers,
+  selectUsersError,
+  selectUsersLoading,
 } from './authentication.selectors';
+import type { CreateUserDto, UpdateUserDto, UserResponseDto } from './authentication.types';
 
-/**
- * Facade for authentication state management.
- * Provides a unified API for login/logout that works for both API key and Keycloak authentication.
- * Consumers don't need to know which authentication type is being used.
- */
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationFacade {
   private readonly store = inject(Store);
 
-  // State observables
   readonly isAuthenticated$: Observable<boolean> = this.store.select(selectIsAuthenticated);
   readonly isNotAuthenticated$: Observable<boolean> = this.store.select(selectIsNotAuthenticated);
-  readonly authenticationType$: Observable<'api-key' | 'keycloak' | null> = this.store.select(selectAuthenticationType);
+  readonly authenticationType$: Observable<'api-key' | 'keycloak' | 'users' | null> =
+    this.store.select(selectAuthenticationType);
+  readonly user$: Observable<{ id: string; email: string; role: string } | null> = this.store.select(selectUser);
+  readonly isAdmin$: Observable<boolean> = this.store.select(selectIsAdmin);
+  readonly canAccessUserManager$: Observable<boolean> = this.store.select(selectCanAccessUserManager);
   readonly loading$: Observable<boolean> = this.store.select(selectAuthenticationLoading);
   readonly error$: Observable<string | null> = this.store.select(selectAuthenticationError);
+  readonly successMessage$: Observable<string | null> = this.store.select(selectSuccessMessage);
 
-  /**
-   * Login - unified method for both API key and Keycloak authentication.
-   * For API key: pass the apiKey parameter
-   * For Keycloak: apiKey parameter is ignored, KeycloakService will handle the login flow
-   *
-   * @param apiKey - Optional API key for API key authentication. Ignored for Keycloak.
-   */
-  login(apiKey?: string): void {
-    this.store.dispatch(login({ apiKey }));
+  readonly registering$: Observable<boolean> = this.store.select(selectRegistering);
+  readonly confirmingEmail$: Observable<boolean> = this.store.select(selectConfirmingEmail);
+  readonly requestingPasswordReset$: Observable<boolean> = this.store.select(selectRequestingPasswordReset);
+  readonly resettingPassword$: Observable<boolean> = this.store.select(selectResettingPassword);
+  readonly changingPassword$: Observable<boolean> = this.store.select(selectChangingPassword);
+
+  readonly users$: Observable<UserResponseDto[]> = this.store.select(selectUsers);
+  readonly usersLoading$: Observable<boolean> = this.store.select(selectUsersLoading);
+  readonly usersError$: Observable<string | null> = this.store.select(selectUsersError);
+  readonly creatingUser$: Observable<boolean> = this.store.select(selectCreatingUser);
+  readonly updatingUser$: Observable<boolean> = this.store.select(selectUpdatingUser);
+  readonly deletingUser$: Observable<boolean> = this.store.select(selectDeletingUser);
+
+  login(apiKey?: string, email?: string, password?: string): void {
+    this.store.dispatch(login({ apiKey, email, password }));
   }
 
-  /**
-   * Logout - unified method for both API key and Keycloak authentication.
-   * Removes API key from localStorage for API key auth, or calls Keycloak logout for Keycloak auth.
-   */
   logout(): void {
     this.store.dispatch(logout());
   }
 
-  /**
-   * Check authentication status - unified method for both authentication types.
-   * Checks if user is authenticated based on the configured authentication type.
-   */
   checkAuthentication(): void {
     this.store.dispatch(checkAuthentication());
+  }
+
+  register(email: string, password: string): void {
+    this.store.dispatch(register({ email, password }));
+  }
+
+  confirmEmail(token: string): void {
+    this.store.dispatch(confirmEmail({ token }));
+  }
+
+  requestPasswordReset(email: string): void {
+    this.store.dispatch(requestPasswordReset({ email }));
+  }
+
+  resetPassword(token: string, newPassword: string): void {
+    this.store.dispatch(resetPassword({ token, newPassword }));
+  }
+
+  changePassword(currentPassword: string, newPassword: string, newPasswordConfirmation: string): void {
+    this.store.dispatch(
+      changePassword({
+        currentPassword,
+        newPassword,
+        newPasswordConfirmation,
+      }),
+    );
+  }
+
+  loadUsers(limit?: number, offset?: number): void {
+    this.store.dispatch(loadUsers({ limit, offset }));
+  }
+
+  createUser(user: CreateUserDto): void {
+    this.store.dispatch(createUser({ user }));
+  }
+
+  updateUser(id: string, user: UpdateUserDto): void {
+    this.store.dispatch(updateUser({ id, user }));
+  }
+
+  deleteUser(id: string): void {
+    this.store.dispatch(deleteUser({ id }));
+  }
+
+  clearError(): void {
+    this.store.dispatch(clearError());
+  }
+
+  clearSuccessMessage(): void {
+    this.store.dispatch(clearSuccessMessage());
   }
 }

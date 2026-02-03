@@ -8,9 +8,53 @@ export const selectIsAuthenticated = createSelector(selectAuthenticationState, (
 
 export const selectAuthenticationType = createSelector(selectAuthenticationState, (state) => state.authenticationType);
 
+export const selectUser = createSelector(selectAuthenticationState, (state) => state.user);
+
 export const selectAuthenticationLoading = createSelector(selectAuthenticationState, (state) => state.loading);
 
 export const selectAuthenticationError = createSelector(selectAuthenticationState, (state) => state.error);
 
+export const selectSuccessMessage = createSelector(selectAuthenticationState, (state) => state.successMessage);
+
 // Derived selectors
 export const selectIsNotAuthenticated = createSelector(selectIsAuthenticated, (isAuthenticated) => !isAuthenticated);
+
+// Users auth sub-state selectors
+export const selectRegistering = createSelector(selectAuthenticationState, (state) => state.registering);
+
+export const selectConfirmingEmail = createSelector(selectAuthenticationState, (state) => state.confirmingEmail);
+
+export const selectRequestingPasswordReset = createSelector(
+  selectAuthenticationState,
+  (state) => state.requestingPasswordReset,
+);
+
+export const selectResettingPassword = createSelector(selectAuthenticationState, (state) => state.resettingPassword);
+
+export const selectChangingPassword = createSelector(selectAuthenticationState, (state) => state.changingPassword);
+
+// Admin users selectors
+export const selectUsers = createSelector(selectAuthenticationState, (state) => state.users);
+
+export const selectUsersLoading = createSelector(selectAuthenticationState, (state) => state.usersLoading);
+
+export const selectUsersError = createSelector(selectAuthenticationState, (state) => state.usersError);
+
+export const selectCreatingUser = createSelector(selectAuthenticationState, (state) => state.creatingUser);
+
+export const selectUpdatingUser = createSelector(selectAuthenticationState, (state) => state.updatingUser);
+
+export const selectDeletingUser = createSelector(selectAuthenticationState, (state) => state.deletingUser);
+
+export const selectIsAdmin = createSelector(selectUser, (user) => user?.role === 'admin');
+
+/**
+ * True when the user can access the user manager (admin users/keycloak auth).
+ */
+export const selectCanAccessUserManager = createSelector(
+  selectIsAuthenticated,
+  selectAuthenticationType,
+  selectIsAdmin,
+  (isAuthenticated, authType, isAdmin) =>
+    isAuthenticated && (authType === 'users' || authType === 'keycloak') && isAdmin,
+);

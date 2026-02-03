@@ -1,0 +1,153 @@
+<section class="section__row">
+  <div class="section__column d-flex align-items-center justify-content-center bg-body-tertiary h-100">
+    <div class="p-4" style="width: 700px; max-width: 100%">
+      <h1 class="display-5 fw-bold mb-3">Create an Account</h1>
+      <p class="lead mb-4">
+        Join Agenstra to manage your AI agent infrastructure. After registration, you will receive an email to confirm
+        your account before you can log in.
+      </p>
+    </div>
+  </div>
+  <div class="section__column d-flex align-items-center justify-content-center">
+    <div class="p-4" style="width: 500px; max-width: 100%">
+      <h2 class="section__column-title mb-4 text-center">Register</h2>
+
+      @if (!isUsersAuth) {
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          User registration is not available for this authentication method.
+          <a routerLink="/login" class="alert-link">Return to login</a>
+        </div>
+      } @else {
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+          <!-- Success Alert -->
+          @if (successMessage$ | async; as successMessage) {
+            <div class="alert alert-success" role="alert">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              <span>{{ successMessage }}</span>
+            </div>
+          }
+
+          <!-- Error Alert -->
+          @if (error$ | async; as error) {
+            <div class="alert alert-danger" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span>{{ error }}</span>
+            </div>
+          }
+
+          <!-- Email Input -->
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-envelope-fill"></i>
+              </span>
+              <input
+                type="email"
+                class="form-control"
+                [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+                id="email"
+                formControlName="email"
+                placeholder="Enter your email"
+                [disabled]="(registering$ | async) ?? false"
+                autocomplete="email"
+              />
+            </div>
+            @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+              <div class="invalid-feedback d-block">
+                @if (registerForm.get('email')?.errors?.['required']) {
+                  Email is required.
+                } @else if (registerForm.get('email')?.errors?.['email']) {
+                  Please enter a valid email address.
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Password Input -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-lock-fill"></i>
+              </span>
+              <input
+                type="password"
+                class="form-control"
+                [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                id="password"
+                formControlName="password"
+                placeholder="Enter your password (min. 8 characters)"
+                [disabled]="(registering$ | async) ?? false"
+                autocomplete="new-password"
+              />
+            </div>
+            @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+              <div class="invalid-feedback d-block">
+                @if (registerForm.get('password')?.errors?.['required']) {
+                  Password is required.
+                } @else if (registerForm.get('password')?.errors?.['minlength']) {
+                  Password must be at least 8 characters.
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Password Confirmation Input -->
+          <div class="mb-3">
+            <label for="passwordConfirmation" class="form-label">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-lock-fill"></i>
+              </span>
+              <input
+                type="password"
+                class="form-control"
+                [class.is-invalid]="
+                  (registerForm.get('passwordConfirmation')?.invalid &&
+                    registerForm.get('passwordConfirmation')?.touched) ||
+                  registerForm.errors?.['passwordMismatch']
+                "
+                id="passwordConfirmation"
+                formControlName="passwordConfirmation"
+                placeholder="Confirm your password"
+                [disabled]="(registering$ | async) ?? false"
+                autocomplete="new-password"
+              />
+            </div>
+            @if (
+              registerForm.get('passwordConfirmation')?.invalid && registerForm.get('passwordConfirmation')?.touched
+            ) {
+              <div class="invalid-feedback d-block">Password confirmation is required.</div>
+            }
+            @if (registerForm.errors?.['passwordMismatch'] && registerForm.get('passwordConfirmation')?.touched) {
+              <div class="invalid-feedback d-block">Passwords do not match.</div>
+            }
+          </div>
+
+          <!-- Submit Button -->
+          <div class="d-grid gap-2">
+            <button
+              type="submit"
+              class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-1"
+              [disabled]="registerForm.invalid || ((registering$ | async) ?? false)"
+            >
+              @if ((registering$ | async) ?? false) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span>Registering...</span>
+              } @else {
+                <i class="bi bi-person-plus-fill me-2"></i>
+                <span>Register</span>
+              }
+            </button>
+          </div>
+
+          <div class="mt-3 text-center">
+            <a routerLink="/login" class="text-decoration-none small">Already have an account? Log in</a>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+</section>

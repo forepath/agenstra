@@ -1,0 +1,88 @@
+<section class="section__row">
+  <div class="section__column d-flex align-items-center justify-content-center bg-body-tertiary h-100">
+    <div class="p-4" style="width: 700px; max-width: 100%">
+      <h1 class="display-5 fw-bold mb-3">Confirm Your Email</h1>
+      <p class="lead mb-4">
+        Enter the confirmation code you received via email. You can either paste the code from your email or click the
+        link in the confirmation message to confirm automatically.
+      </p>
+    </div>
+  </div>
+  <div class="section__column d-flex align-items-center justify-content-center">
+    <div class="p-4" style="width: 500px; max-width: 100%">
+      <h2 class="section__column-title mb-4 text-center">Email Confirmation</h2>
+
+      @if (!isUsersAuth) {
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          Email confirmation is not available for this authentication method.
+          <a routerLink="/login" class="alert-link">Return to login</a>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+          @if (successMessage$ | async; as successMessage) {
+            <div class="alert alert-success" role="alert">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              <span>{{ successMessage }}</span>
+            </div>
+          }
+
+          @if (error$ | async; as error) {
+            <div class="alert alert-danger" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span>{{ error }}</span>
+            </div>
+          }
+
+          @if ((confirmingEmail$ | async) ?? false) {
+            <div class="d-flex flex-column align-items-center gap-3">
+              <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem">
+                <span class="visually-hidden">Confirming...</span>
+              </div>
+              <p class="text-muted mb-0">Confirming your email address...</p>
+            </div>
+          } @else {
+            <!-- Confirmation Code Input -->
+            <div class="mb-3">
+              <label for="token" class="form-label">Confirmation Code</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-key-fill"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="form.get('token')?.invalid && form.get('token')?.touched"
+                  id="token"
+                  formControlName="token"
+                  placeholder="Enter the code from your confirmation email"
+                  [disabled]="(confirmingEmail$ | async) ?? false"
+                  autocomplete="one-time-code"
+                />
+              </div>
+              @if (form.get('token')?.invalid && form.get('token')?.touched) {
+                <div class="invalid-feedback d-block">Confirmation code is required.</div>
+              }
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-1"
+                [disabled]="form.invalid || ((confirmingEmail$ | async) ?? false)"
+              >
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span>Confirm Email</span>
+              </button>
+            </div>
+          }
+
+          <div class="mt-4 text-center">
+            <a routerLink="/login" class="text-decoration-none small">Back to login</a>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+</section>

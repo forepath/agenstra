@@ -5,20 +5,23 @@ import {
   authenticationReducer,
   cancelRun$,
   checkAuthentication$,
+  clearChatHistoryOnCreateSuccess$,
+  clearChatHistoryOnDeleteAllSuccess$,
+  clearChatHistoryOnDeleteSuccess$,
+  clearChatHistoryOnUpdateSuccess$,
   ClientsFacade,
   clientsReducer,
   commit$,
+  confirmEmail$,
+  confirmEmailSuccessRedirect$,
   connectSocket$,
   createBranch$,
   createClient$,
   createClientAgent$,
   createDeploymentConfiguration$,
-  clearChatHistoryOnCreateSuccess$,
-  clearChatHistoryOnDeleteAllSuccess$,
-  clearChatHistoryOnDeleteSuccess$,
-  clearChatHistoryOnUpdateSuccess$,
   createEnvironmentVariable$,
   createFileOrDirectory$,
+  createUser$,
   deleteAllEnvironmentVariables$,
   deleteBranch$,
   deleteClient$,
@@ -27,6 +30,7 @@ import {
   deleteEnvironmentVariable$,
   deleteFileOrDirectory$,
   deleteProvisionedServer$,
+  deleteUser$,
   DeploymentsFacade,
   deploymentsReducer,
   disconnectSocket$,
@@ -62,6 +66,8 @@ import {
   loadServerInfo$,
   loadServerInfoAfterProvisioning$,
   loadServerTypes$,
+  loadUsers$,
+  loadUsersBatch$,
   loadWorkflows$,
   login$,
   loginSuccessRedirect$,
@@ -74,6 +80,12 @@ import {
   push$,
   readFile$,
   rebase$,
+  register$,
+  registerSuccessRedirect$,
+  requestPasswordReset$,
+  requestPasswordResetSuccessRedirect$,
+  resetPassword$,
+  resetPasswordSuccessRedirect$,
   resolveConflict$,
   restoreAgentLogin$,
   restoreClientContext$,
@@ -90,6 +102,7 @@ import {
   updateClientAgent$,
   updateDeploymentConfiguration$,
   updateEnvironmentVariable$,
+  updateUser$,
   VcsFacade,
   vcsReducer,
   writeFile$,
@@ -98,10 +111,17 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 import { AgentConsoleChatComponent } from './chat/chat.component';
+import { AgentConsoleConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
+import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
 import { AgentConsoleLoginComponent } from './login/login.component';
+import { AgentConsoleRegisterComponent } from './register/register.component';
+import { AgentConsoleRequestPasswordResetConfirmationComponent } from './request-password-reset-confirmation/request-password-reset-confirmation.component';
+import { AgentConsoleRequestPasswordResetComponent } from './request-password-reset/request-password-reset.component';
+import { AgentConsoleResetPasswordComponent } from './reset-password/reset-password.component';
+import { UserManagerComponent } from './user-manager/user-manager.component';
 
 export const agentConsoleRoutes: Route[] = [
   {
@@ -118,6 +138,42 @@ export const agentConsoleRoutes: Route[] = [
         component: AgentConsoleLoginComponent,
         canActivate: [loginGuard],
         title: 'Login | Agenstra',
+      },
+      {
+        path: 'register',
+        component: AgentConsoleRegisterComponent,
+        canActivate: [loginGuard],
+        title: 'Register | Agenstra',
+      },
+      {
+        path: 'request-password-reset',
+        component: AgentConsoleRequestPasswordResetComponent,
+        canActivate: [loginGuard],
+        title: 'Request Password Reset | Agenstra',
+      },
+      {
+        path: 'request-password-reset-confirmation',
+        component: AgentConsoleRequestPasswordResetConfirmationComponent,
+        canActivate: [loginGuard],
+        title: 'Password Reset Requested | Agenstra',
+      },
+      {
+        path: 'reset-password',
+        component: AgentConsoleResetPasswordComponent,
+        canActivate: [loginGuard],
+        title: 'Reset Password | Agenstra',
+      },
+      {
+        path: 'confirm-email',
+        component: AgentConsoleConfirmEmailComponent,
+        canActivate: [loginGuard],
+        title: 'Confirm Email | Agenstra',
+      },
+      {
+        path: 'users',
+        canActivate: [authGuard, adminGuard],
+        component: UserManagerComponent,
+        title: 'User Management | Agenstra',
       },
       {
         path: 'clients',
@@ -205,6 +261,14 @@ export const agentConsoleRoutes: Route[] = [
         restoreAgentLogin$,
         login$,
         loginSuccessRedirect$,
+        register$,
+        registerSuccessRedirect$,
+        confirmEmail$,
+        confirmEmailSuccessRedirect$,
+        requestPasswordReset$,
+        requestPasswordResetSuccessRedirect$,
+        resetPassword$,
+        resetPasswordSuccessRedirect$,
         logout$,
         logoutSuccessRedirect$,
         checkAuthentication$,
@@ -254,6 +318,11 @@ export const agentConsoleRoutes: Route[] = [
         cancelRun$,
         loadRunJobs$,
         loadJobLogs$,
+        loadUsers$,
+        loadUsersBatch$,
+        createUser$,
+        updateUser$,
+        deleteUser$,
       }),
       provideMonacoEditor(),
     ],
