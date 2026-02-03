@@ -1986,7 +1986,6 @@ components:
         emailConfirmedAt:
           type: string
           format: date-time
-          nullable: true
         createdAt:
           type: string
           format: date-time
