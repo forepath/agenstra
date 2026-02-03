@@ -640,7 +640,7 @@ describe('AuthenticationEffects', () => {
 
   describe('requestPasswordResetSuccessRedirect$', () => {
     it('should navigate to /request-password-reset-confirmation when requestPasswordResetSuccess action is dispatched', (done) => {
-      const action = requestPasswordResetSuccess();
+      const action = requestPasswordResetSuccess({ email: 'user@example.com' });
 
       actions$ = of(action);
       mockRouter.navigate = jest.fn().mockResolvedValue(true);
@@ -649,7 +649,9 @@ describe('AuthenticationEffects', () => {
       requestPasswordResetSuccessRedirect$(actions$, mockRouter as any, mockLocaleService as any).subscribe({
         complete: () => {
           expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/request-password-reset-confirmation']);
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/request-password-reset-confirmation']);
+          expect(mockRouter.navigate).toHaveBeenCalledWith(['/request-password-reset-confirmation'], {
+            queryParams: { email: 'user@example.com' },
+          });
           expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
           done();
         },

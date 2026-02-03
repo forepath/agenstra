@@ -75,13 +75,14 @@ export class EmailService {
 
   /**
    * Sends the standard email confirmation message (same for self-registration and admin actions).
+   * The code is a 6-character alphanumeric code (A-Z, 0-9).
    */
-  async sendConfirmationEmail(to: string, token: string): Promise<boolean> {
+  async sendConfirmationEmail(to: string, code: string): Promise<boolean> {
     return this.send({
       to,
       subject: 'Confirm your email',
-      text: `Please confirm your email using the following code:\n\n${token}\n\nEnter this code on the confirmation page. The code will expire when you confirm.`,
-      html: `<p>Please confirm your email using the following code:</p><p><strong>${token}</strong></p><p>Enter this code on the confirmation page. The code will expire when you confirm.</p>`,
+      text: `Please confirm your email using the following code:\n\n${code}\n\nEnter this code on the confirmation page. The code will expire when you confirm.`,
+      html: `<p>Please confirm your email using the following code:</p><p><strong>${code}</strong></p><p>Enter this code on the confirmation page. The code will expire when you confirm.</p>`,
     });
   }
 }

@@ -87,16 +87,16 @@ export class AuthenticationFacade {
     this.store.dispatch(register({ email, password }));
   }
 
-  confirmEmail(token: string): void {
-    this.store.dispatch(confirmEmail({ token }));
+  confirmEmail(email: string, code: string): void {
+    this.store.dispatch(confirmEmail({ email, code }));
   }
 
   requestPasswordReset(email: string): void {
     this.store.dispatch(requestPasswordReset({ email }));
   }
 
-  resetPassword(token: string, newPassword: string): void {
-    this.store.dispatch(resetPassword({ token, newPassword }));
+  resetPassword(email: string, code: string, newPassword: string): void {
+    this.store.dispatch(resetPassword({ email, code, newPassword }));
   }
 
   changePassword(currentPassword: string, newPassword: string, newPasswordConfirmation: string): void {

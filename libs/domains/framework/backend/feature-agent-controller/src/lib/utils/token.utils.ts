@@ -1,47 +1,27 @@
 import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
+import { randomInt } from 'crypto';
 
 const BCRYPT_ROUNDS = 12;
-const TOKEN_PART_LENGTH = 32;
+const CONFIRMATION_CODE_LENGTH = 6;
+const ALPHANUMERIC_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 /**
- * Creates a token that embeds the user ID for lookup.
- * Format: {base64url(userId)}.{randomPart}
- * Only the randomPart is hashed and stored; the userId enables lookup.
+ * Creates a 6-character alphanumeric confirmation code (A-Z, 0-9).
+ * Used for email confirmation and password reset.
  */
-export function createTokenWithUserId(userId: string): { token: string; hash: Promise<string> } {
-  const randomPart = randomBytes(TOKEN_PART_LENGTH).toString('hex');
-  const encodedUserId = Buffer.from(userId, 'utf8').toString('base64url');
-  const token = `${encodedUserId}.${randomPart}`;
-  const hash = bcrypt.hash(randomPart, BCRYPT_ROUNDS);
-  return { token, hash };
+export function createConfirmationCode(): { code: string; hash: Promise<string> } {
+  let code = '';
+  for (let i = 0; i < CONFIRMATION_CODE_LENGTH; i++) {
+    code += ALPHANUMERIC_CHARS[randomInt(0, ALPHANUMERIC_CHARS.length)];
+  }
+  const hash = bcrypt.hash(code, BCRYPT_ROUNDS);
+  return { code, hash };
 }
 
 /**
- * Validates a token against a stored bcrypt hash.
- * Parses token to extract userId and randomPart, then compares randomPart with hash.
+ * Validates a 6-character alphanumeric confirmation code against a stored bcrypt hash.
  */
-export async function validateTokenAgainstHash(
-  token: string,
-  storedHash: string | null | undefined,
-): Promise<{ userId: string } | null> {
-  if (!storedHash) return null;
-
-  const parts = token.split('.');
-  if (parts.length !== 2) return null;
-
-  const [encodedUserId, randomPart] = parts;
-  if (!encodedUserId || !randomPart) return null;
-
-  let userId: string;
-  try {
-    userId = Buffer.from(encodedUserId, 'base64url').toString('utf8');
-  } catch {
-    return null;
-  }
-
-  const valid = await bcrypt.compare(randomPart, storedHash);
-  if (!valid) return null;
-
-  return { userId };
+export async function validateConfirmationCode(code: string, storedHash: string | null | undefined): Promise<boolean> {
+  if (!storedHash || !/^[A-Z0-9]{6}$/.test(code)) return false;
+  return bcrypt.compare(code, storedHash);
 }

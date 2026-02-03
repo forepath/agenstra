@@ -46,7 +46,7 @@ paths:
               $ref: '#/components/schemas/RegisterDto'
       responses:
         '201':
-          description: User created (first user auto-confirmed, others receive confirmation code via email)
+          description: User created (first user auto-confirmed, others receive 6-character alphanumeric confirmation code via email)
           content:
             application/json:
               schema:
@@ -55,7 +55,7 @@ paths:
           description: Email already registered
   /auth/confirm-email:
     post:
-      summary: Confirm email with code (users auth only)
+      summary: Confirm email with 6-character code (users auth only)
       operationId: confirmEmail
       security: []
       requestBody:
@@ -68,7 +68,7 @@ paths:
         '200':
           description: Email confirmed
         '400':
-          description: Invalid or expired token
+          description: Invalid or expired confirmation code
   /auth/request-password-reset:
     post:
       summary: Request password reset (users auth only)
@@ -82,10 +82,10 @@ paths:
               $ref: '#/components/schemas/RequestPasswordResetDto'
       responses:
         '200':
-          description: If an account exists with this email, a password reset code will be sent
+          description: If an account exists with this email, a 6-character password reset code will be sent
   /auth/reset-password:
     post:
-      summary: Reset password with code (users auth only)
+      summary: Reset password with 6-character code (users auth only)
       operationId: resetPassword
       security: []
       requestBody:
@@ -98,7 +98,7 @@ paths:
         '200':
           description: Password reset
         '400':
-          description: Invalid or expired token
+          description: Invalid or expired reset code
   /auth/change-password:
     post:
       summary: Change password (authenticated users)
@@ -1900,10 +1900,16 @@ components:
           minLength: 8
     ConfirmEmailDto:
       type: object
-      required: [token]
+      required: [email, code]
       properties:
-        token:
+        email:
           type: string
+          format: email
+          description: User's email address
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+          description: 6-character alphanumeric confirmation code from email (A-Z, 0-9)
     RequestPasswordResetDto:
       type: object
       required: [email]
@@ -1913,10 +1919,16 @@ components:
           format: email
     ResetPasswordDto:
       type: object
-      required: [token, newPassword]
+      required: [email, code, newPassword]
       properties:
-        token:
+        email:
           type: string
+          format: email
+          description: User's email address
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+          description: 6-character alphanumeric reset code from email (A-Z, 0-9)
         newPassword:
           type: string
           minLength: 8

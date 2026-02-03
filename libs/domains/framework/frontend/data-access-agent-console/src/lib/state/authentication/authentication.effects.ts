@@ -252,8 +252,10 @@ export const registerSuccessRedirect$ = createEffect(
   (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
     return actions$.pipe(
       ofType(registerSuccess),
-      tap(() => {
-        router.navigate(localeService.buildAbsoluteUrl(['/confirm-email']));
+      tap(({ user }) => {
+        router.navigate(localeService.buildAbsoluteUrl(['/confirm-email']), {
+          queryParams: { email: user.email },
+        });
       }),
     );
   },
@@ -264,8 +266,8 @@ export const confirmEmail$ = createEffect(
   (actions$ = inject(Actions), authService = inject(AuthService)) => {
     return actions$.pipe(
       ofType(confirmEmail),
-      switchMap(({ token }) =>
-        authService.confirmEmail(token).pipe(
+      switchMap(({ email, code }) =>
+        authService.confirmEmail(email, code).pipe(
           map(() => confirmEmailSuccess()),
           catchError((error) => of(confirmEmailFailure({ error: normalizeError(error) }))),
         ),
@@ -293,7 +295,7 @@ export const requestPasswordReset$ = createEffect(
       ofType(requestPasswordReset),
       switchMap(({ email }) =>
         authService.requestPasswordReset(email).pipe(
-          map(() => requestPasswordResetSuccess()),
+          map(() => requestPasswordResetSuccess({ email })),
           catchError((error) => of(requestPasswordResetFailure({ error: normalizeError(error) }))),
         ),
       ),
@@ -306,8 +308,10 @@ export const requestPasswordResetSuccessRedirect$ = createEffect(
   (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
     return actions$.pipe(
       ofType(requestPasswordResetSuccess),
-      tap(() => {
-        router.navigate(localeService.buildAbsoluteUrl(['/request-password-reset-confirmation']));
+      tap(({ email }) => {
+        router.navigate(localeService.buildAbsoluteUrl(['/request-password-reset-confirmation']), {
+          queryParams: email ? { email } : {},
+        });
       }),
     );
   },
@@ -318,8 +322,8 @@ export const resetPassword$ = createEffect(
   (actions$ = inject(Actions), authService = inject(AuthService)) => {
     return actions$.pipe(
       ofType(resetPassword),
-      switchMap(({ token, newPassword }) =>
-        authService.resetPassword(token, newPassword).pipe(
+      switchMap(({ email, code, newPassword }) =>
+        authService.resetPassword(email, code, newPassword).pipe(
           map(() => resetPasswordSuccess()),
           catchError((error) => of(resetPasswordFailure({ error: normalizeError(error) }))),
         ),

@@ -16,10 +16,11 @@ import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
+import { OtpInputComponent } from '../otp-input/otp-input.component';
 
 @Component({
   selector: 'framework-agent-console-reset-password',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, OtpInputComponent],
   styleUrls: ['./reset-password.component.scss'],
   templateUrl: './reset-password.component.html',
   standalone: true,
@@ -33,6 +34,7 @@ export class AgentConsoleResetPasswordComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   form!: FormGroup;
+  formSubmitted = false;
   resettingPassword$: Observable<boolean> = this.authFacade.resettingPassword$;
   error$: Observable<string | null> = this.authFacade.error$;
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
@@ -42,10 +44,11 @@ export class AgentConsoleResetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const tokenFromQuery = this.route.snapshot.queryParamMap.get('token') ?? '';
+    const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
     this.form = this.fb.group(
       {
-        token: [tokenFromQuery, [Validators.required]],
+        email: [emailFromQuery, [Validators.required, Validators.email]],
+        code: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{6}$/)]],
         newPassword: ['', [Validators.required, Validators.minLength(8)]],
         newPasswordConfirmation: ['', [Validators.required]],
       },
@@ -59,7 +62,15 @@ export class AgentConsoleResetPasswordComponent implements OnInit {
         ofType(resetPasswordSuccess),
         take(1),
         takeUntilDestroyed(this.destroyRef),
-        tap(() => this.form.reset({ token: this.route.snapshot.queryParamMap.get('token') ?? '' })),
+        tap(() => {
+          this.formSubmitted = false;
+          this.form.reset({
+            email: this.route.snapshot.queryParamMap.get('email') ?? '',
+            code: '',
+            newPassword: '',
+            newPasswordConfirmation: '',
+          });
+        }),
       )
       .subscribe();
   }
@@ -74,10 +85,12 @@ export class AgentConsoleResetPasswordComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.formSubmitted = true;
     if (this.form.valid) {
-      const token = this.form.get('token')?.value;
+      const email = this.form.get('email')?.value;
+      const code = this.form.get('code')?.value;
       const newPassword = this.form.get('newPassword')?.value;
-      this.authFacade.resetPassword(token, newPassword);
+      this.authFacade.resetPassword(email, code, newPassword);
     } else {
       Object.keys(this.form.controls).forEach((key) => {
         this.form.get(key)?.markAsTouched();

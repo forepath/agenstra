@@ -9,10 +9,11 @@ import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
+import { OtpInputComponent } from '../otp-input/otp-input.component';
 
 @Component({
   selector: 'framework-agent-console-confirm-email',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, OtpInputComponent],
   styleUrls: ['./confirm-email.component.scss'],
   templateUrl: './confirm-email.component.html',
   standalone: true,
@@ -26,6 +27,7 @@ export class AgentConsoleConfirmEmailComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   form!: FormGroup;
+  formSubmitted = false;
   confirmingEmail$: Observable<boolean> = this.authFacade.confirmingEmail$;
   error$: Observable<string | null> = this.authFacade.error$;
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
@@ -35,9 +37,11 @@ export class AgentConsoleConfirmEmailComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const tokenFromQuery = this.route.snapshot.queryParamMap.get('token') ?? '';
+    const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
+    const codeFromQuery = (this.route.snapshot.queryParamMap.get('code') ?? '').toUpperCase();
     this.form = this.fb.group({
-      token: [tokenFromQuery, [Validators.required]],
+      email: [emailFromQuery, [Validators.required, Validators.email]],
+      code: [codeFromQuery, [Validators.required, Validators.pattern(/^[A-Z0-9]{6}$/)]],
     });
 
     this.actions$
@@ -45,21 +49,31 @@ export class AgentConsoleConfirmEmailComponent implements OnInit {
         ofType(confirmEmailSuccess),
         take(1),
         takeUntilDestroyed(this.destroyRef),
-        tap(() => this.form.reset({ token: this.route.snapshot.queryParamMap.get('token') ?? '' })),
+        tap(() => {
+          this.formSubmitted = false;
+          this.form.reset({
+            email: this.route.snapshot.queryParamMap.get('email') ?? '',
+            code: '',
+          });
+        }),
       )
       .subscribe();
 
-    if (this.isUsersAuth && tokenFromQuery) {
-      this.authFacade.confirmEmail(tokenFromQuery);
+    if (this.isUsersAuth && emailFromQuery && /^[A-Z0-9]{6}$/.test(codeFromQuery)) {
+      this.authFacade.confirmEmail(emailFromQuery, codeFromQuery);
     }
   }
 
   onSubmit(): void {
+    this.formSubmitted = true;
     if (this.form.valid) {
-      const token = this.form.get('token')?.value;
-      this.authFacade.confirmEmail(token);
+      const email = this.form.get('email')?.value;
+      const code = this.form.get('code')?.value;
+      this.authFacade.confirmEmail(email, code);
     } else {
-      this.form.get('token')?.markAsTouched();
+      Object.keys(this.form.controls).forEach((key) => {
+        this.form.get(key)?.markAsTouched();
+      });
     }
   }
 

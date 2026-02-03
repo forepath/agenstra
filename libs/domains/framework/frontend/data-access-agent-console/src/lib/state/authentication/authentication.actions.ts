@@ -60,7 +60,7 @@ export const registerSuccess = createAction(
 
 export const registerFailure = createAction('[Authentication] Register Failure', props<{ error: string }>());
 
-export const confirmEmail = createAction('[Authentication] Confirm Email', props<{ token: string }>());
+export const confirmEmail = createAction('[Authentication] Confirm Email', props<{ email: string; code: string }>());
 
 export const confirmEmailSuccess = createAction('[Authentication] Confirm Email Success');
 
@@ -68,7 +68,10 @@ export const confirmEmailFailure = createAction('[Authentication] Confirm Email 
 
 export const requestPasswordReset = createAction('[Authentication] Request Password Reset', props<{ email: string }>());
 
-export const requestPasswordResetSuccess = createAction('[Authentication] Request Password Reset Success');
+export const requestPasswordResetSuccess = createAction(
+  '[Authentication] Request Password Reset Success',
+  props<{ email: string }>(),
+);
 
 export const requestPasswordResetFailure = createAction(
   '[Authentication] Request Password Reset Failure',
@@ -77,7 +80,7 @@ export const requestPasswordResetFailure = createAction(
 
 export const resetPassword = createAction(
   '[Authentication] Reset Password',
-  props<{ token: string; newPassword: string }>(),
+  props<{ email: string; code: string; newPassword: string }>(),
 );
 
 export const resetPasswordSuccess = createAction('[Authentication] Reset Password Success');

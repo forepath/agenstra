@@ -36,10 +36,10 @@ sequenceDiagram
 
     rect rgb(255, 240, 240)
         Note over Component,API: Confirm Email
-        Component->>Facade: confirmEmail(token)
-        Facade->>Store: dispatch(confirmEmail({token}))
-        Effects->>Service: confirmEmail(token)
-        Service->>API: POST /api/auth/confirm-email
+        Component->>Facade: confirmEmail(email, code)
+        Facade->>Store: dispatch(confirmEmail({email, code}))
+        Effects->>Service: confirmEmail(email, code)
+        Service->>API: POST /api/auth/confirm-email {email, code}
         API-->>Service: 200
         Effects->>Store: dispatch(confirmEmailSuccess())
     end

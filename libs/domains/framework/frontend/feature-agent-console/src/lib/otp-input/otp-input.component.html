@@ -1,0 +1,19 @@
+<div class="otp-input d-flex gap-1" (paste)="onPaste($event)" (focusout)="onBlur($event)">
+  @for (i of digits; track i) {
+    <input
+      #digitInput
+      type="text"
+      inputmode="text"
+      pattern="[A-Z0-9]*"
+      maxlength="1"
+      autocomplete="one-time-code"
+      class="form-control text-center otp-digit flex-1 w-100"
+      [class.is-invalid]="invalid()"
+      [attr.aria-label]="'Character ' + (i + 1) + ' of 6'"
+      [value]="getDigit(i)"
+      (input)="onInput($event, i)"
+      (keydown)="onKeydown($event, i)"
+      [readonly]="disabled()"
+    />
+  }
+</div>

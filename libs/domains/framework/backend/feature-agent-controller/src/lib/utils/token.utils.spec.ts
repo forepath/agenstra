@@ -1,50 +1,53 @@
-import { createTokenWithUserId, validateTokenAgainstHash } from './token.utils';
+import { createConfirmationCode, validateConfirmationCode } from './token.utils';
 
 describe('token.utils', () => {
-  describe('createTokenWithUserId', () => {
-    it('should create token with embedded userId', async () => {
-      const userId = 'user-uuid-123';
-      const { token, hash } = createTokenWithUserId(userId);
-      const tokenHash = await hash;
+  describe('createConfirmationCode', () => {
+    it('should create 6-character alphanumeric code', async () => {
+      const { code, hash } = createConfirmationCode();
+      const codeHash = await hash;
 
-      expect(token).toContain('.');
-      const [encodedUserId] = token.split('.');
-      expect(Buffer.from(encodedUserId, 'base64url').toString('utf8')).toBe(userId);
-      expect(tokenHash).toBeDefined();
-      expect(tokenHash.length).toBeGreaterThan(50);
+      expect(code).toMatch(/^[A-Z0-9]{6}$/);
+      expect(codeHash).toBeDefined();
+      expect(codeHash.length).toBeGreaterThan(50);
+    });
+
+    it('should create unique codes', () => {
+      const { code: code1 } = createConfirmationCode();
+      const { code: code2 } = createConfirmationCode();
+      expect(code1).not.toBe(code2);
     });
   });
 
-  describe('validateTokenAgainstHash', () => {
-    it('should validate correct token', async () => {
-      const userId = 'user-123';
-      const { token, hash } = createTokenWithUserId(userId);
-      const tokenHash = await hash;
+  describe('validateConfirmationCode', () => {
+    it('should validate correct code', async () => {
+      const { code, hash } = createConfirmationCode();
+      const codeHash = await hash;
 
-      const result = await validateTokenAgainstHash(token, tokenHash);
-      expect(result).toEqual({ userId });
+      const result = await validateConfirmationCode(code, codeHash);
+      expect(result).toBe(true);
     });
 
-    it('should reject invalid token', async () => {
-      const userId = 'user-123';
-      const { token, hash } = createTokenWithUserId(userId);
-      const tokenHash = await hash;
+    it('should reject invalid code', async () => {
+      const { code, hash } = createConfirmationCode();
+      const codeHash = await hash;
 
-      const result = await validateTokenAgainstHash(token + 'x', tokenHash);
-      expect(result).toBeNull();
+      const result = await validateConfirmationCode(code + '1', codeHash);
+      expect(result).toBe(false);
     });
 
     it('should reject when storedHash is null', async () => {
-      const result = await validateTokenAgainstHash('any.token', null);
-      expect(result).toBeNull();
+      const result = await validateConfirmationCode('123456', null);
+      expect(result).toBe(false);
     });
 
-    it('should reject malformed token', async () => {
-      const { hash } = createTokenWithUserId('user-123');
-      const tokenHash = await hash;
+    it('should reject invalid format input', async () => {
+      const { hash } = createConfirmationCode();
+      const codeHash = await hash;
 
-      expect(await validateTokenAgainstHash('no-dot', tokenHash)).toBeNull();
-      expect(await validateTokenAgainstHash('', tokenHash)).toBeNull();
+      expect(await validateConfirmationCode('12345', codeHash)).toBe(false);
+      expect(await validateConfirmationCode('ABC1234', codeHash)).toBe(false);
+      expect(await validateConfirmationCode('abc123', codeHash)).toBe(false);
+      expect(await validateConfirmationCode('', codeHash)).toBe(false);
     });
   });
 });

@@ -3,8 +3,8 @@
     <div class="p-4" style="width: 700px; max-width: 100%">
       <h1 class="display-5 fw-bold mb-3">Confirm Your Email</h1>
       <p class="lead mb-4">
-        Enter the confirmation code you received via email. You can either paste the code from your email or click the
-        link in the confirmation message to confirm automatically.
+        Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or
+        type it in the fields below.
       </p>
     </div>
   </div>
@@ -42,26 +42,60 @@
               <p class="text-muted mb-0">Confirming your email address...</p>
             </div>
           } @else {
-            <!-- Confirmation Code Input -->
+            <!-- Email Input -->
             <div class="mb-3">
-              <label for="token" class="form-label">Confirmation Code</label>
+              <label for="email" class="form-label">Email</label>
               <div class="input-group">
                 <span class="input-group-text">
-                  <i class="bi bi-key-fill"></i>
+                  <i class="bi bi-envelope-fill"></i>
                 </span>
                 <input
-                  type="text"
+                  type="email"
                   class="form-control"
-                  [class.is-invalid]="form.get('token')?.invalid && form.get('token')?.touched"
-                  id="token"
-                  formControlName="token"
-                  placeholder="Enter the code from your confirmation email"
+                  [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+                  id="email"
+                  formControlName="email"
+                  placeholder="Enter your email address"
                   [disabled]="(confirmingEmail$ | async) ?? false"
-                  autocomplete="one-time-code"
+                  autocomplete="email"
                 />
               </div>
-              @if (form.get('token')?.invalid && form.get('token')?.touched) {
-                <div class="invalid-feedback d-block">Confirmation code is required.</div>
+              @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                <div class="invalid-feedback d-block">
+                  @if (form.get('email')?.errors?.['required']) {
+                    Email is required.
+                  } @else if (form.get('email')?.errors?.['email']) {
+                    Please enter a valid email address.
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Confirmation Code Input (6-character OTP) -->
+            <div class="mb-3">
+              <label class="form-label">Confirmation Code</label>
+              <framework-agent-console-otp-input
+                formControlName="code"
+                [invalid]="
+                  (form.get('code')?.invalid &&
+                    form.get('code')?.touched &&
+                    ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)) ??
+                  false
+                "
+                [disabled]="(confirmingEmail$ | async) ?? false"
+              />
+              @if (
+                form.get('code')?.invalid &&
+                form.get('code')?.touched &&
+                ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)
+              ) {
+                <div class="invalid-feedback d-block">
+                  @if (form.get('code')?.errors?.['required']) {
+                    Confirmation code is required.
+                  } @else if (form.get('code')?.errors?.['pattern']) {
+                    Code must be exactly 6 characters (uppercase letters and numbers).
+                  }
+                </div>
               }
             </div>
 

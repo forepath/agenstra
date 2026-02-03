@@ -1,9 +1,14 @@
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
 
 export class ResetPasswordDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
+
   @IsString()
   @IsNotEmpty()
-  token!: string;
+  @Matches(/^[A-Z0-9]{6}$/, { message: 'Code must be exactly 6 characters (uppercase letters and numbers)' })
+  code!: string;
 
   @IsString()
   @IsNotEmpty()

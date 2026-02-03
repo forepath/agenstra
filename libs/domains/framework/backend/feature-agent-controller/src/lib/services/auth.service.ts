@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserEntity, UserRole } from '../entities/user.entity';
 import { UsersRepository } from '../repositories/users.repository';
-import { createTokenWithUserId, validateTokenAgainstHash } from '../utils/token.utils';
+import { createConfirmationCode, validateConfirmationCode } from '../utils/token.utils';
 import { EmailService } from './email.service';
 import { UsersService } from './users.service';
 
@@ -78,20 +78,15 @@ export class AuthService {
     };
   }
 
-  async confirmEmail(token: string): Promise<{ message: string }> {
-    const userId = this.parseUserIdFromToken(token);
-    if (!userId) {
-      throw new BadRequestException('Invalid or expired confirmation token');
-    }
-
-    const user = await this.usersRepository.findById(userId);
+  async confirmEmail(email: string, code: string): Promise<{ message: string }> {
+    const user = await this.usersRepository.findByEmail(email);
     if (!user?.emailConfirmationToken) {
-      throw new BadRequestException('Invalid or expired confirmation token');
+      throw new BadRequestException('Invalid or expired confirmation code');
     }
 
-    const valid = await validateTokenAgainstHash(token, user.emailConfirmationToken);
+    const valid = await validateConfirmationCode(code, user.emailConfirmationToken);
     if (!valid) {
-      throw new BadRequestException('Invalid or expired confirmation token');
+      throw new BadRequestException('Invalid or expired confirmation code');
     }
 
     await this.usersRepository.update(user.id, {
@@ -102,39 +97,28 @@ export class AuthService {
     return { message: 'Email confirmed successfully. You can now log in.' };
   }
 
-  private parseUserIdFromToken(token: string): string | null {
-    const parts = token.split('.');
-    if (parts.length !== 2 || !parts[0]) return null;
-    try {
-      const userId = Buffer.from(parts[0], 'base64url').toString('utf8');
-      return userId || null;
-    } catch {
-      return null;
-    }
-  }
-
   async requestPasswordReset(email: string): Promise<{ message: string }> {
     const user = await this.usersRepository.findByEmail(email);
     if (!user || !user.passwordHash) {
       return {
-        message: 'If an account exists with this email, you will receive a password reset link.',
+        message: 'If an account exists with this email, you will receive a password reset code.',
       };
     }
 
-    const { token, hash } = createTokenWithUserId(user.id);
-    const tokenHash = await hash;
+    const { code, hash } = createConfirmationCode();
+    const codeHash = await hash;
     const expiresAt = new Date(Date.now() + PASSWORD_RESET_TOKEN_EXPIRY_MS);
 
     await this.usersRepository.update(user.id, {
-      passwordResetToken: tokenHash,
+      passwordResetToken: codeHash,
       passwordResetTokenExpiresAt: expiresAt,
     });
 
     await this.emailService.send({
       to: user.email,
       subject: 'Reset your password',
-      text: `You requested a password reset. Use the following code to reset your password:\n\n${token}\n\nEnter this code on the reset password page. This code expires in 1 hour.`,
-      html: `<p>You requested a password reset. Use the following code to reset your password:</p><p><strong>${token}</strong></p><p>Enter this code on the reset password page. This code expires in 1 hour.</p>`,
+      text: `You requested a password reset. Use the following code to reset your password:\n\n${code}\n\nEnter this code on the reset password page. This code expires in 1 hour.`,
+      html: `<p>You requested a password reset. Use the following code to reset your password:</p><p><strong>${code}</strong></p><p>Enter this code on the reset password page. This code expires in 1 hour.</p>`,
     });
 
     return {
@@ -142,24 +126,19 @@ export class AuthService {
     };
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
-    const userId = this.parseUserIdFromToken(token);
-    if (!userId) {
-      throw new BadRequestException('Invalid or expired reset token');
-    }
-
-    const user = await this.usersRepository.findById(userId);
+  async resetPassword(email: string, code: string, newPassword: string): Promise<{ message: string }> {
+    const user = await this.usersRepository.findByEmail(email);
     if (!user?.passwordResetToken) {
-      throw new BadRequestException('Invalid or expired reset token');
+      throw new BadRequestException('Invalid or expired reset code');
     }
 
     if (!user.passwordResetTokenExpiresAt || user.passwordResetTokenExpiresAt < new Date()) {
-      throw new BadRequestException('Reset token has expired');
+      throw new BadRequestException('Reset code has expired');
     }
 
-    const valid = await validateTokenAgainstHash(token, user.passwordResetToken);
+    const valid = await validateConfirmationCode(code, user.passwordResetToken);
     if (!valid) {
-      throw new BadRequestException('Invalid or expired reset token');
+      throw new BadRequestException('Invalid or expired reset code');
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);

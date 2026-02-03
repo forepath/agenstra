@@ -5,7 +5,7 @@ import { UpdateUserDto } from '../dto/auth/update-user.dto';
 import { UserResponseDto } from '../dto/auth/user-response.dto';
 import { UserEntity, UserRole } from '../entities/user.entity';
 import { UsersRepository } from '../repositories/users.repository';
-import { createTokenWithUserId } from '../utils/token.utils';
+import { createConfirmationCode } from '../utils/token.utils';
 import { EmailService } from './email.service';
 
 const BCRYPT_ROUNDS = 12;
@@ -63,10 +63,10 @@ export class UsersService {
     });
 
     if (!isFirstUser) {
-      const { token, hash } = createTokenWithUserId(user.id);
-      const tokenHash = await hash;
-      await this.usersRepository.update(user.id, { emailConfirmationToken: tokenHash });
-      await this.emailService.sendConfirmationEmail(user.email, token);
+      const { code, hash } = createConfirmationCode();
+      const codeHash = await hash;
+      await this.usersRepository.update(user.id, { emailConfirmationToken: codeHash });
+      await this.emailService.sendConfirmationEmail(user.email, code);
     }
 
     return this.mapToResponseDto(user);
@@ -93,19 +93,19 @@ export class UsersService {
       updateData.passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
     }
 
-    let confirmationToken: string | undefined;
+    let confirmationCode: string | undefined;
     if (emailChanged && dto.email) {
-      const { token, hash } = createTokenWithUserId(id);
-      const tokenHash = await hash;
+      const { code, hash } = createConfirmationCode();
+      const codeHash = await hash;
       updateData.emailConfirmedAt = null as unknown as Date;
-      updateData.emailConfirmationToken = tokenHash;
-      confirmationToken = token;
+      updateData.emailConfirmationToken = codeHash;
+      confirmationCode = code;
     }
 
     const updated = await this.usersRepository.update(id, updateData);
 
-    if (emailChanged && dto.email && confirmationToken) {
-      await this.emailService.sendConfirmationEmail(dto.email, confirmationToken);
+    if (emailChanged && dto.email && confirmationCode) {
+      await this.emailService.sendConfirmationEmail(dto.email, confirmationCode);
     }
 
     return this.mapToResponseDto(updated);

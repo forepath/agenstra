@@ -466,10 +466,10 @@ All HTTP endpoints (except public auth endpoints) require authentication. The me
 ### Users Auth Endpoints (when AUTHENTICATION_METHOD=users)
 
 - `POST /api/auth/login` - Login with email/password
-- `POST /api/auth/register` - Register new user (confirmation code sent via email for non-first users)
-- `POST /api/auth/confirm-email` - Confirm email with code (sent via email)
-- `POST /api/auth/request-password-reset` - Request password reset (code sent via email)
-- `POST /api/auth/reset-password` - Reset password with code
+- `POST /api/auth/register` - Register new user (6-character alphanumeric confirmation code sent via email for non-first users)
+- `POST /api/auth/confirm-email` - Confirm email with 6-character code (requires email + code)
+- `POST /api/auth/request-password-reset` - Request password reset (6-character code sent via email)
+- `POST /api/auth/reset-password` - Reset password with 6-character code (requires email + code + newPassword)
 - `POST /api/auth/change-password` - Change password (authenticated)
 - `GET /api/users` - List users (admin only)
 - `POST /api/users` - Create user (admin only; non-first users receive confirmation email)

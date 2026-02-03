@@ -30,17 +30,21 @@ export class AuthService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, { email, password });
   }
 
-  confirmEmail(token: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/confirm-email`, { token });
+  confirmEmail(email: string, code: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/confirm-email`, {
+      email,
+      code,
+    });
   }
 
   requestPasswordReset(email: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.apiUrl}/auth/request-password-reset`, { email });
   }
 
-  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+  resetPassword(email: string, code: string, newPassword: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.apiUrl}/auth/reset-password`, {
-      token,
+      email,
+      code,
       newPassword,
     });
   }

@@ -36,7 +36,7 @@ export class AuthController {
   @Post('confirm-email')
   @HttpCode(HttpStatus.OK)
   async confirmEmail(@Body() dto: ConfirmEmailDto) {
-    return this.authService.confirmEmail(dto.token);
+    return this.authService.confirmEmail(dto.email, dto.code);
   }
 
   @Public()
@@ -50,7 +50,7 @@ export class AuthController {
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto.token, dto.newPassword);
+    return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
