@@ -13,6 +13,217 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /auth/login:
+    post:
+      summary: Login (users auth only)
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: JWT access token and user info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials or email not confirmed
+  /auth/register:
+    post:
+      summary: Register new user (users auth only)
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: User created (first user auto-confirmed, others receive confirmation code via email)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '409':
+          description: Email already registered
+  /auth/confirm-email:
+    post:
+      summary: Confirm email with code (users auth only)
+      operationId: confirmEmail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmEmailDto'
+      responses:
+        '200':
+          description: Email confirmed
+        '400':
+          description: Invalid or expired token
+  /auth/request-password-reset:
+    post:
+      summary: Request password reset (users auth only)
+      operationId: requestPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPasswordResetDto'
+      responses:
+        '200':
+          description: If an account exists with this email, a password reset code will be sent
+  /auth/reset-password:
+    post:
+      summary: Reset password with code (users auth only)
+      operationId: resetPassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordDto'
+      responses:
+        '200':
+          description: Password reset
+        '400':
+          description: Invalid or expired token
+  /auth/change-password:
+    post:
+      summary: Change password (authenticated users)
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordDto'
+      responses:
+        '200':
+          description: Password changed
+        '400':
+          description: Passwords do not match or invalid
+        '401':
+          description: Current password incorrect
+  /users:
+    get:
+      summary: List users (admin only)
+      operationId: listUsers
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Array of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponseDto'
+    post:
+      summary: Create user (admin only)
+      operationId: createUser
+      description: >
+        Creates a new user. First user is auto-confirmed. Non-first users receive a
+        confirmation email (same as self-registration); they must confirm before logging in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: User created (first user auto-confirmed, others receive confirmation email)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+        '409':
+          description: Email already exists
+  /users/{id}:
+    get:
+      summary: Get user by id (admin only)
+      operationId: getUser
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+        '404':
+          description: User not found
+    post:
+      summary: Update user (admin only)
+      operationId: updateUser
+      description: >
+        Updates a user. When email is changed, the account is set unconfirmed and a
+        confirmation email is sent to the new address (same as self-registration).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserDto'
+      responses:
+        '200':
+          description: User updated (email change triggers confirmation email to new address)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+        '404':
+          description: User not found
+    delete:
+      summary: Delete user (admin only)
+      operationId: deleteUser
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: User deleted
+        '404':
+          description: User not found
   /clients:
     get:
       summary: List clients
@@ -1661,6 +1872,150 @@ components:
       enum:
         - api_key
         - keycloak
+    AuthenticationMethod:
+      type: string
+      enum:
+        - api-key
+        - keycloak
+        - users
+      description: Server authentication method (api-key, keycloak, or users)
+    LoginDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    RegisterDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    ConfirmEmailDto:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    RequestPasswordResetDto:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordDto:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+    ChangePasswordDto:
+      type: object
+      required: [currentPassword, newPassword, newPasswordConfirmation]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+        newPasswordConfirmation:
+          type: string
+          minLength: 8
+    LoginResponse:
+      type: object
+      required: [access_token, user]
+      properties:
+        access_token:
+          type: string
+          description: JWT bearer token
+        user:
+          type: object
+          required: [id, email, role]
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            role:
+              $ref: '#/components/schemas/UserRole'
+    RegisterResponse:
+      type: object
+      required: [user, message]
+      properties:
+        user:
+          type: object
+          required: [id, email, role]
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            role:
+              $ref: '#/components/schemas/UserRole'
+        message:
+          type: string
+    UserRole:
+      type: string
+      enum:
+        - user
+        - admin
+    UserResponseDto:
+      type: object
+      required: [id, email, role, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        emailConfirmedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateUserDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/UserRole'
+    UpdateUserDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/UserRole'
     ClientResponseDto:
       type: object
       required:

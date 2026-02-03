@@ -3,7 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DataSource } from 'typeorm';
@@ -71,6 +71,14 @@ async function bootstrap() {
   } else if (typeormConfig.synchronize) {
     Logger.log('ℹ️  Schema synchronization enabled - migrations skipped');
   }
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);

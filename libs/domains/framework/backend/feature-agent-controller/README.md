@@ -114,18 +114,9 @@ export class MyService {
 
 ## API Endpoints
 
-All HTTP endpoints require authentication via Keycloak. The `ClientsController` uses:
+All HTTP endpoints require authentication (except `/api/health` and public auth endpoints). The authentication method depends on `AUTHENTICATION_METHOD`; see [Authentication](#authentication) above.
 
-- `@Resource('clients')` decorator for resource-based authorization
-- Global Keycloak guards (`AuthGuard`, `ResourceGuard`, `RoleGuard`)
-
-Clients must include a valid Keycloak JWT bearer token in the `Authorization` header:
-
-```
-Authorization: Bearer <keycloak-jwt-token>
-```
-
-Base URL: `/api/clients`
+Base URL: `/api`
 
 ### Client Management
 
@@ -456,18 +447,35 @@ socket.on('error', (data) => {
 
 ## Authentication
 
+Authentication is configured via the `AUTHENTICATION_METHOD` environment variable:
+
+- **`api-key`** (default when `STATIC_API_KEY` is set): Static API key authentication. All requests require `Authorization: Bearer <key>` or `Authorization: ApiKey <key>`. API key auth always grants admin rights.
+- **`keycloak`**: Keycloak OAuth2/OIDC. Users authenticate via Keycloak. Keycloak users are synced to the users table; first user gets admin role, subsequent users get user role.
+- **`users`**: Built-in user registration with JWT. Users register, confirm email, and log in. First registered user gets admin role. Admins can manage users via CRUD endpoints.
+
+See [Authentication Diagram](./docs/authentication.mmd) for a visual overview.
+
 ### HTTP Endpoints
 
-All HTTP endpoints are protected by Keycloak authentication. The `ClientsController` uses:
+All HTTP endpoints (except public auth endpoints) require authentication. The method depends on `AUTHENTICATION_METHOD`:
 
-- `@Resource('clients')` decorator for resource-based authorization
-- Global Keycloak guards (`AuthGuard`, `ResourceGuard`, `RoleGuard`)
+- **api-key**: `Authorization: Bearer <STATIC_API_KEY>` or `Authorization: ApiKey <STATIC_API_KEY>`
+- **keycloak**: `Authorization: Bearer <keycloak-jwt-token>`
+- **users**: `Authorization: Bearer <jwt-access-token>` (from `POST /api/auth/login`)
 
-Clients must include a valid Keycloak JWT bearer token in the `Authorization` header:
+### Users Auth Endpoints (when AUTHENTICATION_METHOD=users)
 
-```
-Authorization: Bearer <keycloak-jwt-token>
-```
+- `POST /api/auth/login` - Login with email/password
+- `POST /api/auth/register` - Register new user (confirmation code sent via email for non-first users)
+- `POST /api/auth/confirm-email` - Confirm email with code (sent via email)
+- `POST /api/auth/request-password-reset` - Request password reset (code sent via email)
+- `POST /api/auth/reset-password` - Reset password with code
+- `POST /api/auth/change-password` - Change password (authenticated)
+- `GET /api/users` - List users (admin only)
+- `POST /api/users` - Create user (admin only; non-first users receive confirmation email)
+- `GET /api/users/:id` - Get user (admin only)
+- `POST /api/users/:id` - Update user (admin only; email change sets account unconfirmed and sends confirmation email)
+- `DELETE /api/users/:id` - Delete user (admin only)
 
 ### Client Authentication Types
 
@@ -568,12 +576,15 @@ nx test framework-backend-feature-agent-controller --coverage
 
 ### Backend API Environment Variables
 
+- `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `keycloak`, or `users` (default: inferred from `STATIC_API_KEY`)
+- `STATIC_API_KEY` - Static API key (required when `AUTHENTICATION_METHOD=api-key`)
+- `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users`)
 - `WEBSOCKET_PORT` - Port for WebSocket gateway (default: `8081`)
 - `CLIENTS_REMOTE_WS_PORT` - Default WebSocket port for remote agent-manager services (default: `8080`, can be overridden per client via `agentWsPort`)
-- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL (required for Keycloak-authenticated clients)
-- `KEYCLOAK_REALM` - Keycloak realm (required for Keycloak-authenticated clients)
-- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required for HTTP authentication)
-- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required for HTTP authentication)
+- `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL (required when `AUTHENTICATION_METHOD=keycloak`)
+- `KEYCLOAK_REALM` - Keycloak realm (required when `AUTHENTICATION_METHOD=keycloak`)
+- `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required when `AUTHENTICATION_METHOD=keycloak`)
+- `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required when `AUTHENTICATION_METHOD=keycloak`)
 
 ### Provisioning Provider Environment Variables
 

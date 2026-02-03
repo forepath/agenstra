@@ -1,0 +1,33 @@
+flowchart TB
+    subgraph AUTH["Authentication Methods"]
+        direction TB
+        AUTH_METHOD["AUTHENTICATION_METHOD env"]
+        AUTH_METHOD --> API_KEY["api-key"]
+        AUTH_METHOD --> KEYCLOAK["keycloak"]
+        AUTH_METHOD --> USERS["users"]
+    end
+
+    subgraph API_KEY_FLOW["API Key Flow"]
+        API_KEY --> AK1["STATIC_API_KEY required"]
+        AK1 --> AK2["Authorization: Bearer &lt;key&gt; or ApiKey &lt;key&gt;"]
+        AK2 --> AK3["Always admin rights"]
+    end
+
+    subgraph KEYCLOAK_FLOW["Keycloak Flow"]
+        KEYCLOAK --> KC1["Keycloak OAuth2 / OIDC"]
+        KC1 --> KC2["User synced to users table"]
+        KC2 --> KC3["First user = admin, rest = user"]
+    end
+
+    subgraph USERS_FLOW["Users Flow (Built-in)"]
+        USERS --> UF1["JWT-based auth"]
+        UF1 --> UF2["Register / Login / Confirm Email"]
+        UF2 --> UF3["Password reset support (code via email)"]
+        UF3 --> UF4["First user = admin, rest = user"]
+        UF4 --> UF5["Admin CRUD for users"]
+        UF5 --> UF6["Admin create/email change: confirmation email sent"]
+    end
+
+    style API_KEY fill:#e6f0ff
+    style KEYCLOAK fill:#e6ffe6
+    style USERS fill:#fff0e6

@@ -35,6 +35,8 @@ services:
       # Environment variables for the provisioning providers
       HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
       DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
+      # Authentication method configuration
+      AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
       # Static API key authentication configuration
       STATIC_API_KEY: ${STATIC_API_KEY:-}
       # Environment variables for encryption
@@ -54,12 +56,32 @@ services:
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
       KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
+      # Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
+      JWT_SECRET: ${JWT_SECRET:-}
+      # SMTP / MailHog configuration (for email confirmation and password reset)
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
     ports:
       - '3100:3100'
       - '8081:8081'
     depends_on:
       postgres:
         condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - '1025:1025'
+      - '8025:8025'
     networks:
       - agent-controller-network
     restart: unless-stopped

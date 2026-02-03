@@ -76,9 +76,13 @@ For complete WebSocket event specifications, authentication flow, and usage exam
 
 ## Authentication
 
-### HTTP Endpoints
+Authentication is configured via `AUTHENTICATION_METHOD`:
 
-All HTTP endpoints are protected by Keycloak authentication by default. If `STATIC_API_KEY` is set, API key authentication is used instead (no Keycloak fallback). For detailed authentication requirements, see the [library documentation](../../libs/domains/framework/backend/feature-agent-controller/README.md#authentication).
+- **`api-key`**: Static API key (requires `STATIC_API_KEY`). Use `Authorization: Bearer <key>`.
+- **`keycloak`**: Keycloak OAuth2 (requires Keycloak env vars). Users are synced to the users table.
+- **`users`**: Built-in user registration with JWT (requires `JWT_SECRET`). Register, confirm email, login.
+
+For detailed authentication requirements and users auth endpoints, see the [library documentation](../../libs/domains/framework/backend/feature-agent-controller/README.md#authentication).
 
 ### WebSocket Gateway
 
@@ -214,7 +218,9 @@ See the [library documentation](../../libs/domains/framework/backend/feature-age
 
 **Authentication:**
 
-- `STATIC_API_KEY` - Static API key for authentication (if set, uses API key auth instead of Keycloak)
+- `AUTHENTICATION_METHOD` - `api-key`, `keycloak`, or `users` (default: api-key when STATIC_API_KEY set, else keycloak)
+- `STATIC_API_KEY` - Static API key (required when AUTHENTICATION_METHOD=api-key)
+- `JWT_SECRET` - JWT signing secret (required when AUTHENTICATION_METHOD=users)
 - `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required for Keycloak auth)
 - `KEYCLOAK_REALM` - Keycloak realm name (required for Keycloak auth)
