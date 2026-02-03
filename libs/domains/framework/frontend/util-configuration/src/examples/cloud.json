@@ -1,0 +1,27 @@
+{
+  "production": true,
+  "controller": {
+    "restApiUrl": "https://cloud.agenstra.com/v1/api",
+    "websocketUrl": "https://cloud.agenstra.com/v1/clients"
+  },
+  "authentication": {
+    "type": "keycloak",
+    "authServerUrl": "https://cloud.agenstra.com/auth",
+    "realm": "agenstra",
+    "clientId": "agenstra-clients"
+  },
+  "chatModelOptions": {
+    "cursor": {},
+    "opencode": {}
+  },
+  "editor": {
+    "openInNewWindow": true
+  },
+  "deployment": {
+    "openInNewWindow": true
+  },
+  "cookieConsent": {
+    "domain": ".agenstra.com",
+    "privacyPolicyUrl": "https://www.agenstra.com/legal/privacy"
+  }
+}
