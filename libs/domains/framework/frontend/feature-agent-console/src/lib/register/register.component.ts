@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   FormBuilder,
@@ -9,10 +10,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
+import { AuthenticationFacade, registerSuccess } from '@forepath/framework/frontend/data-access-agent-console';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
+import { take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'framework-agent-console-register',
@@ -25,6 +28,8 @@ export class AgentConsoleRegisterComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   protected readonly authFacade = inject(AuthenticationFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly actions$ = inject(Actions);
+  private readonly destroyRef = inject(DestroyRef);
 
   registerForm!: FormGroup;
   registering$: Observable<boolean> = this.authFacade.registering$;
@@ -46,6 +51,15 @@ export class AgentConsoleRegisterComponent implements OnInit {
         validators: this.passwordMatchValidator,
       },
     );
+
+    this.actions$
+      .pipe(
+        ofType(registerSuccess),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+        tap(() => this.registerForm.reset()),
+      )
+      .subscribe();
   }
 
   private passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
@@ -62,7 +76,6 @@ export class AgentConsoleRegisterComponent implements OnInit {
       const email = this.registerForm.get('email')?.value;
       const password = this.registerForm.get('password')?.value;
       this.authFacade.register(email, password);
-      this.registerForm.reset();
     } else {
       Object.keys(this.registerForm.controls).forEach((key) => {
         this.registerForm.get(key)?.markAsTouched();

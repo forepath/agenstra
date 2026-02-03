@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   FormBuilder,
@@ -9,10 +10,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
+import { AuthenticationFacade, resetPasswordSuccess } from '@forepath/framework/frontend/data-access-agent-console';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
+import { take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'framework-agent-console-request-password-reset-confirmation',
@@ -26,6 +29,8 @@ export class AgentConsoleRequestPasswordResetConfirmationComponent implements On
   private readonly route = inject(ActivatedRoute);
   protected readonly authFacade = inject(AuthenticationFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly actions$ = inject(Actions);
+  private readonly destroyRef = inject(DestroyRef);
 
   form!: FormGroup;
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
@@ -48,6 +53,15 @@ export class AgentConsoleRequestPasswordResetConfirmationComponent implements On
         validators: this.passwordMatchValidator,
       },
     );
+
+    this.actions$
+      .pipe(
+        ofType(resetPasswordSuccess),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+        tap(() => this.form.reset({ token: this.route.snapshot.queryParamMap.get('token') ?? '' })),
+      )
+      .subscribe();
   }
 
   private passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
@@ -64,7 +78,6 @@ export class AgentConsoleRequestPasswordResetConfirmationComponent implements On
       const token = this.form.get('token')?.value;
       const newPassword = this.form.get('newPassword')?.value;
       this.authFacade.resetPassword(token, newPassword);
-      this.form.reset({ token: this.route.snapshot.queryParamMap.get('token') ?? '' });
     } else {
       Object.keys(this.form.controls).forEach((key) => {
         this.form.get(key)?.markAsTouched();

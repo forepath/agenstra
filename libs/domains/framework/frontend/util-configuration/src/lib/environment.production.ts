@@ -7,7 +7,10 @@ export const environment: Environment = {
     websocketUrl: 'http://host.docker.internal:8081/clients',
   },
   authentication: {
+    /*
     type: 'api-key',
+    */
+    type: 'users',
     /*
     type: 'keycloak',
     authServerUrl: 'http://host.docker.internal:8380',

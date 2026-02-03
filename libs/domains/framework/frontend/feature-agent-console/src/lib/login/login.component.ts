@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
+import { AuthenticationFacade, loginSuccess } from '@forepath/framework/frontend/data-access-agent-console';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
+import { take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'framework-agent-console-login',
@@ -18,6 +21,8 @@ export class AgentConsoleLoginComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   protected readonly authFacade = inject(AuthenticationFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly actions$ = inject(Actions);
+  private readonly destroyRef = inject(DestroyRef);
 
   loginForm!: FormGroup;
   loading$: Observable<boolean> = this.authFacade.loading$;
@@ -65,6 +70,15 @@ export class AgentConsoleLoginComponent implements OnInit {
         apiKey: ['', [Validators.required]],
       });
     }
+
+    this.actions$
+      .pipe(
+        ofType(loginSuccess),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+        tap(() => this.loginForm.reset()),
+      )
+      .subscribe();
   }
 
   onSubmit(): void {
@@ -77,7 +91,6 @@ export class AgentConsoleLoginComponent implements OnInit {
         const apiKey = this.loginForm.get('apiKey')?.value;
         this.authFacade.login(apiKey);
       }
-      this.loginForm.reset();
     } else {
       // Mark all fields as touched to show validation errors
       Object.keys(this.loginForm.controls).forEach((key) => {

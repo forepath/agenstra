@@ -49,7 +49,7 @@ export class KeycloakUserSyncGuard implements CanActivate {
     const count = await this.usersRepository.count();
     const role = count === 0 ? UserRole.ADMIN : UserRole.USER;
 
-    user = await this.usersRepository.findByEmail(email);
+    user = await this.usersRepository.findByEmail(email.toLowerCase());
     if (user) {
       await this.usersRepository.update(user.id, { keycloakSub });
       return { id: user.id, email: user.email, role: user.role };

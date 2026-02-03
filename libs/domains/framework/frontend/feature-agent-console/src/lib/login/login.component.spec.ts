@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+import { Actions } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { AgentConsoleLoginComponent } from './login.component';
 
@@ -46,6 +47,7 @@ describe('AgentConsoleLoginComponent', () => {
         FormBuilder,
         { provide: AuthenticationFacade, useValue: mockAuthFacade },
         { provide: ENVIRONMENT, useValue: mockEnvironment },
+        { provide: Actions, useValue: of() },
       ],
     }).compileComponents();
 
@@ -93,6 +95,7 @@ describe('AgentConsoleLoginComponent', () => {
               authentication: { type: 'users' },
             },
           },
+          { provide: Actions, useValue: of() },
         ],
       }).compileComponents();
 
