@@ -19,20 +19,7 @@ export const environment: Environment = {
     */
   },
   chatModelOptions: {
-    cursor: {
-      'composer-1': 'Composer 1',
-      'sonnet-4.5': 'Claude Sonnet 4.5',
-      'sonnet-4.5-thinking': 'Claude Sonnet 4.5 Thinking',
-      'gemini-3-pro': 'Gemini 3 Pro',
-      'gpt-5': 'GPT 5',
-      'gpt-5.1': 'GPT 5.1',
-      'gpt-5-codex': 'GPT 5 Codex',
-      'gpt-5-codex-high': 'GPT 5 Codex High',
-      'gpt-5.1-codex': 'GPT 5.1 Codex',
-      'gpt-5.1-codex-high': 'GPT 5.1 Codex High',
-      'opus-4.1': 'Claude Opus 4.1',
-      grok: 'Grok',
-    },
+    cursor: {},
     opencode: {},
   },
   editor: {
