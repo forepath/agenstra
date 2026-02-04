@@ -21,28 +21,8 @@
           class="brand-icon"
         />
       </div>
-      @if (canAccessUserManager$ | async) {
-        <button
-          type="button"
-          class="btn btn-link text-white text-decoration-none d-flex align-items-center gap-1"
-          (click)="onOpenUserManagerInNewWindow()"
-          i18n-title="@@featureContainer-userManagementTitle"
-          title="User Management (opens in new window)"
-        >
-          <i class="bi bi-people me-1"></i>
-          <span class="small" i18n="@@featureContainer-users">Users</span>
-        </button>
-      }
     </div>
     <div class="d-flex align-items-center gap-2">
-      @if (userRoleDisplay$ | async; as role) {
-        <span
-          class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge me-3"
-          [attr.aria-label]="getRoleAriaLabel(role)"
-        >
-          {{ role }}
-        </span>
-      }
       <!-- Dark Mode Toggle -->
       <div class="form-check form-switch me-3 mb-0">
         <input
@@ -98,6 +78,24 @@
     </div>
   </section>
 }
-<section class="section__container">
-  <router-outlet></router-outlet>
-</section>
+<div class="d-flex justify-content-end flex-grow-1">
+  @if (isMainMask()) {
+    @if (canAccessUserManager$ | async) {
+      <aside class="sidebar bg-body-tertiary h-100">
+        <button
+          type="button"
+          class="sidebar__item"
+          (click)="onOpenUserManagerInNewWindow()"
+          i18n-title="@@featureContainer-userManagementTitle"
+          title="User Management (opens in new window)"
+        >
+          <i class="bi bi-people me-1"></i>
+          <span class="small" i18n="@@featureContainer-users">Users</span>
+        </button>
+      </aside>
+    }
+  }
+  <section class="section__container">
+    <router-outlet></router-outlet>
+  </section>
+</div>
