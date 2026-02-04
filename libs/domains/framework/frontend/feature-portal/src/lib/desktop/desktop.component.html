@@ -4,22 +4,31 @@
   <div class="container position-relative">
     <div class="row align-items-center">
       <div class="col-lg-6 mb-4 mb-lg-0 text-center text-lg-start">
-        <h1 class="display-4 fw-bold mb-4">Agenstra <span class="text-primary">Desktop</span></h1>
-        <p class="mb-4 fs-5">
+        <h1 class="display-4 fw-bold mb-4">
+          Agenstra <span class="text-primary" i18n="@@featurePortalDesktop-desktop">Desktop</span>
+        </h1>
+        <p class="mb-4 fs-5" i18n="@@featurePortalDesktop-heroDescription">
           The full Agenstra console - IDE, chat, file management, and agent control - packaged as a native application
           for Windows, macOS, and Linux. No browser required.
         </p>
-        <p class="mb-5">
+        <p class="mb-5" i18n="@@featurePortalDesktop-heroSubtext">
           Connect to your agent-manager instances, interact with AI agents in real-time, edit code directly in
           containers, and manage your distributed infrastructure - all from a single desktop window.
         </p>
         <div class="d-flex flex-column flex-sm-row gap-3">
-          <a routerLink="." fragment="features" class="btn btn-primary py-2 px-4">View Features</a>
+          <a
+            routerLink="."
+            fragment="features"
+            class="btn btn-primary py-2 px-4"
+            i18n="@@featurePortalDesktop-viewFeatures"
+            >View Features</a
+          >
           <a
             href="https://downloads.agenstra.com/"
             class="btn btn-outline-primary py-2 px-4"
             target="_blank"
             rel="noopener noreferrer"
+            i18n="@@featurePortalDesktop-downloads"
             >Downloads</a
           >
         </div>
@@ -29,25 +38,29 @@
           <div class="card border shadow-sm bg-body">
             <div class="card-body py-3 px-4 d-flex align-items-center gap-3">
               <i class="bi bi-check-circle-fill text-primary flex-shrink-0" style="font-size: 1.25rem"></i>
-              <span class="small mb-0">Full IDE, chat, and file management in one window</span>
+              <span class="small mb-0" i18n="@@featurePortalDesktop-featureFullIde"
+                >Full IDE, chat, and file management in one window</span
+              >
             </div>
           </div>
           <div class="card border shadow-sm bg-body">
             <div class="card-body py-3 px-4 d-flex align-items-center gap-3">
               <i class="bi bi-check-circle-fill text-primary flex-shrink-0" style="font-size: 1.25rem"></i>
-              <span class="small mb-0">Real-time AI agent interaction</span>
+              <span class="small mb-0" i18n="@@featurePortalDesktop-featureRealtime"
+                >Real-time AI agent interaction</span
+              >
             </div>
           </div>
           <div class="card border shadow-sm bg-body">
             <div class="card-body py-3 px-4 d-flex align-items-center gap-3">
               <i class="bi bi-check-circle-fill text-primary flex-shrink-0" style="font-size: 1.25rem"></i>
-              <span class="small mb-0">Windows, macOS, and Linux</span>
+              <span class="small mb-0" i18n="@@featurePortalDesktop-featurePlatforms">Windows, macOS, and Linux</span>
             </div>
           </div>
           <div class="card border shadow-sm bg-body">
             <div class="card-body py-3 px-4 d-flex align-items-center gap-3">
               <i class="bi bi-check-circle-fill text-primary flex-shrink-0" style="font-size: 1.25rem"></i>
-              <span class="small mb-0">No browser required</span>
+              <span class="small mb-0" i18n="@@featurePortalDesktop-featureNoBrowser">No browser required</span>
             </div>
           </div>
         </div>
@@ -61,8 +74,10 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12 text-center mb-5">
-        <h2 class="display-5 fw-bold mb-3">Full console, native experience</h2>
-        <p class="lead text-muted">
+        <h2 class="display-5 fw-bold mb-3" i18n="@@featurePortalDesktop-featuresTitle">
+          Full console, native experience
+        </h2>
+        <p class="lead text-muted" i18n="@@featurePortalDesktop-featuresLead">
           The same powerful Agenstra console you use in the browser - packaged as a standalone desktop application for
           Windows, macOS, and Linux.
         </p>
@@ -75,8 +90,8 @@
             <div class="mb-4">
               <i class="bi bi-window-stack text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Native install</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalDesktop-nativeInstallTitle">Native install</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalDesktop-nativeInstallDesc">
               Download and install like any desktop app. No browser tabs, no web URLs to remember. Launch Agenstra from
               your dock, taskbar, or application menu - Windows (.zip), macOS (.zip), or Linux (.deb, .zip).
             </p>
@@ -89,8 +104,8 @@
             <div class="mb-4">
               <i class="bi bi-code-square text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Full console inside</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalDesktop-fullConsoleTitle">Full console inside</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalDesktop-fullConsoleDesc">
               The complete Agenstra console: Monaco-based IDE, real-time chat with AI agents, file tree, terminal, Git
               integration, and container management. Everything you get in the web version - in a dedicated window.
             </p>
@@ -103,8 +118,8 @@
             <div class="mb-4">
               <i class="bi bi-laptop text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Cross-platform</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalDesktop-crossPlatformTitle">Cross-platform</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalDesktop-crossPlatformDesc">
               Built with Electron for consistent behavior across platforms. Use the same config and workflows whether
               you're on Windows, macOS, or Linux. Connect to remote agent-manager instances from anywhere.
             </p>
@@ -121,8 +136,10 @@
   <div class="container position-relative">
     <div class="row">
       <div class="col-md-12 text-center mb-5">
-        <h2 class="display-5 fw-bold mb-3">Hands-free enterprise deployment</h2>
-        <p class="lead text-muted mb-0">
+        <h2 class="display-5 fw-bold mb-3" i18n="@@featurePortalDesktop-enterpriseTitle">
+          Hands-free enterprise deployment
+        </h2>
+        <p class="lead text-muted mb-0" i18n="@@featurePortalDesktop-enterpriseLead">
           Point the desktop app to a central config URL. No rebuilds, no reinstalls - ideal for enterprise deployments.
         </p>
       </div>
@@ -134,8 +151,8 @@
             <div class="mb-4">
               <i class="bi bi-link-45deg text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Single source of truth</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalDesktop-singleSourceTitle">Single source of truth</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalDesktop-singleSourceDesc">
               Host one JSON config file on your internal server. Every client fetches it at launch. Update the file once
               and all deployments pick up the change automatically - no per-machine edits.
             </p>
@@ -148,8 +165,8 @@
             <div class="mb-4">
               <i class="bi bi-building text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Scale without friction</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalDesktop-scaleTitle">Scale without friction</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalDesktop-scaleDesc">
               Roll out the same installer across the entire organization. Users point to the appropriate config URL for
               their environment. No custom builds or per-site packaging.
             </p>
@@ -162,8 +179,8 @@
             <div class="mb-4">
               <i class="bi bi-arrow-repeat text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Change config, not the app</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalDesktop-changeConfigTitle">Change config, not the app</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalDesktop-changeConfigDesc">
               Switch backends, update auth, or toggle features by editing the remote config. No rebuilds, no
               redistributing. The same pattern works for Docker via the <code>CONFIG</code> environment variable.
             </p>
@@ -175,7 +192,7 @@
       <div class="col-md-12">
         <div class="desktop-config-example card border shadow-sm bg-body overflow-hidden">
           <div class="card-body text-center p-4">
-            <h3 class="h6 fw-bold mb-3">Try for yourself</h3>
+            <h3 class="h6 fw-bold mb-3" i18n="@@featurePortalDesktop-tryYourself">Try for yourself</h3>
             <a
               href="https://downloads.agenstra.com/configs/cloud.json"
               class="desktop-config-link text-primary text-break"
@@ -186,7 +203,7 @@
                 class="hero-install-pre mb-3 bg-body-tertiary p-3 rounded"
               ><code>https://downloads.agenstra.com/configs/cloud.json</code></pre>
             </a>
-            <p class="text-muted small mt-3 mb-0">
+            <p class="text-muted small mt-3 mb-0" i18n="@@featurePortalDesktop-configHint">
               Use this URL in the desktop app to connect to our demo environment. The app fetches the config at startup
               and merges it with defaults.
             </p>
@@ -203,8 +220,8 @@
   <div class="container position-relative">
     <div class="row">
       <div class="col-md-12 text-center">
-        <h2 class="display-6 fw-bold mb-3">Get the desktop app</h2>
-        <p class="lead mb-0 text-white">
+        <h2 class="display-6 fw-bold mb-3" i18n="@@featurePortalDesktop-ctaTitle">Get the desktop app</h2>
+        <p class="lead mb-0 text-white" i18n="@@featurePortalDesktop-ctaLead">
           Download Agenstra Desktop for your platform. Connect to your existing agent-manager instances or use the
           web-based console - both give you the same full experience.
         </p>
@@ -214,9 +231,16 @@
             class="btn btn-light py-2 px-4"
             target="_blank"
             rel="noopener noreferrer"
+            i18n="@@featurePortalDesktop-downloadsCta"
             >Downloads</a
           >
-          <a routerLink="/" fragment="hero" class="btn btn-outline-light py-2 px-4">Learn about Agenstra</a>
+          <a
+            routerLink="/"
+            fragment="hero"
+            class="btn btn-outline-light py-2 px-4"
+            i18n="@@featurePortalDesktop-learnAbout"
+            >Learn about Agenstra</a
+          >
         </div>
       </div>
     </div>

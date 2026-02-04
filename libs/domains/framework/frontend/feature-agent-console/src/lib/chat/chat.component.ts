@@ -1432,6 +1432,59 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return this.environment.deployment?.openInNewWindow ?? false;
   }
 
+  getFileTreeToggleTitle(): string {
+    return this.fileTreeVisible()
+      ? $localize`:@@featureChat-hideFileTree:Hide File Tree`
+      : $localize`:@@featureChat-showFileTree:Show File Tree`;
+  }
+
+  getChatToggleTitle(): string {
+    return this.chatVisible()
+      ? $localize`:@@featureChat-hideChat:Hide Chat`
+      : $localize`:@@featureChat-showChat:Show Chat`;
+  }
+
+  getTerminalToggleTitle(): string {
+    return this.terminalVisible()
+      ? $localize`:@@featureChat-hideTerminal:Hide Terminal`
+      : $localize`:@@featureChat-showTerminal:Show Terminal`;
+  }
+
+  getGitManagerToggleTitle(): string {
+    return this.gitManagerVisible()
+      ? $localize`:@@featureChat-hideVersionControl:Hide Version Control`
+      : $localize`:@@featureChat-showVersionControl:Show Version Control`;
+  }
+
+  getChatBackTitle(): string {
+    return this.editorOpen()
+      ? $localize`:@@featureChat-closeChat:Close Chat`
+      : $localize`:@@featureChat-backToEnvironments:Back to environments`;
+  }
+
+  getSocketStatusTitle(reconnecting: boolean): string {
+    return reconnecting
+      ? $localize`:@@featureChat-reconnecting:Reconnecting...`
+      : $localize`:@@featureChat-connected:Connected`;
+  }
+
+  getOpenEditorTitle(): string {
+    return this.getOpenInNewWindow()
+      ? $localize`:@@featureChat-openEditorNewWindow:Open Editor in New Window`
+      : $localize`:@@featureChat-openEditor:Open Editor`;
+  }
+
+  getDeploymentManagerToggleTitle(): string {
+    const openInNew = this.getDeploymentOpenInNewWindow();
+    const isOpen = this.deploymentManagerOpen();
+    if (openInNew && !isOpen) {
+      return $localize`:@@featureChat-openDeploymentManagerNewWindow:Open Deployment Manager in New Window`;
+    }
+    return isOpen
+      ? $localize`:@@featureChat-closeDeploymentManager:Close Deployment Manager`
+      : $localize`:@@featureChat-openDeploymentManager:Open Deployment Manager`;
+  }
+
   /**
    * Open editor in a new window with minimal browser controls in standalone mode
    */

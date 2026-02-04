@@ -65,6 +65,10 @@ export class DeploymentRunDetailsComponent {
     return this.runJobs().find((job) => job.id === jobId) || null;
   });
 
+  getRunDisplayName(runName: string | null | undefined): string {
+    return runName || $localize`:@@featureDeploymentRunDetails-untitledRun:Untitled Run`;
+  }
+
   constructor() {
     // Reset hasLoadedOnce and close logs when runId changes
     effect(() => {
@@ -270,5 +274,11 @@ export class DeploymentRunDetailsComponent {
     }
     const statusLower = status.status.toLowerCase();
     return statusLower === 'in_progress' || statusLower === 'running' || statusLower === 'queued';
+  }
+
+  getLogsHeader(): string {
+    return this.showRunLogs()
+      ? $localize`:@@featureDeploymentRunDetails-runLogsHeader:Run Logs`
+      : $localize`:@@featureDeploymentRunDetails-jobLogsHeader:Job Logs`;
   }
 }

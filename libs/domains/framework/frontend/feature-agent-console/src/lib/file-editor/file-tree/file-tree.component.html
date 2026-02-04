@@ -1,13 +1,14 @@
 <div class="file-tree-container d-flex flex-column h-100">
   <div class="file-tree-header p-2 border-bottom bg-body-tertiary">
     <div class="d-flex justify-content-between align-items-center">
-      <h6 class="mb-0 fw-semibold">Files</h6>
+      <h6 class="mb-0 fw-semibold" i18n="@@featureFileTree-filesHeader">Files</h6>
       <div class="btn-group btn-group-sm" role="group">
         <button
           type="button"
           class="btn btn-sm btn-outline-secondary"
           [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'file'"
           (click)="onCreateItem('file')"
+          i18n-title="@@featureFileTree-newFileTitle"
           title="New File"
         >
           <i class="bi bi-file-earmark-plus"></i>
@@ -17,14 +18,27 @@
           class="btn btn-sm btn-outline-secondary"
           [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'directory'"
           (click)="onCreateItem('directory')"
+          i18n-title="@@featureFileTree-newDirectoryTitle"
           title="New Directory"
         >
           <i class="bi bi-folder-plus"></i>
         </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onUploadFile()" title="Upload File">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          (click)="onUploadFile()"
+          i18n-title="@@featureFileTree-uploadFileTitle"
+          title="Upload File"
+        >
           <i class="bi bi-upload"></i>
         </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onRefreshRoot()" title="Refresh">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          (click)="onRefreshRoot()"
+          i18n-title="@@featureFileTree-refreshTitle"
+          title="Refresh"
+        >
           <i class="bi bi-arrow-clockwise"></i>
         </button>
       </div>
@@ -42,14 +56,14 @@
     @if (rootLoading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
         <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+          <span class="visually-hidden" i18n="@@featureFileTree-loading">Loading...</span>
         </div>
       </div>
     } @else {
       @if (treeNodes().length === 0) {
         <div class="text-center text-muted p-4">
           <i class="bi bi-folder-x fs-4 d-block mb-2"></i>
-          <p class="mb-0 small">No files</p>
+          <p class="mb-0 small" i18n="@@featureFileTree-noFiles">No files</p>
         </div>
         <!-- Show create input at root level if creating at root and tree is empty -->
         @if (creatingItem()?.path === '.') {
@@ -61,7 +75,7 @@
                 [(ngModel)]="newItemName"
                 (keydown.enter)="onConfirmCreate()"
                 (keydown.escape)="onCancelCreate()"
-                [placeholder]="creatingItem()?.type === 'file' ? 'Enter file name...' : 'Enter folder name...'"
+                [placeholder]="getCreateItemPlaceholder()"
                 autofocus
               />
               <button class="btn btn-sm btn-primary" type="button" (click)="onConfirmCreate()">
@@ -86,7 +100,7 @@
                     [(ngModel)]="newItemName"
                     (keydown.enter)="onConfirmCreate()"
                     (keydown.escape)="onCancelCreate()"
-                    [placeholder]="creatingItem()?.type === 'file' ? 'Enter file name...' : 'Enter folder name...'"
+                    [placeholder]="getCreateItemPlaceholder()"
                     autofocus
                   />
                   <button class="btn btn-sm btn-primary" type="button" (click)="onConfirmCreate()">
@@ -130,7 +144,7 @@
             <small
               class="text-muted d-flex align-items-center gap-2 cursor-pointer"
               (click)="onOpenBranchModal()"
-              [title]="'Current branch: ' + branch"
+              [title]="getCurrentBranchTitle(branch)"
             >
               <i class="bi bi-diagram-3"></i>
               <span class="text-truncate">{{ branch }}</span>
@@ -143,13 +157,7 @@
                 [class.status-conflict]="indicator === 'conflict'"
                 [class.has-spinner]="showStatusIndicatorSpinner$ | async"
                 (click)="onStatusIndicatorClick($event)"
-                [title]="
-                  indicator === 'clean'
-                    ? 'In sync with remote - Click to open Version Control'
-                    : indicator === 'changes'
-                      ? 'Local changes (staged, unstaged, or unpushed) - Click to open Version Control'
-                      : 'Merge conflicts detected - Click to open Version Control'
-                "
+                [title]="getStatusIndicatorTitle(indicator)"
               >
                 @if (showStatusIndicatorSpinner$ | async) {
                   <span
@@ -157,7 +165,7 @@
                     role="status"
                     style="width: 10px; height: 10px; border-width: 1.5px"
                   >
-                    <span class="visually-hidden">Loading...</span>
+                    <span class="visually-hidden" i18n="@@featureFileTree-loading">Loading...</span>
                   </span>
                 }
               </span>
@@ -239,6 +247,7 @@
               class="btn btn-sm btn-outline-secondary py-0 px-1"
               [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'file'"
               (click)="onCreateItem('file', node.path); $event.stopPropagation()"
+              i18n-title="@@featureFileTree-newFileTitle"
               title="New File"
             >
               <i class="bi bi-file-earmark-plus"></i>
@@ -248,6 +257,7 @@
               class="btn btn-sm btn-outline-secondary py-0 px-1"
               [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'directory'"
               (click)="onCreateItem('directory', node.path); $event.stopPropagation()"
+              i18n-title="@@featureFileTree-newDirectoryTitle"
               title="New Directory"
             >
               <i class="bi bi-folder-plus"></i>
@@ -256,6 +266,7 @@
               type="button"
               class="btn btn-sm btn-outline-secondary py-0 px-1"
               (click)="onUploadFile(node.path); $event.stopPropagation()"
+              i18n-title="@@featureFileTree-uploadFileTitle"
               title="Upload File"
             >
               <i class="bi bi-upload"></i>
@@ -265,6 +276,7 @@
             type="button"
             class="btn btn-sm btn-outline-danger py-0 px-1"
             (click)="onDeleteItem(node.path); $event.stopPropagation()"
+            i18n-title="@@featureFileTree-deleteTitle"
             title="Delete"
           >
             <i class="bi bi-trash"></i>
@@ -283,7 +295,7 @@
             [(ngModel)]="newItemName"
             (keydown.enter)="onConfirmCreate()"
             (keydown.escape)="onCancelCreate()"
-            [placeholder]="creatingItem()?.type === 'file' ? 'Enter file name...' : 'Enter folder name...'"
+            [placeholder]="getCreateItemPlaceholder()"
             autofocus
           />
           <button class="btn btn-sm btn-primary" type="button" (click)="onConfirmCreate()">
@@ -328,44 +340,45 @@
     (click)="$event.stopPropagation()"
   >
     <button class="dropdown-item" (click)="onCreateItem('file', contextMenuPath() || undefined); onCloseContextMenu()">
-      <i class="bi bi-file-earmark-plus me-2"></i>New File
+      <i class="bi bi-file-earmark-plus me-2"></i><span i18n="@@featureFileTree-contextNewFile">New File</span>
     </button>
     <button
       class="dropdown-item"
       (click)="onCreateItem('directory', contextMenuPath() || undefined); onCloseContextMenu()"
     >
-      <i class="bi bi-folder-plus me-2"></i>New Directory
+      <i class="bi bi-folder-plus me-2"></i><span i18n="@@featureFileTree-contextNewDirectory">New Directory</span>
     </button>
     @if (contextMenuPath() && (contextMenuPath() === '.' || findNodeByPath(contextMenuPath()!)?.type === 'directory')) {
       <button class="dropdown-item" (click)="onUploadFile(contextMenuPath()!); onCloseContextMenu()">
-        <i class="bi bi-upload me-2"></i>Upload File
+        <i class="bi bi-upload me-2"></i><span i18n="@@featureFileTree-contextUploadFile">Upload File</span>
       </button>
     }
     @if (contextMenuPath() && findNodeByPath(contextMenuPath()!)?.type === 'directory') {
       <div class="dropdown-divider"></div>
       <button class="dropdown-item" (click)="onRefreshFolder(contextMenuPath()!); onCloseContextMenu()">
-        <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+        <i class="bi bi-arrow-clockwise me-2"></i><span i18n="@@featureFileTree-contextRefresh">Refresh</span>
       </button>
     }
     @if (contextMenuPath() && findNodeByPath(contextMenuPath()!)?.type === 'file') {
       <div class="dropdown-divider"></div>
       <button class="dropdown-item" (click)="onCopyFileLink(contextMenuPath()!)">
-        <i class="bi bi-link-45deg me-2"></i>Copy link
+        <i class="bi bi-link-45deg me-2"></i><span i18n="@@featureFileTree-contextCopyLink">Copy link</span>
       </button>
       <button class="dropdown-item" (click)="onOpenInNewWindow(contextMenuPath()!)">
-        <i class="bi bi-box-arrow-up-right me-2"></i>Open in a new window
+        <i class="bi bi-box-arrow-up-right me-2"></i
+        ><span i18n="@@featureFileTree-contextOpenInNewWindow">Open in a new window</span>
       </button>
     }
     <div class="dropdown-divider"></div>
     <button class="dropdown-item" (click)="onRenameItem(contextMenuPath()!)">
-      <i class="bi bi-pencil me-2"></i>Rename
+      <i class="bi bi-pencil me-2"></i><span i18n="@@featureFileTree-contextRename">Rename</span>
     </button>
     <button class="dropdown-item" (click)="onMoveItem(contextMenuPath()!)">
-      <i class="bi bi-arrow-right-circle me-2"></i>Move
+      <i class="bi bi-arrow-right-circle me-2"></i><span i18n="@@featureFileTree-contextMove">Move</span>
     </button>
     <div class="dropdown-divider"></div>
     <button class="dropdown-item text-danger" (click)="onDeleteItem(contextMenuPath()!)">
-      <i class="bi bi-trash me-2"></i>Delete
+      <i class="bi bi-trash me-2"></i><span i18n="@@featureFileTree-contextDelete">Delete</span>
     </button>
   </div>
 }
@@ -387,33 +400,41 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteFileModalLabel">
-          Delete {{ itemToDelete()?.type === 'directory' ? 'Directory' : 'File' }}
-        </h5>
+        <h5 class="modal-title" id="deleteFileModalLabel">{{ getDeleteModalTitle() }}</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureFileTree-closeAriaLabel"
           aria-label="Close"
           (click)="itemToDelete.set(null)"
         ></button>
       </div>
       <div class="modal-body">
-        <p>
-          Are you sure you want to delete the {{ itemToDelete()?.type === 'directory' ? 'directory' : 'file' }}
-          <strong>{{ itemToDelete()?.path }}</strong
-          >?
-        </p>
+        <p>{{ getDeleteModalMessage() }}</p>
         <p class="text-danger mb-0">
           <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          This action cannot be undone.
+          <span i18n="@@featureFileTree-deleteModalWarning">This action cannot be undone.</span>
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="itemToDelete.set(null)">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="itemToDelete.set(null)"
+          i18n="@@featureFileTree-cancelButton"
+        >
           Cancel
         </button>
-        <button type="button" class="btn btn-danger" (click)="confirmDeleteItem()">Delete</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDeleteItem()"
+          i18n="@@featureFileTree-deleteButton"
+        >
+          Delete
+        </button>
       </div>
     </div>
   </div>
@@ -431,25 +452,20 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="renameFileModalLabel">
-          Rename {{ itemToRename()?.type === 'directory' ? 'Directory' : 'File' }}
-        </h5>
+        <h5 class="modal-title" id="renameFileModalLabel">{{ getRenameModalTitle() }}</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureFileTree-closeAriaLabel"
           aria-label="Close"
           (click)="cancelRenameItem()"
         ></button>
       </div>
       <div class="modal-body">
-        <p>
-          Enter a new name for the {{ itemToRename()?.type === 'directory' ? 'directory' : 'file' }}
-          <strong>{{ itemToRename()?.path }}</strong
-          >:
-        </p>
+        <p>{{ getRenameModalMessage() }}</p>
         <div class="mb-3">
-          <label for="renameNewName" class="form-label">New Name</label>
+          <label for="renameNewName" class="form-label" i18n="@@featureFileTree-newNameLabel">New Name</label>
           <input
             type="text"
             class="form-control"
@@ -462,7 +478,13 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelRenameItem()">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelRenameItem()"
+          i18n="@@featureFileTree-cancelButton"
+        >
           Cancel
         </button>
         <button
@@ -470,6 +492,7 @@
           class="btn btn-primary"
           (click)="confirmRenameItem()"
           [disabled]="!renameNewName().trim() || renameNewName().trim() === itemToRename()?.name"
+          i18n="@@featureFileTree-renameButton"
         >
           Rename
         </button>
@@ -490,24 +513,22 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="moveFileModalLabel">
-          Move {{ itemToMove()?.type === 'directory' ? 'Directory' : 'File' }}
-        </h5>
+        <h5 class="modal-title" id="moveFileModalLabel">{{ getMoveModalTitle() }}</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureFileTree-closeAriaLabel"
           aria-label="Close"
           (click)="cancelMoveItem()"
         ></button>
       </div>
       <div class="modal-body">
-        <p>
-          Move the {{ itemToMove()?.type === 'directory' ? 'directory' : 'file' }}
-          <strong>{{ itemToMove()?.path }}</strong> to:
-        </p>
+        <p>{{ getMoveModalMessage() }}</p>
         <div class="mb-3">
-          <label for="moveDestinationPath" class="form-label">Destination Path</label>
+          <label for="moveDestinationPath" class="form-label" i18n="@@featureFileTree-destinationPathLabel"
+            >Destination Path</label
+          >
           <input
             type="text"
             class="form-control"
@@ -515,23 +536,27 @@
             [(ngModel)]="moveDestinationPath"
             (keydown.enter)="confirmMoveItem()"
             (keydown.escape)="cancelMoveItem()"
+            i18n-placeholder="@@featureFileTree-moveDestinationPlaceholder"
             placeholder="Enter destination path (e.g., 'folder' or 'folder/subfolder')"
             autofocus
           />
-          <div class="form-text">
+          <div class="form-text" i18n="@@featureFileTree-moveDestinationHint">
             Use '.' for root directory, or enter a relative path like 'folder' or 'folder/subfolder'
           </div>
         </div>
         <p class="text-muted small mb-0">
           <i class="bi bi-info-circle me-1"></i>
-          The {{ itemToMove()?.type === 'directory' ? 'directory' : 'file' }} will be moved to:
-          <strong>{{
-            moveDestinationPath() === '.' ? itemToMove()?.name : moveDestinationPath() + '/' + itemToMove()?.name
-          }}</strong>
+          {{ getMoveDestinationLabel() }}
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelMoveItem()">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelMoveItem()"
+          i18n="@@featureFileTree-cancelButton"
+        >
           Cancel
         </button>
         <button
@@ -539,6 +564,7 @@
           class="btn btn-primary"
           (click)="confirmMoveItem()"
           [disabled]="!moveDestinationPath().trim()"
+          i18n="@@featureFileTree-moveButton"
         >
           Move
         </button>

@@ -3,10 +3,15 @@
   <header class="docs-header border-bottom bg-dark text-white d-flex align-items-center justify-content-between gap-2">
     <div class="d-flex align-items-center gap-3">
       <a [routerLink]="getBasePath()" class="brand-icon-container me-2 fs-3 bg-primary p-3">
-        <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
+        <img
+          src="assets/images/icon_light.svg"
+          i18n-alt="@@featureDocsLayout-brandAlt"
+          alt="Agenstra"
+          class="brand-icon"
+        />
       </a>
       <a [routerLink]="getBasePath()" class="text-decoration-none text-white d-none d-md-block">
-        <h5 class="mb-0">Documentation</h5>
+        <h5 class="mb-0" i18n="@@featureDocsLayout-documentation">Documentation</h5>
       </a>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -16,7 +21,9 @@
         href="https://github.com/forepath/agenstra"
         target="_blank"
         rel="noopener noreferrer"
+        i18n-aria-label="@@featureDocsLayout-githubAriaLabel"
         aria-label="GitHub"
+        i18n-title="@@featureDocsLayout-githubTitle"
         title="View on GitHub"
       >
         <i class="bi bi-github fs-5"></i>
@@ -30,7 +37,12 @@
           [checked]="themeService.isDarkMode()"
           (change)="themeService.toggleTheme()"
         />
-        <label class="form-check-label text-white" for="darkModeToggle" title="Toggle dark mode">
+        <label
+          class="form-check-label text-white"
+          for="darkModeToggle"
+          i18n-title="@@featureDocsLayout-darkModeTitle"
+          title="Toggle dark mode"
+        >
           <i
             class="bi"
             [class.bi-moon-fill]="!themeService.isDarkMode()"
@@ -42,6 +54,7 @@
         type="button"
         class="btn btn-link d-md-none text-white menu-collapse-button"
         (click)="toggleMobileMenu()"
+        i18n-aria-label="@@featureDocsLayout-toggleNavAriaLabel"
         aria-label="Toggle navigation"
       >
         <i class="bi bi-list fs-4"></i>

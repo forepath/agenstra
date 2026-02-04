@@ -58,6 +58,10 @@ export class AgentConsoleContainerComponent implements OnInit {
    */
   readonly showStandaloneLoading = this.standaloneLoadingService.isLoading;
 
+  getRoleAriaLabel(role: string): string {
+    return $localize`:@@featureContainer-ariaLabelRole:Role ${role}:role:`;
+  }
+
   /**
    * Initialize component and check authentication status
    */

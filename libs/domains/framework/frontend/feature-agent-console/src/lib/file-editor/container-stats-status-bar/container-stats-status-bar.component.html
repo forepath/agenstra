@@ -6,7 +6,7 @@
         <div class="d-flex align-items-center gap-1">
           <i class="bi bi-cpu small"></i>
           <small>
-            <span class="d-none d-md-inline">CPU: </span>
+            <span class="d-none d-md-inline" i18n="@@featureContainerStats-cpuLabel">CPU: </span>
             <span class="fw-semibold"> {{ statsData.cpuPercent | number: '1.1-1' }}% </span>
           </small>
         </div>
@@ -15,7 +15,7 @@
         <div class="d-flex align-items-center gap-1">
           <i class="bi bi-memory small"></i>
           <small>
-            <span class="d-none d-md-inline">Memory: </span>
+            <span class="d-none d-md-inline" i18n="@@featureContainerStats-memoryLabel">Memory: </span>
             <span class="fw-semibold">{{ statsData.memoryUsageFormatted }}</span>
             @if (statsData.memoryLimit > 0) {
               /
@@ -39,7 +39,7 @@
       <div class="d-flex align-items-center gap-2">
         <small>
           <i class="bi bi-hourglass-split small me-1"></i>
-          Waiting for container stats...
+          <span i18n="@@featureContainerStats-waitingForStats">Waiting for container stats...</span>
         </small>
       </div>
     </div>

@@ -1,8 +1,8 @@
 <section class="section__row">
   <div class="section__column d-flex align-items-center justify-content-center bg-body-tertiary h-100">
     <div class="p-4" style="width: 700px; max-width: 100%">
-      <h1 class="display-5 fw-bold mb-3">Agenstra</h1>
-      <p class="lead mb-4">
+      <h1 class="display-5 fw-bold mb-3" i18n="@@featureLogin-appName">Agenstra</h1>
+      <p class="lead mb-4" i18n="@@featureLogin-appDescription">
         Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact
         with agents in real-time, and edit code directly in their containers - all from one powerful dashboard.
       </p>
@@ -10,8 +10,8 @@
         <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
           <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
           <div class="d-flex flex-column">
-            <strong>Distributed Agent Management</strong>
-            <span class="text-muted small"
+            <strong i18n="@@featureLogin-featureDistributedAgent">Distributed Agent Management</strong>
+            <span class="text-muted small" i18n="@@featureLogin-featureDistributedAgentDesc"
               >Connect to and manage multiple remote agent-manager services from a single console</span
             >
           </div>
@@ -19,8 +19,8 @@
         <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
           <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
           <div class="d-flex flex-column">
-            <strong>Real-time AI Chat</strong>
-            <span class="text-muted small"
+            <strong i18n="@@featureLogin-featureRealtimeChat">Real-time AI Chat</strong>
+            <span class="text-muted small" i18n="@@featureLogin-featureRealtimeChatDesc"
               >WebSocket-based bidirectional communication with AI agents and instant responses</span
             >
           </div>
@@ -28,8 +28,8 @@
         <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
           <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
           <div class="d-flex flex-column">
-            <strong>Integrated Code Editor</strong>
-            <span class="text-muted small"
+            <strong i18n="@@featureLogin-featureCodeEditor">Integrated Code Editor</strong>
+            <span class="text-muted small" i18n="@@featureLogin-featureCodeEditorDesc"
               >Edit files directly in agent containers with Monaco Editor - read, write, and manage code in
               real-time</span
             >
@@ -38,8 +38,8 @@
         <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
           <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
           <div class="d-flex flex-column">
-            <strong>Container Integration</strong>
-            <span class="text-muted small"
+            <strong i18n="@@featureLogin-featureContainer">Container Integration</strong>
+            <span class="text-muted small" i18n="@@featureLogin-featureContainerDesc"
               >Docker-based agent execution with live log streaming and file system operations</span
             >
           </div>
@@ -49,7 +49,7 @@
   </div>
   <div class="section__column d-flex align-items-center justify-content-center">
     <div class="p-4" style="width: 500px; max-width: 100%">
-      <h2 class="section__column-title mb-4 text-center">Login</h2>
+      <h2 class="section__column-title mb-4 text-center" i18n="@@featureLogin-title">Login</h2>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
         <!-- Success Alert -->
@@ -71,7 +71,9 @@
         @if (isApiKeyAuth) {
           <!-- API Base Hostname Input -->
           <div class="mb-3">
-            <label for="apiBaseHostname" class="form-label">Controller API Host</label>
+            <label for="apiBaseHostname" class="form-label" i18n="@@featureLogin-controllerApiHost"
+              >Controller API Host</label
+            >
             <div class="input-group">
               <span class="input-group-text">
                 <i class="bi bi-globe"></i>
@@ -89,7 +91,7 @@
 
           <!-- API Key Input -->
           <div class="mb-3">
-            <label for="apiKey" class="form-label">Controller API Key</label>
+            <label for="apiKey" class="form-label" i18n="@@featureLogin-controllerApiKey">Controller API Key</label>
             <div class="input-group">
               <span class="input-group-text">
                 <i class="bi bi-key-fill"></i>
@@ -101,12 +103,13 @@
                 id="apiKey"
                 formControlName="apiKey"
                 placeholder="Enter your API key"
+                i18n-placeholder="@@featureLogin-apiKeyPlaceholder"
                 [disabled]="(loading$ | async) ?? false"
                 autocomplete="off"
               />
             </div>
             @if (loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched) {
-              <div class="invalid-feedback d-block">API key is required.</div>
+              <div class="invalid-feedback d-block" i18n="@@featureLogin-apiKeyRequired">API key is required.</div>
             }
           </div>
         }
@@ -114,7 +117,7 @@
         @if (isUsersAuth) {
           <!-- Email Input -->
           <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
+            <label for="email" class="form-label" i18n="@@featureLogin-emailLabel">Email</label>
             <div class="input-group">
               <span class="input-group-text">
                 <i class="bi bi-envelope-fill"></i>
@@ -126,6 +129,7 @@
                 id="email"
                 formControlName="email"
                 placeholder="Enter your email"
+                i18n-placeholder="@@featureLogin-emailPlaceholder"
                 [disabled]="(loading$ | async) ?? false"
                 autocomplete="email"
               />
@@ -133,9 +137,9 @@
             @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
               <div class="invalid-feedback d-block">
                 @if (loginForm.get('email')?.errors?.['required']) {
-                  Email is required.
+                  <ng-container i18n="@@featureLogin-emailRequired">Email is required.</ng-container>
                 } @else if (loginForm.get('email')?.errors?.['email']) {
-                  Please enter a valid email address.
+                  <ng-container i18n="@@featureLogin-emailInvalid">Please enter a valid email address.</ng-container>
                 }
               </div>
             }
@@ -143,7 +147,7 @@
 
           <!-- Password Input -->
           <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label" i18n="@@featureLogin-passwordLabel">Password</label>
             <div class="input-group">
               <span class="input-group-text">
                 <i class="bi bi-lock-fill"></i>
@@ -155,12 +159,13 @@
                 id="password"
                 formControlName="password"
                 placeholder="Enter your password"
+                i18n-placeholder="@@featureLogin-passwordPlaceholder"
                 [disabled]="(loading$ | async) ?? false"
                 autocomplete="current-password"
               />
             </div>
             @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-              <div class="invalid-feedback d-block">Password is required.</div>
+              <div class="invalid-feedback d-block" i18n="@@featureLogin-passwordRequired">Password is required.</div>
             }
           </div>
 
@@ -171,9 +176,16 @@
             [class.justify-content-end]="isSignupDisabled"
           >
             @if (!isSignupDisabled) {
-              <a routerLink="/register" class="text-decoration-none small">Create an account</a>
+              <a routerLink="/register" class="text-decoration-none small" i18n="@@featureLogin-createAccount"
+                >Create an account</a
+              >
             }
-            <a routerLink="/request-password-reset" class="text-decoration-none small">Forgot password?</a>
+            <a
+              routerLink="/request-password-reset"
+              class="text-decoration-none small"
+              i18n="@@featureLogin-forgotPassword"
+              >Forgot password?</a
+            >
           </div>
         }
 
@@ -186,10 +198,10 @@
           >
             @if ((loading$ | async) ?? false) {
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              <span>Logging in...</span>
+              <span i18n="@@featureLogin-loggingIn">Logging in...</span>
             } @else {
               <i class="bi bi-box-arrow-in-right me-2"></i>
-              <span>Login</span>
+              <span i18n="@@featureLogin-submit">Login</span>
             }
           </button>
         </div>

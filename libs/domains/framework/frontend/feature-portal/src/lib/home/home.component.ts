@@ -33,17 +33,17 @@ export class PortalHomeComponent implements OnInit, AfterViewInit {
   isLastCardVisible = signal<boolean>(true);
 
   ngOnInit(): void {
-    this.titleService.setTitle('Agenstra - Centralized Control for Distributed AI Agent Infrastructure');
+    this.titleService.setTitle(
+      $localize`:@@featurePortalHome-metaTitle:Agenstra - Centralized Control for Distributed AI Agent Infrastructure`,
+    );
     this.metaService.addTags([
       {
         name: 'description',
-        content:
-          'Agenstra provides centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard.',
+        content: $localize`:@@featurePortalHome-metaDescription:Agenstra provides centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard.`,
       },
       {
         name: 'keywords',
-        content:
-          'Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents',
+        content: $localize`:@@featurePortalHome-metaKeywords:Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents`,
       },
       { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
       { name: 'robots', content: 'index, follow' },

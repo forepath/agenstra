@@ -1,5 +1,5 @@
 <div class="docs-search-page">
-  <h1>Search Documentation</h1>
+  <h1 i18n="@@featureDocsSearchPage-title">Search Documentation</h1>
 
   <div class="mb-4">
     <framework-docs-search />
@@ -8,18 +8,18 @@
   @if (loading()) {
     <div class="d-flex justify-content-center align-items-center p-5">
       <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden" i18n="@@featureDocsSearchPage-loading">Loading...</span>
       </div>
     </div>
   } @else if (searchQuery() && searchResults().length === 0) {
     <div class="alert alert-info" role="alert">
       <i class="bi bi-info-circle me-2"></i>
-      No results found for "{{ searchQuery() }}"
+      <span i18n="@@featureDocsSearchPage-noResultsFor">No results found for "{{ searchQuery() }}"</span>
     </div>
   } @else if (searchResults().length > 0) {
     <div class="search-results">
       <p class="text-muted mb-3">
-        Found {{ searchResults().length }} result{{ searchResults().length !== 1 ? 's' : '' }} for "{{ searchQuery() }}"
+        {{ getResultsCountMessage(searchResults().length, searchQuery()) }}
       </p>
 
       <div class="list-group">
@@ -47,7 +47,7 @@
   } @else {
     <div class="alert alert-secondary" role="alert">
       <i class="bi bi-search me-2"></i>
-      Enter a search query above to find documentation.
+      <span i18n="@@featureDocsSearchPage-enterQueryHint">Enter a search query above to find documentation.</span>
     </div>
   }
 </div>

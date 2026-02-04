@@ -113,18 +113,19 @@ export class DocsPageComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.titleService.setTitle(
-      `Agenstra - ${this.metadata()?.title || 'Centralized Control for Distributed AI Agent Infrastructure'}`,
-    );
+    const metadataTitle = this.metadata()?.title;
+    const titleFallback = $localize`:@@featureDocsPage-metaTitleFallback:Centralized Control for Distributed AI Agent Infrastructure`;
+    this.titleService.setTitle(`Agenstra - ${metadataTitle || titleFallback}`);
     this.metaService.addTags([
       {
         name: 'description',
-        content: this.metadata()?.summary || 'Centralized Control for Distributed AI Agent Infrastructure',
+        content:
+          this.metadata()?.summary ||
+          $localize`:@@featureDocsPage-metaDescriptionFallback:Centralized Control for Distributed AI Agent Infrastructure`,
       },
       {
         name: 'keywords',
-        content:
-          'Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents',
+        content: $localize`:@@featureDocsPage-metaKeywords:Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents`,
       },
       { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
       { name: 'robots', content: 'index, follow' },

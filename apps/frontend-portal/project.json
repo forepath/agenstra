@@ -92,12 +92,20 @@
       },
       "defaultConfiguration": "development"
     },
-    "extract-i18n": {
+    "extract-i18n-angular": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
         "buildTarget": "frontend-portal:build",
         "outputPath": "apps/frontend-portal/src/i18n"
       }
+    },
+    "extract-i18n": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../remove-context-groups.cjs src/i18n/messages.xlf",
+        "cwd": "apps/frontend-portal"
+      },
+      "dependsOn": ["extract-i18n-angular"]
     },
     "lint": {
       "executor": "@nx/eslint:lint"

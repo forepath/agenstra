@@ -21,17 +21,17 @@ export class PortalAgentCtxComponent implements OnInit {
   copyRunFeedback = false;
 
   ngOnInit(): void {
-    this.titleService.setTitle('AgentCTX - One context, all your AI coding tools');
+    this.titleService.setTitle(
+      $localize`:@@featurePortalAgentctx-metaTitle:AgentCTX - One context, all your AI coding tools`,
+    );
     this.metaService.addTags([
       {
         name: 'description',
-        content:
-          'AgentCTX generates tool-specific config from a single context. One source of truth for all your AI coding tools. Install with one command and run agentctx to get started.',
+        content: $localize`:@@featurePortalAgentctx-metaDescription:AgentCTX generates tool-specific config from a single context. One source of truth for all your AI coding tools. Install with one command and run agentctx to get started.`,
       },
       {
         name: 'keywords',
-        content:
-          'AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth',
+        content: $localize`:@@featurePortalAgentctx-metaKeywords:AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth`,
       },
       { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
       { name: 'robots', content: 'index, follow' },

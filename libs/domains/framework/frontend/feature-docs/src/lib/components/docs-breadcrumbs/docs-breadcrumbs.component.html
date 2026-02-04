@@ -1,7 +1,7 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb mb-0">
     <li class="breadcrumb-item">
-      <a routerLink="/docs">Documentation</a>
+      <a routerLink="/docs" i18n="@@featureDocsBreadcrumbs-documentation">Documentation</a>
     </li>
     @for (crumb of breadcrumbs(); track crumb.path) {
       <li class="breadcrumb-item" [class.active]="$last">

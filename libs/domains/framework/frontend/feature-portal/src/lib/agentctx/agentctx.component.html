@@ -4,23 +4,32 @@
   <div class="container position-relative">
     <div class="row align-items-center">
       <div class="col-lg-6 mb-4 mb-lg-0 text-center text-lg-start">
-        <h1 class="display-4 fw-bold mb-4"><span class="text-primary">Unified Context</span> for AI Coding Tools</h1>
-        <p class="mb-4 fs-5">
+        <h1 class="display-4 fw-bold mb-4" i18n="@@featurePortalAgentctx-heroTitle">
+          <span class="text-primary">Unified Context</span> for AI Coding Tools
+        </h1>
+        <p class="mb-4 fs-5" i18n="@@featurePortalAgentctx-heroDescription">
           Define rules, commands, skills, and agents once in a single <code class="text-primary">.agenstra/</code>
           folder. AgentCTX turns that context into tool-specific config for Cursor, OpenCode, and GitHub Copilot.
         </p>
-        <p class="mb-5">
+        <p class="mb-5" i18n="@@featurePortalAgentctx-heroSubtext">
           Install the <strong>agentctx</strong> CLI with one command. Run it in your project root and it writes
           <code>.cursor/</code>, <code>.opencode/</code>, and <code>.github/</code> for you - no duplicate config, no
           lock-in.
         </p>
         <div class="d-flex flex-column flex-sm-row gap-3">
-          <a routerLink="." fragment="how" class="btn btn-primary py-2 px-4">How it works</a>
+          <a
+            routerLink="."
+            fragment="how"
+            class="btn btn-primary py-2 px-4"
+            i18n="@@featurePortalAgentctx-howItWorksButton"
+            >How it works</a
+          >
           <a
             href="https://docs.agenstra.com/agenstra/ai-agents/agentctx"
             class="btn btn-outline-primary py-2 px-4"
             target="_blank"
             rel="noopener noreferrer"
+            i18n="@@featurePortalAgentctx-documentationButton"
             >Documentation</a
           >
         </div>
@@ -29,7 +38,7 @@
         <div class="hero-install-card card border shadow-sm bg-body overflow-hidden">
           <div class="card-body p-4">
             <div class="d-flex align-items-center justify-content-between mb-3">
-              <span class="text-muted small">Install AgentCTX</span>
+              <span class="text-muted small" i18n="@@featurePortalAgentctx-installLabel">Install AgentCTX</span>
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
@@ -37,16 +46,16 @@
               >
                 @if (copyInstallFeedback) {
                   <i class="bi bi-check2"></i>
-                  <span>Copied</span>
+                  <span i18n="@@featurePortalAgentctx-copied">Copied</span>
                 } @else {
                   <i class="bi bi-clipboard"></i>
-                  <span>Copy</span>
+                  <span i18n="@@featurePortalAgentctx-copy">Copy</span>
                 }
               </button>
             </div>
             <pre class="hero-install-pre mb-3 bg-body-tertiary p-3 rounded"><code>{{ installCommand }}</code></pre>
             <div class="d-flex align-items-center justify-content-between mb-3">
-              <span class="text-muted small">Convert your AI context</span>
+              <span class="text-muted small" i18n="@@featurePortalAgentctx-convertLabel">Convert your AI context</span>
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
@@ -54,10 +63,10 @@
               >
                 @if (copyRunFeedback) {
                   <i class="bi bi-check2"></i>
-                  <span>Copied</span>
+                  <span i18n="@@featurePortalAgentctx-copied">Copied</span>
                 } @else {
                   <i class="bi bi-clipboard"></i>
-                  <span>Copy</span>
+                  <span i18n="@@featurePortalAgentctx-copy">Copy</span>
                 }
               </button>
             </div>
@@ -74,8 +83,8 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12 text-center mb-5">
-        <h2 class="display-5 fw-bold mb-3">One folder, every tool</h2>
-        <p class="lead text-muted">
+        <h2 class="display-5 fw-bold mb-3" i18n="@@featurePortalAgentctx-howTitle">One folder, every tool</h2>
+        <p class="lead text-muted" i18n="@@featurePortalAgentctx-howLead">
           Your <code>.agenstra/</code> context is the single source of truth. AgentCTX transforms it into the directory
           structure and files each tool expects - so you maintain one set of rules, commands, skills, and agents.
         </p>
@@ -225,8 +234,8 @@
             <div class="mb-4">
               <i class="bi bi-folder2-open text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Validate &amp; transform</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalAgentctx-validateTitle">Validate &amp; transform</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-validateDesc">
               AgentCTX checks that your <code>.agenstra/</code> context is valid (e.g. <code>metadata.json</code> and
               structure), then emits the right files and folders for each target tool. Run with no arguments and it
               writes <code>.cursor</code>, <code>.opencode</code>, and <code>.github</code> into your project root.
@@ -240,8 +249,8 @@
             <div class="mb-4">
               <i class="bi bi-braces text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Cursor, OpenCode, GitHub Copilot</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalAgentctx-toolsTitle">Cursor, OpenCode, GitHub Copilot</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-toolsDesc">
               One context drives rules, commands, skills, agents, and MCP definitions for all three. No duplicate edits
               - change a rule or command once and regenerate. Override specific files via
               <code>.agenstra/overrides/</code> when you need tool-specific tweaks.
@@ -255,8 +264,8 @@
             <div class="mb-4">
               <i class="bi bi-code-slash text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Tool-agnostic source</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalAgentctx-sourceTitle">Tool-agnostic source</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-sourceDesc">
               Your <code>.agenstra/</code> files are plain MDC (Markdown with YAML frontmatter). Commit them to git and
               share across the team. Add AgentCTX to CI or a post-merge hook to keep generated configs in sync, or run
               <code>agentctx</code> locally whenever you change context.
@@ -274,14 +283,17 @@
   <div class="container position-relative">
     <div class="row">
       <div class="col-md-12 text-center mb-4">
-        <h2 class="display-5 fw-bold mb-3">Output for your stack</h2>
-        <p class="text-muted mb-0">AgentCTX generates config for these tools from a single context.</p>
+        <h2 class="display-5 fw-bold mb-3" i18n="@@featurePortalAgentctx-outputTitle">Output for your stack</h2>
+        <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-outputLead">
+          AgentCTX generates config for these tools from a single context.
+        </p>
       </div>
     </div>
     <div class="row align-items-center justify-content-center g-4">
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <img
           src="assets/images/logos/cursor.svg"
+          i18n-alt="@@featurePortalHome-cursorAlt"
           alt="Cursor"
           class="img-fluid logo-partner"
           style="max-height: 28px; filter: grayscale(100%) opacity(0.6); transition: all 0.3s ease"
@@ -290,6 +302,7 @@
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <img
           src="assets/images/logos/opencode.svg"
+          i18n-alt="@@featurePortalHome-opencodeAlt"
           alt="OpenCode"
           class="img-fluid logo-partner"
           style="max-height: 28px; filter: grayscale(100%) opacity(0.6); transition: all 0.3s ease"
@@ -298,6 +311,7 @@
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <img
           src="assets/images/logos/github-copilot.svg"
+          i18n-alt="@@featurePortalAgentctx-githubCopilotAlt"
           alt="GitHub Copilot"
           class="img-fluid logo-partner"
           style="max-height: 28px; filter: grayscale(100%) opacity(0.6); transition: all 0.3s ease"
@@ -313,14 +327,22 @@
   <div class="container position-relative">
     <div class="row">
       <div class="col-md-12 text-center">
-        <h2 class="display-6 fw-bold mb-3">Part of the Agenstra ecosystem</h2>
-        <p class="lead mb-0 text-white">
+        <h2 class="display-6 fw-bold mb-3" i18n="@@featurePortalAgentctx-ecosystemTitle">
+          Part of the Agenstra ecosystem
+        </h2>
+        <p class="lead mb-0 text-white" i18n="@@featurePortalAgentctx-ecosystemLead">
           AgentCTX is the easiest way to get started with a single source of truth for AI coding tools. Agenstra has you
           covered, when you need centralized control over distributed agent infrastructure, including multiple servers,
           real-time interaction, web IDE.
         </p>
         <div class="mt-5">
-          <a routerLink="/" fragment="hero" class="btn btn-light py-2 px-4">Learn about Agenstra</a>
+          <a
+            routerLink="/"
+            fragment="hero"
+            class="btn btn-light py-2 px-4"
+            i18n="@@featurePortalAgentctx-learnAboutAgenstra"
+            >Learn about Agenstra</a
+          >
         </div>
       </div>
     </div>

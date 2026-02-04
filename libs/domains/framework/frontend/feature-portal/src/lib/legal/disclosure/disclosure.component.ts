@@ -16,16 +16,15 @@ export class PortalLegalDisclosureComponent implements OnInit {
   private readonly metaService = inject(Meta);
 
   ngOnInit(): void {
-    this.titleService.setTitle('Agenstra - Legal Disclosure');
+    this.titleService.setTitle($localize`:@@featurePortalDisclosure-metaTitle:Agenstra - Legal Disclosure`);
     this.metaService.addTags([
       {
         name: 'description',
-        content:
-          'Agenstra is a platform for managing distributed AI agent infrastructure. This is the legal disclosure for the platform.',
+        content: $localize`:@@featurePortalDisclosure-metaDescription:Agenstra is a platform for managing distributed AI agent infrastructure. This is the legal disclosure for the platform.`,
       },
       {
         name: 'keywords',
-        content: 'Agenstra, legal disclosure, platform, distributed AI agent infrastructure',
+        content: $localize`:@@featurePortalDisclosure-metaKeywords:Agenstra, legal disclosure, platform, distributed AI agent infrastructure`,
       },
       { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
       { name: 'robots', content: 'index, follow' },

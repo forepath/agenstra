@@ -67,6 +67,10 @@ export class DeploymentRunsListComponent {
     return error;
   });
 
+  getRunDisplayName(runName: string | null | undefined): string {
+    return runName || $localize`:@@featureDeploymentRunsList-untitledRun:Untitled Run`;
+  }
+
   constructor() {
     // Load runs when component initializes
     effect(() => {

@@ -9,12 +9,18 @@
               class="brand-icon-container me-2 fs-3 bg-primary p-3"
               style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
             >
-              <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
+              <img
+                src="assets/images/icon_light.svg"
+                alt="Agenstra"
+                i18n-alt="@@featureChat-brandAlt"
+                class="brand-icon"
+              />
             </div>
           }
-          <span class="fw-bold text-uppercase">Agenstra</span>
+          <span class="fw-bold text-uppercase" i18n="@@featureChat-appName">Agenstra</span>
           <span
             class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge"
+            i18n="@@featureChat-studio"
             >Studio</span
           >
         </div>
@@ -26,10 +32,10 @@
               [class.btn-outline-primary]="!fileTreeVisible()"
               [class.btn-primary]="fileTreeVisible()"
               (click)="onToggleFileTree()"
-              [title]="fileTreeVisible() ? 'Hide File Tree' : 'Show File Tree'"
+              [title]="getFileTreeToggleTitle()"
             >
               <i class="bi" [class.bi-folder]="fileTreeVisible()" [class.bi-folder-x]="!fileTreeVisible()"></i>
-              <span class="ms-1 d-none d-md-inline">File Tree</span>
+              <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-fileTree">File Tree</span>
             </button>
             <button
               type="button"
@@ -37,10 +43,10 @@
               [class.btn-outline-primary]="!chatVisible()"
               [class.btn-primary]="chatVisible()"
               (click)="onToggleChat()"
-              [title]="chatVisible() ? 'Hide Chat' : 'Show Chat'"
+              [title]="getChatToggleTitle()"
             >
               <i class="bi" [class.bi-chat-dots]="chatVisible()" [class.bi-chat-dots-fill]="!chatVisible()"></i>
-              <span class="ms-1 d-none d-md-inline">Chat</span>
+              <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-chat">Chat</span>
             </button>
             <button
               type="button"
@@ -48,10 +54,10 @@
               [class.btn-outline-primary]="!terminalVisible()"
               [class.btn-primary]="terminalVisible()"
               (click)="onToggleTerminal()"
-              [title]="terminalVisible() ? 'Hide Terminal' : 'Show Terminal'"
+              [title]="getTerminalToggleTitle()"
             >
               <i class="bi" [class.bi-terminal]="!terminalVisible()" [class.bi-terminal-fill]="terminalVisible()"></i>
-              <span class="ms-1 d-none d-md-inline">Terminal</span>
+              <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-terminal">Terminal</span>
             </button>
             <button
               type="button"
@@ -59,10 +65,10 @@
               [class.btn-outline-primary]="!gitManagerVisible()"
               [class.btn-primary]="gitManagerVisible()"
               (click)="onToggleGitManager()"
-              [title]="gitManagerVisible() ? 'Hide Version Control' : 'Show Version Control'"
+              [title]="getGitManagerToggleTitle()"
             >
               <i class="bi bi-git"></i>
-              <span class="ms-1 d-none d-md-inline">Version Control</span>
+              <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-versionControl">Version Control</span>
             </button>
           </div>
           <button
@@ -73,6 +79,7 @@
             (click)="onShareFileLink()"
             data-bs-toggle="tooltip"
             data-bs-placement="bottom"
+            i18n-title="@@featureChat-shareFileLink"
             title="Share file link"
           >
             <i class="bi bi-share"></i>
@@ -83,10 +90,11 @@
                 type="button"
                 class="btn btn-sm btn-outline-primary"
                 (click)="onToggleEditor()"
+                i18n-title="@@featureChat-closeEditor"
                 title="Close Editor"
               >
                 <i class="bi bi-x-lg"></i>
-                <span class="ms-1 d-none d-md-inline">Close Editor</span>
+                <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-closeEditor">Close Editor</span>
               </button>
             </div>
           }
@@ -99,16 +107,17 @@
     @if (!editorOpen() && !(deploymentManagerOpen() && standaloneMode())) {
       <div class="section__column d-flex flex-column border-end" [class.active-column]="!(activeClientId$ | async)">
         <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 fw-semibold">Workspaces</h5>
+          <h5 class="mb-0 fw-semibold" i18n="@@featureChat-workspaces">Workspaces</h5>
           <button
             type="button"
             class="btn btn-sm btn-primary"
             (click)="onAddClientClick()"
             [disabled]="(clientsCreating$ | async) === true"
-            title="Add workspace"
+            i18n-title="@@featureChat-addWorkspaceTitle"
+            title="Add Workspace"
           >
-            <i class="bi bi-plus-circle"></i>
-            Add
+            <i class="bi bi-plus-circle me-1"></i>
+            <span i18n="@@featureChat-add">Add</span>
           </button>
         </div>
         <form #searchClientForm="ngForm">
@@ -118,6 +127,7 @@
               type="text"
               class="form-control border-0 search-input"
               placeholder="Search workspaces"
+              i18n-placeholder="@@featureChat-searchWorkspacesPlaceholder"
               name="search"
               [(ngModel)]="searchClientQuery"
               required
@@ -128,7 +138,7 @@
           @if (clientsLoading$ | async) {
             <div class="d-flex justify-content-center align-items-center p-4">
               <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading workspaces...</span>
+                <span class="visually-hidden" i18n="@@featureChat-loadingWorkspaces">Loading workspaces...</span>
               </div>
             </div>
           } @else {
@@ -142,7 +152,7 @@
               @if (clients.length === 0) {
                 <div class="p-4 text-center text-muted">
                   <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                  <p class="mb-0">No workspaces available</p>
+                  <p class="mb-0" i18n="@@featureChat-noWorkspaces">No workspaces available</p>
                 </div>
               } @else {
                 <div class="list-group list-group-flush">
@@ -191,6 +201,7 @@
                           class="btn btn-sm btn-outline-primary"
                           (click)="onEditClientClick(client); $event.stopPropagation()"
                           [disabled]="(clientsUpdating$ | async) === true"
+                          i18n-title="@@featureChat-editWorkspaceTitle"
                           title="Edit workspace"
                         >
                           <i class="bi bi-pencil"></i>
@@ -200,7 +211,8 @@
                           class="btn btn-sm btn-outline-danger"
                           (click)="onDeleteClientClick(client.id, client.name); $event.stopPropagation()"
                           [disabled]="(clientsDeleting$ | async) === true"
-                          title="Delete workspace"
+                          i18n-title="@@featureChat-deleteWorkspaceTitle"
+                          title="Delete Workspace"
                         >
                           <i class="bi bi-trash"></i>
                         </button>
@@ -230,21 +242,23 @@
                 class="btn btn-sm btn-secondary d-block d-md-none"
                 (click)="onClientUnselect()"
                 [disabled]="!(activeClientId$ | async)"
+                i18n-title="@@featureChat-backToWorkspaces"
                 title="Back to workspaces"
               >
                 <i class="bi bi-arrow-left"></i>
               </button>
-              <h5 class="mb-0 fw-semibold">Environments</h5>
+              <h5 class="mb-0 fw-semibold" i18n="@@featureChat-environments">Environments</h5>
             </div>
             <button
               type="button"
               class="btn btn-sm btn-primary"
               (click)="onAddAgentClick()"
               [disabled]="!(activeClientId$ | async) || (agentsCreating$ | async) === true"
-              title="Add environment"
+              i18n-title="@@featureChat-addEnvironmentTitle"
+              title="Add Environment"
             >
-              <i class="bi bi-plus-circle"></i>
-              Add
+              <i class="bi bi-plus-circle me-1"></i>
+              <span i18n="@@featureChat-add">Add</span>
             </button>
           </div>
         </div>
@@ -255,6 +269,7 @@
               type="text"
               class="form-control border-0 search-input"
               placeholder="Search environments"
+              i18n-placeholder="@@featureChat-searchEnvironmentsPlaceholder"
               name="search"
               [(ngModel)]="searchAgentQuery"
               required
@@ -265,7 +280,7 @@
           @if (agentsLoading$ | async) {
             <div class="d-flex justify-content-center align-items-center p-4">
               <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading environments...</span>
+                <span class="visually-hidden" i18n="@@featureChat-loadingEnvironments">Loading environments...</span>
               </div>
             </div>
           } @else {
@@ -273,7 +288,7 @@
               @if (agents.length === 0) {
                 <div class="p-4 text-center text-muted">
                   <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                  <p class="mb-0">No environments available</p>
+                  <p class="mb-0" i18n="@@featureChat-noEnvironments">No environments available</p>
                 </div>
               } @else {
                 <div class="list-group list-group-flush">
@@ -342,13 +357,13 @@
                               @if (agent.vnc?.port) {
                                 <small class="text-muted mt-1">
                                   <i class="bi bi-window-desktop me-1"></i>
-                                  Virtual Desktop
+                                  <span i18n="@@featureChat-virtualDesktop">Virtual Desktop</span>
                                 </small>
                               }
                               @if (agent.ssh?.port) {
                                 <small class="text-muted mt-1">
                                   <i class="bi bi-terminal me-1"></i>
-                                  SSH Access
+                                  <span i18n="@@featureChat-sshAccess">SSH Access</span>
                                 </small>
                               }
                             </div>
@@ -360,7 +375,8 @@
                           type="button"
                           class="btn btn-sm btn-outline-primary"
                           (click)="onManageEnvironmentVariablesClick(agent); $event.stopPropagation()"
-                          title="Manage environment variables"
+                          i18n-title="@@featureChat-manageEnvVarsTitle"
+                          title="Manage Environment Variables"
                         >
                           <i class="bi bi-sliders"></i>
                         </button>
@@ -369,6 +385,7 @@
                           class="btn btn-sm btn-outline-primary"
                           (click)="onEditAgentClick(agent); $event.stopPropagation()"
                           [disabled]="(agentsUpdating$ | async) === true"
+                          i18n-title="@@featureChat-editEnvironmentTitle"
                           title="Edit environment"
                         >
                           <i class="bi bi-pencil"></i>
@@ -378,7 +395,8 @@
                           class="btn btn-sm btn-outline-danger"
                           (click)="onDeleteAgentClick(agent.id, agent.name); $event.stopPropagation()"
                           [disabled]="(agentsDeleting$ | async) === true"
-                          title="Delete environment"
+                          i18n-title="@@featureChat-deleteEnvironmentTitle"
+                          title="Delete Environment"
                         >
                           <i class="bi bi-trash"></i>
                         </button>
@@ -461,11 +479,11 @@
                 class="btn btn-sm btn-secondary d-block d-md-none"
                 (click)="onChatBackButton()"
                 [disabled]="!(selectedAgent$ | async)"
-                [title]="editorOpen() ? 'Close Chat' : 'Back to environments'"
+                [title]="getChatBackTitle()"
               >
                 <i class="bi bi-arrow-left"></i>
               </button>
-              <h5 class="mb-0 fw-semibold">Chat</h5>
+              <h5 class="mb-0 fw-semibold" i18n="@@featureChat-chatHeader">Chat</h5>
             </div>
             <div class="d-flex align-items-center gap-2">
               <div class="btn-group" role="group">
@@ -475,14 +493,14 @@
                     class="btn btn-sm btn-outline-success"
                     [disabled]="socketDisconnecting$ | async"
                     (click)="onDisconnectSocket()"
-                    [title]="(socketReconnecting$ | async) ? 'Reconnecting...' : 'Connected'"
+                    [title]="getSocketStatusTitle((socketReconnecting$ | async) ?? false)"
                   >
                     @if (socketReconnecting$ | async) {
                       <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                     } @else {
                       <i class="bi bi-wifi"></i>
                     }
-                    <span class="visually-hidden">Connected</span>
+                    <span class="visually-hidden" i18n="@@featureChat-connected">Connected</span>
                   </button>
                 } @else {
                   @if (socketReconnecting$ | async; as isReconnecting) {
@@ -490,13 +508,16 @@
                       type="button"
                       class="btn btn-sm btn-outline-warning"
                       [disabled]="true"
+                      i18n-title="@@featureChat-reconnecting"
                       title="Reconnecting..."
                     >
                       <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                       @if (socketReconnectAttempts$ | async; as attempts) {
                         <span class="ms-1">({{ attempts }})</span>
                       }
-                      <span class="visually-hidden">Reconnecting</span>
+                      <span class="visually-hidden" i18n="@@featureChat-reconnectingVisuallyHidden"
+                        >Reconnecting...</span
+                      >
                     </button>
                   } @else {
                     <button
@@ -504,6 +525,7 @@
                       class="btn btn-sm btn-outline-danger"
                       [disabled]="socketConnecting$ | async"
                       (click)="onConnectSocket()"
+                      i18n-title="@@featureChat-disconnected"
                       title="Disconnected"
                     >
                       @if (socketConnecting$ | async) {
@@ -511,7 +533,7 @@
                       } @else {
                         <i class="bi bi-wifi-off"></i>
                       }
-                      <span class="visually-hidden">Disconnected</span>
+                      <span class="visually-hidden" i18n="@@featureChat-disconnected">Disconnected</span>
                     </button>
                   }
                 }
@@ -522,10 +544,10 @@
                     type="button"
                     class="btn btn-sm btn-outline-primary"
                     (click)="onToggleEditor(true, getOpenInNewWindow())"
-                    [title]="getOpenInNewWindow() ? 'Open Editor in New Window' : 'Open Editor'"
+                    [title]="getOpenEditorTitle()"
                   >
                     <i class="bi bi-code-square"></i>
-                    <span class="ms-1 d-none d-lg-inline">Open Editor</span>
+                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openEditor">Open Editor</span>
                   </button>
                 </div>
               }
@@ -538,7 +560,9 @@
                       (click)="onToggleVNC(activeClient, selectedAgent)"
                     >
                       <i class="bi bi-window-desktop"></i>
-                      <span class="ms-1 d-none d-lg-inline">Open Virtual Desktop</span>
+                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openVirtualDesktop"
+                        >Open Virtual Desktop</span
+                      >
                     </button>
                   }
                   @if (selectedAgent.ssh?.port) {
@@ -550,7 +574,7 @@
                       (click)="onToggleSSHCommand()"
                     >
                       <i class="bi bi-terminal"></i>
-                      <span class="ms-1 d-none d-lg-inline">SSH Access</span>
+                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-sshAccess">SSH Access</span>
                     </button>
                   }
                   <button
@@ -559,18 +583,10 @@
                     [class.btn-outline-primary]="!deploymentManagerOpen()"
                     [class.btn-primary]="deploymentManagerOpen()"
                     (click)="onToggleDeploymentManager(true, getDeploymentOpenInNewWindow())"
-                    [title]="
-                      getDeploymentOpenInNewWindow()
-                        ? deploymentManagerOpen()
-                          ? 'Close Deployment Manager'
-                          : 'Open Deployment Manager in New Window'
-                        : deploymentManagerOpen()
-                          ? 'Close Deployment Manager'
-                          : 'Open Deployment Manager'
-                    "
+                    [title]="getDeploymentManagerToggleTitle()"
                   >
                     <i class="bi bi-rocket-takeoff"></i>
-                    <span class="ms-1 d-none d-lg-inline">Open Deployments</span>
+                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openDeployments">Open Deployments</span>
                   </button>
                 }
               }
@@ -582,7 +598,7 @@
                 @if (activeClient?.endpoint && selectedAgent.ssh?.port) {
                   <div class="d-flex justify-content-between mb-2 mt-3 flex-column gap-2">
                     <div class="border bg-body rounded small p-3 fw-normal text-wrap text-start d-block w-100">
-                      <label class="form-label d-block mb-2 fw-bold">SSH Command</label>
+                      <label class="form-label d-block mb-2 fw-bold" i18n="@@featureChat-sshCommand">SSH Command</label>
                       <div class="code-block border">
                         {{
                           buildSSHCommand(
@@ -595,7 +611,9 @@
                       </div>
                     </div>
                     <div class="border bg-body rounded small p-3 fw-normal text-wrap text-start d-block w-100">
-                      <label class="form-label d-block mb-2 fw-bold">Remote Workspace Configuration</label>
+                      <label class="form-label d-block mb-2 fw-bold" i18n="@@featureChat-remoteWorkspaceConfig"
+                        >Remote Workspace Configuration</label
+                      >
                       If you want to connect to this workspace with an editor like Cursor or VS Code via SSH, add the
                       following lines to your
                       <code class="text-primary d-inline-block border border-primary rounded px-1">~/.ssh/config</code>
@@ -635,7 +653,7 @@
             @if (messages.length === 0) {
               <div class="text-center text-muted py-5">
                 <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
-                <p class="mb-0">No messages yet. Start a conversation!</p>
+                <p class="mb-0" i18n="@@featureChat-noMessages">No messages yet. Start a conversation!</p>
               </div>
             } @else {
               <div class="d-flex flex-column gap-2">
@@ -679,10 +697,12 @@
                             <div class="card-body chat-message-body">
                               <div class="d-flex align-items-center gap-2 mb-2">
                                 <i class="bi bi-exclamation-circle fs-5"></i>
-                                <strong>Message Dropped</strong>
+                                <strong i18n="@@featureChat-messageDropped">Message Dropped</strong>
                               </div>
                               <p class="card-text chat-message-text mb-0">
-                                This message was filtered and dropped by the system.
+                                <span i18n="@@featureChat-messageDroppedDesc"
+                                  >This message was filtered and dropped by the system.</span
+                                >
                               </p>
                               <small class="chat-message-timestamp text-white-50">{{
                                 formatTimestamp(msg.timestamp)
@@ -737,9 +757,13 @@
                       <div class="card-body chat-message-body">
                         <div class="d-flex align-items-center gap-2">
                           <div class="spinner-border spinner-border-sm text-primary" role="status">
-                            <span class="visually-hidden">Waiting for response...</span>
+                            <span class="visually-hidden" i18n="@@featureChat-waitingForResponse"
+                              >Waiting for response...</span
+                            >
                           </div>
-                          <small class="chat-message-text text-muted mb-0">Agent is thinking...</small>
+                          <small class="chat-message-text text-muted mb-0" i18n="@@featureChat-agentThinking"
+                            >Agent is thinking...</small
+                          >
                         </div>
                       </div>
                     </div>
@@ -756,7 +780,7 @@
             <div class="d-flex align-items-center">
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               <span>
-                Reconnecting to server...
+                <span i18n="@@featureChat-reconnectingToServer">Reconnecting to server...</span>
                 @if (socketReconnectAttempts$ | async; as attempts) {
                   <span class="text-muted">(attempt {{ attempts }})</span>
                 }
@@ -771,7 +795,7 @@
             <div class="alert alert-warning m-3" role="alert">
               <div class="d-flex align-items-center">
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                <span>Reconnecting to workspace...</span>
+                <span i18n="@@featureChat-reconnectingToWorkspace">Reconnecting to workspace...</span>
               </div>
             </div>
           }
@@ -782,7 +806,9 @@
           @if (remoteError && !(remoteReconnecting$ | async)) {
             <div class="alert alert-danger m-3" role="alert">
               <i class="bi bi-exclamation-triangle-fill me-2"></i>
-              Workspace connection failed: {{ remoteError }}
+              <ng-container i18n="@@featureChat-workspaceConnectionFailed"
+                >Workspace connection failed: {{ remoteError }}</ng-container
+              >
             </div>
           }
         }
@@ -817,10 +843,10 @@
                 )
               "
             >
-              <option value="">Chat</option>
+              <option value="" i18n="@@featureChat-chat">Chat</option>
               @if (commands$ | async; as commands) {
                 @if (commands.length > 0) {
-                  <optgroup label="Commands">
+                  <optgroup label="Commands" i18n-label="@@featureChat-commandsLabel">
                     @for (command of commands; track command) {
                       <option [value]="command">{{ command }}</option>
                     }
@@ -835,6 +861,7 @@
                 class="chat-textarea"
                 rows="3"
                 placeholder="Type a message..."
+                i18n-placeholder="@@featureChat-typeMessagePlaceholder"
                 [value]="chatMessage()"
                 (input)="chatMessage.set($any($event.target).value)"
                 (keydown)="onChatInputKeydown($event)"
@@ -867,11 +894,11 @@
               } @else {
                 <i class="bi bi-send"></i>
               }
-              Send
+              <span i18n="@@featureChat-send">Send</span>
             </button>
           </div>
           <div class="input-group input-group-sm mt-2">
-            <span class="input-group-text small text-muted">Model</span>
+            <span class="input-group-text small text-muted" i18n="@@featureChat-model">Model</span>
             <select
               id="chatModelSelect"
               class="form-select form-select-sm small text-body"
@@ -885,7 +912,7 @@
                 !(selectedAgent$ | async)
               "
             >
-              <option value="auto">Auto</option>
+              <option value="auto" i18n="@@featureChat-modelAuto">Auto</option>
               @if (selectedAgent$ | async; as agent) {
                 @for (model of getChatModelOptions(agent.agentType); track model.value) {
                   <option [value]="model.value">{{ model.label }}</option>
@@ -896,7 +923,7 @@
           @if (!(socketConnected$ | async)) {
             <small class="text-muted d-block mt-2">
               <i class="bi bi-info-circle me-1"></i>
-              Connect to socket to send messages
+              <span i18n="@@featureChat-connectToSend">Connect to socket to send messages</span>
             </small>
           }
         </div>
@@ -925,25 +952,28 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteClientModalLabel">Delete Workspace</h5>
+        <h5 class="modal-title" id="deleteClientModalLabel" i18n="@@featureChat-deleteWorkspaceModalTitle">
+          Delete Workspace
+        </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
           [disabled]="(clientsDeleting$ | async) === true"
         ></button>
       </div>
       <div class="modal-body">
-        <p>
+        <p i18n="@@featureChat-deleteWorkspaceConfirm">
           Are you sure you want to delete the workspace <strong>{{ clientToDeleteName() }}</strong
           >?
         </p>
         @if (clientToDeleteHasProvisioning()) {
           <div class="alert alert-warning mb-3" role="alert">
             <i class="bi bi-cloud-fill me-2"></i>
-            <strong>Provisioned Server Detected</strong>
-            <p class="mb-0 mt-2">
+            <strong i18n="@@featureChat-provisionedServerDetected">Provisioned Server Detected</strong>
+            <p class="mb-0 mt-2" i18n="@@featureChat-provisionedServerWarning">
               This workspace has a provisioned server. Deleting the workspace will also delete the server from the cloud
               provider. This action cannot be undone and will result in permanent data loss.
             </p>
@@ -951,7 +981,7 @@
         }
         <p class="text-danger mb-0">
           <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          This action cannot be undone.
+          <span i18n="@@featureChat-cannotUndo">This action cannot be undone.</span>
         </p>
       </div>
       <div class="modal-footer">
@@ -960,6 +990,7 @@
           class="btn btn-secondary"
           data-bs-dismiss="modal"
           [disabled]="(clientsDeleting$ | async) === true"
+          i18n="@@featureChat-cancel"
         >
           Cancel
         </button>
@@ -972,7 +1003,7 @@
           @if (clientsDeleting$ | async) {
             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
           }
-          Delete
+          <span i18n="@@featureChat-delete">Delete</span>
         </button>
       </div>
     </div>
@@ -991,23 +1022,26 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteAgentModalLabel">Delete Environment</h5>
+        <h5 class="modal-title" id="deleteAgentModalLabel" i18n="@@featureChat-deleteEnvironmentModalTitle">
+          Delete Environment
+        </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
           [disabled]="(agentsDeleting$ | async) === true"
         ></button>
       </div>
       <div class="modal-body">
-        <p>
+        <p i18n="@@featureChat-deleteEnvironmentConfirm">
           Are you sure you want to delete the environment <strong>{{ agentToDeleteName() }}</strong
           >?
         </p>
         <p class="text-danger mb-0">
           <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          This action cannot be undone.
+          <span i18n="@@featureChat-cannotUndo">This action cannot be undone.</span>
         </p>
       </div>
       <div class="modal-footer">
@@ -1016,6 +1050,7 @@
           class="btn btn-secondary"
           data-bs-dismiss="modal"
           [disabled]="(agentsDeleting$ | async) === true"
+          i18n="@@featureChat-cancel"
         >
           Cancel
         </button>
@@ -1028,7 +1063,7 @@
           @if (agentsDeleting$ | async) {
             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
           }
-          Delete
+          <span i18n="@@featureChat-delete">Delete</span>
         </button>
       </div>
     </div>
@@ -1047,11 +1082,12 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addClientModalLabel">Add Workspace</h5>
+        <h5 class="modal-title" id="addClientModalLabel" i18n="@@featureChat-addWorkspaceTitle">Add Workspace</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
           [disabled]="(clientsCreating$ | async) === true"
         ></button>
@@ -1070,7 +1106,9 @@
                 (change)="onProvisioningToggle(false)"
                 [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
               />
-              <label class="form-check-label" for="clientModeManual"> Existing Workspace </label>
+              <label class="form-check-label" for="clientModeManual" i18n="@@featureChat-existingWorkspace">
+                Existing Workspace
+              </label>
             </div>
             <div class="form-check form-check-inline">
               <input
@@ -1082,12 +1120,16 @@
                 (change)="onProvisioningToggle(true)"
                 [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
               />
-              <label class="form-check-label" for="clientModeProvision"> Provision Server </label>
+              <label class="form-check-label" for="clientModeProvision" i18n="@@featureChat-provisionServer"
+                >Provision Server</label
+              >
             </div>
           </div>
 
           <div class="mb-3">
-            <label for="clientName" class="form-label">Name <span class="text-danger">*</span></label>
+            <label for="clientName" class="form-label" i18n="@@featureChat-nameLabel"
+              >Name <span class="text-danger">*</span></label
+            >
             <input
               type="text"
               class="form-control"
@@ -1100,7 +1142,7 @@
             />
           </div>
           <div class="mb-3">
-            <label for="clientDescription" class="form-label">Description</label>
+            <label for="clientDescription" class="form-label" i18n="@@featureChat-descriptionLabel">Description</label>
             <textarea
               class="form-control"
               id="clientDescription"
@@ -1115,7 +1157,9 @@
           <!-- Provisioning Fields -->
           @if (useProvisioning()) {
             <div class="mb-3">
-              <label for="clientProvider" class="form-label">Provider <span class="text-danger">*</span></label>
+              <label for="clientProvider" class="form-label" i18n="@@featureChat-providerLabel"
+                >Provider <span class="text-danger">*</span></label
+              >
               <select
                 class="form-select"
                 id="clientProvider"
@@ -1129,7 +1173,7 @@
                   (loadingProviders$ | async) === true
                 "
               >
-                <option value="">Select provider</option>
+                <option value="" i18n="@@featureChat-selectProvider">Select provider</option>
                 @for (provider of provisioningProviders$ | async; track provider.type) {
                   <option [value]="provider.type">{{ provider.displayName }}</option>
                 }
@@ -1138,7 +1182,9 @@
 
             @if (selectedProvider()) {
               <div class="mb-3">
-                <label for="clientServerType" class="form-label">Server Type <span class="text-danger">*</span></label>
+                <label for="clientServerType" class="form-label" i18n="@@featureChat-serverTypeLabel"
+                  >Server Type <span class="text-danger">*</span></label
+                >
                 <select
                   class="form-select"
                   id="clientServerType"
@@ -1152,7 +1198,7 @@
                     (loadingServerTypes$ | async) === true
                   "
                 >
-                  <option value="">Select server type</option>
+                  <option value="" i18n="@@featureChat-selectServerType">Select server type</option>
                   @for (serverType of serverTypes$ | async; track serverType.id) {
                     <option [value]="serverType.id">
                       {{ serverType.name }} - {{ serverType.cores }} vCPU, {{ serverType.memory }}GB RAM,
@@ -1216,7 +1262,9 @@
           <!-- Manual Endpoint Field (only shown when not provisioning) -->
           @if (!useProvisioning()) {
             <div class="mb-3">
-              <label for="clientEndpoint" class="form-label">Endpoint <span class="text-danger">*</span></label>
+              <label for="clientEndpoint" class="form-label" i18n="@@featureChat-endpointLabel"
+                >Endpoint <span class="text-danger">*</span></label
+              >
               <input
                 type="url"
                 class="form-control"
@@ -1225,13 +1273,14 @@
                 [ngModel]="newClient().endpoint"
                 (ngModelChange)="updateClientField('endpoint', $event)"
                 required
+                i18n-placeholder="@@featureChat-endpointPlaceholder"
                 placeholder="https://example.com"
                 [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
               />
             </div>
           }
           <div class="mb-3">
-            <label for="clientAuthenticationType" class="form-label"
+            <label for="clientAuthenticationType" class="form-label" i18n="@@featureChat-authTypeLabel"
               >Authentication Type <span class="text-danger">*</span></label
             >
             <select
@@ -1260,6 +1309,7 @@
                 name="apiKey"
                 [ngModel]="newClient().apiKey"
                 (ngModelChange)="updateClientField('apiKey', $event)"
+                i18n-placeholder="@@featureChat-apiKeyAutoGeneratePlaceholder"
                 placeholder="Leave empty to auto-generate"
                 [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
               />
@@ -1321,6 +1371,7 @@
                   name="keycloakAuthServerUrl"
                   [ngModel]="newClient().keycloakAuthServerUrl"
                   (ngModelChange)="updateClientField('keycloakAuthServerUrl', $event)"
+                  i18n-placeholder="@@featureChat-keycloakUrlPlaceholder"
                   placeholder="http://keycloak:8080"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                 />
@@ -1363,6 +1414,7 @@
                   name="cursorApiKey"
                   [ngModel]="newClient().cursorApiKey"
                   (ngModelChange)="updateClientField('cursorApiKey', $event)"
+                  i18n-placeholder="@@featureChat-optionalPlaceholder"
                   placeholder="Optional"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                 />
@@ -1378,6 +1430,7 @@
                   name="agentDefaultImage"
                   [ngModel]="newClient().agentDefaultImage"
                   (ngModelChange)="updateClientField('agentDefaultImage', $event)"
+                  i18n-placeholder="@@featureChat-agentImagePlaceholder"
                   placeholder="ghcr.io/forepath/agenstra-manager-worker:latest"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                 />
@@ -1394,6 +1447,7 @@
                   name="gitRepositoryUrl"
                   [ngModel]="newClient().gitRepositoryUrl"
                   (ngModelChange)="updateClientField('gitRepositoryUrl', $event)"
+                  i18n-placeholder="@@featureChat-gitRepoPlaceholder"
                   placeholder="https://github.com/user/repo.git"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                 />
@@ -1409,6 +1463,7 @@
                   name="gitUsername"
                   [ngModel]="newClient().gitUsername"
                   (ngModelChange)="updateClientField('gitUsername', $event)"
+                  i18n-placeholder="@@featureChat-optionalPlaceholder"
                   placeholder="Optional"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                 />
@@ -1424,6 +1479,7 @@
                   name="gitToken"
                   [ngModel]="newClient().gitToken"
                   (ngModelChange)="updateClientField('gitToken', $event)"
+                  i18n-placeholder="@@featureChat-optionalPlaceholder"
                   placeholder="Optional"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                 />
@@ -1439,6 +1495,7 @@
                   name="gitPassword"
                   [ngModel]="newClient().gitPassword"
                   (ngModelChange)="updateClientField('gitPassword', $event)"
+                  i18n-placeholder="@@featureChat-optionalPlaceholder"
                   placeholder="Optional"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                 />
@@ -1454,6 +1511,7 @@
                 rows="6"
                 [ngModel]="newClient().gitPrivateKey"
                 (ngModelChange)="updateClientField('gitPrivateKey', $event)"
+                i18n-placeholder="@@featureChat-gitPrivateKeyPlaceholder"
                 placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
                 [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
               ></textarea>
@@ -1481,9 +1539,9 @@
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
             @if (useProvisioning()) {
-              Provision Server
+              <span i18n="@@featureChat-provisionServer">Provision Server</span>
             } @else {
-              Create Workspace
+              <span i18n="@@featureChat-createWorkspace">Create Workspace</span>
             }
           </button>
         </div>
@@ -1504,11 +1562,12 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addAgentModalLabel">Add Environment</h5>
+        <h5 class="modal-title" id="addAgentModalLabel" i18n="@@featureChat-addEnvironmentTitle">Add Environment</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
           [disabled]="(agentsCreating$ | async) === true"
         ></button>
@@ -1591,6 +1650,7 @@
               name="gitRepositoryUrl"
               [ngModel]="newAgent().gitRepositoryUrl"
               (ngModelChange)="updateAgentField('gitRepositoryUrl', $event)"
+              i18n-placeholder="@@featureChat-gitRepoPlaceholder"
               placeholder="https://github.com/user/repo.git"
               [disabled]="(agentsCreating$ | async) === true"
             />
@@ -1654,7 +1714,7 @@
             @if (agentsCreating$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            Create Environment
+            <span i18n="@@featureChat-createEnvironment">Create Environment</span>
           </button>
         </div>
       </form>
@@ -1674,11 +1734,14 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="updateClientModalLabel">Update Workspace</h5>
+        <h5 class="modal-title" id="updateClientModalLabel" i18n="@@featureChat-updateWorkspaceTitle">
+          Update Workspace
+        </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
           [disabled]="(clientsUpdating$ | async) === true"
         ></button>
@@ -1720,6 +1783,7 @@
               [ngModel]="editingClient().endpoint"
               (ngModelChange)="updateEditingClientField('endpoint', $event)"
               required
+              i18n-placeholder="@@featureChat-endpointPlaceholder"
               placeholder="https://example.com"
               [disabled]="(clientsUpdating$ | async) === true"
             />
@@ -1754,6 +1818,7 @@
                 name="apiKey"
                 [ngModel]="editingClient().apiKey"
                 (ngModelChange)="updateEditingClientField('apiKey', $event)"
+                i18n-placeholder="@@featureChat-apiKeyKeepCurrentPlaceholder"
                 placeholder="Leave empty to keep current or auto-generate"
                 [disabled]="(clientsUpdating$ | async) === true"
               />
@@ -1784,6 +1849,7 @@
                 name="keycloakClientSecret"
                 [ngModel]="editingClient().keycloakClientSecret"
                 (ngModelChange)="updateEditingClientField('keycloakClientSecret', $event)"
+                i18n-placeholder="@@featureChat-leaveEmptyKeepCurrentPlaceholder"
                 placeholder="Leave empty to keep current"
                 [disabled]="(clientsUpdating$ | async) === true"
               />
@@ -1814,6 +1880,7 @@
               (ngModelChange)="updateEditingClientFieldNumber('agentWsPort', $event)"
               min="1"
               max="65535"
+              i18n-placeholder="@@featureChat-portPlaceholder"
               placeholder="8080"
               [disabled]="(clientsUpdating$ | async) === true"
             />
@@ -1837,7 +1904,7 @@
             @if (clientsUpdating$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            Update Workspace
+            <span i18n="@@featureChat-updateWorkspace">Update Workspace</span>
           </button>
         </div>
       </form>
@@ -1857,11 +1924,14 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="updateAgentModalLabel">Update Environment</h5>
+        <h5 class="modal-title" id="updateAgentModalLabel" i18n="@@featureChat-updateEnvironmentTitle">
+          Update Environment
+        </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
           [disabled]="(agentsUpdating$ | async) === true"
         ></button>
@@ -1929,7 +1999,7 @@
             @if (agentsUpdating$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            Update Environment
+            <span i18n="@@featureChat-updateEnvironment">Update Environment</span>
           </button>
         </div>
       </form>
@@ -1949,12 +2019,15 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="environmentVariablesModalLabel">Manage Environment Variables</h5>
+        <h5 class="modal-title" id="environmentVariablesModalLabel" i18n="@@featureChat-manageEnvVarsModalTitle">
+          Manage Environment Variables
+        </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
           (click)="onCloseEnvironmentVariablesModal()"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
           [disabled]="(environmentVariablesCreating$ | async) === true"
         ></button>
@@ -1969,7 +2042,7 @@
         <!-- Add New Environment Variable Form -->
         <div class="card mb-3">
           <div class="card-header">
-            <h6 class="mb-0">Add New Environment Variable</h6>
+            <h6 class="mb-0" i18n="@@featureChat-addEnvVar">Add New Environment Variable</h6>
           </div>
           <div class="card-body">
             <form #addEnvVarForm="ngForm" (ngSubmit)="onSubmitCreateEnvironmentVariable()">
@@ -1984,6 +2057,7 @@
                     [ngModel]="newEnvVar().variable"
                     (ngModelChange)="updateEnvVarField('variable', $event)"
                     required
+                    i18n-placeholder="@@featureChat-envVarNamePlaceholder"
                     placeholder="VARIABLE_NAME"
                     [disabled]="(environmentVariablesCreating$ | async) === true"
                   />
@@ -1998,6 +2072,7 @@
                     [ngModel]="newEnvVar().content"
                     (ngModelChange)="updateEnvVarField('content', $event)"
                     required
+                    i18n-placeholder="@@featureChat-envVarValuePlaceholder"
                     placeholder="variable value"
                     [disabled]="(environmentVariablesCreating$ | async) === true"
                   />
@@ -2007,6 +2082,7 @@
                     type="submit"
                     class="btn btn-primary w-100"
                     [disabled]="!addEnvVarForm.valid || (environmentVariablesCreating$ | async) === true"
+                    i18n-title="@@featureChat-addEnvVarTitle"
                     title="Add environment variable"
                   >
                     @if (environmentVariablesCreating$ | async) {
@@ -2024,7 +2100,7 @@
         <!-- Environment Variables List -->
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Environment Variables</h6>
+            <h6 class="mb-0" i18n="@@featureChat-envVars">Environment Variables</h6>
             @if (environmentVariablesLoading$ | async) {
               <div class="spinner-border spinner-border-sm text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -2043,7 +2119,7 @@
                 @if (envVars.length === 0) {
                   <div class="text-center text-muted py-4">
                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                    <p class="mb-0">No environment variables configured</p>
+                    <p class="mb-0" i18n="@@featureChat-noEnvVars">No environment variables configured</p>
                   </div>
                 } @else {
                   <div class="list-group list-group-flush">
@@ -2059,12 +2135,14 @@
                                   class="form-control"
                                   [value]="editingEnvVarValue()"
                                   (input)="editingEnvVarValue.set($any($event.target).value)"
+                                  i18n-placeholder="@@featureChat-enterValuePlaceholder"
                                   placeholder="Enter value"
                                 />
                                 <button
                                   type="button"
                                   class="btn btn-success"
                                   (click)="onSaveEnvironmentVariable(envVar)"
+                                  i18n-title="@@featureChat-saveTitle"
                                   title="Save"
                                 >
                                   <i class="bi bi-check-lg"></i>
@@ -2073,6 +2151,7 @@
                                   type="button"
                                   class="btn btn-secondary"
                                   (click)="onCancelEditEnvironmentVariable()"
+                                  i18n-title="@@featureChat-cancelTitle"
                                   title="Cancel"
                                 >
                                   <i class="bi bi-x-lg"></i>
@@ -2088,6 +2167,7 @@
                                 type="button"
                                 class="btn btn-sm btn-outline-primary"
                                 (click)="onEditEnvironmentVariableClick(envVar)"
+                                i18n-title="@@featureChat-editValueTitle"
                                 title="Edit value"
                               >
                                 <i class="bi bi-pencil"></i>
@@ -2096,6 +2176,7 @@
                                 type="button"
                                 class="btn btn-sm btn-outline-danger"
                                 (click)="onDeleteEnvironmentVariable(envVar.id)"
+                                i18n-title="@@featureChat-deleteTitle"
                                 title="Delete"
                               >
                                 <i class="bi bi-trash"></i>
@@ -2115,7 +2196,9 @@
         <!-- Container Reset Hint -->
         <div class="alert alert-warning mt-3">
           <i class="bi bi-exclamation-triangle me-2"></i>
-          Changing the environment variables will re-create the agent's container. Context may be lost.
+          <span i18n="@@featureChat-envVarsWarning"
+            >Changing the environment variables will re-create the agent's container. Context may be lost.</span
+          >
         </div>
       </div>
       <div class="modal-footer">
@@ -2126,7 +2209,7 @@
           (click)="onCloseEnvironmentVariablesModal()"
           [disabled]="(environmentVariablesCreating$ | async) === true"
         >
-          Close
+          <span i18n="@@featureChat-close">Close</span>
         </button>
       </div>
     </div>

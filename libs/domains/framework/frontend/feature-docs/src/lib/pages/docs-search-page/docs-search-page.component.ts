@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { DocsSearchService, SearchResult } from '../../services';
 import { DocsSearchComponent } from '../../components';
+import { DocsSearchService, SearchResult } from '../../services';
 
 @Component({
   selector: 'framework-docs-search-page',
@@ -52,6 +52,16 @@ export class DocsSearchPageComponent implements OnInit {
     } else {
       this.loading.set(false);
     }
+  }
+
+  /**
+   * Get formatted results count message
+   */
+  getResultsCountMessage(count: number, query: string): string {
+    if (count === 1) {
+      return $localize`:@@featureDocsSearchPage-foundOneResult:Found ${count} result for "${query}":count:query:`;
+    }
+    return $localize`:@@featureDocsSearchPage-foundResults:Found ${count} results for "${query}":count:query:`;
   }
 
   /**
