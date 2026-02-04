@@ -25,6 +25,9 @@ ENV DB_DATABASE=postgres
 # Environment variables for the authentication method
 ENV AUTHENTICATION_METHOD=api-key
 
+# Environment variables for disabling signup
+ENV DISABLE_SIGNUP=false
+
 # Environment variables for the keycloak server
 ENV KEYCLOAK_SERVER_URL=http://keycloak:8080
 ENV KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080

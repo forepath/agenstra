@@ -453,6 +453,8 @@ Authentication is configured via the `AUTHENTICATION_METHOD` environment variabl
 - **`keycloak`**: Keycloak OAuth2/OIDC. Users authenticate via Keycloak. Keycloak users are synced to the users table; first user gets admin role, subsequent users get user role.
 - **`users`**: Built-in user registration with JWT. Users register, confirm email, and log in. First registered user gets admin role. Admins can manage users via CRUD endpoints.
 
+When using `users` auth, set `DISABLE_SIGNUP=true` to disable self-registration. The register endpoint will return 503 Service Unavailable. Use admin user creation for onboarding when signup is disabled.
+
 See [Authentication Diagram](./docs/authentication.mmd) for a visual overview.
 
 ### HTTP Endpoints
@@ -466,7 +468,7 @@ All HTTP endpoints (except public auth endpoints) require authentication. The me
 ### Users Auth Endpoints (when AUTHENTICATION_METHOD=users)
 
 - `POST /api/auth/login` - Login with email/password
-- `POST /api/auth/register` - Register new user (6-character alphanumeric confirmation code sent via email for non-first users)
+- `POST /api/auth/register` - Register new user (6-character alphanumeric confirmation code sent via email for non-first users; returns 503 when DISABLE_SIGNUP=true)
 - `POST /api/auth/confirm-email` - Confirm email with 6-character code (requires email + code)
 - `POST /api/auth/request-password-reset` - Request password reset (6-character code sent via email)
 - `POST /api/auth/reset-password` - Reset password with 6-character code (requires email + code + newPassword)

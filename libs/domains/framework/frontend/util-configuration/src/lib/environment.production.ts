@@ -11,6 +11,7 @@ export const environment: Environment = {
     type: 'api-key',
     */
     type: 'users',
+    disableSignup: false,
     /*
     type: 'keycloak',
     authServerUrl: 'http://host.docker.internal:8380',

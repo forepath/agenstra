@@ -129,7 +129,7 @@
     "@modelcontextprotocol/sdk": "1.18.2",
     "@nestjs/common": "11.1.6",
     "@nestjs/core": "11.1.6",
-    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/jwt": "11.0.2",
     "@nestjs/platform-express": "11.1.6",
     "@nestjs/platform-socket.io": "11.1.6",
     "@nestjs/throttler": "6.5.0",

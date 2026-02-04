@@ -37,4 +37,5 @@ export interface ApiKeyAuthenticationConfig {
 
 export interface UsersAuthenticationConfig {
   type: 'users';
+  disableSignup?: boolean;
 }

@@ -116,6 +116,7 @@ import { AgentConsoleContainerComponent } from './container/container.component'
 import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
+import { signupDisabledGuard } from './guards/signup-disabled.guard';
 import { AgentConsoleLoginComponent } from './login/login.component';
 import { AgentConsoleRegisterComponent } from './register/register.component';
 import { AgentConsoleRequestPasswordResetConfirmationComponent } from './request-password-reset-confirmation/request-password-reset-confirmation.component';
@@ -142,7 +143,7 @@ export const agentConsoleRoutes: Route[] = [
       {
         path: 'register',
         component: AgentConsoleRegisterComponent,
-        canActivate: [loginGuard],
+        canActivate: [signupDisabledGuard, loginGuard],
         title: 'Register | Agenstra',
       },
       {

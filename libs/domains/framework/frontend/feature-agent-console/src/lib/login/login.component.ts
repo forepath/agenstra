@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthenticationFacade, loginSuccess } from '@forepath/framework/frontend/data-access-agent-console';
-import type { Environment } from '@forepath/framework/frontend/util-configuration';
+import type { Environment, UsersAuthenticationConfig } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
@@ -41,6 +41,16 @@ export class AgentConsoleLoginComponent implements OnInit {
    */
   get isApiKeyAuth(): boolean {
     return this.environment.authentication.type === 'api-key';
+  }
+
+  /**
+   * Whether signup is disabled (users auth only). When true, the "Create an account" link is hidden.
+   */
+  get isSignupDisabled(): boolean {
+    return (
+      this.environment.authentication.type === 'users' &&
+      (this.environment.authentication as UsersAuthenticationConfig).disableSignup === true
+    );
   }
 
   /**

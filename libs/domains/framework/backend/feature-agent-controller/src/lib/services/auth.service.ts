@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserEntity, UserRole } from '../entities/user.entity';
@@ -56,6 +56,10 @@ export class AuthService {
   }
 
   async register(email: string, password: string): Promise<RegisterResponse> {
+    if (process.env.DISABLE_SIGNUP === 'true') {
+      throw new ServiceUnavailableException('Signup is disabled');
+    }
+
     const count = await this.usersRepository.count();
     const isFirstUser = count === 0;
 

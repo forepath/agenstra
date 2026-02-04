@@ -165,8 +165,14 @@
           </div>
 
           <!-- Links for users auth -->
-          <div class="mb-3 d-flex justify-content-between">
-            <a routerLink="/register" class="text-decoration-none small">Create an account</a>
+          <div
+            class="mb-3 d-flex"
+            [class.justify-content-between]="!isSignupDisabled"
+            [class.justify-content-end]="isSignupDisabled"
+          >
+            @if (!isSignupDisabled) {
+              <a routerLink="/register" class="text-decoration-none small">Create an account</a>
+            }
             <a routerLink="/request-password-reset" class="text-decoration-none small">Forgot password?</a>
           </div>
         }

@@ -36,6 +36,8 @@ paths:
   /auth/register:
     post:
       summary: Register new user (users auth only)
+      description: |
+        Registers a new user. When DISABLE_SIGNUP is true, returns 503 Service Unavailable.
       operationId: register
       security: []
       requestBody:
@@ -53,6 +55,8 @@ paths:
                 $ref: '#/components/schemas/RegisterResponse'
         '409':
           description: Email already registered
+        '503':
+          description: Signup is disabled (DISABLE_SIGNUP=true)
   /auth/confirm-email:
     post:
       summary: Confirm email with 6-character code (users auth only)

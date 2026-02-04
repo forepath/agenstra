@@ -24,14 +24,18 @@ sequenceDiagram
     end
 
     rect rgb(240, 255, 240)
-        Note over Component,API: Register
+        Note over Component,API: Register (disabled when DISABLE_SIGNUP=true)
         Component->>Facade: register(email, password)
         Facade->>Store: dispatch(register({email, password}))
         Store->>Effects: register$ effect
         Effects->>Service: register(email, password)
         Service->>API: POST /api/auth/register
-        API-->>Service: 201 {user, message}
-        Effects->>Store: dispatch(registerSuccess(...))
+        alt Signup enabled
+            API-->>Service: 201 {user, message}
+            Effects->>Store: dispatch(registerSuccess(...))
+        else Signup disabled
+            API-->>Service: 503 Service Unavailable
+        end
     end
 
     rect rgb(255, 240, 240)

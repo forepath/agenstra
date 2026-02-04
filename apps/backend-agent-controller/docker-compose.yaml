@@ -37,6 +37,8 @@ services:
       DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
       # Authentication method configuration
       AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
+      # Environment variables for disabling signup
+      DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
       # Static API key authentication configuration
       STATIC_API_KEY: ${STATIC_API_KEY:-}
       # Environment variables for encryption
