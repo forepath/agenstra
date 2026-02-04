@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.29.0](https://github.com/forepath/agenstra/compare/v1.28.0...v1.29.0) (2026-02-04)
+
+
+### Features
+
+* desktop app landingpage ([#190](https://github.com/forepath/agenstra/issues/190)) ([c7b6116](https://github.com/forepath/agenstra/commit/c7b61161d5d06826c75b50c6d7495f5ec643376e))
+* user-based authentication ([#191](https://github.com/forepath/agenstra/issues/191)) ([7d5c5cb](https://github.com/forepath/agenstra/commit/7d5c5cbfd578c80d5a42b9ecc349d44f26609040))
+
 ## [1.28.0](https://github.com/forepath/agenstra/compare/v1.27.2...v1.28.0) (2026-02-01)
 
 
