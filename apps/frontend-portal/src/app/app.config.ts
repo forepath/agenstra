@@ -3,7 +3,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
-import { environment } from '@forepath/framework/frontend/util-configuration';
+import { environment, provideLocale } from '@forepath/framework/frontend/util-configuration';
 import { cookieConfig } from '@forepath/framework/frontend/util-cookie-consent';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
@@ -38,5 +38,6 @@ export const appConfig: ApplicationConfig = {
     { provide: ViewportScroller, useClass: ViewportScrollerOffset },
     provideHttpClient(withFetch()),
     provideNgcCookieConsent(cookieConfig),
+    provideLocale(),
   ],
 };
