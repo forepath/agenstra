@@ -1,0 +1,70 @@
+sequenceDiagram
+    participant Component as Angular Component
+    participant Facade as AuthenticationFacade
+    participant Store as NgRx Store
+    participant Effects as AuthenticationEffects
+    participant Service as AuthService
+    participant API as HTTP API<br/>(/api/auth, /api/users)
+
+    Note over Component,API: Users Authentication Flow
+
+    rect rgb(230, 240, 255)
+        Note over Component,API: Login (users)
+        Component->>Facade: login(email, password)
+        Facade->>Store: dispatch(login({email, password}))
+        Store->>Effects: login$ effect
+        Effects->>Service: login(email, password)
+        Service->>API: POST /api/auth/login
+        API-->>Service: 200 {access_token, user}
+        Service-->>Effects: Observable
+        Effects->>Effects: Store JWT in localStorage
+        Effects->>Store: dispatch(loginSuccess({authenticationType, user}))
+        Store->>Store: isAuthenticated=true, user=...
+        Effects->>Component: Redirect to /clients
+    end
+
+    rect rgb(240, 255, 240)
+        Note over Component,API: Register (disabled when DISABLE_SIGNUP=true)
+        Component->>Facade: register(email, password)
+        Facade->>Store: dispatch(register({email, password}))
+        Store->>Effects: register$ effect
+        Effects->>Service: register(email, password)
+        Service->>API: POST /api/auth/register
+        alt Signup enabled
+            API-->>Service: 201 {user, message}
+            Effects->>Store: dispatch(registerSuccess(...))
+        else Signup disabled
+            API-->>Service: 503 Service Unavailable
+        end
+    end
+
+    rect rgb(255, 240, 240)
+        Note over Component,API: Confirm Email
+        Component->>Facade: confirmEmail(email, code)
+        Facade->>Store: dispatch(confirmEmail({email, code}))
+        Effects->>Service: confirmEmail(email, code)
+        Service->>API: POST /api/auth/confirm-email {email, code}
+        API-->>Service: 200
+        Effects->>Store: dispatch(confirmEmailSuccess())
+    end
+
+    rect rgb(255, 255, 230)
+        Note over Component,API: Admin - Load Users
+        Component->>Facade: loadUsers(limit?, offset?)
+        Facade->>Store: dispatch(loadUsers(...))
+        Store->>Effects: loadUsers$ effect
+        Effects->>Service: listUsers(params)
+        Service->>API: GET /api/users (with JWT)
+        API-->>Service: 200 [UserResponseDto[]]
+        Effects->>Store: dispatch(loadUsersSuccess({users}))
+    end
+
+    rect rgb(255, 230, 255)
+        Note over Component,API: Admin - Create User
+        Component->>Facade: createUser(user)
+        Facade->>Store: dispatch(createUser({user}))
+        Effects->>Service: createUser(user)
+        Service->>API: POST /api/users (with JWT)
+        API-->>Service: 201 UserResponseDto
+        Effects->>Store: dispatch(createUserSuccess({user}))
+    end

@@ -1,0 +1,19 @@
+.user-manager-container {
+  min-height: 0;
+}
+
+.brand-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-icon {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+}
+
+.editor-toolbar-badge {
+  font-size: 0.5rem;
+}

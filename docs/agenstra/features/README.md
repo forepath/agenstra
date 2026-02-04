@@ -16,6 +16,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Chat Interface** - AI chat functionality with real-time responses
 - **VNC Browser Access** - Graphical browser access via VNC and noVNC
 - **Deployment** - CI/CD pipeline management and deployment functionality
+- **Authentication** - Multiple authentication methods with configurable user registration
 
 ## Features
 
@@ -138,6 +139,19 @@ CI/CD pipeline management and deployment functionality. Configure CI/CD provider
 - View pipeline run logs and individual job logs
 - Track deployment history
 
+### [Authentication](./authentication.md)
+
+Multiple authentication methods with configurable user registration. Support for API key, Keycloak OAuth2/OIDC, and built-in user authentication with optional signup disable.
+
+**Key Capabilities**:
+
+- API key authentication for simple deployments
+- Keycloak OAuth2/OIDC for enterprise SSO
+- Built-in user registration with email confirmation
+- Password reset with 6-character alphanumeric codes
+- Admin user management
+- Optional signup disable for controlled onboarding
+
 ## Feature Relationships
 
 ```mermaid
@@ -152,6 +166,7 @@ graph TB
     Chat[Chat Interface]
     VNC[VNC Browser Access]
     DEP[Deployment]
+    AUTH[Authentication]
 
     SP --> CM
     CM --> AM
@@ -166,6 +181,7 @@ graph TB
     FM --> IDE
     VC --> IDE
     VC --> DEP
+    AUTH --> AM
 ```
 
 ## Related Documentation

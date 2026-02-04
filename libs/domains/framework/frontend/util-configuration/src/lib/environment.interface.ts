@@ -18,7 +18,10 @@ export interface Environment {
   };
 }
 
-export type AuthenticationConfig = KeycloakAuthenticationConfig | ApiKeyAuthenticationConfig;
+export type AuthenticationConfig =
+  | KeycloakAuthenticationConfig
+  | ApiKeyAuthenticationConfig
+  | UsersAuthenticationConfig;
 
 export interface KeycloakAuthenticationConfig {
   type: 'keycloak';
@@ -30,4 +33,9 @@ export interface KeycloakAuthenticationConfig {
 export interface ApiKeyAuthenticationConfig {
   type: 'api-key';
   apiKey?: string;
+}
+
+export interface UsersAuthenticationConfig {
+  type: 'users';
+  disableSignup?: boolean;
 }

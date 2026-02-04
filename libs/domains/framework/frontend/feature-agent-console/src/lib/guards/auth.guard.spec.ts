@@ -2,7 +2,7 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+import { ENVIRONMENT, LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { isAuthenticated } from '@forepath/identity/frontend';
 import { authGuard } from './auth.guard';
 
@@ -18,6 +18,8 @@ describe('authGuard', () => {
   let mockEnvironment: Environment;
   let mockIsAuthenticated: jest.MockedFunction<typeof isAuthenticated>;
 
+  let mockLocaleService: jest.Mocked<Partial<LocaleService>>;
+
   const setupTestBed = (environmentOverrides?: Partial<Environment>): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -29,6 +31,10 @@ describe('authGuard', () => {
         {
           provide: Router,
           useValue: mockRouter,
+        },
+        {
+          provide: LocaleService,
+          useValue: mockLocaleService,
         },
       ],
     });
@@ -84,6 +90,10 @@ describe('authGuard', () => {
     };
 
     mockIsAuthenticated = isAuthenticated as jest.MockedFunction<typeof isAuthenticated>;
+
+    mockLocaleService = {
+      buildAbsoluteUrl: jest.fn((path: string[]) => path),
+    };
 
     jest.clearAllMocks();
   });
@@ -206,6 +216,73 @@ describe('authGuard', () => {
         },
       });
       (window.localStorage.getItem as jest.Mock).mockReturnValue('');
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
+
+      const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/login']);
+    });
+  });
+
+  describe('when authentication type is users', () => {
+    beforeEach(() => {
+      mockEnvironment = {
+        ...mockEnvironment,
+        authentication: {
+          type: 'users',
+        },
+      };
+    });
+
+    it('should allow access if valid JWT exists in localStorage', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      const exp = Math.floor((Date.now() + 3600000) / 1000);
+      const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
+      const jwt = `header.${payload}.signature`;
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === 'agent-controller-users-jwt' ? jwt : null,
+      );
+
+      const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+
+      expect(result).toBe(true);
+      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+    });
+
+    it('should redirect to login if no JWT exists in localStorage', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
+
+      const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/login']);
+    });
+
+    it('should redirect to login if JWT is expired', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      const exp = Math.floor((Date.now() - 3600000) / 1000);
+      const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
+      const jwt = `header.${payload}.signature`;
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === 'agent-controller-users-jwt' ? jwt : null,
+      );
       const mockUrlTree = {} as UrlTree;
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 

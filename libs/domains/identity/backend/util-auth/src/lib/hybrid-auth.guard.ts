@@ -2,10 +2,34 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
 
+/** Supported authentication methods. */
+export type AuthenticationMethod = 'api-key' | 'keycloak' | 'users';
+
+/** Default authentication method when AUTHENTICATION_METHOD is explicitly set to api-key. */
+export const DEFAULT_AUTHENTICATION_METHOD: AuthenticationMethod = 'api-key';
+
+/**
+ * Resolves the effective authentication method from environment variables.
+ * - AUTHENTICATION_METHOD: explicit choice ('api-key' | 'keycloak' | 'users')
+ * - Fallback when not set: STATIC_API_KEY set -> 'api-key', else -> 'keycloak' (backward compatibility)
+ */
+export function getAuthenticationMethod(): AuthenticationMethod {
+  const explicit = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
+  if (explicit === 'api-key' || explicit === 'keycloak' || explicit === 'users') {
+    return explicit;
+  }
+  // Backward compatibility: STATIC_API_KEY set -> api-key, else -> keycloak
+  if (process.env.STATIC_API_KEY) {
+    return 'api-key';
+  }
+  return 'keycloak';
+}
+
 /**
  * Guard that validates static API key authentication.
- * If STATIC_API_KEY is set, only API key authentication is used (no Keycloak fallback, no anonymous access).
- * If STATIC_API_KEY is not set, this guard allows requests to proceed to Keycloak guards.
+ * When AUTHENTICATION_METHOD is 'api-key' (or STATIC_API_KEY is set for backward compatibility),
+ * only API key authentication is used (no Keycloak fallback, no anonymous access).
+ * When 'keycloak' or 'users', this guard allows requests to proceed to the respective auth guards.
  */
 @Injectable()
 export class HybridAuthGuard implements CanActivate {
@@ -20,10 +44,19 @@ export class HybridAuthGuard implements CanActivate {
       return true;
     }
 
+    const authMethod = getAuthenticationMethod();
     const staticApiKey = process.env.STATIC_API_KEY;
 
-    // If STATIC_API_KEY is set, require API key authentication (no Keycloak fallback, no anonymous)
-    if (staticApiKey) {
+    // api-key: require STATIC_API_KEY to be set and validate it
+    const useApiKey = authMethod === 'api-key' && staticApiKey;
+
+    if (authMethod === 'api-key' && !staticApiKey) {
+      throw new UnauthorizedException(
+        'API key authentication is configured but STATIC_API_KEY is not set. Set STATIC_API_KEY or use a different AUTHENTICATION_METHOD.',
+      );
+    }
+
+    if (useApiKey) {
       const request = context.switchToHttp().getRequest();
       const authHeader = request.headers.authorization;
 
@@ -41,11 +74,11 @@ export class HybridAuthGuard implements CanActivate {
 
       // Accept both "Bearer" and "ApiKey" schemes for API key
       if ((scheme === 'Bearer' || scheme === 'ApiKey') && providedKey === staticApiKey) {
-        // Attach a simple user object to the request for consistency
+        // Attach user object: API key auth always implicates admin rights
         request.user = {
           id: 'api-key-user',
           username: 'api-key',
-          roles: ['api-key-user'],
+          roles: ['admin', 'user'],
         };
         // Mark that API key authentication succeeded
         request.apiKeyAuthenticated = true;
@@ -56,30 +89,29 @@ export class HybridAuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid API key');
     }
 
-    // If STATIC_API_KEY is not set, let Keycloak guards handle authentication
-    // Return true to allow the request to proceed to Keycloak guards
+    // keycloak or users: let respective guards handle authentication
     return true;
   }
 }
 
 /**
  * Guard providers that conditionally include API key guard and Keycloak guards.
- * - If STATIC_API_KEY is set: Only API key guard (no Keycloak, no anonymous)
- * - If STATIC_API_KEY is not set: Only Keycloak guards
+ * - AUTHENTICATION_METHOD=api-key (and STATIC_API_KEY set): Only API key guard
+ * - AUTHENTICATION_METHOD=keycloak: Keycloak guards
+ * - AUTHENTICATION_METHOD=users: JWT guard (handled by UsersAuthModule)
  */
 export function getHybridAuthGuards() {
-  const staticApiKey = process.env.STATIC_API_KEY;
+  const authMethod = getAuthenticationMethod();
   const guards: Array<{ provide: typeof APP_GUARD; useClass: new (...args: unknown[]) => CanActivate }> = [];
 
-  // Always add API key guard (it will check if STATIC_API_KEY is set)
+  // Always add HybridAuthGuard (checks AUTHENTICATION_METHOD and STATIC_API_KEY)
   guards.push({
     provide: APP_GUARD,
     useClass: HybridAuthGuard,
   });
 
-  // Only add Keycloak guards if STATIC_API_KEY is NOT set
-  // (When STATIC_API_KEY is set, we use API key only - no Keycloak fallback)
-  if (!staticApiKey) {
+  // Add Keycloak guards only when using keycloak auth
+  if (authMethod === 'keycloak') {
     guards.push(
       {
         provide: APP_GUARD,

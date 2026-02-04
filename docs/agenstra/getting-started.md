@@ -69,6 +69,8 @@ DB_PASSWORD=postgres
 DB_DATABASE=agent_controller
 
 # Authentication (choose one)
+AUTHENTICATION_METHOD=users
+
 # Option 1: API Key authentication
 STATIC_API_KEY=your-secure-api-key-here
 
@@ -79,6 +81,10 @@ KEYCLOAK_CLIENT_ID=agent-controller
 KEYCLOAK_CLIENT_SECRET=your-client-secret
 # Optional: KEYCLOAK_SERVER_URL if different from auth server URL
 # Optional: KEYCLOAK_TOKEN_VALIDATION=ONLINE (default) or OFFLINE
+
+# Option 3: Users authentication
+JWT_SECRET=your-jwt-secret-key
+DISABLE_SIGNUP=false  # Set to true to disable self-registration
 
 # Ports
 PORT=3100

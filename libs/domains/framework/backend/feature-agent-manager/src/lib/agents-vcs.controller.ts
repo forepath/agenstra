@@ -10,6 +10,7 @@ import { RebaseDto } from './dto/rebase.dto';
 import { ResolveConflictDto } from './dto/resolve-conflict.dto';
 import { StageFilesDto } from './dto/stage-files.dto';
 import { UnstageFilesDto } from './dto/unstage-files.dto';
+import { UserRole } from './entities/user.entity';
 import { AgentsVcsService } from './services/agents-vcs.service';
 
 /**
@@ -17,7 +18,7 @@ import { AgentsVcsService } from './services/agents-vcs.service';
  * Provides endpoints for git operations in agent containers.
  */
 @Resource('agents')
-@Roles('agent_management')
+@Roles(UserRole.CONTROLLER)
 @Controller('agents/:agentId/vcs')
 export class AgentsVcsController {
   constructor(private readonly agentsVcsService: AgentsVcsService) {}

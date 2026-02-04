@@ -25,6 +25,7 @@ import {
   TriggerWorkflowDto,
   WorkflowResponseDto,
 } from './dto/deployment-run.dto';
+import { UserRole } from './entities/user.entity';
 import { DeploymentsService } from './services/deployments.service';
 
 /**
@@ -32,7 +33,7 @@ import { DeploymentsService } from './services/deployments.service';
  * Provides operations for managing deployment configurations and pipeline runs.
  */
 @Resource('agents')
-@Roles('agent_management')
+@Roles(UserRole.CONTROLLER)
 @Controller('agents/:agentId/deployments')
 export class AgentsDeploymentsController {
   constructor(private readonly deploymentsService: DeploymentsService) {}

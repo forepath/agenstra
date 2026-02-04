@@ -16,6 +16,7 @@ import { Resource, Roles } from 'nest-keycloak-connect';
 import { CreateEnvironmentVariableDto } from './dto/create-environment-variable.dto';
 import { EnvironmentVariableResponseDto } from './dto/environment-variable-response.dto';
 import { UpdateEnvironmentVariableDto } from './dto/update-environment-variable.dto';
+import { UserRole } from './entities/user.entity';
 import { AgentEnvironmentVariablesService } from './services/agent-environment-variables.service';
 
 /**
@@ -23,7 +24,7 @@ import { AgentEnvironmentVariablesService } from './services/agent-environment-v
  * Provides CRUD operations for agent environment variables.
  */
 @Resource('agents')
-@Roles('agent_management')
+@Roles(UserRole.CONTROLLER)
 @Controller('agents/:agentId/environment')
 export class AgentsEnvironmentVariablesController {
   constructor(private readonly agentEnvironmentVariablesService: AgentEnvironmentVariablesService) {}

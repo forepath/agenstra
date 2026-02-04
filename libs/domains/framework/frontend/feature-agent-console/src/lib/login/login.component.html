@@ -52,48 +52,130 @@
       <h2 class="section__column-title mb-4 text-center">Login</h2>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
-        <!-- Error Alert -->
-        @if (error$ | async; as error) {
-          <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <span>{{ error }}</span>
-            <button type="button" class="btn-close" aria-label="Close" (click)="loginForm.reset()"></button>
+        <!-- Success Alert -->
+        @if (successMessage$ | async; as successMessage) {
+          <div class="alert alert-success" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span>{{ successMessage }}</span>
           </div>
         }
 
-        <!-- API Base Hostname Input -->
-        <div class="mb-3">
-          <label for="apiBaseHostname" class="form-label">Controller API Host</label>
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="bi bi-globe"></i>
-            </span>
-            <input type="text" class="form-control" id="apiBaseHostname" [value]="apiBaseHostname" readonly disabled />
+        <!-- Error Alert -->
+        @if (error$ | async; as error) {
+          <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>{{ error }}</span>
           </div>
-        </div>
+        }
 
-        <!-- API Key Input -->
-        <div class="mb-3">
-          <label for="apiKey" class="form-label">Controller API Key</label>
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="bi bi-key-fill"></i>
-            </span>
-            <input
-              type="text"
-              class="form-control"
-              [class.is-invalid]="loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched"
-              id="apiKey"
-              formControlName="apiKey"
-              placeholder="Enter your API key"
-              [disabled]="(loading$ | async) ?? false"
-              autocomplete="off"
-            />
+        @if (isApiKeyAuth) {
+          <!-- API Base Hostname Input -->
+          <div class="mb-3">
+            <label for="apiBaseHostname" class="form-label">Controller API Host</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-globe"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                id="apiBaseHostname"
+                [value]="apiBaseHostname"
+                readonly
+                disabled
+              />
+            </div>
           </div>
-          @if (loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched) {
-            <div class="invalid-feedback d-block">API key is required.</div>
-          }
-        </div>
+
+          <!-- API Key Input -->
+          <div class="mb-3">
+            <label for="apiKey" class="form-label">Controller API Key</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-key-fill"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched"
+                id="apiKey"
+                formControlName="apiKey"
+                placeholder="Enter your API key"
+                [disabled]="(loading$ | async) ?? false"
+                autocomplete="off"
+              />
+            </div>
+            @if (loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched) {
+              <div class="invalid-feedback d-block">API key is required.</div>
+            }
+          </div>
+        }
+
+        @if (isUsersAuth) {
+          <!-- Email Input -->
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-envelope-fill"></i>
+              </span>
+              <input
+                type="email"
+                class="form-control"
+                [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                id="email"
+                formControlName="email"
+                placeholder="Enter your email"
+                [disabled]="(loading$ | async) ?? false"
+                autocomplete="email"
+              />
+            </div>
+            @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+              <div class="invalid-feedback d-block">
+                @if (loginForm.get('email')?.errors?.['required']) {
+                  Email is required.
+                } @else if (loginForm.get('email')?.errors?.['email']) {
+                  Please enter a valid email address.
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Password Input -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-lock-fill"></i>
+              </span>
+              <input
+                type="password"
+                class="form-control"
+                [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                id="password"
+                formControlName="password"
+                placeholder="Enter your password"
+                [disabled]="(loading$ | async) ?? false"
+                autocomplete="current-password"
+              />
+            </div>
+            @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+              <div class="invalid-feedback d-block">Password is required.</div>
+            }
+          </div>
+
+          <!-- Links for users auth -->
+          <div
+            class="mb-3 d-flex"
+            [class.justify-content-between]="!isSignupDisabled"
+            [class.justify-content-end]="isSignupDisabled"
+          >
+            @if (!isSignupDisabled) {
+              <a routerLink="/register" class="text-decoration-none small">Create an account</a>
+            }
+            <a routerLink="/request-password-reset" class="text-decoration-none small">Forgot password?</a>
+          </div>
+        }
 
         <!-- Submit Button -->
         <div class="d-grid gap-2">

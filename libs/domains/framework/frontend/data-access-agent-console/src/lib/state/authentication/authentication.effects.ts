@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
@@ -5,27 +6,57 @@ import { ENVIRONMENT, LocaleService } from '@forepath/framework/frontend/util-co
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
 import { catchError, from, map, of, switchMap, tap } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
 import {
+  changePassword,
+  changePasswordFailure,
+  changePasswordSuccess,
   checkAuthentication,
   checkAuthenticationFailure,
   checkAuthenticationSuccess,
+  confirmEmail,
+  confirmEmailFailure,
+  confirmEmailSuccess,
+  createUser,
+  createUserFailure,
+  createUserSuccess,
+  deleteUser,
+  deleteUserFailure,
+  deleteUserSuccess,
+  loadUsers,
+  loadUsersBatch,
+  loadUsersFailure,
+  loadUsersSuccess,
   login,
   loginFailure,
   loginSuccess,
   logout,
   logoutFailure,
   logoutSuccess,
+  register,
+  registerFailure,
+  registerSuccess,
+  requestPasswordReset,
+  requestPasswordResetFailure,
+  requestPasswordResetSuccess,
+  resetPassword,
+  resetPasswordFailure,
+  resetPasswordSuccess,
+  updateUser,
+  updateUserFailure,
+  updateUserSuccess,
 } from './authentication.actions';
 
-/**
- * LocalStorage key for storing the API key
- */
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
+const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
-/**
- * Normalizes error messages from authentication errors.
- */
 function normalizeError(error: unknown): string {
+  if (error instanceof HttpErrorResponse && error.error?.message) {
+    return error.error.message;
+  }
+  if (error instanceof HttpErrorResponse && error.error?.error) {
+    return typeof error.error.error === 'string' ? error.error.error : String(error.error.error);
+  }
   if (error instanceof Error) {
     return error.message;
   }
@@ -38,31 +69,39 @@ function normalizeError(error: unknown): string {
   return 'An unexpected authentication error occurred';
 }
 
-/**
- * Effect to handle login for both API key and Keycloak authentication
- */
 export const login$ = createEffect(
   (
     actions$ = inject(Actions),
     environment = inject<Environment>(ENVIRONMENT),
     keycloakService = inject(KeycloakService, { optional: true }),
+    authService = inject(AuthService, { optional: true }),
   ) => {
     return actions$.pipe(
       ofType(login),
-      switchMap(({ apiKey }) => {
+      switchMap(({ apiKey, email, password }) => {
         if (environment.authentication.type === 'api-key') {
-          // API key authentication
           const keyToStore = apiKey || environment.authentication.apiKey;
           if (keyToStore) {
-            // Store API key in localStorage
             localStorage.setItem(API_KEY_STORAGE_KEY, keyToStore);
             return of(loginSuccess({ authenticationType: 'api-key' }));
           }
           return of(loginFailure({ error: 'API key is required for authentication' }));
-        } else if (environment.authentication.type === 'keycloak' && keycloakService) {
-          // Keycloak authentication
+        }
+        if (environment.authentication.type === 'keycloak' && keycloakService) {
           return from(keycloakService.login()).pipe(
             map(() => loginSuccess({ authenticationType: 'keycloak' })),
+            catchError((error) => of(loginFailure({ error: normalizeError(error) }))),
+          );
+        }
+        if (environment.authentication.type === 'users' && authService && email && password) {
+          return authService.login(email, password).pipe(
+            map((res) => {
+              localStorage.setItem(USERS_JWT_STORAGE_KEY, res.access_token);
+              return loginSuccess({
+                authenticationType: 'users',
+                user: res.user,
+              });
+            }),
             catchError((error) => of(loginFailure({ error: normalizeError(error) }))),
           );
         }
@@ -73,9 +112,6 @@ export const login$ = createEffect(
   { functional: true },
 );
 
-/**
- * Effect to redirect to dashboard upon login success
- */
 export const loginSuccessRedirect$ = createEffect(
   (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
     return actions$.pipe(
@@ -88,9 +124,6 @@ export const loginSuccessRedirect$ = createEffect(
   { functional: true, dispatch: false },
 );
 
-/**
- * Effect to handle logout for both API key and Keycloak authentication
- */
 export const logout$ = createEffect(
   (
     actions$ = inject(Actions),
@@ -101,15 +134,18 @@ export const logout$ = createEffect(
       ofType(logout),
       switchMap(() => {
         if (environment.authentication.type === 'api-key') {
-          // API key authentication - remove from localStorage
           localStorage.removeItem(API_KEY_STORAGE_KEY);
           return of(logoutSuccess());
-        } else if (environment.authentication.type === 'keycloak' && keycloakService) {
-          // Keycloak authentication
+        }
+        if (environment.authentication.type === 'keycloak' && keycloakService) {
           return from(keycloakService.logout()).pipe(
             map(() => logoutSuccess()),
             catchError((error) => of(logoutFailure({ error: normalizeError(error) }))),
           );
+        }
+        if (environment.authentication.type === 'users') {
+          localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+          return of(logoutSuccess());
         }
         return of(logoutSuccess());
       }),
@@ -118,9 +154,6 @@ export const logout$ = createEffect(
   { functional: true },
 );
 
-/**
- * Effect to redirect to login upon logout success
- */
 export const logoutSuccessRedirect$ = createEffect(
   (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
     return actions$.pipe(
@@ -133,9 +166,6 @@ export const logoutSuccessRedirect$ = createEffect(
   { functional: true, dispatch: false },
 );
 
-/**
- * Effect to check authentication status for both API key and Keycloak
- */
 export const checkAuthentication$ = createEffect(
   (
     actions$ = inject(Actions),
@@ -146,7 +176,6 @@ export const checkAuthentication$ = createEffect(
       ofType(checkAuthentication),
       switchMap(() => {
         if (environment.authentication.type === 'api-key') {
-          // Check if API key exists in environment or localStorage
           const envApiKey = environment.authentication.apiKey;
           const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
           const isAuthenticated = !!(envApiKey || storedApiKey);
@@ -156,8 +185,8 @@ export const checkAuthentication$ = createEffect(
               authenticationType: isAuthenticated ? 'api-key' : undefined,
             }),
           );
-        } else if (environment.authentication.type === 'keycloak' && keycloakService) {
-          // Check Keycloak authentication status
+        }
+        if (environment.authentication.type === 'keycloak' && keycloakService) {
           try {
             const isAuthenticated = keycloakService.isLoggedIn();
             return of(
@@ -170,8 +199,260 @@ export const checkAuthentication$ = createEffect(
             return of(checkAuthenticationFailure({ error: normalizeError(error) }));
           }
         }
+        if (environment.authentication.type === 'users') {
+          const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
+          if (jwt) {
+            try {
+              const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
+              const exp = payload.exp ? payload.exp * 1000 : 0;
+              const isAuthenticated = exp > Date.now();
+              const user =
+                payload.sub && payload.email
+                  ? { id: payload.sub, email: payload.email, role: payload.roles?.[0] ?? 'user' }
+                  : undefined;
+              return of(
+                checkAuthenticationSuccess({
+                  isAuthenticated,
+                  authenticationType: isAuthenticated ? 'users' : undefined,
+                  user: isAuthenticated ? user : undefined,
+                }),
+              );
+            } catch {
+              localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+              return of(checkAuthenticationSuccess({ isAuthenticated: false }));
+            }
+          }
+          return of(checkAuthenticationSuccess({ isAuthenticated: false }));
+        }
         return of(checkAuthenticationSuccess({ isAuthenticated: false }));
       }),
+    );
+  },
+  { functional: true },
+);
+
+// --- Users auth effects ---
+
+export const register$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(register),
+      switchMap(({ email, password }) =>
+        authService.register(email, password).pipe(
+          map((res) => registerSuccess({ user: res.user, message: res.message })),
+          catchError((error) => of(registerFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const registerSuccessRedirect$ = createEffect(
+  (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
+    return actions$.pipe(
+      ofType(registerSuccess),
+      tap(({ user }) => {
+        router.navigate(localeService.buildAbsoluteUrl(['/confirm-email']), {
+          queryParams: { email: user.email },
+        });
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
+);
+
+export const confirmEmail$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(confirmEmail),
+      switchMap(({ email, code }) =>
+        authService.confirmEmail(email, code).pipe(
+          map(() => confirmEmailSuccess()),
+          catchError((error) => of(confirmEmailFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const confirmEmailSuccessRedirect$ = createEffect(
+  (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
+    return actions$.pipe(
+      ofType(confirmEmailSuccess),
+      tap(() => {
+        router.navigate(localeService.buildAbsoluteUrl(['/login']));
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
+);
+
+export const requestPasswordReset$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(requestPasswordReset),
+      switchMap(({ email }) =>
+        authService.requestPasswordReset(email).pipe(
+          map(() => requestPasswordResetSuccess({ email })),
+          catchError((error) => of(requestPasswordResetFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const requestPasswordResetSuccessRedirect$ = createEffect(
+  (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
+    return actions$.pipe(
+      ofType(requestPasswordResetSuccess),
+      tap(({ email }) => {
+        router.navigate(localeService.buildAbsoluteUrl(['/request-password-reset-confirmation']), {
+          queryParams: email ? { email } : {},
+        });
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
+);
+
+export const resetPassword$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(resetPassword),
+      switchMap(({ email, code, newPassword }) =>
+        authService.resetPassword(email, code, newPassword).pipe(
+          map(() => resetPasswordSuccess()),
+          catchError((error) => of(resetPasswordFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const resetPasswordSuccessRedirect$ = createEffect(
+  (actions$ = inject(Actions), router = inject(Router), localeService = inject(LocaleService)) => {
+    return actions$.pipe(
+      ofType(resetPasswordSuccess),
+      tap(() => {
+        router.navigate(localeService.buildAbsoluteUrl(['/login']));
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
+);
+
+export const changePassword$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(changePassword),
+      switchMap(({ currentPassword, newPassword, newPasswordConfirmation }) =>
+        authService.changePassword(currentPassword, newPassword, newPasswordConfirmation).pipe(
+          map(() => changePasswordSuccess()),
+          catchError((error) => of(changePasswordFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+// --- Admin users effects ---
+
+const USERS_BATCH_SIZE = 10;
+
+export const loadUsers$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(loadUsers),
+      switchMap(() => {
+        const batchParams = { limit: USERS_BATCH_SIZE, offset: 0 };
+        return authService.listUsers(batchParams).pipe(
+          switchMap((users) => {
+            if (users.length === 0) {
+              return of(loadUsersSuccess({ users: [] }));
+            }
+            if (users.length < USERS_BATCH_SIZE) {
+              return of(loadUsersSuccess({ users }));
+            }
+            return of(loadUsersBatch({ offset: USERS_BATCH_SIZE, accumulatedUsers: users }));
+          }),
+          catchError((error) => of(loadUsersFailure({ error: normalizeError(error) }))),
+        );
+      }),
+    );
+  },
+  { functional: true },
+);
+
+export const loadUsersBatch$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(loadUsersBatch),
+      switchMap(({ offset, accumulatedUsers }) => {
+        const batchParams = { limit: USERS_BATCH_SIZE, offset };
+        return authService.listUsers(batchParams).pipe(
+          switchMap((users) => {
+            const newAccumulated = [...accumulatedUsers, ...users];
+            if (users.length === 0) {
+              return of(loadUsersSuccess({ users: newAccumulated }));
+            }
+            if (users.length < USERS_BATCH_SIZE) {
+              return of(loadUsersSuccess({ users: newAccumulated }));
+            }
+            return of(loadUsersBatch({ offset: offset + USERS_BATCH_SIZE, accumulatedUsers: newAccumulated }));
+          }),
+          catchError((error) => of(loadUsersFailure({ error: normalizeError(error) }))),
+        );
+      }),
+    );
+  },
+  { functional: true },
+);
+
+export const createUser$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(createUser),
+      switchMap(({ user }) =>
+        authService.createUser(user).pipe(
+          map((created) => createUserSuccess({ user: created })),
+          catchError((error) => of(createUserFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const updateUser$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(updateUser),
+      switchMap(({ id, user }) =>
+        authService.updateUser(id, user).pipe(
+          map((updated) => updateUserSuccess({ user: updated })),
+          catchError((error) => of(updateUserFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const deleteUser$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(deleteUser),
+      switchMap(({ id }) =>
+        authService.deleteUser(id).pipe(
+          map(() => deleteUserSuccess({ id })),
+          catchError((error) => of(deleteUserFailure({ error: normalizeError(error) }))),
+        ),
+      ),
     );
   },
   { functional: true },

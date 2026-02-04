@@ -66,6 +66,7 @@ Comprehensive feature documentation:
 - [Web IDE](./features/web-ide.md) - Monaco Editor integration for code editing
 - [Chat Interface](./features/chat-interface.md) - AI chat functionality and message flow
 - [VNC Browser Access](./features/vnc-browser-access.md) - Graphical browser access via VNC and noVNC
+- [Authentication](./features/authentication.md) - Multiple authentication methods with configurable user registration
 
 ### [Deployment](./deployment/README.md)
 

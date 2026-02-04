@@ -19,6 +19,7 @@ import { FileContentDto } from './dto/file-content.dto';
 import { FileNodeDto } from './dto/file-node.dto';
 import { MoveFileDto } from './dto/move-file.dto';
 import { WriteFileDto } from './dto/write-file.dto';
+import { UserRole } from './entities/user.entity';
 import { AgentFileSystemService } from './services/agent-file-system.service';
 
 /**
@@ -26,7 +27,7 @@ import { AgentFileSystemService } from './services/agent-file-system.service';
  * Provides endpoints for reading, writing, listing, creating, deleting, and moving files in agent containers.
  */
 @Resource('agents')
-@Roles('agent_management')
+@Roles(UserRole.CONTROLLER)
 @Controller('agents/:agentId/files')
 export class AgentsFilesController {
   constructor(private readonly agentFileSystemService: AgentFileSystemService) {}

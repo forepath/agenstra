@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { checkAuthentication, login, logout } from './authentication.actions';
+import { checkAuthentication, loadUsers, login, logout, register } from './authentication.actions';
 import { AuthenticationFacade } from './authentication.facade';
 
 describe('AuthenticationFacade', () => {
@@ -126,6 +126,12 @@ describe('AuthenticationFacade', () => {
 
       expect(store.dispatch).toHaveBeenCalledWith(login({ apiKey: 'test-api-key' }));
     });
+
+    it('should dispatch login action with email and password for users auth', () => {
+      facade.login(undefined, 'user@example.com', 'password123');
+
+      expect(store.dispatch).toHaveBeenCalledWith(login({ email: 'user@example.com', password: 'password123' }));
+    });
   });
 
   describe('logout', () => {
@@ -141,6 +147,20 @@ describe('AuthenticationFacade', () => {
       facade.checkAuthentication();
 
       expect(store.dispatch).toHaveBeenCalledWith(checkAuthentication());
+    });
+  });
+
+  describe('users auth', () => {
+    it('should dispatch register action', () => {
+      facade.register('user@example.com', 'password123');
+
+      expect(store.dispatch).toHaveBeenCalledWith(register({ email: 'user@example.com', password: 'password123' }));
+    });
+
+    it('should dispatch loadUsers action', () => {
+      facade.loadUsers();
+
+      expect(store.dispatch).toHaveBeenCalledWith(loadUsers({ limit: undefined, offset: undefined }));
     });
   });
 });

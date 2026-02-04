@@ -1,0 +1,333 @@
+<div class="editor-toolbar-container border-bottom bg-body-tertiary">
+  <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-2">
+      <div
+        class="brand-icon-container me-2 fs-3 bg-primary p-3"
+        style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
+      >
+        <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
+      </div>
+      <span class="fw-bold text-uppercase">Agenstra</span>
+      <span
+        class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge"
+        >Admin Console</span
+      >
+    </div>
+  </div>
+</div>
+<div class="user-manager-container d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold">User Management</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="onAddUser()"
+      [disabled]="(creatingUser$ | async) === true"
+      title="Add user"
+    >
+      <i class="bi bi-plus-circle"></i>
+      Add User
+    </button>
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (usersLoading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading users...</span>
+        </div>
+      </div>
+    } @else {
+      @if (usersError(); as error) {
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+        </div>
+      }
+      @if (usersExcludingSelf().length === 0) {
+        <div class="d-flex justify-content-center align-items-center p-4">
+          <div class="text-center text-muted">
+            <i class="bi bi-people fs-1 d-block mb-2"></i>
+            <p class="mb-0">No other users found</p>
+          </div>
+        </div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (user of usersExcludingSelf(); track user.id) {
+            <div class="list-group-item d-flex justify-content-between align-items-center border-bottom">
+              <div>
+                <div class="fw-semibold">{{ user.email }}</div>
+                <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                    <span class="badge bg-secondary me-1">{{ user.role }}</span>
+                    @if (user.emailConfirmedAt) {
+                      <span class="text-success"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
+                    } @else {
+                      <span class="text-warning"><i class="bi bi-clock me-1"></i>Pending</span>
+                    }
+                  </div>
+                  {{ formatDate(user.createdAt) }}
+                </div>
+              </div>
+              <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-primary" (click)="onEditUser(user)" title="Edit user">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger" (click)="onDeleteUser(user)" title="Delete user">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div
+  class="modal fade"
+  id="createUserModal"
+  tabindex="-1"
+  aria-labelledby="createUserModalLabel"
+  aria-hidden="true"
+  #createUserModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createUserModalLabel">Create User</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          (click)="cancelCreateUser()"
+          aria-label="Close"
+          [disabled]="(creatingUser$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitCreateUser()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="createUserEmail" class="form-label">Email <span class="text-danger">*</span></label>
+            <input
+              type="email"
+              class="form-control"
+              id="createUserEmail"
+              [(ngModel)]="createForm.email"
+              name="email"
+              required
+              placeholder="user@example.com"
+              [disabled]="(creatingUser$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="createUserPassword" class="form-label">Password <span class="text-danger">*</span></label>
+            <input
+              type="password"
+              class="form-control"
+              id="createUserPassword"
+              [(ngModel)]="createForm.password"
+              name="password"
+              required
+              minlength="8"
+              placeholder="Min. 8 characters"
+              [disabled]="(creatingUser$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="createUserRole" class="form-label">Role</label>
+            <select
+              class="form-select"
+              id="createUserRole"
+              [(ngModel)]="createForm.role"
+              name="role"
+              [disabled]="(creatingUser$ | async) === true"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            (click)="cancelCreateUser()"
+            [disabled]="(creatingUser$ | async) === true"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="
+              !createForm.email.trim() ||
+              !createForm.password ||
+              createForm.password.length < 8 ||
+              (creatingUser$ | async) === true
+            "
+          >
+            @if (creatingUser$ | async) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            }
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div
+  class="modal fade"
+  id="editUserModal"
+  tabindex="-1"
+  aria-labelledby="editUserModalLabel"
+  aria-hidden="true"
+  #editUserModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          (click)="cancelEditUser()"
+          aria-label="Close"
+          [disabled]="(updatingUser$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitEditUser()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editUserEmail" class="form-label">Email <span class="text-danger">*</span></label>
+            <input
+              type="email"
+              class="form-control"
+              id="editUserEmail"
+              [(ngModel)]="editForm.email"
+              name="email"
+              required
+              placeholder="user@example.com"
+              [disabled]="(updatingUser$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="editUserPassword" class="form-label">New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="editUserPassword"
+              [(ngModel)]="editForm.password"
+              name="password"
+              minlength="8"
+              placeholder="Leave empty to keep current"
+              [disabled]="(updatingUser$ | async) === true"
+            />
+            <small class="form-text text-muted">Leave empty to keep the current password</small>
+          </div>
+          <div class="mb-3">
+            <label for="editUserRole" class="form-label">Role</label>
+            <select
+              class="form-select"
+              id="editUserRole"
+              [(ngModel)]="editForm.role"
+              name="role"
+              [disabled]="(updatingUser$ | async) === true"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            (click)="cancelEditUser()"
+            [disabled]="(updatingUser$ | async) === true"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!editForm.email.trim() || (updatingUser$ | async) === true"
+          >
+            @if (updatingUser$ | async) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            }
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete User Confirmation Modal -->
+<div
+  class="modal fade"
+  id="deleteUserModal"
+  tabindex="-1"
+  aria-labelledby="deleteUserModalLabel"
+  aria-hidden="true"
+  #deleteUserModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          (click)="cancelDeleteUser()"
+          aria-label="Close"
+          [disabled]="(deletingUser$ | async) === true"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (userToDelete) {
+          <p>
+            Are you sure you want to delete the user <strong>{{ userToDelete.email }}</strong
+            >?
+          </p>
+        }
+        <p class="text-danger mb-0">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelDeleteUser()"
+          [disabled]="(deletingUser$ | async) === true"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDeleteUser()"
+          [disabled]="(deletingUser$ | async) === true"
+        >
+          @if (deletingUser$ | async) {
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          }
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

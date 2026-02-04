@@ -1,5 +1,6 @@
 export * from './lib/interceptors/auth.interceptor.provider';
 export * from './lib/services/agents.service';
+export * from './lib/services/auth.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/deployments.service';
 export * from './lib/services/env.service';

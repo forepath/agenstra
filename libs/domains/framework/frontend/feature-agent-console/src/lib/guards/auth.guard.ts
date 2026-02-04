@@ -10,9 +10,15 @@ import { isAuthenticated } from '@forepath/identity/frontend';
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 
 /**
+ * LocalStorage key for storing the JWT (users authentication)
+ */
+const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+
+/**
  * Guard that protects routes based on authentication configuration.
  * - If authentication type is 'keycloak', uses Keycloak authentication guard
  * - If authentication type is 'api-key', allows access if API key exists in environment or localStorage
+ * - If authentication type is 'users', allows access if valid JWT exists in localStorage
  * - Otherwise, redirects to /login route
  */
 export const authGuard: CanActivateFn = (route, state) => {
@@ -41,6 +47,22 @@ export const authGuard: CanActivateFn = (route, state) => {
     }
 
     // No API key found in environment or localStorage, redirect to login
+    return router.createUrlTree(localeService.buildAbsoluteUrl(['/login']));
+  }
+
+  if (environment.authentication.type === 'users') {
+    const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
+    if (jwt) {
+      try {
+        const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
+        const exp = payload.exp ? payload.exp * 1000 : 0;
+        if (exp > Date.now()) {
+          return true;
+        }
+      } catch {
+        // Invalid JWT, fall through to redirect
+      }
+    }
     return router.createUrlTree(localeService.buildAbsoluteUrl(['/login']));
   }
 

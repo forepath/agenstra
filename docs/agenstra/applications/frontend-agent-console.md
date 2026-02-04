@@ -163,6 +163,7 @@ Configure the application via environment variables:
   - The remote configuration takes precedence over build-time defaults
   - If not set or fetch fails, the application falls back to build-time defaults
   - Example: `CONFIG=https://config.example.com/agenstra-config.json`
+  - For users auth with signup disabled, include `authentication: { type: "users", disableSignup: true }` to hide the "Create an account" link and redirect direct /register navigation to login
 
 ### API Configuration
 

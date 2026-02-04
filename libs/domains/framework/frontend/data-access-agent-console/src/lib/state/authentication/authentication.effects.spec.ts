@@ -5,25 +5,40 @@ import { ENVIRONMENT, LocaleService } from '@forepath/framework/frontend/util-co
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { KeycloakService } from 'keycloak-angular';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   checkAuthentication,
   checkAuthenticationFailure,
   checkAuthenticationSuccess,
+  confirmEmailSuccess,
+  loadUsers,
+  loadUsersBatch,
+  loadUsersFailure,
+  loadUsersSuccess,
   login,
   loginFailure,
   loginSuccess,
   logout,
   logoutFailure,
   logoutSuccess,
+  registerSuccess,
+  requestPasswordResetSuccess,
+  resetPasswordSuccess,
 } from './authentication.actions';
 import {
   checkAuthentication$,
+  confirmEmailSuccessRedirect$,
+  loadUsers$,
+  loadUsersBatch$,
   login$,
   loginSuccessRedirect$,
   logout$,
   logoutSuccessRedirect$,
+  registerSuccessRedirect$,
+  requestPasswordResetSuccessRedirect$,
+  resetPasswordSuccessRedirect$,
 } from './authentication.effects';
+import type { UserResponseDto } from './authentication.types';
 
 // Mock KeycloakService to avoid ES module import issues in Jest
 jest.mock('keycloak-angular', () => ({
@@ -164,7 +179,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        login$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+        login$(actions$, mockEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.setItem).toHaveBeenCalledWith(API_KEY_STORAGE_KEY, 'test-api-key');
           done();
@@ -177,7 +192,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        login$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+        login$(actions$, mockEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.setItem).toHaveBeenCalledWith(API_KEY_STORAGE_KEY, 'env-api-key');
           done();
@@ -196,7 +211,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        login$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+        login$(actions$, mockEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.setItem).not.toHaveBeenCalled();
           done();
@@ -242,7 +257,7 @@ describe('AuthenticationEffects', () => {
         actions$ = of(action);
         mockKeycloakService.login = jest.fn().mockResolvedValue(undefined);
 
-        login$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+        login$(actions$, mockEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(mockKeycloakService.login).toHaveBeenCalled();
           done();
@@ -257,7 +272,7 @@ describe('AuthenticationEffects', () => {
         actions$ = of(action);
         mockKeycloakService.login = jest.fn().mockRejectedValue(error);
 
-        login$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+        login$(actions$, mockEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
@@ -269,7 +284,7 @@ describe('AuthenticationEffects', () => {
 
         actions$ = of(action);
 
-        login$(actions$, mockEnvironment, null).subscribe((result) => {
+        login$(actions$, mockEnvironment, null, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
@@ -601,6 +616,87 @@ describe('AuthenticationEffects', () => {
     });
   });
 
+  describe('registerSuccessRedirect$', () => {
+    it('should navigate to /confirm-email when registerSuccess action is dispatched', (done) => {
+      const action = registerSuccess({
+        user: { id: 'user-1', email: 'test@example.com', role: 'user' },
+        message: 'Registration successful',
+      });
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+      mockLocaleService.buildAbsoluteUrl = jest.fn().mockReturnValue(['/confirm-email']);
+
+      registerSuccessRedirect$(actions$, mockRouter as any, mockLocaleService as any).subscribe({
+        complete: () => {
+          expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/confirm-email']);
+          expect(mockRouter.navigate).toHaveBeenCalledWith(['/confirm-email']);
+          expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+          done();
+        },
+      });
+    });
+  });
+
+  describe('requestPasswordResetSuccessRedirect$', () => {
+    it('should navigate to /request-password-reset-confirmation when requestPasswordResetSuccess action is dispatched', (done) => {
+      const action = requestPasswordResetSuccess({ email: 'user@example.com' });
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+      mockLocaleService.buildAbsoluteUrl = jest.fn().mockReturnValue(['/request-password-reset-confirmation']);
+
+      requestPasswordResetSuccessRedirect$(actions$, mockRouter as any, mockLocaleService as any).subscribe({
+        complete: () => {
+          expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/request-password-reset-confirmation']);
+          expect(mockRouter.navigate).toHaveBeenCalledWith(['/request-password-reset-confirmation'], {
+            queryParams: { email: 'user@example.com' },
+          });
+          expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+          done();
+        },
+      });
+    });
+  });
+
+  describe('resetPasswordSuccessRedirect$', () => {
+    it('should navigate to /login when resetPasswordSuccess action is dispatched', (done) => {
+      const action = resetPasswordSuccess();
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+      mockLocaleService.buildAbsoluteUrl = jest.fn().mockReturnValue(['/login']);
+
+      resetPasswordSuccessRedirect$(actions$, mockRouter as any, mockLocaleService as any).subscribe({
+        complete: () => {
+          expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/login']);
+          expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+          expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+          done();
+        },
+      });
+    });
+  });
+
+  describe('confirmEmailSuccessRedirect$', () => {
+    it('should navigate to /login when confirmEmailSuccess action is dispatched', (done) => {
+      const action = confirmEmailSuccess();
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+      mockLocaleService.buildAbsoluteUrl = jest.fn().mockReturnValue(['/login']);
+
+      confirmEmailSuccessRedirect$(actions$, mockRouter as any, mockLocaleService as any).subscribe({
+        complete: () => {
+          expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/login']);
+          expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+          expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+          done();
+        },
+      });
+    });
+  });
+
   describe('logoutSuccessRedirect$', () => {
     it('should navigate to /login when logoutSuccess action is dispatched', (done) => {
       const action = logoutSuccess();
@@ -616,6 +712,170 @@ describe('AuthenticationEffects', () => {
           expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
           done();
         },
+      });
+    });
+  });
+
+  describe('loadUsers$', () => {
+    const mockAuthService = {
+      listUsers: jest.fn(),
+    } as any;
+
+    const mockUser: UserResponseDto = {
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'user',
+      emailConfirmedAt: '2024-01-01T00:00:00Z',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+    };
+
+    it('should return loadUsersSuccess when batch is empty', (done) => {
+      const users: UserResponseDto[] = [];
+      const action = loadUsers({});
+      const outcome = loadUsersSuccess({ users: [] });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(of(users));
+
+      loadUsers$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.listUsers).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+        done();
+      });
+    });
+
+    it('should return loadUsersSuccess when batch is partial (< 10)', (done) => {
+      const users: UserResponseDto[] = [mockUser];
+      const action = loadUsers({});
+      const outcome = loadUsersSuccess({ users });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(of(users));
+
+      loadUsers$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.listUsers).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+        done();
+      });
+    });
+
+    it('should return loadUsersBatch when batch is full (10 entries)', (done) => {
+      const users: UserResponseDto[] = Array.from({ length: 10 }, (_, i) => ({
+        ...mockUser,
+        id: `user-${i}`,
+      }));
+      const action = loadUsers({});
+      const outcome = loadUsersBatch({ offset: 10, accumulatedUsers: users });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(of(users));
+
+      loadUsers$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.listUsers).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+        done();
+      });
+    });
+
+    it('should return loadUsersFailure on error', (done) => {
+      const action = loadUsers({});
+      const error = new Error('Load failed');
+      const outcome = loadUsersFailure({ error: 'Load failed' });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(throwError(() => error));
+
+      loadUsers$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('loadUsersBatch$', () => {
+    const mockAuthService = {
+      listUsers: jest.fn(),
+    } as any;
+
+    const mockUser: UserResponseDto = {
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'user',
+      emailConfirmedAt: '2024-01-01T00:00:00Z',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+    };
+
+    it('should return loadUsersSuccess when batch is empty', (done) => {
+      const accumulatedUsers: UserResponseDto[] = [mockUser];
+      const newUsers: UserResponseDto[] = [];
+      const action = loadUsersBatch({ offset: 10, accumulatedUsers });
+      const outcome = loadUsersSuccess({ users: accumulatedUsers });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(of(newUsers));
+
+      loadUsersBatch$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.listUsers).toHaveBeenCalledWith({ limit: 10, offset: 10 });
+        done();
+      });
+    });
+
+    it('should return loadUsersSuccess when batch is partial (< 10)', (done) => {
+      const accumulatedUsers: UserResponseDto[] = [mockUser];
+      const newUsers: UserResponseDto[] = [{ ...mockUser, id: 'user-2' }];
+      const action = loadUsersBatch({ offset: 10, accumulatedUsers });
+      const outcome = loadUsersSuccess({ users: [...accumulatedUsers, ...newUsers] });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(of(newUsers));
+
+      loadUsersBatch$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.listUsers).toHaveBeenCalledWith({ limit: 10, offset: 10 });
+        done();
+      });
+    });
+
+    it('should return loadUsersBatch when batch is full (10 entries)', (done) => {
+      const accumulatedUsers: UserResponseDto[] = Array.from({ length: 10 }, (_, i) => ({
+        ...mockUser,
+        id: `user-${i}`,
+      }));
+      const newUsers: UserResponseDto[] = Array.from({ length: 10 }, (_, i) => ({
+        ...mockUser,
+        id: `user-${i + 10}`,
+      }));
+      const action = loadUsersBatch({ offset: 10, accumulatedUsers });
+      const outcome = loadUsersBatch({
+        offset: 20,
+        accumulatedUsers: [...accumulatedUsers, ...newUsers],
+      });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(of(newUsers));
+
+      loadUsersBatch$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.listUsers).toHaveBeenCalledWith({ limit: 10, offset: 10 });
+        done();
+      });
+    });
+
+    it('should return loadUsersFailure on error', (done) => {
+      const accumulatedUsers: UserResponseDto[] = [mockUser];
+      const action = loadUsersBatch({ offset: 10, accumulatedUsers });
+      const error = new Error('Load failed');
+      const outcome = loadUsersFailure({ error: 'Load failed' });
+
+      actions$ = of(action);
+      mockAuthService.listUsers.mockReturnValue(throwError(() => error));
+
+      loadUsersBatch$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
       });
     });
   });

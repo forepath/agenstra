@@ -1,0 +1,13 @@
+.otp-input {
+  .otp-digit {
+    font-size: 1.5rem;
+    padding: 0.2rem !important;
+    text-align: center;
+    line-height: 1.5;
+    box-sizing: border-box;
+
+    &:focus {
+      z-index: 1;
+    }
+  }
+}

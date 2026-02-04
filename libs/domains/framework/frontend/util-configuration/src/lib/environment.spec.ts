@@ -46,7 +46,7 @@ describe('environment', () => {
 
   it('should have authentication type property', () => {
     expect(environment.authentication).toHaveProperty('type');
-    expect(['keycloak', 'api-key']).toContain(environment.authentication.type);
+    expect(['keycloak', 'api-key', 'users']).toContain(environment.authentication.type);
   });
 
   describe('when authentication type is api-key', () => {

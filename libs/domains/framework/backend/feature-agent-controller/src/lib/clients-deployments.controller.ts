@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { Resource, Roles } from 'nest-keycloak-connect';
+import { UserRole } from './entities/user.entity';
 import { ClientAgentDeploymentsProxyService } from './services/client-agent-deployments-proxy.service';
 
 /**
@@ -19,7 +20,7 @@ import { ClientAgentDeploymentsProxyService } from './services/client-agent-depl
  * Proxies requests to remote agent-manager services for deployment operations.
  */
 @Resource('clients')
-@Roles('client_management')
+@Roles(UserRole.ADMIN, UserRole.USER)
 @Controller('clients/:id/agents/:agentId/deployments')
 export class ClientsDeploymentsController {
   constructor(private readonly proxyService: ClientAgentDeploymentsProxyService) {}

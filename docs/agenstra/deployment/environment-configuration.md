@@ -33,6 +33,11 @@ Complete reference for all environment variables used in Agenstra.
 - `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required)
 - `KEYCLOAK_TOKEN_VALIDATION` - Token validation method: `ONLINE` or `OFFLINE` (optional, default: `ONLINE`)
 
+**Option 3: Users Authentication (AUTHENTICATION_METHOD=users)**
+
+- `DISABLE_SIGNUP` - When `true`, disables self-registration. The register endpoint returns 503 Service Unavailable. Use admin user creation for onboarding. (default: `false`)
+- `JWT_SECRET` - Secret for signing JWT tokens (required when using users auth)
+
 ⚠️ **Note for Backend Agent Manager**: When using Keycloak authentication, the JWT token must include the `agent_management` role to access agent-manager endpoints.
 
 ### CORS Configuration
@@ -131,6 +136,7 @@ Complete reference for all environment variables used in Agenstra.
   - The remote configuration takes precedence over build-time defaults
   - If not set or fetch fails, the application falls back to build-time defaults
   - Example: `CONFIG=https://config.example.com/agenstra-config.json`
+  - For users auth, include `authentication: { type: "users", disableSignup: true }` to hide the signup link and disable registration when backend has DISABLE_SIGNUP=true
 
 ### API Configuration
 
