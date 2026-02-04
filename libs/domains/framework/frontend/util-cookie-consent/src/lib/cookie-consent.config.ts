@@ -1,3 +1,4 @@
+/// <reference types="@angular/localize" />
 import { environment } from '@forepath/framework/frontend/util-configuration';
 import { NgcCookieConsentConfig } from 'ngx-cookieconsent';
 
@@ -17,11 +18,11 @@ export const cookieConfig: NgcCookieConsentConfig = {
   },
   type: 'opt-in',
   content: {
-    message: 'This website uses cookies to ensure you get the best experience on our website.',
-    dismiss: 'Got it!',
-    allow: 'Accept',
-    deny: 'Decline',
-    link: 'Learn more',
+    message: $localize`:@@utilCookieConsent-message:This website uses cookies to ensure you get the best experience on our website.`,
+    dismiss: $localize`:@@utilCookieConsent-dismiss:Got it!`,
+    allow: $localize`:@@utilCookieConsent-allow:Accept`,
+    deny: $localize`:@@utilCookieConsent-deny:Decline`,
+    link: $localize`:@@utilCookieConsent-link:Learn more`,
     href: environment.cookieConsent.privacyPolicyUrl,
   },
 };

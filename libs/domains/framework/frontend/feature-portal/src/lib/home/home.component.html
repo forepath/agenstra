@@ -4,23 +4,35 @@
   <div class="container position-relative">
     <div class="row align-items-center">
       <div class="col-lg-6 mb-4 mb-md-0 text-center text-md-start">
-        <h1 class="display-4 fw-bold mb-4">
+        <h1 class="display-4 fw-bold mb-4" i18n="@@featurePortalHome-heroTitle">
           Centralized Control for <span class="text-primary">Distributed AI Agent Infrastructure</span>
         </h1>
-        <p class="mb-4 fs-5">
+        <p class="mb-4 fs-5" i18n="@@featurePortalHome-heroProblem">
           Managing AI agents across multiple servers is complex. You need to coordinate services, monitor containers,
           and maintain connections - all while trying to build your product.
         </p>
-        <p class="mb-5">
+        <p class="mb-5" i18n="@@featurePortalHome-heroSolution">
           Agenstra provides a complete platform for managing distributed AI agent infrastructure. Control multiple
           agent-manager instances, interact with agents in real-time, and code directly in their containers using a
           full-featured web-based IDE - all from one powerful dashboard.
         </p>
         <div class="d-flex flex-column flex-md-row gap-3">
-          <a routerLink="." fragment="solution" class="btn btn-primary py-2 px-4">Learn More</a>
-          <a routerLink="." fragment="features" class="btn btn-outline-primary py-2 px-4">View Features</a>
+          <a
+            routerLink="."
+            fragment="solution"
+            class="btn btn-primary py-2 px-4"
+            i18n="@@featurePortalHome-learnMoreButton"
+            >Learn More</a
+          >
+          <a
+            routerLink="."
+            fragment="features"
+            class="btn btn-outline-primary py-2 px-4"
+            i18n="@@featurePortalHome-viewFeaturesButton"
+            >View Features</a
+          >
         </div>
-        <p class="text-muted small mt-4">
+        <p class="text-muted small mt-4" i18n="@@featurePortalHome-heroAgentctxHint">
           Looking to generate unified context for all your AI coding tools? Check out
           <a routerLink="/agentctx" fragment="hero">AgentCTX</a>!
         </p>
@@ -31,6 +43,7 @@
           <!-- TODO: Replace with product screenshot showing the Agenstra console dashboard with agent management interface -->
           <img
             src="assets/images/screenshots/workspace-management.png"
+            i18n-alt="@@featurePortalHome-dashboardAlt"
             alt="Agenstra Console Dashboard"
             class="img-fluid rounded shadow-lg w-100"
           />
@@ -40,6 +53,7 @@
           <!-- TODO: Replace with product screenshot showing the Agenstra console dashboard with agent management interface -->
           <img
             src="assets/images/screenshots/workspace-management.png"
+            i18n-alt="@@featurePortalHome-dashboardAlt"
             alt="Agenstra Console Dashboard"
             class="img-fluid rounded shadow-lg w-100"
           />
@@ -49,14 +63,17 @@
     <!-- Supported AI Agents Subsection -->
     <div class="row mt-10">
       <div class="col-md-12 text-center mb-4">
-        <h3 class="h5 fw-bold mb-2">Supported AI Agents</h3>
-        <p class="text-muted small mb-0">Works with your favorite AI agent providers</p>
+        <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-supportedAgentsTitle">Supported AI Agents</h3>
+        <p class="text-muted small mb-0" i18n="@@featurePortalHome-supportedAgentsLead">
+          Works with your favorite AI agent providers
+        </p>
       </div>
     </div>
     <div class="row align-items-center justify-content-center g-4 position-relative">
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <img
           src="assets/images/logos/cursor.svg"
+          i18n-alt="@@featurePortalHome-cursorAlt"
           alt="Cursor"
           class="img-fluid logo-partner"
           style="max-height: 28px; filter: grayscale(100%) opacity(0.6); transition: all 0.3s ease"
@@ -65,6 +82,7 @@
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <img
           src="assets/images/logos/opencode.svg"
+          i18n-alt="@@featurePortalHome-opencodeAlt"
           alt="OpenCode"
           class="img-fluid logo-partner"
           style="max-height: 28px; filter: grayscale(100%) opacity(0.6); transition: all 0.3s ease"
@@ -72,7 +90,9 @@
       </div>
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <div class="logo-partner-text">
-          <span class="badge bg-body-secondary text-muted px-3 py-2">Custom Providers</span>
+          <span class="badge bg-body-secondary text-muted px-3 py-2" i18n="@@featurePortalHome-customProviders"
+            >Custom Providers</span
+          >
         </div>
       </div>
     </div>
@@ -84,8 +104,10 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12 text-center mb-5">
-        <h2 class="display-5 fw-bold mb-3">Complete AI Agent Management Platform</h2>
-        <p class="lead text-muted">
+        <h2 class="display-5 fw-bold mb-3" i18n="@@featurePortalHome-solutionTitle">
+          Complete AI Agent Management Platform
+        </h2>
+        <p class="lead text-muted" i18n="@@featurePortalHome-solutionLead">
           Agenstra combines a powerful web-based IDE with distributed backend services to give you complete control over
           your AI agent infrastructure. Code directly in agent containers, access virtual workspaces with browser
           testing, manage agents, interact in real-time, and deploy infrastructure automatically - all from your
@@ -100,8 +122,8 @@
             <div class="mb-4">
               <i class="bi bi-diagram-3-fill text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Centralized Control</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalHome-centralizedTitle">Centralized Control</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalHome-centralizedDesc">
               Connect to and manage multiple remote agent-manager services from a single console. The controller
               orchestrates all your distributed agent infrastructure in one place, enabling you to provision servers,
               monitor agent status across regions, and coordinate deployments - all from a unified dashboard.
@@ -115,8 +137,8 @@
             <div class="mb-4">
               <i class="bi bi-chat-dots-fill text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Real-time Agent Interaction</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalHome-realtimeTitle">Real-time Agent Interaction</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalHome-realtimeDesc">
               WebSocket-based bidirectional communication with AI agents. Chat with agents, stream container logs, send
               commands in real-time through persistent connections, and control message flow with configurable filtering
               for content moderation and compliance.
@@ -132,8 +154,8 @@
             <div class="mb-4">
               <i class="bi bi-code-square text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">Full-Featured Web IDE</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalHome-ideTitle">Full-Featured Web IDE</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalHome-ideDesc">
               Complete IDE experience powered by Monaco Editor (VS Code's editor). Syntax highlighting, IntelliSense,
               multi-file editing, Git integration, terminal access, live collaboration, and virtual workspaces with
               browser access - all in your browser.
@@ -147,8 +169,8 @@
             <div class="mb-4">
               <i class="bi bi-rocket-takeoff-fill text-primary lh-1" style="font-size: 2.5rem"></i>
             </div>
-            <h3 class="h5 fw-bold mb-3">CI/CD Pipeline Management</h3>
-            <p class="text-muted mb-0">
+            <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalHome-cicdTitle">CI/CD Pipeline Management</h3>
+            <p class="text-muted mb-0" i18n="@@featurePortalHome-cicdDesc">
               Configure CI/CD providers (GitHub Actions, GitLab CI/CD) for each agent. Trigger pipeline runs manually,
               monitor their status in real-time, view detailed logs for runs and individual jobs, and track complete
               deployment history - all integrated directly into the console.
@@ -782,14 +804,19 @@
     <!-- Supported Infrastructure Providers Subsection -->
     <div class="row mt-5 pt-5">
       <div class="col-md-12 text-center mb-4">
-        <h3 class="h5 fw-bold mb-2">Supported Infrastructure Providers</h3>
-        <p class="text-muted small mb-0">Automatically deploy agent managers to your favorite cloud provider</p>
+        <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-infraProvidersTitle">
+          Supported Infrastructure Providers
+        </h3>
+        <p class="text-muted small mb-0" i18n="@@featurePortalHome-infraProvidersLead">
+          Automatically deploy agent managers to your favorite cloud provider
+        </p>
       </div>
     </div>
     <div class="row align-items-center justify-content-center g-4 position-relative">
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <img
           src="assets/images/logos/hetzner.svg"
+          i18n-alt="@@featurePortalHome-hetznerAlt"
           alt="Hetzner Cloud"
           class="img-fluid logo-partner"
           style="max-height: 18px; filter: grayscale(100%) opacity(0.6); transition: all 0.3s ease"
@@ -798,6 +825,7 @@
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <img
           src="assets/images/logos/digitalocean.svg"
+          i18n-alt="@@featurePortalHome-digitaloceanAlt"
           alt="DigitalOcean"
           class="img-fluid logo-partner"
           style="max-height: 32px; filter: grayscale(100%) opacity(0.6); transition: all 0.3s ease"
@@ -805,7 +833,9 @@
       </div>
       <div class="col-6 col-md-3 col-lg-2 text-center">
         <div class="logo-partner-text">
-          <span class="badge bg-body-secondary text-muted px-3 py-2">Custom Providers</span>
+          <span class="badge bg-body-secondary text-muted px-3 py-2" i18n="@@featurePortalHome-customProviders"
+            >Custom Providers</span
+          >
         </div>
       </div>
     </div>
@@ -818,8 +848,10 @@
   <div class="container position-relative">
     <div class="row">
       <div class="col-md-12 text-center mb-5">
-        <h2 class="display-5 fw-bold mb-3">Complete Agent Management Capabilities</h2>
-        <p class="lead text-muted">
+        <h2 class="display-5 fw-bold mb-3" i18n="@@featurePortalHome-featuresTitle">
+          Complete Agent Management Capabilities
+        </h2>
+        <p class="lead text-muted" i18n="@@featurePortalHome-featuresLead">
           Everything you need to create, manage, and interact with AI agents across distributed infrastructure.
         </p>
       </div>
@@ -835,8 +867,10 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Agent Lifecycle Management</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-lifecycleTitle">
+                      Agent Lifecycle Management
+                    </h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-lifecycleDesc">
                       Create, update, and delete AI agents through REST APIs. Each agent runs in its own isolated Docker
                       container with secure authentication and credential management.
                     </p>
@@ -849,8 +883,10 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Real-time WebSocket Communication</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-websocketTitle">
+                      Real-time WebSocket Communication
+                    </h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-websocketDesc">
                       Bidirectional WebSocket connections for chat messaging, container log streaming, and command
                       execution. Maintain persistent connections with multiple agents simultaneously.
                     </p>
@@ -863,8 +899,8 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Full-Featured Web-Based IDE</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-webIdeTitle">Full-Featured Web-Based IDE</h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-webIdeDesc">
                       Complete IDE experience with Monaco Editor (VS Code's editor). Syntax highlighting, IntelliSense
                       autocomplete, multi-file tabs, Git diff viewer, markdown preview, terminal integration, and file
                       tree navigation - all running in your browser.
@@ -878,8 +914,10 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Terminal & Container Management</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-terminalTitle">
+                      Terminal &amp; Container Management
+                    </h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-terminalDesc">
                       Integrated terminal (xterm.js) for running commands, Docker-based agent execution with live log
                       streaming, container stats monitoring, and full container lifecycle management - all within the
                       IDE.
@@ -893,8 +931,8 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Integrated Git Workflow</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-gitTitle">Integrated Git Workflow</h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-gitDesc">
                       Built-in Git manager with visual diff viewer, branch management, staging, commit, push, pull,
                       rebase, and conflict resolution. All Git operations integrated directly into the IDE interface.
                     </p>
@@ -907,8 +945,10 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Automated Infrastructure</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-automatedInfraTitle">
+                      Automated Infrastructure
+                    </h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-automatedInfraDesc">
                       Provision cloud servers automatically with Docker and agent-manager deployment. Connect to Hetzner
                       Cloud and other providers to spin up infrastructure in minutes.
                     </p>
@@ -921,8 +961,10 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Multi-Provider Agent Support</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-multiProviderTitle">
+                      Multi-Provider Agent Support
+                    </h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-multiProviderDesc">
                       Plugin-based architecture supporting multiple AI agent providers. Use Cursor agents, OpenAI,
                       Anthropic, or implement custom providers through a unified interface.
                     </p>
@@ -935,8 +977,8 @@
                     <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem"></i>
                   </div>
                   <div>
-                    <h3 class="h5 fw-bold mb-2">Centralized Dashboard</h3>
-                    <p class="text-muted mb-0">
+                    <h3 class="h5 fw-bold mb-2" i18n="@@featurePortalHome-dashboardTitle">Centralized Dashboard</h3>
+                    <p class="text-muted mb-0" i18n="@@featurePortalHome-dashboardDesc">
                       Single console interface to manage all your agent-manager instances. View agents across multiple
                       servers, monitor status, and interact with any agent from one place.
                     </p>
@@ -956,6 +998,7 @@
         <div class="ide-screenshot">
           <img
             src="assets/images/screenshots/terminal.png"
+            i18n-alt="@@featurePortalHome-ideTerminalAlt"
             alt="Agenstra IDE Terminal"
             class="img-fluid rounded shadow-sm"
           />
@@ -966,6 +1009,7 @@
         <div class="text-center ide-screenshot-center">
           <img
             src="assets/images/screenshots/web-ide.png"
+            i18n-alt="@@featurePortalHome-ideEditorAlt"
             alt="Agenstra IDE Editor"
             class="img-fluid rounded shadow-sm w-100"
           />
@@ -978,6 +1022,7 @@
         <div class="ide-screenshot">
           <img
             src="assets/images/screenshots/preview.png"
+            i18n-alt="@@featurePortalHome-idePreviewAlt"
             alt="Agenstra IDE Preview"
             class="img-fluid rounded shadow-sm"
           />
@@ -991,8 +1036,10 @@
           <div class="card-body p-5">
             <div class="row align-items-center">
               <div class="col-md-6 mb-4 mb-md-0">
-                <h3 class="h4 fw-bold mb-3">Virtual Workspaces for Application Testing</h3>
-                <p class="lead text-muted mb-4">
+                <h3 class="h4 fw-bold mb-3" i18n="@@featurePortalHome-workspaceTitle">
+                  Virtual Workspaces for Application Testing
+                </h3>
+                <p class="lead text-muted mb-4" i18n="@@featurePortalHome-workspaceLead">
                   Each agent can have its own separate virtual workspace container with a full desktop environment and
                   Chromium browser to test web applications visually, debug browser interactions, and verify the agent's
                   work - all accessible through a secure web-based VNC client.
@@ -1000,20 +1047,27 @@
                 <ul class="list-unstyled mb-0 text-start">
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>Full Desktop Environment</strong> - Modern desktop with Chromium browser</span>
+                    <span i18n="@@featurePortalHome-workspaceItem1"
+                      ><strong>Full Desktop Environment</strong> - Modern desktop with Chromium browser</span
+                    >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>Shared Workspace</strong> - Same files accessible from both IDE and browser</span>
+                    <span i18n="@@featurePortalHome-workspaceItem2"
+                      ><strong>Shared Workspace</strong> - Same files accessible from both IDE and browser</span
+                    >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>Web-Based Access</strong> - No client installation needed</span>
+                    <span i18n="@@featurePortalHome-workspaceItem3"
+                      ><strong>Web-Based Access</strong> - No client installation needed</span
+                    >
                   </li>
                   <li class="mb-0 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span
-                      ><strong>Secure & Isolated</strong> - Password-protected VNC access with network isolation</span
+                    <span i18n="@@featurePortalHome-workspaceItem4"
+                      ><strong>Secure &amp; Isolated</strong> - Password-protected VNC access with network
+                      isolation</span
                     >
                   </li>
                 </ul>
@@ -1021,6 +1075,7 @@
               <div class="col-md-6 text-center">
                 <img
                   src="assets/images/screenshots/virtual-workspace.png"
+                  i18n-alt="@@featurePortalHome-workspaceAlt"
                   alt="Agenstra Virtual Workspace with Browser Access"
                   class="virtual-workspace-screenshot"
                 />
@@ -1040,13 +1095,14 @@
               <div class="col-md-6 text-center">
                 <img
                   src="assets/images/screenshots/ssh-connection.png"
+                  i18n-alt="@@featurePortalHome-sshAlt"
                   alt="Agenstra Editor with SSH Connection"
                   class="ssh-connection-screenshot"
                 />
               </div>
               <div class="col-md-6 mb-4 mb-md-0">
-                <h3 class="h4 fw-bold mb-3">Native Editor Integration</h3>
-                <p class="lead text-muted mb-4">
+                <h3 class="h4 fw-bold mb-3" i18n="@@featurePortalHome-sshTitle">Native Editor Integration</h3>
+                <p class="lead text-muted mb-4" i18n="@@featurePortalHome-sshLead">
                   Connect your agent workspaces directly to your favorite local editor (Cursor, VS Code, or any
                   SSH-compatible IDE) to work with agent files natively. Use your preferred tools, extensions, and
                   workflows while leveraging the full power of AI agents.
@@ -1054,24 +1110,26 @@
                 <ul class="list-unstyled mb-0 text-start">
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span
+                    <span i18n="@@featurePortalHome-sshItem1"
                       ><strong>Native Editor Experience</strong> - Use Cursor, VS Code, or any SSH-compatible IDE</span
                     >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>Direct File Access</strong> - Edit agent workspace files directly through SSH</span>
+                    <span i18n="@@featurePortalHome-sshItem2"
+                      ><strong>Direct File Access</strong> - Edit agent workspace files directly through SSH</span
+                    >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span
+                    <span i18n="@@featurePortalHome-sshItem3"
                       ><strong>Full Tool Support</strong> - Use all your extensions, themes, and custom
                       configurations</span
                     >
                   </li>
                   <li class="mb-0 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span
+                    <span i18n="@@featurePortalHome-sshItem4"
                       ><strong>Secure Connection</strong> - Password-protected SSH access with isolated network</span
                     >
                   </li>
@@ -1091,8 +1149,10 @@
   <div class="container position-relative">
     <div class="row">
       <div class="col-md-12 text-center mb-5">
-        <h2 class="display-6 fw-bold mb-3">Security &amp; Data Protection by Design</h2>
-        <p class="lead mb-0 text-white">
+        <h2 class="display-6 fw-bold mb-3" i18n="@@featurePortalHome-securityTitle">
+          Security &amp; Data Protection by Design
+        </h2>
+        <p class="lead mb-0 text-white" i18n="@@featurePortalHome-securityLead">
           Keep sensitive data, chats, and agent activity under your full control while meeting strict compliance
           requirements.
         </p>
@@ -1119,7 +1179,7 @@
                 <circle cx="9.5" cy="5.2" r="1.1" />
               </g>
             </svg>
-            <span class="lh-1 fw-semibold ps-2">GDPR compliant</span>
+            <span class="lh-1 fw-semibold ps-2" i18n="@@featurePortalHome-gdprBadge">GDPR compliant</span>
           </div>
           <!-- Made in Germany badge -->
           <div class="badge rounded-pill bg-light text-dark d-inline-flex align-items-center gap-2 ps-2 pe-4 py-2">
@@ -1140,7 +1200,9 @@
                 <rect x="0" y="19" width="28" height="9" fill="#ffce00" />
               </g>
             </svg>
-            <span class="lh-1 fw-semibold ps-2">Created and maintained in Germany</span>
+            <span class="lh-1 fw-semibold ps-2" i18n="@@featurePortalHome-germanyBadge"
+              >Created and maintained in Germany</span
+            >
           </div>
         </div>
       </div>
@@ -1151,23 +1213,25 @@
           <div class="mb-4">
             <i class="bi bi-shield-lock-fill text-primary lh-1" style="font-size: 2.5rem"></i>
           </div>
-          <h3 class="h5 fw-bold mb-3">Full Control over Data Location</h3>
-          <p class="mb-4">
+          <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalHome-dataLocationTitle">Full Control over Data Location</h3>
+          <p class="mb-4" i18n="@@featurePortalHome-dataLocationDesc">
             Run controllers and managers where you need them: self-hosted, on-prem, or in specific cloud regions. All
             agent traffic terminates in your infrastructure - no opaque third-party SaaS.
           </p>
           <ul class="small mb-0 list-unstyled text-start">
             <li class="mb-2 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Per-manager region and provider selection</span>
+              <span i18n="@@featurePortalHome-dataLocationItem1">Per-manager region and provider selection</span>
             </li>
             <li class="mb-2 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Keep logs and chat history in your own data stores</span>
+              <span i18n="@@featurePortalHome-dataLocationItem2"
+                >Keep logs and chat history in your own data stores</span
+              >
             </li>
             <li class="mb-0 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Supports strict data residency requirements</span>
+              <span i18n="@@featurePortalHome-dataLocationItem3">Supports strict data residency requirements</span>
             </li>
           </ul>
         </div>
@@ -1177,27 +1241,31 @@
           <div class="mb-4">
             <i class="bi bi-file-earmark-text-fill text-primary lh-1" style="font-size: 2.5rem"></i>
           </div>
-          <h3 class="h5 fw-bold mb-3">Audit-Ready Agent Activity</h3>
-          <p class="mb-4">
+          <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalHome-auditTitle">Audit-Ready Agent Activity</h3>
+          <p class="mb-4" i18n="@@featurePortalHome-auditDesc">
             Capture a complete trace of what happened, where, and when: from agent connections to executed commands and
             file changes.
           </p>
           <ul class="small mb-0 list-unstyled text-start">
             <li class="mb-2 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Per-agent and per-manager audit trails</span>
+              <span i18n="@@featurePortalHome-auditItem1">Per-agent and per-manager audit trails</span>
             </li>
             <li class="mb-2 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Trace chat sessions back to underlying container actions</span>
+              <span i18n="@@featurePortalHome-auditItem2"
+                >Trace chat sessions back to underlying container actions</span
+              >
             </li>
             <li class="mb-2 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Configurable message filtering for content control and compliance</span>
+              <span i18n="@@featurePortalHome-auditItem3"
+                >Configurable message filtering for content control and compliance</span
+              >
             </li>
             <li class="mb-0 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Exportable logs for internal or external audits</span>
+              <span i18n="@@featurePortalHome-auditItem4">Exportable logs for internal or external audits</span>
             </li>
           </ul>
         </div>
@@ -1207,23 +1275,27 @@
           <div class="mb-4">
             <i class="bi bi-diagram-3-fill text-primary lh-1" style="font-size: 2.5rem"></i>
           </div>
-          <h3 class="h5 fw-bold mb-3">Standardized, Policy-Driven Workspaces</h3>
-          <p class="mb-4">
+          <h3 class="h5 fw-bold mb-3" i18n="@@featurePortalHome-policyTitle">Standardized, Policy-Driven Workspaces</h3>
+          <p class="mb-4" i18n="@@featurePortalHome-policyDesc">
             Define standard agent templates, workspace layouts, and policies once and roll them out consistently across
             environments.
           </p>
           <ul class="small mb-0 list-unstyled text-start">
             <li class="mb-2 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Reusable agent and project templates</span>
+              <span i18n="@@featurePortalHome-policyItem1">Reusable agent and project templates</span>
             </li>
             <li class="mb-2 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Consistent access controls and environment configuration</span>
+              <span i18n="@@featurePortalHome-policyItem2"
+                >Consistent access controls and environment configuration</span
+              >
             </li>
             <li class="mb-0 d-flex align-items-start gap-2">
               <i class="bi bi-check-circle-fill mt-1"></i>
-              <span>Helps align with GDPR/CCPA and internal security policies</span>
+              <span i18n="@@featurePortalHome-policyItem3"
+                >Helps align with GDPR/CCPA and internal security policies</span
+              >
             </li>
           </ul>
         </div>
@@ -1237,8 +1309,8 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12 text-center mb-5">
-        <h2 class="display-5 fw-bold mb-3">Choose Your License</h2>
-        <p class="lead text-muted">
+        <h2 class="display-5 fw-bold mb-3" i18n="@@featurePortalHome-pricingTitle">Choose Your License</h2>
+        <p class="lead text-muted" i18n="@@featurePortalHome-pricingLead">
           Agenstra offers flexible licensing options to fit your needs, from open source to enterprise.
         </p>
       </div>
@@ -1266,33 +1338,39 @@
           <div class="card h-100 border shadow-sm">
             <div class="card-body p-5 d-flex flex-column">
               <div class="text-center mb-4">
-                <h3 class="h4 m-0">Open Source</h3>
-                <span class="badge bg-primary px-3 py-2 my-2">Self-Hosted</span>
+                <h3 class="h4 m-0" i18n="@@featurePortalHome-planOpenSource">Open Source</h3>
+                <span class="badge bg-primary px-3 py-2 my-2" i18n="@@featurePortalHome-badgeSelfHosted"
+                  >Self-Hosted</span
+                >
                 <div class="my-3 bg-body-tertiary p-3 rounded-3">
-                  <div class="display-6 fw-bold text-primary mb-2">Free</div>
-                  <p class="text-muted small mb-0">AGPL-3.0 License</p>
+                  <div class="display-6 fw-bold text-primary mb-2" i18n="@@featurePortalHome-priceFree">Free</div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalHome-licenseAgpl">AGPL-3.0 License</p>
                 </div>
               </div>
               <ul class="list-unstyled mb-4 flex-grow-1">
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span><strong>Agent Manager</strong> - Full agent lifecycle management</span>
+                  <span i18n="@@featurePortalHome-planOpenSourceItem1"
+                    ><strong>Agent Manager</strong> - Full agent lifecycle management</span
+                  >
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Single-machine agent runtime</span>
+                  <span i18n="@@featurePortalHome-planOpenSourceItem2">Single-machine agent runtime</span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Complete source code access</span>
+                  <span i18n="@@featurePortalHome-planOpenSourceItem3">Complete source code access</span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Modify and customize freely</span>
+                  <span i18n="@@featurePortalHome-planOpenSourceItem4">Modify and customize freely</span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-info-circle-fill text-muted mt-1"></i>
-                  <span class="text-muted small">Must share modifications if used as a service (AGPL requirement)</span>
+                  <span class="text-muted small" i18n="@@featurePortalHome-planOpenSourceItem5"
+                    >Must share modifications if used as a service (AGPL requirement)</span
+                  >
                 </li>
               </ul>
               <div class="d-grid mt-auto">
@@ -1302,7 +1380,7 @@
                   target="_blank"
                   rel="noopener"
                 >
-                  View on GitHub
+                  <span i18n="@@featurePortalHome-viewOnGitHub">View on GitHub</span>
                 </a>
               </div>
             </div>
@@ -1314,33 +1392,41 @@
           <div class="card h-100 border shadow-sm">
             <div class="card-body p-5 d-flex flex-column">
               <div class="text-center mb-4">
-                <h3 class="h4 m-0">Startup</h3>
-                <span class="badge bg-primary px-3 py-2 my-2">Self-Hosted</span>
+                <h3 class="h4 m-0" i18n="@@featurePortalHome-planStartup">Startup</h3>
+                <span class="badge bg-primary px-3 py-2 my-2" i18n="@@featurePortalHome-badgeSelfHosted"
+                  >Self-Hosted</span
+                >
                 <div class="my-3 bg-body-tertiary p-3 rounded-3">
-                  <div class="display-6 fw-bold text-primary mb-2">Free</div>
-                  <p class="text-muted small mb-0">BUSL-1.1 with Additional Use Grant</p>
+                  <div class="display-6 fw-bold text-primary mb-2" i18n="@@featurePortalHome-priceFree">Free</div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalHome-licenseBusl">
+                    BUSL-1.1 with Additional Use Grant
+                  </p>
                 </div>
               </div>
               <ul class="list-unstyled mb-4 flex-grow-1">
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span><strong>Everything in Open Source</strong></span>
+                  <span i18n="@@featurePortalHome-planStartupItem1"><strong>Everything in Open Source</strong></span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span><strong>Agent Controller</strong> - Centralized management & server provisioning</span>
+                  <span i18n="@@featurePortalHome-planStartupItem2"
+                    ><strong>Agent Controller</strong> - Centralized management &amp; server provisioning</span
+                  >
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Multi-machine agent runtime orchestration</span>
+                  <span i18n="@@featurePortalHome-planStartupItem3">Multi-machine agent runtime orchestration</span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Extensive web-ui for agent management</span>
+                  <span i18n="@@featurePortalHome-planStartupItem4">Extensive web-ui for agent management</span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-info-circle-fill text-muted mt-1"></i>
-                  <span class="text-muted small">For businesses with Total Finances &lt; €2,000,000/year</span>
+                  <span class="text-muted small" i18n="@@featurePortalHome-planStartupItem5"
+                    >For businesses with Total Finances &lt; €2,000,000/year</span
+                  >
                 </li>
               </ul>
               <a
@@ -1349,7 +1435,7 @@
                 target="_blank"
                 rel="noopener"
               >
-                View on GitHub
+                <span i18n="@@featurePortalHome-viewOnGitHub">View on GitHub</span>
               </a>
             </div>
           </div>
@@ -1359,37 +1445,45 @@
         <div class="col-lg-4">
           <div class="card h-100 border-primary border-2 shadow-sm position-relative">
             <div class="position-absolute top-0 start-50 translate-middle">
-              <span class="badge bg-primary px-3 py-2">Most Popular</span>
+              <span class="badge bg-primary px-3 py-2" i18n="@@featurePortalHome-badgeMostPopular">Most Popular</span>
             </div>
             <div class="card-body p-5 d-flex flex-column">
               <div class="text-center mb-4">
-                <h3 class="h4 m-0">Business</h3>
-                <span class="badge bg-primary px-3 py-2 my-2">Self-Hosted</span>
+                <h3 class="h4 m-0" i18n="@@featurePortalHome-planBusiness">Business</h3>
+                <span class="badge bg-primary px-3 py-2 my-2" i18n="@@featurePortalHome-badgeSelfHosted"
+                  >Self-Hosted</span
+                >
                 <div class="my-3 bg-body-tertiary p-3 rounded-3">
-                  <div class="display-6 fw-bold text-primary mb-2">$499/mo</div>
-                  <p class="text-muted small mb-0">BUSL-1.1 with Additional Use Grant</p>
+                  <div class="display-6 fw-bold text-primary mb-2" i18n="@@featurePortalHome-priceBusiness">
+                    $499/mo
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalHome-licenseBusl">
+                    BUSL-1.1 with Additional Use Grant
+                  </p>
                 </div>
               </div>
               <ul class="list-unstyled mb-4 flex-grow-1">
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span><strong>Everything in Startup</strong></span>
+                  <span i18n="@@featurePortalHome-planBusinessItem1"><strong>Everything in Startup</strong></span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Personal onboarding</span>
+                  <span i18n="@@featurePortalHome-planBusinessItem2">Personal onboarding</span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Standard support (E-Mail, Phone)</span>
+                  <span i18n="@@featurePortalHome-planBusinessItem3">Standard support (E-Mail, Phone)</span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-info-circle-fill text-muted mt-1"></i>
-                  <span class="text-muted small">For businesses with Total Finances ≥ €2,000,000/year</span>
+                  <span class="text-muted small" i18n="@@featurePortalHome-planBusinessItem4"
+                    >For businesses with Total Finances ≥ €2,000,000/year</span
+                  >
                 </li>
               </ul>
               <a href="mailto:hi@agenstra.com" class="btn btn-primary py-2 px-4" target="_blank" rel="noopener">
-                Book a Demo
+                <span i18n="@@featurePortal-bookDemoButton">Book a Demo</span>
               </a>
             </div>
           </div>
@@ -1400,34 +1494,42 @@
           <div class="card h-100 border shadow-sm">
             <div class="card-body p-5 d-flex flex-column">
               <div class="text-center mb-4">
-                <h3 class="h4 m-0">Enterprise</h3>
-                <span class="badge bg-primary px-3 py-2 my-2">Self-Hosted</span>
+                <h3 class="h4 m-0" i18n="@@featurePortalHome-planEnterprise">Enterprise</h3>
+                <span class="badge bg-primary px-3 py-2 my-2" i18n="@@featurePortalHome-badgeSelfHosted"
+                  >Self-Hosted</span
+                >
                 <div class="my-3 bg-body-tertiary p-3 rounded-3">
-                  <div class="display-6 fw-bold text-primary mb-2">Ask Us</div>
-                  <p class="text-muted small mb-0">Commercial License</p>
+                  <div class="display-6 fw-bold text-primary mb-2" i18n="@@featurePortalHome-priceEnterprise">
+                    Ask Us
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalHome-licenseCommercial">Commercial License</p>
                 </div>
               </div>
               <ul class="list-unstyled mb-4 flex-grow-1">
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span><strong>Everything in Business</strong></span>
+                  <span i18n="@@featurePortalHome-planEnterpriseItem1"><strong>Everything in Business</strong></span>
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Priority support (Microsoft Teams) & SLA</span>
+                  <span i18n="@@featurePortalHome-planEnterpriseItem2"
+                    >Priority support (Microsoft Teams) &amp; SLA</span
+                  >
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Expert-led module customization and development</span>
+                  <span i18n="@@featurePortalHome-planEnterpriseItem3"
+                    >Expert-led module customization and development</span
+                  >
                 </li>
                 <li class="mb-3 d-flex align-items-start gap-2">
                   <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                  <span>Custom licensing terms</span>
+                  <span i18n="@@featurePortalHome-planEnterpriseItem4">Custom licensing terms</span>
                 </li>
               </ul>
               <div class="d-grid mt-auto">
                 <a href="mailto:hi@agenstra.com" class="btn btn-primary py-2 px-4" target="_blank" rel="noopener">
-                  Contact Sales
+                  <span i18n="@@featurePortalHome-contactSales">Contact Sales</span>
                 </a>
               </div>
             </div>
@@ -1444,47 +1546,57 @@
             <div class="row align-items-end">
               <div class="col-md-8">
                 <div class="d-flex align-items-center gap-3 mb-3">
-                  <h3 class="h4 m-0">Cloud</h3>
-                  <span class="badge bg-primary px-3 py-2">Managed</span>
+                  <h3 class="h4 m-0" i18n="@@featurePortalHome-planCloud">Cloud</h3>
+                  <span class="badge bg-primary px-3 py-2" i18n="@@featurePortalHome-badgeManaged">Managed</span>
                 </div>
-                <p class="lead mb-4">
+                <p class="lead mb-4" i18n="@@featurePortalHome-planCloudLead">
                   Fully managed Agenstra platform hosted in the cloud. Made for any size of business. No infrastructure
                   setup required.
                 </p>
                 <ul class="list-unstyled mb-0">
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>Fully Managed</strong> - We handle all infrastructure, updates, and maintenance</span>
+                    <span i18n="@@featurePortalHome-planCloudItem1"
+                      ><strong>Fully Managed</strong> - We handle all infrastructure, updates, and maintenance</span
+                    >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span
+                    <span i18n="@@featurePortalHome-planCloudItem2"
                       ><strong>All Features Included</strong> - Complete platform with web IDE, agent management, and
                       more</span
                     >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>Automatic Scaling</strong> - Infrastructure scales with your needs</span>
+                    <span i18n="@@featurePortalHome-planCloudItem3"
+                      ><strong>Automatic Scaling</strong> - Infrastructure scales with your needs</span
+                    >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>99.9% Uptime SLA</strong> - Enterprise-grade reliability</span>
+                    <span i18n="@@featurePortalHome-planCloudItem4"
+                      ><strong>99.9% Uptime SLA</strong> - Enterprise-grade reliability</span
+                    >
                   </li>
                   <li class="mb-2 d-flex align-items-start gap-2">
                     <i class="bi bi-check-circle-fill text-primary mt-1"></i>
-                    <span><strong>Priority Support</strong> - Dedicated support team</span>
+                    <span i18n="@@featurePortalHome-planCloudItem5"
+                      ><strong>Priority Support</strong> - Dedicated support team</span
+                    >
                   </li>
                 </ul>
               </div>
               <div class="col-md-4 text-center text-md-end">
                 <div class="mb-3 bg-body-tertiary p-3 rounded-3">
-                  <div class="mb-2">Starting at</div>
-                  <div class="h3 fw-bold">$99<span class="fs-6 text-muted">/month</span></div>
+                  <div class="mb-2" i18n="@@featurePortalHome-cloudStartingAt">Starting at</div>
+                  <div class="h3 fw-bold" i18n="@@featurePortalHome-cloudPrice">
+                    $99<span class="fs-6 text-muted">/month</span>
+                  </div>
                 </div>
                 <div class="d-grid">
                   <a href="mailto:hi@agenstra.com" class="btn btn-primary py-2 px-4" target="_blank" rel="noopener">
-                    Book a Demo
+                    <span i18n="@@featurePortal-bookDemoButton">Book a Demo</span>
                   </a>
                 </div>
               </div>

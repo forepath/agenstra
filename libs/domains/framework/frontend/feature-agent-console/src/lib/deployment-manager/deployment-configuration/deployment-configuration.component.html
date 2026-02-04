@@ -4,9 +4,11 @@
     <div class="d-flex justify-content-center align-items-center flex-grow-1 p-4">
       <div class="text-center">
         <div class="spinner-border text-primary mb-3" role="status">
-          <span class="visually-hidden">Loading configuration...</span>
+          <span class="visually-hidden" i18n="@@featureDeploymentConfig-loadingConfig">Loading configuration...</span>
         </div>
-        <p class="text-muted small mb-0">Loading deployment configuration...</p>
+        <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-loadingMessage">
+          Loading deployment configuration...
+        </p>
       </div>
     </div>
   } @else if (hasConfiguration()) {
@@ -15,12 +17,13 @@
       <div class="card">
         <div class="card-body">
           <h6 class="card-title d-flex align-items-center justify-content-between">
-            <span>Configuration</span>
+            <span i18n="@@featureDeploymentConfig-configurationLabel">Configuration</span>
             <div class="btn-group btn-group-sm" role="group">
               <button
                 type="button"
                 class="btn btn-sm btn-outline-primary"
                 (click)="onShowConfigurationForm()"
+                i18n-title="@@featureDeploymentConfig-editConfigTitle"
                 title="Edit Configuration"
               >
                 <i class="bi bi-pencil"></i>
@@ -30,6 +33,7 @@
                 class="btn btn-sm btn-outline-danger"
                 (click)="onDeleteConfiguration()"
                 [disabled]="deletingConfiguration$ | async"
+                i18n-title="@@featureDeploymentConfig-deleteConfigTitle"
                 title="Delete Configuration"
               >
                 @if (deletingConfiguration$ | async) {
@@ -41,16 +45,16 @@
             </div>
           </h6>
           <dl class="row mb-0">
-            <dt class="col-sm-4">Provider</dt>
+            <dt class="col-sm-4" i18n="@@featureDeploymentConfig-providerLabel">Provider</dt>
             <dd class="col-sm-8">{{ getProviderDisplayName(configuration()!.providerType) }}</dd>
-            <dt class="col-sm-4">Repository</dt>
+            <dt class="col-sm-4" i18n="@@featureDeploymentConfig-repositoryLabel">Repository</dt>
             <dd class="col-sm-8">{{ configuration()!.repositoryId }}</dd>
             @if (configuration()!.defaultBranch) {
-              <dt class="col-sm-4">Default Branch</dt>
+              <dt class="col-sm-4" i18n="@@featureDeploymentConfig-defaultBranchLabel">Default Branch</dt>
               <dd class="col-sm-8">{{ configuration()!.defaultBranch }}</dd>
             }
             @if (configuration()!.workflowId) {
-              <dt class="col-sm-4">Workflow</dt>
+              <dt class="col-sm-4" i18n="@@featureDeploymentConfig-workflowLabel">Workflow</dt>
               <dd class="col-sm-8">{{ configuration()!.workflowId }}</dd>
             }
           </dl>
@@ -60,7 +64,7 @@
 
     <!-- Repository Selection -->
     <div class="p-3 border-top">
-      <h6 class="fw-semibold mb-2">Repository</h6>
+      <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-repositoryHeader">Repository</h6>
       @if (loadingRepositories$ | async) {
         <div class="d-flex justify-content-center p-3">
           <div class="spinner-border spinner-border-sm text-primary" role="status">
@@ -68,14 +72,14 @@
           </div>
         </div>
       } @else if (repositories().length === 0) {
-        <p class="text-muted small mb-0">No repositories available</p>
+        <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-noRepositories">No repositories available</p>
       } @else {
         <select
           class="form-select form-select-sm"
           [ngModel]="selectedRepositoryId() || ''"
           (ngModelChange)="onSelectRepository($event)"
         >
-          <option value="">Select a repository</option>
+          <option value="" i18n="@@featureDeploymentConfig-selectRepository">Select a repository</option>
           @for (repo of repositories(); track repo.id) {
             <option [value]="repo.id">{{ repo.name }}</option>
           }
@@ -86,7 +90,7 @@
     <!-- Branch Selection -->
     @if (selectedRepositoryId()) {
       <div class="p-3 border-top">
-        <h6 class="fw-semibold mb-2">Branch</h6>
+        <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-branchHeader">Branch</h6>
         @if (loadingBranches$ | async) {
           <div class="d-flex justify-content-center p-3">
             <div class="spinner-border spinner-border-sm text-primary" role="status">
@@ -94,14 +98,14 @@
             </div>
           </div>
         } @else if (branches().length === 0) {
-          <p class="text-muted small mb-0">No branches available</p>
+          <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-noBranches">No branches available</p>
         } @else {
           <select
             class="form-select form-select-sm"
             [ngModel]="selectedBranch() || ''"
             (ngModelChange)="onSelectBranch($event)"
           >
-            <option value="">Select a branch</option>
+            <option value="" i18n="@@featureDeploymentConfig-selectBranch">Select a branch</option>
             @for (branch of branches(); track branch.name) {
               <option [value]="branch.name">{{ branch.name }}</option>
             }
@@ -113,7 +117,7 @@
     <!-- Workflow Selection -->
     @if (selectedRepositoryId()) {
       <div class="p-3 border-top">
-        <h6 class="fw-semibold mb-2">Workflow</h6>
+        <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-workflowHeader">Workflow</h6>
         @if (loadingWorkflows$ | async) {
           <div class="d-flex justify-content-center p-3">
             <div class="spinner-border spinner-border-sm text-primary" role="status">
@@ -121,14 +125,14 @@
             </div>
           </div>
         } @else if (workflows().length === 0) {
-          <p class="text-muted small mb-0">No workflows available</p>
+          <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-noWorkflows">No workflows available</p>
         } @else {
           <select
             class="form-select form-select-sm mb-2"
             [ngModel]="selectedWorkflowId() || ''"
             (ngModelChange)="onSelectWorkflow($event)"
           >
-            <option value="">Select a workflow</option>
+            <option value="" i18n="@@featureDeploymentConfig-selectWorkflow">Select a workflow</option>
             @for (workflow of workflows(); track workflow.id) {
               <option [value]="workflow.id">{{ workflow.name }}</option>
             }
@@ -137,7 +141,9 @@
           <!-- Workflow Inputs -->
           @if (showWorkflowInputs()) {
             <div class="mt-2">
-              <label class="form-label small">Workflow Inputs (optional)</label>
+              <label class="form-label small" i18n="@@featureDeploymentConfig-workflowInputsLabel"
+                >Workflow Inputs (optional)</label
+              >
               @for (input of workflowInputsEntries(); track input.key) {
                 <div class="input-group input-group-sm mb-2">
                   <input
@@ -151,6 +157,7 @@
                     type="button"
                     class="btn btn-outline-danger"
                     (click)="onRemoveWorkflowInput(input.key)"
+                    i18n-title="@@featureDeploymentConfig-removeInputTitle"
                     title="Remove input"
                   >
                     <i class="bi bi-x"></i>
@@ -158,7 +165,7 @@
                 </div>
               }
               <button type="button" class="btn btn-sm btn-outline-secondary w-100" (click)="onAddWorkflowInput()">
-                <i class="bi bi-plus"></i> Add Input
+                <i class="bi bi-plus me-1"></i><span i18n="@@featureDeploymentConfig-addInputButton">Add Input</span>
               </button>
             </div>
           }
@@ -176,7 +183,7 @@
               } @else {
                 <i class="bi bi-play-fill me-1"></i>
               }
-              Trigger Workflow
+              <span i18n="@@featureDeploymentConfig-triggerWorkflowButton">Trigger Workflow</span>
             </button>
           }
         }
@@ -187,11 +194,13 @@
     <div class="p-3">
       <div class="alert alert-info">
         <i class="bi bi-info-circle me-2"></i>
-        No deployment configuration found. Create one to get started.
+        <span i18n="@@featureDeploymentConfig-noConfigMessage"
+          >No deployment configuration found. Create one to get started.</span
+        >
       </div>
       <button type="button" class="btn btn-primary w-100" (click)="onShowConfigurationForm()">
         <i class="bi bi-plus-circle me-1"></i>
-        Create Configuration
+        <span i18n="@@featureDeploymentConfig-createConfigButton">Create Configuration</span>
       </button>
     </div>
   }
@@ -209,13 +218,14 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="configurationModalLabel">
-            {{ hasConfiguration() ? 'Edit' : 'Create' }} Deployment Configuration
+            {{ getModalTitle() }}
           </h5>
           <button
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
             (click)="onCancelConfigurationForm()"
+            i18n-aria-label="@@featureDeploymentConfig-closeAriaLabel"
             aria-label="Close"
             [disabled]="(creatingConfiguration$ | async) || (updatingConfiguration$ | async)"
           ></button>
@@ -223,7 +233,9 @@
         <div class="modal-body">
           <form>
             <div class="mb-3">
-              <label for="providerType" class="form-label">Provider Type</label>
+              <label for="providerType" class="form-label" i18n="@@featureDeploymentConfig-providerTypeLabel"
+                >Provider Type</label
+              >
               <select
                 class="form-select"
                 id="providerType"
@@ -231,67 +243,83 @@
                 (change)="providerType.set($any($event.target).value)"
                 [disabled]="hasConfiguration()"
               >
-                <option value="github">GitHub Actions</option>
-                <option value="gitlab">GitLab CI/CD</option>
+                <option value="github" i18n="@@featureDeploymentConfig-githubOption">GitHub Actions</option>
+                <option value="gitlab" i18n="@@featureDeploymentConfig-gitlabOption">GitLab CI/CD</option>
               </select>
             </div>
 
             <div class="mb-3">
-              <label for="repositoryId" class="form-label">Repository ID</label>
+              <label for="repositoryId" class="form-label" i18n="@@featureDeploymentConfig-repositoryIdLabel"
+                >Repository ID</label
+              >
               <input
                 type="text"
                 class="form-control"
                 id="repositoryId"
                 [value]="repositoryId()"
                 (input)="repositoryId.set($any($event.target).value)"
+                i18n-placeholder="@@featureDeploymentConfig-repoPlaceholder"
                 placeholder="owner/repo"
                 required
               />
-              <small class="form-text text-muted">Format: owner/repository-name</small>
+              <small class="form-text text-muted" i18n="@@featureDeploymentConfig-repositoryIdHint"
+                >Format: owner/repository-name</small
+              >
             </div>
 
             <div class="mb-3">
-              <label for="defaultBranch" class="form-label">Default Branch (optional)</label>
+              <label for="defaultBranch" class="form-label" i18n="@@featureDeploymentConfig-defaultBranchFormLabel"
+                >Default Branch (optional)</label
+              >
               <input
                 type="text"
                 class="form-control"
                 id="defaultBranch"
                 [value]="defaultBranch()"
                 (input)="defaultBranch.set($any($event.target).value)"
+                i18n-placeholder="@@featureDeploymentConfig-branchPlaceholder"
                 placeholder="main"
               />
             </div>
 
             <div class="mb-3">
-              <label for="workflowId" class="form-label">Workflow ID (optional)</label>
+              <label for="workflowId" class="form-label" i18n="@@featureDeploymentConfig-workflowIdLabel"
+                >Workflow ID (optional)</label
+              >
               <input
                 type="text"
                 class="form-control"
                 id="workflowId"
                 [value]="workflowId()"
                 (input)="workflowId.set($any($event.target).value)"
+                i18n-placeholder="@@featureDeploymentConfig-workflowPlaceholder"
                 placeholder="workflow.yml"
               />
             </div>
 
             @if (providerType() === 'gitlab') {
               <div class="mb-3">
-                <label for="providerBaseUrl" class="form-label">GitLab Base URL (optional)</label>
+                <label for="providerBaseUrl" class="form-label" i18n="@@featureDeploymentConfig-gitlabBaseUrlLabel"
+                  >GitLab Base URL (optional)</label
+                >
                 <input
                   type="text"
                   class="form-control"
                   id="providerBaseUrl"
                   [value]="providerBaseUrl()"
                   (input)="providerBaseUrl.set($any($event.target).value)"
+                  i18n-placeholder="@@featureDeploymentConfig-gitlabUrlPlaceholder"
                   placeholder="https://gitlab.com"
                 />
-                <small class="form-text text-muted">Leave empty for GitLab.com</small>
+                <small class="form-text text-muted" i18n="@@featureDeploymentConfig-gitlabBaseUrlHint"
+                  >Leave empty for GitLab.com</small
+                >
               </div>
             }
 
             <div class="mb-3">
               <label for="providerToken" class="form-label">
-                {{ providerType() === 'github' ? 'GitHub' : 'GitLab' }} Token
+                {{ getTokenLabel() }}
               </label>
               <input
                 type="password"
@@ -299,11 +327,11 @@
                 id="providerToken"
                 [value]="providerToken()"
                 (input)="providerToken.set($any($event.target).value)"
-                [placeholder]="hasConfiguration() ? 'Leave empty to keep current token' : 'Enter token'"
+                [placeholder]="getTokenPlaceholder()"
                 [required]="!hasConfiguration()"
               />
               <small class="form-text text-muted">
-                {{ hasConfiguration() ? 'Leave empty to keep the current token' : 'Required for authentication' }}
+                {{ getTokenHint() }}
               </small>
             </div>
           </form>
@@ -316,7 +344,7 @@
             (click)="onCancelConfigurationForm()"
             [disabled]="(creatingConfiguration$ | async) || (updatingConfiguration$ | async)"
           >
-            Cancel
+            <span i18n="@@featureDeploymentConfig-cancelButton">Cancel</span>
           </button>
           <button
             type="button"
@@ -327,7 +355,7 @@
             @if ((creatingConfiguration$ | async) || (updatingConfiguration$ | async)) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            {{ hasConfiguration() ? 'Update' : 'Create' }}
+            {{ getSaveButtonText() }}
           </button>
         </div>
       </div>

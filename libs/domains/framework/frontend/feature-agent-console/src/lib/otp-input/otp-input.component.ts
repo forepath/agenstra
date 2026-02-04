@@ -66,6 +66,10 @@ export class OtpInputComponent implements ControlValueAccessor {
     return this._value[index] ?? '';
   }
 
+  getAriaLabel(index: number): string {
+    return $localize`:@@featureOtpInput-ariaLabelCharacter:Character ${index + 1}:position: of 6`;
+  }
+
   onInput(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
     const raw = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');

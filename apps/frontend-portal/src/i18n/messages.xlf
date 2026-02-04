@@ -2,6 +2,916 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featurePortalAgentctx-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Unified Context<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for AI Coding Tools </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-heroDescription" datatype="html">
+        <source> Define rules, commands, skills, and agents once in a single <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary&quot;&gt;"/>.agenstra/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> folder. AgentCTX turns that context into tool-specific config for Cursor, OpenCode, and GitHub Copilot. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-heroSubtext" datatype="html">
+        <source> Install the <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>agentctx<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> CLI with one command. Run it in your project root and it writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.cursor/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>, <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.opencode/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>, and <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.github/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> for you - no duplicate config, no lock-in. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-howItWorksButton" datatype="html">
+        <source>How it works</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-documentationButton" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-installLabel" datatype="html">
+        <source>Install AgentCTX</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-copied" datatype="html">
+        <source>Copied</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-copy" datatype="html">
+        <source>Copy</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-convertLabel" datatype="html">
+        <source>Convert your AI context</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-howTitle" datatype="html">
+        <source>One folder, every tool</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-howLead" datatype="html">
+        <source> Your <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.agenstra/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> context is the single source of truth. AgentCTX transforms it into the directory structure and files each tool expects - so you maintain one set of rules, commands, skills, and agents. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-validateTitle" datatype="html">
+        <source>Validate &amp; transform</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-validateDesc" datatype="html">
+        <source> AgentCTX checks that your <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.agenstra/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> context is valid (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>metadata.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> and structure), then emits the right files and folders for each target tool. Run with no arguments and it writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.cursor<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>, <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.opencode<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>, and <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.github<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> into your project root. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-toolsTitle" datatype="html">
+        <source>Cursor, OpenCode, GitHub Copilot</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-toolsDesc" datatype="html">
+        <source> One context drives rules, commands, skills, agents, and MCP definitions for all three. No duplicate edits - change a rule or command once and regenerate. Override specific files via <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.agenstra/overrides/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> when you need tool-specific tweaks. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-sourceTitle" datatype="html">
+        <source>Tool-agnostic source</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-sourceDesc" datatype="html">
+        <source> Your <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>.agenstra/<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> files are plain MDC (Markdown with YAML frontmatter). Commit them to git and share across the team. Add AgentCTX to CI or a post-merge hook to keep generated configs in sync, or run <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>agentctx<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> locally whenever you change context. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-outputTitle" datatype="html">
+        <source>Output for your stack</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-outputLead" datatype="html">
+        <source> AgentCTX generates config for these tools from a single context. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-cursorAlt" datatype="html">
+        <source>Cursor</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-opencodeAlt" datatype="html">
+        <source>OpenCode</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-githubCopilotAlt" datatype="html">
+        <source>GitHub Copilot</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-ecosystemTitle" datatype="html">
+        <source> Part of the Agenstra ecosystem </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-ecosystemLead" datatype="html">
+        <source> AgentCTX is the easiest way to get started with a single source of truth for AI coding tools. Agenstra has you covered, when you need centralized control over distributed agent infrastructure, including multiple servers, real-time interaction, web IDE. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-learnAboutAgenstra" datatype="html">
+        <source>Learn about Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-metaTitle" datatype="html">
+        <source>AgentCTX - One context, all your AI coding tools</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-metaDescription" datatype="html">
+        <source>AgentCTX generates tool-specific config from a single context. One source of truth for all your AI coding tools. Install with one command and run agentctx to get started.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-metaKeywords" datatype="html">
+        <source>AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-brandAlt" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-navSolution" datatype="html">
+        <source>Solution</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-navFeatures" datatype="html">
+        <source>Features</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-navSecurity" datatype="html">
+        <source>Security &amp; Data</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-navPricing" datatype="html">
+        <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-githubAriaLabel" datatype="html">
+        <source>GitHub</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-githubTitle" datatype="html">
+        <source>View on GitHub</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-bookDemoButton" datatype="html">
+        <source>Book a Demo</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerBrand" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerTagline" datatype="html">
+        <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers. </source>
+        </trans-unit>
+      <trans-unit id="featurePortal-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-language" datatype="html">
+        <source>Language</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerInformation" datatype="html">
+        <source>Information</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerDownloads" datatype="html">
+        <source>Downloads</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerDocumentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerTools" datatype="html">
+        <source>Tools</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-agentctxLink" datatype="html">
+        <source>AgentCTX</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerDesktopLink" datatype="html">
+        <source>Desktop</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerLegal" datatype="html">
+        <source>Legal</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-legalDisclosureLink" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerCopyright" datatype="html">
+        <source> © 2025 IPvX UG (haftungsbeschränkt). All rights reserved. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-desktop" datatype="html">
+        <source>Desktop</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-heroDescription" datatype="html">
+        <source> The full Agenstra console - IDE, chat, file management, and agent control - packaged as a native application for Windows, macOS, and Linux. No browser required. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-heroSubtext" datatype="html">
+        <source> Connect to your agent-manager instances, interact with AI agents in real-time, edit code directly in containers, and manage your distributed infrastructure - all from a single desktop window. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-viewFeatures" datatype="html">
+        <source>View Features</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-downloads" datatype="html">
+        <source>Downloads</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-featureFullIde" datatype="html">
+        <source>Full IDE, chat, and file management in one window</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-featureRealtime" datatype="html">
+        <source>Real-time AI agent interaction</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-featurePlatforms" datatype="html">
+        <source>Windows, macOS, and Linux</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-featureNoBrowser" datatype="html">
+        <source>No browser required</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-featuresTitle" datatype="html">
+        <source> Full console, native experience </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-featuresLead" datatype="html">
+        <source> The same powerful Agenstra console you use in the browser - packaged as a standalone desktop application for Windows, macOS, and Linux. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-nativeInstallTitle" datatype="html">
+        <source>Native install</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-nativeInstallDesc" datatype="html">
+        <source> Download and install like any desktop app. No browser tabs, no web URLs to remember. Launch Agenstra from your dock, taskbar, or application menu - Windows (.zip), macOS (.zip), or Linux (.deb, .zip). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-fullConsoleTitle" datatype="html">
+        <source>Full console inside</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-fullConsoleDesc" datatype="html">
+        <source> The complete Agenstra console: Monaco-based IDE, real-time chat with AI agents, file tree, terminal, Git integration, and container management. Everything you get in the web version - in a dedicated window. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-crossPlatformTitle" datatype="html">
+        <source>Cross-platform</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-crossPlatformDesc" datatype="html">
+        <source> Built with Electron for consistent behavior across platforms. Use the same config and workflows whether you&apos;re on Windows, macOS, or Linux. Connect to remote agent-manager instances from anywhere. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-enterpriseTitle" datatype="html">
+        <source> Hands-free enterprise deployment </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-enterpriseLead" datatype="html">
+        <source> Point the desktop app to a central config URL. No rebuilds, no reinstalls - ideal for enterprise deployments. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-singleSourceTitle" datatype="html">
+        <source>Single source of truth</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-singleSourceDesc" datatype="html">
+        <source> Host one JSON config file on your internal server. Every client fetches it at launch. Update the file once and all deployments pick up the change automatically - no per-machine edits. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-scaleTitle" datatype="html">
+        <source>Scale without friction</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-scaleDesc" datatype="html">
+        <source> Roll out the same installer across the entire organization. Users point to the appropriate config URL for their environment. No custom builds or per-site packaging. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-changeConfigTitle" datatype="html">
+        <source>Change config, not the app</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-changeConfigDesc" datatype="html">
+        <source> Switch backends, update auth, or toggle features by editing the remote config. No rebuilds, no redistributing. The same pattern works for Docker via the <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>CONFIG<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> environment variable. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-tryYourself" datatype="html">
+        <source>Try for yourself</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-configHint" datatype="html">
+        <source> Use this URL in the desktop app to connect to our demo environment. The app fetches the config at startup and merges it with defaults. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-ctaTitle" datatype="html">
+        <source>Get the desktop app</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-ctaLead" datatype="html">
+        <source> Download Agenstra Desktop for your platform. Connect to your existing agent-manager instances or use the web-based console - both give you the same full experience. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-downloadsCta" datatype="html">
+        <source>Downloads</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-learnAbout" datatype="html">
+        <source>Learn about Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroTitle" datatype="html">
+        <source> Centralized Control for <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Distributed AI Agent Infrastructure<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroProblem" datatype="html">
+        <source> Managing AI agents across multiple servers is complex. You need to coordinate services, monitor containers, and maintain connections - all while trying to build your product. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroSolution" datatype="html">
+        <source> Agenstra provides a complete platform for managing distributed AI agent infrastructure. Control multiple agent-manager instances, interact with agents in real-time, and code directly in their containers using a full-featured web-based IDE - all from one powerful dashboard. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-learnMoreButton" datatype="html">
+        <source>Learn More</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-viewFeaturesButton" datatype="html">
+        <source>View Features</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroAgentctxHint" datatype="html">
+        <source> Looking to generate unified context for all your AI coding tools? Check out <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/agentctx&quot; fragment=&quot;hero&quot;&gt;"/>AgentCTX<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>! </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dashboardAlt" datatype="html">
+        <source>Agenstra Console Dashboard</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-supportedAgentsTitle" datatype="html">
+        <source>Supported AI Agents</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-supportedAgentsLead" datatype="html">
+        <source> Works with your favorite AI agent providers </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-customProviders" datatype="html">
+        <source>Custom Providers</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionTitle" datatype="html">
+        <source> Complete AI Agent Management Platform </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionLead" datatype="html">
+        <source> Agenstra combines a powerful web-based IDE with distributed backend services to give you complete control over your AI agent infrastructure. Code directly in agent containers, access virtual workspaces with browser testing, manage agents, interact in real-time, and deploy infrastructure automatically - all from your browser. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-centralizedTitle" datatype="html">
+        <source>Centralized Control</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-centralizedDesc" datatype="html">
+        <source> Connect to and manage multiple remote agent-manager services from a single console. The controller orchestrates all your distributed agent infrastructure in one place, enabling you to provision servers, monitor agent status across regions, and coordinate deployments - all from a unified dashboard. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-realtimeTitle" datatype="html">
+        <source>Real-time Agent Interaction</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-realtimeDesc" datatype="html">
+        <source> WebSocket-based bidirectional communication with AI agents. Chat with agents, stream container logs, send commands in real-time through persistent connections, and control message flow with configurable filtering for content moderation and compliance. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ideTitle" datatype="html">
+        <source>Full-Featured Web IDE</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ideDesc" datatype="html">
+        <source> Complete IDE experience powered by Monaco Editor (VS Code&apos;s editor). Syntax highlighting, IntelliSense, multi-file editing, Git integration, terminal access, live collaboration, and virtual workspaces with browser access - all in your browser. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-cicdTitle" datatype="html">
+        <source>CI/CD Pipeline Management</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-cicdDesc" datatype="html">
+        <source> Configure CI/CD providers (GitHub Actions, GitLab CI/CD) for each agent. Trigger pipeline runs manually, monitor their status in real-time, view detailed logs for runs and individual jobs, and track complete deployment history - all integrated directly into the console. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-infraProvidersTitle" datatype="html">
+        <source> Supported Infrastructure Providers </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-infraProvidersLead" datatype="html">
+        <source> Automatically deploy agent managers to your favorite cloud provider </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-hetznerAlt" datatype="html">
+        <source>Hetzner Cloud</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-digitaloceanAlt" datatype="html">
+        <source>DigitalOcean</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-featuresTitle" datatype="html">
+        <source> Complete Agent Management Capabilities </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-featuresLead" datatype="html">
+        <source> Everything you need to create, manage, and interact with AI agents across distributed infrastructure. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-lifecycleTitle" datatype="html">
+        <source> Agent Lifecycle Management </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-lifecycleDesc" datatype="html">
+        <source> Create, update, and delete AI agents through REST APIs. Each agent runs in its own isolated Docker container with secure authentication and credential management. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-websocketTitle" datatype="html">
+        <source> Real-time WebSocket Communication </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-websocketDesc" datatype="html">
+        <source> Bidirectional WebSocket connections for chat messaging, container log streaming, and command execution. Maintain persistent connections with multiple agents simultaneously. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-webIdeTitle" datatype="html">
+        <source>Full-Featured Web-Based IDE</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-webIdeDesc" datatype="html">
+        <source> Complete IDE experience with Monaco Editor (VS Code&apos;s editor). Syntax highlighting, IntelliSense autocomplete, multi-file tabs, Git diff viewer, markdown preview, terminal integration, and file tree navigation - all running in your browser. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-terminalTitle" datatype="html">
+        <source> Terminal &amp; Container Management </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-terminalDesc" datatype="html">
+        <source> Integrated terminal (xterm.js) for running commands, Docker-based agent execution with live log streaming, container stats monitoring, and full container lifecycle management - all within the IDE. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-gitTitle" datatype="html">
+        <source>Integrated Git Workflow</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-gitDesc" datatype="html">
+        <source> Built-in Git manager with visual diff viewer, branch management, staging, commit, push, pull, rebase, and conflict resolution. All Git operations integrated directly into the IDE interface. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-automatedInfraTitle" datatype="html">
+        <source> Automated Infrastructure </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-automatedInfraDesc" datatype="html">
+        <source> Provision cloud servers automatically with Docker and agent-manager deployment. Connect to Hetzner Cloud and other providers to spin up infrastructure in minutes. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-multiProviderTitle" datatype="html">
+        <source> Multi-Provider Agent Support </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-multiProviderDesc" datatype="html">
+        <source> Plugin-based architecture supporting multiple AI agent providers. Use Cursor agents, OpenAI, Anthropic, or implement custom providers through a unified interface. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dashboardTitle" datatype="html">
+        <source>Centralized Dashboard</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dashboardDesc" datatype="html">
+        <source> Single console interface to manage all your agent-manager instances. View agents across multiple servers, monitor status, and interact with any agent from one place. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ideTerminalAlt" datatype="html">
+        <source>Agenstra IDE Terminal</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ideEditorAlt" datatype="html">
+        <source>Agenstra IDE Editor</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-idePreviewAlt" datatype="html">
+        <source>Agenstra IDE Preview</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-workspaceTitle" datatype="html">
+        <source> Virtual Workspaces for Application Testing </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-workspaceLead" datatype="html">
+        <source> Each agent can have its own separate virtual workspace container with a full desktop environment and Chromium browser to test web applications visually, debug browser interactions, and verify the agent&apos;s work - all accessible through a secure web-based VNC client. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-workspaceItem1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Full Desktop Environment<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Modern desktop with Chromium browser</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-workspaceItem2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Shared Workspace<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Same files accessible from both IDE and browser</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-workspaceItem3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Web-Based Access<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - No client installation needed</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-workspaceItem4" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Secure &amp; Isolated<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Password-protected VNC access with network isolation</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-workspaceAlt" datatype="html">
+        <source>Agenstra Virtual Workspace with Browser Access</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-sshAlt" datatype="html">
+        <source>Agenstra Editor with SSH Connection</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-sshTitle" datatype="html">
+        <source>Native Editor Integration</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-sshLead" datatype="html">
+        <source> Connect your agent workspaces directly to your favorite local editor (Cursor, VS Code, or any SSH-compatible IDE) to work with agent files natively. Use your preferred tools, extensions, and workflows while leveraging the full power of AI agents. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-sshItem1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Native Editor Experience<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Use Cursor, VS Code, or any SSH-compatible IDE</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-sshItem2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Direct File Access<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Edit agent workspace files directly through SSH</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-sshItem3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Full Tool Support<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Use all your extensions, themes, and custom configurations</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-sshItem4" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Secure Connection<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Password-protected SSH access with isolated network</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityTitle" datatype="html">
+        <source> Security &amp; Data Protection by Design </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityLead" datatype="html">
+        <source> Keep sensitive data, chats, and agent activity under your full control while meeting strict compliance requirements. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-gdprBadge" datatype="html">
+        <source>GDPR compliant</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-germanyBadge" datatype="html">
+        <source>Created and maintained in Germany</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dataLocationTitle" datatype="html">
+        <source>Full Control over Data Location</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dataLocationDesc" datatype="html">
+        <source> Run controllers and managers where you need them: self-hosted, on-prem, or in specific cloud regions. All agent traffic terminates in your infrastructure - no opaque third-party SaaS. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dataLocationItem1" datatype="html">
+        <source>Per-manager region and provider selection</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dataLocationItem2" datatype="html">
+        <source>Keep logs and chat history in your own data stores</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-dataLocationItem3" datatype="html">
+        <source>Supports strict data residency requirements</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-auditTitle" datatype="html">
+        <source>Audit-Ready Agent Activity</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-auditDesc" datatype="html">
+        <source> Capture a complete trace of what happened, where, and when: from agent connections to executed commands and file changes. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-auditItem1" datatype="html">
+        <source>Per-agent and per-manager audit trails</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-auditItem2" datatype="html">
+        <source>Trace chat sessions back to underlying container actions</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-auditItem3" datatype="html">
+        <source>Configurable message filtering for content control and compliance</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-auditItem4" datatype="html">
+        <source>Exportable logs for internal or external audits</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-policyTitle" datatype="html">
+        <source>Standardized, Policy-Driven Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-policyDesc" datatype="html">
+        <source> Define standard agent templates, workspace layouts, and policies once and roll them out consistently across environments. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-policyItem1" datatype="html">
+        <source>Reusable agent and project templates</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-policyItem2" datatype="html">
+        <source>Consistent access controls and environment configuration</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-policyItem3" datatype="html">
+        <source>Helps align with GDPR/CCPA and internal security policies</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pricingTitle" datatype="html">
+        <source>Choose Your License</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pricingLead" datatype="html">
+        <source> Agenstra offers flexible licensing options to fit your needs, from open source to enterprise. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planOpenSource" datatype="html">
+        <source>Open Source</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-badgeSelfHosted" datatype="html">
+        <source>Self-Hosted</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-priceFree" datatype="html">
+        <source>Free</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-licenseAgpl" datatype="html">
+        <source>AGPL-3.0 License</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planOpenSourceItem1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Agent Manager<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Full agent lifecycle management</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planOpenSourceItem2" datatype="html">
+        <source>Single-machine agent runtime</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planOpenSourceItem3" datatype="html">
+        <source>Complete source code access</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planOpenSourceItem4" datatype="html">
+        <source>Modify and customize freely</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planOpenSourceItem5" datatype="html">
+        <source>Must share modifications if used as a service (AGPL requirement)</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-viewOnGitHub" datatype="html">
+        <source>View on GitHub</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planStartup" datatype="html">
+        <source>Startup</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-licenseBusl" datatype="html">
+        <source> BUSL-1.1 with Additional Use Grant </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planStartupItem1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Everything in Open Source<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planStartupItem2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Agent Controller<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Centralized management &amp; server provisioning</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planStartupItem3" datatype="html">
+        <source>Multi-machine agent runtime orchestration</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planStartupItem4" datatype="html">
+        <source>Extensive web-ui for agent management</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planStartupItem5" datatype="html">
+        <source>For businesses with Total Finances &lt; €2,000,000/year</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-badgeMostPopular" datatype="html">
+        <source>Most Popular</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planBusiness" datatype="html">
+        <source>Business</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-priceBusiness" datatype="html">
+        <source> $499/mo </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planBusinessItem1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Everything in Startup<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planBusinessItem2" datatype="html">
+        <source>Personal onboarding</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planBusinessItem3" datatype="html">
+        <source>Standard support (E-Mail, Phone)</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planBusinessItem4" datatype="html">
+        <source>For businesses with Total Finances ≥ €2,000,000/year</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planEnterprise" datatype="html">
+        <source>Enterprise</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-priceEnterprise" datatype="html">
+        <source> Ask Us </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-licenseCommercial" datatype="html">
+        <source>Commercial License</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planEnterpriseItem1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Everything in Business<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planEnterpriseItem2" datatype="html">
+        <source>Priority support (Microsoft Teams) &amp; SLA</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planEnterpriseItem3" datatype="html">
+        <source>Expert-led module customization and development</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planEnterpriseItem4" datatype="html">
+        <source>Custom licensing terms</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-contactSales" datatype="html">
+        <source>Contact Sales</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planCloud" datatype="html">
+        <source>Cloud</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-badgeManaged" datatype="html">
+        <source>Managed</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planCloudLead" datatype="html">
+        <source> Fully managed Agenstra platform hosted in the cloud. Made for any size of business. No infrastructure setup required. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planCloudItem1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Fully Managed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - We handle all infrastructure, updates, and maintenance</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planCloudItem2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>All Features Included<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Complete platform with web IDE, agent management, and more</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planCloudItem3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Automatic Scaling<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Infrastructure scales with your needs</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planCloudItem4" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>99.9% Uptime SLA<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Enterprise-grade reliability</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-planCloudItem5" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Priority Support<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Dedicated support team</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-cloudStartingAt" datatype="html">
+        <source>Starting at</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-cloudPrice" datatype="html">
+        <source> $99<x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;fs-6 text-muted&quot;&gt;"/>/month<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-metaTitle" datatype="html">
+        <source>Agenstra - Centralized Control for Distributed AI Agent Infrastructure</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-metaDescription" datatype="html">
+        <source>Agenstra provides centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-metaKeywords" datatype="html">
+        <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-title" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-ddgInfo" datatype="html">
+        <source> Information in accordance with Section 5 of the Digital Services Act (DDG) </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-vatTitle" datatype="html">
+        <source>VAT Identification Number</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-vatId" datatype="html">
+        <source>DE361636567</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-vatNote" datatype="html">
+        <source> (in accordance with Section 27a of the German VAT Act) </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-contentTitle" datatype="html">
+        <source>Content Responsibility</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-contentDesc" datatype="html">
+        <source> Responsible for content in accordance with Section 55, Paragraph 2 of the German Interstate Broadcasting Treaty (RStV): </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-contentResponsibleName" datatype="html">
+        <source>Marcel Menk</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-addressNote" datatype="html">
+        <source>Address as stated above</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-liabilityContentTitle" datatype="html">
+        <source> Liability for Content </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-liabilityContentDesc" datatype="html">
+        <source> As a service provider, we are responsible for our own content on these pages in accordance with general laws. However, according to Article 8 of the Digital Services Act (DSA), as a service provider, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this regard is only possible from the time of knowledge of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-liabilityLinksTitle" datatype="html">
+        <source>Liability for Links</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-liabilityLinksDesc" datatype="html">
+        <source> Our website contains links to external third-party websites, over whose content we have no influence. Therefore, we cannot assume any liability for these external contents. The respective provider or operator of the linked pages is always responsible for the content of the linked pages. The linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognizable at the time of linking. However, a permanent content control of the linked pages is not reasonable without concrete evidence of a legal violation. Upon becoming aware of legal violations, we will remove such links immediately. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-copyrightTitle" datatype="html">
+        <source>Copyright</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-copyrightDesc" datatype="html">
+        <source> The content and works created by the site operators on these pages are subject to German copyright law. The reproduction, processing, distribution and any kind of exploitation outside the limits of copyright require the written consent of the respective author or creator. Downloads and copies of this site are only permitted for private, non-commercial use. Insofar as the content on this site was not created by the operator, the copyrights of third parties are observed. In particular, third-party content is identified as such. Should you nevertheless become aware of a copyright infringement, please inform us accordingly. Upon becoming aware of legal violations, we will remove such content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-metaTitle" datatype="html">
+        <source>Agenstra - Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-metaDescription" datatype="html">
+        <source>Agenstra is a platform for managing distributed AI agent infrastructure. This is the legal disclosure for the platform.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDisclosure-metaKeywords" datatype="html">
+        <source>Agenstra, legal disclosure, platform, distributed AI agent infrastructure</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-title" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-gdprInfo" datatype="html">
+        <source> Information in accordance with Section 13 of the GDPR </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-lastUpdated" datatype="html">
+        <source> Last updated: January 1, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-collectionTitle" datatype="html">
+        <source> Collection of General Information </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-collectionDesc" datatype="html">
+        <source> When you access our website, information of a general nature is automatically collected. This information (server log files) includes, for example, the type of web browser, the operating system used, the domain name of your Internet service provider, and similar information. This is exclusively information that does not allow any conclusions to be drawn about your person. This information is technically necessary to correctly deliver the content of websites requested by you and is mandatory when using the Internet. Anonymous information of this kind is statistically evaluated by us to optimize our Internet presence and the technology behind it. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-personalizedTitle" datatype="html">
+        <source>Personalized Services</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-personalizedDesc" datatype="html">
+        <source> When registering to use our personalized services, some personal data is collected, such as name, address, contact and communication data such as telephone number and email address. If you are registered with us, you can access content and services that we only offer to registered users. Registered users also have the option to change or delete the data provided during registration at any time if necessary. Of course, we will also provide you with information about the personal data we have stored about you at any time. We will be happy to correct or delete this data at your request, provided there are no legal retention obligations to the contrary. To contact us in this regard, please use the contact details provided at the end of this privacy policy. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-sslTitle" datatype="html">
+        <source>SSL Encryption</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-sslDesc" datatype="html">
+        <source> To protect the security of your data during transmission, we use state-of-the-art encryption methods (e.g., SSL) over HTTPS. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-emailTitle" datatype="html">
+        <source>Contact via Email</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-emailDesc" datatype="html">
+        <source> If you contact us by email or contact form, the information you provide will be stored for the purpose of processing your inquiry and for possible follow-up questions. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-rightsTitle" datatype="html">
+        <source> Right to Information, Correction, Blocking, Deletion, and Objection </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-rightsDesc1" datatype="html">
+        <source> You have the right to receive information about your personal data stored by us at any time. You also have the right to correction, blocking or, apart from the prescribed data storage for business processing, deletion of your personal data. Please contact our data protection officer for this purpose. You can find the contact details at the very bottom. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-rightsDesc2" datatype="html">
+        <source> For a data block to be taken into account at any time, this data must be kept in a lock file for control purposes. You can also request the deletion of the data, provided there is no legal archiving obligation. If such an obligation exists, we will block your data upon request. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-rightsDesc3" datatype="html">
+        <source> You can make changes or revoke consent by sending us a corresponding notification with effect for the future. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cookiesTitle" datatype="html">
+        <source>Cookies</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cookiesDesc1" datatype="html">
+        <source> Like many other websites, we also use so-called &quot;cookies&quot;. Cookies are small text files that are transferred from a website server to your hard drive. This automatically gives us certain data such as IP address, browser used, operating system about your computer and your connection to the Internet. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cookiesDesc2" datatype="html">
+        <source> Cookies cannot be used to launch programs or transfer viruses to a computer. Based on the information contained in cookies, we can make navigation easier for you and enable the correct display of our websites. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cookiesDesc3" datatype="html">
+        <source> Under no circumstances will the data we collect be passed on to third parties or linked to personal data without your consent. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cookiesDesc4" datatype="html">
+        <source> Of course, you can generally view our website without cookies. Internet browsers are regularly set to accept cookies. You can deactivate the use of cookies at any time via the settings of your browser. Please use the help functions of your Internet browser to find out how to change these settings. Please note that some functions of our website may not work if you have deactivated the use of cookies. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-newsletterTitle" datatype="html">
+        <source>Newsletter</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-newsletterDesc" datatype="html">
+        <source> For sending our newsletter, we use the open-source software Listmonk, which we operate independently on our servers within the European Union. No personal data is passed on to third parties. As part of the newsletter dispatch, we process in particular your email address as well as any other voluntarily provided information (e.g., name or preferences). The processing is carried out exclusively for the purpose of sending and analyzing our newsletter on the basis of your consent in accordance with Art. 6 para. 1 lit. a GDPR. You can revoke your consent at any time with effect for the future, e.g., via the unsubscribe link in the newsletter or by sending us a message. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-liveChatTitle" datatype="html">
+        <source> Live Chat and Support Communication </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-liveChatDesc" datatype="html">
+        <source> For processing support requests and providing a live chat on our website, we use the open-source software Chatwoot, which we operate ourselves on servers within the European Union. The data you provide in the chat, such as name, email address, and the content of the communication, are processed. The processing serves to efficiently process your request and is based on Art. 6 para. 1 lit. b GDPR (fulfillment of a contract or pre-contractual measures) or on the basis of our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in user-friendly and fast customer communication. Your data will not be passed on to third parties. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-gtmTitle" datatype="html">
+        <source>Google Tag Manager</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-gtmDesc" datatype="html">
+        <source> We use Google Tag Manager, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland. Google Tag Manager is used to manage website tags via an interface. The tool itself (which implements the tags) does not process any personal data of users. Google Tag Manager only triggers other tags, which in turn may collect data. Google only receives information about the use of the Tag Manager itself. Further information can be found in Google&apos;s privacy policy at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in an efficient and technically flawless integration of analysis and marketing services. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cloudflareCdnTitle" datatype="html">
+        <source>Cloudflare CDN</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cloudflareCdnDesc" datatype="html">
+        <source> We use the Content Delivery Network (CDN) of Cloudflare Germany GmbH, Rosental 7, c/o Mindspace, 80331 Munich, Germany (Cloudflare), to increase the security and delivery speed of our website. This corresponds to our legitimate interest (Art. 6 para. 1 lit. f GDPR). A CDN is a network of servers distributed worldwide that is able to deliver optimized content to website users. For this purpose, personal data may be processed in server log files by Cloudflare. Cloudflare is a recipient of your personal data and acts as a processor for us. Further information on objection and removal options against Cloudflare can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/resources/assets/slt3lc6tev37/1M1j5uuFDuLTYiZJJDPBag/770322411bcac7f8bcc350e31b1e8319/Customer_DPA_v.3_1_-_de-de_19_Oct_2020.pdf&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>Cloudflare DPA<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-plausibleTitle" datatype="html">
+        <source>Plausible Analytics</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-plausibleDesc" datatype="html">
+        <source> We use Plausible Analytics, a self-hosted open-source web analytics service running on our own EU-based infrastructure. Plausible collects aggregated, anonymized usage statistics about our website. It does not use cookies, local storage, or any persistent identifiers. Only anonymized data such as page views, referrers, approximate geographic location (country/region), device type, and browser information is processed. No individual user profiles or cross-site tracking occurs. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in understanding and improving the website experience for all visitors. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cloudflareAnalyticsTitle" datatype="html">
+        <source>Cloudflare Analytics</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-cloudflareAnalyticsDesc" datatype="html">
+        <source> We use Cloudflare Analytics, a service of Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA (EU representative: Cloudflare Ireland Limited, 5th Floor, One Albert Quay, Cork, Ireland). Cloudflare Analytics is only activated after explicit user consent. It collects aggregated website traffic data such as page views, unique visitors, referrers, and performance metrics. Data is processed in accordance with Cloudflare&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/privacypolicy/&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.cloudflare.com/privacypolicy/<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-gaTitle" datatype="html">
+        <source>Google Analytics</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-gaDesc" datatype="html">
+        <source> We use Google Analytics, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland (US parent: Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA). Google Analytics is only activated after explicit user consent. It collects data on website usage including page views, sessions, user behavior, and demographics for optimization purposes. IP addresses are anonymized, and data is processed in accordance with Google&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-mailgunTitle" datatype="html">
+        <source>Mailgun</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-mailgunDesc" datatype="html">
+        <source> For sending system-related emails (e.g., confirmation, notification, or transaction emails), we use the &quot;Mailgun&quot; service of the provider Mailgun Technologies, Inc., 112 E Pecan St. #1135, San Antonio, TX 78205, USA. The sending takes place via server locations within the European Union. Mailgun acts as a processor in accordance with Art. 28 GDPR. A corresponding data processing agreement has been concluded with Mailgun, which ensures compliance with European data protection standards. The processing includes in particular email addresses as well as the content of the sent emails. Further information on data processing by Mailgun can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.mailgun.com/de/legal/privacy-policy&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.mailgun.com/de/legal/privacy-policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-changesTitle" datatype="html">
+        <source>Changes</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-changesDesc" datatype="html">
+        <source> We reserve the right to occasionally adapt this privacy policy so that it always complies with current legal requirements or to implement changes to our services in the privacy policy, e.g., when introducing new services. The new privacy policy will then apply to your next visit. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-metaTitle" datatype="html">
+        <source>Agenstra - Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-metaDescription" datatype="html">
+        <source>Agenstra is a platform for managing distributed AI agent infrastructure. This is the privacy policy for the platform.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-metaKeywords" datatype="html">
+        <source>Agenstra, privacy policy, platform, distributed AI agent infrastructure</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

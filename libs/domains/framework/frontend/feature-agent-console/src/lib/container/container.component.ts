@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
-import { combineLatest, map } from 'rxjs';
+import { LocaleService } from '@forepath/framework/frontend/util-configuration';
+import { combineLatest, filter, map, startWith } from 'rxjs';
 import { StandaloneLoadingService } from '../standalone-loading.service';
 import { ThemeService } from '../theme.service';
 
@@ -17,8 +18,29 @@ import { ThemeService } from '../theme.service';
 export class AgentConsoleContainerComponent implements OnInit {
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
   protected readonly themeService = inject(ThemeService);
+  protected readonly localeService = inject(LocaleService);
+
+  /**
+   * True when on the main clients mask (not editor, deployments, etc.)
+   */
+  readonly isMainMask = toSignal(
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        map(() => this.router.url),
+        startWith(this.router.url),
+      )
+      .pipe(map((url) => url.includes('/clients') && !url.includes('/editor') && !url.includes('/deployments'))),
+    {
+      initialValue:
+        this.router.url.includes('/clients') &&
+        !this.router.url.includes('/editor') &&
+        !this.router.url.includes('/deployments'),
+    },
+  );
 
   /**
    * Observable indicating whether the user is authenticated
@@ -57,6 +79,10 @@ export class AgentConsoleContainerComponent implements OnInit {
    * Signal indicating if standalone loading spinner should be shown
    */
   readonly showStandaloneLoading = this.standaloneLoadingService.isLoading;
+
+  getRoleAriaLabel(role: string): string {
+    return $localize`:@@featureContainer-ariaLabelRole:Role ${role}:role:`;
+  }
 
   /**
    * Initialize component and check authentication status

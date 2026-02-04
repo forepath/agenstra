@@ -3,19 +3,27 @@
     class="git-diff-viewer-header p-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center"
   >
     <div class="d-flex align-items-center gap-2">
-      <h6 class="mb-0 fw-semibold"><i class="bi bi-file-diff me-2"></i>File Diff</h6>
+      <h6 class="mb-0 fw-semibold">
+        <i class="bi bi-file-diff me-2"></i><span i18n="@@featureGitDiffViewer-header">File Diff</span>
+      </h6>
       @if (filePath()) {
         <span class="text-muted small">{{ filePath() }}</span>
       }
     </div>
-    <button type="button" class="btn btn-sm btn-close" (click)="onClose()" aria-label="Close"></button>
+    <button
+      type="button"
+      class="btn btn-sm btn-close"
+      (click)="onClose()"
+      i18n-aria-label="@@featureGitDiffViewer-closeAriaLabel"
+      aria-label="Close"
+    ></button>
   </div>
 
   <div class="git-diff-viewer-content flex-grow-1 position-relative">
     @if (loading()) {
       <div class="d-flex justify-content-center align-items-center h-100">
         <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden">Loading diff...</span>
+          <span class="visually-hidden" i18n="@@featureGitDiffViewer-loadingDiff">Loading diff...</span>
         </div>
       </div>
     } @else if (error()) {

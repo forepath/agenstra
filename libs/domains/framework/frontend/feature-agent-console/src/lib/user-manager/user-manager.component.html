@@ -5,11 +5,17 @@
         class="brand-icon-container me-2 fs-3 bg-primary p-3"
         style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
       >
-        <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
+        <img
+          src="assets/images/icon_light.svg"
+          alt="Agenstra"
+          i18n-alt="@@featureUserManager-brandAlt"
+          class="brand-icon"
+        />
       </div>
-      <span class="fw-bold text-uppercase">Agenstra</span>
+      <span class="fw-bold text-uppercase" i18n="@@featureUserManager-appName">Agenstra</span>
       <span
         class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge"
+        i18n="@@featureUserManager-adminConsole"
         >Admin Console</span
       >
     </div>
@@ -17,16 +23,17 @@
 </div>
 <div class="user-manager-container d-flex flex-column h-100">
   <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold">User Management</h5>
+    <h5 class="mb-0 fw-semibold" i18n="@@featureUserManager-title">User Management</h5>
     <button
       type="button"
       class="btn btn-sm btn-primary"
       (click)="onAddUser()"
       [disabled]="(creatingUser$ | async) === true"
+      i18n-title="@@featureUserManager-addUserTitle"
       title="Add user"
     >
-      <i class="bi bi-plus-circle"></i>
-      Add User
+      <i class="bi bi-plus-circle me-1"></i>
+      <span i18n="@@featureUserManager-addUser">Add User</span>
     </button>
   </div>
 
@@ -34,7 +41,7 @@
     @if (usersLoading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
         <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading users...</span>
+          <span class="visually-hidden" i18n="@@featureUserManager-loadingUsers">Loading users...</span>
         </div>
       </div>
     } @else {
@@ -48,7 +55,7 @@
         <div class="d-flex justify-content-center align-items-center p-4">
           <div class="text-center text-muted">
             <i class="bi bi-people fs-1 d-block mb-2"></i>
-            <p class="mb-0">No other users found</p>
+            <p class="mb-0" i18n="@@featureUserManager-noOtherUsers">No other users found</p>
           </div>
         </div>
       } @else {
@@ -61,19 +68,37 @@
                   <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
                     <span class="badge bg-secondary me-1">{{ user.role }}</span>
                     @if (user.emailConfirmedAt) {
-                      <span class="text-success"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
+                      <span class="text-success"
+                        ><i class="bi bi-check-circle me-1"></i
+                        ><ng-container i18n="@@featureUserManager-confirmed">Confirmed</ng-container></span
+                      >
                     } @else {
-                      <span class="text-warning"><i class="bi bi-clock me-1"></i>Pending</span>
+                      <span class="text-warning"
+                        ><i class="bi bi-clock me-1"></i
+                        ><ng-container i18n="@@featureUserManager-pending">Pending</ng-container></span
+                      >
                     }
                   </div>
                   {{ formatDate(user.createdAt) }}
                 </div>
               </div>
               <div class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-outline-primary" (click)="onEditUser(user)" title="Edit user">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="onEditUser(user)"
+                  i18n-title="@@featureUserManager-editUserButtonTitle"
+                  title="Edit user"
+                >
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button type="button" class="btn btn-outline-danger" (click)="onDeleteUser(user)" title="Delete user">
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="onDeleteUser(user)"
+                  i18n-title="@@featureUserManager-deleteUserButtonTitle"
+                  title="Delete user"
+                >
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -97,12 +122,13 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="createUserModalLabel">Create User</h5>
+        <h5 class="modal-title" id="createUserModalLabel" i18n="@@featureUserManager-createUserTitle">Create User</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
           (click)="cancelCreateUser()"
+          i18n-aria-label="@@featureUserManager-closeAriaLabel"
           aria-label="Close"
           [disabled]="(creatingUser$ | async) === true"
         ></button>
@@ -110,7 +136,9 @@
       <form (ngSubmit)="onSubmitCreateUser()">
         <div class="modal-body">
           <div class="mb-3">
-            <label for="createUserEmail" class="form-label">Email <span class="text-danger">*</span></label>
+            <label for="createUserEmail" class="form-label" i18n="@@featureUserManager-emailLabel"
+              >Email <span class="text-danger">*</span></label
+            >
             <input
               type="email"
               class="form-control"
@@ -119,11 +147,14 @@
               name="email"
               required
               placeholder="user@example.com"
+              i18n-placeholder="@@featureUserManager-emailPlaceholder"
               [disabled]="(creatingUser$ | async) === true"
             />
           </div>
           <div class="mb-3">
-            <label for="createUserPassword" class="form-label">Password <span class="text-danger">*</span></label>
+            <label for="createUserPassword" class="form-label" i18n="@@featureUserManager-passwordLabel"
+              >Password <span class="text-danger">*</span></label
+            >
             <input
               type="password"
               class="form-control"
@@ -133,11 +164,12 @@
               required
               minlength="8"
               placeholder="Min. 8 characters"
+              i18n-placeholder="@@featureUserManager-passwordPlaceholder"
               [disabled]="(creatingUser$ | async) === true"
             />
           </div>
           <div class="mb-3">
-            <label for="createUserRole" class="form-label">Role</label>
+            <label for="createUserRole" class="form-label" i18n="@@featureUserManager-roleLabel">Role</label>
             <select
               class="form-select"
               id="createUserRole"
@@ -145,8 +177,8 @@
               name="role"
               [disabled]="(creatingUser$ | async) === true"
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="user" i18n="@@featureUserManager-roleUser">User</option>
+              <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
             </select>
           </div>
         </div>
@@ -157,6 +189,7 @@
             data-bs-dismiss="modal"
             (click)="cancelCreateUser()"
             [disabled]="(creatingUser$ | async) === true"
+            i18n="@@featureUserManager-cancel"
           >
             Cancel
           </button>
@@ -173,7 +206,7 @@
             @if (creatingUser$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            Create
+            <span i18n="@@featureUserManager-create">Create</span>
           </button>
         </div>
       </form>
@@ -193,12 +226,13 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+        <h5 class="modal-title" id="editUserModalLabel" i18n="@@featureUserManager-editUserModalTitle">Edit User</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
           (click)="cancelEditUser()"
+          i18n-aria-label="@@featureUserManager-closeAriaLabel"
           aria-label="Close"
           [disabled]="(updatingUser$ | async) === true"
         ></button>
@@ -206,7 +240,9 @@
       <form (ngSubmit)="onSubmitEditUser()">
         <div class="modal-body">
           <div class="mb-3">
-            <label for="editUserEmail" class="form-label">Email <span class="text-danger">*</span></label>
+            <label for="editUserEmail" class="form-label" i18n="@@featureUserManager-emailLabel"
+              >Email <span class="text-danger">*</span></label
+            >
             <input
               type="email"
               class="form-control"
@@ -215,11 +251,14 @@
               name="email"
               required
               placeholder="user@example.com"
+              i18n-placeholder="@@featureUserManager-emailPlaceholder"
               [disabled]="(updatingUser$ | async) === true"
             />
           </div>
           <div class="mb-3">
-            <label for="editUserPassword" class="form-label">New Password</label>
+            <label for="editUserPassword" class="form-label" i18n="@@featureUserManager-newPasswordLabel"
+              >New Password</label
+            >
             <input
               type="password"
               class="form-control"
@@ -228,12 +267,15 @@
               name="password"
               minlength="8"
               placeholder="Leave empty to keep current"
+              i18n-placeholder="@@featureUserManager-passwordKeepCurrentPlaceholder"
               [disabled]="(updatingUser$ | async) === true"
             />
-            <small class="form-text text-muted">Leave empty to keep the current password</small>
+            <small class="form-text text-muted" i18n="@@featureUserManager-passwordKeepCurrentHint"
+              >Leave empty to keep the current password</small
+            >
           </div>
           <div class="mb-3">
-            <label for="editUserRole" class="form-label">Role</label>
+            <label for="editUserRole" class="form-label" i18n="@@featureUserManager-roleLabel">Role</label>
             <select
               class="form-select"
               id="editUserRole"
@@ -241,8 +283,8 @@
               name="role"
               [disabled]="(updatingUser$ | async) === true"
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="user" i18n="@@featureUserManager-roleUser">User</option>
+              <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
             </select>
           </div>
         </div>
@@ -253,6 +295,7 @@
             data-bs-dismiss="modal"
             (click)="cancelEditUser()"
             [disabled]="(updatingUser$ | async) === true"
+            i18n="@@featureUserManager-cancel"
           >
             Cancel
           </button>
@@ -264,7 +307,7 @@
             @if (updatingUser$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            Update
+            <span i18n="@@featureUserManager-update">Update</span>
           </button>
         </div>
       </form>
@@ -284,26 +327,29 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+        <h5 class="modal-title" id="deleteUserModalLabel" i18n="@@featureUserManager-deleteUserModalTitle">
+          Delete User
+        </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
           (click)="cancelDeleteUser()"
+          i18n-aria-label="@@featureUserManager-closeAriaLabel"
           aria-label="Close"
           [disabled]="(deletingUser$ | async) === true"
         ></button>
       </div>
       <div class="modal-body">
         @if (userToDelete) {
-          <p>
+          <p i18n="@@featureUserManager-deleteUserConfirm">
             Are you sure you want to delete the user <strong>{{ userToDelete.email }}</strong
             >?
           </p>
         }
         <p class="text-danger mb-0">
           <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          This action cannot be undone.
+          <span i18n="@@featureUserManager-cannotUndo">This action cannot be undone.</span>
         </p>
       </div>
       <div class="modal-footer">
@@ -313,6 +359,7 @@
           data-bs-dismiss="modal"
           (click)="cancelDeleteUser()"
           [disabled]="(deletingUser$ | async) === true"
+          i18n="@@featureUserManager-cancel"
         >
           Cancel
         </button>
@@ -325,7 +372,7 @@
           @if (deletingUser$ | async) {
             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
           }
-          Delete
+          <span i18n="@@featureUserManager-delete">Delete</span>
         </button>
       </div>
     </div>

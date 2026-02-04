@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, inject, OnDestroy, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
+import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { NavigationNode } from '@forepath/framework/frontend/util-docs-parser';
 import { DocsNavigationService, ThemeService } from '../../services';
 import { DocsNavigationComponent } from '../docs-navigation/docs-navigation.component';
@@ -17,6 +18,7 @@ import { DocsSearchComponent } from '../docs-search/docs-search.component';
 export class DocsLayoutComponent implements AfterViewInit, OnDestroy {
   private readonly navigationService = inject(DocsNavigationService);
   protected readonly themeService = inject(ThemeService);
+  protected readonly localeService = inject(LocaleService);
 
   /**
    * Whether we're on a mobile device (width <= 767.98px, Bootstrap md breakpoint)

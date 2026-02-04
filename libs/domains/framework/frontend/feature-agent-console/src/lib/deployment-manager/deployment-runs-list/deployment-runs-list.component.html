@@ -2,7 +2,7 @@
   @if (loadingRuns$ | async) {
     <div class="d-flex justify-content-center align-items-center p-4">
       <div class="spinner-border spinner-border-sm text-primary" role="status">
-        <span class="visually-hidden">Loading runs...</span>
+        <span class="visually-hidden" i18n="@@featureDeploymentRunsList-loadingRuns">Loading runs...</span>
       </div>
     </div>
   } @else {
@@ -12,6 +12,7 @@
         <input
           type="text"
           class="form-control border-0 search-input"
+          i18n-placeholder="@@featureDeploymentRunsList-searchPlaceholder"
           placeholder="Search deployment runs"
           name="search"
           [(ngModel)]="searchRunsQuery"
@@ -24,7 +25,7 @@
         <div class="d-flex justify-content-center align-items-center p-4">
           <div class="text-center text-muted">
             <i class="bi bi-inbox fs-4 d-block mb-2"></i>
-            <p class="mb-0 small">No deployment runs found</p>
+            <p class="mb-0 small" i18n="@@featureDeploymentRunsList-noRunsFound">No deployment runs found</p>
           </div>
         </div>
       } @else {
@@ -41,7 +42,7 @@
               >
                 <div class="d-flex flex-column">
                   <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong class="text-truncate me-2">{{ run.runName || 'Untitled Run' }}</strong>
+                    <strong class="text-truncate me-2">{{ getRunDisplayName(run.runName) }}</strong>
                     <span class="badge" [ngClass]="getStatusBadgeClass(run.status)" [title]="run.status">
                       <i class="bi" [ngClass]="getStatusIcon(run.status)"></i>
                       {{ run.status }}

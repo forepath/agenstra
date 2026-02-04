@@ -5,7 +5,7 @@
     style="z-index: 9999"
   >
     <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem">
-      <span class="visually-hidden">Loading file...</span>
+      <span class="visually-hidden" i18n="@@featureContainer-loadingFile">Loading file...</span>
     </div>
   </div>
 }
@@ -14,29 +14,41 @@
   <section class="bg-dark text-white d-flex align-items-center justify-content-between gap-2">
     <div class="d-flex align-items-center gap-3">
       <div class="brand-icon-container me-2 fs-3 bg-primary p-3">
-        <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
+        <img
+          src="assets/images/icon_light.svg"
+          alt="Agenstra"
+          i18n-alt="@@featureContainer-brandAlt"
+          class="brand-icon"
+        />
       </div>
-      @if (canAccessUserManager$ | async) {
-        <button
-          type="button"
-          class="btn btn-link text-white text-decoration-none d-flex align-items-center gap-1"
-          (click)="onOpenUserManagerInNewWindow()"
-          title="User Management (opens in new window)"
-        >
-          <i class="bi bi-people me-1"></i>
-          <span class="small">Users</span>
-        </button>
-      }
     </div>
     <div class="d-flex align-items-center gap-2">
-      @if (userRoleDisplay$ | async; as role) {
-        <span
-          class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge me-3"
-          [attr.aria-label]="'Role: ' + role"
+      <!-- Language Switcher -->
+      <div class="dropdown me-1">
+        <button
+          class="btn btn-link text-white text-decoration-none p-2 dropdown-toggle"
+          type="button"
+          id="languageDropdown"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          i18n-aria-label="@@featureContainer-languageSwitcherAriaLabel"
+          aria-label="Select language"
         >
-          {{ role }}
-        </span>
-      }
+          <i class="bi bi-globe"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+          @for (locale of localeService.getAvailableLocales(); track locale.code) {
+            <li>
+              <a
+                class="dropdown-item"
+                [class.active]="localeService.getCurrentLocale() === locale.code"
+                [href]="localeService.getLanguageSwitchUrl(locale.code)"
+                >{{ locale.label }}</a
+              >
+            </li>
+          }
+        </ul>
+      </div>
       <!-- Dark Mode Toggle -->
       <div class="form-check form-switch me-3 mb-0">
         <input
@@ -47,7 +59,12 @@
           [checked]="themeService.isDarkMode()"
           (change)="themeService.toggleTheme()"
         />
-        <label class="form-check-label text-white" for="darkModeToggle" title="Toggle dark mode">
+        <label
+          class="form-check-label text-white"
+          for="darkModeToggle"
+          i18n-title="@@featureContainer-toggleDarkMode"
+          title="Toggle dark mode"
+        >
           <i
             class="bi"
             [class.bi-moon-fill]="!themeService.isDarkMode()"
@@ -56,13 +73,38 @@
         </label>
       </div>
       @if (isAuthenticated$ | async) {
-        <button class="btn btn-primary me-3" (click)="onLogout()">Logout</button>
+        <button class="btn btn-primary me-3" (click)="onLogout()" i18n="@@featureContainer-logout">Logout</button>
       }
     </div>
   </section>
 } @else {
-  <!-- Dark Mode Toggle for Standalone Mode -->
+  <!-- Language Switcher and Dark Mode Toggle for Standalone Mode -->
   <section class="d-flex align-items-center justify-content-end gap-2 p-2 bg-dark text-white">
+    <div class="dropdown">
+      <button
+        class="btn btn-link text-white text-decoration-none p-2 dropdown-toggle"
+        type="button"
+        id="languageDropdownStandalone"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        i18n-aria-label="@@featureContainer-languageSwitcherAriaLabel"
+        aria-label="Select language"
+      >
+        <i class="bi bi-globe"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdownStandalone">
+        @for (locale of localeService.getAvailableLocales(); track locale.code) {
+          <li>
+            <a
+              class="dropdown-item"
+              [class.active]="localeService.getCurrentLocale() === locale.code"
+              [href]="localeService.getLanguageSwitchUrl(locale.code)"
+              >{{ locale.label }}</a
+            >
+          </li>
+        }
+      </ul>
+    </div>
     <div class="form-check form-switch mb-0">
       <input
         class="form-check-input"
@@ -72,7 +114,12 @@
         [checked]="themeService.isDarkMode()"
         (change)="themeService.toggleTheme()"
       />
-      <label class="form-check-label" for="darkModeToggleStandalone" title="Toggle dark mode">
+      <label
+        class="form-check-label"
+        for="darkModeToggleStandalone"
+        i18n-title="@@featureContainer-toggleDarkMode"
+        title="Toggle dark mode"
+      >
         <i
           class="bi"
           [class.bi-moon-fill]="!themeService.isDarkMode()"
@@ -82,6 +129,24 @@
     </div>
   </section>
 }
-<section class="section__container">
-  <router-outlet></router-outlet>
-</section>
+<div class="d-flex justify-content-end flex-grow-1 overflow-hidden">
+  @if (isMainMask()) {
+    @if (canAccessUserManager$ | async) {
+      <aside class="sidebar bg-body-tertiary h-100">
+        <button
+          type="button"
+          class="sidebar__item"
+          (click)="onOpenUserManagerInNewWindow()"
+          i18n-title="@@featureContainer-userManagementTitle"
+          title="User Management (opens in new window)"
+        >
+          <i class="bi bi-people me-1"></i>
+          <span class="small" i18n="@@featureContainer-users">Users</span>
+        </button>
+      </aside>
+    }
+  }
+  <section class="section__container">
+    <router-outlet></router-outlet>
+  </section>
+</div>

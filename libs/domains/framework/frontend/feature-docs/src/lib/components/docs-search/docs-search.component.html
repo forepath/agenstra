@@ -4,6 +4,7 @@
       <input
         type="text"
         class="form-control"
+        i18n-placeholder="@@featureDocsSearch-searchPlaceholder"
         placeholder="Search documentation..."
         [value]="searchQuery()"
         (input)="onSearchInput($event)"
@@ -36,14 +37,21 @@
         }
       </div>
       <div class="search-results-footer">
-        <button type="button" class="btn btn-link btn-sm" (click)="onSearchClick()">View all results</button>
+        <button
+          type="button"
+          class="btn btn-link btn-sm"
+          (click)="onSearchClick()"
+          i18n="@@featureDocsSearch-viewAllResults"
+        >
+          View all results
+        </button>
       </div>
     </div>
   } @else if (showResults() && searchQuery().trim().length > 0) {
     <div class="search-results-dropdown">
       <div class="list-group">
         <div class="list-group-item text-center text-muted">
-          <small>No results found</small>
+          <small i18n="@@featureDocsSearch-noResults">No results found</small>
         </div>
       </div>
     </div>

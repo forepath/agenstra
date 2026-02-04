@@ -3,7 +3,7 @@
   <div class="monaco-editor-container d-flex flex-column h-100">
     <div class="preview-section d-flex flex-column h-100 w-100">
       <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
-        <span class="small fw-semibold">Image Preview</span>
+        <span class="small fw-semibold" i18n="@@featureMonacoEditor-imagePreview">Image Preview</span>
       </div>
       <div class="preview-content flex-grow-1 p-3 overflow-auto">
         @if (imagePreviewUrl(); as imageUrl) {
@@ -23,7 +23,7 @@
   <div class="d-flex align-items-center justify-content-center h-100 bg-body-secondary">
     <div class="text-center text-muted p-4">
       <i class="bi bi-file-binary fs-1 d-block mb-3"></i>
-      <p class="mb-0">Binary file - cannot edit</p>
+      <p class="mb-0" i18n="@@featureMonacoEditor-binaryFileMessage">Binary file - cannot edit</p>
       <small class="text-muted">{{ filePath() }}</small>
     </div>
   </div>
@@ -32,7 +32,10 @@
     @if (isDirty() && !autosaveEnabled()) {
       <div class="editor-status-bar bg-warning text-dark px-3 py-1 small">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <span class="fw-bold me-1">Unsaved changes</span> Switching files will discard any unsaved changes!
+        <span class="fw-bold me-1" i18n="@@featureMonacoEditor-unsavedChanges">Unsaved changes</span>
+        <span i18n="@@featureMonacoEditor-switchingFilesWarning"
+          >Switching files will discard any unsaved changes!</span
+        >
       </div>
     }
     <div class="editor-preview-wrapper d-flex flex-grow-1" [class.preview-active]="previewVisible()">
@@ -53,6 +56,7 @@
               [disabled]="isBinary()"
               data-bs-toggle="tooltip"
               data-bs-placement="bottom"
+              i18n-title="@@featureMonacoEditor-undoTitle"
               title="Undo (Ctrl+Z)"
             >
               <i class="bi bi-arrow-counterclockwise"></i>
@@ -64,6 +68,7 @@
               [disabled]="isBinary()"
               data-bs-toggle="tooltip"
               data-bs-placement="bottom"
+              i18n-title="@@featureMonacoEditor-redoTitle"
               title="Redo (Ctrl+Y)"
             >
               <i class="bi bi-arrow-clockwise"></i>
@@ -76,6 +81,7 @@
               [class.btn-outline-secondary]="!previewVisible()"
               [class.btn-secondary]="previewVisible()"
               (click)="togglePreview()"
+              i18n-title="@@featureMonacoEditor-togglePreviewTitle"
               title="Toggle preview"
             >
               <i class="bi bi-search"></i>
@@ -94,11 +100,12 @@
           <div
             class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary"
           >
-            <span class="small fw-semibold">Preview</span>
+            <span class="small fw-semibold" i18n="@@featureMonacoEditor-preview">Preview</span>
             <button
               type="button"
               class="btn btn-sm btn-close"
               (click)="closePreview()"
+              i18n-aria-label="@@featureMonacoEditor-closePreviewAriaLabel"
               aria-label="Close preview"
             ></button>
           </div>

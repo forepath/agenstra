@@ -2,14 +2,16 @@
   @if (loadingRunStatus() && !hasLoadedOnce()) {
     <div class="d-flex justify-content-center align-items-center p-4">
       <div class="spinner-border spinner-border-sm text-primary" role="status">
-        <span class="visually-hidden">Loading run details...</span>
+        <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingRunDetails"
+          >Loading run details...</span
+        >
       </div>
     </div>
   } @else if (currentRunStatus()) {
     <!-- Run Status -->
     <div class="p-3 border-bottom">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h6 class="mb-0 fw-semibold">{{ currentRunStatus()!.runName || 'Untitled Run' }}</h6>
+        <h6 class="mb-0 fw-semibold">{{ getRunDisplayName(currentRunStatus()!.runName) }}</h6>
         <span
           class="badge"
           [ngClass]="getStatusBadgeClass(currentRunStatus()!.status)"
@@ -20,7 +22,7 @@
         </span>
       </div>
       <dl class="row mb-0 small">
-        <dt class="col-sm-4">Branch</dt>
+        <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-branchLabel">Branch</dt>
         <dd class="col-sm-8">
           <code>{{ currentRunStatus()!.ref }}</code>
         </dd>
@@ -28,10 +30,10 @@
         <dd class="col-sm-8">
           <code class="small">{{ currentRunStatus()!.sha.substring(0, 7) }}</code>
         </dd>
-        <dt class="col-sm-4">Started</dt>
+        <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-startedLabel">Started</dt>
         <dd class="col-sm-8">{{ formatDate(currentRunStatus()!.createdAt) }}</dd>
         @if (currentRunStatus()!.updatedAt) {
-          <dt class="col-sm-4">Updated</dt>
+          <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-updatedLabel">Updated</dt>
           <dd class="col-sm-8">{{ formatDate(currentRunStatus()!.updatedAt) }}</dd>
         }
       </dl>
@@ -48,7 +50,7 @@
             } @else {
               <i class="bi bi-stop-circle me-1"></i>
             }
-            Cancel Run
+            <span i18n="@@featureDeploymentRunDetails-cancelRunButton">Cancel Run</span>
           </button>
         </div>
       }
@@ -58,7 +60,7 @@
     @if (!showRunLogs() && !showJobLogs()) {
       <div class="d-flex flex-column flex-grow-1" style="min-height: 0">
         <div class="p-2 border-bottom bg-body-tertiary d-flex align-items-center justify-content-between flex-shrink-0">
-          <h6 class="mb-0 fw-semibold">Jobs</h6>
+          <h6 class="mb-0 fw-semibold" i18n="@@featureDeploymentRunDetails-jobsHeader">Jobs</h6>
           <button
             type="button"
             class="btn btn-sm btn-outline-primary"
@@ -69,7 +71,7 @@
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             } @else {
               <i class="bi bi-file-text me-1"></i>
-              View Run Logs
+              <span i18n="@@featureDeploymentRunDetails-viewRunLogsButton">View Run Logs</span>
             }
           </button>
         </div>
@@ -77,11 +79,11 @@
           @if (loadingRunJobs$ | async) {
             <div class="d-flex justify-content-center p-2">
               <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden">Loading jobs...</span>
+                <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingJobs">Loading jobs...</span>
               </div>
             </div>
           } @else if (runJobs().length === 0) {
-            <p class="text-muted small mb-0">No jobs available</p>
+            <p class="text-muted small mb-0" i18n="@@featureDeploymentRunDetails-noJobs">No jobs available</p>
           } @else {
             <div class="list-group list-group-flush">
               @for (job of runJobs(); track job.id) {
@@ -94,10 +96,14 @@
                       <span class="fw-semibold">{{ job.name }}</span>
                     </div>
                     @if (job.startedAt) {
-                      <div class="small text-muted">Started: {{ formatDate(job.startedAt) }}</div>
+                      <div class="small text-muted" i18n="@@featureDeploymentRunDetails-startedAt">
+                        Started: {{ formatDate(job.startedAt) }}
+                      </div>
                     }
                     @if (job.completedAt) {
-                      <div class="small text-muted">Completed: {{ formatDate(job.completedAt) }}</div>
+                      <div class="small text-muted" i18n="@@featureDeploymentRunDetails-completedAt">
+                        Completed: {{ formatDate(job.completedAt) }}
+                      </div>
                     }
                   </div>
                   <button
@@ -121,7 +127,7 @@
       <div class="flex-grow-1 d-flex flex-column" style="min-height: 0">
         <div class="p-2 border-bottom bg-body-tertiary d-flex align-items-center justify-content-between">
           <h6 class="mb-0 fw-semibold">
-            {{ showRunLogs() ? 'Run Logs' : 'Job Logs' }}
+            {{ getLogsHeader() }}
             @if (selectedJob()) {
               - {{ selectedJob()!.name }}
             }
@@ -134,7 +140,7 @@
           @if (showRunLogs() && loadingRunLogs()) {
             <div class="d-flex justify-content-center p-4">
               <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden">Loading logs...</span>
+                <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingLogs">Loading logs...</span>
               </div>
             </div>
           } @else if (showRunLogs() && runLogs()) {
@@ -142,13 +148,13 @@
           } @else if (showJobLogs() && loadingJobLogs()) {
             <div class="d-flex justify-content-center p-4">
               <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden">Loading logs...</span>
+                <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingLogs">Loading logs...</span>
               </div>
             </div>
           } @else if (showJobLogs() && jobLogs()) {
             <pre class="log-content mb-0">{{ jobLogs() }}</pre>
           } @else {
-            <p class="text-muted small mb-0">No logs available</p>
+            <p class="text-muted small mb-0" i18n="@@featureDeploymentRunDetails-noLogs">No logs available</p>
           }
         </div>
       </div>
@@ -157,7 +163,7 @@
     <div class="d-flex justify-content-center align-items-center p-4">
       <div class="text-center text-muted">
         <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
-        <p class="mb-0 small">Run not found</p>
+        <p class="mb-0 small" i18n="@@featureDeploymentRunDetails-runNotFound">Run not found</p>
       </div>
     </div>
   }

@@ -458,4 +458,34 @@ export class DeploymentConfigurationComponent {
       }
     }
   }
+
+  getModalTitle(): string {
+    return this.hasConfiguration()
+      ? $localize`:@@featureDeploymentConfig-editModalTitle:Edit Deployment Configuration`
+      : $localize`:@@featureDeploymentConfig-createModalTitle:Create Deployment Configuration`;
+  }
+
+  getTokenLabel(): string {
+    return this.providerType() === 'github'
+      ? $localize`:@@featureDeploymentConfig-githubTokenLabel:GitHub Token`
+      : $localize`:@@featureDeploymentConfig-gitlabTokenLabel:GitLab Token`;
+  }
+
+  getTokenHint(): string {
+    return this.hasConfiguration()
+      ? $localize`:@@featureDeploymentConfig-tokenHintKeepCurrent:Leave empty to keep the current token`
+      : $localize`:@@featureDeploymentConfig-tokenHintRequired:Required for authentication`;
+  }
+
+  getTokenPlaceholder(): string {
+    return this.hasConfiguration()
+      ? $localize`:@@featureDeploymentConfig-tokenPlaceholderKeepCurrent:Leave empty to keep current token`
+      : $localize`:@@featureDeploymentConfig-tokenPlaceholderEnter:Enter token`;
+  }
+
+  getSaveButtonText(): string {
+    return this.hasConfiguration()
+      ? $localize`:@@featureDeploymentConfig-updateButton:Update`
+      : $localize`:@@featureDeploymentConfig-createButton:Create`;
+  }
 }

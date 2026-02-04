@@ -1,8 +1,8 @@
 <section class="section__row">
   <div class="section__column d-flex align-items-center justify-content-center bg-body-tertiary h-100">
     <div class="p-4" style="width: 700px; max-width: 100%">
-      <h1 class="display-5 fw-bold mb-3">Confirm Your Email</h1>
-      <p class="lead mb-4">
+      <h1 class="display-5 fw-bold mb-3" i18n="@@featureConfirmEmail-title">Confirm Your Email</h1>
+      <p class="lead mb-4" i18n="@@featureConfirmEmail-description">
         Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or
         type it in the fields below.
       </p>
@@ -10,13 +10,15 @@
   </div>
   <div class="section__column d-flex align-items-center justify-content-center">
     <div class="p-4" style="width: 500px; max-width: 100%">
-      <h2 class="section__column-title mb-4 text-center">Email Confirmation</h2>
+      <h2 class="section__column-title mb-4 text-center" i18n="@@featureConfirmEmail-formTitle">Email Confirmation</h2>
 
       @if (!isUsersAuth) {
         <div class="alert alert-info" role="alert">
           <i class="bi bi-info-circle-fill me-2"></i>
-          Email confirmation is not available for this authentication method.
-          <a routerLink="/login" class="alert-link">Return to login</a>
+          <ng-container i18n="@@featureConfirmEmail-authNotAvailable"
+            >Email confirmation is not available for this authentication method.</ng-container
+          >
+          <a routerLink="/login" class="alert-link" i18n="@@featureConfirmEmail-returnToLogin">Return to login</a>
         </div>
       } @else {
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
@@ -37,14 +39,14 @@
           @if ((confirmingEmail$ | async) ?? false) {
             <div class="d-flex flex-column align-items-center gap-3">
               <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem">
-                <span class="visually-hidden">Confirming...</span>
+                <span class="visually-hidden" i18n="@@featureConfirmEmail-confirmingA11y">Confirming...</span>
               </div>
-              <p class="text-muted mb-0">Confirming your email address...</p>
+              <p class="text-muted mb-0" i18n="@@featureConfirmEmail-confirming">Confirming your email address...</p>
             </div>
           } @else {
             <!-- Email Input -->
             <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
+              <label for="email" class="form-label" i18n="@@featureConfirmEmail-emailLabel">Email</label>
               <div class="input-group">
                 <span class="input-group-text">
                   <i class="bi bi-envelope-fill"></i>
@@ -56,6 +58,7 @@
                   id="email"
                   formControlName="email"
                   placeholder="Enter your email address"
+                  i18n-placeholder="@@featureConfirmEmail-emailPlaceholder"
                   [disabled]="(confirmingEmail$ | async) ?? false"
                   autocomplete="email"
                 />
@@ -63,9 +66,11 @@
               @if (form.get('email')?.invalid && form.get('email')?.touched) {
                 <div class="invalid-feedback d-block">
                   @if (form.get('email')?.errors?.['required']) {
-                    Email is required.
+                    <ng-container i18n="@@featureConfirmEmail-emailRequired">Email is required.</ng-container>
                   } @else if (form.get('email')?.errors?.['email']) {
-                    Please enter a valid email address.
+                    <ng-container i18n="@@featureConfirmEmail-emailInvalid"
+                      >Please enter a valid email address.</ng-container
+                    >
                   }
                 </div>
               }
@@ -73,7 +78,7 @@
 
             <!-- Confirmation Code Input (6-character OTP) -->
             <div class="mb-3">
-              <label class="form-label">Confirmation Code</label>
+              <label class="form-label" i18n="@@featureConfirmEmail-codeLabel">Confirmation Code</label>
               <framework-agent-console-otp-input
                 formControlName="code"
                 [invalid]="
@@ -91,9 +96,13 @@
               ) {
                 <div class="invalid-feedback d-block">
                   @if (form.get('code')?.errors?.['required']) {
-                    Confirmation code is required.
+                    <ng-container i18n="@@featureConfirmEmail-codeRequired"
+                      >Confirmation code is required.</ng-container
+                    >
                   } @else if (form.get('code')?.errors?.['pattern']) {
-                    Code must be exactly 6 characters (uppercase letters and numbers).
+                    <ng-container i18n="@@featureConfirmEmail-codePattern"
+                      >Code must be exactly 6 characters (uppercase letters and numbers).</ng-container
+                    >
                   }
                 </div>
               }
@@ -107,13 +116,15 @@
                 [disabled]="form.invalid || ((confirmingEmail$ | async) ?? false)"
               >
                 <i class="bi bi-check-circle-fill me-2"></i>
-                <span>Confirm Email</span>
+                <span i18n="@@featureConfirmEmail-submit">Confirm Email</span>
               </button>
             </div>
           }
 
           <div class="mt-4 text-center">
-            <a routerLink="/login" class="text-decoration-none small">Back to login</a>
+            <a routerLink="/login" class="text-decoration-none small" i18n="@@featureConfirmEmail-backToLogin"
+              >Back to login</a
+            >
           </div>
         </form>
       }

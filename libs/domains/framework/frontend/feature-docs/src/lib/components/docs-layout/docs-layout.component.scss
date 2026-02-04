@@ -85,3 +85,9 @@
     }
   }
 }
+
+#languageDropdown {
+  &:after {
+    display: none;
+  }
+}

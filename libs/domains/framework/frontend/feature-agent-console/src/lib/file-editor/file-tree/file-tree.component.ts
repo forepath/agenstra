@@ -1278,6 +1278,93 @@ export class FileTreeComponent implements OnInit {
     return Array.from({ length: level }, (_, i) => i);
   }
 
+  getCreateItemPlaceholder(): string {
+    const item = this.creatingItem();
+    if (!item) return '';
+    return item.type === 'file'
+      ? $localize`:@@featureFileTree-enterFileName:Enter file name...`
+      : $localize`:@@featureFileTree-enterFolderName:Enter folder name...`;
+  }
+
+  getStatusIndicatorTitle(indicator: string): string {
+    switch (indicator) {
+      case 'clean':
+        return $localize`:@@featureFileTree-statusClean:In sync with remote - Click to open Version Control`;
+      case 'changes':
+        return $localize`:@@featureFileTree-statusChanges:Local changes (staged, unstaged, or unpushed) - Click to open Version Control`;
+      case 'conflict':
+        return $localize`:@@featureFileTree-statusConflict:Merge conflicts detected - Click to open Version Control`;
+      default:
+        return '';
+    }
+  }
+
+  getCurrentBranchTitle(branch: string): string {
+    return $localize`:@@featureFileTree-currentBranchTitle:Current branch: ${branch}:branch:`;
+  }
+
+  getDeleteModalTitle(): string {
+    const item = this.itemToDelete();
+    if (!item) return '';
+    return item.type === 'directory'
+      ? $localize`:@@featureFileTree-deleteDirectoryTitle:Delete Directory`
+      : $localize`:@@featureFileTree-deleteFileTitle:Delete File`;
+  }
+
+  getDeleteModalMessage(): string {
+    const item = this.itemToDelete();
+    if (!item) return '';
+    const path = item.path;
+    return item.type === 'directory'
+      ? $localize`:@@featureFileTree-deleteDirectoryMessage:Are you sure you want to delete the directory ${path}?:path:`
+      : $localize`:@@featureFileTree-deleteFileMessage:Are you sure you want to delete the file ${path}?:path:`;
+  }
+
+  getRenameModalMessage(): string {
+    const item = this.itemToRename();
+    if (!item) return '';
+    const path = item.path;
+    return item.type === 'directory'
+      ? $localize`:@@featureFileTree-renameDirectoryMessage:Enter a new name for the directory ${path}:path:`
+      : $localize`:@@featureFileTree-renameFileMessage:Enter a new name for the file ${path}:path:`;
+  }
+
+  getRenameModalTitle(): string {
+    const item = this.itemToRename();
+    if (!item) return '';
+    return item.type === 'directory'
+      ? $localize`:@@featureFileTree-renameDirectoryTitle:Rename Directory`
+      : $localize`:@@featureFileTree-renameFileTitle:Rename File`;
+  }
+
+  getMoveModalTitle(): string {
+    const item = this.itemToMove();
+    if (!item) return '';
+    return item.type === 'directory'
+      ? $localize`:@@featureFileTree-moveDirectoryTitle:Move Directory`
+      : $localize`:@@featureFileTree-moveFileTitle:Move File`;
+  }
+
+  getMoveModalMessage(): string {
+    const item = this.itemToMove();
+    if (!item) return '';
+    const path = item.path;
+    return item.type === 'directory'
+      ? $localize`:@@featureFileTree-moveDirectoryMessage:Move the directory ${path} to::path:`
+      : $localize`:@@featureFileTree-moveFileMessage:Move the file ${path} to::path:`;
+  }
+
+  getMoveDestinationLabel(): string {
+    const item = this.itemToMove();
+    if (!item) return '';
+    const dest = this.moveDestinationPath();
+    const name = item.name;
+    const result = dest === '.' ? name : dest + '/' + name;
+    return item.type === 'directory'
+      ? $localize`:@@featureFileTree-moveDirectoryDestination:The directory will be moved to: ${result}:result:`
+      : $localize`:@@featureFileTree-moveFileDestination:The file will be moved to: ${result}:result:`;
+  }
+
   onRefreshRoot(): void {
     // Refresh root and all expanded directories
     const expanded = this.expandedPaths();
