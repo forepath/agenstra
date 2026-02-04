@@ -3,6 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
+import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { combineLatest, filter, map, startWith } from 'rxjs';
 import { StandaloneLoadingService } from '../standalone-loading.service';
 import { ThemeService } from '../theme.service';
@@ -20,6 +21,7 @@ export class AgentConsoleContainerComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
   protected readonly themeService = inject(ThemeService);
+  protected readonly localeService = inject(LocaleService);
 
   /**
    * True when on the main clients mask (not editor, deployments, etc.)

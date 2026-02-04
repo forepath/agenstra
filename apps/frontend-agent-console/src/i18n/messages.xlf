@@ -408,17 +408,20 @@
       <trans-unit id="featureContainer-brandAlt" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
-      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
-        <source>User Management (opens in new window)</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-users" datatype="html">
-        <source>Users</source>
+      <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
         </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
         </trans-unit>
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
+        <source>User Management (opens in new window)</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-users" datatype="html">
+        <source>Users</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>

@@ -11,6 +11,9 @@
       <trans-unit id="featureDocsLayout-documentation" datatype="html">
         <source>Documentation</source>
         </trans-unit>
+      <trans-unit id="featureDocsLayout-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
       <trans-unit id="featureDocsLayout-githubAriaLabel" datatype="html">
         <source>GitHub</source>
         </trans-unit>

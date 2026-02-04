@@ -142,3 +142,9 @@
     }
   }
 }
+
+#footerLanguageDropdown {
+  &:after {
+    display: none;
+  }
+}

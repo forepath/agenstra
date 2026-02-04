@@ -158,6 +158,14 @@
         <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers. </source>
         <target> Zentrale Steuerung für verteilte KI-Agent-Infrastruktur. Verwalten Sie mehrere Agent-Manager-Instanzen, interagieren Sie in Echtzeit mit Agents und bearbeiten Sie Code direkt in deren Containern. </target>
         </trans-unit>
+      <trans-unit id="featurePortal-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        <target>Sprache auswählen</target>
+        </trans-unit>
+      <trans-unit id="featurePortal-language" datatype="html">
+        <source>Language</source>
+        <target>Sprache</target>
+        </trans-unit>
       <trans-unit id="featurePortal-footerInformation" datatype="html">
         <source>Information</source>
         <target>Informationen</target>

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 
 @Component({
   selector: 'framework-portal-container',
@@ -11,6 +12,8 @@ import { RouterModule } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PortalContainerComponent {
+  protected readonly localeService = inject(LocaleService);
+
   /**
    * Mobile menu visibility
    */

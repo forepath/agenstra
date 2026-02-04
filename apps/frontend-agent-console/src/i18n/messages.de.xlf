@@ -452,6 +452,10 @@
         <source>Agenstra</source>
         <target>Agenstra</target>
         </trans-unit>
+      <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        <target>Sprache auswählen</target>
+        </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management (opens in new window)</source>
         <target>Benutzerverwaltung (öffnet in neuem Fenster)</target>

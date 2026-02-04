@@ -23,6 +23,32 @@
       </div>
     </div>
     <div class="d-flex align-items-center gap-2">
+      <!-- Language Switcher -->
+      <div class="dropdown me-1">
+        <button
+          class="btn btn-link text-white text-decoration-none p-2 dropdown-toggle"
+          type="button"
+          id="languageDropdown"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          i18n-aria-label="@@featureContainer-languageSwitcherAriaLabel"
+          aria-label="Select language"
+        >
+          <i class="bi bi-globe"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+          @for (locale of localeService.getAvailableLocales(); track locale.code) {
+            <li>
+              <a
+                class="dropdown-item"
+                [class.active]="localeService.getCurrentLocale() === locale.code"
+                [href]="localeService.getLanguageSwitchUrl(locale.code)"
+                >{{ locale.label }}</a
+              >
+            </li>
+          }
+        </ul>
+      </div>
       <!-- Dark Mode Toggle -->
       <div class="form-check form-switch me-3 mb-0">
         <input
@@ -52,8 +78,33 @@
     </div>
   </section>
 } @else {
-  <!-- Dark Mode Toggle for Standalone Mode -->
+  <!-- Language Switcher and Dark Mode Toggle for Standalone Mode -->
   <section class="d-flex align-items-center justify-content-end gap-2 p-2 bg-dark text-white">
+    <div class="dropdown">
+      <button
+        class="btn btn-link text-white text-decoration-none p-2 dropdown-toggle"
+        type="button"
+        id="languageDropdownStandalone"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        i18n-aria-label="@@featureContainer-languageSwitcherAriaLabel"
+        aria-label="Select language"
+      >
+        <i class="bi bi-globe"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdownStandalone">
+        @for (locale of localeService.getAvailableLocales(); track locale.code) {
+          <li>
+            <a
+              class="dropdown-item"
+              [class.active]="localeService.getCurrentLocale() === locale.code"
+              [href]="localeService.getLanguageSwitchUrl(locale.code)"
+              >{{ locale.label }}</a
+            >
+          </li>
+        }
+      </ul>
+    </div>
     <div class="form-check form-switch mb-0">
       <input
         class="form-check-input"

@@ -119,6 +119,12 @@
       <trans-unit id="featurePortal-footerTagline" datatype="html">
         <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers. </source>
         </trans-unit>
+      <trans-unit id="featurePortal-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-language" datatype="html">
+        <source>Language</source>
+        </trans-unit>
       <trans-unit id="featurePortal-footerInformation" datatype="html">
         <source>Information</source>
         </trans-unit>

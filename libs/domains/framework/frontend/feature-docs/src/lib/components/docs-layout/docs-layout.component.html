@@ -15,6 +15,32 @@
       </a>
     </div>
     <div class="d-flex align-items-center gap-2">
+      <!-- Language Switcher -->
+      <div class="dropdown me-1">
+        <button
+          class="btn btn-link text-white text-decoration-none p-2 dropdown-toggle"
+          type="button"
+          id="languageDropdown"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          i18n-aria-label="@@featureDocsLayout-languageSwitcherAriaLabel"
+          aria-label="Select language"
+        >
+          <i class="bi bi-globe"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+          @for (locale of localeService.getAvailableLocales(); track locale.code) {
+            <li>
+              <a
+                class="dropdown-item"
+                [class.active]="localeService.getCurrentLocale() === locale.code"
+                [href]="localeService.getLanguageSwitchUrl(locale.code)"
+                >{{ locale.label }}</a
+              >
+            </li>
+          }
+        </ul>
+      </div>
       <framework-docs-search [searchField]="!isMobile()" />
       <a
         class="nav-link text-white ms-3 d-none d-md-block"
