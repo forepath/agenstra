@@ -106,7 +106,7 @@
     "@analogjs/vitest-angular": "1.21.1",
     "@angular/animations": "19.2.15",
     "@angular/common": "19.2.15",
-    "@angular/compiler": "19.2.15",
+    "@angular/compiler": "19.2.18",
     "@angular/core": "19.2.15",
     "@angular/forms": "19.2.15",
     "@angular/platform-browser": "19.2.15",
