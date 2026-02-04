@@ -60,10 +60,10 @@
         <source>Enter a search query above to find documentation.</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
-        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;:count:query:</source>
+        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
-        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;:count:query:</source>
+        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
         </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

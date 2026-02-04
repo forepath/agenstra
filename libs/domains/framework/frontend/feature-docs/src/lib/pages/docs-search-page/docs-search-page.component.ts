@@ -59,9 +59,9 @@ export class DocsSearchPageComponent implements OnInit {
    */
   getResultsCountMessage(count: number, query: string): string {
     if (count === 1) {
-      return $localize`:@@featureDocsSearchPage-foundOneResult:Found ${count} result for "${query}":count:query:`;
+      return $localize`:@@featureDocsSearchPage-foundOneResult:Found ${count} result for "${query}"`;
     }
-    return $localize`:@@featureDocsSearchPage-foundResults:Found ${count} results for "${query}":count:query:`;
+    return $localize`:@@featureDocsSearchPage-foundResults:Found ${count} results for "${query}"`;
   }
 
   /**
