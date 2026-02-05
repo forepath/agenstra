@@ -1,5 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
 import {
+  addClientUser,
+  addClientUserFailure,
+  addClientUserSuccess,
   clearActiveClient,
   createClient,
   createClientFailure,
@@ -12,6 +15,9 @@ import {
   deleteProvisionedServerSuccess,
   loadClient,
   loadClientFailure,
+  loadClientUsers,
+  loadClientUsersFailure,
+  loadClientUsersSuccess,
   loadClients,
   loadClientsBatch,
   loadClientsFailure,
@@ -29,6 +35,9 @@ import {
   provisionServer,
   provisionServerFailure,
   provisionServerSuccess,
+  removeClientUser,
+  removeClientUserFailure,
+  removeClientUserSuccess,
   setActiveClient,
   setActiveClientFailure,
   setActiveClientSuccess,
@@ -36,7 +45,13 @@ import {
   updateClientFailure,
   updateClientSuccess,
 } from './clients.actions';
-import type { ClientResponseDto, ProvisioningProviderInfo, ServerInfo, ServerType } from './clients.types';
+import type {
+  ClientResponseDto,
+  ClientUserResponseDto,
+  ProvisioningProviderInfo,
+  ServerInfo,
+  ServerType,
+} from './clients.types';
 
 export interface ClientsState {
   entities: ClientResponseDto[];
@@ -57,6 +72,11 @@ export interface ClientsState {
   serverInfo: Record<string, ServerInfo>; // keyed by clientId
   loadingServerInfo: Record<string, boolean>; // keyed by clientId
   deletingProvisionedServer: Record<string, boolean>; // keyed by clientId
+  // Client user management (per-client permissions)
+  clientUsers: Record<string, ClientUserResponseDto[]>; // keyed by clientId
+  loadingClientUsers: Record<string, boolean>; // keyed by clientId
+  addingClientUser: Record<string, boolean>; // keyed by clientId
+  removingClientUser: Record<string, boolean>; // keyed by relationshipId
 }
 
 export const initialClientsState: ClientsState = {
@@ -77,6 +97,10 @@ export const initialClientsState: ClientsState = {
   serverInfo: {},
   loadingServerInfo: {},
   deletingProvisionedServer: {},
+  clientUsers: {},
+  loadingClientUsers: {},
+  addingClientUser: {},
+  removingClientUser: {},
 };
 
 export const clientsReducer = createReducer(
@@ -314,4 +338,64 @@ export const clientsReducer = createReducer(
     ),
     error,
   })),
+  // Client User Management
+  on(loadClientUsers, (state, { clientId }) => ({
+    ...state,
+    loadingClientUsers: { ...state.loadingClientUsers, [clientId]: true },
+    error: null,
+  })),
+  on(loadClientUsersSuccess, (state, { clientId, users }) => ({
+    ...state,
+    clientUsers: { ...state.clientUsers, [clientId]: users },
+    loadingClientUsers: { ...state.loadingClientUsers, [clientId]: false },
+    error: null,
+  })),
+  on(loadClientUsersFailure, (state, { clientId, error }) => ({
+    ...state,
+    loadingClientUsers: { ...state.loadingClientUsers, [clientId]: false },
+    error,
+  })),
+  on(addClientUser, (state, { clientId }) => ({
+    ...state,
+    addingClientUser: { ...state.addingClientUser, [clientId]: true },
+    error: null,
+  })),
+  on(addClientUserSuccess, (state, { clientId, user }) => {
+    const existingUsers = state.clientUsers[clientId] ?? [];
+    return {
+      ...state,
+      clientUsers: { ...state.clientUsers, [clientId]: [...existingUsers, user] },
+      addingClientUser: { ...state.addingClientUser, [clientId]: false },
+      error: null,
+    };
+  }),
+  on(addClientUserFailure, (state, { clientId, error }) => ({
+    ...state,
+    addingClientUser: { ...state.addingClientUser, [clientId]: false },
+    error,
+  })),
+  on(removeClientUser, (state, { relationshipId }) => ({
+    ...state,
+    removingClientUser: { ...state.removingClientUser, [relationshipId]: true },
+    error: null,
+  })),
+  on(removeClientUserSuccess, (state, { clientId, relationshipId }) => {
+    const existingUsers = state.clientUsers[clientId] ?? [];
+    const updatedUsers = existingUsers.filter((u) => u.id !== relationshipId);
+    const { [relationshipId]: _, ...restRemoving } = state.removingClientUser;
+    return {
+      ...state,
+      clientUsers: { ...state.clientUsers, [clientId]: updatedUsers },
+      removingClientUser: restRemoving,
+      error: null,
+    };
+  }),
+  on(removeClientUserFailure, (state, { relationshipId, error }) => {
+    const { [relationshipId]: _, ...restRemoving } = state.removingClientUser;
+    return {
+      ...state,
+      removingClientUser: restRemoving,
+      error,
+    };
+  }),
 );

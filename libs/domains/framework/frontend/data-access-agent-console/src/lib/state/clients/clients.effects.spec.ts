@@ -6,6 +6,9 @@ import { Store } from '@ngrx/store';
 import { of, throwError } from 'rxjs';
 import { ClientsService } from '../../services/clients.service';
 import {
+  addClientUser,
+  addClientUserFailure,
+  addClientUserSuccess,
   createClient,
   createClientFailure,
   createClientSuccess,
@@ -14,6 +17,9 @@ import {
   deleteClientSuccess,
   loadClient,
   loadClientFailure,
+  loadClientUsers,
+  loadClientUsersFailure,
+  loadClientUsersSuccess,
   loadClients,
   loadClientsBatch,
   loadClientsFailure,
@@ -22,6 +28,9 @@ import {
   loadServerInfo,
   loadServerInfoFailure,
   loadServerInfoSuccess,
+  removeClientUser,
+  removeClientUserFailure,
+  removeClientUserSuccess,
   setActiveClient,
   setActiveClientSuccess,
   updateClient,
@@ -29,12 +38,15 @@ import {
   updateClientSuccess,
 } from './clients.actions';
 import {
+  addClientUser$,
   createClient$,
   deleteClient$,
   loadClient$,
+  loadClientUsers$,
   loadClients$,
   loadClientsBatch$,
   loadServerInfo$,
+  removeClientUser$,
   setActiveClient$,
   updateClient$,
 } from './clients.effects';
@@ -85,6 +97,9 @@ describe('ClientsEffects', () => {
       updateClient: jest.fn(),
       deleteClient: jest.fn(),
       getServerInfo: jest.fn(),
+      getClientUsers: jest.fn(),
+      addClientUser: jest.fn(),
+      removeClientUser: jest.fn(),
     } as any;
 
     store = {
@@ -596,6 +611,130 @@ describe('ClientsEffects', () => {
             done();
           }
         },
+      });
+    });
+  });
+
+  describe('loadClientUsers$', () => {
+    it('should return loadClientUsersSuccess on success', (done) => {
+      const clientId = 'client-1';
+      const users = [
+        {
+          id: 'rel-1',
+          userId: 'user-1',
+          clientId,
+          role: 'user' as const,
+          userEmail: 'a@test.com',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        },
+      ];
+      const action = loadClientUsers({ clientId });
+      const outcome = loadClientUsersSuccess({ clientId, users });
+
+      actions$ = of(action);
+      clientsService.getClientUsers.mockReturnValue(of(users));
+
+      loadClientUsers$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(clientsService.getClientUsers).toHaveBeenCalledWith(clientId);
+        done();
+      });
+    });
+
+    it('should return loadClientUsersFailure on error', (done) => {
+      const clientId = 'client-1';
+      const action = loadClientUsers({ clientId });
+      const error = new Error('Load failed');
+      const outcome = loadClientUsersFailure({ clientId, error: 'Load failed' });
+
+      actions$ = of(action);
+      clientsService.getClientUsers.mockReturnValue(throwError(() => error));
+
+      loadClientUsers$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('addClientUser$', () => {
+    it('should return addClientUserSuccess on success', (done) => {
+      const clientId = 'client-1';
+      const dto = { email: 'new@test.com', role: 'user' as const };
+      const user = {
+        id: 'rel-2',
+        userId: 'user-2',
+        clientId,
+        role: 'user' as const,
+        userEmail: 'new@test.com',
+        createdAt: '2024-01-02',
+        updatedAt: '2024-01-02',
+      };
+      const action = addClientUser({ clientId, dto });
+      const outcome = addClientUserSuccess({ clientId, user });
+
+      actions$ = of(action);
+      clientsService.addClientUser.mockReturnValue(of(user));
+
+      addClientUser$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(clientsService.addClientUser).toHaveBeenCalledWith(clientId, dto);
+        done();
+      });
+    });
+
+    it('should return addClientUserFailure on error', (done) => {
+      const clientId = 'client-1';
+      const dto = { email: 'new@test.com', role: 'user' as const };
+      const action = addClientUser({ clientId, dto });
+      const error = new Error('Add failed');
+      const outcome = addClientUserFailure({ clientId, error: 'Add failed' });
+
+      actions$ = of(action);
+      clientsService.addClientUser.mockReturnValue(throwError(() => error));
+
+      addClientUser$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('removeClientUser$', () => {
+    it('should return removeClientUserSuccess on success', (done) => {
+      const clientId = 'client-1';
+      const relationshipId = 'rel-1';
+      const action = removeClientUser({ clientId, relationshipId });
+      const outcome = removeClientUserSuccess({ clientId, relationshipId });
+
+      actions$ = of(action);
+      clientsService.removeClientUser.mockReturnValue(of(undefined));
+
+      removeClientUser$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(clientsService.removeClientUser).toHaveBeenCalledWith(clientId, relationshipId);
+        done();
+      });
+    });
+
+    it('should return removeClientUserFailure on error', (done) => {
+      const clientId = 'client-1';
+      const relationshipId = 'rel-1';
+      const action = removeClientUser({ clientId, relationshipId });
+      const error = new Error('Remove failed');
+      const outcome = removeClientUserFailure({
+        clientId,
+        relationshipId,
+        error: 'Remove failed',
+      });
+
+      actions$ = of(action);
+      clientsService.removeClientUser.mockReturnValue(throwError(() => error));
+
+      removeClientUser$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
       });
     });
   });

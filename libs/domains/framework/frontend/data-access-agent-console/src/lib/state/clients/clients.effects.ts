@@ -5,6 +5,9 @@ import { Store } from '@ngrx/store';
 import { catchError, exhaustMap, map, mergeMap, of, switchMap } from 'rxjs';
 import { ClientsService } from '../../services/clients.service';
 import {
+  addClientUser,
+  addClientUserFailure,
+  addClientUserSuccess,
   createClient,
   createClientFailure,
   createClientSuccess,
@@ -16,6 +19,9 @@ import {
   deleteProvisionedServerSuccess,
   loadClient,
   loadClientFailure,
+  loadClientUsers,
+  loadClientUsersFailure,
+  loadClientUsersSuccess,
   loadClients,
   loadClientsBatch,
   loadClientsFailure,
@@ -33,6 +39,9 @@ import {
   provisionServer,
   provisionServerFailure,
   provisionServerSuccess,
+  removeClientUser,
+  removeClientUserFailure,
+  removeClientUserSuccess,
   setActiveClient,
   setActiveClientSuccess,
   updateClient,
@@ -296,6 +305,54 @@ export const deleteProvisionedServer$ = createEffect(
         clientsService.deleteProvisionedServer(clientId).pipe(
           map(() => deleteProvisionedServerSuccess({ clientId })),
           catchError((error) => of(deleteProvisionedServerFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+// Client User Management Effects
+export const loadClientUsers$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
+    return actions$.pipe(
+      ofType(loadClientUsers),
+      exhaustMap(({ clientId }) =>
+        clientsService.getClientUsers(clientId).pipe(
+          map((users) => loadClientUsersSuccess({ clientId, users })),
+          catchError((error) => of(loadClientUsersFailure({ clientId, error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const addClientUser$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
+    return actions$.pipe(
+      ofType(addClientUser),
+      exhaustMap(({ clientId, dto }) =>
+        clientsService.addClientUser(clientId, dto).pipe(
+          map((user) => addClientUserSuccess({ clientId, user })),
+          catchError((error) => of(addClientUserFailure({ clientId, error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const removeClientUser$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
+    return actions$.pipe(
+      ofType(removeClientUser),
+      exhaustMap(({ clientId, relationshipId }) =>
+        clientsService.removeClientUser(clientId, relationshipId).pipe(
+          map(() => removeClientUserSuccess({ clientId, relationshipId })),
+          catchError((error) =>
+            of(removeClientUserFailure({ clientId, relationshipId, error: normalizeError(error) })),
+          ),
         ),
       ),
     );

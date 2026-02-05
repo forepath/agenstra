@@ -2,6 +2,7 @@ import { BadRequestException, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -11,9 +12,12 @@ import {
 import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
 import { AuthenticationType } from './entities/client.entity';
+import { buildRequestFromSocketUser, ensureClientAccess } from './utils/client-access.utils';
 import { ClientAgentCredentialsRepository } from './repositories/client-agent-credentials.repository';
+import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientsService } from './services/clients.service';
+import { SocketAuthService } from './services/socket-auth.service';
 // socket.io-client is required at runtime when forwarding; avoid static import to keep optional dependency for tests
 // Using type-only import for ClientSocket to avoid runtime dependency
 
@@ -31,7 +35,7 @@ interface ForwardPayload {
   namespace: 'clients',
   cors: { origin: '*' },
 })
-export class ClientsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -61,8 +65,27 @@ export class ClientsGateway implements OnGatewayConnection, OnGatewayDisconnect 
   constructor(
     private readonly clientsService: ClientsService,
     private readonly clientsRepository: ClientsRepository,
+    private readonly clientUsersRepository: ClientUsersRepository,
     private readonly clientAgentCredentialsRepository: ClientAgentCredentialsRepository,
+    private readonly socketAuthService: SocketAuthService,
   ) {}
+
+  afterInit(server: Server): void {
+    // When using namespace: 'clients', NestJS passes the namespace (not root Server) to afterInit.
+    // Namespaces don't have .of(); use server directly for middleware.
+    server.use(async (socket, next) => {
+      // Auth from headers (polling) or handshake.auth (WebSocket - browser cannot send custom headers)
+      const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
+      const userInfo = await this.socketAuthService.validateAndGetUser(authHeader);
+      if (!userInfo) {
+        this.logger.warn(`WebSocket connection rejected: missing or invalid authorization for socket ${socket.id}`);
+        next(new Error('Unauthorized'));
+        return;
+      }
+      (socket as Socket & { data: { userInfo: typeof userInfo } }).data = { userInfo };
+      next();
+    });
+  }
 
   handleConnection(socket: Socket): void {
     this.logger.log(`Client connected: ${socket.id}`);
@@ -125,6 +148,20 @@ export class ClientsGateway implements OnGatewayConnection, OnGatewayDisconnect 
     this.settingClientBySocket.set(socket.id, clientId);
 
     try {
+      const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
+        .data?.userInfo;
+      if (!userInfo) {
+        this.settingClientBySocket.delete(socket.id);
+        socket.emit('error', { message: 'Unauthorized' });
+        return;
+      }
+      await ensureClientAccess(
+        this.clientsRepository,
+        this.clientUsersRepository,
+        clientId,
+        buildRequestFromSocketUser(userInfo),
+      );
+
       const client = await this.clientsRepository.findByIdOrThrow(clientId as string);
       this.selectedClientBySocket.set(socket.id, clientId);
 

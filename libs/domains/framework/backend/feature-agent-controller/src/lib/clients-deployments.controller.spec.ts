@@ -1,10 +1,21 @@
+import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsDeploymentsController } from './clients-deployments.controller';
+import { ClientUsersRepository } from './repositories/client-users.repository';
+import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentDeploymentsProxyService } from './services/client-agent-deployments-proxy.service';
 
 describe('ClientsDeploymentsController', () => {
   let controller: ClientsDeploymentsController;
   let proxyService: jest.Mocked<ClientAgentDeploymentsProxyService>;
+
+  const mockClientsRepository = {
+    findById: jest.fn(),
+  };
+
+  const mockClientUsersRepository = {
+    findUserClientAccess: jest.fn(),
+  };
 
   const mockProxyService = {
     getConfiguration: jest.fn(),
@@ -23,12 +34,23 @@ describe('ClientsDeploymentsController', () => {
   };
 
   beforeEach(async () => {
+    mockClientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null });
+    mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ClientsDeploymentsController],
       providers: [
         {
           provide: ClientAgentDeploymentsProxyService,
           useValue: mockProxyService,
+        },
+        {
+          provide: ClientsRepository,
+          useValue: mockClientsRepository,
+        },
+        {
+          provide: ClientUsersRepository,
+          useValue: mockClientUsersRepository,
         },
       ],
     }).compile();
@@ -52,7 +74,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.getConfiguration.mockResolvedValue(mockConfiguration);
 
-      const result = await controller.getConfiguration('client-uuid', 'agent-uuid');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.getConfiguration('client-uuid', 'agent-uuid', mockReq);
 
       expect(result).toEqual(mockConfiguration);
       expect(proxyService.getConfiguration).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
@@ -77,7 +100,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.upsertConfiguration.mockResolvedValue(mockConfiguration);
 
-      const result = await controller.upsertConfiguration('client-uuid', 'agent-uuid', dto);
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.upsertConfiguration('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(result).toEqual(mockConfiguration);
       expect(proxyService.upsertConfiguration).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);
@@ -88,7 +112,8 @@ describe('ClientsDeploymentsController', () => {
     it('should delete deployment configuration', async () => {
       proxyService.deleteConfiguration.mockResolvedValue(undefined);
 
-      await controller.deleteConfiguration('client-uuid', 'agent-uuid');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      await controller.deleteConfiguration('client-uuid', 'agent-uuid', mockReq);
 
       expect(proxyService.deleteConfiguration).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
@@ -109,7 +134,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.listRepositories.mockResolvedValue(mockRepositories);
 
-      const result = await controller.listRepositories('client-uuid', 'agent-uuid');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.listRepositories('client-uuid', 'agent-uuid', mockReq);
 
       expect(result).toEqual(mockRepositories);
       expect(proxyService.listRepositories).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
@@ -125,7 +151,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.listBranches.mockResolvedValue(mockBranches);
 
-      const result = await controller.listBranches('client-uuid', 'agent-uuid', 'owner/repo');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.listBranches('client-uuid', 'agent-uuid', 'owner/repo', mockReq);
 
       expect(result).toEqual(mockBranches);
       expect(proxyService.listBranches).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'owner/repo');
@@ -146,7 +173,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.listWorkflows.mockResolvedValue(mockWorkflows);
 
-      const result = await controller.listWorkflows('client-uuid', 'agent-uuid', 'owner/repo', 'main');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.listWorkflows('client-uuid', 'agent-uuid', 'owner/repo', 'main', mockReq);
 
       expect(result).toEqual(mockWorkflows);
       expect(proxyService.listWorkflows).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'owner/repo', 'main');
@@ -165,7 +193,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.listWorkflows.mockResolvedValue(mockWorkflows);
 
-      const result = await controller.listWorkflows('client-uuid', 'agent-uuid', 'owner/repo');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.listWorkflows('client-uuid', 'agent-uuid', 'owner/repo', undefined, mockReq);
 
       expect(result).toEqual(mockWorkflows);
       expect(proxyService.listWorkflows).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'owner/repo', undefined);
@@ -188,7 +217,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.triggerWorkflow.mockResolvedValue(mockRun);
 
-      const result = await controller.triggerWorkflow('client-uuid', 'agent-uuid', dto);
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.triggerWorkflow('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(result).toEqual(mockRun);
       expect(proxyService.triggerWorkflow).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);
@@ -207,7 +237,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.listRuns.mockResolvedValue(mockRuns);
 
-      const result = await controller.listRuns('client-uuid', 'agent-uuid', 50, 0);
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.listRuns('client-uuid', 'agent-uuid', 50, 0, mockReq);
 
       expect(result).toEqual(mockRuns);
       expect(proxyService.listRuns).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 50, 0);
@@ -224,7 +255,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.listRuns.mockResolvedValue(mockRuns);
 
-      const result = await controller.listRuns('client-uuid', 'agent-uuid');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.listRuns('client-uuid', 'agent-uuid', undefined, undefined, mockReq);
 
       expect(result).toEqual(mockRuns);
       expect(proxyService.listRuns).toHaveBeenCalledWith('client-uuid', 'agent-uuid', undefined, undefined);
@@ -242,7 +274,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.getRunStatus.mockResolvedValue(mockRun);
 
-      const result = await controller.getRunStatus('client-uuid', 'agent-uuid', '789');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.getRunStatus('client-uuid', 'agent-uuid', '789', mockReq);
 
       expect(result).toEqual(mockRun);
       expect(proxyService.getRunStatus).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '789');
@@ -255,7 +288,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.getRunLogs.mockResolvedValue(mockLogs);
 
-      const result = await controller.getRunLogs('client-uuid', 'agent-uuid', '789');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.getRunLogs('client-uuid', 'agent-uuid', '789', mockReq);
 
       expect(result).toEqual(mockLogs);
       expect(proxyService.getRunLogs).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '789');
@@ -275,7 +309,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.listRunJobs.mockResolvedValue(mockJobs);
 
-      const result = await controller.listRunJobs('client-uuid', 'agent-uuid', '789');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.listRunJobs('client-uuid', 'agent-uuid', '789', mockReq);
 
       expect(result).toEqual(mockJobs);
       expect(proxyService.listRunJobs).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '789');
@@ -288,7 +323,8 @@ describe('ClientsDeploymentsController', () => {
 
       proxyService.getJobLogs.mockResolvedValue(mockLogs);
 
-      const result = await controller.getJobLogs('client-uuid', 'agent-uuid', '789', '1');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = await controller.getJobLogs('client-uuid', 'agent-uuid', '789', '1', mockReq);
 
       expect(result).toEqual(mockLogs);
       expect(proxyService.getJobLogs).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '789', '1');
@@ -299,9 +335,24 @@ describe('ClientsDeploymentsController', () => {
     it('should cancel run', async () => {
       proxyService.cancelRun.mockResolvedValue(undefined);
 
-      await controller.cancelRun('client-uuid', 'agent-uuid', '789');
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      await controller.cancelRun('client-uuid', 'agent-uuid', '789', mockReq);
 
       expect(proxyService.cancelRun).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '789');
+    });
+  });
+
+  describe('permission checks', () => {
+    it('should throw ForbiddenException when user does not have access', async () => {
+      mockClientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'other-user-id' });
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+      const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', roles: ['user'] } } as any;
+
+      await expect(controller.getConfiguration('client-uuid', 'agent-uuid', mockReq)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(proxyService.getConfiguration).not.toHaveBeenCalled();
     });
   });
 });

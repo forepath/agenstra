@@ -1,0 +1,58 @@
+flowchart TB
+    subgraph STATE["📦 Clients NgRx State"]
+        direction TB
+        STATE_USE["Use Case: Client & Provisioning State<br/>Reactive State Management<br/>Per-Client Permissions"]
+        STATE_USE --> STATE1["📄 Client Entities<br/>ClientResponseDto[]"]
+        STATE_USE --> STATE2["👤 Client Users<br/>Key: clientId → ClientUserResponseDto[]"]
+        STATE_USE --> STATE3["⏳ Loading States<br/>loading, loadingClient, creating,<br/>updating, deleting, loadingClientUsers,<br/>addingClientUser, removingClientUser"]
+        STATE_USE --> STATE4["☁️ Provisioning State<br/>providers, serverTypes, serverInfo"]
+    end
+
+    subgraph FACADE["🎭 ClientsFacade"]
+        direction TB
+        FACADE_USE["Use Case: Component Interface<br/>Type-safe API<br/>No Direct Store Access"]
+        FACADE_USE --> FACADE1["📋 Clients CRUD<br/>loadClients(), createClient(),<br/>updateClient(), deleteClient()"]
+        FACADE_USE --> FACADE2["👥 Client User Management<br/>loadClientUsers(), addClientUser(),<br/>removeClientUser(), getClientUsers$()"]
+        FACADE_USE --> FACADE3["☁️ Provisioning<br/>provisionServer(), loadServerInfo(),<br/>deleteProvisionedServer()"]
+    end
+
+    subgraph EFFECTS["⚡ NgRx Effects"]
+        direction TB
+        EFFECTS_USE["Use Case: Side Effects<br/>API Calls<br/>Error Handling"]
+        EFFECTS_USE --> EFFECTS1["loadClientUsers$<br/>Calls ClientsService.getClientUsers()"]
+        EFFECTS_USE --> EFFECTS2["addClientUser$<br/>Calls ClientsService.addClientUser()"]
+        EFFECTS_USE --> EFFECTS3["removeClientUser$<br/>Calls ClientsService.removeClientUser()"]
+    end
+
+    subgraph SERVICE["🌐 ClientsService"]
+        direction TB
+        SERVICE_USE["Use Case: HTTP Client<br/>REST API Communication"]
+        SERVICE_USE --> SERVICE1["getClientUsers()<br/>GET /clients/{id}/users"]
+        SERVICE_USE --> SERVICE2["addClientUser()<br/>POST /clients/{id}/users"]
+        SERVICE_USE --> SERVICE3["removeClientUser()<br/>DELETE /clients/{id}/users/{relationshipId}"]
+    end
+
+    subgraph API["🔷 HTTP REST API"]
+        direction TB
+        API_USE["Use Case: Backend<br/>Per-Client Permissions"]
+        API_USE --> API1["List Client Users<br/>Returns: ClientUserResponseDto[]"]
+        API_USE --> API2["Add User to Client<br/>Accepts: AddClientUserDto"]
+        API_USE --> API3["Remove User from Client<br/>Returns: 204 No Content"]
+    end
+
+    Start([Component]) --> FACADE
+    FACADE --> STATE
+    FACADE --> EFFECTS
+    EFFECTS --> SERVICE
+    SERVICE --> API
+
+    STATE -.->|"Reactive Updates"| FACADE
+    EFFECTS -.->|"Dispatch Actions"| STATE
+    SERVICE -.->|"HTTP Requests"| API
+    API -.->|"HTTP Responses"| SERVICE
+
+    style STATE fill:#e6f0ff,stroke:#4a90e2,stroke-width:3px
+    style FACADE fill:#fff4e6,stroke:#ff8c42,stroke-width:3px
+    style EFFECTS fill:#e6ffe6,stroke:#4a9e42,stroke-width:3px
+    style SERVICE fill:#ffe6f0,stroke:#e24a9e,stroke-width:3px
+    style API fill:#f0f0f0,stroke:#666666,stroke-width:3px

@@ -13,21 +13,28 @@ import {
   UpdateEnvironmentVariableDto,
   WriteFileDto,
 } from '@forepath/framework/backend/feature-agent-manager';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsController } from './clients.controller';
+import { AddClientUserDto } from './dto/add-client-user.dto';
 import { ClientResponseDto } from './dto/client-response.dto';
+import { ClientUserResponseDto } from './dto/client-user-response.dto';
 import { CreateClientResponseDto } from './dto/create-client-response.dto';
 import { CreateClientDto } from './dto/create-client.dto';
 import { ProvisionServerDto } from './dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from './dto/provisioned-server-response.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { ClientUserRole } from './entities/client-user.entity';
 import { AuthenticationType } from './entities/client.entity';
+import { UserRole } from './entities/user.entity';
 import { ProvisioningProviderFactory } from './providers/provisioning-provider.factory';
 import { ProvisioningProvider } from './providers/provisioning-provider.interface';
+import { ClientUsersRepository } from './repositories/client-users.repository';
+import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentEnvironmentVariablesProxyService } from './services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from './services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from './services/client-agent-proxy.service';
+import { ClientUsersService } from './services/client-users.service';
 import { ClientsService } from './services/clients.service';
 import { ProvisioningService } from './services/provisioning.service';
 
@@ -39,6 +46,9 @@ describe('ClientsController', () => {
   let environmentVariablesProxyService: jest.Mocked<ClientAgentEnvironmentVariablesProxyService>;
   let provisioningService: jest.Mocked<ProvisioningService>;
   let provisioningProviderFactory: jest.Mocked<ProvisioningProviderFactory>;
+  let clientUsersService: jest.Mocked<ClientUsersService>;
+  let clientsRepository: jest.Mocked<ClientsRepository>;
+  let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
 
   const mockClientResponse: ClientResponseDto = {
     id: 'test-uuid',
@@ -123,6 +133,21 @@ describe('ClientsController', () => {
     getRegisteredTypes: jest.fn(),
   };
 
+  const mockClientUsersService = {
+    addUserToClient: jest.fn(),
+    removeUserFromClient: jest.fn(),
+    getClientUsers: jest.fn(),
+  };
+
+  const mockClientsRepository = {
+    findById: jest.fn(),
+    findByIdOrThrow: jest.fn(),
+  };
+
+  const mockClientUsersRepository = {
+    findUserClientAccess: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ClientsController],
@@ -151,6 +176,18 @@ describe('ClientsController', () => {
           provide: ProvisioningProviderFactory,
           useValue: mockProvisioningProviderFactory,
         },
+        {
+          provide: ClientUsersService,
+          useValue: mockClientUsersService,
+        },
+        {
+          provide: ClientsRepository,
+          useValue: mockClientsRepository,
+        },
+        {
+          provide: ClientUsersRepository,
+          useValue: mockClientUsersRepository,
+        },
       ],
     }).compile();
 
@@ -161,6 +198,9 @@ describe('ClientsController', () => {
     environmentVariablesProxyService = module.get(ClientAgentEnvironmentVariablesProxyService);
     provisioningService = module.get(ProvisioningService);
     provisioningProviderFactory = module.get(ProvisioningProviderFactory);
+    clientUsersService = module.get(ClientUsersService);
+    clientsRepository = module.get(ClientsRepository);
+    clientUsersRepository = module.get(ClientUsersRepository);
   });
 
   afterEach(() => {
@@ -170,33 +210,36 @@ describe('ClientsController', () => {
   describe('getClients', () => {
     it('should return array of clients', async () => {
       const clients = [mockClientResponse];
+      const mockReq = { apiKeyAuthenticated: true } as any;
       service.findAll.mockResolvedValue(clients);
 
-      const result = await controller.getClients(10, 0);
+      const result = await controller.getClients(10, 0, mockReq);
 
       expect(result).toEqual(clients);
-      expect(service.findAll).toHaveBeenCalledWith(10, 0);
+      expect(service.findAll).toHaveBeenCalledWith(10, 0, undefined, undefined, true);
     });
 
     it('should use default pagination values', async () => {
       const clients = [mockClientResponse];
+      const mockReq = { apiKeyAuthenticated: true } as any;
       service.findAll.mockResolvedValue(clients);
 
-      const result = await controller.getClients();
+      const result = await controller.getClients(undefined, undefined, mockReq);
 
       expect(result).toEqual(clients);
-      expect(service.findAll).toHaveBeenCalledWith(10, 0);
+      expect(service.findAll).toHaveBeenCalledWith(10, 0, undefined, undefined, true);
     });
   });
 
   describe('getClient', () => {
     it('should return single client', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
       service.findOne.mockResolvedValue(mockClientResponse);
 
-      const result = await controller.getClient('test-uuid');
+      const result = await controller.getClient('test-uuid', mockReq);
 
       expect(result).toEqual(mockClientResponse);
-      expect(service.findOne).toHaveBeenCalledWith('test-uuid');
+      expect(service.findOne).toHaveBeenCalledWith('test-uuid', undefined, undefined, true);
     });
   });
 
@@ -208,14 +251,15 @@ describe('ClientsController', () => {
         endpoint: 'https://example.com/api',
         authenticationType: AuthenticationType.API_KEY,
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
 
       service.create.mockResolvedValue(mockCreateClientResponse);
 
-      const result = await controller.createClient(createDto);
+      const result = await controller.createClient(createDto, mockReq);
 
       expect(result).toEqual(mockCreateClientResponse);
       expect(result.apiKey).toBeDefined();
-      expect(service.create).toHaveBeenCalledWith(createDto);
+      expect(service.create).toHaveBeenCalledWith(createDto, undefined);
     });
 
     it('should create new client with Keycloak credentials for KEYCLOAK type', async () => {
@@ -232,14 +276,15 @@ describe('ClientsController', () => {
         authenticationType: AuthenticationType.KEYCLOAK,
         apiKey: undefined,
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
 
       service.create.mockResolvedValue(responseWithoutApiKey);
 
-      const result = await controller.createClient(createDto);
+      const result = await controller.createClient(createDto, mockReq);
 
       expect(result).toEqual(responseWithoutApiKey);
       expect(result.apiKey).toBeUndefined();
-      expect(service.create).toHaveBeenCalledWith(createDto);
+      expect(service.create).toHaveBeenCalledWith(createDto, undefined);
     });
   });
 
@@ -249,35 +294,42 @@ describe('ClientsController', () => {
         name: 'Updated Client',
       };
 
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findByIdOrThrow.mockResolvedValue({ id: 'test-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       service.update.mockResolvedValue(mockClientResponse);
 
-      const result = await controller.updateClient('test-uuid', updateDto);
+      const result = await controller.updateClient('test-uuid', updateDto, mockReq);
 
       expect(result).toEqual(mockClientResponse);
-      expect(service.update).toHaveBeenCalledWith('test-uuid', updateDto);
+      expect(service.update).toHaveBeenCalledWith('test-uuid', updateDto, undefined, undefined, true);
     });
   });
 
   describe('deleteClient', () => {
     it('should delete client', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
       provisioningService.deleteProvisionedServer.mockRejectedValue(
         new BadRequestException('No provisioning reference for client'),
       );
       service.remove.mockResolvedValue(undefined);
 
-      await controller.deleteClient('test-uuid');
+      await controller.deleteClient('test-uuid', mockReq);
 
       expect(provisioningService.deleteProvisionedServer).toHaveBeenCalledWith('test-uuid');
-      expect(service.remove).toHaveBeenCalledWith('test-uuid');
+      expect(service.remove).toHaveBeenCalledWith('test-uuid', undefined, undefined, true);
     });
   });
 
   describe('getClientAgents', () => {
     it('should return array of agents for a client', async () => {
       const agents = [mockAgentResponse];
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.getClientAgents.mockResolvedValue(agents);
 
-      const result = await controller.getClientAgents('client-uuid', 10, 0);
+      const result = await controller.getClientAgents('client-uuid', 10, 0, mockReq);
 
       expect(result).toEqual(agents);
       expect(proxyService.getClientAgents).toHaveBeenCalledWith('client-uuid', 10, 0);
@@ -285,9 +337,12 @@ describe('ClientsController', () => {
 
     it('should use default pagination values', async () => {
       const agents = [mockAgentResponse];
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.getClientAgents.mockResolvedValue(agents);
 
-      const result = await controller.getClientAgents('client-uuid');
+      const result = await controller.getClientAgents('client-uuid', undefined, undefined, mockReq);
 
       expect(result).toEqual(agents);
       expect(proxyService.getClientAgents).toHaveBeenCalledWith('client-uuid', 10, 0);
@@ -296,9 +351,12 @@ describe('ClientsController', () => {
 
   describe('getClientAgent', () => {
     it('should return single agent for a client', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.getClientAgent.mockResolvedValue(mockAgentResponse);
 
-      const result = await controller.getClientAgent('client-uuid', 'agent-uuid');
+      const result = await controller.getClientAgent('client-uuid', 'agent-uuid', mockReq);
 
       expect(result).toEqual(mockAgentResponse);
       expect(proxyService.getClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
@@ -311,10 +369,12 @@ describe('ClientsController', () => {
         name: 'New Agent',
         description: 'New Agent Description',
       };
-
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.createClientAgent.mockResolvedValue(mockCreateAgentResponse);
 
-      const result = await controller.createClientAgent('client-uuid', createDto);
+      const result = await controller.createClientAgent('client-uuid', createDto, mockReq);
 
       expect(result).toEqual(mockCreateAgentResponse);
       expect(proxyService.createClientAgent).toHaveBeenCalledWith('client-uuid', createDto);
@@ -326,10 +386,12 @@ describe('ClientsController', () => {
       const updateDto: UpdateAgentDto = {
         name: 'Updated Agent',
       };
-
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.updateClientAgent.mockResolvedValue(mockAgentResponse);
 
-      const result = await controller.updateClientAgent('client-uuid', 'agent-uuid', updateDto);
+      const result = await controller.updateClientAgent('client-uuid', 'agent-uuid', updateDto, mockReq);
 
       expect(result).toEqual(mockAgentResponse);
       expect(proxyService.updateClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid', updateDto);
@@ -338,9 +400,12 @@ describe('ClientsController', () => {
 
   describe('deleteClientAgent', () => {
     it('should delete agent for a client', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.deleteClientAgent.mockResolvedValue(undefined);
 
-      await controller.deleteClientAgent('client-uuid', 'agent-uuid');
+      await controller.deleteClientAgent('client-uuid', 'agent-uuid', mockReq);
 
       expect(proxyService.deleteClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
@@ -352,9 +417,12 @@ describe('ClientsController', () => {
         content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
         encoding: 'utf-8',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.readFile.mockResolvedValue(mockFileContent);
 
-      const result = await controller.readFile('client-uuid', 'agent-uuid', 'test.txt');
+      const result = await controller.readFile('client-uuid', 'agent-uuid', 'test.txt', mockReq);
 
       expect(result).toEqual(mockFileContent);
       expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt');
@@ -367,9 +435,12 @@ describe('ClientsController', () => {
         content: Buffer.from('New content', 'utf-8').toString('base64'),
         encoding: 'utf-8',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.writeFile.mockResolvedValue(undefined);
 
-      await controller.writeFile('client-uuid', 'agent-uuid', 'test.txt', writeDto);
+      await controller.writeFile('client-uuid', 'agent-uuid', 'test.txt', writeDto, mockReq);
 
       expect(fileSystemProxyService.writeFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt', writeDto);
     });
@@ -386,9 +457,12 @@ describe('ClientsController', () => {
           modifiedAt: new Date('2024-01-01'),
         },
       ];
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.listDirectory.mockResolvedValue(mockFileNodes);
 
-      const result = await controller.listDirectory('client-uuid', 'agent-uuid', 'test-dir');
+      const result = await controller.listDirectory('client-uuid', 'agent-uuid', 'test-dir', mockReq);
 
       expect(result).toEqual(mockFileNodes);
       expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test-dir');
@@ -396,9 +470,12 @@ describe('ClientsController', () => {
 
     it('should use default path when not provided', async () => {
       const mockFileNodes: FileNodeDto[] = [];
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.listDirectory.mockResolvedValue(mockFileNodes);
 
-      await controller.listDirectory('client-uuid', 'agent-uuid');
+      await controller.listDirectory('client-uuid', 'agent-uuid', undefined, mockReq);
 
       expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '.');
     });
@@ -410,9 +487,12 @@ describe('ClientsController', () => {
         type: 'file',
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', 'new-file.txt', createDto);
+      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', 'new-file.txt', createDto, mockReq);
 
       expect(fileSystemProxyService.createFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
@@ -426,9 +506,12 @@ describe('ClientsController', () => {
       const createDto: CreateFileDto = {
         type: 'directory',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', 'new-dir', createDto);
+      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', 'new-dir', createDto, mockReq);
 
       expect(fileSystemProxyService.createFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
@@ -443,9 +526,18 @@ describe('ClientsController', () => {
         type: 'file',
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', ['nested', 'path', 'file.txt'], createDto);
+      await controller.createFileOrDirectory(
+        'client-uuid',
+        'agent-uuid',
+        ['nested', 'path', 'file.txt'],
+        createDto,
+        mockReq,
+      );
 
       expect(fileSystemProxyService.createFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
@@ -460,10 +552,13 @@ describe('ClientsController', () => {
         type: 'file',
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
-      await expect(controller.createFileOrDirectory('client-uuid', 'agent-uuid', undefined, createDto)).rejects.toThrow(
-        'File path is required',
-      );
+      await expect(
+        controller.createFileOrDirectory('client-uuid', 'agent-uuid', undefined, createDto, mockReq),
+      ).rejects.toThrow('File path is required');
     });
 
     it('should throw BadRequestException when path is an object', async () => {
@@ -471,18 +566,24 @@ describe('ClientsController', () => {
         type: 'file',
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
       await expect(
-        controller.createFileOrDirectory('client-uuid', 'agent-uuid', { invalid: 'path' }, createDto),
+        controller.createFileOrDirectory('client-uuid', 'agent-uuid', { invalid: 'path' }, createDto, mockReq),
       ).rejects.toThrow('File path must be a string or array, got object');
     });
   });
 
   describe('deleteFileOrDirectory', () => {
     it('should proxy delete file request', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.deleteFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.deleteFileOrDirectory('client-uuid', 'agent-uuid', 'file-to-delete.txt');
+      await controller.deleteFileOrDirectory('client-uuid', 'agent-uuid', 'file-to-delete.txt', mockReq);
 
       expect(fileSystemProxyService.deleteFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
@@ -497,9 +598,12 @@ describe('ClientsController', () => {
       const moveDto: MoveFileDto = {
         destination: 'new-location/file.txt',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.moveFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source-file.txt', moveDto);
+      await controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source-file.txt', moveDto, mockReq);
 
       expect(fileSystemProxyService.moveFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
@@ -513,9 +617,18 @@ describe('ClientsController', () => {
       const moveDto: MoveFileDto = {
         destination: 'new-location/file.txt',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.moveFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.moveFileOrDirectory('client-uuid', 'agent-uuid', ['nested', 'path', 'file.txt'], moveDto);
+      await controller.moveFileOrDirectory(
+        'client-uuid',
+        'agent-uuid',
+        ['nested', 'path', 'file.txt'],
+        moveDto,
+        mockReq,
+      );
 
       expect(fileSystemProxyService.moveFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
@@ -529,19 +642,25 @@ describe('ClientsController', () => {
       const moveDto: MoveFileDto = {
         destination: 'new-location/file.txt',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
-      await expect(controller.moveFileOrDirectory('client-uuid', 'agent-uuid', undefined, moveDto)).rejects.toThrow(
-        'File path is required',
-      );
+      await expect(
+        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', undefined, moveDto, mockReq),
+      ).rejects.toThrow('File path is required');
     });
 
     it('should throw BadRequestException when path is an object', async () => {
       const moveDto: MoveFileDto = {
         destination: 'new-location/file.txt',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
       await expect(
-        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', { invalid: 'path' }, moveDto),
+        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', { invalid: 'path' }, moveDto, mockReq),
       ).rejects.toThrow('File path must be a string or array, got object');
     });
 
@@ -549,10 +668,13 @@ describe('ClientsController', () => {
       const moveDto: MoveFileDto = {
         destination: '',
       };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
-      await expect(controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source.txt', moveDto)).rejects.toThrow(
-        'Destination path is required',
-      );
+      await expect(
+        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source.txt', moveDto, mockReq),
+      ).rejects.toThrow('Destination path is required');
     });
   });
 
@@ -650,7 +772,7 @@ describe('ClientsController', () => {
       const result = await controller.provisionServer(provisionDto);
 
       expect(result).toEqual(mockResponse);
-      expect(provisioningService.provisionServer).toHaveBeenCalledWith(provisionDto);
+      expect(provisioningService.provisionServer).toHaveBeenCalledWith(provisionDto, undefined);
     });
   });
 
@@ -664,10 +786,12 @@ describe('ClientsController', () => {
         serverStatus: 'running',
         providerType: 'hetzner',
       };
-
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       provisioningService.getServerInfo.mockResolvedValue(mockServerInfo);
 
-      const result = await controller.getServerInfo('client-uuid');
+      const result = await controller.getServerInfo('client-uuid', mockReq);
 
       expect(result).toEqual(mockServerInfo);
       expect(provisioningService.getServerInfo).toHaveBeenCalledWith('client-uuid');
@@ -676,9 +800,12 @@ describe('ClientsController', () => {
 
   describe('deleteProvisionedServer', () => {
     it('should delete a provisioned server and its client', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       provisioningService.deleteProvisionedServer.mockResolvedValue(undefined);
 
-      await controller.deleteProvisionedServer('client-uuid');
+      await controller.deleteProvisionedServer('client-uuid', mockReq);
 
       expect(provisioningService.deleteProvisionedServer).toHaveBeenCalledWith('client-uuid');
     });
@@ -700,9 +827,12 @@ describe('ClientsController', () => {
 
     describe('getClientAgentEnvironmentVariables', () => {
       it('should proxy get environment variables request', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.getEnvironmentVariables.mockResolvedValue([mockEnvVar]);
 
-        const result = await controller.getClientAgentEnvironmentVariables(clientId, agentId, 50, 0);
+        const result = await controller.getClientAgentEnvironmentVariables(clientId, agentId, 50, 0, mockReq);
 
         expect(result).toEqual([mockEnvVar]);
         expect(mockEnvironmentVariablesProxyService.getEnvironmentVariables).toHaveBeenCalledWith(
@@ -714,9 +844,12 @@ describe('ClientsController', () => {
       });
 
       it('should use default pagination parameters', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.getEnvironmentVariables.mockResolvedValue([]);
 
-        await controller.getClientAgentEnvironmentVariables(clientId, agentId);
+        await controller.getClientAgentEnvironmentVariables(clientId, agentId, undefined, undefined, mockReq);
 
         expect(mockEnvironmentVariablesProxyService.getEnvironmentVariables).toHaveBeenCalledWith(
           clientId,
@@ -729,9 +862,12 @@ describe('ClientsController', () => {
 
     describe('countClientAgentEnvironmentVariables', () => {
       it('should proxy count environment variables request', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.countEnvironmentVariables.mockResolvedValue({ count: 5 });
 
-        const result = await controller.countClientAgentEnvironmentVariables(clientId, agentId);
+        const result = await controller.countClientAgentEnvironmentVariables(clientId, agentId, mockReq);
 
         expect(result).toEqual({ count: 5 });
         expect(mockEnvironmentVariablesProxyService.countEnvironmentVariables).toHaveBeenCalledWith(clientId, agentId);
@@ -744,10 +880,12 @@ describe('ClientsController', () => {
           variable: 'API_KEY',
           content: 'secret-api-key-value',
         };
-
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.createEnvironmentVariable.mockResolvedValue(mockEnvVar);
 
-        const result = await controller.createClientAgentEnvironmentVariable(clientId, agentId, createDto);
+        const result = await controller.createClientAgentEnvironmentVariable(clientId, agentId, createDto, mockReq);
 
         expect(result).toEqual(mockEnvVar);
         expect(mockEnvironmentVariablesProxyService.createEnvironmentVariable).toHaveBeenCalledWith(
@@ -764,6 +902,9 @@ describe('ClientsController', () => {
           variable: 'UPDATED_API_KEY',
           content: 'updated-secret-value',
         };
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
         const updatedEnvVar: EnvironmentVariableResponseDto = {
           ...mockEnvVar,
@@ -773,7 +914,13 @@ describe('ClientsController', () => {
 
         mockEnvironmentVariablesProxyService.updateEnvironmentVariable.mockResolvedValue(updatedEnvVar);
 
-        const result = await controller.updateClientAgentEnvironmentVariable(clientId, agentId, envVarId, updateDto);
+        const result = await controller.updateClientAgentEnvironmentVariable(
+          clientId,
+          agentId,
+          envVarId,
+          updateDto,
+          mockReq,
+        );
 
         expect(result).toEqual(updatedEnvVar);
         expect(mockEnvironmentVariablesProxyService.updateEnvironmentVariable).toHaveBeenCalledWith(
@@ -787,9 +934,12 @@ describe('ClientsController', () => {
 
     describe('deleteClientAgentEnvironmentVariable', () => {
       it('should proxy delete environment variable request', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.deleteEnvironmentVariable.mockResolvedValue(undefined);
 
-        await controller.deleteClientAgentEnvironmentVariable(clientId, agentId, envVarId);
+        await controller.deleteClientAgentEnvironmentVariable(clientId, agentId, envVarId, mockReq);
 
         expect(mockEnvironmentVariablesProxyService.deleteEnvironmentVariable).toHaveBeenCalledWith(
           clientId,
@@ -801,15 +951,126 @@ describe('ClientsController', () => {
 
     describe('deleteAllClientAgentEnvironmentVariables', () => {
       it('should proxy delete all environment variables request', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.deleteAllEnvironmentVariables.mockResolvedValue({ deletedCount: 3 });
 
-        const result = await controller.deleteAllClientAgentEnvironmentVariables(clientId, agentId);
+        const result = await controller.deleteAllClientAgentEnvironmentVariables(clientId, agentId, mockReq);
 
         expect(result).toEqual({ deletedCount: 3 });
         expect(mockEnvironmentVariablesProxyService.deleteAllEnvironmentVariables).toHaveBeenCalledWith(
           clientId,
           agentId,
         );
+      });
+    });
+  });
+
+  describe('Client User Management', () => {
+    const clientId = 'client-uuid';
+    const relationshipId = 'relationship-uuid';
+    const mockClientUserResponse: ClientUserResponseDto = {
+      id: relationshipId,
+      userId: 'user-uuid',
+      clientId: clientId,
+      role: 'user' as ClientUserRole,
+      userEmail: 'test@example.com',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+    };
+
+    describe('getClientUsers', () => {
+      it('should return list of client users', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+        clientUsersService.getClientUsers.mockResolvedValue([mockClientUserResponse]);
+
+        const result = await controller.getClientUsers(clientId, mockReq);
+
+        expect(result).toEqual([mockClientUserResponse]);
+        expect(clientUsersService.getClientUsers).toHaveBeenCalledWith(clientId);
+      });
+
+      it('should throw ForbiddenException when user does not have access', async () => {
+        const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', role: 'user' } } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: 'other-user-id' } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+        await expect(controller.getClientUsers(clientId, mockReq)).rejects.toThrow(ForbiddenException);
+        expect(clientUsersService.getClientUsers).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('addClientUser', () => {
+      it('should add a user to a client', async () => {
+        const addClientUserDto: AddClientUserDto = {
+          email: 'newuser@example.com',
+          role: 'user' as ClientUserRole,
+        };
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientsRepository.findByIdOrThrow.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+        clientUsersService.addUserToClient.mockResolvedValue(mockClientUserResponse);
+
+        const result = await controller.addClientUser(clientId, addClientUserDto, mockReq);
+
+        expect(result).toEqual(mockClientUserResponse);
+        expect(clientUsersService.addUserToClient).toHaveBeenCalledWith(
+          clientId,
+          addClientUserDto,
+          '',
+          UserRole.USER,
+          false,
+          undefined,
+        );
+      });
+
+      it('should throw ForbiddenException when user does not have access', async () => {
+        const addClientUserDto: AddClientUserDto = {
+          email: 'newuser@example.com',
+          role: 'user' as ClientUserRole,
+        };
+        const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', role: 'user' } } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: 'other-user-id' } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+        await expect(controller.addClientUser(clientId, addClientUserDto, mockReq)).rejects.toThrow(ForbiddenException);
+        expect(clientUsersService.addUserToClient).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('removeClientUser', () => {
+      it('should remove a user from a client', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientsRepository.findByIdOrThrow.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+        clientUsersService.removeUserFromClient.mockResolvedValue(undefined);
+
+        await controller.removeClientUser(clientId, relationshipId, mockReq);
+
+        expect(clientUsersService.removeUserFromClient).toHaveBeenCalledWith(
+          clientId,
+          relationshipId,
+          '',
+          UserRole.USER,
+          false,
+          undefined,
+        );
+      });
+
+      it('should throw ForbiddenException when user does not have access', async () => {
+        const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', role: 'user' } } as any;
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: 'other-user-id' } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+        await expect(controller.removeClientUser(clientId, relationshipId, mockReq)).rejects.toThrow(
+          ForbiddenException,
+        );
+        expect(clientUsersService.removeUserFromClient).not.toHaveBeenCalled();
       });
     });
   });

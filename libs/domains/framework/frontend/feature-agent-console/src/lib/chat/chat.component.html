@@ -199,6 +199,15 @@
                         <button
                           type="button"
                           class="btn btn-sm btn-outline-primary"
+                          (click)="onManageClientUsersClick(client); $event.stopPropagation()"
+                          i18n-title="@@featureChat-manageClientUsersTitle"
+                          title="Manage workspace users"
+                        >
+                          <i class="bi bi-people"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-primary"
                           (click)="onEditClientClick(client); $event.stopPropagation()"
                           [disabled]="(clientsUpdating$ | async) === true"
                           i18n-title="@@featureChat-editWorkspaceTitle"
@@ -2208,6 +2217,178 @@
           data-bs-dismiss="modal"
           (click)="onCloseEnvironmentVariablesModal()"
           [disabled]="(environmentVariablesCreating$ | async) === true"
+        >
+          <span i18n="@@featureChat-close">Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Client Users Modal -->
+<div
+  class="modal fade"
+  id="clientUsersModal"
+  tabindex="-1"
+  aria-labelledby="clientUsersModalLabel"
+  aria-hidden="true"
+  #clientUsersModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clientUsersModalLabel" i18n="@@featureChat-manageClientUsersModalTitle">
+          Manage Workspace Users
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          (click)="onCloseClientUsersModal()"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="(clientUsersAdding$ | async) === true"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (clientUsersError$ | async; as error) {
+          <div class="alert alert-danger mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ error }}
+          </div>
+        }
+        @if (clientUsersModalPermissions$ | async; as perms) {
+          @if (perms.canAddUser) {
+            <!-- Add New User Form -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h6 class="mb-0" i18n="@@featureChat-addClientUser">Add User to Workspace</h6>
+              </div>
+              <div class="card-body">
+                <form #addClientUserForm="ngForm" (ngSubmit)="onSubmitAddClientUser()">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="clientUserEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="clientUserEmail"
+                        name="email"
+                        [ngModel]="newClientUser().email"
+                        (ngModelChange)="updateClientUserField('email', $event)"
+                        required
+                        i18n-placeholder="@@featureChat-clientUserEmailPlaceholder"
+                        placeholder="user&#64;example.com"
+                        [disabled]="(clientUsersAdding$ | async) === true"
+                      />
+                    </div>
+                    <div class="col-md-5">
+                      <label for="clientUserRole" class="form-label">Role <span class="text-danger">*</span></label>
+                      <select
+                        class="form-select"
+                        id="clientUserRole"
+                        name="role"
+                        [ngModel]="perms.canAddAdminRole ? newClientUser().role : 'user'"
+                        (ngModelChange)="updateClientUserField('role', perms.canAddAdminRole ? $event : 'user')"
+                        required
+                        [disabled]="(clientUsersAdding$ | async) === true"
+                      >
+                        <option value="user" i18n="@@featureChat-clientUserRoleUser">User</option>
+                        @if (perms.canAddAdminRole) {
+                          <option value="admin" i18n="@@featureChat-clientUserRoleAdmin">Admin</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                      <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                        [disabled]="!addClientUserForm.valid || (clientUsersAdding$ | async) === true"
+                        i18n-title="@@featureChat-addClientUserTitle"
+                        title="Add user"
+                      >
+                        @if (clientUsersAdding$ | async) {
+                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        } @else {
+                          <i class="bi bi-plus-lg"></i>
+                        }
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Client Users List -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0" i18n="@@featureChat-clientUsers">Workspace Users</h6>
+            @if (clientUsersLoading$ | async) {
+              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            }
+          </div>
+          <div class="card-body">
+            @if (clientUsersLoading$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden" i18n="@@featureChat-loadingClientUsers"
+                    >Loading workspace users...</span
+                  >
+                </div>
+              </div>
+            } @else {
+              @if (clientUsers$ | async; as users) {
+                @if (users.length === 0) {
+                  <div class="text-center text-muted py-4">
+                    <i class="bi bi-people fs-1 d-block mb-2"></i>
+                    <p class="mb-0" i18n="@@featureChat-noClientUsers">No users assigned to this workspace</p>
+                  </div>
+                } @else {
+                  <div class="list-group list-group-flush">
+                    @for (user of users; track user.id) {
+                      <div class="list-group-item border-bottom d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                          <div class="fw-semibold mb-1">{{ user.userEmail || user.userId }}</div>
+                          <small class="text-muted text-capitalize">{{ user.role }}</small>
+                        </div>
+                        @if (clientUsersModalPermissions$ | async; as perms) {
+                          @if (perms.canRemoveUser(user)) {
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-outline-danger"
+                              (click)="onRemoveClientUser(user.id)"
+                              [disabled]="(getRemovingClientUser$(user.id) | async) === true"
+                              i18n-title="@@featureChat-removeClientUserTitle"
+                              title="Remove user"
+                            >
+                              @if (getRemovingClientUser$(user.id) | async) {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                              } @else {
+                                <i class="bi bi-trash"></i>
+                              }
+                            </button>
+                          }
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="onCloseClientUsersModal()"
+          [disabled]="(clientUsersAdding$ | async) === true"
         >
           <span i18n="@@featureChat-close">Close</span>
         </button>

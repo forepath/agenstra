@@ -10,8 +10,24 @@ import {
   StageFilesDto,
   UnstageFilesDto,
 } from '@forepath/framework/backend/feature-agent-manager';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { Resource } from 'nest-keycloak-connect';
+import { ensureClientAccess, type RequestWithUser } from './utils/client-access.utils';
+import { ClientUsersRepository } from './repositories/client-users.repository';
+import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentVcsProxyService } from './services/client-agent-vcs-proxy.service';
 
 /**
@@ -21,7 +37,11 @@ import { ClientAgentVcsProxyService } from './services/client-agent-vcs-proxy.se
 @Resource('clients')
 @Controller('clients/:clientId/agents/:agentId/vcs')
 export class ClientsVcsController {
-  constructor(private readonly clientAgentVcsProxyService: ClientAgentVcsProxyService) {}
+  constructor(
+    private readonly clientAgentVcsProxyService: ClientAgentVcsProxyService,
+    private readonly clientsRepository: ClientsRepository,
+    private readonly clientUsersRepository: ClientUsersRepository,
+  ) {}
 
   /**
    * Get git status for the agent's repository.
@@ -33,7 +53,9 @@ export class ClientsVcsController {
   async getStatus(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<GitStatusDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.clientAgentVcsProxyService.getStatus(clientId, agentId);
   }
 
@@ -47,7 +69,9 @@ export class ClientsVcsController {
   async getBranches(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<GitBranchDto[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.clientAgentVcsProxyService.getBranches(clientId, agentId);
   }
 
@@ -63,10 +87,12 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Query('path') filePath: string,
+    @Req() req?: RequestWithUser,
   ): Promise<GitDiffDto> {
     if (!filePath) {
-      throw new Error('File path is required');
+      throw new BadRequestException('File path is required');
     }
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.clientAgentVcsProxyService.getFileDiff(clientId, agentId, filePath);
   }
 
@@ -82,7 +108,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() stageFilesDto: StageFilesDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.stageFiles(clientId, agentId, stageFilesDto);
   }
 
@@ -98,7 +126,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() unstageFilesDto: UnstageFilesDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.unstageFiles(clientId, agentId, unstageFilesDto);
   }
 
@@ -114,7 +144,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() commitDto: CommitDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.commit(clientId, agentId, commitDto);
   }
 
@@ -130,7 +162,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() pushOptions: PushOptionsDto = {},
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.push(clientId, agentId, pushOptions);
   }
 
@@ -144,7 +178,9 @@ export class ClientsVcsController {
   async pull(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.pull(clientId, agentId);
   }
 
@@ -158,7 +194,9 @@ export class ClientsVcsController {
   async fetch(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.fetch(clientId, agentId);
   }
 
@@ -174,7 +212,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() rebaseDto: RebaseDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.rebase(clientId, agentId, rebaseDto);
   }
 
@@ -190,7 +230,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('branch') branch: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.switchBranch(clientId, agentId, branch);
   }
 
@@ -206,7 +248,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() createBranchDto: CreateBranchDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.createBranch(clientId, agentId, createBranchDto);
   }
 
@@ -222,7 +266,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('branch') branch: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.deleteBranch(clientId, agentId, branch);
   }
 
@@ -238,7 +284,9 @@ export class ClientsVcsController {
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() resolveConflictDto: ResolveConflictDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.clientAgentVcsProxyService.resolveConflict(clientId, agentId, resolveConflictDto);
   }
 }

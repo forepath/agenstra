@@ -4,7 +4,9 @@ import type { Environment } from '@forepath/framework/frontend/util-configuratio
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
 import type {
+  AddClientUserDto,
   ClientResponseDto,
+  ClientUserResponseDto,
   CreateClientDto,
   CreateClientResponseDto,
   ListClientsParams,
@@ -108,5 +110,26 @@ export class ClientsService {
    */
   deleteProvisionedServer(clientId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/clients/${clientId}/provisioning`);
+  }
+
+  /**
+   * List users associated with a client.
+   */
+  getClientUsers(clientId: string): Observable<ClientUserResponseDto[]> {
+    return this.http.get<ClientUserResponseDto[]>(`${this.apiUrl}/clients/${clientId}/users`);
+  }
+
+  /**
+   * Add a user to a client by email.
+   */
+  addClientUser(clientId: string, dto: AddClientUserDto): Observable<ClientUserResponseDto> {
+    return this.http.post<ClientUserResponseDto>(`${this.apiUrl}/clients/${clientId}/users`, dto);
+  }
+
+  /**
+   * Remove a user from a client.
+   */
+  removeClientUser(clientId: string, relationshipId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/clients/${clientId}/users/${relationshipId}`);
   }
 }

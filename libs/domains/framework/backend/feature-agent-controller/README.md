@@ -25,6 +25,7 @@ Clients are entities that represent remote agent-manager services. The controlle
 - ✅ Support for configurable agent WebSocket ports per client
 - ✅ Credential storage for proxied agent operations
 - ✅ **Server Provisioning** - Automated cloud server provisioning with Docker and agent-manager deployment
+- ✅ **Per-Client Permissions** - Fine-grained access control with user roles per client (admin/user)
 
 ## Architecture
 
@@ -33,11 +34,14 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
 - **Entities**:
   - `ClientEntity` - Domain model representing a client (remote agent-manager service)
   - `ClientAgentCredentialEntity` - Stores credentials for agents created via proxied requests
+  - `ClientUserEntity` - Many-to-many relationship between users and clients with per-client roles
 - **Repositories**:
   - `ClientsRepository` - Data access layer for client operations
   - `ClientAgentCredentialsRepository` - Data access layer for agent credentials
+  - `ClientUsersRepository` - Data access layer for client-user relationships
 - **Services**:
-  - `ClientsService` - Business logic orchestration for clients
+  - `ClientsService` - Business logic orchestration for clients with permission checks
+  - `ClientUsersService` - Manages client-user relationships and role-based access control
   - `ClientAgentProxyService` - Proxies HTTP requests to remote agent-manager services
   - `ClientAgentFileSystemProxyService` - Proxies file system operations to remote agent-manager services
   - `ClientAgentEnvironmentVariablesProxyService` - Proxies environment variable operations to remote agent-manager services
@@ -112,9 +116,69 @@ export class MyService {
 }
 ```
 
+## Per-Client Permissions
+
+Agenstra supports fine-grained per-client permissions to enable multi-tenant scenarios. Each client has:
+
+1. **Creator** (`user_id`): The user who created the client. This is automatically set when a client is created (or null in api-key mode).
+2. **Associated Users** (`client_users` table): A many-to-many relationship allowing multiple users to access a client with different roles.
+
+### Access Control Rules
+
+Access to a client is granted if:
+
+- The user is a **global admin** (role `admin` in the `users` table)
+- The user is the **creator** of the client (`user_id` matches)
+- The user is in the `client_users` relationship table for that client
+
+In **api-key mode** (`AUTHENTICATION_METHOD=api-key`), all permission checks are bypassed and access is always granted.
+
+### Client Roles
+
+Each user-client relationship has a role:
+
+- **`admin`**: Can manage users (add/remove) and has full access to the client
+- **`user`**: Can access the client but cannot manage users
+
+### Permission Matrix
+
+| User Type      | Can Create Clients | Can View Own Clients | Can View Other Clients | Can Add Users       | Can Remove Users |
+| -------------- | ------------------ | -------------------- | ---------------------- | ------------------- | ---------------- |
+| Global Admin   | ✅                 | ✅                   | ✅ (all)               | ✅ (any role)       | ✅ (anyone)      |
+| Client Creator | ✅                 | ✅                   | ❌                     | ✅ (any role)       | ✅ (anyone)      |
+| Client Admin   | ❌                 | ✅ (assigned)        | ❌                     | ✅ (user role only) | ✅ (users only)  |
+| Client User    | ❌                 | ✅ (assigned)        | ❌                     | ❌                  | ❌               |
+| API Key Mode   | ✅                 | ✅                   | ✅ (all)               | ✅ (any role)       | ✅ (anyone)      |
+
+### Managing Client Users
+
+Users are added to clients by their email address:
+
+```typescript
+// Add a user to a client
+POST /api/clients/{clientId}/users
+{
+  "email": "user@example.com",
+  "role": "user"  // or "admin"
+}
+```
+
+The user must exist in the system (in the `users` table) before they can be added to a client.
+
+### Filtering
+
+When listing clients (`GET /api/clients`), only clients the user has access to are returned:
+
+- Global admins see all clients
+- Regular users see only:
+  - Clients they created
+  - Clients where they are in the `client_users` relationship table
+
 ## API Endpoints
 
 All HTTP endpoints require authentication (except `/api/health` and public auth endpoints). The authentication method depends on `AUTHENTICATION_METHOD`; see [Authentication](#authentication) above.
+
+**Note**: All endpoints that access a specific client (`/api/clients/:id/*`) now check permissions. Users without access will receive a `403 Forbidden` response.
 
 Base URL: `/api`
 
@@ -172,6 +236,12 @@ Base URL: `/api`
 - `POST /api/clients/:id/agents/:agentId/vcs/branches` - Create a new branch (proxied)
 - `DELETE /api/clients/:id/agents/:agentId/vcs/branches/:branch` - Delete a branch (proxied)
 - `POST /api/clients/:id/agents/:agentId/vcs/conflicts/resolve` - Resolve merge conflicts (proxied)
+
+### Client User Management
+
+- `GET /api/clients/:id/users` - List all users associated with a client
+- `POST /api/clients/:id/users` - Add a user to a client by email address
+- `DELETE /api/clients/:id/users/:relationshipId` - Remove a user from a client
 
 ### Server Provisioning
 

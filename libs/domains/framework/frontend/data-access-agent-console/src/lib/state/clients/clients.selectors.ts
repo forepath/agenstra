@@ -68,3 +68,16 @@ export const selectLoadingServerInfo = (clientId: string) =>
 
 export const selectDeletingProvisionedServer = (clientId: string) =>
   createSelector(selectClientsState, (state) => state.deletingProvisionedServer[clientId] ?? false);
+
+// Client user management selectors
+export const selectClientUsers = (clientId: string) =>
+  createSelector(selectClientsState, (state) => state.clientUsers[clientId] ?? []);
+
+export const selectLoadingClientUsers = (clientId: string) =>
+  createSelector(selectClientsState, (state) => state.loadingClientUsers[clientId] ?? false);
+
+export const selectAddingClientUser = (clientId: string) =>
+  createSelector(selectClientsState, (state) => state.addingClientUser[clientId] ?? false);
+
+export const selectRemovingClientUser = (relationshipId: string) =>
+  createSelector(selectClientsState, (state) => state.removingClientUser[relationshipId] ?? false);

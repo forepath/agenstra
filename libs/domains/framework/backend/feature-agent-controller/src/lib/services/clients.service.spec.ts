@@ -5,6 +5,7 @@ import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { AuthenticationType, ClientEntity } from '../entities/client.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
+import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
@@ -17,6 +18,7 @@ describe('ClientsService', () => {
   let keycloakTokenService: jest.Mocked<KeycloakTokenService>;
   let clientAgentProxyService: jest.Mocked<ClientAgentProxyService>;
   let provisioningReferencesRepository: jest.Mocked<ProvisioningReferencesRepository>;
+  let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
 
   const mockClient: ClientEntity = {
     id: 'test-uuid',
@@ -66,6 +68,11 @@ describe('ClientsService', () => {
     findByClientId: jest.fn(),
   };
 
+  const mockClientUsersRepository = {
+    findUserClientAccess: jest.fn(),
+    findByUserId: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,6 +93,10 @@ describe('ClientsService', () => {
           provide: ProvisioningReferencesRepository,
           useValue: mockProvisioningReferencesRepository,
         },
+        {
+          provide: ClientUsersRepository,
+          useValue: mockClientUsersRepository,
+        },
       ],
     }).compile();
 
@@ -94,6 +105,7 @@ describe('ClientsService', () => {
     keycloakTokenService = module.get(KeycloakTokenService);
     clientAgentProxyService = module.get(ClientAgentProxyService);
     provisioningReferencesRepository = module.get(ProvisioningReferencesRepository);
+    clientUsersRepository = module.get(ClientUsersRepository);
   });
 
   afterEach(() => {
@@ -131,13 +143,16 @@ describe('ClientsService', () => {
       expect(result.apiKey?.length).toBeGreaterThan(0);
       expect(typeof result.apiKey).toBe('string');
       expect(repository.findByName).toHaveBeenCalledWith(createDto.name);
-      expect(repository.create).toHaveBeenCalledWith({
-        name: createDto.name,
-        description: createDto.description,
-        endpoint: createDto.endpoint,
-        authenticationType: createDto.authenticationType,
-        apiKey: expect.any(String),
-      });
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createDto.name,
+          description: createDto.description,
+          endpoint: createDto.endpoint,
+          authenticationType: createDto.authenticationType,
+          apiKey: expect.any(String),
+          userId: null,
+        }),
+      );
     });
 
     it('should create client with Keycloak credentials for KEYCLOAK type', async () => {
@@ -167,16 +182,19 @@ describe('ClientsService', () => {
       expect(result.name).toBe(createDto.name);
       expect(result.authenticationType).toBe(AuthenticationType.KEYCLOAK);
       expect(result.apiKey).toBeUndefined();
-      expect(repository.create).toHaveBeenCalledWith({
-        name: createDto.name,
-        description: undefined,
-        endpoint: createDto.endpoint,
-        authenticationType: createDto.authenticationType,
-        apiKey: undefined,
-        keycloakClientId: createDto.keycloakClientId,
-        keycloakClientSecret: createDto.keycloakClientSecret,
-        keycloakRealm: createDto.keycloakRealm,
-      });
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createDto.name,
+          description: undefined,
+          endpoint: createDto.endpoint,
+          authenticationType: createDto.authenticationType,
+          apiKey: undefined,
+          keycloakClientId: createDto.keycloakClientId,
+          keycloakClientSecret: createDto.keycloakClientSecret,
+          keycloakRealm: createDto.keycloakRealm,
+          userId: null,
+        }),
+      );
     });
 
     it('should throw BadRequestException when KEYCLOAK type is missing credentials', async () => {
@@ -215,13 +233,16 @@ describe('ClientsService', () => {
 
       expect(result.name).toBe(createDto.name);
       expect(result.description).toBeUndefined();
-      expect(repository.create).toHaveBeenCalledWith({
-        name: createDto.name,
-        description: undefined,
-        endpoint: createDto.endpoint,
-        authenticationType: createDto.authenticationType,
-        apiKey: expect.any(String),
-      });
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createDto.name,
+          description: undefined,
+          endpoint: createDto.endpoint,
+          authenticationType: createDto.authenticationType,
+          apiKey: expect.any(String),
+          userId: null,
+        }),
+      );
     });
 
     it('should create client with provided API key', async () => {
@@ -246,13 +267,16 @@ describe('ClientsService', () => {
       const result = await service.create(createDto);
 
       expect(result.apiKey).toBe(providedApiKey);
-      expect(repository.create).toHaveBeenCalledWith({
-        name: createDto.name,
-        description: undefined,
-        endpoint: createDto.endpoint,
-        authenticationType: createDto.authenticationType,
-        apiKey: providedApiKey,
-      });
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createDto.name,
+          description: undefined,
+          endpoint: createDto.endpoint,
+          authenticationType: createDto.authenticationType,
+          apiKey: providedApiKey,
+          userId: null,
+        }),
+      );
     });
 
     it('should throw BadRequestException when client name already exists', async () => {
@@ -289,7 +313,7 @@ describe('ClientsService', () => {
       clientAgentProxyService.getClientConfig.mockResolvedValue(mockConfig);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
 
-      const result = await service.findAll(10, 0);
+      const result = await service.findAll(10, 0, undefined, undefined, true);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe(mockClient.id);
@@ -307,7 +331,7 @@ describe('ClientsService', () => {
       clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
 
-      const result = await service.findAll(10, 0);
+      const result = await service.findAll(10, 0, undefined, undefined, true);
 
       expect(result).toHaveLength(1);
       expect(result[0].isAutoProvisioned).toBe(false);
@@ -320,7 +344,7 @@ describe('ClientsService', () => {
       clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
 
-      const result = await service.findAll(10, 0);
+      const result = await service.findAll(10, 0, undefined, undefined, true);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe(mockClient.id);
@@ -335,7 +359,7 @@ describe('ClientsService', () => {
       clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
 
-      await service.findAll();
+      await service.findAll(10, 0, undefined, undefined, true);
 
       expect(repository.findAll).toHaveBeenCalledWith(10, 0);
     });
@@ -360,7 +384,7 @@ describe('ClientsService', () => {
       clientAgentProxyService.getClientConfig.mockResolvedValue(mockConfig);
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
 
-      const result = await service.findOne('test-uuid');
+      const result = await service.findOne('test-uuid', undefined, undefined, true);
 
       expect(result.id).toBe(mockClient.id);
       expect(result).not.toHaveProperty('apiKey');
@@ -376,7 +400,7 @@ describe('ClientsService', () => {
       clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
 
-      const result = await service.findOne('test-uuid');
+      const result = await service.findOne('test-uuid', undefined, undefined, true);
 
       expect(result.id).toBe(mockClient.id);
       expect(result.config).toBeUndefined();
@@ -398,11 +422,12 @@ describe('ClientsService', () => {
         agentTypes: [{ type: 'cursor', displayName: 'Cursor' }],
       };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(null);
       repository.update.mockResolvedValue(updatedClient);
       clientAgentProxyService.getClientConfig.mockResolvedValue(mockConfig);
 
-      const result = await service.update('test-uuid', updateDto);
+      const result = await service.update('test-uuid', updateDto, undefined, undefined, true);
 
       expect(result.name).toBe(updateDto.name);
       expect(result.description).toBe(updateDto.description);
@@ -417,10 +442,11 @@ describe('ClientsService', () => {
       };
       const updatedClient = { ...mockClient, endpoint: updateDto.endpoint };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(null);
       repository.update.mockResolvedValue(updatedClient);
 
-      const result = await service.update('test-uuid', updateDto);
+      const result = await service.update('test-uuid', updateDto, undefined, undefined, true);
 
       expect(result.endpoint).toBe(updateDto.endpoint);
     });
@@ -440,11 +466,12 @@ describe('ClientsService', () => {
         keycloakRealm: updateDto.keycloakRealm,
       };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(null);
       mockRepository.findById.mockResolvedValue(mockClient);
       repository.update.mockResolvedValue(updatedClient);
 
-      const result = await service.update('test-uuid', updateDto);
+      const result = await service.update('test-uuid', updateDto, undefined, undefined, true);
 
       expect(result.authenticationType).toBe(AuthenticationType.KEYCLOAK);
     });
@@ -454,10 +481,13 @@ describe('ClientsService', () => {
         authenticationType: AuthenticationType.KEYCLOAK,
       };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(null);
       mockRepository.findById.mockResolvedValue(mockClient);
 
-      await expect(service.update('test-uuid', updateDto)).rejects.toThrow(BadRequestException);
+      await expect(service.update('test-uuid', updateDto, undefined, undefined, true)).rejects.toThrow(
+        BadRequestException,
+      );
       await expect(service.update('test-uuid', updateDto)).rejects.toThrow(
         'Keycloak client ID and client secret are required when changing authentication type to KEYCLOAK',
       );
@@ -475,11 +505,12 @@ describe('ClientsService', () => {
       };
 
       process.env.KEYCLOAK_AUTH_SERVER_URL = 'https://keycloak.example.com';
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClient);
       mockRepository.findByName.mockResolvedValue(null);
       mockRepository.findById.mockResolvedValue(mockKeycloakClient);
       repository.update.mockResolvedValue(updatedClient);
 
-      await service.update('keycloak-client-uuid', updateDto);
+      await service.update('keycloak-client-uuid', updateDto, undefined, undefined, true);
 
       expect(keycloakTokenService.clearCache).toHaveBeenCalledWith(
         'https://keycloak.example.com',
@@ -495,9 +526,12 @@ describe('ClientsService', () => {
       };
       const conflictingClient = { ...mockClient, id: 'different-id' };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(conflictingClient);
 
-      await expect(service.update('test-uuid', updateDto)).rejects.toThrow(BadRequestException);
+      await expect(service.update('test-uuid', updateDto, undefined, undefined, true)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should allow updating to same name', async () => {
@@ -506,10 +540,11 @@ describe('ClientsService', () => {
       };
       const updatedClient = { ...mockClient, name: updateDto.name };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(mockClient);
       repository.update.mockResolvedValue(updatedClient);
 
-      const result = await service.update('test-uuid', updateDto);
+      const result = await service.update('test-uuid', updateDto, undefined, undefined, true);
 
       expect(result.name).toBe(updateDto.name);
     });
@@ -520,10 +555,11 @@ describe('ClientsService', () => {
       };
       const updatedClient = { ...mockClient, name: updateDto.name };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(null);
       repository.update.mockResolvedValue(updatedClient);
 
-      await service.update('test-uuid', updateDto);
+      await service.update('test-uuid', updateDto, undefined, undefined, true);
 
       expect(repository.update).toHaveBeenCalledWith('test-uuid', {
         name: updateDto.name,
@@ -537,10 +573,11 @@ describe('ClientsService', () => {
       };
       const updatedClient = { ...mockClient, apiKey: newApiKey };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(null);
       repository.update.mockResolvedValue(updatedClient);
 
-      const result = await service.update('test-uuid', updateDto);
+      const result = await service.update('test-uuid', updateDto, undefined, undefined, true);
 
       expect(result).not.toHaveProperty('apiKey');
       expect(repository.update).toHaveBeenCalledWith('test-uuid', {
@@ -556,10 +593,11 @@ describe('ClientsService', () => {
       };
       const updatedClient = { ...mockClient, name: updateDto.name, apiKey: newApiKey };
 
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       mockRepository.findByName.mockResolvedValue(null);
       repository.update.mockResolvedValue(updatedClient);
 
-      const result = await service.update('test-uuid', updateDto);
+      const result = await service.update('test-uuid', updateDto, undefined, undefined, true);
 
       expect(result.name).toBe(updateDto.name);
       expect(result).not.toHaveProperty('apiKey');
@@ -575,7 +613,7 @@ describe('ClientsService', () => {
       mockRepository.findByIdOrThrow.mockResolvedValue(mockClient);
       repository.delete.mockResolvedValue(undefined);
 
-      await service.remove('test-uuid');
+      await service.remove('test-uuid', undefined, undefined, true);
 
       expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
       expect(repository.delete).toHaveBeenCalledWith('test-uuid');
@@ -586,7 +624,7 @@ describe('ClientsService', () => {
       mockRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClient);
       repository.delete.mockResolvedValue(undefined);
 
-      await service.remove('keycloak-client-uuid');
+      await service.remove('keycloak-client-uuid', undefined, undefined, true);
 
       expect(keycloakTokenService.clearCache).toHaveBeenCalledWith(
         'https://keycloak.example.com',

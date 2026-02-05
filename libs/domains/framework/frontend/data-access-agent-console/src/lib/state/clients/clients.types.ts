@@ -121,3 +121,21 @@ export interface ServerInfo {
   serverStatus?: string;
   providerType: string;
 }
+
+// Client user management (per-client permissions)
+export type ClientUserRole = 'admin' | 'user';
+
+export interface ClientUserResponseDto {
+  id: string;
+  userId: string;
+  clientId: string;
+  role: ClientUserRole;
+  userEmail?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AddClientUserDto {
+  email: string;
+  role: ClientUserRole;
+}

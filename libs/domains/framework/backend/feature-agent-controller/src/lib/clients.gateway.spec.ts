@@ -1,8 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserRole } from './entities/user.entity';
 import { ClientsGateway } from './clients.gateway';
 import { ClientAgentCredentialsRepository } from './repositories/client-agent-credentials.repository';
+import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientsService } from './services/clients.service';
+import { SocketAuthService } from './services/socket-auth.service';
 
 jest.mock(
   'socket.io-client',
@@ -91,6 +94,7 @@ describe('ClientsGateway', () => {
   };
 
   const mockClientsRepository = {
+    findById: jest.fn(),
     findByIdOrThrow: jest.fn(),
   };
 
@@ -98,23 +102,38 @@ describe('ClientsGateway', () => {
     findByClientAndAgent: jest.fn(),
   };
 
-  const createMockSocket = (id = 'socket-1') => {
+  const mockClientUsersRepository = {
+    findUserClientAccess: jest.fn(),
+  };
+
+  const mockSocketAuthService = {
+    validateAndGetUser: jest
+      .fn()
+      .mockResolvedValue({ isApiKeyAuth: true, user: { id: 'api-key-user', roles: ['admin'] } }),
+  };
+
+  const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
-    return {
+    const socket = {
       id,
       emit: jest.fn((event: string, payload: unknown) => emitted.push({ event, payload })),
       getEmitted: () => emitted,
       connected: true, // Required for event forwarding in gateway
+      data: withUserInfo ? { userInfo: { isApiKeyAuth: true, user: { id: 'api-key-user', roles: ['admin'] } } } : {},
     } as any;
+    return socket;
   };
 
   beforeEach(async () => {
+    mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ClientsGateway,
         { provide: ClientsService, useValue: mockClientsService },
         { provide: ClientsRepository, useValue: mockClientsRepository },
+        { provide: ClientUsersRepository, useValue: mockClientUsersRepository },
         { provide: ClientAgentCredentialsRepository, useValue: mockCredentialsRepo },
+        { provide: SocketAuthService, useValue: mockSocketAuthService },
       ],
     }).compile();
 
@@ -157,6 +176,41 @@ describe('ClientsGateway', () => {
     const socket = createMockSocket();
     await gateway.handleSetClient({} as any, socket);
     expect(socket.emit).toHaveBeenCalledWith('error', expect.objectContaining({ message: expect.any(String) }));
+  });
+
+  it('should emit Unauthorized when socket has no userInfo', async () => {
+    const socket = createMockSocket('socket-1', false);
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+      agentWsPort: 8099,
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    expect(socket.emit).toHaveBeenCalledWith('error', { message: 'Unauthorized' });
+  });
+
+  it('should emit error when user lacks access to client (403)', async () => {
+    const socket = createMockSocket();
+    (socket as any).data = {
+      userInfo: {
+        userId: 'user-without-access',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+        user: { id: 'user-without-access', roles: ['user'] },
+      },
+    };
+    mockClientsRepository.findById.mockResolvedValue({
+      id: 'client-uuid',
+      userId: 'other-owner',
+    } as any);
+    mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    expect(socket.emit).toHaveBeenCalledWith(
+      'error',
+      expect.objectContaining({ message: 'You do not have access to this client' }),
+    );
   });
 
   it('should emit error on setClient when findOne throws', async () => {

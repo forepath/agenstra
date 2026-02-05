@@ -290,9 +290,13 @@ DOCKER_COMPOSE_EOF
   /**
    * Provision a new server and create a client.
    * @param provisionServerDto - Provisioning options
+   * @param userId - The UUID of the user creating the client (optional, for api-key mode)
    * @returns Provisioned server response with client information
    */
-  async provisionServer(provisionServerDto: ProvisionServerDto): Promise<ProvisionedServerResponseDto> {
+  async provisionServer(
+    provisionServerDto: ProvisionServerDto,
+    userId?: string,
+  ): Promise<ProvisionedServerResponseDto> {
     // Get the provider
     if (!this.provisioningProviderFactory.hasProvider(provisionServerDto.providerType)) {
       throw new BadRequestException(
@@ -353,17 +357,20 @@ DOCKER_COMPOSE_EOF
     this.logger.log(`Server provisioned: ${provisionedServer.serverId} at ${provisionedServer.endpoint}`);
 
     // Create client in database
-    const client = await this.clientsService.create({
-      name: provisionServerDto.name,
-      description: provisionServerDto.description || `Provisioned via ${provisionServerDto.providerType}`,
-      endpoint: provisionedServer.endpoint,
-      authenticationType: provisionServerDto.authenticationType,
-      apiKey,
-      keycloakClientId: provisionServerDto.keycloakClientId,
-      keycloakClientSecret: provisionServerDto.keycloakClientSecret,
-      keycloakRealm: provisionServerDto.keycloakRealm,
-      agentWsPort: provisionServerDto.agentWsPort || 8443,
-    });
+    const client = await this.clientsService.create(
+      {
+        name: provisionServerDto.name,
+        description: provisionServerDto.description || `Provisioned via ${provisionServerDto.providerType}`,
+        endpoint: provisionedServer.endpoint,
+        authenticationType: provisionServerDto.authenticationType,
+        apiKey,
+        keycloakClientId: provisionServerDto.keycloakClientId,
+        keycloakClientSecret: provisionServerDto.keycloakClientSecret,
+        keycloakRealm: provisionServerDto.keycloakRealm,
+        agentWsPort: provisionServerDto.agentWsPort || 8443,
+      },
+      userId,
+    );
 
     // Create provisioning reference
     const reference = await this.provisioningReferencesRepository.create({
@@ -419,7 +426,9 @@ DOCKER_COMPOSE_EOF
     }
 
     // Delete client (this will cascade delete the provisioning reference)
-    await this.clientsService.remove(clientId);
+    // Pass undefined for userId/userRole and true for isApiKeyAuth to bypass permission checks
+    // since provisioning deletion is a special administrative operation
+    await this.clientsService.remove(clientId, undefined, undefined, true);
   }
 
   /**

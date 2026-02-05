@@ -6,6 +6,7 @@ export * from './lib/dto/create-client.dto';
 export * from './lib/dto/update-client.dto';
 export * from './lib/entities/client-agent-credential.entity';
 export * from './lib/entities/client.entity';
+export * from './lib/entities/client-user.entity';
 export * from './lib/entities/provisioning-reference.entity';
 export * from './lib/entities/user.entity';
 export * from './lib/keycloak-user-sync.module';

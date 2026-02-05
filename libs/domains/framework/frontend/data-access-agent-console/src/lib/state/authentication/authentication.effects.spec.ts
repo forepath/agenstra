@@ -630,7 +630,9 @@ describe('AuthenticationEffects', () => {
       registerSuccessRedirect$(actions$, mockRouter as any, mockLocaleService as any).subscribe({
         complete: () => {
           expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/confirm-email']);
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/confirm-email']);
+          expect(mockRouter.navigate).toHaveBeenCalledWith(['/confirm-email'], {
+            queryParams: { email: 'test@example.com' },
+          });
           expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
           done();
         },

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClientsController } from './clients.controller';
 import { ClientEntity } from './entities/client.entity';
+import { ClientUserEntity } from './entities/client-user.entity';
 import { ProvisioningReferenceEntity } from './entities/provisioning-reference.entity';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentFileSystemProxyService } from './services/client-agent-file-system-proxy.service';
@@ -13,6 +14,8 @@ import { ClientAgentCredentialEntity } from './entities/client-agent-credential.
 import { ClientAgentCredentialsService } from './services/client-agent-credentials.service';
 import { ClientAgentCredentialsRepository } from './repositories/client-agent-credentials.repository';
 import { ClientsGateway } from './clients.gateway';
+import { UserEntity } from './entities/user.entity';
+import { UsersRepository } from './repositories/users.repository';
 
 describe('ClientsModule', () => {
   let module: TestingModule;
@@ -35,6 +38,12 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(ClientAgentCredentialEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ProvisioningReferenceEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(ClientUserEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(UserEntity))
+      .useValue(mockRepository)
+      .overrideProvider(UsersRepository)
       .useValue(mockRepository)
       .compile();
   });

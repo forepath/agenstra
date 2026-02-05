@@ -160,7 +160,7 @@ describe('SocketsEffects', () => {
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
           randomizationFactor: 0.5,
-          extraHeaders: { Authorization: 'Bearer test-api-key' },
+          auth: { Authorization: 'Bearer test-api-key' },
         });
         expect(result).toEqual(connectSocketSuccess());
         done();
@@ -212,7 +212,7 @@ describe('SocketsEffects', () => {
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
           randomizationFactor: 0.5,
-          extraHeaders: { Authorization: 'Bearer keycloak-token-123' },
+          auth: { Authorization: 'Bearer keycloak-token-123' },
         });
         expect(result).toEqual(connectSocketSuccess());
         done();

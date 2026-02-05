@@ -2,11 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import {
+  addClientUser,
   clearActiveClient,
   createClient,
   deleteClient,
   loadClient,
+  loadClientUsers,
   loadClients,
+  removeClientUser,
   setActiveClient,
   updateClient,
 } from './clients.actions';
@@ -305,6 +308,24 @@ describe('ClientsFacade', () => {
         expect(result).toBeNull();
         done();
       });
+    });
+  });
+
+  describe('Client User Management', () => {
+    it('should dispatch loadClientUsers action', () => {
+      facade.loadClientUsers('client-1');
+      expect(store.dispatch).toHaveBeenCalledWith(loadClientUsers({ clientId: 'client-1' }));
+    });
+
+    it('should dispatch addClientUser action', () => {
+      const dto = { email: 'new@test.com', role: 'user' as const };
+      facade.addClientUser('client-1', dto);
+      expect(store.dispatch).toHaveBeenCalledWith(addClientUser({ clientId: 'client-1', dto }));
+    });
+
+    it('should dispatch removeClientUser action', () => {
+      facade.removeClientUser('client-1', 'rel-1');
+      expect(store.dispatch).toHaveBeenCalledWith(removeClientUser({ clientId: 'client-1', relationshipId: 'rel-1' }));
     });
   });
 });

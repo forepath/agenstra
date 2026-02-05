@@ -1,4 +1,7 @@
 import {
+  addClientUser,
+  addClientUserFailure,
+  addClientUserSuccess,
   clearActiveClient,
   createClient,
   createClientFailure,
@@ -8,6 +11,9 @@ import {
   deleteClientSuccess,
   loadClient,
   loadClientFailure,
+  loadClientUsers,
+  loadClientUsersFailure,
+  loadClientUsersSuccess,
   loadClients,
   loadClientsBatch,
   loadClientsFailure,
@@ -16,6 +22,9 @@ import {
   loadServerInfo,
   loadServerInfoFailure,
   loadServerInfoSuccess,
+  removeClientUser,
+  removeClientUserFailure,
+  removeClientUserSuccess,
   setActiveClient,
   setActiveClientFailure,
   setActiveClientSuccess,
@@ -563,6 +572,103 @@ describe('clientsReducer', () => {
 
       expect(newState.loadingServerInfo['client-1']).toBe(false);
       expect(newState.error).toBe('Network error');
+    });
+  });
+
+  describe('loadClientUsers', () => {
+    it('should set loadingClientUsers to true for clientId', () => {
+      const state: ClientsState = { ...initialClientsState };
+      const newState = clientsReducer(state, loadClientUsers({ clientId: 'client-1' }));
+      expect(newState.loadingClientUsers['client-1']).toBe(true);
+    });
+  });
+
+  describe('loadClientUsersSuccess', () => {
+    it('should set clientUsers and set loading to false', () => {
+      const users = [
+        {
+          id: 'rel-1',
+          userId: 'user-1',
+          clientId: 'client-1',
+          role: 'user' as const,
+          userEmail: 'a@test.com',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        },
+      ];
+      const state: ClientsState = {
+        ...initialClientsState,
+        loadingClientUsers: { 'client-1': true },
+      };
+      const newState = clientsReducer(state, loadClientUsersSuccess({ clientId: 'client-1', users }));
+      expect(newState.clientUsers['client-1']).toEqual(users);
+      expect(newState.loadingClientUsers['client-1']).toBe(false);
+    });
+  });
+
+  describe('addClientUserSuccess', () => {
+    it('should append user to clientUsers', () => {
+      const existingUser = {
+        id: 'rel-1',
+        userId: 'user-1',
+        clientId: 'client-1',
+        role: 'user' as const,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      };
+      const newUser = {
+        id: 'rel-2',
+        userId: 'user-2',
+        clientId: 'client-1',
+        role: 'admin' as const,
+        userEmail: 'b@test.com',
+        createdAt: '2024-01-02',
+        updatedAt: '2024-01-02',
+      };
+      const state: ClientsState = {
+        ...initialClientsState,
+        clientUsers: { 'client-1': [existingUser] },
+        addingClientUser: { 'client-1': true },
+      };
+      const newState = clientsReducer(state, addClientUserSuccess({ clientId: 'client-1', user: newUser }));
+      expect(newState.clientUsers['client-1']).toHaveLength(2);
+      expect(newState.clientUsers['client-1']).toContainEqual(newUser);
+      expect(newState.addingClientUser['client-1']).toBe(false);
+    });
+  });
+
+  describe('removeClientUserSuccess', () => {
+    it('should remove user from clientUsers', () => {
+      const users = [
+        {
+          id: 'rel-1',
+          userId: 'user-1',
+          clientId: 'client-1',
+          role: 'user' as const,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        },
+        {
+          id: 'rel-2',
+          userId: 'user-2',
+          clientId: 'client-1',
+          role: 'admin' as const,
+          createdAt: '2024-01-02',
+          updatedAt: '2024-01-02',
+        },
+      ];
+      const state: ClientsState = {
+        ...initialClientsState,
+        clientUsers: { 'client-1': users },
+        removingClientUser: { 'rel-2': true },
+      };
+      const newState = clientsReducer(
+        state,
+        removeClientUserSuccess({ clientId: 'client-1', relationshipId: 'rel-2' }),
+      );
+      expect(newState.clientUsers['client-1']).toHaveLength(1);
+      expect(newState.clientUsers['client-1'][0].id).toBe('rel-1');
+      expect(newState.removingClientUser['rel-2']).toBeUndefined();
     });
   });
 });

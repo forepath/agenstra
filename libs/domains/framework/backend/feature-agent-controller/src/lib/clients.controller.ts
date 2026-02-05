@@ -17,6 +17,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -27,18 +28,32 @@ import {
   Post,
   Put,
   Query,
+  Req,
 } from '@nestjs/common';
 import { Resource } from 'nest-keycloak-connect';
+import { AddClientUserDto } from './dto/add-client-user.dto';
 import { ClientResponseDto } from './dto/client-response.dto';
+import { ClientUserResponseDto } from './dto/client-user-response.dto';
 import { CreateClientResponseDto } from './dto/create-client-response.dto';
 import { CreateClientDto } from './dto/create-client.dto';
 import { ProvisionServerDto } from './dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from './dto/provisioned-server-response.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { ClientUserRole } from './entities/client-user.entity';
+import { UserRole } from './entities/user.entity';
+import {
+  checkClientAccess,
+  ensureClientAccess,
+  getUserFromRequest,
+  type RequestWithUser,
+} from './utils/client-access.utils';
+import { ClientsRepository } from './repositories/clients.repository';
+import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ProvisioningProviderFactory } from './providers/provisioning-provider.factory';
 import { ClientAgentEnvironmentVariablesProxyService } from './services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from './services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from './services/client-agent-proxy.service';
+import { ClientUsersService } from './services/client-users.service';
 import { ClientsService } from './services/clients.service';
 import { ProvisioningService } from './services/provisioning.service';
 
@@ -56,52 +71,88 @@ export class ClientsController {
     private readonly clientAgentEnvironmentVariablesProxyService: ClientAgentEnvironmentVariablesProxyService,
     private readonly provisioningService: ProvisioningService,
     private readonly provisioningProviderFactory: ProvisioningProviderFactory,
+    private readonly clientUsersService: ClientUsersService,
+    private readonly clientsRepository: ClientsRepository,
+    private readonly clientUsersRepository: ClientUsersRepository,
   ) {}
 
   /**
    * Get all clients with pagination.
+   * Only returns clients the user has access to.
    * @param limit - Maximum number of clients to return (default: 10)
    * @param offset - Number of clients to skip (default: 0)
+   * @param req - The request object
    * @returns Array of client response DTOs
    */
   @Get()
   async getClients(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Req() req?: RequestWithUser,
   ): Promise<ClientResponseDto[]> {
-    return await this.clientsService.findAll(limit ?? 10, offset ?? 0);
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    return await this.clientsService.findAll(
+      limit ?? 10,
+      offset ?? 0,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
   }
 
   /**
    * Create a new client.
    * An API key will be generated (if API_KEY authentication type) and returned in the response.
+   * The user_id will be set to the logged-in user (or null for api-key mode).
    * @param createClientDto - Data transfer object for creating a client
+   * @param req - The request object
    * @returns The created client response DTO with generated API key (if applicable)
    */
   @Post()
-  async createClient(@Body() createClientDto: CreateClientDto): Promise<CreateClientResponseDto> {
-    return await this.clientsService.create(createClientDto);
+  async createClient(
+    @Body() createClientDto: CreateClientDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<CreateClientResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    return await this.clientsService.create(createClientDto, userInfo.userId);
   }
 
   /**
    * Get a single agent for a specific client by agent ID.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
+   * @param req - The request object
    * @returns The agent response DTO
    */
   @Get(':id/agents/:agentId')
   async getClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
     return await this.clientAgentProxyService.getClientAgent(id, agentId);
   }
 
   /**
    * Get all agents for a specific client with pagination.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param limit - Maximum number of agents to return (default: 10)
    * @param offset - Number of agents to skip (default: 0)
+   * @param req - The request object
    * @returns Array of agent response DTOs
    */
   @Get(':id/agents')
@@ -109,15 +160,30 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto[]> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
     return await this.clientAgentProxyService.getClientAgents(id, limit ?? 10, offset ?? 0);
   }
 
   /**
    * Update an existing agent for a specific client.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent to update
    * @param updateAgentDto - Data transfer object for updating an agent
+   * @param req - The request object
    * @returns The updated agent response DTO
    */
   @Post(':id/agents/:agentId')
@@ -125,71 +191,103 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() updateAgentDto: UpdateAgentDto,
+    @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentProxyService.updateClientAgent(id, agentId, updateAgentDto);
   }
 
   /**
    * Create a new agent for a specific client.
+   * Only accessible if the user has access to the client.
    * A random password will be generated and returned in the response.
    * @param id - The UUID of the client
    * @param createAgentDto - Data transfer object for creating an agent
+   * @param req - The request object
    * @returns The created agent response DTO with generated password
    */
   @Post(':id/agents')
   async createClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() createAgentDto: CreateAgentDto,
+    @Req() req?: RequestWithUser,
   ): Promise<CreateAgentResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentProxyService.createClientAgent(id, createAgentDto);
   }
 
   /**
    * Delete an agent for a specific client by agent ID.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent to delete
+   * @param req - The request object
    */
   @Delete(':id/agents/:agentId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     await this.clientAgentProxyService.deleteClientAgent(id, agentId);
   }
 
   /**
    * Get a single client by ID.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
+   * @param req - The request object
    * @returns The client response DTO
    */
   @Get(':id')
-  async getClient(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ClientResponseDto> {
-    return await this.clientsService.findOne(id);
+  async getClient(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<ClientResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    return await this.clientsService.findOne(id, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth);
   }
 
   /**
    * Update an existing client.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client to update
    * @param updateClientDto - Data transfer object for updating a client
+   * @param req - The request object
    * @returns The updated client response DTO
    */
   @Post(':id')
   async updateClient(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateClientDto: UpdateClientDto,
+    @Req() req?: RequestWithUser,
   ): Promise<ClientResponseDto> {
-    return await this.clientsService.update(id, updateClientDto);
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    return await this.clientsService.update(
+      id,
+      updateClientDto,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
   }
 
   /**
    * Delete a client by ID.
+   * Only accessible if the user has access to the client.
    * If the client has a provisioning reference, the provisioned server will also be deleted.
    * @param id - The UUID of the client to delete
+   * @param req - The request object
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteClient(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
+  async deleteClient(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<void> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
     // Check if client has provisioning - if so, delete the server from the provider
     try {
       await this.provisioningService.deleteProvisionedServer(id);
@@ -202,7 +300,7 @@ export class ClientsController {
         error instanceof BadRequestException &&
         (error.message.includes('No provisioning reference') || error.message.includes('provisioning reference'))
       ) {
-        await this.clientsService.remove(id);
+        await this.clientsService.remove(id, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth);
         return;
       }
       // Re-throw other errors
@@ -212,9 +310,11 @@ export class ClientsController {
 
   /**
    * Read file content from agent container via client proxy.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param path - The file path (wildcard parameter for nested paths)
+   * @param req - The request object
    * @returns File content (base64-encoded) and encoding type
    */
   @Get(':id/agents/:agentId/files/*path')
@@ -222,7 +322,9 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Req() req?: RequestWithUser,
   ): Promise<FileContentDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string;
     if (typeof path === 'string') {
@@ -240,10 +342,12 @@ export class ClientsController {
 
   /**
    * Write file content to agent container via client proxy.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param path - The file path (wildcard parameter for nested paths)
    * @param writeFileDto - The file content to write (base64-encoded)
+   * @param req - The request object
    */
   @Put(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -252,7 +356,9 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() writeFileDto: WriteFileDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -271,9 +377,11 @@ export class ClientsController {
 
   /**
    * List directory contents in agent container via client proxy.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param path - Optional directory path (defaults to '.')
+   * @param req - The request object
    * @returns Array of file nodes
    */
   @Get(':id/agents/:agentId/files')
@@ -281,16 +389,20 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Query('path') path?: string,
+    @Req() req?: RequestWithUser,
   ): Promise<FileNodeDto[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentFileSystemProxyService.listDirectory(id, agentId, path || '.');
   }
 
   /**
    * Create a file or directory in agent container via client proxy.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param path - The file path (wildcard parameter for nested paths)
    * @param createFileDto - The file/directory creation data
+   * @param req - The request object
    */
   @Post(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.CREATED)
@@ -299,7 +411,9 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() createFileDto: CreateFileDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -318,9 +432,11 @@ export class ClientsController {
 
   /**
    * Delete a file or directory from agent container via client proxy.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param path - The file path (wildcard parameter for nested paths)
+   * @param req - The request object
    */
   @Delete(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -328,7 +444,9 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -347,10 +465,12 @@ export class ClientsController {
 
   /**
    * Move a file or directory in agent container via client proxy.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param path - The source file path (wildcard parameter for nested paths)
    * @param moveFileDto - The move operation data (destination path)
+   * @param req - The request object
    */
   @Patch(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -359,7 +479,9 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() moveFileDto: MoveFileDto,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -409,40 +531,57 @@ export class ClientsController {
 
   /**
    * Provision a new server and create a client.
+   * The user_id will be set to the logged-in user (or null for api-key mode).
    * @param provisionServerDto - Provisioning options
+   * @param req - The request object
    * @returns Provisioned server response with client information
    */
   @Post('provisioning/provision')
-  async provisionServer(@Body() provisionServerDto: ProvisionServerDto): Promise<ProvisionedServerResponseDto> {
-    return await this.provisioningService.provisionServer(provisionServerDto);
+  async provisionServer(
+    @Body() provisionServerDto: ProvisionServerDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<ProvisionedServerResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    return await this.provisioningService.provisionServer(provisionServerDto, userInfo.userId);
   }
 
   /**
    * Get server information for a provisioned client.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
+   * @param req - The request object
    * @returns Server information
    */
   @Get(':id/provisioning/info')
-  async getServerInfo(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async getServerInfo(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() req?: RequestWithUser) {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.provisioningService.getServerInfo(id);
   }
 
   /**
    * Delete a provisioned server and its associated client.
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
+   * @param req - The request object
    */
   @Delete(':id/provisioning')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteProvisionedServer(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
+  async deleteProvisionedServer(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     await this.provisioningService.deleteProvisionedServer(id);
   }
 
   /**
    * Get all environment variables for an agent with pagination (proxied).
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param limit - Maximum number of environment variables to return (default: 50)
    * @param offset - Number of environment variables to skip (default: 0)
+   * @param req - The request object
    * @returns Array of environment variable response DTOs
    */
   @Get(':id/agents/:agentId/environment')
@@ -451,7 +590,9 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.getEnvironmentVariables(
       id,
       agentId,
@@ -462,23 +603,29 @@ export class ClientsController {
 
   /**
    * Get count of environment variables for an agent (proxied).
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
+   * @param req - The request object
    * @returns Count of environment variables
    */
   @Get(':id/agents/:agentId/environment/count')
   async countClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<{ count: number }> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.countEnvironmentVariables(id, agentId);
   }
 
   /**
    * Create a new environment variable for an agent (proxied).
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param createDto - Data transfer object for creating an environment variable
+   * @param req - The request object
    * @returns The created environment variable response DTO
    */
   @Post(':id/agents/:agentId/environment')
@@ -487,16 +634,20 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() createDto: CreateEnvironmentVariableDto,
+    @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.createEnvironmentVariable(id, agentId, createDto);
   }
 
   /**
    * Update an existing environment variable (proxied).
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param envVarId - The UUID of the environment variable to update
    * @param updateDto - Data transfer object for updating an environment variable
+   * @param req - The request object
    * @returns The updated environment variable response DTO
    */
   @Put(':id/agents/:agentId/environment/:envVarId')
@@ -505,7 +656,9 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('envVarId', new ParseUUIDPipe({ version: '4' })) envVarId: string,
     @Body() updateDto: UpdateEnvironmentVariableDto,
+    @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.updateEnvironmentVariable(
       id,
       agentId,
@@ -516,9 +669,11 @@ export class ClientsController {
 
   /**
    * Delete an environment variable by ID (proxied).
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
    * @param envVarId - The UUID of the environment variable to delete
+   * @param req - The request object
    */
   @Delete(':id/agents/:agentId/environment/:envVarId')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -526,14 +681,18 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('envVarId', new ParseUUIDPipe({ version: '4' })) envVarId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     await this.clientAgentEnvironmentVariablesProxyService.deleteEnvironmentVariable(id, agentId, envVarId);
   }
 
   /**
    * Delete all environment variables for an agent (proxied).
+   * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
    * @param agentId - The UUID of the agent
+   * @param req - The request object
    * @returns Number of environment variables deleted
    */
   @Delete(':id/agents/:agentId/environment')
@@ -541,7 +700,117 @@ export class ClientsController {
   async deleteAllClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<{ deletedCount: number }> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.deleteAllEnvironmentVariables(id, agentId);
+  }
+
+  /**
+   * Get all users associated with a client.
+   * Only accessible if the user has access to the client.
+   * @param id - The UUID of the client
+   * @param req - The request object
+   * @returns Array of client-user relationships
+   */
+  @Get(':id/users')
+  async getClientUsers(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<ClientUserResponseDto[]> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+    return await this.clientUsersService.getClientUsers(id);
+  }
+
+  /**
+   * Add a user to a client by email address.
+   * Only accessible if the user has permission to add users to the client.
+   * @param id - The UUID of the client
+   * @param addClientUserDto - Data transfer object containing email and role
+   * @param req - The request object
+   * @returns The created client-user relationship
+   */
+  @Post(':id/users')
+  @HttpCode(HttpStatus.CREATED)
+  async addClientUser(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() addClientUserDto: AddClientUserDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<ClientUserResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+
+    const client = await this.clientsRepository.findByIdOrThrow(id);
+    const isClientCreator = client.userId === userInfo.userId;
+
+    return await this.clientUsersService.addUserToClient(
+      id,
+      addClientUserDto,
+      userInfo.userId || '',
+      userInfo.userRole || UserRole.USER,
+      isClientCreator,
+      access.clientUserRole,
+    );
+  }
+
+  /**
+   * Remove a user from a client.
+   * Only accessible if the user has permission to remove users from the client.
+   * @param id - The UUID of the client
+   * @param relationshipId - The UUID of the client-user relationship to remove
+   * @param req - The request object
+   */
+  @Delete(':id/users/:relationshipId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeClientUser(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('relationshipId', new ParseUUIDPipe({ version: '4' })) relationshipId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<void> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+
+    const client = await this.clientsRepository.findByIdOrThrow(id);
+    const isClientCreator = client.userId === userInfo.userId;
+
+    await this.clientUsersService.removeUserFromClient(
+      id,
+      relationshipId,
+      userInfo.userId || '',
+      userInfo.userRole || UserRole.USER,
+      isClientCreator,
+      access.clientUserRole,
+    );
   }
 }
