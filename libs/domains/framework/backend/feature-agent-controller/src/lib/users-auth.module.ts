@@ -5,8 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './controllers/auth.controller';
 import { UsersController } from './controllers/users.controller';
 import { UserEntity } from './entities/user.entity';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
+import { UsersAuthGuard } from './guards/users-auth.guard';
+import { KeycloakRolesGuard } from './guards/keycloak-roles.guard';
+import { UsersRolesGuard } from './guards/users-roles.guard';
 import { UsersRepository } from './repositories/users.repository';
 import { AuthService } from './services/auth.service';
 import { EmailService } from './services/email.service';
@@ -31,8 +32,10 @@ import { UsersService } from './services/users.service';
     UsersService,
     EmailService,
     AuthService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },
+    UsersAuthGuard,
+    KeycloakRolesGuard,
+    UsersRolesGuard,
+    { provide: APP_GUARD, useClass: UsersAuthGuard },
   ],
   exports: [UsersService, UsersRepository, AuthService],
 })

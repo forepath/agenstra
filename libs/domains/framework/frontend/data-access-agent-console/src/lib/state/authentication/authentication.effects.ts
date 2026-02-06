@@ -50,6 +50,61 @@ import {
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
+/** Keycloak token structure with realm_access and resource_access. */
+interface KeycloakTokenPayload {
+  realm_access?: { roles?: unknown };
+  resource_access?: Record<string, { roles?: unknown }>;
+  [key: string]: unknown;
+}
+
+/**
+ * Extracts roles from Keycloak token payload.
+ * Mirrors backend KeycloakRolesGuard logic: realm_access.roles and resource_access.<client>.roles.
+ */
+function getRolesFromKeycloakToken(token: unknown): string[] {
+  if (!token || typeof token !== 'object') {
+    return [];
+  }
+
+  const obj = token as Record<string, unknown>;
+
+  if (Array.isArray(obj['roles'])) {
+    return obj['roles'].filter((r): r is string => typeof r === 'string');
+  }
+
+  const tokenPayload = obj as KeycloakTokenPayload;
+  const roles: string[] = [];
+  const seen = new Set<string>();
+
+  function collectRoles(value: unknown): void {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === 'string' && !seen.has(item)) {
+          seen.add(item);
+          roles.push(item);
+        } else if (item !== null && typeof item === 'object') {
+          collectRoles(item);
+        }
+      }
+    } else if (value !== null && typeof value === 'object') {
+      for (const v of Object.values(value)) {
+        collectRoles(v);
+      }
+    }
+  }
+
+  collectRoles(tokenPayload.realm_access?.roles);
+  if (tokenPayload.resource_access && typeof tokenPayload.resource_access === 'object') {
+    for (const resource of Object.values(tokenPayload.resource_access)) {
+      if (resource !== null && typeof resource === 'object' && 'roles' in resource) {
+        collectRoles((resource as { roles?: unknown }).roles);
+      }
+    }
+  }
+
+  return roles;
+}
+
 function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse && error.error?.message) {
     return error.error.message;
@@ -190,8 +245,8 @@ export const checkAuthentication$ = createEffect(
           try {
             const isAuthenticated = keycloakService.isLoggedIn();
             const instance = keycloakService.getKeycloakInstance();
-            const role =
-              instance?.tokenParsed?.['roles']?.find((role: string) => ['user', 'admin'].includes(role)) ?? 'user';
+            const roles = getRolesFromKeycloakToken(instance?.tokenParsed);
+            const role = roles.includes('admin') ? 'admin' : 'user';
 
             return of(
               checkAuthenticationSuccess({

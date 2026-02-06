@@ -73,6 +73,22 @@ describe('UsersRepository', () => {
     });
   });
 
+  describe('findByKeycloakSub', () => {
+    it('should return user when found by keycloakSub', async () => {
+      const userWithKeycloak = { ...mockUser, keycloakSub: 'keycloak-sub-123' };
+      mockRepository.findOne.mockResolvedValue(userWithKeycloak);
+      const result = await repository.findByKeycloakSub('keycloak-sub-123');
+      expect(result).toEqual(userWithKeycloak);
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { keycloakSub: 'keycloak-sub-123' } });
+    });
+
+    it('should return null when no user has keycloakSub', async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      const result = await repository.findByKeycloakSub('unknown-sub');
+      expect(result).toBeNull();
+    });
+  });
+
   describe('create', () => {
     it('should create and save user with lowercase email', async () => {
       const created = { ...mockUser, email: 'new@example.com' };

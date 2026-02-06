@@ -24,17 +24,15 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { Resource } from 'nest-keycloak-connect';
-import { ensureClientAccess, type RequestWithUser } from './utils/client-access.utils';
 import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentVcsProxyService } from './services/client-agent-vcs-proxy.service';
+import { ensureClientAccess, type RequestWithUser } from './utils/client-access.utils';
 
 /**
  * Controller for proxied agent VCS (Version Control System) operations.
  * Provides endpoints that proxy VCS requests to client endpoints.
  */
-@Resource('clients')
 @Controller('clients/:clientId/agents/:agentId/vcs')
 export class ClientsVcsController {
   constructor(

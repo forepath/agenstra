@@ -30,6 +30,7 @@ describe('ClientsModule', () => {
     save: jest.fn(),
     remove: jest.fn(),
     count: jest.fn(),
+    findByKeycloakSub: jest.fn().mockResolvedValue(null),
   };
 
   const mockKeycloakInstance = {

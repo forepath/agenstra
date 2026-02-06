@@ -1,9 +1,9 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
-import { ClientUserRole } from '../entities/client-user.entity';
-import { UserRole } from '../entities/user.entity';
-import type { ClientEntity } from '../entities/client.entity';
 import type { ClientUserEntity } from '../entities/client-user.entity';
+import { ClientUserRole } from '../entities/client-user.entity';
+import type { ClientEntity } from '../entities/client.entity';
+import { UserRole } from '../entities/user.entity';
 
 /** Minimal interface for client access check - findById */
 export interface ClientAccessClientsRepository {

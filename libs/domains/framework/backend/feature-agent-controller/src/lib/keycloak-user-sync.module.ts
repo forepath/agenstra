@@ -4,9 +4,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './controllers/users.controller';
 import { UserEntity } from './entities/user.entity';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { KeycloakUserSyncGuard } from './guards/keycloak-user-sync.guard';
-import { RolesGuard } from './guards/roles.guard';
+import { UsersAuthGuard } from './guards/users-auth.guard';
+import { KeycloakRolesGuard } from './guards/keycloak-roles.guard';
+import { KeycloakAuthGuard } from './guards/keycloak-auth.guard';
 import { UsersRepository } from './repositories/users.repository';
 import { EmailService } from './services/email.service';
 import { UsersService } from './services/users.service';
@@ -30,9 +30,9 @@ import { UsersService } from './services/users.service';
     UsersRepository,
     UsersService,
     EmailService,
-    JwtAuthGuard,
-    RolesGuard,
-    { provide: APP_GUARD, useClass: KeycloakUserSyncGuard },
+    UsersAuthGuard,
+    KeycloakRolesGuard,
+    { provide: APP_GUARD, useClass: KeycloakAuthGuard },
   ],
   exports: [UsersRepository],
 })

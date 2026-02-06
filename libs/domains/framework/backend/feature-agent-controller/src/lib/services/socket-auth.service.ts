@@ -3,6 +3,7 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE, TokenValidation } from 'nest-keycloak-connect';
 import { UserRole } from '../entities/user.entity';
+import { UsersRepository } from '../repositories/users.repository';
 import type { SocketUserInfo } from '../utils/client-access.utils';
 
 /** Minimal Keycloak interface for token validation */
@@ -26,6 +27,7 @@ export class SocketAuthService {
     @Optional() @Inject(KEYCLOAK_INSTANCE) private readonly keycloak: KeycloakInstance | null,
     @Optional() @Inject(KEYCLOAK_CONNECT_OPTIONS) private readonly keycloakOpts: KeycloakConnectConfig | null,
     @Optional() private readonly jwtService: JwtService | null,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   /**
@@ -134,12 +136,19 @@ export class SocketAuthService {
       const roles = payload.realm_access?.roles ?? [];
       const isAdmin = roles.includes('admin') || roles.includes('realm-admin');
 
+      // Resolve Keycloak sub to our users table id for client_users lookups
+      let userId = payload.sub;
+      const syncedUser = await this.usersRepository.findByKeycloakSub(payload.sub);
+      if (syncedUser) {
+        userId = syncedUser.id;
+      }
+
       return {
-        userId: payload.sub,
+        userId,
         userRole: isAdmin ? UserRole.ADMIN : UserRole.USER,
         isApiKeyAuth: false,
         user: {
-          id: payload.sub,
+          id: userId,
           roles: roles,
         },
       };

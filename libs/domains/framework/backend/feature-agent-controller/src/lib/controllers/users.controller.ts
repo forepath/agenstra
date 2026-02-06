@@ -12,18 +12,18 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Resource, Roles } from 'nest-keycloak-connect';
+import { KeycloakRoles } from '../decorators/keycloak-roles.decorator';
+import { UsersRoles } from '../decorators/users-roles.decorator';
 import { CreateUserDto } from '../dto/auth/create-user.dto';
 import { UpdateUserDto } from '../dto/auth/update-user.dto';
 import { UserRole } from '../entities/user.entity';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { RolesGuard } from '../guards/roles.guard';
+import { UsersAuthGuard } from '../guards/users-auth.guard';
 import { UsersService } from '../services/users.service';
 
-@Resource('users')
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@UseGuards(UsersAuthGuard)
+@KeycloakRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

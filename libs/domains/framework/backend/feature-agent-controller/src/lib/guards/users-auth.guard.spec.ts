@@ -1,10 +1,15 @@
+import { getAuthenticationMethod } from '@forepath/identity/backend';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { UsersAuthGuard } from './users-auth.guard';
 
-describe('JwtAuthGuard', () => {
-  let guard: JwtAuthGuard;
+jest.mock('@forepath/identity/backend', () => ({
+  getAuthenticationMethod: jest.fn(),
+}));
+
+describe('UsersAuthGuard', () => {
+  let guard: UsersAuthGuard;
   let jwtService: jest.Mocked<JwtService>;
   let reflector: Reflector;
 
@@ -13,7 +18,8 @@ describe('JwtAuthGuard', () => {
       verifyAsync: jest.fn(),
     } as unknown as jest.Mocked<JwtService>;
     reflector = new Reflector();
-    guard = new JwtAuthGuard(jwtService, reflector);
+    guard = new UsersAuthGuard(jwtService, reflector);
+    (getAuthenticationMethod as jest.Mock).mockReturnValue('users');
   });
 
   const createContext = (request: object): ExecutionContext =>
@@ -59,5 +65,31 @@ describe('JwtAuthGuard', () => {
     const request = { headers: { authorization: 'Bearer invalid-token' } };
     jwtService.verifyAsync.mockRejectedValue(new Error('Invalid token'));
     await expect(guard.canActivate(createContext(request))).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('should skip when Keycloak is auth method', async () => {
+    (getAuthenticationMethod as jest.Mock).mockReturnValue('keycloak');
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
+    const request = { headers: {} };
+    const result = await guard.canActivate(createContext(request));
+    expect(result).toBe(true);
+    expect(jwtService.verifyAsync).not.toHaveBeenCalled();
+  });
+
+  it('should skip when api-key is auth method', async () => {
+    (getAuthenticationMethod as jest.Mock).mockReturnValue('api-key');
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
+    const request = { headers: {} };
+    const result = await guard.canActivate(createContext(request));
+    expect(result).toBe(true);
+    expect(jwtService.verifyAsync).not.toHaveBeenCalled();
+  });
+
+  it('should pass through when user is already set', async () => {
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
+    const request = { headers: {}, user: { id: 'existing', roles: ['admin'] } };
+    const result = await guard.canActivate(createContext(request));
+    expect(result).toBe(true);
+    expect(jwtService.verifyAsync).not.toHaveBeenCalled();
   });
 });

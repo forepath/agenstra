@@ -12,17 +12,15 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { Resource } from 'nest-keycloak-connect';
-import { ensureClientAccess, type RequestWithUser } from './utils/client-access.utils';
 import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentDeploymentsProxyService } from './services/client-agent-deployments-proxy.service';
+import { ensureClientAccess, type RequestWithUser } from './utils/client-access.utils';
 
 /**
  * Controller for proxied deployment and CI/CD pipeline endpoints.
  * Proxies requests to remote agent-manager services for deployment operations.
  */
-@Resource('clients')
 @Controller('clients/:id/agents/:agentId/deployments')
 export class ClientsDeploymentsController {
   constructor(

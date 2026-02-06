@@ -374,7 +374,6 @@ Authorization: ApiKey <static-api-key>
 
 When `STATIC_API_KEY` is not set, all HTTP endpoints are protected by Keycloak authentication. The `AgentsController` uses:
 
-- `@Resource('agents')` decorator for resource-based authorization
 - Global Keycloak guards (`AuthGuard`, `ResourceGuard`, `RoleGuard`)
 
 Clients must include a valid Keycloak JWT bearer token in the `Authorization` header:

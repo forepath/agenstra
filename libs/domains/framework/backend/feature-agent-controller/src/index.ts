@@ -9,6 +9,8 @@ export * from './lib/entities/client-user.entity';
 export * from './lib/entities/client.entity';
 export * from './lib/entities/provisioning-reference.entity';
 export * from './lib/entities/user.entity';
+export * from './lib/decorators/keycloak-roles.decorator';
+export * from './lib/decorators/users-roles.decorator';
 export * from './lib/keycloak-user-sync.module';
 export * from './lib/repositories/client-agent-credentials.repository';
 export * from './lib/repositories/clients.repository';
