@@ -1,7 +1,11 @@
 import { SetMetadata } from '@nestjs/common';
 import { UserRole } from '../entities/user.entity';
 
-export const ROLES_KEY = 'roles';
+/**
+ * Unique key to avoid conflict with nest-keycloak-connect's RoleGuard (which uses 'roles').
+ * Our RolesGuard checks app-level roles (users table); Keycloak RoleGuard checks token roles.
+ */
+export const ROLES_KEY = 'app.roles';
 
 /**
  * Specifies which roles can access a route.

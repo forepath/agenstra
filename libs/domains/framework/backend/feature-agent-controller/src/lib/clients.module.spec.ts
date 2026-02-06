@@ -1,5 +1,7 @@
+import { getAuthenticationMethod } from '@forepath/identity/backend';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-connect';
 import { ClientsController } from './clients.controller';
 import { ClientEntity } from './entities/client.entity';
 import { ClientUserEntity } from './entities/client-user.entity';
@@ -14,6 +16,7 @@ import { ClientAgentCredentialEntity } from './entities/client-agent-credential.
 import { ClientAgentCredentialsService } from './services/client-agent-credentials.service';
 import { ClientAgentCredentialsRepository } from './repositories/client-agent-credentials.repository';
 import { ClientsGateway } from './clients.gateway';
+import { SocketAuthService } from './services/socket-auth.service';
 import { UserEntity } from './entities/user.entity';
 import { UsersRepository } from './repositories/users.repository';
 
@@ -29,8 +32,21 @@ describe('ClientsModule', () => {
     count: jest.fn(),
   };
 
+  const mockKeycloakInstance = {
+    grantManager: {
+      createGrant: jest.fn(),
+      validateAccessToken: jest.fn(),
+      validateToken: jest.fn(),
+    },
+  };
+
+  const mockKeycloakOptions = {
+    tokenValidation: 'ONLINE' as const,
+  };
+
   beforeEach(async () => {
-    module = await Test.createTestingModule({
+    const authMethod = getAuthenticationMethod();
+    const moduleBuilder = Test.createTestingModule({
       imports: [ClientsModule],
     })
       .overrideProvider(getRepositoryToken(ClientEntity))
@@ -44,8 +60,18 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(UserEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
-      .useValue(mockRepository)
-      .compile();
+      .useValue(mockRepository);
+
+    // Mock Keycloak providers if auth method is keycloak
+    if (authMethod === 'keycloak') {
+      moduleBuilder
+        .overrideProvider(KEYCLOAK_INSTANCE)
+        .useValue(mockKeycloakInstance)
+        .overrideProvider(KEYCLOAK_CONNECT_OPTIONS)
+        .useValue(mockKeycloakOptions);
+    }
+
+    module = await moduleBuilder.compile();
   });
 
   afterEach(async () => {
@@ -143,5 +169,43 @@ describe('ClientsModule', () => {
   it('should export ClientAgentFileSystemProxyService', () => {
     const service = module.get<ClientAgentFileSystemProxyService>(ClientAgentFileSystemProxyService);
     expect(service).toBeDefined();
+  });
+
+  it('should provide SocketAuthService', () => {
+    const service = module.get<SocketAuthService>(SocketAuthService);
+    expect(service).toBeDefined();
+    expect(service).toBeInstanceOf(SocketAuthService);
+  });
+
+  it('should provide SocketAuthService with optional Keycloak dependencies', () => {
+    const service = module.get<SocketAuthService>(SocketAuthService);
+    expect(service).toBeDefined();
+    // SocketAuthService should be instantiated even if Keycloak is not configured
+    expect(service).toBeInstanceOf(SocketAuthService);
+  });
+
+  describe('when authentication method is keycloak', () => {
+    beforeEach(() => {
+      // Ensure we're testing with keycloak auth method
+      // Note: This test will only run if AUTHENTICATION_METHOD=keycloak in test environment
+    });
+
+    it('should provide KEYCLOAK_INSTANCE when auth method is keycloak', () => {
+      const authMethod = getAuthenticationMethod();
+      if (authMethod === 'keycloak') {
+        const keycloakInstance = module.get(KEYCLOAK_INSTANCE);
+        expect(keycloakInstance).toBeDefined();
+        expect(keycloakInstance).toEqual(mockKeycloakInstance);
+      }
+    });
+
+    it('should provide KEYCLOAK_CONNECT_OPTIONS when auth method is keycloak', () => {
+      const authMethod = getAuthenticationMethod();
+      if (authMethod === 'keycloak') {
+        const keycloakOptions = module.get(KEYCLOAK_CONNECT_OPTIONS);
+        expect(keycloakOptions).toBeDefined();
+        expect(keycloakOptions).toEqual(mockKeycloakOptions);
+      }
+    });
   });
 });

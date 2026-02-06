@@ -1,7 +1,8 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { getAuthenticationMethod } from '@forepath/identity/backend';
-import { KEYCLOAK_INSTANCE } from 'nest-keycloak-connect';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE, TokenValidation } from 'nest-keycloak-connect';
+import { UserRole } from '../entities/user.entity';
 import type { SocketUserInfo } from '../utils/client-access.utils';
 
 /** Minimal Keycloak interface for token validation */
@@ -9,14 +10,21 @@ interface KeycloakInstance {
   grantManager: {
     createGrant: (p: { access_token: string }) => Promise<{ access_token: unknown }>;
     validateAccessToken: (t: unknown) => Promise<unknown>;
+    validateToken: (t: unknown, type: string) => Promise<unknown>;
   };
 }
-import { UserRole } from '../entities/user.entity';
+
+interface KeycloakConnectConfig {
+  tokenValidation?: TokenValidation;
+}
 
 @Injectable()
 export class SocketAuthService {
+  private readonly logger = new Logger(SocketAuthService.name);
+
   constructor(
     @Optional() @Inject(KEYCLOAK_INSTANCE) private readonly keycloak: KeycloakInstance | null,
+    @Optional() @Inject(KEYCLOAK_CONNECT_OPTIONS) private readonly keycloakOpts: KeycloakConnectConfig | null,
     @Optional() private readonly jwtService: JwtService | null,
   ) {}
 
@@ -74,15 +82,55 @@ export class SocketAuthService {
   }
 
   private async validateKeycloakToken(token: string): Promise<SocketUserInfo | null> {
+    // Use exact same validation logic as HTTP AuthGuard from nest-keycloak-connect
+    const tokenValidation = this.keycloakOpts?.tokenValidation || TokenValidation.ONLINE;
+    const gm = this.keycloak!.grantManager;
+    let grant: { access_token: unknown };
+
     try {
-      const grant = await this.keycloak!.grantManager.createGrant({ access_token: token });
-      const accessToken = grant.access_token;
-      const isValid = await this.keycloak!.grantManager.validateAccessToken(accessToken);
-      if (isValid !== accessToken) {
+      // Step 1: Create grant (validates token structure)
+      grant = await gm.createGrant({ access_token: token });
+    } catch (ex) {
+      // It will fail to create grants on invalid access token (i.e expired or wrong domain)
+      return null;
+    }
+
+    const accessToken = grant.access_token;
+
+    this.logger.debug(`Using token validation method: ${tokenValidation.toUpperCase()}`);
+
+    try {
+      // Step 2: Validate token based on tokenValidation setting (same as HTTP AuthGuard)
+      let result: boolean | unknown;
+
+      switch (tokenValidation) {
+        case TokenValidation.ONLINE:
+          result = await gm.validateAccessToken(accessToken);
+          // validateAccessToken returns the token if valid, or false if invalid
+          if (result !== accessToken) {
+            return null;
+          }
+          break;
+        case TokenValidation.OFFLINE:
+          result = await gm.validateToken(accessToken, 'Bearer');
+          // validateToken returns the token if valid
+          if (result !== accessToken) {
+            return null;
+          }
+          break;
+        case TokenValidation.NONE:
+          // No validation, just trust the token
+          break;
+        default:
+          return null;
+      }
+
+      // Token is valid, parse payload
+      const payload = this.parseJwtPayload(token);
+      if (!payload.sub) {
         return null;
       }
 
-      const payload = this.parseJwtPayload(token);
       const roles = payload.realm_access?.roles ?? [];
       const isAdmin = roles.includes('admin') || roles.includes('realm-admin');
 

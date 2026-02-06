@@ -189,10 +189,21 @@ export const checkAuthentication$ = createEffect(
         if (environment.authentication.type === 'keycloak' && keycloakService) {
           try {
             const isAuthenticated = keycloakService.isLoggedIn();
+            const instance = keycloakService.getKeycloakInstance();
+            const role =
+              instance?.tokenParsed?.['roles']?.find((role: string) => ['user', 'admin'].includes(role)) ?? 'user';
+
             return of(
               checkAuthenticationSuccess({
                 isAuthenticated,
                 authenticationType: isAuthenticated ? 'keycloak' : undefined,
+                user: instance?.tokenParsed
+                  ? {
+                      id: instance.tokenParsed['sub'] ?? '',
+                      email: instance.tokenParsed['email'] ?? '',
+                      role: role,
+                    }
+                  : undefined,
               }),
             );
           } catch (error) {
@@ -206,10 +217,9 @@ export const checkAuthentication$ = createEffect(
               const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
               const exp = payload.exp ? payload.exp * 1000 : 0;
               const isAuthenticated = exp > Date.now();
+              const role = payload.roles?.find((role: string) => role === 'admin') ? 'admin' : 'user';
               const user =
-                payload.sub && payload.email
-                  ? { id: payload.sub, email: payload.email, role: payload.roles?.[0] ?? 'user' }
-                  : undefined;
+                payload.sub && payload.email ? { id: payload.sub, email: payload.email, role: role } : undefined;
               return of(
                 checkAuthenticationSuccess({
                   isAuthenticated,

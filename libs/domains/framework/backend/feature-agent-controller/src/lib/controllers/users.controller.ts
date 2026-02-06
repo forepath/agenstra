@@ -12,7 +12,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Roles } from '../decorators/roles.decorator';
+import { Resource, Roles } from 'nest-keycloak-connect';
 import { CreateUserDto } from '../dto/auth/create-user.dto';
 import { UpdateUserDto } from '../dto/auth/update-user.dto';
 import { UserRole } from '../entities/user.entity';
@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { UsersService } from '../services/users.service';
 
+@Resource('users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)

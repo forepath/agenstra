@@ -1,5 +1,7 @@
+import { getAuthenticationMethod, KeycloakService } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeycloakConnectModule } from 'nest-keycloak-connect';
 import { ClientsDeploymentsController } from './clients-deployments.controller';
 import { ClientsVcsController } from './clients-vcs.controller';
 import { ClientsController } from './clients.controller';
@@ -29,6 +31,8 @@ import { KeycloakTokenService } from './services/keycloak-token.service';
 import { ProvisioningService } from './services/provisioning.service';
 import { SocketAuthService } from './services/socket-auth.service';
 
+const authMethod = getAuthenticationMethod();
+
 /**
  * Module for agent clients feature.
  * Provides controllers, services, and repository for agent CRUD operations and file system operations.
@@ -42,6 +46,8 @@ import { SocketAuthService } from './services/socket-auth.service';
       ClientUserEntity,
       UserEntity,
     ]),
+    // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
+    ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [ClientsController, ClientsVcsController, ClientsDeploymentsController],
   providers: [
