@@ -13,7 +13,9 @@ import {
   selectClientsLoading,
   selectClientsLoadingAny,
   selectClientsState,
+  selectClientUsers,
   selectHasClients,
+  selectLoadingClientUsers,
   selectSelectedClient,
 } from './clients.selectors';
 import type { ClientResponseDto } from './clients.types';
@@ -297,6 +299,47 @@ describe('Clients Selectors', () => {
       const result = selectHasClients(rootState as any);
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('selectClientUsers', () => {
+    it('should return client users for clientId', () => {
+      const users = [
+        {
+          id: 'rel-1',
+          userId: 'user-1',
+          clientId: 'client-1',
+          role: 'user' as const,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        },
+      ];
+      const state = createState({ clientUsers: { 'client-1': users } });
+      const rootState = { clients: state };
+      const selector = selectClientUsers('client-1');
+      const result = selector(rootState as any);
+
+      expect(result).toEqual(users);
+    });
+
+    it('should return empty array when no users for clientId', () => {
+      const state = createState();
+      const rootState = { clients: state };
+      const selector = selectClientUsers('client-1');
+      const result = selector(rootState as any);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('selectLoadingClientUsers', () => {
+    it('should return loading state for clientId', () => {
+      const state = createState({ loadingClientUsers: { 'client-1': true } });
+      const rootState = { clients: state };
+      const selector = selectLoadingClientUsers('client-1');
+      const result = selector(rootState as any);
+
+      expect(result).toBe(true);
     });
   });
 });

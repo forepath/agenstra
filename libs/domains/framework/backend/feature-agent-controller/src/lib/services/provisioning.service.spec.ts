@@ -104,6 +104,14 @@ describe('ProvisioningService', () => {
           useValue: mockClientsService,
         },
         {
+          provide: 'ClientUsersRepository',
+          useValue: {},
+        },
+        {
+          provide: 'ClientUsersService',
+          useValue: {},
+        },
+        {
           provide: ProvisioningReferencesRepository,
           useValue: mockProvisioningReferencesRepository,
         },
@@ -174,6 +182,7 @@ describe('ProvisioningService', () => {
           apiKey: expect.any(String),
           agentWsPort: 8080,
         }),
+        undefined, // userId
       );
       expect(mockProvisioningReferencesRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -221,6 +230,7 @@ describe('ProvisioningService', () => {
           keycloakClientSecret: 'keycloak-client-secret',
           keycloakRealm: 'test-realm',
         }),
+        undefined, // userId
       );
     });
 
@@ -242,6 +252,7 @@ describe('ProvisioningService', () => {
         expect.objectContaining({
           apiKey: 'custom-api-key-123',
         }),
+        undefined, // userId
       );
     });
 
@@ -298,7 +309,7 @@ describe('ProvisioningService', () => {
       expect(mockProvisioningReferencesRepository.findByClientId).toHaveBeenCalledWith('client-uuid');
       expect(mockProvisioningProviderFactory.hasProvider).toHaveBeenCalledWith('hetzner');
       expect(mockProvider.deleteServer).toHaveBeenCalledWith('server-123');
-      expect(mockClientsService.remove).toHaveBeenCalledWith('client-uuid');
+      expect(mockClientsService.remove).toHaveBeenCalledWith('client-uuid', undefined, undefined, true);
     });
 
     it('should continue with client deletion even if server deletion fails', async () => {
@@ -311,7 +322,7 @@ describe('ProvisioningService', () => {
       await service.deleteProvisionedServer('client-uuid');
 
       expect(mockProvider.deleteServer).toHaveBeenCalled();
-      expect(mockClientsService.remove).toHaveBeenCalledWith('client-uuid');
+      expect(mockClientsService.remove).toHaveBeenCalledWith('client-uuid', undefined, undefined, true);
     });
 
     it('should skip server deletion if provider is not available', async () => {
@@ -322,7 +333,7 @@ describe('ProvisioningService', () => {
       await service.deleteProvisionedServer('client-uuid');
 
       expect(mockProvider.deleteServer).not.toHaveBeenCalled();
-      expect(mockClientsService.remove).toHaveBeenCalledWith('client-uuid');
+      expect(mockClientsService.remove).toHaveBeenCalledWith('client-uuid', undefined, undefined, true);
     });
 
     it('should throw BadRequestException when provisioning reference is not found', async () => {

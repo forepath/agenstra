@@ -299,9 +299,16 @@ sequenceDiagram
     end
 ```
 
+## Per-Client Permissions
+
+When using **keycloak** or **users** authentication, access to clients is controlled by per-client permissions. Users can be assigned to clients with roles (admin/user). In **api-key** mode, users do not play a role and all permission checks are bypassed.
+
+See **[Client Management](./client-management.md#per-client-permissions)** for details on access control rules and managing client users.
+
 ## Related Documentation
 
 - **[Environment Configuration](../deployment/environment-configuration.md)** - Environment variable reference
+- **[Client Management](./client-management.md)** - Per-client permissions and user management
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** - Backend authentication implementation
 - **[Frontend Agent Console Application](../applications/frontend-agent-console.md)** - Frontend authentication UI
 

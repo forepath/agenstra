@@ -106,6 +106,50 @@
         <source>Manage Environment Variables</source>
         <target>Umgebungsvariablen verwalten</target>
         </trans-unit>
+      <trans-unit id="featureChat-manageClientUsersTitle" datatype="html">
+        <source>Manage workspace users</source>
+        <target>Workspace-Benutzer verwalten</target>
+        </trans-unit>
+      <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
+        <source>Manage Workspace Users</source>
+        <target>Workspace-Benutzer verwalten</target>
+        </trans-unit>
+      <trans-unit id="featureChat-addClientUser" datatype="html">
+        <source>Add User to Workspace</source>
+        <target>Benutzer zum Workspace hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-addClientUserTitle" datatype="html">
+        <source>Add user</source>
+        <target>Benutzer hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUserEmailPlaceholder" datatype="html">
+        <source>user&#64;example.com</source>
+        <target>benutzer&#64;beispiel.de</target>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUserRoleUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUserRoleAdmin" datatype="html">
+        <source>Admin</source>
+        <target>Administrator</target>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUsers" datatype="html">
+        <source>Workspace Users</source>
+        <target>Workspace-Benutzer</target>
+        </trans-unit>
+      <trans-unit id="featureChat-loadingClientUsers" datatype="html">
+        <source>Loading workspace users...</source>
+        <target>Workspace-Benutzer werden geladen...</target>
+        </trans-unit>
+      <trans-unit id="featureChat-noClientUsers" datatype="html">
+        <source>No users assigned to this workspace</source>
+        <target>Diesem Workspace sind keine Benutzer zugewiesen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-removeClientUserTitle" datatype="html">
+        <source>Remove user</source>
+        <target>Benutzer entfernen</target>
+        </trans-unit>
       <trans-unit id="featureChat-editEnvironmentTitle" datatype="html">
         <source>Edit environment</source>
         <target>Umgebung bearbeiten</target>
@@ -456,14 +500,6 @@
         <source>Select language</source>
         <target>Sprache auswählen</target>
         </trans-unit>
-      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
-        <source>User Management (opens in new window)</source>
-        <target>Benutzerverwaltung (öffnet in neuem Fenster)</target>
-        </trans-unit>
-      <trans-unit id="featureContainer-users" datatype="html">
-        <source>Users</source>
-        <target>Benutzer</target>
-        </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
         <target>Dunkelmodus ein-/ausschalten</target>
@@ -471,6 +507,22 @@
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         <target>Abmelden</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-spacesTitle" datatype="html">
+        <source>Spaces</source>
+        <target>Bereiche</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-spaces" datatype="html">
+        <source>Spaces</source>
+        <target>Bereiche</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
+        <source>User Management</source>
+        <target>Benutzerverwaltung</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-users" datatype="html">
+        <source>Users</source>
+        <target>Benutzer</target>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -1802,8 +1854,12 @@
         <target>Benutzer hinzufügen</target>
         </trans-unit>
       <trans-unit id="featureUserManager-addUser" datatype="html">
-        <source>Add User</source>
-        <target>Benutzer hinzufügen</target>
+        <source>Add</source>
+        <target>Hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
+        <source>Search users</source>
+        <target>Benutzer suchen</target>
         </trans-unit>
       <trans-unit id="featureUserManager-loadingUsers" datatype="html">
         <source>Loading users...</source>

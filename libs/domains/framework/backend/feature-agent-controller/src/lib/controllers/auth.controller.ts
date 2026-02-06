@@ -7,8 +7,7 @@ import { LoginDto } from '../dto/auth/login.dto';
 import { RegisterDto } from '../dto/auth/register.dto';
 import { RequestPasswordResetDto } from '../dto/auth/request-password-reset.dto';
 import { ResetPasswordDto } from '../dto/auth/reset-password.dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { RolesGuard } from '../guards/roles.guard';
+import { UsersAuthGuard } from '../guards/users-auth.guard';
 import { AuthService } from '../services/auth.service';
 
 interface RequestWithUser extends Request {
@@ -53,7 +52,7 @@ export class AuthController {
     return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(UsersAuthGuard)
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   async changePassword(@Body() dto: ChangePasswordDto, @Req() req: RequestWithUser) {

@@ -11,20 +11,16 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { Resource, Roles } from 'nest-keycloak-connect';
 import { AgentResponseDto } from './dto/agent-response.dto';
 import { CreateAgentResponseDto } from './dto/create-agent-response.dto';
 import { CreateAgentDto } from './dto/create-agent.dto';
 import { UpdateAgentDto } from './dto/update-agent.dto';
-import { UserRole } from './entities/user.entity';
 import { AgentsService } from './services/agents.service';
 
 /**
  * Controller for agent management endpoints.
  * Provides CRUD operations for agents.
  */
-@Resource('agents')
-@Roles(UserRole.CONTROLLER)
 @Controller('agents')
 export class AgentsController {
   constructor(private readonly agentsService: AgentsService) {}

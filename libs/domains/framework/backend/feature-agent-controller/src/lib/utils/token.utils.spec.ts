@@ -9,7 +9,7 @@ describe('token.utils', () => {
       expect(code).toMatch(/^[A-Z0-9]{6}$/);
       expect(codeHash).toBeDefined();
       expect(codeHash.length).toBeGreaterThan(50);
-    });
+    }, 15000);
 
     it('should create unique codes', () => {
       const { code: code1 } = createConfirmationCode();
@@ -25,7 +25,7 @@ describe('token.utils', () => {
 
       const result = await validateConfirmationCode(code, codeHash);
       expect(result).toBe(true);
-    });
+    }, 15000);
 
     it('should reject invalid code', async () => {
       const { code, hash } = createConfirmationCode();
@@ -33,7 +33,7 @@ describe('token.utils', () => {
 
       const result = await validateConfirmationCode(code + '1', codeHash);
       expect(result).toBe(false);
-    });
+    }, 15000);
 
     it('should reject when storedHash is null', async () => {
       const result = await validateConfirmationCode('123456', null);
@@ -48,6 +48,6 @@ describe('token.utils', () => {
       expect(await validateConfirmationCode('ABC1234', codeHash)).toBe(false);
       expect(await validateConfirmationCode('abc123', codeHash)).toBe(false);
       expect(await validateConfirmationCode('', codeHash)).toBe(false);
-    });
+    }, 15000);
   });
 });

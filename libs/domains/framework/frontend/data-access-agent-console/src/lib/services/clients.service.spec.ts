@@ -159,4 +159,71 @@ describe('ClientsService', () => {
       req.flush(null);
     });
   });
+
+  describe('getClientUsers', () => {
+    it('should return client users', (done) => {
+      const clientId = 'client-1';
+      const mockUsers = [
+        {
+          id: 'rel-1',
+          userId: 'user-1',
+          clientId,
+          role: 'user' as const,
+          userEmail: 'a@test.com',
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      ];
+
+      service.getClientUsers(clientId).subscribe((users) => {
+        expect(users).toEqual(mockUsers);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/users`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockUsers);
+    });
+  });
+
+  describe('addClientUser', () => {
+    it('should add a user to a client', (done) => {
+      const clientId = 'client-1';
+      const dto = { email: 'new@test.com', role: 'user' as const };
+      const mockResponse = {
+        id: 'rel-2',
+        userId: 'user-2',
+        clientId,
+        role: 'user' as const,
+        userEmail: 'new@test.com',
+        createdAt: '2024-01-02T00:00:00Z',
+        updatedAt: '2024-01-02T00:00:00Z',
+      };
+
+      service.addClientUser(clientId, dto).subscribe((user) => {
+        expect(user).toEqual(mockResponse);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/users`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('removeClientUser', () => {
+    it('should remove a user from a client', (done) => {
+      const clientId = 'client-1';
+      const relationshipId = 'rel-1';
+
+      service.removeClientUser(clientId, relationshipId).subscribe(() => {
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/users/${relationshipId}`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+    });
+  });
 });

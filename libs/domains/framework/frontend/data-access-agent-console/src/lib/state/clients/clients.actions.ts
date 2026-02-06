@@ -1,6 +1,8 @@
 import { createAction, props } from '@ngrx/store';
 import type {
+  AddClientUserDto,
   ClientResponseDto,
+  ClientUserResponseDto,
   CreateClientDto,
   CreateClientResponseDto,
   ListClientsParams,
@@ -127,4 +129,47 @@ export const deleteProvisionedServerSuccess = createAction(
 export const deleteProvisionedServerFailure = createAction(
   '[Clients] Delete Provisioned Server Failure',
   props<{ error: string }>(),
+);
+
+// Client User Management Actions
+export const loadClientUsers = createAction('[Clients] Load Client Users', props<{ clientId: string }>());
+
+export const loadClientUsersSuccess = createAction(
+  '[Clients] Load Client Users Success',
+  props<{ clientId: string; users: ClientUserResponseDto[] }>(),
+);
+
+export const loadClientUsersFailure = createAction(
+  '[Clients] Load Client Users Failure',
+  props<{ clientId: string; error: string }>(),
+);
+
+export const addClientUser = createAction(
+  '[Clients] Add Client User',
+  props<{ clientId: string; dto: AddClientUserDto }>(),
+);
+
+export const addClientUserSuccess = createAction(
+  '[Clients] Add Client User Success',
+  props<{ clientId: string; user: ClientUserResponseDto }>(),
+);
+
+export const addClientUserFailure = createAction(
+  '[Clients] Add Client User Failure',
+  props<{ clientId: string; error: string }>(),
+);
+
+export const removeClientUser = createAction(
+  '[Clients] Remove Client User',
+  props<{ clientId: string; relationshipId: string }>(),
+);
+
+export const removeClientUserSuccess = createAction(
+  '[Clients] Remove Client User Success',
+  props<{ clientId: string; relationshipId: string }>(),
+);
+
+export const removeClientUserFailure = createAction(
+  '[Clients] Remove Client User Failure',
+  props<{ clientId: string; relationshipId: string; error: string }>(),
 );

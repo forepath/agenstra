@@ -2,7 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import type {
+  AddClientUserDto,
   ClientResponseDto,
+  ClientUserResponseDto,
   CreateClientDto,
   ListClientsParams,
   ProvisionServerDto,
@@ -11,22 +13,26 @@ import type {
   UpdateClientDto,
 } from './clients.types';
 import {
+  addClientUser,
   clearActiveClient,
   createClient,
   deleteClient,
   deleteProvisionedServer,
   loadClient,
+  loadClientUsers,
   loadClients,
   loadProvisioningProviders,
   loadServerInfo,
   loadServerTypes,
   provisionServer,
+  removeClientUser,
   setActiveClient,
   updateClient,
 } from './clients.actions';
 import {
   selectActiveClient,
   selectActiveClientId,
+  selectAddingClientUser,
   selectClientById,
   selectClientCreating,
   selectClientDeleting,
@@ -37,13 +43,16 @@ import {
   selectClientsError,
   selectClientsLoading,
   selectClientsLoadingAny,
+  selectClientUsers,
   selectDeletingProvisionedServer,
   selectHasClients,
+  selectLoadingClientUsers,
   selectLoadingProviders,
   selectLoadingServerInfo,
   selectLoadingServerTypes,
   selectProvisioning,
   selectProvisioningProviders,
+  selectRemovingClientUser,
   selectSelectedClient,
   selectServerInfo,
   selectServerTypes,
@@ -227,5 +236,69 @@ export class ClientsFacade {
    */
   deleteProvisionedServer(clientId: string): void {
     this.store.dispatch(deleteProvisionedServer({ clientId }));
+  }
+
+  // Client user management
+
+  /**
+   * Load users associated with a client.
+   * @param clientId - The client ID
+   */
+  loadClientUsers(clientId: string): void {
+    this.store.dispatch(loadClientUsers({ clientId }));
+  }
+
+  /**
+   * Add a user to a client by email.
+   * @param clientId - The client ID
+   * @param dto - Email and role for the user to add
+   */
+  addClientUser(clientId: string, dto: AddClientUserDto): void {
+    this.store.dispatch(addClientUser({ clientId, dto }));
+  }
+
+  /**
+   * Remove a user from a client.
+   * @param clientId - The client ID
+   * @param relationshipId - The client-user relationship ID to remove
+   */
+  removeClientUser(clientId: string, relationshipId: string): void {
+    this.store.dispatch(removeClientUser({ clientId, relationshipId }));
+  }
+
+  /**
+   * Get client users as an observable.
+   * @param clientId - The client ID
+   * @returns Observable of client users array
+   */
+  getClientUsers$(clientId: string): Observable<ClientUserResponseDto[]> {
+    return this.store.select(selectClientUsers(clientId));
+  }
+
+  /**
+   * Get loading state for client users as an observable.
+   * @param clientId - The client ID
+   * @returns Observable of loading state
+   */
+  getLoadingClientUsers$(clientId: string): Observable<boolean> {
+    return this.store.select(selectLoadingClientUsers(clientId));
+  }
+
+  /**
+   * Get adding state for client user as an observable.
+   * @param clientId - The client ID
+   * @returns Observable of adding state
+   */
+  getAddingClientUser$(clientId: string): Observable<boolean> {
+    return this.store.select(selectAddingClientUser(clientId));
+  }
+
+  /**
+   * Get removing state for client user as an observable.
+   * @param relationshipId - The relationship ID
+   * @returns Observable of removing state
+   */
+  getRemovingClientUser$(relationshipId: string): Observable<boolean> {
+    return this.store.select(selectRemovingClientUser(relationshipId));
   }
 }

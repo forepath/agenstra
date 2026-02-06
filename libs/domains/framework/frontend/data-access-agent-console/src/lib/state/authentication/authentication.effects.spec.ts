@@ -100,6 +100,7 @@ describe('AuthenticationEffects', () => {
       login: jest.fn(),
       logout: jest.fn(),
       isLoggedIn: jest.fn(),
+      getKeycloakInstance: jest.fn().mockReturnValue(undefined),
     };
 
     mockLocaleService = {
@@ -536,6 +537,80 @@ describe('AuthenticationEffects', () => {
         });
       });
 
+      it('should extract admin role from realm_access.roles in token', (done) => {
+        const action = checkAuthentication();
+        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
+        mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
+          tokenParsed: {
+            sub: 'user-sub-123',
+            email: 'admin@example.com',
+            realm_access: { roles: ['admin', 'user'] },
+          },
+        });
+
+        actions$ = of(action);
+
+        checkAuthentication$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+          expect(result).toEqual(
+            checkAuthenticationSuccess({
+              isAuthenticated: true,
+              authenticationType: 'keycloak',
+              user: { id: 'user-sub-123', email: 'admin@example.com', role: 'admin' },
+            }),
+          );
+          done();
+        });
+      });
+
+      it('should extract user role when realm_access has no admin', (done) => {
+        const action = checkAuthentication();
+        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
+        mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
+          tokenParsed: {
+            sub: 'user-sub-456',
+            email: 'user@example.com',
+            realm_access: { roles: ['user'] },
+          },
+        });
+
+        actions$ = of(action);
+
+        checkAuthentication$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+          expect(result).toEqual(
+            checkAuthenticationSuccess({
+              isAuthenticated: true,
+              authenticationType: 'keycloak',
+              user: { id: 'user-sub-456', email: 'user@example.com', role: 'user' },
+            }),
+          );
+          done();
+        });
+      });
+
+      it('should extract admin role from resource_access client roles', (done) => {
+        const action = checkAuthentication();
+        mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
+        mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
+          tokenParsed: {
+            sub: 'user-sub-789',
+            email: 'user@example.com',
+            realm_access: { roles: ['user'] },
+            resource_access: {
+              'test-client': { roles: ['admin'] },
+            },
+          },
+        });
+
+        actions$ = of(action);
+
+        checkAuthentication$(actions$, mockEnvironment, mockKeycloakService as any).subscribe((result) => {
+          expect(result).toMatchObject({
+            user: { id: 'user-sub-789', email: 'user@example.com', role: 'admin' },
+          });
+          done();
+        });
+      });
+
       it('should return checkAuthenticationSuccess with false if user is not logged in', (done) => {
         const action = checkAuthentication();
         const outcome = checkAuthenticationSuccess({ isAuthenticated: false });
@@ -630,7 +705,9 @@ describe('AuthenticationEffects', () => {
       registerSuccessRedirect$(actions$, mockRouter as any, mockLocaleService as any).subscribe({
         complete: () => {
           expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/confirm-email']);
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/confirm-email']);
+          expect(mockRouter.navigate).toHaveBeenCalledWith(['/confirm-email'], {
+            queryParams: { email: 'test@example.com' },
+          });
           expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
           done();
         },

@@ -1,4 +1,7 @@
+import { getAuthenticationMethod } from '@forepath/identity/backend';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { UserRole } from '../entities/user.entity';
 import { UsersRepository } from '../repositories/users.repository';
 
@@ -18,10 +21,26 @@ interface KeycloakTokenPayload {
  * Runs after Keycloak AuthGuard; ensures request.user has our format { id, email, roles }.
  */
 @Injectable()
-export class KeycloakUserSyncGuard implements CanActivate {
-  constructor(private readonly usersRepository: UsersRepository) {}
+export class KeycloakAuthGuard implements CanActivate {
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
+    if (getAuthenticationMethod() !== 'keycloak') {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     const tokenPayload = request.user as KeycloakTokenPayload | undefined;
 

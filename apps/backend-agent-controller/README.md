@@ -15,6 +15,7 @@ This application provides:
 - **HTTP REST API** - Full CRUD operations for client management and proxied agent operations
 - **WebSocket Gateway** - Real-time bidirectional event forwarding to remote agent-manager services
 - **Server Provisioning** - Automated cloud server provisioning (Hetzner Cloud, DigitalOcean) with Docker and agent-manager deployment
+- **Per-Client Permissions** - Fine-grained access control with user roles per client (admin/user)
 - **Secure Authentication** - Keycloak integration for HTTP endpoints and API key fallback
 - **Database Support** - PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** - Automatic database schema migrations on startup

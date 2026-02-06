@@ -1,17 +1,18 @@
+import { getAuthenticationMethod } from '@forepath/identity/backend';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
-export interface JwtPayload {
+export interface UsersJwtPayload {
   sub: string;
   email: string;
   roles: string[];
 }
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
+export class UsersAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
@@ -27,7 +28,17 @@ export class JwtAuthGuard implements CanActivate {
       return true;
     }
 
+    if (getAuthenticationMethod() !== 'users') {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest<Request>();
+
+    // Pass through when user is already set (e.g. by API key or other auth)
+    if (request['user']) {
+      return true;
+    }
+
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
@@ -35,7 +46,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+      const payload = await this.jwtService.verifyAsync<UsersJwtPayload>(token);
       request['user'] = {
         id: payload.sub,
         email: payload.email,

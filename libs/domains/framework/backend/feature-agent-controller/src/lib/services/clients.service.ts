@@ -1,10 +1,13 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { AuthenticationType, ClientEntity } from '../entities/client.entity';
+import { ClientUserRole } from '../entities/client-user.entity';
+import { UserRole } from '../entities/user.entity';
+import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
@@ -24,6 +27,7 @@ export class ClientsService {
     @Inject(forwardRef(() => ClientAgentProxyService))
     private readonly clientAgentProxyService: ClientAgentProxyService,
     private readonly provisioningReferencesRepository: ProvisioningReferencesRepository,
+    private readonly clientUsersRepository: ClientUsersRepository,
   ) {}
 
   /**
@@ -44,12 +48,60 @@ export class ClientsService {
   }
 
   /**
+   * Check if api-key mode is active (role checks should be disabled).
+   * @returns True if api-key mode is active
+   */
+  private isApiKeyMode(): boolean {
+    const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
+    return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
+  }
+
+  /**
+   * Check if a user has access to a client.
+   * @param userId - The UUID of the user
+   * @param userRole - The role of the user (from users table)
+   * @param client - The client entity
+   * @param isApiKeyAuth - Whether the request is authenticated via API key
+   * @returns Object with access status and client user role if applicable
+   */
+  private async checkClientAccess(
+    userId: string,
+    userRole: UserRole,
+    client: ClientEntity,
+    isApiKeyAuth: boolean,
+  ): Promise<{ hasAccess: boolean; clientUserRole?: ClientUserRole }> {
+    // API key mode: always grant access
+    if (isApiKeyAuth || this.isApiKeyMode()) {
+      return { hasAccess: true };
+    }
+
+    // Global admin: always has access
+    if (userRole === UserRole.ADMIN) {
+      return { hasAccess: true };
+    }
+
+    // Creator: always has access
+    if (client.userId === userId) {
+      return { hasAccess: true };
+    }
+
+    // Check many-to-many relationship
+    const clientUser = await this.clientUsersRepository.findUserClientAccess(userId, client.id);
+    if (clientUser) {
+      return { hasAccess: true, clientUserRole: clientUser.role };
+    }
+
+    return { hasAccess: false };
+  }
+
+  /**
    * Create a new client with API key (provided or auto-generated if needed).
    * @param createClientDto - Data transfer object for creating a client
+   * @param userId - The UUID of the user creating the client (optional, for api-key mode)
    * @returns The created client response DTO with API key (if applicable)
    * @throws BadRequestException if client name already exists
    */
-  async create(createClientDto: CreateClientDto): Promise<CreateClientResponseDto> {
+  async create(createClientDto: CreateClientDto, userId?: string): Promise<CreateClientResponseDto> {
     // Check if client with the same name already exists
     const existingClient = await this.clientsRepository.findByName(createClientDto.name);
     if (existingClient) {
@@ -82,6 +134,7 @@ export class ClientsService {
       keycloakClientSecret: createClientDto.keycloakClientSecret,
       keycloakRealm: createClientDto.keycloakRealm,
       agentWsPort: createClientDto.agentWsPort,
+      userId: userId ?? null,
     });
 
     const response = await this.mapToResponseDto(client);
@@ -92,16 +145,74 @@ export class ClientsService {
   }
 
   /**
-   * Find all clients with pagination.
+   * Find all clients with pagination, filtered by user permissions.
    * @param limit - Maximum number of clients to return
    * @param offset - Number of clients to skip
-   * @returns Array of client response DTOs
+   * @param userId - The UUID of the user (optional, for api-key mode)
+   * @param userRole - The role of the user (optional, for api-key mode)
+   * @param isApiKeyAuth - Whether the request is authenticated via API key
+   * @returns Array of client response DTOs that the user has access to
    */
-  async findAll(limit = 10, offset = 0): Promise<ClientResponseDto[]> {
-    const clients = await this.clientsRepository.findAll(limit, offset);
-    // Fetch config for all clients in parallel, but don't fail if any request fails
-    const clientsWithConfig = await Promise.all(
-      clients.map(async (client) => {
+  async findAll(
+    limit = 10,
+    offset = 0,
+    userId?: string,
+    userRole?: UserRole,
+    isApiKeyAuth = false,
+  ): Promise<ClientResponseDto[]> {
+    // In api-key mode, return all clients
+    if (isApiKeyAuth || this.isApiKeyMode()) {
+      const clients = await this.clientsRepository.findAll(limit, offset);
+      return Promise.all(
+        clients.map(async (client) => {
+          const dto = await this.mapToResponseDto(client);
+          try {
+            dto.config = await this.clientAgentProxyService.getClientConfig(client.id);
+          } catch (error) {
+            // Config is optional, continue without it
+          }
+          return dto;
+        }),
+      );
+    }
+
+    // For non-api-key mode, filter by permissions
+    if (!userId || !userRole) {
+      return [];
+    }
+
+    // Global admin: return all clients
+    if (userRole === UserRole.ADMIN) {
+      const clients = await this.clientsRepository.findAll(limit, offset);
+      return Promise.all(
+        clients.map(async (client) => {
+          const dto = await this.mapToResponseDto(client);
+          try {
+            dto.config = await this.clientAgentProxyService.getClientConfig(client.id);
+          } catch (error) {
+            // Config is optional, continue without it
+          }
+          return dto;
+        }),
+      );
+    }
+
+    // Get all clients the user has access to
+    // 1. Clients created by the user
+    // 2. Clients where user is in client_users table
+    const userClients = await this.clientUsersRepository.findByUserId(userId);
+    const clientIds = new Set<string>();
+    userClients.forEach((cu) => clientIds.add(cu.clientId));
+
+    // Also get clients created by the user
+    const allClients = await this.clientsRepository.findAll(1000, 0); // Get all for filtering
+    const accessibleClients = allClients.filter((client) => client.userId === userId || clientIds.has(client.id));
+
+    // Apply pagination
+    const paginatedClients = accessibleClients.slice(offset, offset + limit);
+
+    return Promise.all(
+      paginatedClients.map(async (client) => {
         const dto = await this.mapToResponseDto(client);
         try {
           dto.config = await this.clientAgentProxyService.getClientConfig(client.id);
@@ -111,17 +222,29 @@ export class ClientsService {
         return dto;
       }),
     );
-    return clientsWithConfig;
   }
 
   /**
-   * Find a client by ID.
+   * Find a client by ID, checking user permissions.
    * @param id - The UUID of the client
+   * @param userId - The UUID of the user (optional, for api-key mode)
+   * @param userRole - The role of the user (optional, for api-key mode)
+   * @param isApiKeyAuth - Whether the request is authenticated via API key
    * @returns The client response DTO
    * @throws NotFoundException if client is not found
+   * @throws ForbiddenException if user does not have access to the client
    */
-  async findOne(id: string): Promise<ClientResponseDto> {
+  async findOne(id: string, userId?: string, userRole?: UserRole, isApiKeyAuth = false): Promise<ClientResponseDto> {
     const client = await this.clientsRepository.findByIdOrThrow(id);
+
+    // Check access permissions
+    if (!isApiKeyAuth && !this.isApiKeyMode() && userId && userRole) {
+      const access = await this.checkClientAccess(userId, userRole, client, isApiKeyAuth);
+      if (!access.hasAccess) {
+        throw new ForbiddenException('You do not have access to this client');
+      }
+    }
+
     const dto = await this.mapToResponseDto(client);
     // Fetch config from agent-manager, but don't fail if request fails
     try {
@@ -133,15 +256,34 @@ export class ClientsService {
   }
 
   /**
-   * Update an existing client.
+   * Update an existing client, checking user permissions.
    * API key can be updated but will never be included in responses.
    * @param id - The UUID of the client to update
    * @param updateClientDto - Data transfer object for updating a client
+   * @param userId - The UUID of the user (optional, for api-key mode)
+   * @param userRole - The role of the user (optional, for api-key mode)
+   * @param isApiKeyAuth - Whether the request is authenticated via API key
    * @returns The updated client response DTO
    * @throws NotFoundException if client is not found
    * @throws BadRequestException if new name conflicts with existing client
+   * @throws ForbiddenException if user does not have access to the client
    */
-  async update(id: string, updateClientDto: UpdateClientDto): Promise<ClientResponseDto> {
+  async update(
+    id: string,
+    updateClientDto: UpdateClientDto,
+    userId?: string,
+    userRole?: UserRole,
+    isApiKeyAuth = false,
+  ): Promise<ClientResponseDto> {
+    const client = await this.clientsRepository.findByIdOrThrow(id);
+
+    // Check access permissions
+    if (!isApiKeyAuth && !this.isApiKeyMode() && userId && userRole) {
+      const access = await this.checkClientAccess(userId, userRole, client, isApiKeyAuth);
+      if (!access.hasAccess) {
+        throw new ForbiddenException('You do not have access to this client');
+      }
+    }
     // If name is being updated, check for conflicts
     if (updateClientDto.name) {
       const existingClient = await this.clientsRepository.findByName(updateClientDto.name);
@@ -206,8 +348,8 @@ export class ClientsService {
       (key) => updateData[key as keyof ClientEntity] === undefined && delete updateData[key as keyof ClientEntity],
     );
 
-    const client = await this.clientsRepository.update(id, updateData);
-    const dto = await this.mapToResponseDto(client);
+    const updatedClient = await this.clientsRepository.update(id, updateData);
+    const dto = await this.mapToResponseDto(updatedClient);
     // Fetch config from agent-manager, but don't fail if request fails
     try {
       dto.config = await this.clientAgentProxyService.getClientConfig(id);
@@ -218,12 +360,24 @@ export class ClientsService {
   }
 
   /**
-   * Delete a client by ID.
+   * Delete a client by ID, checking user permissions.
    * @param id - The UUID of the client to delete
+   * @param userId - The UUID of the user (optional, for api-key mode)
+   * @param userRole - The role of the user (optional, for api-key mode)
+   * @param isApiKeyAuth - Whether the request is authenticated via API key
    * @throws NotFoundException if client is not found
+   * @throws ForbiddenException if user does not have access to the client
    */
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId?: string, userRole?: UserRole, isApiKeyAuth = false): Promise<void> {
     const client = await this.clientsRepository.findByIdOrThrow(id);
+
+    // Check access permissions
+    if (!isApiKeyAuth && !this.isApiKeyMode() && userId && userRole) {
+      const access = await this.checkClientAccess(userId, userRole, client, isApiKeyAuth);
+      if (!access.hasAccess) {
+        throw new ForbiddenException('You do not have access to this client');
+      }
+    }
 
     // Clear token cache if it's a Keycloak client
     if (client.authenticationType === AuthenticationType.KEYCLOAK && client.keycloakClientId && client.keycloakRealm) {

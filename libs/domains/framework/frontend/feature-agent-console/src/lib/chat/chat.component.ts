@@ -17,16 +17,20 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
+  AuthenticationFacade,
   ClientsFacade,
   ContainerType,
   DeploymentsService,
   EnvFacade,
   FilesFacade,
   SocketsFacade,
+  type AddClientUserDto,
   type AgentResponseDto,
   type ChatMessageData,
   type ClientAuthenticationType,
   type ClientResponseDto,
+  type ClientUserResponseDto,
+  type ClientUserRole,
   type CreateAgentDto,
   type CreateClientDto,
   type CreateEnvironmentVariableDto,
@@ -48,6 +52,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   skip,
   startWith,
   Subject,
@@ -101,6 +106,7 @@ type ChatMessageWithFilter = {
 export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
+  private readonly authFacade = inject(AuthenticationFacade);
   private readonly socketsFacade = inject(SocketsFacade);
   private readonly filesFacade = inject(FilesFacade);
   private readonly envFacade = inject(EnvFacade);
@@ -136,6 +142,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   @ViewChild('environmentVariablesModal', { static: false })
   private environmentVariablesModal!: ElementRef<HTMLDivElement>;
+
+  @ViewChild('clientUsersModal', { static: false })
+  private clientUsersModal!: ElementRef<HTMLDivElement>;
 
   @ViewChild('fileEditor', { static: false })
   fileEditor!: FileEditorComponent;
@@ -548,6 +557,85 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
       return this.envFacade.getEnvError$(clientId, agentId);
     }),
+  );
+
+  // Client users modal state (for managing workspace users)
+  readonly managingClientUsersClientId = signal<string | null>(null);
+  readonly newClientUser = signal<AddClientUserDto>({
+    email: '',
+    role: 'user' as ClientUserRole,
+  });
+
+  readonly managingClientUsersClientId$ = toObservable(this.managingClientUsersClientId);
+  readonly clientUsers$: Observable<ClientUserResponseDto[]> = this.managingClientUsersClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) {
+        return of([]);
+      }
+      return this.clientsFacade.getClientUsers$(clientId).pipe(map((users) => users ?? []));
+    }),
+  );
+  readonly clientUsersLoading$: Observable<boolean> = this.managingClientUsersClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) {
+        return of(false);
+      }
+      return this.clientsFacade.getLoadingClientUsers$(clientId);
+    }),
+  );
+  readonly clientUsersAdding$: Observable<boolean> = this.managingClientUsersClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) {
+        return of(false);
+      }
+      return this.clientsFacade.getAddingClientUser$(clientId);
+    }),
+  );
+  readonly clientUsersError$: Observable<string | null> = this.clientsFacade.error$;
+
+  /**
+   * Permissions for the client users modal, inferred from the loaded users list.
+   * - User not in list (or no auth user): super admin → can add any role, remove anyone
+   * - User in list with role 'admin': client admin → can add only 'user' role, remove only users
+   * - User in list with role 'user': client user → cannot add or remove
+   */
+  readonly clientUsersModalPermissions$: Observable<{
+    canAddUser: boolean;
+    canAddAdminRole: boolean;
+    canRemoveUser: (user: ClientUserResponseDto) => boolean;
+  }> = combineLatest([this.clientUsers$, this.clientUsersLoading$, this.authFacade.user$]).pipe(
+    map(([users, loading, currentUser]) => {
+      if (loading) {
+        return { canAddUser: false, canAddAdminRole: false, canRemoveUser: () => false };
+      }
+      const currentUserInList =
+        currentUser &&
+        users.find(
+          (u) =>
+            u.userId === currentUser.id ||
+            (u.userEmail && currentUser.email && u.userEmail.toLowerCase() === currentUser.email.toLowerCase()),
+        );
+      if (!currentUserInList || !currentUser) {
+        return {
+          canAddUser: true,
+          canAddAdminRole: true,
+          canRemoveUser: () => true,
+        };
+      }
+      if (currentUserInList.role === 'admin') {
+        return {
+          canAddUser: true,
+          canAddAdminRole: false,
+          canRemoveUser: (user: ClientUserResponseDto) => user.role === 'user',
+        };
+      }
+      return {
+        canAddUser: false,
+        canAddAdminRole: false,
+        canRemoveUser: () => false,
+      };
+    }),
+    shareReplay({ bufferSize: 1, refCount: true }),
   );
 
   private initialRouting: Record<string, boolean> = {
@@ -2661,6 +2749,66 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.newEnvVar.set({
       variable: '',
       content: '',
+    });
+  }
+
+  onManageClientUsersClick(client: ClientResponseDto): void {
+    this.managingClientUsersClientId.set(client.id);
+    this.clientsFacade.loadClientUsers(client.id);
+    this.showModal(this.clientUsersModal);
+  }
+
+  onSubmitAddClientUser(): void {
+    const clientId = this.managingClientUsersClientId();
+    if (!clientId) {
+      return;
+    }
+
+    const dto = this.newClientUser();
+    if (!dto.email?.trim()) {
+      return;
+    }
+
+    this.clientsFacade.addClientUser(clientId, {
+      email: dto.email.trim(),
+      role: dto.role,
+    });
+
+    this.clientUsersAdding$
+      .pipe(
+        filter((adding) => !adding),
+        take(1),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+        this.newClientUser.set({
+          email: '',
+          role: 'user' as ClientUserRole,
+        });
+      });
+  }
+
+  onRemoveClientUser(relationshipId: string): void {
+    const clientId = this.managingClientUsersClientId();
+    if (!clientId) {
+      return;
+    }
+    this.clientsFacade.removeClientUser(clientId, relationshipId);
+  }
+
+  getRemovingClientUser$(relationshipId: string): Observable<boolean> {
+    return this.clientsFacade.getRemovingClientUser$(relationshipId);
+  }
+
+  updateClientUserField(field: keyof AddClientUserDto, value: string | ClientUserRole): void {
+    this.newClientUser.update((current) => ({ ...current, [field]: value }));
+  }
+
+  onCloseClientUsersModal(): void {
+    this.managingClientUsersClientId.set(null);
+    this.newClientUser.set({
+      email: '',
+      role: 'user' as ClientUserRole,
     });
   }
 

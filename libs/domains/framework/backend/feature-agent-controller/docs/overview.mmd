@@ -9,6 +9,14 @@ flowchart TB
         HTTP_USE --> HTTP5["🗑️ Delete Client<br/>DELETE /api/clients/:id<br/>Returns: 204 No Content"]
     end
 
+    subgraph USERS["👥 HTTP REST API - Client User Management (/api/clients/:id/users)"]
+        direction TB
+        USERS_USE["Use Case: Per-Client Permissions<br/>keycloak/users auth only<br/>Add/Remove users by email"]
+        USERS_USE --> USERS1["📋 List Client Users<br/>GET /api/clients/:id/users<br/>Returns: ClientUserResponseDto[]"]
+        USERS_USE --> USERS2["➕ Add User to Client<br/>POST /api/clients/:id/users<br/>Accepts: AddClientUserDto"]
+        USERS_USE --> USERS3["🗑️ Remove User from Client<br/>DELETE /api/clients/:id/users/:relationshipId<br/>Returns: 204 No Content"]
+    end
+
     subgraph PROXY["🔷 HTTP REST API - Proxied Agent Operations (/api/clients/:id/agents)"]
         direction TB
         PROXY_USE["Use Case: Agent Management via Client<br/>Proxy to Remote Agent-Manager<br/>Request-Response Pattern"]
@@ -43,28 +51,32 @@ flowchart TB
     subgraph WS["🔶 WebSocket Gateway (namespace: /clients)"]
         direction TB
         WS_USE["Use Case: Real-time Event Forwarding<br/>Bidirectional Messages<br/>Persistent Connection"]
-        WS_USE --> WS1["🔐 Client Context Setup<br/>1. Connect to WebSocket<br/>2. setClient with clientId<br/>3. Remote connection established<br/>4. Auto-authentication (API_KEY/Keycloak)"]
+        WS_USE --> WS1["🔐 Client Context Setup<br/>1. Connect to WebSocket (auth: api-key/Keycloak/users)<br/>2. setClient with clientId (per-client access check)<br/>3. Remote connection established<br/>4. Auto-authentication (API_KEY/Keycloak)"]
         WS_USE --> WS2["📤 Event Forwarding<br/>1. forward event with agentId?<br/>2. Auto-login if agentId provided<br/>3. Forward to remote agent-manager WS<br/>4. Relay responses back to client"]
     end
 
     Start([Agent Controller Feature]) --> HTTP
+    Start --> USERS
     Start --> PROXY
     Start --> FILES
     Start --> ENV
     Start --> WS
 
     HTTP -.->|"Stateless<br/>Request-Response"| HTTP_USE
+    USERS -.->|"Per-Client<br/>Permissions"| USERS_USE
     PROXY -.->|"Proxy to Remote<br/>Agent-Manager"| PROXY_USE
     FILES -.->|"Proxy to Remote<br/>Agent-Manager"| FILES_USE
     ENV -.->|"Proxy to Remote<br/>Agent-Manager"| ENV_USE
     WS -.->|"Stateful<br/>Persistent Connection"| WS_USE
 
     style HTTP fill:#e6f0ff,stroke:#4a90e2,stroke-width:3px
+    style USERS fill:#f0e6ff,stroke:#8c42ff,stroke-width:3px
     style PROXY fill:#e6f0ff,stroke:#4a90e2,stroke-width:3px
     style FILES fill:#e6ffe6,stroke:#4a9e2,stroke-width:3px
     style ENV fill:#fff0e6,stroke:#ff6b42,stroke-width:3px
     style WS fill:#fff4e6,stroke:#ff8c42,stroke-width:3px
     style HTTP_USE fill:#d6e9ff,stroke:#4a90e2
+    style USERS_USE fill:#e6d6ff,stroke:#8c42ff
     style PROXY_USE fill:#d6e9ff,stroke:#4a90e2
     style FILES_USE fill:#d6ffd6,stroke:#4a9e2
     style ENV_USE fill:#ffe6d6,stroke:#ff6b42
@@ -74,6 +86,9 @@ flowchart TB
     style HTTP3 fill:#f0f7ff,stroke:#4a90e2
     style HTTP4 fill:#f0f7ff,stroke:#4a90e2
     style HTTP5 fill:#f0f7ff,stroke:#4a90e2
+    style USERS1 fill:#f5f0ff,stroke:#8c42ff
+    style USERS2 fill:#f5f0ff,stroke:#8c42ff
+    style USERS3 fill:#f5f0ff,stroke:#8c42ff
     style PROXY1 fill:#f0f7ff,stroke:#4a90e2
     style PROXY2 fill:#f0f7ff,stroke:#4a90e2
     style PROXY3 fill:#f0f7ff,stroke:#4a90e2

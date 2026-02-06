@@ -1,38 +1,61 @@
+import { getAuthenticationMethod, KeycloakService } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeycloakConnectModule } from 'nest-keycloak-connect';
 import { ClientsDeploymentsController } from './clients-deployments.controller';
 import { ClientsVcsController } from './clients-vcs.controller';
 import { ClientsController } from './clients.controller';
 import { ClientsGateway } from './clients.gateway';
 import { ClientAgentCredentialEntity } from './entities/client-agent-credential.entity';
 import { ClientEntity } from './entities/client.entity';
+import { ClientUserEntity } from './entities/client-user.entity';
 import { ProvisioningReferenceEntity } from './entities/provisioning-reference.entity';
+import { UserEntity } from './entities/user.entity';
 import { DigitalOceanProvider } from './providers/digital-ocean.provider';
 import { HetznerProvider } from './providers/hetzner.provider';
 import { ProvisioningProviderFactory } from './providers/provisioning-provider.factory';
 import { ClientAgentCredentialsRepository } from './repositories/client-agent-credentials.repository';
+import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ProvisioningReferencesRepository } from './repositories/provisioning-references.repository';
+import { UsersRepository } from './repositories/users.repository';
 import { ClientAgentCredentialsService } from './services/client-agent-credentials.service';
 import { ClientAgentDeploymentsProxyService } from './services/client-agent-deployments-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from './services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from './services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from './services/client-agent-proxy.service';
 import { ClientAgentVcsProxyService } from './services/client-agent-vcs-proxy.service';
+import { ClientUsersService } from './services/client-users.service';
 import { ClientsService } from './services/clients.service';
 import { KeycloakTokenService } from './services/keycloak-token.service';
 import { ProvisioningService } from './services/provisioning.service';
+import { SocketAuthService } from './services/socket-auth.service';
+
+const authMethod = getAuthenticationMethod();
 
 /**
  * Module for agent clients feature.
  * Provides controllers, services, and repository for agent CRUD operations and file system operations.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([ClientEntity, ClientAgentCredentialEntity, ProvisioningReferenceEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      ClientEntity,
+      ClientAgentCredentialEntity,
+      ProvisioningReferenceEntity,
+      ClientUserEntity,
+      UserEntity,
+    ]),
+    // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
+    ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
+  ],
   controllers: [ClientsController, ClientsVcsController, ClientsDeploymentsController],
   providers: [
     ClientsService,
     ClientsRepository,
+    ClientUsersRepository,
+    ClientUsersService,
+    UsersRepository,
     KeycloakTokenService,
     ClientAgentProxyService,
     ClientAgentFileSystemProxyService,
@@ -41,6 +64,7 @@ import { ProvisioningService } from './services/provisioning.service';
     ClientAgentEnvironmentVariablesProxyService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
+    SocketAuthService,
     ClientsGateway,
     ProvisioningService,
     ProvisioningProviderFactory,
@@ -64,6 +88,8 @@ import { ProvisioningService } from './services/provisioning.service';
   exports: [
     ClientsService,
     ClientsRepository,
+    ClientUsersRepository,
+    ClientUsersService,
     KeycloakTokenService,
     ClientAgentProxyService,
     ClientAgentFileSystemProxyService,

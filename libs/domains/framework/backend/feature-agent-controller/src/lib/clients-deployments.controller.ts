@@ -10,20 +10,24 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
-import { Resource, Roles } from 'nest-keycloak-connect';
-import { UserRole } from './entities/user.entity';
+import { ClientUsersRepository } from './repositories/client-users.repository';
+import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentDeploymentsProxyService } from './services/client-agent-deployments-proxy.service';
+import { ensureClientAccess, type RequestWithUser } from './utils/client-access.utils';
 
 /**
  * Controller for proxied deployment and CI/CD pipeline endpoints.
  * Proxies requests to remote agent-manager services for deployment operations.
  */
-@Resource('clients')
-@Roles(UserRole.ADMIN, UserRole.USER)
 @Controller('clients/:id/agents/:agentId/deployments')
 export class ClientsDeploymentsController {
-  constructor(private readonly proxyService: ClientAgentDeploymentsProxyService) {}
+  constructor(
+    private readonly proxyService: ClientAgentDeploymentsProxyService,
+    private readonly clientsRepository: ClientsRepository,
+    private readonly clientUsersRepository: ClientUsersRepository,
+  ) {}
 
   /**
    * Get deployment configuration for an agent (proxied).
@@ -32,7 +36,9 @@ export class ClientsDeploymentsController {
   async getConfiguration(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.getConfiguration(clientId, agentId);
   }
 
@@ -44,7 +50,9 @@ export class ClientsDeploymentsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() dto: unknown,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.upsertConfiguration(clientId, agentId, dto);
   }
 
@@ -56,7 +64,9 @@ export class ClientsDeploymentsController {
   async deleteConfiguration(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.proxyService.deleteConfiguration(clientId, agentId);
   }
 
@@ -67,7 +77,9 @@ export class ClientsDeploymentsController {
   async listRepositories(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.listRepositories(clientId, agentId);
   }
 
@@ -79,7 +91,9 @@ export class ClientsDeploymentsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('repositoryId') repositoryId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.listBranches(clientId, agentId, repositoryId);
   }
 
@@ -92,7 +106,9 @@ export class ClientsDeploymentsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('repositoryId') repositoryId: string,
     @Query('branch') branch?: string,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.listWorkflows(clientId, agentId, repositoryId, branch);
   }
 
@@ -104,7 +120,9 @@ export class ClientsDeploymentsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() dto: unknown,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.triggerWorkflow(clientId, agentId, dto);
   }
 
@@ -117,7 +135,9 @@ export class ClientsDeploymentsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.listRuns(clientId, agentId, limit, offset);
   }
 
@@ -129,7 +149,9 @@ export class ClientsDeploymentsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('runId') runId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.getRunStatus(clientId, agentId, runId);
   }
 
@@ -141,7 +163,9 @@ export class ClientsDeploymentsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('runId') runId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<{ logs: string }> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.getRunLogs(clientId, agentId, runId);
   }
 
@@ -153,7 +177,9 @@ export class ClientsDeploymentsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('runId') runId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.listRunJobs(clientId, agentId, runId);
   }
 
@@ -166,7 +192,9 @@ export class ClientsDeploymentsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('runId') runId: string,
     @Param('jobId') jobId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<{ logs: string }> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     return await this.proxyService.getJobLogs(clientId, agentId, runId, jobId);
   }
 
@@ -179,7 +207,9 @@ export class ClientsDeploymentsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('runId') runId: string,
+    @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     await this.proxyService.cancelRun(clientId, agentId, runId);
   }
 }

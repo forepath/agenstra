@@ -10,6 +10,16 @@ Agenstra uses WebSocket (Socket.IO) for real-time bidirectional communication. T
 - **Controller ↔ Manager**: Event forwarding to remote agent-managers
 - **Manager ↔ Agent Containers**: Real-time chat and container communication
 
+## Authentication
+
+WebSocket connections to the controller require authentication. Pass the `Authorization` header in the handshake (same as HTTP):
+
+- **API key**: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
+- **Keycloak**: `Bearer <keycloak-jwt-token>`
+- **Users**: `Bearer <jwt-token>`
+
+Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client (global admin, client creator, or client_users entry) can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
+
 ## Connection Flow
 
 ### Frontend to Controller
@@ -19,9 +29,11 @@ sequenceDiagram
     participant F as Frontend
     participant AC as Agent Controller
 
-    F->>AC: WebSocket Connect
+    F->>AC: WebSocket Connect (with Authorization header)
+    AC->>AC: Validate auth (api-key, keycloak, or users)
     AC->>F: Connected
     F->>AC: setClient (clientId)
+    AC->>AC: Check client access
     AC->>AC: Store Client Context
     AC->>F: clientSet
 ```
@@ -198,7 +210,9 @@ sequenceDiagram
 
 ### Authentication Errors
 
-- `loginError` event on authentication failure
+- `connect_error` "Unauthorized" when WebSocket auth fails
+- `error` "You do not have access to this client" when setClient is forbidden
+- `loginError` event on agent authentication failure
 - Generic error messages to prevent information disclosure
 - Automatic retry on reconnection
 

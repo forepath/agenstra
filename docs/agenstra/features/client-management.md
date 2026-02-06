@@ -9,6 +9,8 @@ A client represents a connection to a remote agent-manager service. You can eith
 1. **Connect to an existing agent-manager** - If you already have an agent-manager running
 2. **Provision a new server** - Automatically provision a cloud server with agent-manager deployment
 
+When using keycloak or users authentication, Agenstra supports **per-client permissions** to enable multi-tenant scenarios. Each client has a creator and can have multiple associated users with different roles.
+
 ## Creating a Client
 
 ### Connect to Existing Agent-Manager
@@ -67,6 +69,36 @@ This configuration allows you to discover which agent types are available on eac
 
 **Note**: Deleting a client also deletes all stored agent credentials for that client.
 
+## Per-Client Permissions
+
+When using **keycloak** or **users** authentication, access to clients is controlled by per-client permissions. In **api-key** mode, users do not play a role and all permission checks are bypassed.
+
+### Access Control Rules
+
+Access to a client is granted if:
+
+- The user is a **global admin** (role `admin` in the users table)
+- The user is the **creator** of the client (`user_id` matches)
+- The user is in the `client_users` relationship table for that client
+
+### Client Roles
+
+Each user-client relationship has a role:
+
+- **`admin`** - Can manage users (add/remove) and has full access to the client
+- **`user`** - Can access the client but cannot manage users
+
+### Managing Client Users
+
+Users are added to clients by their email address. This applies to keycloak and users authentication; in api-key mode, users do not play a role and these endpoints are not applicable.
+
+**Permissions**:
+
+- Global admins can add any role and remove anyone
+- Client creators can add any role and remove anyone
+- Client admins can only add users with `user` role and remove users (not other admins)
+- Client users cannot add or remove anyone
+
 ## Authentication Types
 
 ### API Key Authentication
@@ -87,11 +119,19 @@ This configuration allows you to discover which agent types are available on eac
 
 ### Client Management
 
-- `GET /api/clients` - List all clients
+- `GET /api/clients` - List all clients (filtered by user access in keycloak/users mode)
 - `GET /api/clients/:id` - Get a single client by UUID
 - `POST /api/clients` - Create a new client
 - `POST /api/clients/:id` - Update an existing client
 - `DELETE /api/clients/:id` - Delete a client
+
+### Client User Management (keycloak/users authentication only)
+
+- `GET /api/clients/:id/users` - List users associated with a client
+- `POST /api/clients/:id/users` - Add a user to a client by email
+- `DELETE /api/clients/:id/users/:relationshipId` - Remove a user from a client
+
+In api-key mode, users do not play a role; these endpoints are not applicable.
 
 For detailed API documentation, see the application and API reference docs linked below.
 

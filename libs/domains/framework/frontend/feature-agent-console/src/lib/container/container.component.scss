@@ -17,6 +17,14 @@
       &:hover {
         background-color: var(--bs-gray-800);
       }
+
+      &.active {
+        background-color: var(--bs-gray-900);
+
+        &:hover {
+          background-color: var(--bs-gray-900);
+        }
+      }
     }
   }
 }
@@ -53,6 +61,16 @@
     border: 0;
     outline: 0;
     background-color: transparent;
+    color: var(--bs-heading-color);
+    text-decoration: none;
+
+    &.active {
+      background-color: var(--bs-gray-300);
+
+      &:hover {
+        background-color: var(--bs-gray-300);
+      }
+    }
 
     &:hover {
       background-color: var(--bs-gray-200);

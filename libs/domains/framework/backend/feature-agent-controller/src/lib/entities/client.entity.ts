@@ -1,5 +1,16 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { createAes256GcmTransformer } from '../utils/encryption.transformer';
+import { ClientUserEntity } from './client-user.entity';
+import { UserEntity } from './user.entity';
 
 export enum AuthenticationType {
   API_KEY = 'api_key',
@@ -53,6 +64,16 @@ export class ClientEntity {
 
   @Column({ type: 'int', nullable: true, name: 'agent_ws_port' })
   agentWsPort?: number;
+
+  @Column({ type: 'uuid', nullable: true, name: 'user_id' })
+  userId?: string;
+
+  @ManyToOne(() => UserEntity, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'user_id' })
+  user?: UserEntity;
+
+  @OneToMany(() => ClientUserEntity, (clientUser) => clientUser.client)
+  clientUsers?: ClientUserEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

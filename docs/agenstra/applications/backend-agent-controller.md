@@ -13,7 +13,8 @@ This application provides:
 - **HTTP REST API** - Full CRUD operations for client management and proxied agent operations
 - **WebSocket Gateway** - Real-time bidirectional event forwarding to remote agent-manager services
 - **Server Provisioning** - Automated cloud server provisioning (Hetzner Cloud, DigitalOcean) with Docker and agent-manager deployment
-- **Secure Authentication** - Keycloak integration for HTTP endpoints and API key fallback
+- **Per-Client Permissions** - Fine-grained access control with user roles per client (keycloak/users mode)
+- **Secure Authentication** - API key, Keycloak OAuth2/OIDC, or built-in users (JWT) for HTTP and WebSocket
 - **Database Support** - PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** - Automatic database schema migrations on startup
 - **Rate Limiting** - Configurable rate limiting on all API endpoints
@@ -37,11 +38,19 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 
 ### Client Management
 
-- `GET /api/clients` - List all clients (supports `limit` and `offset` query parameters)
+- `GET /api/clients` - List all clients (filtered by user access in keycloak/users mode; supports `limit` and `offset`)
 - `GET /api/clients/:id` - Get a single client by UUID
 - `POST /api/clients` - Create a new client (returns API key if API_KEY authentication type)
 - `POST /api/clients/:id` - Update an existing client
 - `DELETE /api/clients/:id` - Delete a client
+
+### Client User Management (keycloak/users authentication only)
+
+- `GET /api/clients/:id/users` - List users associated with a client
+- `POST /api/clients/:id/users` - Add a user to a client by email
+- `DELETE /api/clients/:id/users/:relationshipId` - Remove a user from a client
+
+In api-key mode, users do not play a role; these endpoints are not applicable.
 
 ### Proxied Agent Operations
 
@@ -91,11 +100,21 @@ For complete API endpoint documentation, request/response schemas, and authentic
 
 The Socket.IO WebSocket gateway is available at `http://localhost:8081/clients` (or configured `WEBSOCKET_PORT`).
 
+### Authentication
+
+WebSocket connections require authentication via the `Authorization` header (polling) or `handshake.auth.Authorization` (WebSocket transport). The same authentication methods as HTTP apply:
+
+- **API key**: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
+- **Keycloak**: `Bearer <keycloak-jwt-token>`
+- **Users**: `Bearer <jwt-token>`
+
+Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
+
 ### Events
 
 #### Client → Server
 
-- `setClient` - Set the client context for subsequent operations
+- `setClient` - Set the client context for subsequent operations (requires access to the client)
 - `forward` - Forward an event to the remote agent-manager WebSocket
 
 #### Server → Client
@@ -104,27 +123,36 @@ The Socket.IO WebSocket gateway is available at `http://localhost:8081/clients` 
 - `forwardedEvent` - Events forwarded from the remote agent-manager
 - `error` - Error messages
 
-For complete WebSocket event specifications, authentication flow, and usage examples, see the application and API reference docs linked below.
+For complete WebSocket event specifications and usage examples, see the application and API reference docs linked below.
 
 ## Authentication
 
+Authentication is configured via `AUTHENTICATION_METHOD` (or inferred from `STATIC_API_KEY`). See [Authentication Feature](../features/authentication.md) for details.
+
 ### HTTP Endpoints
 
-All HTTP endpoints are protected by Keycloak authentication by default. If `STATIC_API_KEY` is set, API key authentication is used instead (no Keycloak fallback).
+All HTTP endpoints require authentication. The method depends on configuration:
 
-**Keycloak Authentication**:
+**API Key** (`AUTHENTICATION_METHOD=api-key`):
 
-- Include a valid Keycloak JWT bearer token in the `Authorization` header: `Bearer <keycloak-jwt-token>`
+- Include the API key: `Authorization: Bearer <static-api-key>` or `ApiKey <static-api-key>`
+- All permission checks are bypassed
 
-**API Key Authentication**:
+**Keycloak** (`AUTHENTICATION_METHOD=keycloak`):
 
-- Include the API key in the `Authorization` header: `Bearer <static-api-key>` or `ApiKey <static-api-key>`
+- Include a valid Keycloak JWT: `Authorization: Bearer <keycloak-jwt-token>`
+- Per-client permissions apply (global admin, client creator, or client_users entry)
+
+**Users** (`AUTHENTICATION_METHOD=users`):
+
+- Include a valid JWT from login: `Authorization: Bearer <jwt-token>`
+- Per-client permissions apply
 
 ### WebSocket Gateway
 
-The WebSocket gateway uses client context management. Clients must first set their context using the `setClient` event before forwarding events.
+The WebSocket gateway uses the same authentication as HTTP. Clients must authenticate on connect and set their context using the `setClient` event before forwarding events. Per-client access is enforced on `setClient`.
 
-For detailed authentication requirements, see the application and API reference docs linked below.
+For detailed authentication requirements, see the [Authentication Feature](../features/authentication.md).
 
 ## Rate Limiting
 
@@ -195,7 +223,8 @@ See the application docs and environment configuration for complete environment 
 
 **Authentication:**
 
-- `STATIC_API_KEY` - Static API key for authentication (if set, uses API key auth instead of Keycloak)
+- `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `keycloak`, or `users` (default: inferred from `STATIC_API_KEY`)
+- `STATIC_API_KEY` - Static API key (required when `AUTHENTICATION_METHOD=api-key`)
 - `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required for Keycloak auth)
 - `KEYCLOAK_REALM` - Keycloak realm name (required for Keycloak auth)

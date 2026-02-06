@@ -2,19 +2,34 @@ asyncapi: 3.0.0
 info:
   title: Clients Gateway
   version: 1.0.0
-  description: Socket.IO events for the clients proxy gateway (Socket.IO namespace "clients")
+  description: |
+    Socket.IO events for the clients proxy gateway (Socket.IO namespace "clients").
+    All connections require authentication via the `Authorization` header in the handshake
+    (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
+    Unauthenticated connections are rejected with connect_error "Unauthorized".
+    The `setClient` operation enforces per-client authorization: only users with access to
+    the requested client (global admin, client creator, or client_users entry) can set that
+    client context. Unauthorized setClient attempts emit an `error` event with message
+    "You do not have access to this client".
 servers:
   local:
     host: localhost:8081
     protocol: ws
-    description: Socket.IO server (namespace /clients)
+    description: Socket.IO server (namespace /clients). Pass Authorization header in handshake.
 channels:
   clients/setClient:
     address: clients/setClient
     messages:
       setClientCommand:
         $ref: '#/components/messages/SetClient'
-    description: Client selects a client context by UUID
+    description: |
+      Client selects a client context by UUID. Requires authenticated connection.
+      The user must have access to the client (global admin, client creator, or client_users entry).
+      On success, server emits setClientSuccess. On failure, server emits error with one of:
+      - "clientId is required" (400)
+      - "Unauthorized" (missing or invalid auth on socket)
+      - "You do not have access to this client" (403)
+      - "Remote connection failed: ..." (connection to agent-manager failed)
   clients/setClientSuccess:
     address: clients/setClientSuccess
     messages:
@@ -26,7 +41,14 @@ channels:
     messages:
       errorEvent:
         $ref: '#/components/messages/Error'
-    description: Generic error responses
+    description: |
+      Error responses. Common message values:
+      - "clientId is required" (setClient missing clientId)
+      - "Unauthorized" (socket missing userInfo after auth middleware)
+      - "You do not have access to this client" (403 - setClient forbidden)
+      - "No client selected. Call setClient first." (forward without setClient)
+      - "Remote connection not established" (forward failed)
+      - "Remote connection failed: ..." (connection to agent-manager failed)
   clients/forward:
     address: clients/forward
     messages:
@@ -210,7 +232,14 @@ components:
         properties:
           message:
             type: string
-            description: Error message
+            description: |
+              Error message. Possible values include:
+              - "clientId is required" (400)
+              - "Unauthorized" (401)
+              - "You do not have access to this client" (403)
+              - "No client selected. Call setClient first."
+              - "Remote connection not established"
+              - "Remote connection failed: ..."
     RemoteDisconnected:
       name: RemoteDisconnected
       title: Remote connection disconnected

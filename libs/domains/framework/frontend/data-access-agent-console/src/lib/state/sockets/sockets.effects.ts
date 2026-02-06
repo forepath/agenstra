@@ -61,19 +61,24 @@ const INTERNAL_EVENTS = new Set([
   'pong',
 ]);
 
+const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
+const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+
 /**
- * Gets the authentication header for socket connection
- * Returns an Observable since getToken() is async
+ * Gets the authentication header for socket connection.
+ * Mirrors the HTTP auth interceptor: api-key (env or localStorage), keycloak, or users JWT.
  */
 function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
   if (environment.authentication.type === 'api-key') {
-    const apiKey = environment.authentication.apiKey;
+    const apiKey =
+      environment.authentication.apiKey ??
+      (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
     if (apiKey) {
       return of(`Bearer ${apiKey}`);
     }
     return of(null);
-  } else if (environment.authentication.type === 'keycloak' && keycloakService) {
-    // getToken() returns a Promise, so we need to handle it asynchronously
+  }
+  if (environment.authentication.type === 'keycloak' && keycloakService) {
     return from(keycloakService.getToken()).pipe(
       map((token) => (token ? `Bearer ${token}` : null)),
       catchError((error) => {
@@ -81,6 +86,13 @@ function getAuthHeader(environment: Environment, keycloakService: KeycloakServic
         return of(null);
       }),
     );
+  }
+  if (environment.authentication.type === 'users') {
+    const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
+    if (jwt) {
+      return of(`Bearer ${jwt}`);
+    }
+    return of(null);
   }
   return of(null);
 }
@@ -124,7 +136,10 @@ export const connectSocket$ = createEffect(
         // Get auth header (async for Keycloak)
         return getAuthHeader(environment, keycloakService).pipe(
           switchMap((authHeader) => {
-            // Create socket connection with reconnection enabled
+            // Create socket connection with reconnection enabled.
+            // Use auth (not extraHeaders): browser WebSocket API does not support custom headers,
+            // so extraHeaders is ignored when transports: ['websocket']. The auth option is sent
+            // in the handshake packet and works with WebSocket transport.
             socketInstance = io(websocketUrl, {
               transports: ['websocket'],
               rejectUnauthorized: false,
@@ -133,7 +148,7 @@ export const connectSocket$ = createEffect(
               reconnectionDelay: 1000,
               reconnectionDelayMax: 5000,
               randomizationFactor: 0.5,
-              ...(authHeader && { extraHeaders: { Authorization: authHeader } }),
+              ...(authHeader && { auth: { Authorization: authHeader } }),
             });
 
             // Handle connection success

@@ -11,7 +11,6 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { Resource, Roles } from 'nest-keycloak-connect';
 import {
   CreateDeploymentConfigurationDto,
   DeploymentConfigurationResponseDto,
@@ -25,15 +24,12 @@ import {
   TriggerWorkflowDto,
   WorkflowResponseDto,
 } from './dto/deployment-run.dto';
-import { UserRole } from './entities/user.entity';
 import { DeploymentsService } from './services/deployments.service';
 
 /**
  * Controller for deployment and CI/CD pipeline endpoints.
  * Provides operations for managing deployment configurations and pipeline runs.
  */
-@Resource('agents')
-@Roles(UserRole.CONTROLLER)
 @Controller('agents/:agentId/deployments')
 export class AgentsDeploymentsController {
   constructor(private readonly deploymentsService: DeploymentsService) {}

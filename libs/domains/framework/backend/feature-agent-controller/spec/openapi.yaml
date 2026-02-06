@@ -231,6 +231,12 @@ paths:
   /clients:
     get:
       summary: List clients
+      description: |
+        Returns all clients the user has access to. In api-key mode, returns all clients.
+        For regular users, only returns clients where:
+        - The user is the creator (user_id matches)
+        - The user is in the client_users relationship table
+        Global admins see all clients.
       operationId: listClients
       parameters:
         - in: query
@@ -256,6 +262,9 @@ paths:
                   $ref: '#/components/schemas/ClientResponseDto'
     post:
       summary: Create client
+      description: |
+        Creates a new client. The user_id is automatically set to the logged-in user.
+        In api-key mode, user_id is set to null.
       operationId: createClient
       requestBody:
         required: true
@@ -273,6 +282,13 @@ paths:
   /clients/{id}:
     get:
       summary: Get client by id
+      description: |
+        Returns a client by ID. Only accessible if the user has access to the client.
+        Access is granted if:
+        - The user is a global admin
+        - The user is the creator (user_id matches)
+        - The user is in the client_users relationship table
+        In api-key mode, access is always granted.
       operationId: getClient
       parameters:
         - in: path
@@ -288,8 +304,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClientResponseDto'
+        '403':
+          description: User does not have access to this client
     post:
       summary: Update client
+      description: |
+        Updates a client. Only accessible if the user has access to the client.
+        Access rules are the same as GET /clients/{id}.
       operationId: updateClient
       parameters:
         - in: path
@@ -311,8 +332,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClientResponseDto'
+        '403':
+          description: User does not have access to this client
     delete:
       summary: Delete client
+      description: |
+        Deletes a client. Only accessible if the user has access to the client.
+        Access rules are the same as GET /clients/{id}.
       operationId: deleteClient
       parameters:
         - in: path
@@ -324,6 +350,105 @@ paths:
       responses:
         '204':
           description: Deleted
+        '403':
+          description: User does not have access to this client
+  /clients/{id}/users:
+    get:
+      summary: List users associated with a client
+      description: |
+        Returns all users associated with a client through the client_users relationship table.
+        Only accessible if the user has access to the client.
+        Note: In api-key mode, users do not play a role; this endpoint is intended for keycloak and users authentication.
+      operationId: getClientUsers
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+      responses:
+        '200':
+          description: Array of client-user relationships
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientUserResponseDto'
+        '403':
+          description: User does not have access to this client
+    post:
+      summary: Add a user to a client
+      description: |
+        Adds a user to a client by email address. The user is identified by their email.
+        Permissions:
+        - Global admins can add any role
+        - Client creators can add any role
+        - Client admins can only add 'user' role
+        - Client users cannot add anyone
+        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
+      operationId: addClientUser
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddClientUserDto'
+      responses:
+        '201':
+          description: User added to client
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientUserResponseDto'
+        '400':
+          description: User not found, relationship already exists, or permission denied
+        '403':
+          description: User does not have access to this client
+  /clients/{id}/users/{relationshipId}:
+    delete:
+      summary: Remove a user from a client
+      description: |
+        Removes a user from a client by deleting the client_users relationship.
+        Permissions:
+        - Global admins can remove anyone
+        - Client creators can remove anyone
+        - Client admins can remove users (but not other admins)
+        - Client users cannot remove anyone
+        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
+      operationId: removeClientUser
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: relationshipId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client_users relationship to remove
+      responses:
+        '204':
+          description: User removed from client
+        '400':
+          description: Relationship not found or permission denied
+        '403':
+          description: User does not have access to this client
   /clients/{id}/agents:
     get:
       summary: List agents for a client
@@ -357,6 +482,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AgentResponseDto'
+        '403':
+          description: User does not have access to this client
     post:
       summary: Create agent for a client
       operationId: createClientAgent
@@ -381,6 +508,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateAgentResponseDto'
+        '403':
+          description: User does not have access to this client
   /clients/{id}/agents/{agentId}:
     get:
       summary: Get agent by id for a client
@@ -407,6 +536,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentResponseDto'
+        '403':
+          description: User does not have access to this client
     post:
       summary: Update agent for a client
       operationId: updateClientAgent
@@ -438,6 +569,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentResponseDto'
+        '403':
+          description: User does not have access to this client
     delete:
       summary: Delete agent for a client
       operationId: deleteClientAgent
@@ -459,6 +592,8 @@ paths:
       responses:
         '204':
           description: Deleted
+        '403':
+          description: User does not have access to this client
   /clients/{id}/agents/{agentId}/files:
     get:
       summary: List directory contents (proxied)
@@ -492,6 +627,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FileNodeDto'
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or directory not found
   /clients/{id}/agents/{agentId}/files/{path}:
@@ -528,6 +665,8 @@ paths:
                 $ref: '#/components/schemas/FileContentDto'
         '400':
           description: Invalid path
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or file not found
     put:
@@ -565,6 +704,8 @@ paths:
           description: File written successfully
         '400':
           description: Invalid path or content too large
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
     delete:
@@ -596,6 +737,8 @@ paths:
           description: File or directory deleted successfully
         '400':
           description: Invalid path
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or file/directory not found
     patch:
@@ -633,6 +776,8 @@ paths:
           description: File or directory moved successfully
         '400':
           description: Invalid path or destination
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or source file/directory not found
     post:
@@ -670,6 +815,8 @@ paths:
           description: File or directory created
         '400':
           description: Invalid request
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/environment:
@@ -712,6 +859,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EnvironmentVariableResponseDto'
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
     post:
@@ -778,6 +927,8 @@ paths:
                 properties:
                   deletedCount:
                     type: integer
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/environment/count:
@@ -810,6 +961,8 @@ paths:
                 properties:
                   count:
                     type: integer
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/environment/{envVarId}:
@@ -853,6 +1006,8 @@ paths:
                 $ref: '#/components/schemas/EnvironmentVariableResponseDto'
         '400':
           description: Invalid request
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or environment variable not found
     delete:
@@ -883,6 +1038,8 @@ paths:
       responses:
         '204':
           description: Environment variable deleted successfully
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or environment variable not found
   /clients/{id}/agents/{agentId}/vcs/status:
@@ -911,6 +1068,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GitStatusDto'
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/branches:
@@ -941,6 +1100,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/GitBranchDto'
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
     post:
@@ -972,6 +1133,8 @@ paths:
           description: Branch created successfully
         '400':
           description: Invalid branch name or parameters
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/branches/{branch}:
@@ -1003,6 +1166,8 @@ paths:
           description: Branch deleted successfully
         '400':
           description: Cannot delete current branch
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or branch not found
   /clients/{id}/agents/{agentId}/vcs/branches/{branch}/switch:
@@ -1034,6 +1199,8 @@ paths:
           description: Branch switched successfully
         '400':
           description: Invalid branch or uncommitted changes
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or branch not found
   /clients/{id}/agents/{agentId}/vcs/diff:
@@ -1070,6 +1237,8 @@ paths:
                 $ref: '#/components/schemas/GitDiffDto'
         '400':
           description: Invalid file path
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or file not found
   /clients/{id}/agents/{agentId}/vcs/stage:
@@ -1102,6 +1271,8 @@ paths:
           description: Files staged successfully
         '400':
           description: Invalid file paths
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/unstage:
@@ -1134,6 +1305,8 @@ paths:
           description: Files unstaged successfully
         '400':
           description: Invalid file paths
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/commit:
@@ -1166,6 +1339,8 @@ paths:
           description: Changes committed successfully
         '400':
           description: No staged changes or invalid commit message
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/push:
@@ -1198,6 +1373,8 @@ paths:
           description: Changes pushed successfully
         '400':
           description: Nothing to push or push failed
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/pull:
@@ -1224,6 +1401,8 @@ paths:
           description: Changes pulled successfully
         '400':
           description: Pull failed or conflicts
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/fetch:
@@ -1248,6 +1427,8 @@ paths:
       responses:
         '204':
           description: Changes fetched successfully
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/vcs/rebase:
@@ -1280,6 +1461,8 @@ paths:
           description: Rebase completed successfully
         '400':
           description: Rebase failed or conflicts
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or branch not found
   /clients/{id}/agents/{agentId}/vcs/conflicts/resolve:
@@ -1312,6 +1495,8 @@ paths:
           description: Conflict resolved successfully
         '400':
           description: Invalid conflict resolution strategy
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or file not found
   /clients/provisioning/providers:
@@ -1523,6 +1708,8 @@ paths:
                 type: array
                 items:
                   type: object
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or deployment configuration not found
   /clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches:
@@ -1559,6 +1746,8 @@ paths:
                 type: array
                 items:
                   type: object
+        '403':
+          description: User does not have access to this client
         '404':
           description: Client, agent, or deployment configuration not found
   /clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows:
@@ -2617,6 +2806,48 @@ components:
           type: string
         content:
           type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AddClientUserDto:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address of the user to add
+        role:
+          type: string
+          enum: [admin, user]
+          description: Role for the user in this client (admin or user)
+    ClientUserResponseDto:
+      type: object
+      required: [id, userId, clientId, role, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the client_users relationship
+        userId:
+          type: string
+          format: uuid
+          description: The UUID of the user
+        clientId:
+          type: string
+          format: uuid
+          description: The UUID of the client
+        role:
+          type: string
+          enum: [admin, user]
+          description: Role for the user in this client
+        userEmail:
+          type: string
+          format: email
+          description: Email address of the user
         createdAt:
           type: string
           format: date-time

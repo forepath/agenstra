@@ -47,6 +47,9 @@
       <trans-unit id="featureChat-noWorkspaces" datatype="html">
         <source>No workspaces available</source>
         </trans-unit>
+      <trans-unit id="featureChat-manageClientUsersTitle" datatype="html">
+        <source>Manage workspace users</source>
+        </trans-unit>
       <trans-unit id="featureChat-editWorkspaceTitle" datatype="html">
         <source>Edit workspace</source>
         </trans-unit>
@@ -312,6 +315,36 @@
       <trans-unit id="featureChat-close" datatype="html">
         <source>Close</source>
         </trans-unit>
+      <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
+        <source> Manage Workspace Users </source>
+        </trans-unit>
+      <trans-unit id="featureChat-addClientUser" datatype="html">
+        <source>Add User to Workspace</source>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUserEmailPlaceholder" datatype="html">
+        <source>user@example.com</source>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUserRoleUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUserRoleAdmin" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureChat-addClientUserTitle" datatype="html">
+        <source>Add user</source>
+        </trans-unit>
+      <trans-unit id="featureChat-clientUsers" datatype="html">
+        <source>Workspace Users</source>
+        </trans-unit>
+      <trans-unit id="featureChat-loadingClientUsers" datatype="html">
+        <source>Loading workspace users...</source>
+        </trans-unit>
+      <trans-unit id="featureChat-noClientUsers" datatype="html">
+        <source>No users assigned to this workspace</source>
+        </trans-unit>
+      <trans-unit id="featureChat-removeClientUserTitle" datatype="html">
+        <source>Remove user</source>
+        </trans-unit>
       <trans-unit id="featureChat-hideFileTree" datatype="html">
         <source>Hide File Tree</source>
         </trans-unit>
@@ -417,8 +450,14 @@
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         </trans-unit>
+      <trans-unit id="featureContainer-spacesTitle" datatype="html">
+        <source>Spaces</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-spaces" datatype="html">
+        <source>Spaces</source>
+        </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
-        <source>User Management (opens in new window)</source>
+        <source>User Management</source>
         </trans-unit>
       <trans-unit id="featureContainer-users" datatype="html">
         <source>Users</source>
@@ -1420,15 +1459,6 @@
       <trans-unit id="featureResetPassword-backToLogin" datatype="html">
         <source>Back to login</source>
         </trans-unit>
-      <trans-unit id="featureUserManager-brandAlt" datatype="html">
-        <source>Agenstra</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-appName" datatype="html">
-        <source>Agenstra</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-adminConsole" datatype="html">
-        <source>Admin Console</source>
-        </trans-unit>
       <trans-unit id="featureUserManager-title" datatype="html">
         <source>User Management</source>
         </trans-unit>
@@ -1436,7 +1466,10 @@
         <source>Add user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-addUser" datatype="html">
-        <source>Add User</source>
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
+        <source>Search users</source>
         </trans-unit>
       <trans-unit id="featureUserManager-loadingUsers" datatype="html">
         <source>Loading users...</source>

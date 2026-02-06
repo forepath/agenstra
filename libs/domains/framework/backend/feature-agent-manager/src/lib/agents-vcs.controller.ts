@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
-import { Resource, Roles } from 'nest-keycloak-connect';
 import { CommitDto } from './dto/commit.dto';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { GitBranchDto } from './dto/git-branch.dto';
@@ -10,15 +9,12 @@ import { RebaseDto } from './dto/rebase.dto';
 import { ResolveConflictDto } from './dto/resolve-conflict.dto';
 import { StageFilesDto } from './dto/stage-files.dto';
 import { UnstageFilesDto } from './dto/unstage-files.dto';
-import { UserRole } from './entities/user.entity';
 import { AgentsVcsService } from './services/agents-vcs.service';
 
 /**
  * Controller for agent VCS (Version Control System) operations.
  * Provides endpoints for git operations in agent containers.
  */
-@Resource('agents')
-@Roles(UserRole.CONTROLLER)
 @Controller('agents/:agentId/vcs')
 export class AgentsVcsController {
   constructor(private readonly agentsVcsService: AgentsVcsService) {}

@@ -1,27 +1,4 @@
-<div class="editor-toolbar-container border-bottom bg-body-tertiary">
-  <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center gap-2">
-      <div
-        class="brand-icon-container me-2 fs-3 bg-primary p-3"
-        style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
-      >
-        <img
-          src="assets/images/icon_light.svg"
-          alt="Agenstra"
-          i18n-alt="@@featureUserManager-brandAlt"
-          class="brand-icon"
-        />
-      </div>
-      <span class="fw-bold text-uppercase" i18n="@@featureUserManager-appName">Agenstra</span>
-      <span
-        class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge"
-        i18n="@@featureUserManager-adminConsole"
-        >Admin Console</span
-      >
-    </div>
-  </div>
-</div>
-<div class="user-manager-container d-flex flex-column h-100">
+<div class="user-manager-container border-top d-flex flex-column h-100">
   <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
     <h5 class="mb-0 fw-semibold" i18n="@@featureUserManager-title">User Management</h5>
     <button
@@ -33,9 +10,24 @@
       title="Add user"
     >
       <i class="bi bi-plus-circle me-1"></i>
-      <span i18n="@@featureUserManager-addUser">Add User</span>
+      <span i18n="@@featureUserManager-addUser">Add</span>
     </button>
   </div>
+
+  <form #searchUserForm="ngForm">
+    <div class="input-group search-input-container border-bottom">
+      <i class="bi bi-search"></i>
+      <input
+        type="text"
+        class="form-control border-0 search-input"
+        placeholder="Search users"
+        i18n-placeholder="@@featureUserManager-searchUsersPlaceholder"
+        name="search"
+        [(ngModel)]="searchUserQuery"
+        required
+      />
+    </div>
+  </form>
 
   <div class="flex-grow-1 overflow-auto">
     @if (usersLoading$ | async) {
