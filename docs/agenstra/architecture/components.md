@@ -13,7 +13,8 @@ This document provides a detailed breakdown of all system components, their resp
 **Key Components**:
 
 - `ClientsController` - HTTP REST API for client management
-- `ClientsService` - Business logic for clients
+- `ClientsService` - Business logic for clients with permission checks
+- `ClientUsersService` - Manages client-user relationships and per-client roles
 - `ClientsGateway` - WebSocket gateway for event forwarding
 - `ClientAgentProxyService` - Proxies HTTP requests to remote agent-managers
 - `ProvisioningService` - Automated cloud server provisioning
@@ -100,9 +101,12 @@ This document provides a detailed breakdown of all system components, their resp
 **Key Components**:
 
 - `ClientEntity` - Client domain model
+- `ClientUserEntity` - Client-user relationship with per-client roles
 - `ClientAgentCredentialEntity` - Agent credential storage
 - `ClientsRepository` - Data access layer
-- `ClientsService` - Business logic
+- `ClientUsersRepository` - Client-user relationship data access
+- `ClientsService` - Business logic with permission checks
+- `ClientUsersService` - Client-user relationship management
 - `ClientAgentProxyService` - HTTP request proxying
 - `ClientsGateway` - WebSocket event forwarding
 - `ProvisioningService` - Server provisioning (Hetzner, DigitalOcean)
@@ -207,6 +211,7 @@ graph TB
 **Tables**:
 
 - `clients` - Client entities (remote agent-manager instances)
+- `client_users` - Many-to-many user-client relationships with per-client roles (admin/user)
 - `client_agent_credentials` - Stored agent credentials for auto-login
 - `provisioning_references` - Links clients to provisioned cloud servers
 

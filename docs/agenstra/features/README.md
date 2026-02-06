@@ -28,6 +28,7 @@ Create and manage clients (remote agent-manager instances). Connect to existing 
 
 - Create, read, update, and delete clients
 - Configure authentication (API key or Keycloak)
+- Per-client permissions (keycloak/users mode): add and remove users with roles
 - View client configuration and available agent types
 - Manage multiple agent-manager instances from one console
 

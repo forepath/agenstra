@@ -20,11 +20,13 @@ Complete reference for all environment variables used in Agenstra.
 
 ### Authentication
 
-**Option 1: API Key Authentication**
+- `AUTHENTICATION_METHOD` - Explicit choice: `api-key`, `keycloak`, or `users`. If not set, inferred from `STATIC_API_KEY` (api-key if set, else keycloak).
 
-- `STATIC_API_KEY` - Static API key for authentication (if set, uses API key auth instead of Keycloak)
+**Option 1: API Key Authentication** (`AUTHENTICATION_METHOD=api-key`)
 
-**Option 2: Keycloak Authentication**
+- `STATIC_API_KEY` - Static API key for authentication (required)
+
+**Option 2: Keycloak Authentication** (`AUTHENTICATION_METHOD=keycloak`)
 
 - `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required)
@@ -33,10 +35,10 @@ Complete reference for all environment variables used in Agenstra.
 - `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required)
 - `KEYCLOAK_TOKEN_VALIDATION` - Token validation method: `ONLINE` or `OFFLINE` (optional, default: `ONLINE`)
 
-**Option 3: Users Authentication (AUTHENTICATION_METHOD=users)**
+**Option 3: Users Authentication** (`AUTHENTICATION_METHOD=users`)
 
+- `JWT_SECRET` - Secret for signing JWT tokens (required)
 - `DISABLE_SIGNUP` - When `true`, disables self-registration. The register endpoint returns 503 Service Unavailable. Use admin user creation for onboarding. (default: `false`)
-- `JWT_SECRET` - Secret for signing JWT tokens (required when using users auth)
 
 ⚠️ **Note for Backend Agent Manager**: When using Keycloak authentication, the JWT token must include the `agent_management` role to access agent-manager endpoints.
 

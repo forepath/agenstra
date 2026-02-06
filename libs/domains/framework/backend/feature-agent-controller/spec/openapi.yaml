@@ -358,6 +358,7 @@ paths:
       description: |
         Returns all users associated with a client through the client_users relationship table.
         Only accessible if the user has access to the client.
+        Note: In api-key mode, users do not play a role; this endpoint is intended for keycloak and users authentication.
       operationId: getClientUsers
       parameters:
         - in: path
@@ -387,7 +388,7 @@ paths:
         - Client creators can add any role
         - Client admins can only add 'user' role
         - Client users cannot add anyone
-        In api-key mode, any role can be added.
+        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
       operationId: addClientUser
       parameters:
         - in: path
@@ -424,7 +425,7 @@ paths:
         - Client creators can remove anyone
         - Client admins can remove users (but not other admins)
         - Client users cannot remove anyone
-        In api-key mode, anyone can be removed.
+        Note: In api-key mode, users do not play a role; this endpoint is not applicable. Use keycloak or users authentication.
       operationId: removeClientUser
       parameters:
         - in: path

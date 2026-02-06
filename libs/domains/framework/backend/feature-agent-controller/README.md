@@ -148,11 +148,13 @@ Each user-client relationship has a role:
 | Client Creator | ✅                 | ✅                   | ❌                     | ✅ (any role)       | ✅ (anyone)      |
 | Client Admin   | ❌                 | ✅ (assigned)        | ❌                     | ✅ (user role only) | ✅ (users only)  |
 | Client User    | ❌                 | ✅ (assigned)        | ❌                     | ❌                  | ❌               |
-| API Key Mode   | ✅                 | ✅                   | ✅ (all)               | ✅ (any role)       | ✅ (anyone)      |
+| API Key Mode   | ✅                 | ✅                   | ✅ (all)               | N/A                 | N/A              |
+
+**Note:** In api-key mode, users do not play a role; the client user management endpoints (`GET/POST/DELETE /api/clients/:id/users`) are intended for keycloak and users authentication only.
 
 ### Managing Client Users
 
-Users are added to clients by their email address:
+Users are added to clients by their email address. This applies to keycloak and users authentication; in api-key mode, users do not play a role and these endpoints are not applicable.
 
 ```typescript
 // Add a user to a client
