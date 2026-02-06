@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
@@ -12,6 +12,7 @@ import {
   type UserResponseDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { Actions, ofType } from '@ngrx/effects';
+import { combineLatestWith, map } from 'rxjs/operators';
 import { StandaloneLoadingService } from '../standalone-loading.service';
 
 @Component({
@@ -37,7 +38,17 @@ export class UserManagerComponent implements OnInit {
   @ViewChild('deleteUserModal', { static: false })
   private deleteUserModal!: ElementRef<HTMLDivElement>;
 
-  readonly users$ = this.authFacade.users$;
+  readonly searchUserQuery = signal<string>('');
+  readonly searchUserQuery$ = toObservable(this.searchUserQuery);
+  readonly users$ = this.authFacade.users$.pipe(
+    combineLatestWith(this.searchUserQuery$),
+    map(([users, searchQuery]) => {
+      if (!searchQuery) {
+        return users;
+      }
+      return users.filter((user) => JSON.stringify(user).toLowerCase().includes(searchQuery.toLowerCase()));
+    }),
+  );
   readonly usersLoading$ = this.authFacade.usersLoading$;
   readonly usersError$ = this.authFacade.usersError$;
   readonly creatingUser$ = this.authFacade.creatingUser$;

@@ -500,14 +500,6 @@
         <source>Select language</source>
         <target>Sprache auswählen</target>
         </trans-unit>
-      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
-        <source>User Management (opens in new window)</source>
-        <target>Benutzerverwaltung (öffnet in neuem Fenster)</target>
-        </trans-unit>
-      <trans-unit id="featureContainer-users" datatype="html">
-        <source>Users</source>
-        <target>Benutzer</target>
-        </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
         <target>Dunkelmodus ein-/ausschalten</target>
@@ -515,6 +507,22 @@
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         <target>Abmelden</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-spacesTitle" datatype="html">
+        <source>Spaces</source>
+        <target>Bereiche</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-spaces" datatype="html">
+        <source>Spaces</source>
+        <target>Bereiche</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
+        <source>User Management</source>
+        <target>Benutzerverwaltung</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-users" datatype="html">
+        <source>Users</source>
+        <target>Benutzer</target>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -1846,8 +1854,12 @@
         <target>Benutzer hinzufügen</target>
         </trans-unit>
       <trans-unit id="featureUserManager-addUser" datatype="html">
-        <source>Add User</source>
-        <target>Benutzer hinzufügen</target>
+        <source>Add</source>
+        <target>Hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
+        <source>Search users</source>
+        <target>Benutzer suchen</target>
         </trans-unit>
       <trans-unit id="featureUserManager-loadingUsers" datatype="html">
         <source>Loading users...</source>

@@ -33,10 +33,17 @@ export class AgentConsoleContainerComponent implements OnInit {
         map(() => this.router.url),
         startWith(this.router.url),
       )
-      .pipe(map((url) => url.includes('/clients') && !url.includes('/editor') && !url.includes('/deployments'))),
+      .pipe(
+        map(
+          (url) =>
+            (url.includes('/clients') || url.includes('/users')) &&
+            !url.includes('/editor') &&
+            !url.includes('/deployments'),
+        ),
+      ),
     {
       initialValue:
-        this.router.url.includes('/clients') &&
+        (this.router.url.includes('/clients') || this.router.url.includes('/users')) &&
         !this.router.url.includes('/editor') &&
         !this.router.url.includes('/deployments'),
     },
@@ -113,34 +120,5 @@ export class AgentConsoleContainerComponent implements OnInit {
    */
   onLogout(): void {
     this.authenticationFacade.logout();
-  }
-
-  /**
-   * Open user manager in a new standalone window (like deployment manager)
-   */
-  onOpenUserManagerInNewWindow(): void {
-    const baseUrl = window.location.origin;
-    const usersPath = '/users';
-    const queryParams = new URLSearchParams();
-    queryParams.set('standalone', 'true');
-    const url = `${baseUrl}${usersPath}?${queryParams.toString()}`;
-
-    const screenWidth = window.screen.availWidth || window.screen.width;
-    const screenHeight = window.screen.availHeight || window.screen.height;
-
-    const windowFeatures = [
-      'menubar=no',
-      'toolbar=no',
-      'location=no',
-      'status=no',
-      'resizable=yes',
-      'scrollbars=yes',
-      `width=${screenWidth}`,
-      `height=${screenHeight}`,
-      `left=0`,
-      `top=0`,
-    ].join(',');
-
-    window.open(url, '_blank', windowFeatures);
   }
 }

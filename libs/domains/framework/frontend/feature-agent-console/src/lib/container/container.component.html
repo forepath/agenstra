@@ -131,20 +131,30 @@
 }
 <div class="d-flex justify-content-end flex-grow-1 overflow-hidden">
   @if (isMainMask()) {
-    @if (canAccessUserManager$ | async) {
-      <aside class="sidebar bg-body-tertiary h-100">
-        <button
-          type="button"
+    <aside class="sidebar bg-body-tertiary h-100">
+      <a
+        routerLink="/clients"
+        routerLinkActive="active"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-spacesTitle"
+        title="Spaces"
+      >
+        <i class="bi bi-grid me-1"></i>
+        <span class="small" i18n="@@featureContainer-spaces">Spaces</span>
+      </a>
+      @if (canAccessUserManager$ | async) {
+        <a
+          routerLink="/users"
+          routerLinkActive="active"
           class="sidebar__item"
-          (click)="onOpenUserManagerInNewWindow()"
           i18n-title="@@featureContainer-userManagementTitle"
-          title="User Management (opens in new window)"
+          title="User Management"
         >
           <i class="bi bi-people me-1"></i>
           <span class="small" i18n="@@featureContainer-users">Users</span>
-        </button>
-      </aside>
-    }
+        </a>
+      }
+    </aside>
   }
   <section class="section__container">
     <router-outlet></router-outlet>

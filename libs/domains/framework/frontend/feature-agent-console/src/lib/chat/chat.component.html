@@ -1,4 +1,4 @@
-<div class="section__content-wrapper d-flex flex-column">
+<div class="section__content-wrapper d-flex flex-column" [class.border-top]="!standaloneMode()">
   <!-- Toolbar (shown when editor is open, spans editor and chat) -->
   @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
     <div class="editor-toolbar-container border-bottom bg-body-tertiary">
