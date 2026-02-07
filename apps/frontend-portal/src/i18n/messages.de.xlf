@@ -158,6 +158,10 @@
         <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers. </source>
         <target> Zentrale Steuerung für verteilte KI-Agent-Infrastruktur. Verwalten Sie mehrere Agent-Manager-Instanzen, interagieren Sie in Echtzeit mit Agents und bearbeiten Sie Code direkt in deren Containern. </target>
         </trans-unit>
+      <trans-unit id="featurePortal-footerListings" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;fw-bold&quot;&gt;"/>Want to learn even more?<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Check out the Agenstra listings on these platforms: </source>
+        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;fw-bold&quot;&gt;"/>Möchten Sie noch mehr erfahren?<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Sehen Sie sich die Agenstra auf diesen Plattformen an: </target>
+        </trans-unit>
       <trans-unit id="featurePortal-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
         <target>Sprache auswählen</target>
