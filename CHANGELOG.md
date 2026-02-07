@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.30.0](https://github.com/forepath/agenstra/compare/v1.29.0...v1.30.0) (2026-02-07)
+
+
+### Features
+
+* application translations ([#193](https://github.com/forepath/agenstra/issues/193)) ([6a2b5d1](https://github.com/forepath/agenstra/commit/6a2b5d1006fcb07aeb873ca3cd0c6f8e184b2b85))
+* project-based user permissions ([#195](https://github.com/forepath/agenstra/issues/195)) ([c5fa7c3](https://github.com/forepath/agenstra/commit/c5fa7c33e87e7ec72c669c4afc734aa7e11f1a67))
+
 ## [1.29.0](https://github.com/forepath/agenstra/compare/v1.28.0...v1.29.0) (2026-02-04)
 
 
