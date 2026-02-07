@@ -119,25 +119,68 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     });
   }
 
-  readonly editorOptions = computed(() => ({
-    theme: this.themeService.isDarkMode() ? 'vs-dark' : 'vs-light',
-    language: this.language(),
+  /**
+   * Stable options reference to prevent ngx-monaco-editor from disposing/recreating
+   * the editor on every change detection. The library's options setter recreates the
+   * editor when it receives a new object reference, which was causing user edits
+   * to be lost and the dirty state to never trigger.
+   */
+  private _cachedEditorOptions: {
+    theme: string;
+    language: string;
+    readOnly: boolean;
+    automaticLayout: boolean;
+    minimap: { enabled: boolean };
+    scrollBeyondLastLine: boolean;
+    fontSize: number;
+    lineNumbers: 'on';
+    wordWrap: 'on';
+    quickSuggestions: boolean;
+    suggestOnTriggerCharacters: boolean;
+    acceptSuggestionOnEnter: 'on';
+    tabCompletion: 'on';
+    wordBasedSuggestions: boolean;
+    suggestSelection: 'first';
+    snippetSuggestions: 'top';
+  } = {
+    theme: 'vs-dark',
+    language: 'plaintext',
+    readOnly: false,
     automaticLayout: true,
     minimap: { enabled: true },
     scrollBeyondLastLine: false,
     fontSize: 14,
-    lineNumbers: 'on' as const,
-    wordWrap: 'on' as const,
-    readOnly: this.isBinary(),
-    // IntelliSense / Autocomplete options
+    lineNumbers: 'on',
+    wordWrap: 'on',
     quickSuggestions: true,
     suggestOnTriggerCharacters: true,
-    acceptSuggestionOnEnter: 'on' as const,
-    tabCompletion: 'on' as const,
+    acceptSuggestionOnEnter: 'on',
+    tabCompletion: 'on',
     wordBasedSuggestions: true,
-    suggestSelection: 'first' as const,
-    snippetSuggestions: 'top' as const,
-  }));
+    suggestSelection: 'first',
+    snippetSuggestions: 'top',
+  };
+
+  readonly editorOptions = computed(() => {
+    const theme = this.themeService.isDarkMode() ? 'vs-dark' : 'vs-light';
+    const language = this.language();
+    const readOnly = this.isBinary();
+
+    if (
+      this._cachedEditorOptions.theme !== theme ||
+      this._cachedEditorOptions.language !== language ||
+      this._cachedEditorOptions.readOnly !== readOnly
+    ) {
+      this._cachedEditorOptions = {
+        ...this._cachedEditorOptions,
+        theme,
+        language,
+        readOnly,
+      };
+    }
+
+    return this._cachedEditorOptions;
+  });
 
   ngOnDestroy(): void {
     if (this.contentChangeDisposable) {
