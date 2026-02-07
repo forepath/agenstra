@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 /**
  * DTO for triggering a workflow run.
@@ -13,6 +13,7 @@ export class TriggerWorkflowDto {
   ref!: string;
 
   @IsOptional()
+  @IsObject({ message: 'Inputs must be an object' })
   inputs?: Record<string, string>;
 }
 

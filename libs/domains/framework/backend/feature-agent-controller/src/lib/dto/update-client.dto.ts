@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, IsUrl, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, IsUrl, Max, Min } from 'class-validator';
 import { AuthenticationType } from '../entities/client.entity';
 
 /**
@@ -20,7 +20,7 @@ export class UpdateClientDto {
   endpoint?: string;
 
   @IsOptional()
-  @IsString({ message: 'Authentication type must be a string' })
+  @IsEnum(AuthenticationType, { message: 'Authentication type must be either api_key or keycloak' })
   authenticationType?: AuthenticationType;
 
   @IsOptional()
