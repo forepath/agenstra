@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.31.0](https://github.com/forepath/agenstra/compare/v1.30.0...v1.31.0) (2026-02-07)
+
+
+### Features
+
+* product listing backlinks ([#197](https://github.com/forepath/agenstra/issues/197)) ([d029d6c](https://github.com/forepath/agenstra/commit/d029d6c8dfcecfdd2bbc8d261f78e3ad9de9c3df))
+
+
+### Bug Fixes
+
+* data transfer object validation ([#198](https://github.com/forepath/agenstra/issues/198)) ([926ce11](https://github.com/forepath/agenstra/commit/926ce119c6e75fd2ce2ec904ccf3bb0213608a47))
+
 ## [1.30.0](https://github.com/forepath/agenstra/compare/v1.29.0...v1.30.0) (2026-02-07)
 
 
