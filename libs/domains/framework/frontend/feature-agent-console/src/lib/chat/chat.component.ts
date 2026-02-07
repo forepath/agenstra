@@ -337,6 +337,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly fileTreeVisible = signal<boolean>(false);
   readonly terminalVisible = signal<boolean>(false);
   readonly gitManagerVisible = signal<boolean>(false);
+  readonly selectedFilePathForShare = signal<string | null>(null);
 
   // Convert signals to observables (must be in field initializer for injection context)
   private readonly standaloneMode$ = toObservable(this.standaloneMode);
@@ -1153,13 +1154,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.fileTreeVisible.set(this.fileEditor.fileTreeVisible());
         this.terminalVisible.set(this.fileEditor.terminalVisible());
         this.gitManagerVisible.set(this.fileEditor.gitManagerVisible());
+        this.selectedFilePathForShare.set(this.fileEditor.selectedFilePath());
         this.cdr.markForCheck();
       }, 0);
     } else {
-      // Reset to false when editor is closed
-      this.fileTreeVisible.set(false);
-      this.terminalVisible.set(false);
-      this.gitManagerVisible.set(false);
+      // Reset when editor is closed - use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+      setTimeout(() => {
+        this.fileTreeVisible.set(false);
+        this.terminalVisible.set(false);
+        this.gitManagerVisible.set(false);
+        this.selectedFilePathForShare.set(null);
+        this.cdr.markForCheck();
+      }, 0);
     }
   }
 

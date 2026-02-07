@@ -35,6 +35,19 @@ function base64ToUtf8(base64: string): string {
   return new TextDecoder('utf-8').decode(bytes);
 }
 
+/**
+ * Encode UTF-8 string to base64.
+ * btoa() only accepts Latin-1; use TextEncoder for proper UTF-8 support.
+ */
+function utf8ToBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 @Component({
   selector: 'framework-monaco-editor-wrapper',
   imports: [CommonModule, MonacoEditorModule],
@@ -208,7 +221,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
 
       try {
         const value = currentEditor.getValue();
-        const base64 = btoa(value);
+        const base64 = utf8ToBase64(value);
 
         // Update current editor content for live preview
         this.currentEditorContent.set(value);
@@ -218,7 +231,8 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
           this.contentChange.emit(base64);
         });
       } catch (error) {
-        // Silently handle encoding errors
+        // Log encoding errors instead of silently ignoring (helps debug dirty state issues)
+        console.warn('Monaco contentChange: encoding error', error);
       }
     });
 
@@ -260,6 +274,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
 
     // For text files, handle editor content updates
     if (!editor || !content) {
+      this.lastContent = content;
       return;
     }
 

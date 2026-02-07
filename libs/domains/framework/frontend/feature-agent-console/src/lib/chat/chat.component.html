@@ -75,7 +75,7 @@
             #shareFileLinkButton
             type="button"
             class="btn btn-sm btn-outline-primary"
-            [disabled]="!fileEditor?.selectedFilePath()"
+            [disabled]="!selectedFilePathForShare()"
             (click)="onShareFileLink()"
             data-bs-toggle="tooltip"
             data-bs-placement="bottom"

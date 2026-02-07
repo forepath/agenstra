@@ -1123,8 +1123,11 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
+    // Clear cached content first so Monaco wrapper receives a fresh emission and updates correctly
+    this.filesFacade.clearFileContent(clientId, agentId, filePath);
+    // Reset lastLoadedFilePath so the content effect will run when new content arrives
+    this.lastLoadedFilePath.set(null);
     // Reload the file from server
-    // This will trigger the effect that updates editorContent
     this.filesFacade.readFile(clientId, agentId, filePath);
 
     // Clear dirty state for this file
@@ -1177,17 +1180,21 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   /**
-   * Update the query parameter silently (without triggering navigation)
+   * Update the query parameter silently (without triggering navigation).
+   * Deferred to next tick to avoid ExpressionChangedAfterItHasBeenCheckedError when
+   * parent components (e.g. language switcher) read window.location during change detection.
    */
   private updateQueryParameter(filePath: string | null): void {
-    const url = new URL(window.location.href);
-    if (filePath) {
-      url.searchParams.set('file', encodeURIComponent(filePath));
-    } else {
-      url.searchParams.delete('file');
-    }
-    // Use replaceState to update URL without triggering navigation
-    this.location.replaceState(url.pathname + url.search + url.hash);
+    queueMicrotask(() => {
+      const url = new URL(window.location.href);
+      if (filePath) {
+        url.searchParams.set('file', encodeURIComponent(filePath));
+      } else {
+        url.searchParams.delete('file');
+      }
+      // Use replaceState to update URL without triggering navigation
+      this.location.replaceState(url.pathname + url.search + url.hash);
+    });
   }
 
   /**
