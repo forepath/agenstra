@@ -1,0 +1,32 @@
+flowchart TB
+    subgraph Frontend["Frontend (Chat Mask)"]
+        ChatUI[Chat Component]
+        AGIChat[AGI Chat Mode]
+        OpenClawConfig[OpenClaw Config UI]
+        ChatUI --> AGIChat
+        ChatUI --> OpenClawConfig
+    end
+
+    subgraph Controller["Agent Controller (Proxy)"]
+        WsProxy[WebSocket Proxy]
+        HttpProxy[HTTP Proxy]
+    end
+
+    subgraph Manager["Agent Manager"]
+        AgentsService[AgentsService]
+        AGIProvider[AGI Agent Provider]
+        DockerService[DockerService]
+        AgentsService --> AGIProvider
+        AgentsService --> DockerService
+    end
+
+    subgraph AGIContainer["AGI Container (Dockerfile.agi)"]
+        OpenClawGateway[OpenClaw Gateway]
+        OpenClawGateway -->|":18789 HTTP/WS"| ConfigUI[Control UI]
+        OpenClawGateway -->|"WebSocket"| ChatAPI[chat.history chat.send]
+    end
+
+    AGIChat -->|"via proxy"| OpenClawGateway
+    OpenClawConfig -->|"iframe/link"| ConfigUI
+    WsProxy --> OpenClawGateway
+    HttpProxy --> ConfigUI

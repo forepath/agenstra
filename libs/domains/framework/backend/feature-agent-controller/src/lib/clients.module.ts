@@ -23,6 +23,7 @@ import { ClientAgentCredentialsService } from './services/client-agent-credentia
 import { ClientAgentDeploymentsProxyService } from './services/client-agent-deployments-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from './services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from './services/client-agent-file-system-proxy.service';
+import { ClientAgentOpenClawProxyService } from './services/client-agent-openclaw-proxy.service';
 import { ClientAgentProxyService } from './services/client-agent-proxy.service';
 import { ClientAgentVcsProxyService } from './services/client-agent-vcs-proxy.service';
 import { ClientUsersService } from './services/client-users.service';
@@ -62,6 +63,7 @@ const authMethod = getAuthenticationMethod();
     ClientAgentVcsProxyService,
     ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,
+    ClientAgentOpenClawProxyService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
     SocketAuthService,
@@ -96,6 +98,7 @@ const authMethod = getAuthenticationMethod();
     ClientAgentVcsProxyService,
     ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,
+    ClientAgentOpenClawProxyService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
     ClientsGateway,

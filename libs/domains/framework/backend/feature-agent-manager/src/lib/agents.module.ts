@@ -13,6 +13,7 @@ import { AgentEntity } from './entities/agent.entity';
 import { DeploymentConfigurationEntity } from './entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from './entities/deployment-run.entity';
 import { AgentProviderFactory } from './providers/agent-provider.factory';
+import { AgiAgentProvider } from './providers/agents/agi-agent.provider';
 import { CursorAgentProvider } from './providers/agents/cursor-agent.provider';
 import { OpenCodeAgentProvider } from './providers/agents/opencode-agent.provider';
 import { ChatFilterFactory } from './providers/chat-filter.factory';
@@ -77,6 +78,7 @@ import { PasswordService } from './services/password.service';
     DeploymentRunsRepository,
     DockerService,
     AgentProviderFactory,
+    AgiAgentProvider,
     CursorAgentProvider,
     OpenCodeAgentProvider,
     PipelineProviderFactory,
@@ -91,14 +93,16 @@ import { PasswordService } from './services/password.service';
       provide: 'AGENT_PROVIDER_INIT',
       useFactory: (
         factory: AgentProviderFactory,
+        agiProvider: AgiAgentProvider,
         cursorProvider: CursorAgentProvider,
         opencodeProvider: OpenCodeAgentProvider,
       ) => {
+        factory.registerProvider(agiProvider);
         factory.registerProvider(cursorProvider);
         factory.registerProvider(opencodeProvider);
         return true;
       },
-      inject: [AgentProviderFactory, CursorAgentProvider, OpenCodeAgentProvider],
+      inject: [AgentProviderFactory, AgiAgentProvider, CursorAgentProvider, OpenCodeAgentProvider],
     },
     {
       provide: 'PIPELINE_PROVIDER_INIT',

@@ -79,6 +79,9 @@ export class AgentEntity {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'git_repository_url' })
   gitRepositoryUrl?: string;
 
+  @Column({ type: 'integer', nullable: true, name: 'openclaw_host_port' })
+  openclawHostPort?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Client as Client
+    participant Controller as Agent Controller
+    participant Manager as Agent Manager
+    participant Repo as AgentsRepository
+    participant DB as Database
+    participant Docker as DockerService
+    participant AGIProvider as AGI Agent Provider
+
+    Note over Client,Docker: Create AGI Agent Flow
+
+    rect rgb(200, 220, 255)
+        Note over Client,Docker: Create Request
+        Client->>Controller: POST /clients/:id/agents<br/>{agentType: 'agi', name, description}
+        Controller->>Manager: POST /api/agents<br/>(forwarded with agentType: 'agi')
+        Manager->>Manager: agentsService.create()
+        Manager->>Manager: agentType === 'agi' ?
+    end
+
+    rect rgb(240, 250, 255)
+        Note over Manager,Docker: AGI-Specific Flow (skip git, VNC, SSH)
+        Manager->>Manager: createAgiAgent()
+        Manager->>AGIProvider: getDockerImage()
+        AGIProvider-->>Manager: AGI_AGENT_DOCKER_IMAGE or default
+        Manager->>Manager: generateRandomOpenClawPort()
+        Manager->>Docker: createContainer(image, port binding 18789)
+        Docker->>Docker: Start OpenClaw gateway with --allow-unconfigured
+        Docker-->>Manager: containerId
+        Manager->>Repo: save(agent with openclawHostPort)
+        Repo->>DB: INSERT agents
+        DB-->>Repo: agent entity
+        Repo-->>Manager: agent entity
+        Manager-->>Controller: AgentResponseDto (with openclaw.port)
+        Controller-->>Client: Agent created
+    end

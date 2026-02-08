@@ -9,6 +9,9 @@ export interface AgentResponseDto {
     port: number;
     password: string;
   };
+  openclaw?: {
+    port: number;
+  };
   ssh?: {
     port: number;
     password: string;

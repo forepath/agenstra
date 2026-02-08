@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant Frontend as Frontend
+    participant Controller as ClientsController
+    participant Proxy as ClientAgentOpenClawProxyService
+    participant AgentProxy as ClientAgentProxyService
+    participant Repo as ClientsRepository
+    participant DB as Database
+    participant OpenClaw as OpenClaw Gateway<br/>(Agent Manager)
+
+    Note over Frontend,OpenClaw: OpenClaw Proxy for AGI Agents
+
+    rect rgb(200, 220, 255)
+        Note over Frontend,OpenClaw: Get OpenClaw Proxy URL
+        Frontend->>Controller: GET /clients/:id/agents/:agentId/openclaw-url
+        Controller->>Controller: ensureClientAccess(clientId)
+        Controller->>Proxy: getOpenClawTargetUrl(clientId, agentId)
+        Proxy->>AgentProxy: getClientAgent(clientId, agentId)
+        AgentProxy->>AgentProxy: Fetch agent from agent-manager
+        AgentProxy-->>Proxy: agent (agentType, openclaw.port)
+        alt agent.agentType !== 'agi'
+            Proxy-->>Controller: BadRequestException
+        else !agent.openclaw?.port
+            Proxy-->>Controller: BadRequestException
+        else Valid AGI agent
+            Proxy->>Repo: findByIdOrThrow(clientId)
+            Repo->>DB: SELECT client
+            DB-->>Repo: client entity (endpoint)
+            Repo-->>Proxy: client entity
+            Proxy->>Proxy: buildOpenClawUrlFromEndpoint(endpoint, openclaw.port)
+            Proxy-->>Controller: targetUrl (e.g. http://manager:18789)
+            Controller->>Controller: proxyPath = /api/clients/:id/agents/:agentId/openclaw
+            Controller->>Controller: baseUrl = req.protocol + req.get('host')
+            Controller-->>Frontend: { url: baseUrl + proxyPath }
+        end
+    end
+
+    rect rgb(240, 250, 255)
+        Note over Frontend,OpenClaw: Proxy HTTP Request to OpenClaw
+        Frontend->>Controller: GET /clients/:id/agents/:agentId/openclaw/*
+        Controller->>Controller: ensureClientAccess(clientId)
+        Controller->>Proxy: getOpenClawTargetUrl(clientId, agentId)
+        Proxy-->>Controller: targetBase
+        Controller->>Controller: requestPath = originalUrl.replace(/.*\/openclaw/, '') || '/'
+        Controller->>Controller: targetUrl = targetBase + requestPath
+        Controller->>OpenClaw: HTTP GET targetUrl (stream)
+        OpenClaw->>OpenClaw: Serve Control UI / WebChat
+        OpenClaw-->>Controller: Response stream
+        Controller-->>Frontend: Stream response (HTML/JS/CSS)
+    end

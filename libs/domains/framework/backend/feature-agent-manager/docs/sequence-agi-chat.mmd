@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant Frontend as Chat Component
+    participant Controller as Agent Controller
+    participant Proxy as OpenClaw Proxy
+    participant OpenClaw as OpenClaw Gateway
+    participant AGIContainer as AGI Container
+
+    Note over Frontend,AGIContainer: AGI Chat Flow via OpenClaw Proxy
+
+    rect rgb(200, 220, 255)
+        Note over Frontend,AGIContainer: Get OpenClaw URL
+        Frontend->>Controller: GET /clients/:id/agents/:agentId/openclaw-url
+        Controller->>Controller: ensureClientAccess()
+        Controller->>Proxy: getOpenClawTargetUrl(clientId, agentId)
+        Proxy->>Proxy: Resolve agent openclaw.port from client endpoint
+        Proxy-->>Controller: target URL
+        Controller-->>Frontend: { url: "https://controller/.../openclaw" }
+    end
+
+    rect rgb(240, 250, 255)
+        Note over Frontend,AGIContainer: Embed OpenClaw in iframe
+        Frontend->>Frontend: Render iframe with [src]=openclawUrl
+        Frontend->>Controller: GET /clients/:id/agents/:agentId/openclaw/...
+        Controller->>Proxy: getOpenClawTargetUrl()
+        Proxy-->>Controller: target base URL
+        Controller->>OpenClaw: Proxy GET request
+        OpenClaw->>AGIContainer: OpenClaw gateway (port 18789)
+        AGIContainer-->>OpenClaw: HTML/JS/CSS (Control UI)
+        OpenClaw-->>Controller: Stream response
+        Controller-->>Frontend: Response streamed to iframe
+    end
+
+    rect rgb(250, 255, 240)
+        Note over Frontend,AGIContainer: Configure OpenClaw (new tab)
+        Frontend->>Frontend: User clicks "Configure OpenClaw"
+        Frontend->>Controller: getOpenClawUrl() -> window.open(url)
+        Frontend->>Controller: GET /clients/:id/agents/:agentId/openclaw
+        Controller->>OpenClaw: Proxy to OpenClaw Control UI
+        OpenClaw-->>Controller: Control UI
+        Controller-->>Frontend: OpenClaw UI in new tab
+    end

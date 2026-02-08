@@ -29,7 +29,9 @@ import {
   Put,
   Query,
   Req,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AddClientUserDto } from './dto/add-client-user.dto';
 import { ClientResponseDto } from './dto/client-response.dto';
 import { ClientUserResponseDto } from './dto/client-user-response.dto';
@@ -44,6 +46,7 @@ import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentEnvironmentVariablesProxyService } from './services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from './services/client-agent-file-system-proxy.service';
+import { ClientAgentOpenClawProxyService } from './services/client-agent-openclaw-proxy.service';
 import { ClientAgentProxyService } from './services/client-agent-proxy.service';
 import { ClientUsersService } from './services/client-users.service';
 import { ClientsService } from './services/clients.service';
@@ -66,6 +69,7 @@ export class ClientsController {
     private readonly clientAgentProxyService: ClientAgentProxyService,
     private readonly clientAgentFileSystemProxyService: ClientAgentFileSystemProxyService,
     private readonly clientAgentEnvironmentVariablesProxyService: ClientAgentEnvironmentVariablesProxyService,
+    private readonly clientAgentOpenClawProxyService: ClientAgentOpenClawProxyService,
     private readonly provisioningService: ProvisioningService,
     private readonly provisioningProviderFactory: ProvisioningProviderFactory,
     private readonly clientUsersService: ClientUsersService,
@@ -141,6 +145,71 @@ export class ClientsController {
       throw new ForbiddenException('You do not have access to this client');
     }
     return await this.clientAgentProxyService.getClientAgent(id, agentId);
+  }
+
+  /**
+   * Get the OpenClaw proxy URL for an AGI agent.
+   * Returns the URL the frontend should use to access the OpenClaw Control UI (opens in new tab or iframe).
+   * Only accessible if the user has access to the client and the agent is AGI type.
+   * @param id - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @param req - The request object
+   * @returns Object with the proxy URL
+   */
+  @Get(':id/agents/:agentId/openclaw-url')
+  async getOpenClawUrl(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<{ url: string }> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const targetUrl = await this.clientAgentOpenClawProxyService.getOpenClawTargetUrl(id, agentId);
+    const baseUrl = req?.protocol && req?.get ? `${req.protocol}://${req.get('host')}` : '';
+    const proxyPath = `/api/clients/${id}/agents/${agentId}/openclaw`;
+    return { url: `${baseUrl}${proxyPath}` };
+  }
+
+  /**
+   * Proxy GET requests to the OpenClaw gateway for AGI agents.
+   * Streams the response from the OpenClaw Control UI back to the client.
+   * Use the URL from getOpenClawUrl in an iframe or new tab.
+   */
+  @Get(':id/agents/:agentId/openclaw')
+  async proxyOpenClawGet(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req: RequestWithUser,
+    @Res() res: Response,
+  ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const targetBase = await this.clientAgentOpenClawProxyService.getOpenClawTargetUrl(id, agentId);
+    const originalUrl = (req as { originalUrl?: string }).originalUrl || req.url || '';
+    const requestPath = originalUrl.replace(/.*\/openclaw/, '') || '/';
+    const targetUrl = `${targetBase}${requestPath}` || targetBase;
+
+    const axios = (await import('axios')).default;
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: targetUrl,
+        responseType: 'stream',
+        validateStatus: () => true,
+        httpsAgent: targetUrl.startsWith('https')
+          ? new (await import('https')).Agent({ rejectUnauthorized: false })
+          : undefined,
+      });
+
+      res.status(response.status);
+      Object.entries(response.headers).forEach(([key, value]) => {
+        if (key.toLowerCase() !== 'transfer-encoding' && value) {
+          res.setHeader(key, value);
+        }
+      });
+      response.data.pipe(res);
+    } catch (error) {
+      const err = error as { message?: string };
+      res.status(502).json({ message: `OpenClaw proxy failed: ${err.message}` });
+    }
   }
 
   /**

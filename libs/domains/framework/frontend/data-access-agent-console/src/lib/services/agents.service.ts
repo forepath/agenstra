@@ -69,4 +69,12 @@ export class AgentsService {
   deleteClientAgent(clientId: string, agentId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}`);
   }
+
+  /**
+   * Get the OpenClaw proxy URL for an AGI agent.
+   * Returns the URL to use in an iframe or new tab for the OpenClaw Control UI.
+   */
+  getOpenClawUrl(clientId: string, agentId: string): Observable<{ url: string }> {
+    return this.http.get<{ url: string }>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/openclaw-url`);
+  }
 }

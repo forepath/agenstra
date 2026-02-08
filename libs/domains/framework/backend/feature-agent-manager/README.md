@@ -85,6 +85,9 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[HTTP VCS Sequence Diagram](./docs/sequence-http-vcs.mmd)** - Detailed sequence diagram for all VCS (Git) operations (status, branches, diff, stage, commit, push, pull, etc.)
 - **[WebSocket Auth & Logs Diagram](./docs/sequence-ws-auth-logs.mmd)** - Sequence diagram for WebSocket connection, authentication flow, and container log streaming
 - **[WebSocket Chat Diagram](./docs/sequence-ws-chat.mmd)** - Sequence diagram for WebSocket chat message flow and disconnection handling
+- **[AGI Overview](./docs/agi-overview.mmd)** - Architecture diagram for AGI (OpenClaw) agent flow
+- **[AGI Create Sequence](./docs/sequence-agi-create.mmd)** - Create-agent sequence for AGI agents
+- **[AGI Chat Sequence](./docs/sequence-agi-chat.mmd)** - Chat flow via OpenClaw proxy
 - **[Lifecycle Diagram](./docs/lifecycle.mmd)** - End-to-end sequence diagram showing the complete agent lifecycle from creation through deletion
 
 These diagrams provide comprehensive visual documentation of:
@@ -443,6 +446,18 @@ The library uses a plugin-based architecture to support multiple agent implement
 #### Available Providers
 
 - **cursor** (default) - Cursor-agent binary running in Docker containers
+- **agi** - OpenClaw gateway running in Docker containers (chat-only, no workspace)
+
+#### AGI (OpenClaw) Agents
+
+AGI agents run an OpenClaw gateway in a single Docker container. They differ from cursor agents:
+
+- No git clone, VNC, or SSH setup
+- Chat uses the OpenClaw WebSocket protocol (via proxy), not the agent-manager `/agents` namespace
+- OpenClaw Control UI is exposed for configuration (model selection, API keys)
+- `openclaw_host_port` is stored on the agent entity for proxying
+
+See [AGI Overview](./docs/agi-overview.mmd), [Create Sequence](./docs/sequence-agi-create.mmd), and [Chat Sequence](./docs/sequence-agi-chat.mmd) for architecture and flow diagrams.
 
 #### Adding New Providers
 

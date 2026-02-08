@@ -14,6 +14,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Version Control** - Git operations directly from the web interface
 - **Web IDE** - Monaco Editor integration for code editing
 - **Chat Interface** - AI chat functionality with real-time responses
+- **AGI Support** - OpenClaw-based AGI agents with chat-only interface
 - **VNC Browser Access** - Graphical browser access via VNC and noVNC
 - **Deployment** - CI/CD pipeline management and deployment functionality
 - **Authentication** - Multiple authentication methods with configurable user registration
@@ -114,6 +115,17 @@ AI chat functionality with real-time responses. Send messages to agents and rece
 - Markdown rendering
 - Automatic history restoration
 
+### [AGI Support](./agi-support.md)
+
+OpenClaw-based AGI agents with a chat-only interface. No workspace, VNC, or SSH setup.
+
+**Key Capabilities**:
+
+- Create AGI agents without git repository
+- Embedded OpenClaw WebChat in the chat mask
+- OpenClaw Control UI for configuration
+- Multi-model support via OpenClaw
+
 ### [VNC Browser Access](./vnc-browser-access.md)
 
 Graphical browser access via VNC and noVNC. Access a Chromium browser running in a virtual workspace container associated with an agent.
@@ -165,6 +177,7 @@ graph TB
     VC[Version Control]
     IDE[Web IDE]
     Chat[Chat Interface]
+    AGI[AGI Support]
     VNC[VNC Browser Access]
     DEP[Deployment]
     AUTH[Authentication]
@@ -176,9 +189,11 @@ graph TB
     AM --> VC
     AM --> IDE
     AM --> Chat
+    AM --> AGI
     AM --> VNC
     AM --> DEP
     WS --> Chat
+    AGI --> Chat
     FM --> IDE
     VC --> IDE
     VC --> DEP

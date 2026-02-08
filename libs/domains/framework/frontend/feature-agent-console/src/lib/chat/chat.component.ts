@@ -11,12 +11,13 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
+  AgentsService,
   AuthenticationFacade,
   ClientsFacade,
   ContainerType,
@@ -118,6 +119,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
   private readonly localeService = inject(LocaleService);
+  private readonly agentsService = inject(AgentsService);
 
   @ViewChild('chatMessagesContainer', { static: false })
   private chatMessagesContainer!: ElementRef<HTMLDivElement>;
@@ -246,6 +248,23 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         return of(null);
       }
       return this.agentsFacade.getSelectedClientAgent$(clientId);
+    }),
+  );
+  readonly selectedAgent = toSignal(this.selectedAgent$, { initialValue: null as AgentResponseDto | null });
+
+  /**
+   * OpenClaw proxy URL for AGI agents. Used to embed the OpenClaw WebChat UI in an iframe.
+   * Emits the sanitized URL when the selected agent is AGI, null otherwise.
+   */
+  readonly openclawUrl$ = combineLatest([this.activeClientId$, this.selectedAgent$]).pipe(
+    switchMap(([clientId, agent]) => {
+      if (!clientId || !agent || !this.isAgiAgent(agent)) {
+        return of(null);
+      }
+      return this.agentsService.getOpenClawUrl(clientId, agent.id).pipe(
+        map((res) => this.sanitizer.bypassSecurityTrustResourceUrl(res.url)),
+        catchError(() => of(null)),
+      );
     }),
   );
 
@@ -1395,6 +1414,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onToggleEditor(navigate = true, openInNewWindow = false): void {
+    const agent = this.selectedAgent();
+    if (agent && this.isAgiAgent(agent)) {
+      return;
+    }
     const wasOpen = this.editorOpen();
 
     // If opening in new window and editor is not open, open new window
@@ -1658,6 +1681,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onToggleDeploymentManager(navigate = true, openInNewWindow = false): void {
+    const agent = this.selectedAgent();
+    if (agent && this.isAgiAgent(agent)) {
+      return;
+    }
     const wasOpen = this.deploymentManagerOpen();
 
     // If opening in new window and deployment manager is not open, open new window
@@ -3447,6 +3474,28 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       default:
         return 'Generic';
     }
+  }
+
+  /**
+   * Check if the agent is an AGI (OpenClaw) agent.
+   * AGI agents have a simplified chat-only UI (no editor, deployments, VNC, SSH).
+   */
+  isAgiAgent(agent: AgentResponseDto | null | undefined): boolean {
+    return agent?.agentType === 'agi';
+  }
+
+  /**
+   * Open the OpenClaw configuration UI in a new tab for AGI agents.
+   */
+  onOpenClawConfigClick(clientId: string, agentId: string): void {
+    this.agentsService.getOpenClawUrl(clientId, agentId).subscribe({
+      next: (response) => {
+        window.open(response.url, '_blank', 'noopener,noreferrer');
+      },
+      error: (err) => {
+        console.error('Failed to get OpenClaw URL:', err);
+      },
+    });
   }
 
   /**

@@ -77,7 +77,9 @@ export class AgentsRepository {
    * @returns True if the port is in use, false otherwise
    */
   async findPortInUse(port: number): Promise<boolean> {
-    const agent = await this.repository.findOne({ where: [{ vncHostPort: port }, { sshHostPort: port }] });
+    const agent = await this.repository.findOne({
+      where: [{ vncHostPort: port }, { sshHostPort: port }, { openclawHostPort: port }],
+    });
     return agent !== null;
   }
 

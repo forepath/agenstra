@@ -191,6 +191,74 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
+   * Create an AGI agent (OpenClaw-only container).
+   * No git clone, VNC, or SSH. Only the AGI container with OpenClaw gateway, port binding.
+   */
+  private async createAgiAgent(
+    createAgentDto: CreateAgentDto,
+    generatedPassword: string,
+    hashedPassword: string,
+  ): Promise<CreateAgentResponseDto> {
+    const provider = this.agentProviderFactory.getProvider('agi');
+    const dockerImage = provider.getDockerImage();
+
+    const openclawHostPort = await this.generateRandomOpenClawPort();
+    const openclawVolumePath = `/opt/agents/${uuidv4()}`;
+
+    const containerId = await this.dockerService.createContainer({
+      image: dockerImage,
+      env: {
+        AGENT_NAME: createAgentDto.name,
+        OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || this.generateRandomPassword(),
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+      },
+      volumes: [
+        {
+          hostPath: openclawVolumePath,
+          containerPath: '/home/node/.openclaw',
+          readOnly: false,
+        },
+      ],
+      ports: [
+        {
+          containerPort: 18789,
+          hostPort: openclawHostPort,
+        },
+      ],
+    });
+
+    try {
+      const agent = await this.agentsRepository.create({
+        name: createAgentDto.name,
+        description: createAgentDto.description,
+        hashedPassword,
+        containerId,
+        volumePath: openclawVolumePath,
+        agentType: 'agi',
+        containerType: createAgentDto.containerType || ContainerType.GENERIC,
+        openclawHostPort,
+      });
+
+      return {
+        ...this.mapToResponseDto(agent),
+        password: generatedPassword,
+      };
+    } catch (error) {
+      try {
+        await this.dockerService.deleteContainer(containerId);
+      } catch (cleanupError) {
+        const err = cleanupError as { message?: string; stack?: string };
+        this.logger.error(
+          `Failed to clean up AGI container ${containerId} after creation failure: ${err.message}`,
+          err.stack,
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Create .netrc file in the container for git authentication.
    * @param containerId - The ID of the container
    * @param repositoryUrl - The URL of the repository to create the .netrc file for
@@ -246,6 +314,14 @@ export class AgentsService implements OnApplicationBootstrap {
     // Hash the password
     const hashedPassword = await this.passwordService.hashPassword(generatedPassword);
 
+    // Determine agent type (default to 'cursor' for backward compatibility)
+    const agentType = createAgentDto.agentType || 'cursor';
+
+    // AGI branch: create only OpenClaw container, no git/VNC/SSH
+    if (agentType === 'agi') {
+      return this.createAgiAgent(createAgentDto, generatedPassword, hashedPassword);
+    }
+
     // Define a folder name for the agent
     const agentVolumePath = `/opt/agents/${uuidv4()}`;
 
@@ -257,9 +333,6 @@ export class AgentsService implements OnApplicationBootstrap {
     }
 
     const sshRepository = this.isSshRepository(repositoryUrl);
-
-    // Determine agent type (default to 'cursor' for backward compatibility)
-    const agentType = createAgentDto.agentType || 'cursor';
 
     // Get the provider for this agent type to retrieve the Docker image
     const provider = this.agentProviderFactory.getProvider(agentType);
@@ -635,6 +708,7 @@ export class AgentsService implements OnApplicationBootstrap {
             password: agent.vncPassword,
           }
         : undefined,
+      openclaw: agent.openclawHostPort ? { port: agent.openclawHostPort } : undefined,
       ssh: agent.sshHostPort
         ? {
             port: agent.sshHostPort,
@@ -685,6 +759,23 @@ export class AgentsService implements OnApplicationBootstrap {
     }
 
     return prosedPort;
+  }
+
+  /**
+   * Generate a random port for OpenClaw gateway.
+   * @returns A random port in the OpenClaw port range
+   */
+  private async generateRandomOpenClawPort(): Promise<number> {
+    const range = process.env.OPENCLAW_SERVER_PUBLIC_PORTS || '40000-49151';
+
+    const [start, end] = range.split('-').map(Number);
+    const proposedPort = Math.floor(Math.random() * (end - start + 1)) + start;
+
+    if (await this.agentsRepository.findPortInUse(proposedPort)) {
+      return await this.generateRandomOpenClawPort();
+    }
+
+    return proposedPort;
   }
 
   /**

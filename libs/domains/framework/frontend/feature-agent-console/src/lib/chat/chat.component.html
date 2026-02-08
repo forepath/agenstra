@@ -1,6 +1,6 @@
 <div class="section__content-wrapper d-flex flex-column" [class.border-top]="!standaloneMode()">
-  <!-- Toolbar (shown when editor is open, spans editor and chat) -->
-  @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
+  <!-- Toolbar (shown when editor is open, spans editor and chat; hidden for AGI agents) -->
+  @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async) && !isAgiAgent(selectedAgent$ | async)) {
     <div class="editor-toolbar-container border-bottom bg-body-tertiary">
       <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
@@ -420,8 +420,8 @@
       </div>
     }
 
-    <!-- Column: Editor (shown when editor is open, to the left of chat) -->
-    @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
+    <!-- Column: Editor (shown when editor is open, to the left of chat; hidden for AGI agents) -->
+    @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async) && !isAgiAgent(selectedAgent$ | async)) {
       <div
         class="section__column section__column--editor d-flex flex-column border-end"
         [class.mobile-hidden]="chatVisible() || deploymentManagerOpen()"
@@ -436,8 +436,13 @@
       </div>
     }
 
-    <!-- Column: Deployment Manager (shown when deployment manager is open, to the left of chat) -->
-    @if (deploymentManagerOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
+    <!-- Column: Deployment Manager (shown when deployment manager is open, to the left of chat; hidden for AGI agents) -->
+    @if (
+      deploymentManagerOpen() &&
+      (activeClientId$ | async) &&
+      (selectedAgent$ | async) &&
+      !isAgiAgent(selectedAgent$ | async)
+    ) {
       <div
         class="section__column section__column--deployment-manager d-flex flex-column"
         [class.border-end]="!standaloneMode()"
@@ -547,7 +552,7 @@
                   }
                 }
               </div>
-              @if (!editorOpen()) {
+              @if (!editorOpen() && !isAgiAgent(selectedAgent$ | async)) {
                 <div class="btn-group" role="group">
                   <button
                     type="button"
@@ -562,7 +567,7 @@
               }
               @if (activeClient$ | async; as activeClient) {
                 @if (selectedAgent$ | async; as selectedAgent) {
-                  @if (selectedAgent.vnc?.port && (activeClient$ | async)) {
+                  @if (!isAgiAgent(selectedAgent) && selectedAgent.vnc?.port && (activeClient$ | async)) {
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-primary"
@@ -574,7 +579,7 @@
                       >
                     </button>
                   }
-                  @if (selectedAgent.ssh?.port) {
+                  @if (!isAgiAgent(selectedAgent) && selectedAgent.ssh?.port) {
                     <button
                       type="button"
                       class="btn btn-sm"
@@ -586,17 +591,33 @@
                       <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-sshAccess">SSH Access</span>
                     </button>
                   }
-                  <button
-                    type="button"
-                    class="btn btn-sm"
-                    [class.btn-outline-primary]="!deploymentManagerOpen()"
-                    [class.btn-primary]="deploymentManagerOpen()"
-                    (click)="onToggleDeploymentManager(true, getDeploymentOpenInNewWindow())"
-                    [title]="getDeploymentManagerToggleTitle()"
-                  >
-                    <i class="bi bi-rocket-takeoff"></i>
-                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openDeployments">Open Deployments</span>
-                  </button>
+                  @if (!isAgiAgent(selectedAgent)) {
+                    <button
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-outline-primary]="!deploymentManagerOpen()"
+                      [class.btn-primary]="deploymentManagerOpen()"
+                      (click)="onToggleDeploymentManager(true, getDeploymentOpenInNewWindow())"
+                      [title]="getDeploymentManagerToggleTitle()"
+                    >
+                      <i class="bi bi-rocket-takeoff"></i>
+                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openDeployments">Open Deployments</span>
+                    </button>
+                  }
+                  @if (isAgiAgent(selectedAgent)) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="onOpenClawConfigClick(activeClient.id, selectedAgent.id)"
+                      i18n-title="@@featureChat-configureOpenClaw"
+                      title="Configure OpenClaw"
+                    >
+                      <i class="bi bi-gear"></i>
+                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-configureOpenClaw"
+                        >Configure OpenClaw</span
+                      >
+                    </button>
+                  }
                 }
               }
             </div>
@@ -656,286 +677,310 @@
           }
         </div>
 
-        <!-- Chat messages -->
-        <div #chatMessagesContainer class="chat-messages-container flex-grow-1 overflow-auto p-3 bg-body-secondary">
-          @if (chatMessagesWithFilters$ | async; as messages) {
-            @if (messages.length === 0) {
-              <div class="text-center text-muted py-5">
-                <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
-                <p class="mb-0" i18n="@@featureChat-noMessages">No messages yet. Start a conversation!</p>
+        <!-- AGI: Embed OpenClaw WebChat in iframe -->
+        @if (selectedAgent$ | async; as selectedAgent) {
+          @if (isAgiAgent(selectedAgent)) {
+            @if (openclawUrl$ | async; as openclawUrl) {
+              <div class="chat-messages-container flex-grow-1 overflow-auto p-0 bg-body-secondary position-relative">
+                <iframe
+                  [src]="openclawUrl"
+                  class="w-100 h-100 border-0"
+                  style="min-height: 400px"
+                  title="OpenClaw Chat"
+                  i18n-title="@@featureChat-openClawChat"
+                ></iframe>
               </div>
             } @else {
-              <div class="d-flex flex-column gap-2">
-                @for (msg of messages; track msg.timestamp) {
-                  @if (isUserMessage(msg.payload)) {
-                    @if (getChatMessageData(msg.payload); as messageData) {
-                      <div class="d-flex justify-content-end">
-                        @if (
-                          msg.filterResult &&
-                          (msg.filterResult.status === 'filtered' || msg.filterResult.status === 'dropped')
-                        ) {
-                          <div class="card bg-primary text-white chat-message-card border-warning border-2">
-                            <div class="card-body chat-message-body">
-                              @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
-                                <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
-                              }
-                              <div class="d-flex align-items-center gap-2 mt-2">
-                                <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
-                                <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+              <div
+                class="chat-messages-container flex-grow-1 overflow-auto p-5 bg-body-secondary text-center text-muted"
+              >
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span i18n="@@featureChat-loadingOpenClaw">Loading OpenClaw...</span>
+              </div>
+            }
+          } @else {
+            <!-- Chat messages (non-AGI agents) -->
+            <div #chatMessagesContainer class="chat-messages-container flex-grow-1 overflow-auto p-3 bg-body-secondary">
+              @if (chatMessagesWithFilters$ | async; as messages) {
+                @if (messages.length === 0) {
+                  <div class="text-center text-muted py-5">
+                    <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
+                    <p class="mb-0" i18n="@@featureChat-noMessages">No messages yet. Start a conversation!</p>
+                  </div>
+                } @else {
+                  <div class="d-flex flex-column gap-2">
+                    @for (msg of messages; track msg.timestamp) {
+                      @if (isUserMessage(msg.payload)) {
+                        @if (getChatMessageData(msg.payload); as messageData) {
+                          <div class="d-flex justify-content-end">
+                            @if (
+                              msg.filterResult &&
+                              (msg.filterResult.status === 'filtered' || msg.filterResult.status === 'dropped')
+                            ) {
+                              <div class="card bg-primary text-white chat-message-card border-warning border-2">
+                                <div class="card-body chat-message-body">
+                                  @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
+                                    <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
+                                  }
+                                  <div class="d-flex align-items-center gap-2 mt-2">
+                                    <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
+                                    <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                                  </div>
+                                  <small class="chat-message-timestamp">{{ formatTimestamp(msg.timestamp) }}</small>
+                                </div>
                               </div>
-                              <small class="chat-message-timestamp">{{ formatTimestamp(msg.timestamp) }}</small>
-                            </div>
-                          </div>
-                        } @else {
-                          <div class="card bg-primary text-white chat-message-card">
-                            <div class="card-body chat-message-body">
-                              @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
-                                <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
-                              }
-                              <small class="chat-message-timestamp">{{ formatTimestamp(msg.timestamp) }}</small>
-                            </div>
+                            } @else {
+                              <div class="card bg-primary text-white chat-message-card">
+                                <div class="card-body chat-message-body">
+                                  @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
+                                    <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
+                                  }
+                                  <small class="chat-message-timestamp">{{ formatTimestamp(msg.timestamp) }}</small>
+                                </div>
+                              </div>
+                            }
                           </div>
                         }
-                      </div>
-                    }
-                  } @else if (isAgentMessage(msg.payload)) {
-                    @if (getChatMessageData(msg.payload); as messageData) {
-                      @if (isMessageDropped(messageData)) {
-                        <div class="d-flex justify-content-start">
-                          <div class="card bg-danger text-white chat-message-card border-danger border-2">
-                            <div class="card-body chat-message-body">
-                              <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-exclamation-circle fs-5"></i>
-                                <strong i18n="@@featureChat-messageDropped">Message Dropped</strong>
-                              </div>
-                              <p class="card-text chat-message-text mb-0">
-                                <span i18n="@@featureChat-messageDroppedDesc"
-                                  >This message was filtered and dropped by the system.</span
-                                >
-                              </p>
-                              <small class="chat-message-timestamp text-white-50">{{
-                                formatTimestamp(msg.timestamp)
-                              }}</small>
-                            </div>
-                          </div>
-                        </div>
-                      } @else {
-                        <div class="d-flex justify-content-start">
-                          @if (msg.filterResult && msg.filterResult.status === 'filtered') {
-                            <div class="card bg-body chat-message-card border-warning border-2">
-                              <div class="card-body chat-message-body">
-                                @if (parseMarkdown(messageData); as htmlContent) {
-                                  <div
-                                    class="card-text chat-message-text markdown-content"
-                                    [innerHTML]="htmlContent"
-                                  ></div>
-                                }
-                                <div class="d-flex align-items-center gap-2 mt-2">
-                                  <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
-                                  <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                      } @else if (isAgentMessage(msg.payload)) {
+                        @if (getChatMessageData(msg.payload); as messageData) {
+                          @if (isMessageDropped(messageData)) {
+                            <div class="d-flex justify-content-start">
+                              <div class="card bg-danger text-white chat-message-card border-danger border-2">
+                                <div class="card-body chat-message-body">
+                                  <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-exclamation-circle fs-5"></i>
+                                    <strong i18n="@@featureChat-messageDropped">Message Dropped</strong>
+                                  </div>
+                                  <p class="card-text chat-message-text mb-0">
+                                    <span i18n="@@featureChat-messageDroppedDesc"
+                                      >This message was filtered and dropped by the system.</span
+                                    >
+                                  </p>
+                                  <small class="chat-message-timestamp text-white-50">{{
+                                    formatTimestamp(msg.timestamp)
+                                  }}</small>
                                 </div>
-                                <small class="chat-message-timestamp text-muted">{{
-                                  formatTimestamp(msg.timestamp)
-                                }}</small>
                               </div>
                             </div>
                           } @else {
-                            <div class="card bg-body chat-message-card">
-                              <div class="card-body chat-message-body">
-                                @if (parseMarkdown(messageData); as htmlContent) {
-                                  <div
-                                    class="card-text chat-message-text markdown-content"
-                                    [innerHTML]="htmlContent"
-                                  ></div>
-                                }
-                                <small class="chat-message-timestamp text-muted">{{
-                                  formatTimestamp(msg.timestamp)
-                                }}</small>
-                              </div>
+                            <div class="d-flex justify-content-start">
+                              @if (msg.filterResult && msg.filterResult.status === 'filtered') {
+                                <div class="card bg-body chat-message-card border-warning border-2">
+                                  <div class="card-body chat-message-body">
+                                    @if (parseMarkdown(messageData); as htmlContent) {
+                                      <div
+                                        class="card-text chat-message-text markdown-content"
+                                        [innerHTML]="htmlContent"
+                                      ></div>
+                                    }
+                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                      <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
+                                      <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                                    </div>
+                                    <small class="chat-message-timestamp text-muted">{{
+                                      formatTimestamp(msg.timestamp)
+                                    }}</small>
+                                  </div>
+                                </div>
+                              } @else {
+                                <div class="card bg-body chat-message-card">
+                                  <div class="card-body chat-message-body">
+                                    @if (parseMarkdown(messageData); as htmlContent) {
+                                      <div
+                                        class="card-text chat-message-text markdown-content"
+                                        [innerHTML]="htmlContent"
+                                      ></div>
+                                    }
+                                    <small class="chat-message-timestamp text-muted">{{
+                                      formatTimestamp(msg.timestamp)
+                                    }}</small>
+                                  </div>
+                                </div>
+                              }
                             </div>
                           }
-                        </div>
+                        }
                       }
                     }
-                  }
-                }
-                <!-- Loading indicator when waiting for agent response -->
-                @if (waitingForResponse$ | async) {
-                  <div class="d-flex justify-content-start">
-                    <div class="card bg-body chat-message-card">
-                      <div class="card-body chat-message-body">
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="spinner-border spinner-border-sm text-primary" role="status">
-                            <span class="visually-hidden" i18n="@@featureChat-waitingForResponse"
-                              >Waiting for response...</span
-                            >
+                    <!-- Loading indicator when waiting for agent response -->
+                    @if (waitingForResponse$ | async) {
+                      <div class="d-flex justify-content-start">
+                        <div class="card bg-body chat-message-card">
+                          <div class="card-body chat-message-body">
+                            <div class="d-flex align-items-center gap-2">
+                              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden" i18n="@@featureChat-waitingForResponse"
+                                  >Waiting for response...</span
+                                >
+                              </div>
+                              <small class="chat-message-text text-muted mb-0" i18n="@@featureChat-agentThinking"
+                                >Agent is thinking...</small
+                              >
+                            </div>
                           </div>
-                          <small class="chat-message-text text-muted mb-0" i18n="@@featureChat-agentThinking"
-                            >Agent is thinking...</small
-                          >
                         </div>
                       </div>
-                    </div>
+                    }
                   </div>
                 }
+              }
+            </div>
+
+            <!-- Socket reconnection status (main socket) -->
+            @if (socketReconnecting$ | async) {
+              <div class="alert alert-warning m-3" role="alert">
+                <div class="d-flex align-items-center">
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span>
+                    <span i18n="@@featureChat-reconnectingToServer">Reconnecting to server...</span>
+                    @if (socketReconnectAttempts$ | async; as attempts) {
+                      <span class="text-muted">(attempt {{ attempts }})</span>
+                    }
+                  </span>
+                </div>
               </div>
             }
-          }
-        </div>
 
-        <!-- Socket reconnection status (main socket) -->
-        @if (socketReconnecting$ | async) {
-          <div class="alert alert-warning m-3" role="alert">
-            <div class="d-flex align-items-center">
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              <span>
-                <span i18n="@@featureChat-reconnectingToServer">Reconnecting to server...</span>
-                @if (socketReconnectAttempts$ | async; as attempts) {
-                  <span class="text-muted">(attempt {{ attempts }})</span>
-                }
-              </span>
-            </div>
-          </div>
-        }
+            <!-- Remote connection reconnection status (per clientId) -->
+            @if (remoteReconnecting$ | async) {
+              @if (activeClientId$ | async) {
+                <div class="alert alert-warning m-3" role="alert">
+                  <div class="d-flex align-items-center">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span i18n="@@featureChat-reconnectingToWorkspace">Reconnecting to workspace...</span>
+                  </div>
+                </div>
+              }
+            }
 
-        <!-- Remote connection reconnection status (per clientId) -->
-        @if (remoteReconnecting$ | async) {
-          @if (activeClientId$ | async) {
-            <div class="alert alert-warning m-3" role="alert">
-              <div class="d-flex align-items-center">
-                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                <span i18n="@@featureChat-reconnectingToWorkspace">Reconnecting to workspace...</span>
-              </div>
-            </div>
-          }
-        }
+            <!-- Remote connection error (only shown when not reconnecting) -->
+            @if (remoteConnectionError$ | async; as remoteError) {
+              @if (remoteError && !(remoteReconnecting$ | async)) {
+                <div class="alert alert-danger m-3" role="alert">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  <ng-container i18n="@@featureChat-workspaceConnectionFailed"
+                    >Workspace connection failed: {{ remoteError }}</ng-container
+                  >
+                </div>
+              }
+            }
 
-        <!-- Remote connection error (only shown when not reconnecting) -->
-        @if (remoteConnectionError$ | async; as remoteError) {
-          @if (remoteError && !(remoteReconnecting$ | async)) {
-            <div class="alert alert-danger m-3" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i>
-              <ng-container i18n="@@featureChat-workspaceConnectionFailed"
-                >Workspace connection failed: {{ remoteError }}</ng-container
-              >
-            </div>
-          }
-        }
+            <!-- Socket error (only shown when not reconnecting) -->
+            @if (socketError$ | async; as socketError) {
+              @if (!(socketReconnecting$ | async)) {
+                <div class="alert alert-danger m-3" role="alert">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  {{ socketError }}
+                </div>
+              }
+            }
 
-        <!-- Socket error (only shown when not reconnecting) -->
-        @if (socketError$ | async; as socketError) {
-          @if (!(socketReconnecting$ | async)) {
-            <div class="alert alert-danger m-3" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i>
-              {{ socketError }}
-            </div>
-          }
-        }
-
-        <!-- Chat input -->
-        <div class="p-3 border-top bg-body-tertiary chat-input-container">
-          <div class="chat-commands-select">
-            <select
-              id="chatCommandsSelect"
-              class="form-select form-select-sm small text-body"
-              name="chatCommandsSelect"
-              [ngModel]="selectedCommand() ?? ''"
-              (ngModelChange)="onCommandChange($event)"
-              [disabled]="
-                !!(
-                  !(socketConnected$ | async) ||
-                  (socketReconnecting$ | async) ||
-                  (remoteReconnecting$ | async) ||
-                  !(selectedAgent$ | async) ||
-                  (commandsLoading$ | async) ||
-                  (commands$ | async)?.length === 0
-                )
-              "
-            >
-              <option value="" i18n="@@featureChat-chat">Chat</option>
-              @if (commands$ | async; as commands) {
-                @if (commands.length > 0) {
-                  <optgroup label="Commands" i18n-label="@@featureChat-commandsLabel">
-                    @for (command of commands; track command) {
-                      <option [value]="command">{{ command }}</option>
+            <!-- Chat input -->
+            <div class="p-3 border-top bg-body-tertiary chat-input-container">
+              <div class="chat-commands-select">
+                <select
+                  id="chatCommandsSelect"
+                  class="form-select form-select-sm small text-body"
+                  name="chatCommandsSelect"
+                  [ngModel]="selectedCommand() ?? ''"
+                  (ngModelChange)="onCommandChange($event)"
+                  [disabled]="
+                    !!(
+                      !(socketConnected$ | async) ||
+                      (socketReconnecting$ | async) ||
+                      (remoteReconnecting$ | async) ||
+                      !(selectedAgent$ | async) ||
+                      (commandsLoading$ | async) ||
+                      (commands$ | async)?.length === 0
+                    )
+                  "
+                >
+                  <option value="" i18n="@@featureChat-chat">Chat</option>
+                  @if (commands$ | async; as commands) {
+                    @if (commands.length > 0) {
+                      <optgroup label="Commands" i18n-label="@@featureChat-commandsLabel">
+                        @for (command of commands; track command) {
+                          <option [value]="command">{{ command }}</option>
+                        }
+                      </optgroup>
                     }
-                  </optgroup>
-                }
+                  }
+                </select>
+              </div>
+              <div class="chat-input-group">
+                <div class="form-control chat-textarea-container">
+                  <textarea
+                    class="chat-textarea"
+                    rows="3"
+                    placeholder="Type a message..."
+                    i18n-placeholder="@@featureChat-typeMessagePlaceholder"
+                    [value]="chatMessage()"
+                    (input)="chatMessage.set($any($event.target).value)"
+                    (keydown)="onChatInputKeydown($event)"
+                    [disabled]="
+                      !(socketConnected$ | async) ||
+                      (socketReconnecting$ | async) ||
+                      (remoteReconnecting$ | async) ||
+                      (forwarding$ | async) ||
+                      !(selectedAgent$ | async)
+                    "
+                  ></textarea>
+                </div>
+              </div>
+              <div class="chat-send-button-container">
+                <button
+                  class="btn btn-primary btn-sm chat-send-button"
+                  type="button"
+                  [disabled]="
+                    !(socketConnected$ | async) ||
+                    (socketReconnecting$ | async) ||
+                    (remoteReconnecting$ | async) ||
+                    (forwarding$ | async) ||
+                    !(selectedAgent$ | async) ||
+                    !chatMessage().trim()
+                  "
+                  (click)="onSendMessage()"
+                >
+                  @if (forwarding$ | async) {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-send"></i>
+                  }
+                  <span i18n="@@featureChat-send">Send</span>
+                </button>
+              </div>
+              <div class="input-group input-group-sm mt-2">
+                <span class="input-group-text small text-muted" i18n="@@featureChat-model">Model</span>
+                <select
+                  id="chatModelSelect"
+                  class="form-select form-select-sm small text-body"
+                  name="chatModelSelect"
+                  [ngModel]="selectedChatModel() ?? ''"
+                  (ngModelChange)="onChatModelChange($event)"
+                  [disabled]="
+                    !(socketConnected$ | async) ||
+                    (socketReconnecting$ | async) ||
+                    (remoteReconnecting$ | async) ||
+                    !(selectedAgent$ | async)
+                  "
+                >
+                  <option value="auto" i18n="@@featureChat-modelAuto">Auto</option>
+                  @if (selectedAgent$ | async; as agent) {
+                    @for (model of getChatModelOptions(agent.agentType); track model.value) {
+                      <option [value]="model.value">{{ model.label }}</option>
+                    }
+                  }
+                </select>
+              </div>
+              @if (!(socketConnected$ | async)) {
+                <small class="text-muted d-block mt-2">
+                  <i class="bi bi-info-circle me-1"></i>
+                  <span i18n="@@featureChat-connectToSend">Connect to socket to send messages</span>
+                </small>
               }
-            </select>
-          </div>
-          <div class="chat-input-group">
-            <div class="form-control chat-textarea-container">
-              <textarea
-                class="chat-textarea"
-                rows="3"
-                placeholder="Type a message..."
-                i18n-placeholder="@@featureChat-typeMessagePlaceholder"
-                [value]="chatMessage()"
-                (input)="chatMessage.set($any($event.target).value)"
-                (keydown)="onChatInputKeydown($event)"
-                [disabled]="
-                  !(socketConnected$ | async) ||
-                  (socketReconnecting$ | async) ||
-                  (remoteReconnecting$ | async) ||
-                  (forwarding$ | async) ||
-                  !(selectedAgent$ | async)
-                "
-              ></textarea>
             </div>
-          </div>
-          <div class="chat-send-button-container">
-            <button
-              class="btn btn-primary btn-sm chat-send-button"
-              type="button"
-              [disabled]="
-                !(socketConnected$ | async) ||
-                (socketReconnecting$ | async) ||
-                (remoteReconnecting$ | async) ||
-                (forwarding$ | async) ||
-                !(selectedAgent$ | async) ||
-                !chatMessage().trim()
-              "
-              (click)="onSendMessage()"
-            >
-              @if (forwarding$ | async) {
-                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-              } @else {
-                <i class="bi bi-send"></i>
-              }
-              <span i18n="@@featureChat-send">Send</span>
-            </button>
-          </div>
-          <div class="input-group input-group-sm mt-2">
-            <span class="input-group-text small text-muted" i18n="@@featureChat-model">Model</span>
-            <select
-              id="chatModelSelect"
-              class="form-select form-select-sm small text-body"
-              name="chatModelSelect"
-              [ngModel]="selectedChatModel() ?? ''"
-              (ngModelChange)="onChatModelChange($event)"
-              [disabled]="
-                !(socketConnected$ | async) ||
-                (socketReconnecting$ | async) ||
-                (remoteReconnecting$ | async) ||
-                !(selectedAgent$ | async)
-              "
-            >
-              <option value="auto" i18n="@@featureChat-modelAuto">Auto</option>
-              @if (selectedAgent$ | async; as agent) {
-                @for (model of getChatModelOptions(agent.agentType); track model.value) {
-                  <option [value]="model.value">{{ model.label }}</option>
-                }
-              }
-            </select>
-          </div>
-          @if (!(socketConnected$ | async)) {
-            <small class="text-muted d-block mt-2">
-              <i class="bi bi-info-circle me-1"></i>
-              <span i18n="@@featureChat-connectToSend">Connect to socket to send messages</span>
-            </small>
           }
-        </div>
+        }
 
         <!-- Container Stats Status Bar (shown when editor is closed) -->
         @if (!editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
