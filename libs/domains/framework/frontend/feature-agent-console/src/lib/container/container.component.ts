@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
@@ -17,6 +18,7 @@ import { ThemeService } from '../theme.service';
 })
 export class AgentConsoleContainerComponent implements OnInit {
   private readonly authenticationFacade = inject(AuthenticationFacade);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
@@ -107,7 +109,7 @@ export class AgentConsoleContainerComponent implements OnInit {
     }
 
     // Watch for query parameter changes
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const isStandalone = !!params['standalone'];
       if (isStandalone) {
         this.standaloneLoadingService.setLoading(true);

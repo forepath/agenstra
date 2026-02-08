@@ -424,6 +424,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private shouldScrollToBottom = false;
   private previousMessageCount = 0;
   private readonly destroy$ = new Subject<void>();
+  private syncAnimationFrameId: number | null = null;
+  private syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private lastUserMessageTimestamp = signal<number | null>(null);
   private lastAgentMessageTimestamp = 0;
 
@@ -1125,6 +1127,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.destroy$.next();
     this.destroy$.complete();
 
+    // Cancel any pending sync to prevent callbacks holding component reference
+    if (this.syncAnimationFrameId !== null) {
+      cancelAnimationFrame(this.syncAnimationFrameId);
+      this.syncAnimationFrameId = null;
+    }
+    if (this.syncTimeoutId !== null) {
+      clearTimeout(this.syncTimeoutId);
+      this.syncTimeoutId = null;
+    }
+
     // Dispose tooltip if it exists
     if (this.shareButtonTooltip) {
       this.shareButtonTooltip.dispose();
@@ -1138,28 +1150,49 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.shouldScrollToBottom = false;
     }
 
-    // Sync fileEditor visibility signals to prevent ExpressionChangedAfterItHasBeenCheckedError
-    // This runs after change detection, so it's safe to update signals here
-    this.syncFileEditorVisibility();
+    // Sync fileEditor visibility signals - coalesced to at most once per frame to avoid memory churn
+    this.scheduleSyncFileEditorVisibility();
   }
 
   /**
-   * Syncs local visibility signals with fileEditor's signals
-   * This prevents ExpressionChangedAfterItHasBeenCheckedError by avoiding direct template access
+   * Schedules a sync of fileEditor visibility signals. Coalesces multiple calls to at most one per
+   * animation frame to avoid excessive setTimeout/requestAnimationFrame callbacks during change detection.
+   */
+  private scheduleSyncFileEditorVisibility(): void {
+    if (this.syncAnimationFrameId !== null) {
+      return;
+    }
+    this.syncAnimationFrameId = requestAnimationFrame(() => {
+      this.syncAnimationFrameId = null;
+      this.syncFileEditorVisibility();
+    });
+  }
+
+  /**
+   * Syncs local visibility signals with fileEditor's signals.
+   * This prevents ExpressionChangedAfterItHasBeenCheckedError by avoiding direct template access.
    */
   private syncFileEditorVisibility(): void {
+    if (this.syncTimeoutId !== null) {
+      clearTimeout(this.syncTimeoutId);
+      this.syncTimeoutId = null;
+    }
     if (this.editorOpen() && this.fileEditor) {
       // Use setTimeout to ensure this runs after the current change detection cycle
-      setTimeout(() => {
-        this.fileTreeVisible.set(this.fileEditor.fileTreeVisible());
-        this.terminalVisible.set(this.fileEditor.terminalVisible());
-        this.gitManagerVisible.set(this.fileEditor.gitManagerVisible());
-        this.selectedFilePathForShare.set(this.fileEditor.selectedFilePath());
+      this.syncTimeoutId = setTimeout(() => {
+        this.syncTimeoutId = null;
+        if (this.fileEditor) {
+          this.fileTreeVisible.set(this.fileEditor.fileTreeVisible());
+          this.terminalVisible.set(this.fileEditor.terminalVisible());
+          this.gitManagerVisible.set(this.fileEditor.gitManagerVisible());
+          this.selectedFilePathForShare.set(this.fileEditor.selectedFilePath());
+        }
         this.cdr.markForCheck();
       }, 0);
     } else {
       // Reset when editor is closed - use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
-      setTimeout(() => {
+      this.syncTimeoutId = setTimeout(() => {
+        this.syncTimeoutId = null;
         this.fileTreeVisible.set(false);
         this.terminalVisible.set(false);
         this.gitManagerVisible.set(false);
@@ -1213,7 +1246,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Clear active client
       this.clientsFacade.clearActiveClient();
       // Disconnect socket if connected
-      this.socketConnected$.pipe(take(1)).subscribe((connected) => {
+      this.socketConnected$.pipe(take(1), takeUntil(this.destroy$)).subscribe((connected) => {
         if (connected) {
           this.socketsFacade.disconnect();
         }
@@ -1307,7 +1340,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Clear local selected agent ID
     this.selectedAgentId.set(null);
     // Disconnect socket if connected
-    this.socketConnected$.pipe(take(1)).subscribe((connected) => {
+    this.socketConnected$.pipe(take(1), takeUntil(this.destroy$)).subscribe((connected) => {
       if (connected) {
         this.socketsFacade.disconnect();
       }
@@ -3326,6 +3359,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             );
           }
         }),
+        takeUntil(this.destroy$),
       )
       .subscribe();
   }
@@ -3419,6 +3453,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           // setClientSuccess received, now forward login
           this.socketsFacade.forwardLogin(agentId);
         }),
+        takeUntil(this.destroy$),
       )
       .subscribe();
   }

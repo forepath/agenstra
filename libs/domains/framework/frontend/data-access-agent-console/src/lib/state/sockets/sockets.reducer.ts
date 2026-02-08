@@ -81,6 +81,9 @@ export interface SocketsState {
   settingClientId: string | null; // Track which clientId is being set
   // Per-clientId remote connection state (clients.gateway -> agents.gateway)
   remoteConnections: Record<string, RemoteConnectionState>;
+  // Maximum number of entries to keep (to prevent memory issues)
+  maxForwardedEvents: number;
+  maxMessageFilterResults: number;
 }
 
 export const initialSocketsState: SocketsState = {
@@ -100,6 +103,8 @@ export const initialSocketsState: SocketsState = {
   settingClient: false,
   settingClientId: null,
   remoteConnections: {},
+  maxForwardedEvents: 1000,
+  maxMessageFilterResults: 1000,
 };
 
 export const socketsReducer = createReducer(
@@ -288,7 +293,7 @@ export const socketsReducer = createReducer(
     let messageFilterResults = state.messageFilterResults;
     if (event === 'messageFilterResult' && 'data' in payload && payload.success) {
       const filterResult = payload.data as import('./sockets.types').MessageFilterResultData;
-      messageFilterResults = [
+      const updatedFilterResults = [
         ...messageFilterResults,
         {
           direction: filterResult.direction,
@@ -301,11 +306,21 @@ export const socketsReducer = createReducer(
           receivedAt: Date.now(),
         },
       ];
+      messageFilterResults =
+        updatedFilterResults.length > state.maxMessageFilterResults
+          ? updatedFilterResults.slice(-state.maxMessageFilterResults)
+          : updatedFilterResults;
     }
+
+    const updatedForwardedEvents = [...state.forwardedEvents, { event, payload, timestamp: Date.now() }];
+    const trimmedForwardedEvents =
+      updatedForwardedEvents.length > state.maxForwardedEvents
+        ? updatedForwardedEvents.slice(-state.maxForwardedEvents)
+        : updatedForwardedEvents;
 
     return {
       ...state,
-      forwardedEvents: [...state.forwardedEvents, { event, payload, timestamp: Date.now() }],
+      forwardedEvents: trimmedForwardedEvents,
       messageFilterResults,
       selectedAgentId,
     };
