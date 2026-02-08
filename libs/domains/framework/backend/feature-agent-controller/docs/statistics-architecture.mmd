@@ -1,0 +1,41 @@
+flowchart TB
+    subgraph ShadowTables["Shadow Tables - store references to original entities"]
+        direction TB
+        SU["statistics_users"]
+        SC["statistics_clients"]
+        SA["statistics_agents"]
+        SProv["statistics_provisioning_references"]
+        SCU["statistics_client_users"]
+    end
+
+    subgraph StatsTables["Statistics/Event Tables"]
+        direction TB
+        ChatIO["statistics_chat_io"]
+        ChatFilter["statistics_chat_filter_drops"]
+        ChatFilterFlags["statistics_chat_filter_flags"]
+        EntityEvents["statistics_entity_events"]
+    end
+
+    ChatIO --> SA
+    ChatIO --> SU
+    ChatFilter --> SA
+    ChatFilter --> SU
+    ChatFilterFlags --> SA
+    ChatFilterFlags --> SU
+    EntityEvents --> SU
+    EntityEvents --> SC
+    EntityEvents --> SA
+    EntityEvents --> SProv
+    EntityEvents --> SCU
+
+    style ShadowTables fill:#e6f0ff
+    style StatsTables fill:#e6ffe6
+    style SU fill:#d6e9ff
+    style SC fill:#d6e9ff
+    style SA fill:#d6e9ff
+    style SProv fill:#d6e9ff
+    style SCU fill:#d6e9ff
+    style ChatIO fill:#d6ffd6
+    style ChatFilter fill:#d6ffd6
+    style ChatFilterFlags fill:#d6ffd6
+    style EntityEvents fill:#d6ffd6

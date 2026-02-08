@@ -26,6 +26,7 @@ Clients are entities that represent remote agent-manager services. The controlle
 - ✅ Credential storage for proxied agent operations
 - ✅ **Server Provisioning** - Automated cloud server provisioning with Docker and agent-manager deployment
 - ✅ **Per-Client Permissions** - Fine-grained access control with user roles per client (admin/user)
+- ✅ **Statistics** - Persistent data collection for chat I/O, filter drops, and entity lifecycle events; structure ready for future REST API
 
 ## Architecture
 
@@ -68,6 +69,8 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
 All diagrams are available in the [`docs/`](./docs/) directory:
 
 - **[Overview Diagram](./docs/overview.mmd)** - High-level flowchart showing HTTP REST API for clients, proxied agent operations, and WebSocket event forwarding
+- **[Statistics Model](./docs/statistics-architecture.mmd)** - Flowchart of shadow tables and statistics/event tables; persistent statistics (chat I/O, filter drops, entity lifecycle), collection points, REST API
+- **[HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd)** - Sequence diagram for Statistics REST API (client-scoped and aggregate endpoints)
 - **[HTTP Sequence Diagram](./docs/sequence-http.mmd)** - Detailed sequence diagram for all HTTP CRUD operations (client management and proxied agent operations)
 - **[HTTP Environment Variables Sequence Diagram](./docs/sequence-http-environment.mmd)** - Detailed sequence diagram for proxied environment variable operations
 - **[HTTP VCS Sequence Diagram](./docs/sequence-http-vcs.mmd)** - Detailed sequence diagram for proxied VCS (Git) operations
@@ -244,6 +247,21 @@ Base URL: `/api`
 - `GET /api/clients/:id/users` - List all users associated with a client
 - `POST /api/clients/:id/users` - Add a user to a client by email address
 - `DELETE /api/clients/:id/users/:relationshipId` - Remove a user from a client
+
+### Statistics API
+
+REST endpoints for querying chat I/O, filter drops, filter flags, and entity lifecycle events. Access is scoped by client; users see only statistics for clients they can access. See [OpenAPI spec](spec/openapi.yaml) and [statistics-architecture.mmd](docs/statistics-architecture.mmd) for details.
+
+- `GET /api/clients/:id/statistics/summary` - Aggregate statistics for a client
+- `GET /api/clients/:id/statistics/chat-io` - Chat I/O records (paginated)
+- `GET /api/clients/:id/statistics/filter-drops` - Filter drop incidents (paginated)
+- `GET /api/clients/:id/statistics/filter-flags` - Filter flag incidents (paginated, messages flagged but not dropped)
+- `GET /api/clients/:id/statistics/entity-events` - Entity lifecycle events (paginated)
+- `GET /api/statistics/summary` - Aggregate statistics (all accessible clients or filter by `clientId`)
+- `GET /api/statistics/chat-io` - Chat I/O records
+- `GET /api/statistics/filter-drops` - Filter drops
+- `GET /api/statistics/filter-flags` - Filter flags (messages flagged but not dropped)
+- `GET /api/statistics/entity-events` - Entity events
 
 ### Server Provisioning
 
@@ -460,6 +478,16 @@ The `ClientsGateway` provides WebSocket-based real-time event forwarding to remo
 - All events from the remote agent-manager WebSocket are forwarded back to the client via `onAny()` handler
 
 See the [AsyncAPI specification](./spec/asyncapi.yaml) for complete event documentation.
+
+### Statistics
+
+The agent-controller collects persistent statistics for analytics and future REST API exposure:
+
+- **Chat I/O** - Word and character counts for user input and agent output
+- **Filter drops** - Messages dropped by content filters (profanity, PII, etc.) with filter type and direction
+- **Entity lifecycle** - Creation, update, and deletion of clients, agents, users, client-user relationships, and provisioning references
+
+Data is stored in shadow tables (`statistics_*`) with no secrets. See [Statistics Model](./docs/statistics-architecture.mmd) for the full design, collection points, and REST API. The [HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd) shows the request flow for statistics endpoints.
 
 ### WebSocket Authentication
 

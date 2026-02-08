@@ -2053,6 +2053,524 @@ paths:
           description: Pipeline cancelled successfully
         '404':
           description: Client, agent, deployment configuration, or run not found
+  /clients/{id}/statistics/summary:
+    get:
+      summary: Get statistics summary for a client
+      description: |
+        Returns aggregate statistics (messages, words, chars, filter drops) for a client.
+        Requires access to the client (creator, client_users, or admin/api-key).
+      operationId: getClientStatisticsSummary
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+          description: Start of time range (ISO 8601)
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+          description: End of time range (ISO 8601)
+        - in: query
+          name: groupBy
+          schema:
+            type: string
+            enum: [day, hour]
+          description: Optional time-series aggregation
+      responses:
+        '200':
+          description: Statistics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsSummaryDto'
+        '403':
+          description: Access denied to this client
+  /clients/{id}/statistics/chat-io:
+    get:
+      summary: Get chat I/O records for a client
+      operationId: getClientStatisticsChatIo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [input, output]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across id, direction, wordCount, charCount
+      responses:
+        '200':
+          description: Paginated chat I/O records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsChatIoListDto'
+        '403':
+          description: Access denied to this client
+  /clients/{id}/statistics/filter-drops:
+    get:
+      summary: Get filter drops for a client
+      operationId: getClientStatisticsFilterDrops
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: filterType
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across filterType, filterDisplayName, filterReason, direction
+      responses:
+        '200':
+          description: Paginated filter drops
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsFilterDropListDto'
+        '403':
+          description: Access denied to this client
+  /clients/{id}/statistics/filter-flags:
+    get:
+      summary: Get filter flags for a client
+      description: |
+        Returns paginated filter flags (messages flagged/modified by filters but NOT dropped).
+        These messages were allowed through (possibly modified) and appear in Chat I/O.
+      operationId: getClientStatisticsFilterFlags
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: filterType
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across filterType, filterDisplayName, filterReason, direction
+      responses:
+        '200':
+          description: Paginated filter flags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsFilterFlagListDto'
+        '403':
+          description: Access denied to this client
+  /clients/{id}/statistics/entity-events:
+    get:
+      summary: Get entity lifecycle events for a client
+      operationId: getClientStatisticsEntityEvents
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: entityType
+          schema:
+            type: string
+            enum: [user, client, agent, client_user, provisioning_reference]
+        - in: query
+          name: eventType
+          schema:
+            type: string
+            enum: [created, updated, deleted]
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across entityType, eventType, originalEntityId
+      responses:
+        '200':
+          description: Paginated entity events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsEntityEventListDto'
+        '403':
+          description: Access denied to this client
+  /statistics/summary:
+    get:
+      summary: Get aggregate statistics summary
+      description: |
+        Returns aggregate statistics across all accessible clients. When clientId is provided,
+        validates access and returns data for that client only. 403 when clientId provided but no access.
+      operationId: getStatisticsSummary
+      parameters:
+        - in: query
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+          description: Optional client filter; must be accessible
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: groupBy
+          schema:
+            type: string
+            enum: [day, hour]
+      responses:
+        '200':
+          description: Statistics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsSummaryDto'
+        '403':
+          description: Access denied to requested client
+  /statistics/chat-io:
+    get:
+      summary: Get chat I/O records (aggregate or by client)
+      operationId: getStatisticsChatIo
+      parameters:
+        - in: query
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [input, output]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across id, direction, wordCount, charCount
+      responses:
+        '200':
+          description: Paginated chat I/O records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsChatIoListDto'
+        '403':
+          description: Access denied to requested client
+  /statistics/filter-drops:
+    get:
+      summary: Get filter drops (aggregate or by client)
+      operationId: getStatisticsFilterDrops
+      parameters:
+        - in: query
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: filterType
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across filterType, filterDisplayName, filterReason, direction
+      responses:
+        '200':
+          description: Paginated filter drops
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsFilterDropListDto'
+        '403':
+          description: Access denied to requested client
+  /statistics/filter-flags:
+    get:
+      summary: Get filter flags (aggregate or by client)
+      description: |
+        Returns paginated filter flags (messages flagged/modified by filters but NOT dropped).
+        These messages were allowed through (possibly modified) and appear in Chat I/O.
+      operationId: getStatisticsFilterFlags
+      parameters:
+        - in: query
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: filterType
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across filterType, filterDisplayName, filterReason, direction
+      responses:
+        '200':
+          description: Paginated filter flags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsFilterFlagListDto'
+        '403':
+          description: Access denied to requested client
+  /statistics/entity-events:
+    get:
+      summary: Get entity events (aggregate or by client)
+      operationId: getStatisticsEntityEvents
+      parameters:
+        - in: query
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: entityType
+          schema:
+            type: string
+            enum: [user, client, agent, client_user, provisioning_reference]
+        - in: query
+          name: eventType
+          schema:
+            type: string
+            enum: [created, updated, deleted]
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across entityType, eventType, originalEntityId
+      responses:
+        '200':
+          description: Paginated entity events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsEntityEventListDto'
+        '403':
+          description: Access denied to requested client
 components:
   securitySchemes:
     bearerAuth:
@@ -2854,3 +3372,292 @@ components:
         updatedAt:
           type: string
           format: date-time
+    StatisticsSummaryDto:
+      type: object
+      required:
+        [
+          totalMessages,
+          totalWords,
+          totalChars,
+          avgWordsPerMessage,
+          filterDropCount,
+          filterTypesBreakdown,
+        ]
+      properties:
+        totalMessages:
+          type: integer
+        totalWords:
+          type: integer
+        totalChars:
+          type: integer
+        avgWordsPerMessage:
+          type: number
+        filterDropCount:
+          type: integer
+        filterTypesBreakdown:
+          type: array
+          items:
+            type: object
+            required: [filterType, direction, count]
+            properties:
+              filterType:
+                type: string
+              direction:
+                type: string
+                enum: [incoming, outgoing]
+              count:
+                type: integer
+        filterFlagCount:
+          type: integer
+          description: Count of messages flagged/modified (excluding dropped)
+        filterFlagsBreakdown:
+          type: array
+          items:
+            type: object
+            required: [filterType, direction, count]
+            properties:
+              filterType:
+                type: string
+              direction:
+                type: string
+                enum: [incoming, outgoing]
+              count:
+                type: integer
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+                format: date-time
+              count:
+                type: integer
+              wordCount:
+                type: integer
+              charCount:
+                type: integer
+    StatisticsChatIoDto:
+      type: object
+      required: [id, clientId, direction, wordCount, charCount, occurredAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        clientName:
+          type: string
+          description: Client name for display; link to chat when agentId present
+        agentName:
+          type: string
+          description: Agent name for display; link to chat when agentId present
+        originalUserId:
+          type: string
+          format: uuid
+          description: Original user ID from identity system; use to resolve user email
+        direction:
+          type: string
+          enum: [input, output]
+        wordCount:
+          type: integer
+        charCount:
+          type: integer
+        occurredAt:
+          type: string
+          format: date-time
+    StatisticsChatIoListDto:
+      type: object
+      required: [data, total, limit, offset]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticsChatIoDto'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    StatisticsFilterDropDto:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          filterType,
+          filterDisplayName,
+          direction,
+          wordCount,
+          charCount,
+          occurredAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        clientName:
+          type: string
+          description: Client name for display; link to chat when agentId present
+        agentName:
+          type: string
+          description: Agent name for display; link to chat when agentId present
+        originalUserId:
+          type: string
+          format: uuid
+          description: Original user ID from identity system; use to resolve user email
+        filterType:
+          type: string
+        filterDisplayName:
+          type: string
+        filterReason:
+          type: string
+        direction:
+          type: string
+          enum: [incoming, outgoing]
+        wordCount:
+          type: integer
+        charCount:
+          type: integer
+        occurredAt:
+          type: string
+          format: date-time
+    StatisticsFilterDropListDto:
+      type: object
+      required: [data, total, limit, offset]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticsFilterDropDto'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    StatisticsFilterFlagDto:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          filterType,
+          filterDisplayName,
+          direction,
+          wordCount,
+          charCount,
+          occurredAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        clientName:
+          type: string
+          description: Client name for display; link to chat when agentId present
+        agentName:
+          type: string
+          description: Agent name for display; link to chat when agentId present
+        originalUserId:
+          type: string
+          format: uuid
+          description: Original user ID from identity system; use to resolve user email
+        filterType:
+          type: string
+        filterDisplayName:
+          type: string
+        filterReason:
+          type: string
+        direction:
+          type: string
+          enum: [incoming, outgoing]
+        wordCount:
+          type: integer
+        charCount:
+          type: integer
+        occurredAt:
+          type: string
+          format: date-time
+    StatisticsFilterFlagListDto:
+      type: object
+      required: [data, total, limit, offset]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticsFilterFlagDto'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    StatisticsEntityEventDto:
+      type: object
+      required: [id, entityType, eventType, originalEntityId, occurredAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+          enum: [user, client, agent, client_user, provisioning_reference]
+        eventType:
+          type: string
+          enum: [created, updated, deleted]
+        originalEntityId:
+          type: string
+          format: uuid
+        originalUserId:
+          type: string
+          format: uuid
+          description: Original user ID of the actor who performed the event
+        clientId:
+          type: string
+          format: uuid
+          description: Client ID for agent events; link to chat when agentId present
+        agentId:
+          type: string
+          format: uuid
+          description: Agent ID for agent events; link to chat when present
+        clientName:
+          type: string
+          description: Client name for agent events; display "client --> agent"
+        agentName:
+          type: string
+          description: Agent name for agent events; display "client --> agent"
+        occurredAt:
+          type: string
+          format: date-time
+    StatisticsEntityEventListDto:
+      type: object
+      required: [data, total, limit, offset]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticsEntityEventDto'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer

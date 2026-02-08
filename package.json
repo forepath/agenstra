@@ -165,6 +165,7 @@
     "mermaid": "11.12.2",
     "monaco-editor": "0.52.2",
     "nest-keycloak-connect": "2.0.0-alpha.2",
+    "ng-apexcharts": "1.15.0",
     "ngx-cookieconsent": "8.0.0",
     "ngx-monaco-editor-v2": "19.0.2",
     "nodemailer": "7.0.13",

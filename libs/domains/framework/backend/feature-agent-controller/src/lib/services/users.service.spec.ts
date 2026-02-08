@@ -6,6 +6,7 @@ import { UpdateUserDto } from '../dto/auth/update-user.dto';
 import { UserEntity, UserRole } from '../entities/user.entity';
 import { UsersRepository } from '../repositories/users.repository';
 import { EmailService } from './email.service';
+import { StatisticsService } from './statistics.service';
 import { UsersService } from './users.service';
 
 jest.mock('bcrypt');
@@ -42,11 +43,18 @@ describe('UsersService', () => {
       sendConfirmationEmail: jest.fn().mockResolvedValue(true),
     } as never;
 
+    const mockStatisticsService = {
+      recordEntityCreated: jest.fn().mockResolvedValue(undefined),
+      recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
+      recordEntityDeleted: jest.fn().mockResolvedValue(undefined),
+    } as never;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: UsersRepository, useValue: mockRepository },
         { provide: EmailService, useValue: mockEmailService },
+        { provide: StatisticsService, useValue: mockStatisticsService },
       ],
     }).compile();
 

@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { AuthenticationType, ClientEntity } from '../entities/client.entity';
+import { UserRole } from '../entities/user.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
@@ -11,6 +12,7 @@ import { ProvisioningReferencesRepository } from '../repositories/provisioning-r
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { ClientsService } from './clients.service';
 import { KeycloakTokenService } from './keycloak-token.service';
+import { StatisticsService } from './statistics.service';
 
 describe('ClientsService', () => {
   let service: ClientsService;
@@ -49,6 +51,8 @@ describe('ClientsService', () => {
     findById: jest.fn(),
     findByName: jest.fn(),
     findAll: jest.fn(),
+    findAllIds: jest.fn(),
+    findIdsByCreatorId: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -71,6 +75,12 @@ describe('ClientsService', () => {
   const mockClientUsersRepository = {
     findUserClientAccess: jest.fn(),
     findByUserId: jest.fn(),
+  };
+
+  const mockStatisticsService = {
+    recordEntityCreated: jest.fn().mockResolvedValue(undefined),
+    recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
+    recordEntityDeleted: jest.fn().mockResolvedValue(undefined),
   };
 
   beforeEach(async () => {
@@ -96,6 +106,10 @@ describe('ClientsService', () => {
         {
           provide: ClientUsersRepository,
           useValue: mockClientUsersRepository,
+        },
+        {
+          provide: StatisticsService,
+          useValue: mockStatisticsService,
         },
       ],
     }).compile();
@@ -152,6 +166,12 @@ describe('ClientsService', () => {
           apiKey: expect.any(String),
           userId: null,
         }),
+      );
+      expect(mockStatisticsService.recordEntityCreated).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(String),
+        {},
+        undefined,
       );
     });
 
@@ -617,6 +637,7 @@ describe('ClientsService', () => {
 
       expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
       expect(repository.delete).toHaveBeenCalledWith('test-uuid');
+      expect(mockStatisticsService.recordEntityDeleted).toHaveBeenCalledWith(expect.anything(), 'test-uuid', undefined);
     });
 
     it('should clear token cache when deleting Keycloak client', async () => {
@@ -788,6 +809,53 @@ describe('ClientsService', () => {
 
       expect(result.isAutoProvisioned).toBe(false);
       expect(provisioningReferencesRepository.findByClientId).toHaveBeenCalledWith(mockClient.id);
+    });
+  });
+
+  describe('getAccessibleClientIds', () => {
+    it('should return all client IDs when API key auth', async () => {
+      mockRepository.findAllIds.mockResolvedValue(['c1', 'c2', 'c3']);
+
+      const result = await service.getAccessibleClientIds(undefined, undefined, true);
+
+      expect(result).toEqual(['c1', 'c2', 'c3']);
+      expect(mockRepository.findAllIds).toHaveBeenCalled();
+      expect(mockClientUsersRepository.findByUserId).not.toHaveBeenCalled();
+      expect(mockRepository.findIdsByCreatorId).not.toHaveBeenCalled();
+    });
+
+    it('should return all client IDs when user is admin', async () => {
+      mockRepository.findAllIds.mockResolvedValue(['c1', 'c2']);
+
+      const result = await service.getAccessibleClientIds('user-1', UserRole.ADMIN, false);
+
+      expect(result).toEqual(['c1', 'c2']);
+      expect(mockRepository.findAllIds).toHaveBeenCalled();
+    });
+
+    it('should return union of client_users and creator clients for regular user', async () => {
+      mockClientUsersRepository.findByUserId.mockResolvedValue([
+        { clientId: 'c1' } as never,
+        { clientId: 'c2' } as never,
+      ]);
+      mockRepository.findIdsByCreatorId.mockResolvedValue(['c2', 'c3']);
+
+      const result = await service.getAccessibleClientIds('user-1', UserRole.USER, false);
+
+      expect(result).toContain('c1');
+      expect(result).toContain('c2');
+      expect(result).toContain('c3');
+      expect(result).toHaveLength(3);
+      expect(mockClientUsersRepository.findByUserId).toHaveBeenCalledWith('user-1');
+      expect(mockRepository.findIdsByCreatorId).toHaveBeenCalledWith('user-1');
+    });
+
+    it('should return empty array when no userId or userRole', async () => {
+      const result = await service.getAccessibleClientIds(undefined, undefined, false);
+
+      expect(result).toEqual([]);
+      expect(mockRepository.findAllIds).not.toHaveBeenCalled();
+      expect(mockClientUsersRepository.findByUserId).not.toHaveBeenCalled();
     });
   });
 });

@@ -6,6 +6,15 @@ import { ClientsController } from './clients.controller';
 import { ClientEntity } from './entities/client.entity';
 import { ClientUserEntity } from './entities/client-user.entity';
 import { ProvisioningReferenceEntity } from './entities/provisioning-reference.entity';
+import { StatisticsAgentEntity } from './entities/statistics-agent.entity';
+import { StatisticsChatFilterDropEntity } from './entities/statistics-chat-filter-drop.entity';
+import { StatisticsChatFilterFlagEntity } from './entities/statistics-chat-filter-flag.entity';
+import { StatisticsChatIoEntity } from './entities/statistics-chat-io.entity';
+import { StatisticsClientEntity } from './entities/statistics-client.entity';
+import { StatisticsClientUserEntity } from './entities/statistics-client-user.entity';
+import { StatisticsEntityEventEntity } from './entities/statistics-entity-event.entity';
+import { StatisticsProvisioningReferenceEntity } from './entities/statistics-provisioning-reference.entity';
+import { StatisticsUserEntity } from './entities/statistics-user.entity';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientAgentFileSystemProxyService } from './services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from './services/client-agent-proxy.service';
@@ -59,6 +68,24 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(ClientUserEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(UserEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsUserEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsClientEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsAgentEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsProvisioningReferenceEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsClientUserEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsChatIoEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsChatFilterDropEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsChatFilterFlagEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(StatisticsEntityEventEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
       .useValue(mockRepository);

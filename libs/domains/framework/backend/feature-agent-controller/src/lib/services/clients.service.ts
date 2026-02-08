@@ -4,6 +4,7 @@ import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
+import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { AuthenticationType, ClientEntity } from '../entities/client.entity';
 import { ClientUserRole } from '../entities/client-user.entity';
 import { UserRole } from '../entities/user.entity';
@@ -12,6 +13,7 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { KeycloakTokenService } from './keycloak-token.service';
+import { StatisticsService } from './statistics.service';
 
 /**
  * Service for client business logic operations.
@@ -28,6 +30,7 @@ export class ClientsService {
     private readonly clientAgentProxyService: ClientAgentProxyService,
     private readonly provisioningReferencesRepository: ProvisioningReferencesRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
+    private readonly statisticsService: StatisticsService,
   ) {}
 
   /**
@@ -138,6 +141,9 @@ export class ClientsService {
     });
 
     const response = await this.mapToResponseDto(client);
+    this.statisticsService
+      .recordEntityCreated(StatisticsEntityType.CLIENT, client.id, {}, userId ?? undefined)
+      .catch(() => {});
     return {
       ...response,
       apiKey,
@@ -349,6 +355,9 @@ export class ClientsService {
     );
 
     const updatedClient = await this.clientsRepository.update(id, updateData);
+    this.statisticsService
+      .recordEntityUpdated(StatisticsEntityType.CLIENT, id, {}, userId ?? undefined)
+      .catch(() => {});
     const dto = await this.mapToResponseDto(updatedClient);
     // Fetch config from agent-manager, but don't fail if request fails
     try {
@@ -387,7 +396,34 @@ export class ClientsService {
       }
     }
 
+    this.statisticsService.recordEntityDeleted(StatisticsEntityType.CLIENT, id, userId ?? undefined).catch(() => {});
     await this.clientsRepository.delete(id);
+  }
+
+  /**
+   * Get client IDs the user has access to (for statistics filtering).
+   * API key and admin: all clients. Regular user: clients they created + clients in client_users.
+   * @param userId - The UUID of the user (optional)
+   * @param userRole - The role of the user (optional)
+   * @param isApiKeyAuth - Whether the request is authenticated via API key
+   * @returns Array of client UUIDs
+   */
+  async getAccessibleClientIds(userId?: string, userRole?: UserRole, isApiKeyAuth = false): Promise<string[]> {
+    if (isApiKeyAuth || this.isApiKeyMode()) {
+      return await this.clientsRepository.findAllIds();
+    }
+    if (userRole === UserRole.ADMIN) {
+      return await this.clientsRepository.findAllIds();
+    }
+    if (!userId || !userRole) {
+      return [];
+    }
+    const clientIds = new Set<string>();
+    const userClients = await this.clientUsersRepository.findByUserId(userId);
+    userClients.forEach((cu) => clientIds.add(cu.clientId));
+    const creatorIds = await this.clientsRepository.findIdsByCreatorId(userId);
+    creatorIds.forEach((id) => clientIds.add(id));
+    return Array.from(clientIds);
   }
 
   /**

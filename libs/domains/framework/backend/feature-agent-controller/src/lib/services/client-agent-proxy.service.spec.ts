@@ -13,6 +13,7 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentCredentialsService } from './client-agent-credentials.service';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { ClientsService } from './clients.service';
+import { StatisticsService } from './statistics.service';
 
 // Mock axios
 jest.mock('axios');
@@ -76,6 +77,12 @@ describe('ClientAgentProxyService', () => {
     deleteCredentials: jest.fn(),
   };
 
+  const mockStatisticsService = {
+    recordEntityCreated: jest.fn().mockResolvedValue(undefined),
+    recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
+    recordEntityDeleted: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -91,6 +98,10 @@ describe('ClientAgentProxyService', () => {
         {
           provide: ClientAgentCredentialsService,
           useValue: mockCredentialsService,
+        },
+        {
+          provide: StatisticsService,
+          useValue: mockStatisticsService,
         },
       ],
     }).compile();

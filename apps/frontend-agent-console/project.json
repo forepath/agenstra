@@ -38,7 +38,8 @@
         "styles": ["apps/frontend-agent-console/src/styles.scss"],
         "scripts": [
           "node_modules/@popperjs/core/dist/umd/popper.min.js",
-          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+          "node_modules/apexcharts/dist/apexcharts.min.js"
         ],
         "localize": true,
         "i18nMissingTranslation": "warning"

@@ -1,0 +1,15 @@
+.audit-container {
+  min-height: 0;
+}
+
+.audit-filters {
+  max-height: 50vh;
+
+  @media (max-width: 767.98px) {
+    max-height: none;
+  }
+}
+
+.audit-content {
+  min-height: 0;
+}
