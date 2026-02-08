@@ -32,6 +32,12 @@
       <trans-unit id="featureAudit-apply" datatype="html">
         <source>Apply</source>
         </trans-unit>
+      <trans-unit id="featureAudit-resetFiltersTitle" datatype="html">
+        <source>Reset filters to defaults</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-reset" datatype="html">
+        <source>Reset</source>
+        </trans-unit>
       <trans-unit id="featureAudit-loading" datatype="html">
         <source>Loading statistics...</source>
         </trans-unit>

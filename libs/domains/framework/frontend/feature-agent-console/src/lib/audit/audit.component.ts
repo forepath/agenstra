@@ -176,6 +176,22 @@ export class AuditComponent implements OnInit {
     };
   });
 
+  readonly filtersAreDefault = computed(() => {
+    const defaultFrom = this.formatDateForInput(this.getDefaultFromDate());
+    const defaultTo = this.formatDateForInput(this.getDefaultToDate());
+    return (
+      this.selectedClientId() === null &&
+      this.fromDate() === defaultFrom &&
+      this.toDate() === defaultTo &&
+      this.groupBy() === 'day' &&
+      this.chatIoSearch() === '' &&
+      this.filterDropsSearch() === '' &&
+      this.filterFlagsSearch() === '' &&
+      this.entityEventsSearch() === '' &&
+      this.filtersCollapsed() === true
+    );
+  });
+
   ngOnInit(): void {
     const stored = this.loadFilters();
     if (stored) {
@@ -275,6 +291,39 @@ export class AuditComponent implements OnInit {
   }
 
   onApplyFilters(): void {
+    this.chatIoPage.set(0);
+    this.filterDropsPage.set(0);
+    this.filterFlagsPage.set(0);
+    this.entityEventsPage.set(0);
+    this.applyFilters();
+  }
+
+  onResetFilters(): void {
+    if (this.chatIoSearchTimer) {
+      clearTimeout(this.chatIoSearchTimer);
+      this.chatIoSearchTimer = null;
+    }
+    if (this.filterDropsSearchTimer) {
+      clearTimeout(this.filterDropsSearchTimer);
+      this.filterDropsSearchTimer = null;
+    }
+    if (this.filterFlagsSearchTimer) {
+      clearTimeout(this.filterFlagsSearchTimer);
+      this.filterFlagsSearchTimer = null;
+    }
+    if (this.entityEventsSearchTimer) {
+      clearTimeout(this.entityEventsSearchTimer);
+      this.entityEventsSearchTimer = null;
+    }
+    this.selectedClientId.set(null);
+    this.fromDate.set(this.formatDateForInput(this.getDefaultFromDate()));
+    this.toDate.set(this.formatDateForInput(this.getDefaultToDate()));
+    this.groupBy.set('day');
+    this.chatIoSearch.set('');
+    this.filterDropsSearch.set('');
+    this.filterFlagsSearch.set('');
+    this.entityEventsSearch.set('');
+    this.filtersCollapsed.set(true);
     this.chatIoPage.set(0);
     this.filterDropsPage.set(0);
     this.filterFlagsPage.set(0);

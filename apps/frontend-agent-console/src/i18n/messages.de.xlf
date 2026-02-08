@@ -42,6 +42,14 @@
         <source>Apply</source>
         <target>Anwenden</target>
         </trans-unit>
+      <trans-unit id="featureAudit-resetFiltersTitle" datatype="html">
+        <source>Reset filters to defaults</source>
+        <target>Filter auf Standardwerte zurücksetzen</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-reset" datatype="html">
+        <source>Reset</source>
+        <target>Zurücksetzen</target>
+        </trans-unit>
       <trans-unit id="featureAudit-loading" datatype="html">
         <source>Loading statistics...</source>
         <target>Statistiken werden geladen...</target>
