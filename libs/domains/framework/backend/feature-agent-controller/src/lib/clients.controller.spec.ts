@@ -377,7 +377,7 @@ describe('ClientsController', () => {
       const result = await controller.createClientAgent('client-uuid', createDto, mockReq);
 
       expect(result).toEqual(mockCreateAgentResponse);
-      expect(proxyService.createClientAgent).toHaveBeenCalledWith('client-uuid', createDto);
+      expect(proxyService.createClientAgent).toHaveBeenCalledWith('client-uuid', createDto, undefined);
     });
   });
 
@@ -394,7 +394,7 @@ describe('ClientsController', () => {
       const result = await controller.updateClientAgent('client-uuid', 'agent-uuid', updateDto, mockReq);
 
       expect(result).toEqual(mockAgentResponse);
-      expect(proxyService.updateClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid', updateDto);
+      expect(proxyService.updateClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid', updateDto, undefined);
     });
   });
 
@@ -407,7 +407,7 @@ describe('ClientsController', () => {
 
       await controller.deleteClientAgent('client-uuid', 'agent-uuid', mockReq);
 
-      expect(proxyService.deleteClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(proxyService.deleteClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid', undefined);
     });
   });
 
@@ -807,7 +807,7 @@ describe('ClientsController', () => {
 
       await controller.deleteProvisionedServer('client-uuid', mockReq);
 
-      expect(provisioningService.deleteProvisionedServer).toHaveBeenCalledWith('client-uuid');
+      expect(provisioningService.deleteProvisionedServer).toHaveBeenCalledWith('client-uuid', undefined);
     });
   });
 

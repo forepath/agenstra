@@ -42,6 +42,16 @@ export class UsersRepository {
     });
   }
 
+  /**
+   * Get all user ids and roles for statistics mirror sync.
+   * Returns minimal data for efficient batch processing.
+   */
+  async findAllIdsAndRoles(): Promise<{ id: string; role: string }[]> {
+    return this.repository.find({
+      select: ['id', 'role'],
+    });
+  }
+
   async create(data: Partial<UserEntity>): Promise<UserEntity> {
     const entity = this.repository.create({
       ...data,

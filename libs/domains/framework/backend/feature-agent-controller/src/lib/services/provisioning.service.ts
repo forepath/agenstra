@@ -1,4 +1,5 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { randomBytes } from 'crypto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
@@ -6,6 +7,7 @@ import { AuthenticationType } from '../entities/client.entity';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientsService } from './clients.service';
+import { StatisticsService } from './statistics.service';
 
 /**
  * Service for orchestrating server provisioning through cloud providers.
@@ -21,6 +23,7 @@ export class ProvisioningService {
     @Inject(forwardRef(() => ClientsService))
     private readonly clientsService: ClientsService,
     private readonly provisioningReferencesRepository: ProvisioningReferencesRepository,
+    private readonly statisticsService: StatisticsService,
   ) {}
 
   /**
@@ -383,6 +386,23 @@ DOCKER_COMPOSE_EOF
       providerMetadata: JSON.stringify(provisionedServer.metadata || {}),
     });
 
+    this.statisticsService
+      .recordEntityCreated(
+        StatisticsEntityType.PROVISIONING_REFERENCE,
+        reference.id,
+        {
+          clientId: client.id,
+          providerType: provisionServerDto.providerType,
+          serverId: provisionedServer.serverId,
+          serverName: provisionedServer.name,
+          publicIp: provisionedServer.publicIp,
+          privateIp: provisionedServer.privateIp,
+          providerMetadata: JSON.stringify(provisionedServer.metadata || {}),
+        },
+        userId,
+      )
+      .catch(() => {});
+
     this.logger.log(`Created provisioning reference ${reference.id} for client ${client.id}`);
 
     return {
@@ -400,13 +420,18 @@ DOCKER_COMPOSE_EOF
   /**
    * Delete a provisioned server and its associated client.
    * @param clientId - The UUID of the client
+   * @param userId - The UUID of the user performing the delete (optional)
    */
-  async deleteProvisionedServer(clientId: string): Promise<void> {
+  async deleteProvisionedServer(clientId: string, userId?: string): Promise<void> {
     // Find provisioning reference
     const reference = await this.provisioningReferencesRepository.findByClientId(clientId);
     if (!reference) {
       throw new BadRequestException(`No provisioning reference found for client ${clientId}`);
     }
+
+    this.statisticsService
+      .recordEntityDeleted(StatisticsEntityType.PROVISIONING_REFERENCE, reference.id, userId)
+      .catch(() => {});
 
     // Get the provider
     if (!this.provisioningProviderFactory.hasProvider(reference.providerType)) {

@@ -2,6 +2,162 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template" target-language="de">
     <body>
+      <trans-unit id="featureAudit-filtersTitle" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-toggleFiltersTitle" datatype="html">
+        <source>Toggle filters</source>
+        <target>Filter ein-/ausblenden</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-clientLabel" datatype="html">
+        <source>Client</source>
+        <target>Client</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-allClients" datatype="html">
+        <source>All clients</source>
+        <target>Alle Clients</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-fromDateLabel" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-toDateLabel" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-groupByLabel" datatype="html">
+        <source>Group by</source>
+        <target>Gruppieren nach</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-groupByDay" datatype="html">
+        <source>Day</source>
+        <target>Tag</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-groupByHour" datatype="html">
+        <source>Hour</source>
+        <target>Stunde</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-apply" datatype="html">
+        <source>Apply</source>
+        <target>Anwenden</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-loading" datatype="html">
+        <source>Loading statistics...</source>
+        <target>Statistiken werden geladen...</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-totalMessages" datatype="html">
+        <source>Total messages</source>
+        <target>Nachrichten gesamt</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-totalWords" datatype="html">
+        <source>Total words</source>
+        <target>Wörter gesamt</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-avgWordsPerMessage" datatype="html">
+        <source> Avg words/message </source>
+        <target>Ø Wörter/Nachricht</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterDrops" datatype="html">
+        <source>Filter drops</source>
+        <target>Filter-Abbrüche</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterFlags" datatype="html">
+        <source>Filter flags</source>
+        <target>Filter-Markierungen</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-noChartData" datatype="html">
+        <source>No time series or filter breakdown data available</source>
+        <target>Keine Zeitreihen- oder Filterdaten verfügbar</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-noData" datatype="html">
+        <source>No data yet. Apply filters and load statistics.</source>
+        <target>Noch keine Daten. Filter anwenden und Statistiken laden.</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-auditTables" datatype="html">
+        <source>Audit Tables</source>
+        <target>Audit-Tabellen</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-chatIoTable" datatype="html">
+        <source>Chat I/O</source>
+        <target>Chat-I/O</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-searchPlaceholder" datatype="html">
+        <source>Search (current page)</source>
+        <target>Suchen (aktuelle Seite)</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterDropsTable" datatype="html">
+        <source>Filter Drops</source>
+        <target>Filter-Abbrüche</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterFlagsTable" datatype="html">
+        <source>Filter Flags</source>
+        <target>Filter-Markierungen</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityEventsTable" datatype="html">
+        <source>Entity Events</source>
+        <target>Entitäts-Ereignisse</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-time" datatype="html">
+        <source>Time</source>
+        <target>Zeit</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-user" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-agent" datatype="html">
+        <source>Agent</source>
+        <target>Agent</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-direction" datatype="html">
+        <source>Direction</source>
+        <target>Richtung</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-words" datatype="html">
+        <source>Words</source>
+        <target>Wörter</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-chars" datatype="html">
+        <source>Chars</source>
+        <target>Zeichen</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterType" datatype="html">
+        <source>Filter</source>
+        <target>Filter</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-reason" datatype="html">
+        <source>Reason</source>
+        <target>Grund</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-eventType" datatype="html">
+        <source>Event</source>
+        <target>Ereignis</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-entity" datatype="html">
+        <source>Entity</source>
+        <target>Entität</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-noRows" datatype="html">
+        <source>No rows</source>
+        <target>Keine Einträge</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-showingOf" datatype="html">
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/></source>
+        <target><x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/> angezeigt</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-prev" datatype="html">
+        <source>Previous</source>
+        <target>Zurück</target>
+        </trans-unit>
+      <trans-unit id="featureAudit-next" datatype="html">
+        <source>Next</source>
+        <target>Weiter</target>
+        </trans-unit>
       <trans-unit id="featureChat-brandAlt" datatype="html">
         <source>Agenstra</source>
         <target>Agenstra</target>
@@ -515,6 +671,14 @@
       <trans-unit id="featureContainer-spaces" datatype="html">
         <source>Spaces</source>
         <target>Bereiche</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-auditTitle" datatype="html">
+        <source>Audit</source>
+        <target>Audit</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-audit" datatype="html">
+        <source>Audit</source>
+        <target>Audit</target>
         </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management</source>

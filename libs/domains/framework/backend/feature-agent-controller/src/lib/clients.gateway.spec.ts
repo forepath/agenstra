@@ -6,6 +6,7 @@ import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientsService } from './services/clients.service';
 import { SocketAuthService } from './services/socket-auth.service';
+import { StatisticsService } from './services/statistics.service';
 
 jest.mock(
   'socket.io-client',
@@ -88,6 +89,7 @@ describe('ClientsGateway', () => {
   let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let credentialsRepo: jest.Mocked<ClientAgentCredentialsRepository>;
+  let statisticsService: jest.Mocked<StatisticsService>;
 
   const mockClientsService = {
     findOne: jest.fn(),
@@ -112,6 +114,12 @@ describe('ClientsGateway', () => {
       .mockResolvedValue({ isApiKeyAuth: true, user: { id: 'api-key-user', roles: ['admin'] } }),
   };
 
+  const mockStatisticsService = {
+    recordChatInput: jest.fn().mockResolvedValue(undefined),
+    recordChatOutput: jest.fn().mockResolvedValue(undefined),
+    recordChatFilterDrop: jest.fn().mockResolvedValue(undefined),
+  };
+
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -134,6 +142,7 @@ describe('ClientsGateway', () => {
         { provide: ClientUsersRepository, useValue: mockClientUsersRepository },
         { provide: ClientAgentCredentialsRepository, useValue: mockCredentialsRepo },
         { provide: SocketAuthService, useValue: mockSocketAuthService },
+        { provide: StatisticsService, useValue: mockStatisticsService },
       ],
     }).compile();
 
@@ -141,6 +150,7 @@ describe('ClientsGateway', () => {
     clientsService = module.get(ClientsService);
     clientsRepository = module.get(ClientsRepository);
     credentialsRepo = module.get(ClientAgentCredentialsRepository);
+    statisticsService = module.get(StatisticsService);
   });
 
   afterEach(async () => {
@@ -276,6 +286,42 @@ describe('ClientsGateway', () => {
     expect(remote.emit).toHaveBeenCalledWith('login', { agentId: 'agent-uuid', password: 'password123' });
     expect(remote.emit).toHaveBeenCalledWith('chat', { message: 'hi' });
     expect(socket.emit).toHaveBeenCalledWith('forwardAck', expect.objectContaining({ received: true, event: 'chat' }));
+  });
+
+  it('should record chat input statistics when forwarding chat with agentId', async () => {
+    const socket = createMockSocket();
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+      agentWsPort: 8099,
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+    mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
+      id: 'cred-1',
+      clientId: 'client-uuid',
+      agentId: 'agent-uuid',
+      password: 'password123',
+    } as any);
+
+    const forwardPromise = gateway.handleForward(
+      { event: 'chat', payload: { message: 'Hello world' }, agentId: 'agent-uuid' },
+      socket,
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    remote.triggerEvent('loginSuccess');
+    await forwardPromise;
+
+    expect(statisticsService.recordChatInput).toHaveBeenCalledWith(
+      'client-uuid',
+      'agent-uuid',
+      2, // word count for "Hello world"
+      11, // char count
+      undefined, // userId (api-key auth)
+    );
   });
 
   it('should forward chat payload with model indicator unchanged', async () => {

@@ -8,6 +8,7 @@ import { ProvisioningProvider, ProvisionedServer, ServerInfo } from '../provider
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientsService } from './clients.service';
 import { ProvisioningService } from './provisioning.service';
+import { StatisticsService } from './statistics.service';
 
 describe('ProvisioningService', () => {
   let service: ProvisioningService;
@@ -91,6 +92,11 @@ describe('ProvisioningService', () => {
     update: jest.fn(),
   };
 
+  const mockStatisticsService = {
+    recordEntityCreated: jest.fn().mockResolvedValue(undefined),
+    recordEntityDeleted: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -114,6 +120,10 @@ describe('ProvisioningService', () => {
         {
           provide: ProvisioningReferencesRepository,
           useValue: mockProvisioningReferencesRepository,
+        },
+        {
+          provide: StatisticsService,
+          useValue: mockStatisticsService,
         },
       ],
     }).compile();

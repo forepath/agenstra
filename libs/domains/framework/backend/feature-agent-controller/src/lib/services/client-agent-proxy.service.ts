@@ -7,11 +7,13 @@ import {
   UpdateAgentDto,
 } from '@forepath/framework/backend/feature-agent-manager';
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { AuthenticationType } from '../entities/client.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentCredentialsService } from './client-agent-credentials.service';
 import { ClientsService } from './clients.service';
+import { StatisticsService } from './statistics.service';
 
 /**
  * Service for proxying agent management requests to client endpoints.
@@ -26,6 +28,7 @@ export class ClientAgentProxyService {
     private readonly clientsService: ClientsService,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientAgentCredentialsService: ClientAgentCredentialsService,
+    private readonly statisticsService: StatisticsService,
   ) {}
 
   /**
@@ -194,7 +197,11 @@ export class ClientAgentProxyService {
    * @param createAgentDto - Data transfer object for creating an agent
    * @returns The created agent response DTO with generated password
    */
-  async createClientAgent(clientId: string, createAgentDto: CreateAgentDto): Promise<CreateAgentResponseDto> {
+  async createClientAgent(
+    clientId: string,
+    createAgentDto: CreateAgentDto,
+    userId?: string,
+  ): Promise<CreateAgentResponseDto> {
     const result = await this.makeRequest<CreateAgentResponseDto>(clientId, {
       method: 'POST',
       data: createAgentDto,
@@ -202,6 +209,22 @@ export class ClientAgentProxyService {
     // Persist credentials for socket proxying
     if (result?.id && result?.password) {
       await this.clientAgentCredentialsService.saveCredentials(clientId, result.id, result.password);
+    }
+    if (result?.id) {
+      this.statisticsService
+        .recordEntityCreated(
+          StatisticsEntityType.AGENT,
+          result.id,
+          {
+            clientId,
+            agentType: createAgentDto.agentType ?? 'cursor',
+            containerType: createAgentDto.containerType?.toString() ?? 'generic',
+            name: createAgentDto.name,
+            description: createAgentDto.description,
+          },
+          userId,
+        )
+        .catch(() => {});
     }
     return result;
   }
@@ -217,12 +240,28 @@ export class ClientAgentProxyService {
     clientId: string,
     agentId: string,
     updateAgentDto: UpdateAgentDto,
+    userId?: string,
   ): Promise<AgentResponseDto> {
-    return await this.makeRequest<AgentResponseDto>(clientId, {
+    const result = await this.makeRequest<AgentResponseDto>(clientId, {
       method: 'POST',
       url: `/${agentId}`,
       data: updateAgentDto,
     });
+    this.statisticsService
+      .recordEntityUpdated(
+        StatisticsEntityType.AGENT,
+        agentId,
+        {
+          clientId,
+          agentType: result.agentType,
+          containerType: result.containerType?.toString(),
+          name: result.name,
+          description: result.description,
+        },
+        userId,
+      )
+      .catch(() => {});
+    return result;
   }
 
   /**
@@ -230,7 +269,8 @@ export class ClientAgentProxyService {
    * @param clientId - The UUID of the client
    * @param agentId - The UUID of the agent to delete
    */
-  async deleteClientAgent(clientId: string, agentId: string): Promise<void> {
+  async deleteClientAgent(clientId: string, agentId: string, userId?: string): Promise<void> {
+    this.statisticsService.recordEntityDeleted(StatisticsEntityType.AGENT, agentId, userId).catch(() => {});
     await this.makeRequest<void>(clientId, {
       method: 'DELETE',
       url: `/${agentId}`,

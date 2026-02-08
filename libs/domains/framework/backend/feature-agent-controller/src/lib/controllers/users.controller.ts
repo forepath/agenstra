@@ -10,8 +10,10 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { KeycloakRoles } from '../decorators/keycloak-roles.decorator';
 import { UsersRoles } from '../decorators/users-roles.decorator';
 import { CreateUserDto } from '../dto/auth/create-user.dto';
@@ -54,7 +56,11 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.usersService.remove(id);
+  async remove(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: Request & { user?: { id?: string } },
+  ) {
+    const userId = req?.user?.id;
+    return this.usersService.remove(id, userId);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ClientEntity } from '../entities/client.entity';
+import { AuthenticationType, ClientEntity } from '../entities/client.entity';
 
 /**
  * Repository for client database operations.
@@ -66,6 +66,46 @@ export class ClientsRepository {
    */
   async count(): Promise<number> {
     return await this.repository.count();
+  }
+
+  /**
+   * Find all client IDs (for statistics access filtering).
+   * @returns Array of client UUIDs
+   */
+  async findAllIds(): Promise<string[]> {
+    const rows = await this.repository.find({ select: ['id'] });
+    return rows.map((r) => r.id);
+  }
+
+  /**
+   * Find all clients with minimal fields for statistics mirror sync.
+   * @returns Array of client sync data
+   */
+  async findAllForStatisticsSync(): Promise<
+    { id: string; name: string; endpoint: string; authenticationType: AuthenticationType }[]
+  > {
+    const rows = await this.repository.find({
+      select: ['id', 'name', 'endpoint', 'authenticationType'],
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      endpoint: r.endpoint,
+      authenticationType: r.authenticationType,
+    }));
+  }
+
+  /**
+   * Find client IDs where the user is the creator.
+   * @param userId - The UUID of the user (creator)
+   * @returns Array of client UUIDs
+   */
+  async findIdsByCreatorId(userId: string): Promise<string[]> {
+    const rows = await this.repository.find({
+      where: { userId },
+      select: ['id'],
+    });
+    return rows.map((r) => r.id);
   }
 
   /**

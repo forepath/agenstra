@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './controllers/auth.controller';
+import { StatisticsModule } from './statistics.module';
 import { UsersController } from './controllers/users.controller';
 import { UserEntity } from './entities/user.entity';
 import { UsersAuthGuard } from './guards/users-auth.guard';
@@ -20,6 +21,7 @@ import { UsersService } from './services/users.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
+    StatisticsModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET || 'default-secret-change-in-production',

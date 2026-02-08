@@ -137,6 +137,47 @@ describe('ClientsRepository', () => {
     });
   });
 
+  describe('findAllIds', () => {
+    it('should return array of client IDs', async () => {
+      mockTypeOrmRepository.find.mockResolvedValue([{ id: 'id-1' }, { id: 'id-2' }]);
+
+      const result = await repository.findAllIds();
+
+      expect(result).toEqual(['id-1', 'id-2']);
+      expect(mockTypeOrmRepository.find).toHaveBeenCalledWith({ select: ['id'] });
+    });
+
+    it('should return empty array when no clients', async () => {
+      mockTypeOrmRepository.find.mockResolvedValue([]);
+
+      const result = await repository.findAllIds();
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('findIdsByCreatorId', () => {
+    it('should return client IDs where user is creator', async () => {
+      mockTypeOrmRepository.find.mockResolvedValue([{ id: 'client-a' }, { id: 'client-b' }]);
+
+      const result = await repository.findIdsByCreatorId('user-123');
+
+      expect(result).toEqual(['client-a', 'client-b']);
+      expect(mockTypeOrmRepository.find).toHaveBeenCalledWith({
+        where: { userId: 'user-123' },
+        select: ['id'],
+      });
+    });
+
+    it('should return empty array when user has no clients', async () => {
+      mockTypeOrmRepository.find.mockResolvedValue([]);
+
+      const result = await repository.findIdsByCreatorId('user-orphan');
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('create', () => {
     it('should create and save new client with API_KEY type', async () => {
       const createData = {

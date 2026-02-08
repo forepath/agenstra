@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { AddClientUserDto } from '../dto/add-client-user.dto';
 import { ClientUserResponseDto } from '../dto/client-user-response.dto';
 import { ClientUserEntity, ClientUserRole } from '../entities/client-user.entity';
 import { UserRole } from '../entities/user.entity';
 import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { StatisticsService } from './statistics.service';
 
 /**
  * Service for managing client-user relationships.
@@ -15,6 +17,7 @@ export class ClientUsersService {
   constructor(
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly statisticsService: StatisticsService,
   ) {}
 
   /**
@@ -72,6 +75,19 @@ export class ClientUsersService {
       role: addClientUserDto.role,
     });
 
+    this.statisticsService
+      .recordEntityCreated(
+        StatisticsEntityType.CLIENT_USER,
+        clientUser.id,
+        {
+          clientId,
+          userId: user.id,
+          role: addClientUserDto.role,
+        },
+        requestingUserId,
+      )
+      .catch(() => {});
+
     return this.mapToResponseDto(clientUser, user.email);
   }
 
@@ -117,6 +133,10 @@ export class ClientUsersService {
       // Client user or no relationship: cannot remove anyone
       throw new BadRequestException('You do not have permission to remove users from this client');
     }
+
+    this.statisticsService
+      .recordEntityDeleted(StatisticsEntityType.CLIENT_USER, relationshipId, requestingUserId)
+      .catch(() => {});
 
     // Delete the relationship
     await this.clientUsersRepository.delete(relationshipId);

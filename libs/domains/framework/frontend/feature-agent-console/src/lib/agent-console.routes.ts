@@ -78,6 +78,16 @@ import {
   moveFileOrDirectory$,
   processContainerStats$,
   provisionServer$,
+  loadClientStatisticsSummary$,
+  loadClientStatisticsChatIo$,
+  loadClientStatisticsFilterDrops$,
+  loadClientStatisticsFilterFlags$,
+  loadClientStatisticsEntityEvents$,
+  loadStatisticsSummary$,
+  loadStatisticsChatIo$,
+  loadStatisticsFilterDrops$,
+  loadStatisticsFilterFlags$,
+  loadStatisticsEntityEvents$,
   pull$,
   push$,
   readFile$,
@@ -98,6 +108,8 @@ import {
   stageFiles$,
   StatsFacade,
   statsReducer,
+  StatisticsFacade,
+  statisticsReducer,
   switchBranch$,
   triggerWorkflow$,
   unstageFiles$,
@@ -113,6 +125,7 @@ import {
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
+import { AuditComponent } from './audit/audit.component';
 import { AgentConsoleChatComponent } from './chat/chat.component';
 import { AgentConsoleConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
@@ -180,6 +193,12 @@ export const agentConsoleRoutes: Route[] = [
         title: 'User Management | Agenstra',
       },
       {
+        path: 'audit',
+        canActivate: [authGuard],
+        component: AuditComponent,
+        title: 'Audit | Agenstra',
+      },
+      {
         path: 'clients',
         canActivate: [authGuard],
         title: 'Manager | Agenstra',
@@ -225,6 +244,7 @@ export const agentConsoleRoutes: Route[] = [
       EnvFacade,
       VcsFacade,
       StatsFacade,
+      StatisticsFacade,
       DeploymentsFacade,
       // Feature states - registered at feature level for lazy loading
       provideState('clients', clientsReducer),
@@ -235,6 +255,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('env', envReducer),
       provideState('vcs', vcsReducer),
       provideState('stats', statsReducer),
+      provideState('statistics', statisticsReducer),
       provideState('deployments', deploymentsReducer),
       // Effects - only active when this feature route is loaded
       provideEffects({
@@ -311,6 +332,16 @@ export const agentConsoleRoutes: Route[] = [
         deleteBranch$,
         resolveConflict$,
         processContainerStats$,
+        loadClientStatisticsSummary$,
+        loadClientStatisticsChatIo$,
+        loadClientStatisticsFilterDrops$,
+        loadClientStatisticsFilterFlags$,
+        loadClientStatisticsEntityEvents$,
+        loadStatisticsSummary$,
+        loadStatisticsChatIo$,
+        loadStatisticsFilterDrops$,
+        loadStatisticsFilterFlags$,
+        loadStatisticsEntityEvents$,
         loadDeploymentConfiguration$,
         createDeploymentConfiguration$,
         updateDeploymentConfiguration$,

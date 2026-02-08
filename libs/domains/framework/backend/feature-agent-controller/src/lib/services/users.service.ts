@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { CreateUserDto } from '../dto/auth/create-user.dto';
 import { UpdateUserDto } from '../dto/auth/update-user.dto';
 import { UserResponseDto } from '../dto/auth/user-response.dto';
@@ -7,6 +8,7 @@ import { UserEntity, UserRole } from '../entities/user.entity';
 import { UsersRepository } from '../repositories/users.repository';
 import { createConfirmationCode } from '../utils/token.utils';
 import { EmailService } from './email.service';
+import { StatisticsService } from './statistics.service';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -15,6 +17,7 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
+    private readonly statisticsService: StatisticsService,
   ) {}
 
   async mapToResponseDto(user: UserEntity): Promise<UserResponseDto> {
@@ -62,6 +65,8 @@ export class UsersService {
       emailConfirmationToken: undefined,
     });
 
+    this.statisticsService.recordEntityCreated(StatisticsEntityType.USER, user.id, { role }, undefined).catch(() => {});
+
     if (!isFirstUser) {
       const { code, hash } = createConfirmationCode();
       const codeHash = await hash;
@@ -103,6 +108,9 @@ export class UsersService {
     }
 
     const updated = await this.usersRepository.update(id, updateData);
+    this.statisticsService
+      .recordEntityUpdated(StatisticsEntityType.USER, id, { role: updated.role }, undefined)
+      .catch(() => {});
 
     if (emailChanged && dto.email && confirmationCode) {
       await this.emailService.sendConfirmationEmail(dto.email, confirmationCode);
@@ -111,11 +119,12 @@ export class UsersService {
     return this.mapToResponseDto(updated);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, requestingUserId?: string): Promise<void> {
     const user = await this.usersRepository.findById(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    this.statisticsService.recordEntityDeleted(StatisticsEntityType.USER, id, requestingUserId).catch(() => {});
     await this.usersRepository.remove(id);
   }
 

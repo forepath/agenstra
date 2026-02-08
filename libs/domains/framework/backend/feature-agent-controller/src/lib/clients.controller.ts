@@ -191,7 +191,8 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
-    return await this.clientAgentProxyService.updateClientAgent(id, agentId, updateAgentDto);
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    return await this.clientAgentProxyService.updateClientAgent(id, agentId, updateAgentDto, userInfo.userId);
   }
 
   /**
@@ -210,7 +211,8 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<CreateAgentResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
-    return await this.clientAgentProxyService.createClientAgent(id, createAgentDto);
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    return await this.clientAgentProxyService.createClientAgent(id, createAgentDto, userInfo.userId);
   }
 
   /**
@@ -228,7 +230,8 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<void> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
-    await this.clientAgentProxyService.deleteClientAgent(id, agentId);
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    await this.clientAgentProxyService.deleteClientAgent(id, agentId, userInfo.userId);
   }
 
   /**
@@ -568,7 +571,8 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<void> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
-    await this.provisioningService.deleteProvisionedServer(id);
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    await this.provisioningService.deleteProvisionedServer(id, userInfo.userId);
   }
 
   /**

@@ -1,0 +1,211 @@
+sequenceDiagram
+    participant Client as HTTP Client
+    participant ClientStats as ClientStatisticsController<br/>(/api/clients/:id/statistics)
+    participant Stats as StatisticsController<br/>(/api/statistics)
+    participant EnsureAccess as ensureClientAccess
+    participant ClientsSvc as ClientsService
+    participant QuerySvc as StatisticsQueryService
+    participant StatsRepo as StatisticsRepository
+    participant ClientsRepo as ClientsRepository
+    participant ClientUsersRepo as ClientUsersRepository
+    participant DB as Database
+
+    Note over Client,DB: HTTP API - Statistics (Client-Scoped & Aggregate)
+
+    rect rgb(230, 245, 255)
+        Note over Client,DB: Client-Scoped: Get Summary
+        Client->>ClientStats: GET /api/clients/:id/statistics/summary?from&to&groupBy
+        ClientStats->>EnsureAccess: ensureClientAccess(clientsRepo, clientUsersRepo, clientId, req)
+        EnsureAccess->>ClientsRepo: findById(clientId)
+        ClientsRepo->>DB: SELECT client
+        DB-->>ClientsRepo: client entity
+        EnsureAccess->>ClientUsersRepo: findUserClientAccess(userId, clientId)
+        ClientUsersRepo->>DB: SELECT client_users
+        DB-->>ClientUsersRepo: client_user or null
+        alt No access
+            EnsureAccess-->>ClientStats: ForbiddenException 403
+            ClientStats-->>Client: 403 Forbidden
+        else Has access
+            EnsureAccess-->>ClientStats: { isClientCreator, clientUserRole }
+            ClientStats->>QuerySvc: getClientSummary(clientId, { from, to, groupBy })
+            QuerySvc->>StatsRepo: findStatisticsClientIdsByOriginalIds([clientId])
+            StatsRepo->>DB: SELECT id FROM statistics_clients<br/>WHERE original_client_id IN (:ids)
+            DB-->>StatsRepo: statistics_client_ids[]
+            StatsRepo-->>QuerySvc: statistics_client_ids[]
+            QuerySvc->>StatsRepo: queryChatIoAggregate(...)
+            StatsRepo->>DB: SELECT COUNT, SUM, etc. FROM statistics_chat_io
+            DB-->>StatsRepo: aggregations
+            QuerySvc->>StatsRepo: queryFilterDropsAggregate(...)
+            StatsRepo->>DB: SELECT COUNT, breakdown FROM statistics_chat_filter_drops
+            DB-->>StatsRepo: aggregations
+            QuerySvc->>StatsRepo: queryFilterFlagsAggregate(...)
+            StatsRepo->>DB: SELECT COUNT, breakdown FROM statistics_chat_filter_flags
+            DB-->>StatsRepo: aggregations
+            StatsRepo-->>QuerySvc: chat + filter aggregates
+            QuerySvc-->>ClientStats: StatisticsSummaryDto
+            ClientStats-->>Client: 200 OK<br/>{totalMessages, totalWords, filterDropCount, filterFlagCount, ...}
+        end
+    end
+
+    rect rgb(255, 248, 232)
+        Note over Client,DB: Client-Scoped: Get Filter Flags
+        Client->>ClientStats: GET /api/clients/:id/statistics/filter-flags?agentId&filterType&from&to&limit&offset
+        ClientStats->>EnsureAccess: ensureClientAccess(...)
+        alt Has access
+            EnsureAccess-->>ClientStats: ok
+            ClientStats->>QuerySvc: getClientFilterFlags(clientId, params)
+            QuerySvc->>StatsRepo: queryFilterFlags(...)
+            StatsRepo->>DB: SELECT FROM statistics_chat_filter_flags
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>ClientStats: StatisticsFilterFlagListDto
+            ClientStats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end
+
+    rect rgb(240, 255, 245)
+        Note over Client,DB: Client-Scoped: Get Chat I/O
+        Client->>ClientStats: GET /api/clients/:id/statistics/chat-io?agentId&from&to&direction&limit&offset
+        ClientStats->>EnsureAccess: ensureClientAccess(...)
+        alt Has access
+            EnsureAccess-->>ClientStats: ok
+            ClientStats->>QuerySvc: getClientChatIo(clientId, params)
+            QuerySvc->>StatsRepo: findStatisticsClientIdsByOriginalIds([clientId])
+            StatsRepo-->>QuerySvc: statistics_client_ids[]
+            QuerySvc->>StatsRepo: queryChatIo({ statisticsClientIds, agentId, from, to, ... })
+            StatsRepo->>DB: SELECT FROM statistics_chat_io<br/>WHERE statistics_client_id IN (:ids)
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>ClientStats: StatisticsChatIoListDto
+            ClientStats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end
+
+    rect rgb(255, 248, 240)
+        Note over Client,DB: Client-Scoped: Get Filter Drops
+        Client->>ClientStats: GET /api/clients/:id/statistics/filter-drops?agentId&filterType&from&to&limit&offset
+        ClientStats->>EnsureAccess: ensureClientAccess(...)
+        alt Has access
+            EnsureAccess-->>ClientStats: ok
+            ClientStats->>QuerySvc: getClientFilterDrops(clientId, params)
+            QuerySvc->>StatsRepo: queryFilterDrops(...)
+            StatsRepo->>DB: SELECT FROM statistics_chat_filter_drops
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>ClientStats: StatisticsFilterDropListDto
+            ClientStats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end
+
+    rect rgb(255, 240, 248)
+        Note over Client,DB: Client-Scoped: Get Entity Events
+        Client->>ClientStats: GET /api/clients/:id/statistics/entity-events?entityType&eventType&from&to&limit&offset
+        ClientStats->>EnsureAccess: ensureClientAccess(...)
+        alt Has access
+            EnsureAccess-->>ClientStats: ok
+            ClientStats->>QuerySvc: getClientEntityEvents(clientId, params)
+            QuerySvc->>StatsRepo: queryEntityEvents(...)
+            StatsRepo->>DB: SELECT FROM statistics_entity_events<br/>(filtered by client via related entities)
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>ClientStats: StatisticsEntityEventListDto
+            ClientStats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end
+
+    rect rgb(245, 240, 255)
+        Note over Client,DB: Aggregate: Get Summary (all accessible clients)
+        Client->>Stats: GET /api/statistics/summary?clientId?&from&to&groupBy
+        Stats->>ClientsSvc: getAccessibleClientIds(userId, userRole, isApiKeyAuth)
+        ClientsSvc->>ClientsRepo: findAllIds() or findByUserId + findIdsByCreatorId
+        ClientsRepo->>DB: SELECT id FROM clients<br/>or client_users + clients
+        DB-->>ClientsRepo: client_ids[]
+        ClientsRepo-->>ClientsSvc: accessible_client_ids[]
+        ClientsSvc-->>Stats: accessible_client_ids[]
+        alt clientId provided and not in accessible_ids
+            Stats-->>Client: 403 Forbidden
+        else clientId in accessible or no clientId filter
+            Stats->>QuerySvc: getSummary(clientIds, { from, to, groupBy })
+            QuerySvc->>StatsRepo: findStatisticsClientIdsByOriginalIds(clientIds)
+            StatsRepo->>DB: SELECT id FROM statistics_clients
+            DB-->>StatsRepo: statistics_client_ids[]
+            QuerySvc->>StatsRepo: queryChatIoAggregate + queryFilterDropsAggregate + queryFilterFlagsAggregate
+            StatsRepo->>DB: aggregate queries
+            DB-->>StatsRepo: results
+            StatsRepo-->>QuerySvc: aggregates
+            QuerySvc-->>Stats: StatisticsSummaryDto
+            Stats-->>Client: 200 OK<br/>{totalMessages, totalWords, filterDropCount, filterFlagCount, ...}
+        end
+    end
+
+    rect rgb(240, 255, 248)
+        Note over Client,DB: Aggregate: Get Chat I/O
+        Client->>Stats: GET /api/statistics/chat-io?clientId?&agentId?&from&to&direction&limit&offset
+        Stats->>ClientsSvc: getAccessibleClientIds(...)
+        ClientsSvc-->>Stats: accessible_client_ids[]
+        alt clientId provided and not accessible
+            Stats-->>Client: 403 Forbidden
+        else ok
+            Stats->>QuerySvc: getChatIo(clientIds, params)
+            QuerySvc->>StatsRepo: queryChatIo(...)
+            StatsRepo->>DB: SELECT FROM statistics_chat_io
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>Stats: StatisticsChatIoListDto
+            Stats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end
+
+    rect rgb(248, 255, 240)
+        Note over Client,DB: Aggregate: Get Filter Drops
+        Client->>Stats: GET /api/statistics/filter-drops?clientId?&agentId?&filterType?&from&to&limit&offset
+        Stats->>ClientsSvc: getAccessibleClientIds(...)
+        ClientsSvc-->>Stats: accessible_client_ids[]
+        alt clientId provided and not accessible
+            Stats-->>Client: 403 Forbidden
+        else ok
+            Stats->>QuerySvc: getFilterDrops(clientIds, params)
+            QuerySvc->>StatsRepo: queryFilterDrops(...)
+            StatsRepo->>DB: SELECT FROM statistics_chat_filter_drops
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>Stats: StatisticsFilterDropListDto
+            Stats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end
+
+    rect rgb(248, 255, 232)
+        Note over Client,DB: Aggregate: Get Filter Flags
+        Client->>Stats: GET /api/statistics/filter-flags?clientId?&agentId?&filterType?&from&to&limit&offset
+        Stats->>ClientsSvc: getAccessibleClientIds(...)
+        ClientsSvc-->>Stats: accessible_client_ids[]
+        alt clientId provided and not accessible
+            Stats-->>Client: 403 Forbidden
+        else ok
+            Stats->>QuerySvc: getFilterFlags(clientIds, params)
+            QuerySvc->>StatsRepo: queryFilterFlags(...)
+            StatsRepo->>DB: SELECT FROM statistics_chat_filter_flags
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>Stats: StatisticsFilterFlagListDto
+            Stats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end
+
+    rect rgb(255, 245, 250)
+        Note over Client,DB: Aggregate: Get Entity Events
+        Client->>Stats: GET /api/statistics/entity-events?clientId?&entityType?&eventType?&from&to&limit&offset
+        Stats->>ClientsSvc: getAccessibleClientIds(...)
+        ClientsSvc-->>Stats: accessible_client_ids[]
+        alt clientId provided and not accessible
+            Stats-->>Client: 403 Forbidden
+        else ok
+            Stats->>QuerySvc: getEntityEvents(clientIds, params)
+            QuerySvc->>StatsRepo: queryEntityEvents(...)
+            StatsRepo->>DB: SELECT FROM statistics_entity_events
+            DB-->>StatsRepo: rows[], total
+            StatsRepo-->>QuerySvc: { rows, total }
+            QuerySvc-->>Stats: StatisticsEntityEventListDto
+            Stats-->>Client: 200 OK<br/>{data, total, limit, offset}
+        end
+    end

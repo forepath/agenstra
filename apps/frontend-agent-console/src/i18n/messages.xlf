@@ -2,6 +2,123 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureAudit-filtersTitle" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-toggleFiltersTitle" datatype="html">
+        <source>Toggle filters</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-clientLabel" datatype="html">
+        <source>Client</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-allClients" datatype="html">
+        <source>All clients</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-fromDateLabel" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-toDateLabel" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-groupByLabel" datatype="html">
+        <source>Group by</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-groupByDay" datatype="html">
+        <source>Day</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-groupByHour" datatype="html">
+        <source>Hour</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-apply" datatype="html">
+        <source>Apply</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-loading" datatype="html">
+        <source>Loading statistics...</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-totalMessages" datatype="html">
+        <source>Total messages</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-totalWords" datatype="html">
+        <source>Total words</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-avgWordsPerMessage" datatype="html">
+        <source> Avg words/message </source>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterDrops" datatype="html">
+        <source>Filter drops</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterFlags" datatype="html">
+        <source>Filter flags</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-noChartData" datatype="html">
+        <source>No time series or filter breakdown data available</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-auditTables" datatype="html">
+        <source>Audit Tables</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chatIoTable" datatype="html">
+        <source>Chat I/O</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-searchPlaceholder" datatype="html">
+        <source>Search (current page)</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-time" datatype="html">
+        <source>Time</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-user" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-agent" datatype="html">
+        <source>Agent</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-direction" datatype="html">
+        <source>Direction</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-words" datatype="html">
+        <source>Words</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chars" datatype="html">
+        <source>Chars</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-noRows" datatype="html">
+        <source>No rows</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-showingOf" datatype="html">
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAudit-prev" datatype="html">
+        <source>Previous</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-next" datatype="html">
+        <source>Next</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterDropsTable" datatype="html">
+        <source>Filter Drops</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterFlagsTable" datatype="html">
+        <source>Filter Flags</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterType" datatype="html">
+        <source>Filter</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-reason" datatype="html">
+        <source>Reason</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityEventsTable" datatype="html">
+        <source>Entity Events</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityType" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-eventType" datatype="html">
+        <source>Event</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entity" datatype="html">
+        <source>Entity</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-noData" datatype="html">
+        <source>No data yet. Apply filters and load statistics.</source>
+        </trans-unit>
       <trans-unit id="featureChat-brandAlt" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
@@ -455,6 +572,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-spaces" datatype="html">
         <source>Spaces</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-auditTitle" datatype="html">
+        <source>Audit</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-audit" datatype="html">
+        <source>Audit</source>
         </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management</source>

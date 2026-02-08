@@ -1,4 +1,6 @@
 import { BadRequestException, Logger } from '@nestjs/common';
+import { FilterDropDirection } from './entities/statistics-chat-filter-drop.entity';
+import { FilterFlagDirection } from './entities/statistics-chat-filter-flag.entity';
 import {
   ConnectedSocket,
   MessageBody,
@@ -18,6 +20,7 @@ import { ClientUsersRepository } from './repositories/client-users.repository';
 import { ClientsRepository } from './repositories/clients.repository';
 import { ClientsService } from './services/clients.service';
 import { SocketAuthService } from './services/socket-auth.service';
+import { StatisticsService } from './services/statistics.service';
 // socket.io-client is required at runtime when forwarding; avoid static import to keep optional dependency for tests
 // Using type-only import for ClientSocket to avoid runtime dependency
 
@@ -61,6 +64,9 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   >();
   // Track clientId per remote socket for context (keyed by local socket.id)
   private clientIdBySocket = new Map<string, string>();
+  // Track last agentId and message for statistics (last forward with agentId)
+  private lastAgentIdBySocket = new Map<string, string>();
+  private lastChatMessageBySocket = new Map<string, string>();
 
   constructor(
     private readonly clientsService: ClientsService,
@@ -68,6 +74,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly clientAgentCredentialsRepository: ClientAgentCredentialsRepository,
     private readonly socketAuthService: SocketAuthService,
+    private readonly statisticsService: StatisticsService,
   ) {}
 
   afterInit(server: Server): void {
@@ -108,6 +115,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.settingClientBySocket.delete(socket.id);
     this.remoteReconnectionState.delete(socket.id);
     this.clientIdBySocket.delete(socket.id);
+    this.lastAgentIdBySocket.delete(socket.id);
+    this.lastChatMessageBySocket.delete(socket.id);
   }
 
   /**
@@ -237,6 +246,90 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         if (event === 'error' && args.length > 0 && args[0] instanceof Error) {
           return;
         }
+        // Record statistics for chat events before forwarding
+        const currentClientId = this.clientIdBySocket.get(socket.id);
+        const lastAgentId = this.lastAgentIdBySocket.get(socket.id);
+        const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
+        const userId = userInfo?.userId;
+
+        if (event === 'chatMessage' && currentClientId && lastAgentId && args.length > 0) {
+          const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
+          const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+          if (payload?.from === 'agent') {
+            const resp = payload.response;
+            const text = (payload.text as string) ?? (typeof resp === 'string' ? resp : JSON.stringify(resp ?? ''));
+            const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+            const charCount = text.length;
+            this.statisticsService
+              .recordChatOutput(currentClientId, lastAgentId, wordCount, charCount, userId)
+              .catch(() => {});
+          }
+        } else if (event === 'messageFilterResult' && currentClientId && lastAgentId && args.length > 0) {
+          const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
+          const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+          if (payload?.status === 'dropped') {
+            const direction =
+              payload.direction === 'outgoing' ? FilterDropDirection.OUTGOING : FilterDropDirection.INCOMING;
+            const matchedFilter = payload?.matchedFilter as
+              | { type?: string; displayName?: string; reason?: string }
+              | undefined;
+            // For incoming drops we have the message from our forward; for outgoing we don't
+            let wordCount = 0;
+            let charCount = 0;
+            if (direction === FilterDropDirection.INCOMING) {
+              const lastMessage = this.lastChatMessageBySocket.get(socket.id);
+              wordCount = lastMessage ? lastMessage.trim().split(/\s+/).filter(Boolean).length : 0;
+              charCount = lastMessage?.length ?? 0;
+              this.lastChatMessageBySocket.delete(socket.id);
+            }
+            this.statisticsService
+              .recordChatFilterDrop(
+                currentClientId,
+                lastAgentId,
+                matchedFilter?.type ?? 'unknown',
+                matchedFilter?.displayName ?? 'Unknown Filter',
+                direction,
+                wordCount,
+                charCount,
+                userId,
+                matchedFilter?.reason,
+              )
+              .catch(() => {});
+          } else if (payload?.status === 'filtered') {
+            const flagDirection =
+              payload.direction === 'outgoing' ? FilterFlagDirection.OUTGOING : FilterFlagDirection.INCOMING;
+            const matchedFilter = payload?.matchedFilter as
+              | { type?: string; displayName?: string; reason?: string }
+              | undefined;
+            let wordCount = 0;
+            let charCount = 0;
+            const msg = (payload?.message as string) ?? '';
+            if (msg) {
+              wordCount = msg.trim().split(/\s+/).filter(Boolean).length;
+              charCount = msg.length;
+            } else if (flagDirection === FilterFlagDirection.INCOMING) {
+              const lastMessage = this.lastChatMessageBySocket.get(socket.id);
+              if (lastMessage) {
+                wordCount = lastMessage.trim().split(/\s+/).filter(Boolean).length;
+                charCount = lastMessage.length;
+              }
+            }
+            this.statisticsService
+              .recordChatFilterFlag(
+                currentClientId,
+                lastAgentId,
+                matchedFilter?.type ?? 'unknown',
+                matchedFilter?.displayName ?? 'Unknown Filter',
+                flagDirection,
+                wordCount,
+                charCount,
+                userId,
+                matchedFilter?.reason,
+              )
+              .catch(() => {});
+          }
+        }
+
         // Only forward application-level events, not Socket.IO internal events
         if (!internalEvents.has(event)) {
           // Check connection state before emitting (matches agents.gateway.ts pattern)
@@ -753,6 +846,20 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           this.logger.warn(`No stored credentials for client ${clientId}, agent ${agentId}; skipping auto-login`);
         }
       }
+      if (event === 'chat' && agentId) {
+        const message = (payload as { message?: string })?.message ?? '';
+        const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
+        const charCount = message.length;
+        const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
+        this.statisticsService
+          .recordChatInput(clientId, agentId, wordCount, charCount, userInfo?.userId)
+          .catch(() => {});
+        this.lastAgentIdBySocket.set(socket.id, agentId);
+        this.lastChatMessageBySocket.set(socket.id, message);
+      } else if (agentId) {
+        this.lastAgentIdBySocket.set(socket.id, agentId);
+      }
+
       remote.emit(event, payload);
       // SECURITY: Acknowledgement sent only to the initiating socket
       socket.emit('forwardAck', { received: true, event });
