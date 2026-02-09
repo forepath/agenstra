@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.32.0](https://github.com/forepath/agenstra/compare/v1.31.0...v1.32.0) (2026-02-09)
+
+
+### Features
+
+* statistics filter reset button ([#203](https://github.com/forepath/agenstra/issues/203)) ([b644929](https://github.com/forepath/agenstra/commit/b644929c04d96d1b9f79e8bc45cf3a04ce8e82e1))
+* statistics support ([#202](https://github.com/forepath/agenstra/issues/202)) ([d4b14ee](https://github.com/forepath/agenstra/commit/d4b14ee22c3cd01ec8ac3f7b422447e9dee31c8c))
+
+
+### Bug Fixes
+
+* prevent memory leaks and OOM from unbounded state ([#204](https://github.com/forepath/agenstra/issues/204)) ([ce3bcbb](https://github.com/forepath/agenstra/commit/ce3bcbbe650a69592c2576d25a2a6655abffadf1))
+
+
+### Chores
+
+* add devhunt link ([#200](https://github.com/forepath/agenstra/issues/200)) ([4b60985](https://github.com/forepath/agenstra/commit/4b609852dd1cd24626eaa3bc7138a343369aad37))
+
 ## [1.31.0](https://github.com/forepath/agenstra/compare/v1.30.0...v1.31.0) (2026-02-07)
 
 
