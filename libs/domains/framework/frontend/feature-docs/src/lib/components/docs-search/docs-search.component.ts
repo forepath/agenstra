@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,7 +18,7 @@ export class DocsSearchComponent {
 
   private readonly searchService = inject(DocsSearchService);
   private readonly router = inject(Router);
-
+  private readonly destroyRef = inject(DestroyRef);
   /**
    * Search input value
    */
@@ -39,7 +39,7 @@ export class DocsSearchComponent {
   constructor() {
     // Debounce search input
     this.searchSubject
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((query: string) => {
         this.searchService.searchQuery.set(query);
         if (query.trim().length > 0) {

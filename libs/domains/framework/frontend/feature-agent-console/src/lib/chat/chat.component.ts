@@ -3,6 +3,7 @@ import {
   AfterViewChecked,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   ElementRef,
   inject,
   OnDestroy,
@@ -11,7 +12,7 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -55,10 +56,8 @@ import {
   shareReplay,
   skip,
   startWith,
-  Subject,
   switchMap,
   take,
-  takeUntil,
   tap,
   withLatestFrom,
 } from 'rxjs';
@@ -423,7 +422,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private activeClientId: string | null = null;
   private shouldScrollToBottom = false;
   private previousMessageCount = 0;
-  private readonly destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
+  private syncAnimationFrameId: number | null = null;
+  private syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private lastUserMessageTimestamp = signal<number | null>(null);
   private lastAgentMessageTimestamp = 0;
 
@@ -669,7 +670,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((clients) => clients.length > 0),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((clients) => {
         // Load serverInfo for each client (will fail silently if no provisioning exists)
@@ -682,7 +683,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     combineLatest([this.activeClientId$, this.agents$])
       .pipe(
         filter(([clientId, agents]) => !!clientId && agents.length > 0),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(([clientId, agents]) => {
         // Trigger status loading for each agent (will be loaded on-demand via getAgentDeploymentStatus$)
@@ -700,7 +701,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         combineLatestWith(this.clients$, this.agents$),
         withLatestFrom(this.route.queryParams),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         delay(0),
       )
       .subscribe(([[params, clients, agents], queryParams]) => {
@@ -836,7 +837,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Use skip(1) to skip the first emission which is handled in initial routing
     this.route.queryParams
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         skip(1), // Skip first emission (handled in initial routing)
       )
       .subscribe((queryParams) => {
@@ -872,7 +873,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       });
 
     // Reset editor view when selected agent changes and load commands
-    this.selectedAgent$.pipe(takeUntil(this.destroy$)).subscribe((agent) => {
+    this.selectedAgent$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((agent) => {
       const currentAgentId = agent?.id || null;
       const localSelectedAgentId = this.selectedAgentId();
 
@@ -941,7 +942,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
 
     // Load agents when active client changes
-    this.activeClientId$.pipe(takeUntil(this.destroy$)).subscribe((clientId) => {
+    this.activeClientId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((clientId) => {
       if (clientId && clientId !== this.activeClientId) {
         // Switching to a different client - clear agent selection from previous client
         const previousClientId = this.activeClientId;
@@ -981,7 +982,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
 
     // Subscribe to chat messages and trigger scroll when new messages arrive
-    this.chatMessages$.pipe(takeUntil(this.destroy$)).subscribe((messages) => {
+    this.chatMessages$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((messages) => {
       const currentMessageCount = messages.length;
 
       // Initialize lastAgentMessageTimestamp on first load to prevent treating existing messages as new
@@ -1023,7 +1024,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
 
     // Subscribe to waiting state changes to trigger scroll when loading indicator appears
-    this.waitingForResponse$.pipe(takeUntil(this.destroy$)).subscribe((waiting) => {
+    this.waitingForResponse$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((waiting) => {
       if (waiting) {
         // When we start waiting for a response, scroll to show the loading indicator
         this.shouldScrollToBottom = true;
@@ -1093,7 +1094,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             }),
           );
         }),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((result) => {
         // File content is loaded (or no file to load), hide the loading spinner (only on initial load)
@@ -1122,8 +1123,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    // Cancel any pending sync to prevent callbacks holding component reference
+    if (this.syncAnimationFrameId !== null) {
+      cancelAnimationFrame(this.syncAnimationFrameId);
+      this.syncAnimationFrameId = null;
+    }
+    if (this.syncTimeoutId !== null) {
+      clearTimeout(this.syncTimeoutId);
+      this.syncTimeoutId = null;
+    }
 
     // Dispose tooltip if it exists
     if (this.shareButtonTooltip) {
@@ -1138,28 +1146,49 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.shouldScrollToBottom = false;
     }
 
-    // Sync fileEditor visibility signals to prevent ExpressionChangedAfterItHasBeenCheckedError
-    // This runs after change detection, so it's safe to update signals here
-    this.syncFileEditorVisibility();
+    // Sync fileEditor visibility signals - coalesced to at most once per frame to avoid memory churn
+    this.scheduleSyncFileEditorVisibility();
   }
 
   /**
-   * Syncs local visibility signals with fileEditor's signals
-   * This prevents ExpressionChangedAfterItHasBeenCheckedError by avoiding direct template access
+   * Schedules a sync of fileEditor visibility signals. Coalesces multiple calls to at most one per
+   * animation frame to avoid excessive setTimeout/requestAnimationFrame callbacks during change detection.
+   */
+  private scheduleSyncFileEditorVisibility(): void {
+    if (this.syncAnimationFrameId !== null) {
+      return;
+    }
+    this.syncAnimationFrameId = requestAnimationFrame(() => {
+      this.syncAnimationFrameId = null;
+      this.syncFileEditorVisibility();
+    });
+  }
+
+  /**
+   * Syncs local visibility signals with fileEditor's signals.
+   * This prevents ExpressionChangedAfterItHasBeenCheckedError by avoiding direct template access.
    */
   private syncFileEditorVisibility(): void {
+    if (this.syncTimeoutId !== null) {
+      clearTimeout(this.syncTimeoutId);
+      this.syncTimeoutId = null;
+    }
     if (this.editorOpen() && this.fileEditor) {
       // Use setTimeout to ensure this runs after the current change detection cycle
-      setTimeout(() => {
-        this.fileTreeVisible.set(this.fileEditor.fileTreeVisible());
-        this.terminalVisible.set(this.fileEditor.terminalVisible());
-        this.gitManagerVisible.set(this.fileEditor.gitManagerVisible());
-        this.selectedFilePathForShare.set(this.fileEditor.selectedFilePath());
+      this.syncTimeoutId = setTimeout(() => {
+        this.syncTimeoutId = null;
+        if (this.fileEditor) {
+          this.fileTreeVisible.set(this.fileEditor.fileTreeVisible());
+          this.terminalVisible.set(this.fileEditor.terminalVisible());
+          this.gitManagerVisible.set(this.fileEditor.gitManagerVisible());
+          this.selectedFilePathForShare.set(this.fileEditor.selectedFilePath());
+        }
         this.cdr.markForCheck();
       }, 0);
     } else {
       // Reset when editor is closed - use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
-      setTimeout(() => {
+      this.syncTimeoutId = setTimeout(() => {
+        this.syncTimeoutId = null;
         this.fileTreeVisible.set(false);
         this.terminalVisible.set(false);
         this.gitManagerVisible.set(false);
@@ -1213,7 +1242,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Clear active client
       this.clientsFacade.clearActiveClient();
       // Disconnect socket if connected
-      this.socketConnected$.pipe(take(1)).subscribe((connected) => {
+      this.socketConnected$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((connected) => {
         if (connected) {
           this.socketsFacade.disconnect();
         }
@@ -1307,7 +1336,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Clear local selected agent ID
     this.selectedAgentId.set(null);
     // Disconnect socket if connected
-    this.socketConnected$.pipe(take(1)).subscribe((connected) => {
+    this.socketConnected$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((connected) => {
       if (connected) {
         this.socketsFacade.disconnect();
       }
@@ -1986,7 +2015,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Check if serverInfo already exists in store
     this.clientsFacade
       .getServerInfo$(clientId)
-      .pipe(take(1), takeUntil(this.destroy$))
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
       .subscribe((serverInfo) => {
         if (serverInfo) {
           // ServerInfo exists, client has provisioning
@@ -2002,7 +2031,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               filter((loading) => !loading), // Wait for loading to finish
               switchMap(() => this.clientsFacade.getServerInfo$(clientId)),
               take(1),
-              takeUntil(this.destroy$),
+              takeUntilDestroyed(this.destroyRef),
             )
             .subscribe((info) => {
               this.clientToDeleteHasProvisioning.set(!!info);
@@ -2027,7 +2056,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         .pipe(
           filter((deleting) => !deleting),
           take(1),
-          takeUntil(this.destroy$),
+          takeUntilDestroyed(this.destroyRef),
         )
         .subscribe(() => {
           this.hideModal(this.deleteClientModal);
@@ -2048,7 +2077,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         .pipe(
           filter((deleting) => !deleting),
           take(1),
-          takeUntil(this.destroy$),
+          takeUntilDestroyed(this.destroyRef),
         )
         .subscribe(() => {
           this.hideModal(this.deleteAgentModal);
@@ -2262,7 +2291,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         .pipe(
           filter((provisioning) => !provisioning),
           take(1),
-          takeUntil(this.destroy$),
+          takeUntilDestroyed(this.destroyRef),
         )
         .subscribe(() => {
           this.hideModal(this.addClientModal);
@@ -2312,7 +2341,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         .pipe(
           filter((creating) => !creating),
           take(1),
-          takeUntil(this.destroy$),
+          takeUntilDestroyed(this.destroyRef),
         )
         .subscribe(() => {
           this.hideModal(this.addClientModal);
@@ -2379,7 +2408,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((creating) => !creating),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.hideModal(this.addAgentModal);
@@ -2581,7 +2610,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((updating) => !updating),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.hideModal(this.updateClientModal);
@@ -2630,7 +2659,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((updating) => !updating),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.hideModal(this.updateAgentModal);
@@ -2678,7 +2707,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((creating) => !creating),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         // Reset form
@@ -2726,7 +2755,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((updating) => !updating),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.onCancelEditEnvironmentVariable();
@@ -2784,7 +2813,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((adding) => !adding),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.newClientUser.set({
@@ -3326,6 +3355,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             );
           }
         }),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }
@@ -3345,7 +3375,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         filter((agent) => !!agent && this.editorOpen()),
         take(1),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         // Use multiple requestAnimationFrame calls and setTimeout to ensure file editor is fully initialized
@@ -3419,6 +3449,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           // setClientSuccess received, now forward login
           this.socketsFacade.forwardLogin(agentId);
         }),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }
