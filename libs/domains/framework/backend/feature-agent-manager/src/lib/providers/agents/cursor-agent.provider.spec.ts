@@ -42,6 +42,12 @@ describe('CursorAgentProvider', () => {
     });
   });
 
+  describe('getBasePath', () => {
+    it('should return "/app"', () => {
+      expect(provider.getBasePath()).toBe('/app');
+    });
+  });
+
   describe('getDockerImage', () => {
     it('should return default image when CURSOR_AGENT_DOCKER_IMAGE is not set', () => {
       delete process.env.CURSOR_AGENT_DOCKER_IMAGE;
