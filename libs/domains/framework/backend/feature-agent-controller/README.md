@@ -339,7 +339,7 @@ Values are securely passed from the frontend through the backend to the user dat
 Client responses include a `config` field that is automatically fetched from the remote agent-manager service. This configuration includes:
 
 - `gitRepositoryUrl` - The Git repository URL configured on the agent-manager instance (if set)
-- `agentTypes` - Array of available agent provider types registered on the agent-manager instance (e.g., `['cursor']`, `['cursor', 'openai']`)
+- `agentTypes` - Array of available agent provider types registered on the agent-manager instance (e.g., `['cursor']`, `['cursor', 'opencode']`)
 
 The config field is optional and may be `undefined` if:
 

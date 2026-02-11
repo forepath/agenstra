@@ -1190,7 +1190,7 @@ components:
           type: [string, 'null']
         agentType:
           type: string
-          enum: [cursor]
+          enum: [cursor, opencode, openclaw]
           description: Agent provider type (defaults to 'cursor' if not provided)
         gitRepositoryUrl:
           type: [string, 'null']
@@ -1235,7 +1235,7 @@ components:
           type: [string, 'null']
         agentType:
           type: string
-          enum: [cursor]
+          enum: [cursor, opencode, openclaw]
           description: Agent provider type
         deploymentConfiguration:
           type: object

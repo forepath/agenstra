@@ -181,7 +181,7 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
-        env: {
+        env: expect.objectContaining({
           AGENT_NAME: createDto.name,
           CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
@@ -189,7 +189,7 @@ describe('AgentsService', () => {
           GIT_TOKEN: process.env.GIT_TOKEN,
           GIT_PASSWORD: process.env.GIT_PASSWORD,
           GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
-        },
+        }),
         volumes: [
           {
             hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
@@ -210,7 +210,7 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
-        expect.stringMatching(/sh -c "git clone '[^']+' \/app"/),
+        expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
       );
       expect(repository.create).toHaveBeenCalledWith({
         name: createDto.name,
@@ -261,7 +261,7 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
-        env: {
+        env: expect.objectContaining({
           AGENT_NAME: createDto.name,
           CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
@@ -269,7 +269,7 @@ describe('AgentsService', () => {
           GIT_TOKEN: process.env.GIT_TOKEN,
           GIT_PASSWORD: process.env.GIT_PASSWORD,
           GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
-        },
+        }),
         volumes: [
           {
             hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
@@ -534,7 +534,7 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
-        env: {
+        env: expect.objectContaining({
           AGENT_NAME: createDto.name,
           CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
@@ -542,7 +542,7 @@ describe('AgentsService', () => {
           GIT_TOKEN: process.env.GIT_TOKEN,
           GIT_PASSWORD: process.env.GIT_PASSWORD,
           GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
-        },
+        }),
         volumes: [
           {
             hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
@@ -578,9 +578,61 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         7,
         containerId,
-        expect.stringMatching(/sh -c "git clone .*git@github\.com:user\/repo\.git.*\/app"/),
+        expect.stringMatching(/sh -c "git clone .*git@github\.com:user\/repo\.git.*'\/app'"/),
       );
       expect(repository.create).toHaveBeenCalled();
+    });
+
+    it('should create agent with SSH repository using getRepositoryPath', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'SSH Agent',
+        description: 'SSH Description',
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+
+      // Generate a test SSH key using sshpk (Ed25519 is supported for generation)
+      const key = sshpk.generatePrivateKey('ed25519');
+      const privateKeyPem = key.toString('openssh');
+
+      process.env.GIT_REPOSITORY_URL = 'git@github.com:user/repo.git';
+      process.env.GIT_PRIVATE_KEY = privateKeyPem;
+
+      const basePath = '/app';
+      const repositoryPath = '/workspace';
+
+      mockAgentProvider.getBasePath = jest.fn().mockReturnValue(basePath);
+      mockAgentProvider.getRepositoryPath = jest.fn().mockReturnValue(repositoryPath);
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
+      expect(mockAgentProvider.getRepositoryPath).toHaveBeenCalled();
+      // Verify git clone uses basePath + repositoryPath for SSH repository
+      const expectedPath = basePath + repositoryPath;
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        7,
+        containerId,
+        expect.stringMatching(
+          new RegExp(`sh -c "git clone .*git@github\\.com:user/repo\\.git.*'${expectedPath.replace(/'/g, "'\\''")}'"`),
+        ),
+      );
     });
 
     it('should throw BadRequestException when SSH repository URL is missing private key', async () => {
@@ -707,6 +759,446 @@ describe('AgentsService', () => {
         workflowId: 'workflow.yml',
         providerToken: 'ghp_token123',
         providerBaseUrl: undefined,
+      });
+    });
+
+    it('should use provider base path when getBasePath is defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+      const customBasePath = '/custom/path';
+
+      mockAgentProvider.getBasePath = jest.fn().mockReturnValue(customBasePath);
+      // Remove getRepositoryPath to ensure it's not defined from previous tests
+      delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
+        env: expect.objectContaining({
+          AGENT_NAME: createDto.name,
+          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
+          GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
+          GIT_USERNAME: process.env.GIT_USERNAME,
+          GIT_TOKEN: process.env.GIT_TOKEN,
+          GIT_PASSWORD: process.env.GIT_PASSWORD,
+          GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+        }),
+        volumes: [
+          {
+            hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+            containerPath: customBasePath,
+            readOnly: false,
+          },
+        ],
+      });
+      // Verify git clone uses the custom base path (escaped for shell)
+      // Since getRepositoryPath is not defined, it should use just basePath
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        3,
+        containerId,
+        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
+      );
+    });
+
+    it('should use provider repository path when getRepositoryPath is defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+      const basePath = '/app';
+      const repositoryPath = '/repository';
+
+      mockAgentProvider.getBasePath = jest.fn().mockReturnValue(basePath);
+      mockAgentProvider.getRepositoryPath = jest.fn().mockReturnValue(repositoryPath);
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
+      expect(mockAgentProvider.getRepositoryPath).toHaveBeenCalled();
+      // Verify git clone uses basePath + repositoryPath
+      const expectedPath = basePath + repositoryPath;
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        3,
+        containerId,
+        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
+      );
+    });
+
+    it('should combine custom base path and repository path when both are defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+      const customBasePath = '/custom/base';
+      const repositoryPath = '/repo';
+
+      mockAgentProvider.getBasePath = jest.fn().mockReturnValue(customBasePath);
+      mockAgentProvider.getRepositoryPath = jest.fn().mockReturnValue(repositoryPath);
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
+      expect(mockAgentProvider.getRepositoryPath).toHaveBeenCalled();
+      // Verify volume mount uses custom base path
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
+        env: expect.objectContaining({
+          AGENT_NAME: createDto.name,
+          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
+          GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
+          GIT_USERNAME: process.env.GIT_USERNAME,
+          GIT_TOKEN: process.env.GIT_TOKEN,
+          GIT_PASSWORD: process.env.GIT_PASSWORD,
+          GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+        }),
+        volumes: [
+          {
+            hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+            containerPath: customBasePath,
+            readOnly: false,
+          },
+        ],
+      });
+      // Verify git clone uses basePath + repositoryPath
+      const expectedPath = customBasePath + repositoryPath;
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        3,
+        containerId,
+        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
+      );
+    });
+
+    it('should use only base path when getRepositoryPath is not defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+      const customBasePath = '/custom/path';
+
+      mockAgentProvider.getBasePath = jest.fn().mockReturnValue(customBasePath);
+      // Remove getRepositoryPath to simulate provider without the method
+      delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
+      // Verify git clone uses only basePath when getRepositoryPath is not defined
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        3,
+        containerId,
+        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
+      );
+    });
+
+    it('should fall back to /app when getBasePath is not defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+
+      // Remove getBasePath from mock provider to simulate provider without the method
+      delete (mockAgentProvider as { getBasePath?: () => string }).getBasePath;
+      // Also remove getRepositoryPath to ensure it's not defined from previous tests
+      delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
+        env: expect.objectContaining({
+          AGENT_NAME: createDto.name,
+          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
+          GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
+          GIT_USERNAME: process.env.GIT_USERNAME,
+          GIT_TOKEN: process.env.GIT_TOKEN,
+          GIT_PASSWORD: process.env.GIT_PASSWORD,
+          GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+        }),
+        volumes: [
+          {
+            hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+            containerPath: '/app',
+            readOnly: false,
+          },
+        ],
+      });
+      // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        3,
+        containerId,
+        expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
+      );
+    });
+
+    it('should fall back to /app when getBasePath returns undefined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+
+      mockAgentProvider.getBasePath = jest.fn().mockReturnValue(undefined);
+      // Remove getRepositoryPath to ensure it's not defined from previous tests
+      delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
+        env: expect.objectContaining({
+          AGENT_NAME: createDto.name,
+          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
+          GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
+          GIT_USERNAME: process.env.GIT_USERNAME,
+          GIT_TOKEN: process.env.GIT_TOKEN,
+          GIT_PASSWORD: process.env.GIT_PASSWORD,
+          GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+        }),
+        volumes: [
+          {
+            hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+            containerPath: '/app',
+            readOnly: false,
+          },
+        ],
+      });
+      // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        3,
+        containerId,
+        expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
+      );
+    });
+
+    it('should include provider environment variables when getEnvironmentVariables is defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+      const customEnvVars = {
+        CUSTOM_VAR_1: 'value1',
+        CUSTOM_VAR_2: 'value2',
+        API_ENDPOINT: 'https://api.example.com',
+      };
+
+      mockAgentProvider.getEnvironmentVariables = jest.fn().mockReturnValue(customEnvVars);
+      // Remove getRepositoryPath to ensure it's not defined from previous tests
+      delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(mockAgentProvider.getEnvironmentVariables).toHaveBeenCalled();
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
+        env: expect.objectContaining({
+          AGENT_NAME: createDto.name,
+          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
+          GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
+          GIT_USERNAME: process.env.GIT_USERNAME,
+          GIT_TOKEN: process.env.GIT_TOKEN,
+          GIT_PASSWORD: process.env.GIT_PASSWORD,
+          GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+          ...customEnvVars,
+        }),
+        volumes: [
+          {
+            hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+            containerPath: '/app',
+            readOnly: false,
+          },
+        ],
+      });
+    });
+
+    it('should not include provider environment variables when getEnvironmentVariables is not defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        description: 'New Description',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const volumePath = '/opt/agents/test-volume-uuid';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        description: createDto.description,
+        hashedPassword,
+        containerId,
+        volumePath,
+      };
+
+      // Remove getEnvironmentVariables to ensure it's not defined from previous tests
+      delete (mockAgentProvider as { getEnvironmentVariables?: () => Record<string, string> }).getEnvironmentVariables;
+      // Remove getRepositoryPath to ensure it's not defined from previous tests
+      delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      // Verify that getEnvironmentVariables was not called (since it doesn't exist)
+      expect(mockAgentProvider.getEnvironmentVariables).toBeUndefined();
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
+        env: {
+          AGENT_NAME: createDto.name,
+          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
+          GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
+          GIT_USERNAME: process.env.GIT_USERNAME,
+          GIT_TOKEN: process.env.GIT_TOKEN,
+          GIT_PASSWORD: process.env.GIT_PASSWORD,
+          GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+        },
+        volumes: [
+          {
+            hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+            containerPath: '/app',
+            readOnly: false,
+          },
+        ],
       });
     });
 

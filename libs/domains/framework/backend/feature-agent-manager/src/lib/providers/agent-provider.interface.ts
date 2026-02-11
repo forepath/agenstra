@@ -10,6 +10,10 @@ export interface AgentResponseObject {
   [key: string]: unknown; // Allow additional properties
 }
 
+export interface AgentFeatures {
+  chat: boolean;
+}
+
 /**
  * Agent provider interface for implementing different agent solutions.
  * This interface allows the system to support multiple agent implementations
@@ -54,6 +58,20 @@ export interface AgentProvider {
    * @returns The base path string (e.g., '/app'). Defaults to '/app' if not implemented.
    */
   getBasePath?(): string;
+
+  /**
+   * Get the path to the repository relative to the base path for the provider.
+   * This is used to construct the repository path within agent containers.
+   * @returns The repository path string (e.g., 'repository'). Defaults to '' if not implemented.
+   */
+  getRepositoryPath?(): string;
+
+  /**
+   * Get the environment variables for the provider.
+   * This is used to set environment variables within agent containers.
+   * @returns The environment variables object. Defaults to {} if not implemented.
+   */
+  getEnvironmentVariables?(): Record<string, string>;
 
   /**
    * Send a message to the agent and get a response.
