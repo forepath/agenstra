@@ -30,6 +30,15 @@ export class CursorAgentProvider implements AgentProvider {
   }
 
   /**
+   * Get the base path for the provider.
+   * This is used to construct the API base URL.
+   * @returns The base path string (e.g., '/app')
+   */
+  getBasePath(): string {
+    return '/app';
+  }
+
+  /**
    * Get the Docker image (including tag) to use for cursor-agent containers.
    * @returns The Docker image string
    */

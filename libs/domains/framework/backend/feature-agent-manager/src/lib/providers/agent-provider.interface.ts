@@ -49,6 +49,13 @@ export interface AgentProvider {
   getSshConnectionDockerImage(): string | undefined;
 
   /**
+   * Get the base path for the provider.
+   * This is used to construct file system paths within agent containers.
+   * @returns The base path string (e.g., '/app'). Defaults to '/app' if not implemented.
+   */
+  getBasePath?(): string;
+
+  /**
    * Send a message to the agent and get a response.
    * @param agentId - The UUID of the agent
    * @param containerId - The Docker container ID where the agent is running

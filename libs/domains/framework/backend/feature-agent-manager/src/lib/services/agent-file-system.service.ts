@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
+import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
@@ -16,12 +17,13 @@ import { DockerService } from './docker.service';
 export class AgentFileSystemService {
   private readonly logger = new Logger(AgentFileSystemService.name);
   private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-  private readonly BASE_PATH = '/app';
+  private readonly DEFAULT_BASE_PATH = '/app';
 
   constructor(
     private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
+    private readonly agentProviderFactory: AgentProviderFactory,
   ) {}
 
   /**
@@ -57,13 +59,37 @@ export class AgentFileSystemService {
   }
 
   /**
+   * Get the base path for an agent based on its provider.
+   * Falls back to the default '/app' if the provider doesn't specify one.
+   * @param agentType - The agent type identifier
+   * @returns The base path string
+   */
+  private getBasePath(agentType: string): string {
+    try {
+      const provider = this.agentProviderFactory.getProvider(agentType);
+      if (provider.getBasePath) {
+        const basePath = provider.getBasePath();
+        if (basePath) {
+          return basePath;
+        }
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to get provider for agent type '${agentType}', using default base path: ${error}`);
+    }
+    return this.DEFAULT_BASE_PATH;
+  }
+
+  /**
    * Build the full container path from a relative path.
-   * @param relativePath - The relative path from /app
+   * Uses the provider's base path if available, otherwise defaults to '/app'.
+   * @param relativePath - The relative path from the base path
+   * @param agentType - The agent type identifier
    * @returns The full container path
    */
-  private buildContainerPath(relativePath: string): string {
+  private buildContainerPath(relativePath: string, agentType: string): string {
     const sanitized = this.sanitizePath(relativePath);
-    return `${this.BASE_PATH}/${sanitized}`;
+    const basePath = this.getBasePath(agentType);
+    return `${basePath}/${sanitized}`;
   }
 
   /**
@@ -71,7 +97,7 @@ export class AgentFileSystemService {
    * Uses docker cp to copy the file to a temporary location, then reads it as base64.
    * This approach avoids corruption issues that can occur with shell commands, especially for binary files.
    * @param agentId - The UUID of the agent
-   * @param filePath - The relative path to the file (from /app)
+   * @param filePath - The relative path to the file (from the provider's base path, defaults to /app)
    * @returns File content (base64-encoded) and encoding type
    * @throws NotFoundException if agent or file is not found
    * @throws BadRequestException if path is invalid or file is too large
@@ -84,7 +110,7 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath);
+    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
     let tempFilePath: string | null = null;
 
     try {
@@ -205,7 +231,7 @@ export class AgentFileSystemService {
    * Write file content to agent container.
    * Accepts base64-encoded content to support both text and binary files.
    * @param agentId - The UUID of the agent
-   * @param filePath - The relative path to the file (from /app)
+   * @param filePath - The relative path to the file (from the provider's base path, defaults to /app)
    * @param content - The file content as base64-encoded string
    * @param encoding - Optional encoding indicator ('utf-8' or 'base64')
    * @throws NotFoundException if agent is not found
@@ -219,7 +245,7 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath);
+    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
 
     // Content is already base64-encoded, so we check the approximate decoded size
     // Base64 is ~33% larger: original_size ≈ base64_length * 3/4
@@ -254,7 +280,7 @@ export class AgentFileSystemService {
   /**
    * List directory contents in agent container.
    * @param agentId - The UUID of the agent
-   * @param directoryPath - The relative path to the directory (from /app), defaults to '.'
+   * @param directoryPath - The relative path to the directory (from the provider's base path, defaults to /app), defaults to '.'
    * @returns Array of file nodes
    * @throws NotFoundException if agent or directory is not found
    * @throws BadRequestException if path is invalid
@@ -267,7 +293,7 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(directoryPath);
+    const containerPath = this.buildContainerPath(directoryPath, agentEntity.agentType);
 
     try {
       // Use a simpler approach: ls to list, then process with find for each item
@@ -400,7 +426,7 @@ export class AgentFileSystemService {
   /**
    * Create a file or directory in agent container.
    * @param agentId - The UUID of the agent
-   * @param filePath - The relative path to create (from /app)
+   * @param filePath - The relative path to create (from the provider's base path, defaults to /app)
    * @param type - The type to create ('file' or 'directory')
    * @param content - Optional content for file creation
    * @throws NotFoundException if agent is not found
@@ -419,7 +445,7 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath);
+    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
 
     try {
       if (type === 'directory') {
@@ -453,7 +479,7 @@ export class AgentFileSystemService {
   /**
    * Delete a file or directory from agent container.
    * @param agentId - The UUID of the agent
-   * @param filePath - The relative path to delete (from /app)
+   * @param filePath - The relative path to delete (from the provider's base path, defaults to /app)
    * @throws NotFoundException if agent or file is not found
    * @throws BadRequestException if path is invalid
    */
@@ -465,7 +491,7 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath);
+    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
 
     try {
       // Use rm -rf to delete file or directory
@@ -488,8 +514,8 @@ export class AgentFileSystemService {
   /**
    * Move a file or directory in agent container.
    * @param agentId - The UUID of the agent
-   * @param sourcePath - The relative path to the source file/directory (from /app)
-   * @param destinationPath - The relative path to the destination (from /app)
+   * @param sourcePath - The relative path to the source file/directory (from the provider's base path, defaults to /app)
+   * @param destinationPath - The relative path to the destination (from the provider's base path, defaults to /app)
    * @throws NotFoundException if agent, source file, or destination directory is not found
    * @throws BadRequestException if paths are invalid
    */
@@ -501,8 +527,8 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const sourceContainerPath = this.buildContainerPath(sourcePath);
-    const destinationContainerPath = this.buildContainerPath(destinationPath);
+    const sourceContainerPath = this.buildContainerPath(sourcePath, agentEntity.agentType);
+    const destinationContainerPath = this.buildContainerPath(destinationPath, agentEntity.agentType);
 
     try {
       // Use mv command to move file or directory

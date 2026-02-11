@@ -44,6 +44,12 @@ describe('OpenCodeAgentProvider', () => {
     });
   });
 
+  describe('getBasePath', () => {
+    it('should return "/app"', () => {
+      expect(provider.getBasePath()).toBe('/app');
+    });
+  });
+
   describe('getDockerImage', () => {
     it('should return default image when OPENCODE_AGENT_DOCKER_IMAGE is not set', () => {
       delete process.env.OPENCODE_AGENT_DOCKER_IMAGE;

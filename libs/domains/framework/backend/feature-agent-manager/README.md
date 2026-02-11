@@ -468,6 +468,12 @@ To add a new agent provider:
        return process.env.MY_AGENT_DOCKER_IMAGE || 'my-registry/my-agent:latest';
      }
 
+     getBasePath(): string {
+       // Return the base path for file system operations (defaults to '/app' if not implemented)
+       // This path is used by AgentFileSystemService for all file operations
+       return '/custom/path'; // or '/app' for default behavior
+     }
+
      async sendMessage(agentId: string, containerId: string, message: string, options?: AgentProviderOptions): Promise<string> {
        // Implementation
      }
@@ -711,7 +717,7 @@ These environment variables are required for git repository cloning when creatin
 
 1. Create a Docker container with `GIT_REPOSITORY_URL`, `GIT_USERNAME`, and `GIT_TOKEN` (or `GIT_PASSWORD`) environment variables
 2. Create a `.netrc` file in the container for git authentication
-3. Clone the repository directly into the container's `/app` directory (workdir)
+3. Clone the repository directly into the container's base path directory (defaults to `/app`, configurable via provider's `getBasePath()` method)
 
 **SSH repositories**
 
