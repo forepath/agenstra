@@ -280,6 +280,45 @@ export class ClientAgentProxyService {
   }
 
   /**
+   * Start all Docker containers for an agent (main, VNC, SSH).
+   * @param clientId - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @returns The agent response DTO
+   */
+  async startClientAgent(clientId: string, agentId: string): Promise<AgentResponseDto> {
+    return await this.makeRequest<AgentResponseDto>(clientId, {
+      method: 'POST',
+      url: `/${agentId}/start`,
+    });
+  }
+
+  /**
+   * Stop all Docker containers for an agent (main, VNC, SSH).
+   * @param clientId - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @returns The agent response DTO
+   */
+  async stopClientAgent(clientId: string, agentId: string): Promise<AgentResponseDto> {
+    return await this.makeRequest<AgentResponseDto>(clientId, {
+      method: 'POST',
+      url: `/${agentId}/stop`,
+    });
+  }
+
+  /**
+   * Restart all Docker containers for an agent (main, VNC, SSH).
+   * @param clientId - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @returns The agent response DTO
+   */
+  async restartClientAgent(clientId: string, agentId: string): Promise<AgentResponseDto> {
+    return await this.makeRequest<AgentResponseDto>(clientId, {
+      method: 'POST',
+      url: `/${agentId}/restart`,
+    });
+  }
+
+  /**
    * Get configuration from the client's agent-manager service.
    * Returns undefined if the request fails (e.g., agent-manager is unreachable).
    * @param clientId - The UUID of the client

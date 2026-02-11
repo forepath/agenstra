@@ -109,6 +109,69 @@ paths:
       responses:
         '204':
           description: Deleted
+  /agents/{id}/start:
+    post:
+      summary: Start agent environment
+      operationId: startAgent
+      description: Start all Docker containers for the agent (main, VNC, SSH).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent environment started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponseDto'
+        '404':
+          description: Agent not found
+  /agents/{id}/stop:
+    post:
+      summary: Stop agent environment
+      operationId: stopAgent
+      description: Stop all Docker containers for the agent (main, VNC, SSH).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent environment stopped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponseDto'
+        '404':
+          description: Agent not found
+  /agents/{id}/restart:
+    post:
+      summary: Restart agent environment
+      operationId: restartAgent
+      description: Restart all Docker containers for the agent (main, VNC, SSH).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent environment restarted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponseDto'
+        '404':
+          description: Agent not found
   /config:
     get:
       summary: Get configuration parameters

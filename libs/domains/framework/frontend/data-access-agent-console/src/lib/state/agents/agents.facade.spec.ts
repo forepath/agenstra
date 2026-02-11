@@ -7,6 +7,9 @@ import {
   deleteClientAgent,
   loadClientAgent,
   loadClientAgents,
+  restartClientAgent,
+  startClientAgent,
+  stopClientAgent,
   updateClientAgent,
 } from './agents.actions';
 import { AgentsFacade } from './agents.facade';
@@ -259,6 +262,27 @@ describe('AgentsFacade', () => {
       facade.deleteClientAgent(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(deleteClientAgent({ clientId, agentId }));
+    });
+
+    it('should dispatch startClientAgent action', () => {
+      const agentId = 'agent-1';
+      facade.startClientAgent(clientId, agentId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(startClientAgent({ clientId, agentId }));
+    });
+
+    it('should dispatch stopClientAgent action', () => {
+      const agentId = 'agent-1';
+      facade.stopClientAgent(clientId, agentId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(stopClientAgent({ clientId, agentId }));
+    });
+
+    it('should dispatch restartClientAgent action', () => {
+      const agentId = 'agent-1';
+      facade.restartClientAgent(clientId, agentId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(restartClientAgent({ clientId, agentId }));
     });
 
     it('should dispatch clearSelectedClientAgent action', () => {

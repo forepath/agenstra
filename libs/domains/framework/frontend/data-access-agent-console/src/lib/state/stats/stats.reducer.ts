@@ -1,5 +1,10 @@
 import { createReducer, on } from '@ngrx/store';
-import { clearAllStatsHistory, clearStatsHistory, containerStatsReceived } from './stats.actions';
+import {
+  clearAllStatsHistory,
+  clearStatsHistory,
+  containerStatsReceived,
+  setContainerRunningStatus,
+} from './stats.actions';
 import type { ContainerStatsEntry } from './stats.types';
 
 /**
@@ -11,6 +16,8 @@ export interface StatsState {
   statsByContainer: Record<string, ContainerStatsEntry[]>;
   // Maximum number of stats entries to keep per container (to prevent memory issues)
   maxEntriesPerContainer: number;
+  // Optimistic running status after start/stop/restart; socket data takes precedence when present
+  runningOverrides: Record<string, boolean>;
 }
 
 /**
@@ -23,6 +30,7 @@ function getStatsKey(clientId: string, agentId: string): string {
 export const initialStatsState: StatsState = {
   statsByContainer: {},
   maxEntriesPerContainer: 1000, // Keep last 1000 entries per container
+  runningOverrides: {},
 };
 
 export const statsReducer = createReducer(
@@ -40,24 +48,41 @@ export const statsReducer = createReducer(
         ? updatedStats.slice(-state.maxEntriesPerContainer)
         : updatedStats;
 
+    // Clear override for this container so socket data is now the source of truth
+    const { [key]: _removed, ...remainingOverrides } = state.runningOverrides;
+
     return {
       ...state,
       statsByContainer: {
         ...state.statsByContainer,
         [key]: trimmedStats,
       },
+      runningOverrides: remainingOverrides,
     };
   }),
   on(clearStatsHistory, (state, { clientId, agentId }) => {
     const key = getStatsKey(clientId, agentId);
     const { [key]: removed, ...remainingStats } = state.statsByContainer;
+    const { [key]: removedOverride, ...remainingOverrides } = state.runningOverrides;
     return {
       ...state,
       statsByContainer: remainingStats,
+      runningOverrides: remainingOverrides,
     };
   }),
   on(clearAllStatsHistory, (state) => ({
     ...state,
     statsByContainer: {},
+    runningOverrides: {},
   })),
+  on(setContainerRunningStatus, (state, { clientId, agentId, running }) => {
+    const key = getStatsKey(clientId, agentId);
+    return {
+      ...state,
+      runningOverrides: {
+        ...state.runningOverrides,
+        [key]: running,
+      },
+    };
+  }),
 );

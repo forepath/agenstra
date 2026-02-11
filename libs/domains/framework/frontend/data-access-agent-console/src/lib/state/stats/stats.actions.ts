@@ -21,3 +21,12 @@ export const clearStatsHistory = createAction(
  * Action to clear all stats history
  */
 export const clearAllStatsHistory = createAction('[Stats] Clear All Stats History');
+
+/**
+ * Action to set container running status optimistically (e.g. after start/stop/restart success).
+ * Used so the UI updates immediately without waiting for the next containerStats websocket event.
+ */
+export const setContainerRunningStatus = createAction(
+  '[Stats] Set Container Running Status',
+  props<{ clientId: string; agentId: string; running: boolean }>(),
+);

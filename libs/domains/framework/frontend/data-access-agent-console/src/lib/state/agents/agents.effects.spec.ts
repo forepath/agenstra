@@ -22,6 +22,15 @@ import {
   loadClientAgentsFailure,
   loadClientAgentsSuccess,
   loadClientAgentSuccess,
+  restartClientAgent,
+  restartClientAgentFailure,
+  restartClientAgentSuccess,
+  startClientAgent,
+  startClientAgentFailure,
+  startClientAgentSuccess,
+  stopClientAgent,
+  stopClientAgentFailure,
+  stopClientAgentSuccess,
   updateClientAgent,
   updateClientAgentFailure,
   updateClientAgentSuccess,
@@ -34,6 +43,9 @@ import {
   loadClientAgentCommandsLoading$,
   loadClientAgents$,
   loadClientAgentsBatch$,
+  restartClientAgent$,
+  startClientAgent$,
+  stopClientAgent$,
   updateClientAgent$,
 } from './agents.effects';
 import { selectAgentsEntities } from './agents.selectors';
@@ -72,6 +84,9 @@ describe('AgentsEffects', () => {
       createClientAgent: jest.fn(),
       updateClientAgent: jest.fn(),
       deleteClientAgent: jest.fn(),
+      startClientAgent: jest.fn(),
+      stopClientAgent: jest.fn(),
+      restartClientAgent: jest.fn(),
     } as any;
 
     TestBed.configureTestingModule({
@@ -375,6 +390,99 @@ describe('AgentsEffects', () => {
       agentsService.deleteClientAgent.mockReturnValue(throwError(() => error));
 
       deleteClientAgent$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('startClientAgent$', () => {
+    it('should return startClientAgentSuccess on success', (done) => {
+      const agentId = 'agent-1';
+      const action = startClientAgent({ clientId, agentId });
+      const outcome = startClientAgentSuccess({ clientId, agent: mockAgent });
+
+      actions$ = of(action);
+      agentsService.startClientAgent.mockReturnValue(of(mockAgent));
+
+      startClientAgent$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+
+    it('should return startClientAgentFailure on error', (done) => {
+      const agentId = 'agent-1';
+      const action = startClientAgent({ clientId, agentId });
+      const error = new Error('Start failed');
+      const outcome = startClientAgentFailure({ clientId, error: 'Start failed' });
+
+      actions$ = of(action);
+      agentsService.startClientAgent.mockReturnValue(throwError(() => error));
+
+      startClientAgent$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('stopClientAgent$', () => {
+    it('should return stopClientAgentSuccess on success', (done) => {
+      const agentId = 'agent-1';
+      const action = stopClientAgent({ clientId, agentId });
+      const outcome = stopClientAgentSuccess({ clientId, agent: mockAgent });
+
+      actions$ = of(action);
+      agentsService.stopClientAgent.mockReturnValue(of(mockAgent));
+
+      stopClientAgent$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+
+    it('should return stopClientAgentFailure on error', (done) => {
+      const agentId = 'agent-1';
+      const action = stopClientAgent({ clientId, agentId });
+      const error = new Error('Stop failed');
+      const outcome = stopClientAgentFailure({ clientId, error: 'Stop failed' });
+
+      actions$ = of(action);
+      agentsService.stopClientAgent.mockReturnValue(throwError(() => error));
+
+      stopClientAgent$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('restartClientAgent$', () => {
+    it('should return restartClientAgentSuccess on success', (done) => {
+      const agentId = 'agent-1';
+      const action = restartClientAgent({ clientId, agentId });
+      const outcome = restartClientAgentSuccess({ clientId, agent: mockAgent });
+
+      actions$ = of(action);
+      agentsService.restartClientAgent.mockReturnValue(of(mockAgent));
+
+      restartClientAgent$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+
+    it('should return restartClientAgentFailure on error', (done) => {
+      const agentId = 'agent-1';
+      const action = restartClientAgent({ clientId, agentId });
+      const error = new Error('Restart failed');
+      const outcome = restartClientAgentFailure({ clientId, error: 'Restart failed' });
+
+      actions$ = of(action);
+      agentsService.restartClientAgent.mockReturnValue(throwError(() => error));
+
+      restartClientAgent$(actions$, agentsService).subscribe((result) => {
         expect(result).toEqual(outcome);
         done();
       });

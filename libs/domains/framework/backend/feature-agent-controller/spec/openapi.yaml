@@ -594,6 +594,99 @@ paths:
           description: Deleted
         '403':
           description: User does not have access to this client
+  /clients/{id}/agents/{agentId}/start:
+    post:
+      summary: Start agent environment for a client
+      operationId: startClientAgent
+      description: Start all Docker containers for the agent (main, VNC, SSH). Proxied to agent-manager.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the agent
+      responses:
+        '200':
+          description: Agent environment started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Agent not found
+  /clients/{id}/agents/{agentId}/stop:
+    post:
+      summary: Stop agent environment for a client
+      operationId: stopClientAgent
+      description: Stop all Docker containers for the agent (main, VNC, SSH). Proxied to agent-manager.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the agent
+      responses:
+        '200':
+          description: Agent environment stopped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Agent not found
+  /clients/{id}/agents/{agentId}/restart:
+    post:
+      summary: Restart agent environment for a client
+      operationId: restartClientAgent
+      description: Restart all Docker containers for the agent (main, VNC, SSH). Proxied to agent-manager.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the agent
+      responses:
+        '200':
+          description: Agent environment restarted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Agent not found
   /clients/{id}/agents/{agentId}/files:
     get:
       summary: List directory contents (proxied)

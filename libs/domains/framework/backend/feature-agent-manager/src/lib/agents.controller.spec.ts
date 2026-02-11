@@ -32,6 +32,9 @@ describe('AgentsController', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+    start: jest.fn(),
+    stop: jest.fn(),
+    restart: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -125,6 +128,39 @@ describe('AgentsController', () => {
       await controller.deleteAgent('test-uuid');
 
       expect(service.remove).toHaveBeenCalledWith('test-uuid');
+    });
+  });
+
+  describe('startAgent', () => {
+    it('should start agent and return agent response', async () => {
+      service.start.mockResolvedValue(mockAgentResponse);
+
+      const result = await controller.startAgent('test-uuid');
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(service.start).toHaveBeenCalledWith('test-uuid');
+    });
+  });
+
+  describe('stopAgent', () => {
+    it('should stop agent and return agent response', async () => {
+      service.stop.mockResolvedValue(mockAgentResponse);
+
+      const result = await controller.stopAgent('test-uuid');
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(service.stop).toHaveBeenCalledWith('test-uuid');
+    });
+  });
+
+  describe('restartAgent', () => {
+    it('should restart agent and return agent response', async () => {
+      service.restart.mockResolvedValue(mockAgentResponse);
+
+      const result = await controller.restartAgent('test-uuid');
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(service.restart).toHaveBeenCalledWith('test-uuid');
     });
   });
 });

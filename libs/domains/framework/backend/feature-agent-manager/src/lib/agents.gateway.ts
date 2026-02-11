@@ -1182,28 +1182,38 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
-   * Broadcast container stats to all clients authenticated to an agent.
+   * Broadcast container status and stats to all clients authenticated to an agent.
+   * Always sends container status (running/stopped). Stats are included only when the container is running.
    * @param agentUuid - The UUID of the agent
    * @param containerId - The container ID
    */
   private async broadcastContainerStats(agentUuid: string, containerId: string): Promise<void> {
     try {
-      const stats = await this.dockerService.getContainerStats(containerId);
+      const status = await this.dockerService.getContainerStatus(containerId);
       const statsTimestamp = new Date().toISOString();
 
-      // Broadcast stats to all authenticated clients
+      let stats: Awaited<ReturnType<DockerService['getContainerStats']>> | null = null;
+      if (status.running) {
+        try {
+          stats = await this.dockerService.getContainerStats(containerId);
+        } catch (statsError) {
+          const err = statsError as { message?: string; stack?: string };
+          this.logger.warn(`Failed to get container stats for agent ${agentUuid}: ${err.message}`, err.stack);
+        }
+      }
+
       this.broadcastToAgent(
         agentUuid,
         'containerStats',
         createSuccessResponse({
+          status,
           stats,
           timestamp: statsTimestamp,
         }),
       );
     } catch (error) {
       const err = error as { message?: string; stack?: string };
-      // Log error but don't throw - periodic broadcasting should continue
-      this.logger.warn(`Failed to get container stats for agent ${agentUuid}: ${err.message}`, err.stack);
+      this.logger.warn(`Failed to get container status for agent ${agentUuid}: ${err.message}`, err.stack);
     }
   }
 

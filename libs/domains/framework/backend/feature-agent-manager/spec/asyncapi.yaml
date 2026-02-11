@@ -116,7 +116,7 @@ channels:
     messages:
       containerStatsEvent:
         $ref: '#/components/messages/ContainerStats'
-    description: Server broadcasts container statistics (CPU, memory, network, etc.) periodically to all clients authenticated to the agent. First stats are sent immediately after successful login, then every 5 seconds while clients remain authenticated.
+    description: Server broadcasts container status (running/stopped) and, when running, container statistics (CPU, memory, network, etc.) periodically to all clients authenticated to the agent. First broadcast is sent immediately after successful login, then every 5 seconds while clients remain authenticated. When the container is stopped, stats is null but status is always present.
 operations:
   clientSendsLogin:
     action: send
@@ -690,11 +690,20 @@ components:
             enum: [true]
           data:
             type: object
-            required: [stats, timestamp]
+            required: [status, timestamp]
             properties:
+              status:
+                type: object
+                required: [running]
+                description: General container run status.
+                properties:
+                  running:
+                    type: boolean
+                    description: true if the container is started, false if stopped.
               stats:
                 type: object
-                description: Docker container statistics object (CPU, memory, network, etc.). See Docker API documentation for full structure.
+                nullable: true
+                description: Docker container statistics (CPU, memory, network, etc.). Present when container is running, null when stopped. See Docker API documentation for full structure.
                 properties:
                   read:
                     type: string
@@ -728,7 +737,7 @@ components:
                     description: Network statistics
               timestamp:
                 type: string
-                description: ISO timestamp when stats were collected
+                description: ISO timestamp when the payload was collected
           timestamp:
             type: string
             description: ISO timestamp

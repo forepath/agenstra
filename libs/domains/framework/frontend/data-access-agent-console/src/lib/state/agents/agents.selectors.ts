@@ -18,6 +18,12 @@ export const selectAgentsUpdating = createSelector(selectAgentsState, (state) =>
 
 export const selectAgentsDeleting = createSelector(selectAgentsState, (state) => state.deleting);
 
+export const selectAgentsStarting = createSelector(selectAgentsState, (state) => state.starting);
+
+export const selectAgentsStopping = createSelector(selectAgentsState, (state) => state.stopping);
+
+export const selectAgentsRestarting = createSelector(selectAgentsState, (state) => state.restarting);
+
 export const selectAgentsErrors = createSelector(selectAgentsState, (state) => state.errors);
 
 export const selectAgentsCommands = createSelector(selectAgentsState, (state) => state.commands);
@@ -46,6 +52,15 @@ export const selectClientAgentsUpdating = (clientId: string) =>
 export const selectClientAgentsDeleting = (clientId: string) =>
   createSelector(selectAgentsDeleting, (deleting) => deleting[clientId] ?? false);
 
+export const selectClientAgentsStarting = (clientId: string) =>
+  createSelector(selectAgentsStarting, (starting) => starting[clientId] ?? false);
+
+export const selectClientAgentsStopping = (clientId: string) =>
+  createSelector(selectAgentsStopping, (stopping) => stopping[clientId] ?? false);
+
+export const selectClientAgentsRestarting = (clientId: string) =>
+  createSelector(selectAgentsRestarting, (restarting) => restarting[clientId] ?? false);
+
 export const selectClientAgentsError = (clientId: string) =>
   createSelector(selectAgentsErrors, (errors) => errors[clientId] ?? null);
 
@@ -57,8 +72,11 @@ export const selectClientAgentsLoadingAny = (clientId: string) =>
     selectClientAgentsCreating(clientId),
     selectClientAgentsUpdating(clientId),
     selectClientAgentsDeleting(clientId),
-    (loading, loadingAgent, creating, updating, deleting) =>
-      loading || loadingAgent || creating || updating || deleting,
+    selectClientAgentsStarting(clientId),
+    selectClientAgentsStopping(clientId),
+    selectClientAgentsRestarting(clientId),
+    (loading, loadingAgent, creating, updating, deleting, starting, stopping, restarting) =>
+      loading || loadingAgent || creating || updating || deleting || starting || stopping || restarting,
   );
 
 // Derived selectors for a specific client

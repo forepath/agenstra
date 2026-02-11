@@ -31,9 +31,9 @@ export class ContainerStatsStatusBarComponent {
         this.statsFacade.getContainerStats$(clientId, agentId),
       ]).pipe(
         map(([current, statsArray]) => {
-          if (!current) {
+          if (!current || current.stats == null) {
             return {
-              current: null,
+              current: current ?? null,
               previous: null,
               cpuPercent: 0,
               memoryUsage: 0,
@@ -50,7 +50,7 @@ export class ContainerStatsStatusBarComponent {
           // Calculate CPU percent once here, not in template
           const cpuPercent = this.calculateCpuPercent(current, previous);
 
-          // Calculate memory values once here, not in template
+          // Calculate memory values once here, not in template (stats is defined here)
           const memoryUsage = current.stats.memory_stats?.usage || 0;
           const memoryLimit = this.getMemoryLimit(current.stats.memory_stats);
           const memoryUsagePercent = this.getMemoryUsagePercentage({

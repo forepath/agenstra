@@ -2021,6 +2021,53 @@ describe('DockerService', () => {
     });
   });
 
+  describe('getContainerStatus', () => {
+    const containerId = 'test-container-id';
+
+    it('should return running true when container is running', async () => {
+      mockContainer.inspect.mockResolvedValue({ State: { Running: true } });
+
+      const result = await service.getContainerStatus(containerId);
+
+      expect(mockContainer.inspect).toHaveBeenCalled();
+      expect(result).toEqual({ running: true });
+    });
+
+    it('should return running false when container is stopped', async () => {
+      mockContainer.inspect.mockResolvedValue({ State: { Running: false } });
+
+      const result = await service.getContainerStatus(containerId);
+
+      expect(mockContainer.inspect).toHaveBeenCalled();
+      expect(result).toEqual({ running: false });
+    });
+
+    it('should return running false when State is missing', async () => {
+      mockContainer.inspect.mockResolvedValue({});
+
+      const result = await service.getContainerStatus(containerId);
+
+      expect(mockContainer.inspect).toHaveBeenCalled();
+      expect(result).toEqual({ running: false });
+    });
+
+    it('should throw NotFoundException when container does not exist', async () => {
+      mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
+
+      await expect(service.getContainerStatus(containerId)).rejects.toThrow(NotFoundException);
+      expect(mockContainer.inspect).toHaveBeenCalled();
+    });
+
+    it('should propagate non-404 inspection errors', async () => {
+      const error = new Error('Docker daemon error') as Error & { statusCode?: number };
+      error.statusCode = 500;
+      mockContainer.inspect.mockRejectedValue(error);
+
+      await expect(service.getContainerStatus(containerId)).rejects.toThrow('Docker daemon error');
+      expect(mockContainer.inspect).toHaveBeenCalled();
+    });
+  });
+
   describe('getContainerStats', () => {
     const containerId = 'test-container-id';
 

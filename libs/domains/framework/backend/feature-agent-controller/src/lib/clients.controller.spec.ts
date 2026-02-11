@@ -99,6 +99,9 @@ describe('ClientsController', () => {
     createClientAgent: jest.fn(),
     updateClientAgent: jest.fn(),
     deleteClientAgent: jest.fn(),
+    startClientAgent: jest.fn(),
+    stopClientAgent: jest.fn(),
+    restartClientAgent: jest.fn(),
     getClientConfig: jest.fn(),
   };
 
@@ -408,6 +411,48 @@ describe('ClientsController', () => {
       await controller.deleteClientAgent('client-uuid', 'agent-uuid', mockReq);
 
       expect(proxyService.deleteClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid', undefined);
+    });
+  });
+
+  describe('startClientAgent', () => {
+    it('should start agent for a client and return agent response', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      proxyService.startClientAgent.mockResolvedValue(mockAgentResponse);
+
+      const result = await controller.startClientAgent('client-uuid', 'agent-uuid', mockReq);
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(proxyService.startClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+    });
+  });
+
+  describe('stopClientAgent', () => {
+    it('should stop agent for a client and return agent response', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      proxyService.stopClientAgent.mockResolvedValue(mockAgentResponse);
+
+      const result = await controller.stopClientAgent('client-uuid', 'agent-uuid', mockReq);
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(proxyService.stopClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+    });
+  });
+
+  describe('restartClientAgent', () => {
+    it('should restart agent for a client and return agent response', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      proxyService.restartClientAgent.mockResolvedValue(mockAgentResponse);
+
+      const result = await controller.restartClientAgent('client-uuid', 'agent-uuid', mockReq);
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(proxyService.restartClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
 

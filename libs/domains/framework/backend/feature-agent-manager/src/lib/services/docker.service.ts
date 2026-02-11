@@ -339,6 +339,90 @@ export class DockerService {
   }
 
   /**
+   * Start a Docker container by ID.
+   * @param containerId - The ID of the container to start
+   * @throws NotFoundException if container is not found
+   */
+  async startContainer(containerId: string): Promise<void> {
+    try {
+      const container = this.docker.getContainer(containerId);
+
+      try {
+        await container.inspect();
+      } catch (error: unknown) {
+        const dockerError = error as { statusCode?: number };
+        if (dockerError.statusCode === 404) {
+          throw new NotFoundException(`Container with ID '${containerId}' not found`);
+        }
+        throw error;
+      }
+
+      try {
+        await container.start();
+        this.logger.log(`Started container ${containerId}`);
+      } catch (error: unknown) {
+        const startError = error as { statusCode?: number; message?: string };
+        if (startError.statusCode === 304) {
+          this.logger.debug(`Container ${containerId} is already running`);
+          return;
+        }
+        const err = startError as { message?: string; stack?: string };
+        this.logger.error(`Failed to start container ${containerId}: ${err.message}`, err.stack);
+        throw error;
+      }
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      const err = error as { message?: string; stack?: string };
+      this.logger.error(`Error starting container: ${err.message}`, err.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Stop a Docker container by ID.
+   * @param containerId - The ID of the container to stop
+   * @throws NotFoundException if container is not found
+   */
+  async stopContainer(containerId: string): Promise<void> {
+    try {
+      const container = this.docker.getContainer(containerId);
+
+      try {
+        await container.inspect();
+      } catch (error: unknown) {
+        const dockerError = error as { statusCode?: number };
+        if (dockerError.statusCode === 404) {
+          throw new NotFoundException(`Container with ID '${containerId}' not found`);
+        }
+        throw error;
+      }
+
+      try {
+        await container.stop();
+        this.logger.log(`Stopped container ${containerId}`);
+      } catch (error: unknown) {
+        const stopError = error as { statusCode?: number; message?: string };
+        if (stopError.statusCode === 304) {
+          this.logger.debug(`Container ${containerId} is already stopped`);
+          return;
+        }
+        const err = stopError as { message?: string; stack?: string };
+        this.logger.error(`Failed to stop container ${containerId}: ${err.message}`, err.stack);
+        throw error;
+      }
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      const err = error as { message?: string; stack?: string };
+      this.logger.error(`Error stopping container: ${err.message}`, err.stack);
+      throw error;
+    }
+  }
+
+  /**
    * Restart a Docker container by ID.
    * Stops the container if it's running, then starts it again.
    * @param containerId - The ID of the container to restart
@@ -1298,6 +1382,39 @@ export class DockerService {
       }
       const err = error as { message?: string; stack?: string };
       this.logger.error(`Error copying file from container: ${err.message}`, err.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Get container run status (whether it is started or stopped).
+   * @param containerId - The container ID
+   * @returns Object with running boolean
+   * @throws NotFoundException if container is not found
+   */
+  async getContainerStatus(containerId: string): Promise<{ running: boolean }> {
+    try {
+      const container = this.docker.getContainer(containerId);
+
+      let inspectInfo: Docker.ContainerInspectInfo;
+      try {
+        inspectInfo = await container.inspect();
+      } catch (error: unknown) {
+        const dockerError = error as { statusCode?: number };
+        if (dockerError.statusCode === 404) {
+          throw new NotFoundException(`Container with ID '${containerId}' not found`);
+        }
+        throw error;
+      }
+
+      const running = inspectInfo.State?.Running ?? false;
+      return { running };
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      const err = error as { message?: string; stack?: string };
+      this.logger.error(`Error getting container status: ${err.message}`, err.stack);
       throw error;
     }
   }

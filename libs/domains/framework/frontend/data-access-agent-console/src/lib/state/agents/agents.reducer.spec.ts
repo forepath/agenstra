@@ -16,6 +16,15 @@ import {
   loadClientAgentsFailure,
   loadClientAgentsSuccess,
   loadClientAgentSuccess,
+  restartClientAgent,
+  restartClientAgentFailure,
+  restartClientAgentSuccess,
+  startClientAgent,
+  startClientAgentFailure,
+  startClientAgentSuccess,
+  stopClientAgent,
+  stopClientAgentFailure,
+  stopClientAgentSuccess,
   updateClientAgent,
   updateClientAgentFailure,
   updateClientAgentSuccess,
@@ -348,6 +357,144 @@ describe('agentsReducer', () => {
 
       expect(newState.errors[clientId]).toBe('Delete failed');
       expect(newState.deleting[clientId]).toBe(false);
+    });
+  });
+
+  describe('startClientAgent', () => {
+    it('should set starting to true and clear error for the client', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        errors: { [clientId]: 'Previous error' },
+      };
+
+      const newState = agentsReducer(state, startClientAgent({ clientId, agentId: 'agent-1' }));
+
+      expect(newState.starting[clientId]).toBe(true);
+      expect(newState.errors[clientId]).toBeNull();
+    });
+  });
+
+  describe('startClientAgentSuccess', () => {
+    it('should update agent in list and selectedAgent and set starting to false', () => {
+      const updatedAgent = { ...mockAgent, name: 'Updated Name' };
+      const state: AgentsState = {
+        ...initialAgentsState,
+        entities: { [clientId]: [mockAgent, mockAgent2] },
+        selectedAgents: { [clientId]: mockAgent },
+        starting: { [clientId]: true },
+      };
+
+      const newState = agentsReducer(state, startClientAgentSuccess({ clientId, agent: updatedAgent }));
+
+      expect(newState.entities[clientId]).toContainEqual(updatedAgent);
+      expect(newState.selectedAgents[clientId]).toEqual(updatedAgent);
+      expect(newState.starting[clientId]).toBe(false);
+    });
+  });
+
+  describe('startClientAgentFailure', () => {
+    it('should set error and set starting to false', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        starting: { [clientId]: true },
+      };
+
+      const newState = agentsReducer(state, startClientAgentFailure({ clientId, error: 'Start failed' }));
+
+      expect(newState.errors[clientId]).toBe('Start failed');
+      expect(newState.starting[clientId]).toBe(false);
+    });
+  });
+
+  describe('stopClientAgent', () => {
+    it('should set stopping to true and clear error for the client', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        errors: { [clientId]: 'Previous error' },
+      };
+
+      const newState = agentsReducer(state, stopClientAgent({ clientId, agentId: 'agent-1' }));
+
+      expect(newState.stopping[clientId]).toBe(true);
+      expect(newState.errors[clientId]).toBeNull();
+    });
+  });
+
+  describe('stopClientAgentSuccess', () => {
+    it('should update agent in list and selectedAgent and set stopping to false', () => {
+      const updatedAgent = { ...mockAgent, name: 'Stopped Name' };
+      const state: AgentsState = {
+        ...initialAgentsState,
+        entities: { [clientId]: [mockAgent, mockAgent2] },
+        selectedAgents: { [clientId]: mockAgent },
+        stopping: { [clientId]: true },
+      };
+
+      const newState = agentsReducer(state, stopClientAgentSuccess({ clientId, agent: updatedAgent }));
+
+      expect(newState.entities[clientId]).toContainEqual(updatedAgent);
+      expect(newState.selectedAgents[clientId]).toEqual(updatedAgent);
+      expect(newState.stopping[clientId]).toBe(false);
+    });
+  });
+
+  describe('stopClientAgentFailure', () => {
+    it('should set error and set stopping to false', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        stopping: { [clientId]: true },
+      };
+
+      const newState = agentsReducer(state, stopClientAgentFailure({ clientId, error: 'Stop failed' }));
+
+      expect(newState.errors[clientId]).toBe('Stop failed');
+      expect(newState.stopping[clientId]).toBe(false);
+    });
+  });
+
+  describe('restartClientAgent', () => {
+    it('should set restarting to true and clear error for the client', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        errors: { [clientId]: 'Previous error' },
+      };
+
+      const newState = agentsReducer(state, restartClientAgent({ clientId, agentId: 'agent-1' }));
+
+      expect(newState.restarting[clientId]).toBe(true);
+      expect(newState.errors[clientId]).toBeNull();
+    });
+  });
+
+  describe('restartClientAgentSuccess', () => {
+    it('should update agent in list and selectedAgent and set restarting to false', () => {
+      const updatedAgent = { ...mockAgent, name: 'Restarted Name' };
+      const state: AgentsState = {
+        ...initialAgentsState,
+        entities: { [clientId]: [mockAgent, mockAgent2] },
+        selectedAgents: { [clientId]: mockAgent },
+        restarting: { [clientId]: true },
+      };
+
+      const newState = agentsReducer(state, restartClientAgentSuccess({ clientId, agent: updatedAgent }));
+
+      expect(newState.entities[clientId]).toContainEqual(updatedAgent);
+      expect(newState.selectedAgents[clientId]).toEqual(updatedAgent);
+      expect(newState.restarting[clientId]).toBe(false);
+    });
+  });
+
+  describe('restartClientAgentFailure', () => {
+    it('should set error and set restarting to false', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        restarting: { [clientId]: true },
+      };
+
+      const newState = agentsReducer(state, restartClientAgentFailure({ clientId, error: 'Restart failed' }));
+
+      expect(newState.errors[clientId]).toBe('Restart failed');
+      expect(newState.restarting[clientId]).toBe(false);
     });
   });
 

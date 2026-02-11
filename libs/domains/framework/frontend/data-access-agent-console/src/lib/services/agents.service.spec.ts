@@ -154,4 +154,49 @@ describe('AgentsService', () => {
       req.flush(null);
     });
   });
+
+  describe('startClientAgent', () => {
+    it('should start agent containers for a client', (done) => {
+      const agentId = 'agent-1';
+
+      service.startClientAgent(clientId, agentId).subscribe((agent) => {
+        expect(agent).toEqual(mockAgent);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/start`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockAgent);
+    });
+  });
+
+  describe('stopClientAgent', () => {
+    it('should stop agent containers for a client', (done) => {
+      const agentId = 'agent-1';
+
+      service.stopClientAgent(clientId, agentId).subscribe((agent) => {
+        expect(agent).toEqual(mockAgent);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/stop`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockAgent);
+    });
+  });
+
+  describe('restartClientAgent', () => {
+    it('should restart agent containers for a client', (done) => {
+      const agentId = 'agent-1';
+
+      service.restartClientAgent(clientId, agentId).subscribe((agent) => {
+        expect(agent).toEqual(mockAgent);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/restart`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockAgent);
+    });
+  });
 });
