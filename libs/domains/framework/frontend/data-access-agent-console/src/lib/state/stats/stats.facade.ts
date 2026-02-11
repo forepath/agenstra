@@ -11,6 +11,7 @@ import {
   selectContainerStatsFromTime,
   selectContainerStatsInRange,
   selectContainerStatsLimited,
+  selectContainerRunningStatus,
   selectContainersWithStats,
   selectCurrentContainerStats,
 } from './stats.selectors';
@@ -42,6 +43,16 @@ export class StatsFacade {
    */
   getCurrentContainerStats$(clientId: string, agentId: string): Observable<ContainerStatsEntry | null> {
     return this.store.select(selectCurrentContainerStats(clientId, agentId)).pipe(distinctUntilChanged());
+  }
+
+  /**
+   * Get container run status (true = running, false = stopped) for a specific container.
+   * Returns null when no status has been received yet.
+   * @param clientId - The client ID
+   * @param agentId - The agent ID
+   */
+  getContainerRunningStatus$(clientId: string, agentId: string): Observable<boolean | null> {
+    return this.store.select(selectContainerRunningStatus(clientId, agentId)).pipe(distinctUntilChanged());
   }
 
   /**

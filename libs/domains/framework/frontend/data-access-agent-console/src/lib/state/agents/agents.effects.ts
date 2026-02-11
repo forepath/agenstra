@@ -1,8 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, exhaustMap, filter, map, of, switchMap, withLatestFrom } from 'rxjs';
+import { catchError, exhaustMap, filter, from, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 import { AgentsService } from '../../services/agents.service';
+import { setContainerRunningStatus } from '../stats/stats.actions';
 import { listDirectory, listDirectoryFailure, listDirectorySuccess } from '../files/files.actions';
 import type { FileNodeDto } from '../files/files.types';
 import {
@@ -21,6 +22,15 @@ import {
   loadClientAgentsFailure,
   loadClientAgentsSuccess,
   loadClientAgentSuccess,
+  restartClientAgent,
+  restartClientAgentFailure,
+  restartClientAgentSuccess,
+  startClientAgent,
+  startClientAgentFailure,
+  startClientAgentSuccess,
+  stopClientAgent,
+  stopClientAgentFailure,
+  stopClientAgentSuccess,
   updateClientAgent,
   updateClientAgentFailure,
   updateClientAgentSuccess,
@@ -158,6 +168,66 @@ export const deleteClientAgent$ = createEffect(
         agentsService.deleteClientAgent(clientId, agentId).pipe(
           map(() => deleteClientAgentSuccess({ clientId, agentId })),
           catchError((error) => of(deleteClientAgentFailure({ clientId, error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const startClientAgent$ = createEffect(
+  (actions$ = inject(Actions), agentsService = inject(AgentsService)) => {
+    return actions$.pipe(
+      ofType(startClientAgent),
+      exhaustMap(({ clientId, agentId }) =>
+        agentsService.startClientAgent(clientId, agentId).pipe(
+          mergeMap((agent) =>
+            from([
+              startClientAgentSuccess({ clientId, agent }),
+              setContainerRunningStatus({ clientId, agentId: agent.id, running: true }),
+            ]),
+          ),
+          catchError((error) => of(startClientAgentFailure({ clientId, error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const stopClientAgent$ = createEffect(
+  (actions$ = inject(Actions), agentsService = inject(AgentsService)) => {
+    return actions$.pipe(
+      ofType(stopClientAgent),
+      exhaustMap(({ clientId, agentId }) =>
+        agentsService.stopClientAgent(clientId, agentId).pipe(
+          mergeMap((agent) =>
+            from([
+              stopClientAgentSuccess({ clientId, agent }),
+              setContainerRunningStatus({ clientId, agentId: agent.id, running: false }),
+            ]),
+          ),
+          catchError((error) => of(stopClientAgentFailure({ clientId, error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const restartClientAgent$ = createEffect(
+  (actions$ = inject(Actions), agentsService = inject(AgentsService)) => {
+    return actions$.pipe(
+      ofType(restartClientAgent),
+      exhaustMap(({ clientId, agentId }) =>
+        agentsService.restartClientAgent(clientId, agentId).pipe(
+          mergeMap((agent) =>
+            from([
+              restartClientAgentSuccess({ clientId, agent }),
+              setContainerRunningStatus({ clientId, agentId: agent.id, running: true }),
+            ]),
+          ),
+          catchError((error) => of(restartClientAgentFailure({ clientId, error: normalizeError(error) }))),
         ),
       ),
     );

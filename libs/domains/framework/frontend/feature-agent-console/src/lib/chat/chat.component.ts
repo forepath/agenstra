@@ -25,6 +25,7 @@ import {
   EnvFacade,
   FilesFacade,
   SocketsFacade,
+  StatsFacade,
   type AddClientUserDto,
   type AgentResponseDto,
   type ChatMessageData,
@@ -107,6 +108,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly socketsFacade = inject(SocketsFacade);
+  private readonly statsFacade = inject(StatsFacade);
   private readonly filesFacade = inject(FilesFacade);
   private readonly envFacade = inject(EnvFacade);
   private readonly deploymentsService = inject(DeploymentsService);
@@ -237,6 +239,24 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         return of(false);
       }
       return this.agentsFacade.getClientAgentsUpdating$(clientId);
+    }),
+  );
+  readonly agentsStarting$: Observable<boolean> = this.activeClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) return of(false);
+      return this.agentsFacade.getClientAgentsStarting$(clientId);
+    }),
+  );
+  readonly agentsStopping$: Observable<boolean> = this.activeClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) return of(false);
+      return this.agentsFacade.getClientAgentsStopping$(clientId);
+    }),
+  );
+  readonly agentsRestarting$: Observable<boolean> = this.activeClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) return of(false);
+      return this.agentsFacade.getClientAgentsRestarting$(clientId);
     }),
   );
   readonly selectedAgent$: Observable<AgentResponseDto | null> = this.activeClientId$.pipe(
@@ -2548,6 +2568,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.showModal(this.updateAgentModal);
   }
 
+  onStartAgent(clientId: string, agentId: string): void {
+    this.agentsFacade.startClientAgent(clientId, agentId);
+  }
+
+  onStopAgent(clientId: string, agentId: string): void {
+    this.agentsFacade.stopClientAgent(clientId, agentId);
+  }
+
+  onRestartAgent(clientId: string, agentId: string): void {
+    this.agentsFacade.restartClientAgent(clientId, agentId);
+  }
+
   onEditingClientAuthTypeChange(): void {
     // Clear authentication-specific fields when type changes
     const current = this.editingClient();
@@ -2948,6 +2980,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * @param agentId - The agent ID
    * @returns Observable of deployment status info or null
    */
+  /**
+   * Get container run status (running/stopped) for an agent from stats.
+   */
+  getAgentContainerRunning$(clientId: string, agentId: string): Observable<boolean | null> {
+    return this.statsFacade.getContainerRunningStatus$(clientId, agentId);
+  }
+
   getAgentDeploymentStatus$(
     clientId: string,
     agentId: string,

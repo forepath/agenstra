@@ -69,4 +69,25 @@ export class AgentsService {
   deleteClientAgent(clientId: string, agentId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}`);
   }
+
+  /**
+   * Start all containers for an agent for a specific client.
+   */
+  startClientAgent(clientId: string, agentId: string): Observable<AgentResponseDto> {
+    return this.http.post<AgentResponseDto>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/start`, {});
+  }
+
+  /**
+   * Stop all containers for an agent for a specific client.
+   */
+  stopClientAgent(clientId: string, agentId: string): Observable<AgentResponseDto> {
+    return this.http.post<AgentResponseDto>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/stop`, {});
+  }
+
+  /**
+   * Restart all containers for an agent for a specific client.
+   */
+  restartClientAgent(clientId: string, agentId: string): Observable<AgentResponseDto> {
+    return this.http.post<AgentResponseDto>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/restart`, {});
+  }
 }

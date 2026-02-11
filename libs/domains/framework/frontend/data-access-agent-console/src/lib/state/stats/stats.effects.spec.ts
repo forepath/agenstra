@@ -55,6 +55,7 @@ describe('StatsEffects', () => {
   const createContainerStatsPayload = (): SuccessResponse<ContainerStatsPayload> => ({
     success: true,
     data: {
+      status: { running: true },
       stats: mockStats,
       timestamp: '2024-01-01T00:00:00.000Z',
     },
@@ -95,6 +96,7 @@ describe('StatsEffects', () => {
           containerStatsReceived({
             entry: {
               stats: mockStats,
+              status: { running: true },
               timestamp: '2024-01-01T00:00:00.000Z',
               receivedAt: expect.any(Number),
               clientId: 'client-1',

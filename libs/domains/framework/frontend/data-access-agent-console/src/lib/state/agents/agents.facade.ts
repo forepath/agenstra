@@ -7,6 +7,9 @@ import {
   deleteClientAgent,
   loadClientAgent,
   loadClientAgents,
+  restartClientAgent,
+  startClientAgent,
+  stopClientAgent,
   updateClientAgent,
 } from './agents.actions';
 import {
@@ -21,6 +24,9 @@ import {
   selectClientAgentsError,
   selectClientAgentsLoading,
   selectClientAgentsLoadingAny,
+  selectClientAgentsRestarting,
+  selectClientAgentsStarting,
+  selectClientAgentsStopping,
   selectClientAgentsUpdating,
   selectHasClientAgents,
   selectSelectedClientAgent,
@@ -100,6 +106,33 @@ export class AgentsFacade {
    */
   getClientAgentsDeleting$(clientId: string): Observable<boolean> {
     return this.store.select(selectClientAgentsDeleting(clientId));
+  }
+
+  /**
+   * Get starting state for a client.
+   * @param clientId - The client ID
+   * @returns Observable of starting state
+   */
+  getClientAgentsStarting$(clientId: string): Observable<boolean> {
+    return this.store.select(selectClientAgentsStarting(clientId));
+  }
+
+  /**
+   * Get stopping state for a client.
+   * @param clientId - The client ID
+   * @returns Observable of stopping state
+   */
+  getClientAgentsStopping$(clientId: string): Observable<boolean> {
+    return this.store.select(selectClientAgentsStopping(clientId));
+  }
+
+  /**
+   * Get restarting state for a client.
+   * @param clientId - The client ID
+   * @returns Observable of restarting state
+   */
+  getClientAgentsRestarting$(clientId: string): Observable<boolean> {
+    return this.store.select(selectClientAgentsRestarting(clientId));
   }
 
   /**
@@ -192,6 +225,33 @@ export class AgentsFacade {
    */
   deleteClientAgent(clientId: string, agentId: string): void {
     this.store.dispatch(deleteClientAgent({ clientId, agentId }));
+  }
+
+  /**
+   * Start all containers for an agent for a client.
+   * @param clientId - The client ID
+   * @param agentId - The agent ID
+   */
+  startClientAgent(clientId: string, agentId: string): void {
+    this.store.dispatch(startClientAgent({ clientId, agentId }));
+  }
+
+  /**
+   * Stop all containers for an agent for a client.
+   * @param clientId - The client ID
+   * @param agentId - The agent ID
+   */
+  stopClientAgent(clientId: string, agentId: string): void {
+    this.store.dispatch(stopClientAgent({ clientId, agentId }));
+  }
+
+  /**
+   * Restart all containers for an agent for a client.
+   * @param clientId - The client ID
+   * @param agentId - The agent ID
+   */
+  restartClientAgent(clientId: string, agentId: string): void {
+    this.store.dispatch(restartClientAgent({ clientId, agentId }));
   }
 
   /**

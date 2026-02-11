@@ -17,6 +17,15 @@ import {
   loadClientAgentsFailure,
   loadClientAgentsSuccess,
   loadClientAgentSuccess,
+  restartClientAgent,
+  restartClientAgentFailure,
+  restartClientAgentSuccess,
+  startClientAgent,
+  startClientAgentFailure,
+  startClientAgentSuccess,
+  stopClientAgent,
+  stopClientAgentFailure,
+  stopClientAgentSuccess,
   updateClientAgent,
   updateClientAgentFailure,
   updateClientAgentSuccess,
@@ -37,6 +46,9 @@ export interface AgentsState {
   creating: Record<string, boolean>;
   updating: Record<string, boolean>;
   deleting: Record<string, boolean>;
+  starting: Record<string, boolean>;
+  stopping: Record<string, boolean>;
+  restarting: Record<string, boolean>;
   // Errors per client
   errors: Record<string, string | null>;
 }
@@ -51,6 +63,9 @@ export const initialAgentsState: AgentsState = {
   creating: {},
   updating: {},
   deleting: {},
+  starting: {},
+  stopping: {},
+  restarting: {},
   errors: {},
 };
 
@@ -69,6 +84,9 @@ function updateClientState(
     creating: boolean;
     updating: boolean;
     deleting: boolean;
+    starting: boolean;
+    stopping: boolean;
+    restarting: boolean;
     error: string | null;
   }) => Partial<{
     agents: AgentResponseDto[];
@@ -78,6 +96,9 @@ function updateClientState(
     creating: boolean;
     updating: boolean;
     deleting: boolean;
+    starting: boolean;
+    stopping: boolean;
+    restarting: boolean;
     error: string | null;
   }>,
 ): AgentsState {
@@ -89,6 +110,9 @@ function updateClientState(
     creating: state.creating[clientId] || false,
     updating: state.updating[clientId] || false,
     deleting: state.deleting[clientId] || false,
+    starting: state.starting[clientId] || false,
+    stopping: state.stopping[clientId] || false,
+    restarting: state.restarting[clientId] || false,
     error: state.errors[clientId] || null,
   };
 
@@ -123,6 +147,18 @@ function updateClientState(
     deleting: {
       ...state.deleting,
       ...(updates.deleting !== undefined && { [clientId]: updates.deleting }),
+    },
+    starting: {
+      ...state.starting,
+      ...(updates.starting !== undefined && { [clientId]: updates.starting }),
+    },
+    stopping: {
+      ...state.stopping,
+      ...(updates.stopping !== undefined && { [clientId]: updates.stopping }),
+    },
+    restarting: {
+      ...state.restarting,
+      ...(updates.restarting !== undefined && { [clientId]: updates.restarting }),
     },
     errors: {
       ...state.errors,
@@ -256,6 +292,72 @@ export const agentsReducer = createReducer(
   on(deleteClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({
       deleting: false,
+      error,
+    })),
+  ),
+  // Start Client Agent
+  on(startClientAgent, (state, { clientId }) =>
+    updateClientState(state, clientId, (clientState) => ({
+      ...clientState,
+      starting: true,
+      error: null,
+    })),
+  ),
+  on(startClientAgentSuccess, (state, { clientId, agent }) =>
+    updateClientState(state, clientId, (clientState) => ({
+      agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
+      selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
+      starting: false,
+      error: null,
+    })),
+  ),
+  on(startClientAgentFailure, (state, { clientId, error }) =>
+    updateClientState(state, clientId, () => ({
+      starting: false,
+      error,
+    })),
+  ),
+  // Stop Client Agent
+  on(stopClientAgent, (state, { clientId }) =>
+    updateClientState(state, clientId, (clientState) => ({
+      ...clientState,
+      stopping: true,
+      error: null,
+    })),
+  ),
+  on(stopClientAgentSuccess, (state, { clientId, agent }) =>
+    updateClientState(state, clientId, (clientState) => ({
+      agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
+      selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
+      stopping: false,
+      error: null,
+    })),
+  ),
+  on(stopClientAgentFailure, (state, { clientId, error }) =>
+    updateClientState(state, clientId, () => ({
+      stopping: false,
+      error,
+    })),
+  ),
+  // Restart Client Agent
+  on(restartClientAgent, (state, { clientId }) =>
+    updateClientState(state, clientId, (clientState) => ({
+      ...clientState,
+      restarting: true,
+      error: null,
+    })),
+  ),
+  on(restartClientAgentSuccess, (state, { clientId, agent }) =>
+    updateClientState(state, clientId, (clientState) => ({
+      agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
+      selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
+      restarting: false,
+      error: null,
+    })),
+  ),
+  on(restartClientAgentFailure, (state, { clientId, error }) =>
+    updateClientState(state, clientId, () => ({
+      restarting: false,
       error,
     })),
   ),

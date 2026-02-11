@@ -258,9 +258,13 @@ export interface MessageFilterResultData {
 }
 
 /**
- * Container stats payload (from agents.gateway.ts ContainerStatsPayload)
+ * Container stats payload (from agents.gateway.ts ContainerStatsPayload).
+ * When container is stopped, stats is null but status is always present.
  */
 export interface ContainerStatsPayload {
+  status: {
+    running: boolean;
+  };
   stats: {
     read: string;
     preread: string;

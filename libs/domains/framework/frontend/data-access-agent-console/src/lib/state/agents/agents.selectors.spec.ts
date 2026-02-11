@@ -21,6 +21,9 @@ import {
   selectClientAgentsError,
   selectClientAgentsLoading,
   selectClientAgentsLoadingAny,
+  selectClientAgentsRestarting,
+  selectClientAgentsStarting,
+  selectClientAgentsStopping,
   selectClientAgentsUpdating,
   selectHasClientAgents,
   selectSelectedAgents,
@@ -214,6 +217,45 @@ describe('Agents Selectors', () => {
     });
   });
 
+  describe('selectClientAgentsStarting', () => {
+    it('should return starting state for a specific client', () => {
+      const state = createState({
+        starting: { [clientId]: true },
+      });
+      const rootState = { agents: state };
+      const selector = selectClientAgentsStarting(clientId);
+      const result = selector(rootState as any);
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('selectClientAgentsStopping', () => {
+    it('should return stopping state for a specific client', () => {
+      const state = createState({
+        stopping: { [clientId]: true },
+      });
+      const rootState = { agents: state };
+      const selector = selectClientAgentsStopping(clientId);
+      const result = selector(rootState as any);
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('selectClientAgentsRestarting', () => {
+    it('should return restarting state for a specific client', () => {
+      const state = createState({
+        restarting: { [clientId]: true },
+      });
+      const rootState = { agents: state };
+      const selector = selectClientAgentsRestarting(clientId);
+      const result = selector(rootState as any);
+
+      expect(result).toBe(true);
+    });
+  });
+
   describe('selectClientAgentsError', () => {
     it('should return error for a specific client', () => {
       const state = createState({
@@ -257,6 +299,9 @@ describe('Agents Selectors', () => {
         creating: {},
         updating: {},
         deleting: {},
+        starting: {},
+        stopping: {},
+        restarting: {},
       });
       const rootState = { agents: state };
       const selector = selectClientAgentsLoadingAny(clientId);

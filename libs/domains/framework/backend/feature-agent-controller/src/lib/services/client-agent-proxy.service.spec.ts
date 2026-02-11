@@ -341,6 +341,75 @@ describe('ClientAgentProxyService', () => {
     });
   });
 
+  describe('startClientAgent', () => {
+    it('should start agent and return agent response', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: mockAgentResponse,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      const result = await service.startClientAgent('client-uuid', 'agent-uuid');
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          url: 'https://example.com/api/api/agents/agent-uuid/start',
+        }),
+      );
+    });
+  });
+
+  describe('stopClientAgent', () => {
+    it('should stop agent and return agent response', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: mockAgentResponse,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      const result = await service.stopClientAgent('client-uuid', 'agent-uuid');
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          url: 'https://example.com/api/api/agents/agent-uuid/stop',
+        }),
+      );
+    });
+  });
+
+  describe('restartClientAgent', () => {
+    it('should restart agent and return agent response', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: mockAgentResponse,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      const result = await service.restartClientAgent('client-uuid', 'agent-uuid');
+
+      expect(result).toEqual(mockAgentResponse);
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          url: 'https://example.com/api/api/agents/agent-uuid/restart',
+        }),
+      );
+    });
+  });
+
   describe('getAuthHeader', () => {
     it('should throw error if API key is missing for API_KEY client', async () => {
       const clientWithoutApiKey: ClientEntity = {

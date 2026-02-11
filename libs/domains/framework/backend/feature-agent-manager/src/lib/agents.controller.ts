@@ -50,6 +50,36 @@ export class AgentsController {
   }
 
   /**
+   * Start all containers for an agent.
+   * @param id - The UUID of the agent
+   * @returns The agent response DTO
+   */
+  @Post(':id/start')
+  async startAgent(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AgentResponseDto> {
+    return await this.agentsService.start(id);
+  }
+
+  /**
+   * Stop all containers for an agent.
+   * @param id - The UUID of the agent
+   * @returns The agent response DTO
+   */
+  @Post(':id/stop')
+  async stopAgent(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AgentResponseDto> {
+    return await this.agentsService.stop(id);
+  }
+
+  /**
+   * Restart all containers for an agent.
+   * @param id - The UUID of the agent
+   * @returns The agent response DTO
+   */
+  @Post(':id/restart')
+  async restartAgent(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AgentResponseDto> {
+    return await this.agentsService.restart(id);
+  }
+
+  /**
    * Create a new agent.
    * A random password will be generated and returned in the response.
    * @param createAgentDto - Data transfer object for creating an agent

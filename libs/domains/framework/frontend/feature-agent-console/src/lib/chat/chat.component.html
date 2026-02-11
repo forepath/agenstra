@@ -492,9 +492,82 @@
               >
                 <i class="bi bi-arrow-left"></i>
               </button>
+              @if (activeClient$ | async; as activeClient) {
+                @if (selectedAgent$ | async; as selectedAgent) {
+                  @if ({ running: getAgentContainerRunning$(activeClient.id, selectedAgent.id) | async }; as status) {
+                    <span
+                      class="rounded-circle d-inline-block flex-shrink-0 me-2"
+                      [ngClass]="status.running ? 'bg-success' : 'bg-danger'"
+                      style="width: 0.5rem; height: 0.5rem"
+                      [attr.aria-label]="status.running ? 'Container started' : 'Container stopped'"
+                    ></span>
+                  }
+                }
+              }
               <h5 class="mb-0 fw-semibold" i18n="@@featureChat-chatHeader">Chat</h5>
             </div>
             <div class="d-flex align-items-center gap-2">
+              @if (activeClient$ | async; as activeClient) {
+                @if (selectedAgent$ | async; as selectedAgent) {
+                  @if ({ running: getAgentContainerRunning$(activeClient.id, selectedAgent.id) | async }; as status) {
+                    <div class="btn-group" role="group">
+                      @if (status.running !== true) {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-success"
+                          (click)="onStartAgent(activeClient.id, selectedAgent.id)"
+                          [disabled]="(agentsStarting$ | async) === true"
+                          i18n-title="@@featureChat-startEnvironmentTitle"
+                          title="Start environment"
+                        >
+                          @if (agentsStarting$ | async) {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          } @else {
+                            <i class="bi bi-play-fill" aria-hidden="true"></i>
+                          }
+                          <span class="visually-hidden" i18n="@@featureChat-startEnvironment">Start environment</span>
+                        </button>
+                      }
+                      @if (status.running === true) {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="onStopAgent(activeClient.id, selectedAgent.id)"
+                          [disabled]="(agentsStopping$ | async) === true"
+                          i18n-title="@@featureChat-stopEnvironmentTitle"
+                          title="Stop environment"
+                        >
+                          @if (agentsStopping$ | async) {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          } @else {
+                            <i class="bi bi-stop-fill" aria-hidden="true"></i>
+                          }
+                          <span class="visually-hidden" i18n="@@featureChat-stopEnvironment">Stop environment</span>
+                        </button>
+                      }
+                      @if (status.running != null) {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-warning"
+                          (click)="onRestartAgent(activeClient.id, selectedAgent.id)"
+                          [disabled]="(agentsRestarting$ | async) === true"
+                          i18n-title="@@featureChat-restartEnvironmentTitle"
+                          title="Restart environment"
+                        >
+                          @if (agentsRestarting$ | async) {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          } @else {
+                            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                          }
+                          <span class="visually-hidden" i18n="@@featureChat-restartEnvironment"
+                            >Restart environment</span
+                          >
+                        </button>
+                      }
+                    </div>
+                  }
+                }
+              }
               <div class="btn-group" role="group">
                 @if (socketConnected$ | async) {
                   <button

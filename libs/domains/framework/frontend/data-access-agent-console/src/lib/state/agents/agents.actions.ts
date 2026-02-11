@@ -92,6 +92,54 @@ export const deleteClientAgentFailure = createAction(
   props<{ clientId: string; error: string }>(),
 );
 
+// Start Client Agent Actions
+export const startClientAgent = createAction(
+  '[Agents] Start Client Agent',
+  props<{ clientId: string; agentId: string }>(),
+);
+
+export const startClientAgentSuccess = createAction(
+  '[Agents] Start Client Agent Success',
+  props<{ clientId: string; agent: AgentResponseDto }>(),
+);
+
+export const startClientAgentFailure = createAction(
+  '[Agents] Start Client Agent Failure',
+  props<{ clientId: string; error: string }>(),
+);
+
+// Stop Client Agent Actions
+export const stopClientAgent = createAction(
+  '[Agents] Stop Client Agent',
+  props<{ clientId: string; agentId: string }>(),
+);
+
+export const stopClientAgentSuccess = createAction(
+  '[Agents] Stop Client Agent Success',
+  props<{ clientId: string; agent: AgentResponseDto }>(),
+);
+
+export const stopClientAgentFailure = createAction(
+  '[Agents] Stop Client Agent Failure',
+  props<{ clientId: string; error: string }>(),
+);
+
+// Restart Client Agent Actions
+export const restartClientAgent = createAction(
+  '[Agents] Restart Client Agent',
+  props<{ clientId: string; agentId: string }>(),
+);
+
+export const restartClientAgentSuccess = createAction(
+  '[Agents] Restart Client Agent Success',
+  props<{ clientId: string; agent: AgentResponseDto }>(),
+);
+
+export const restartClientAgentFailure = createAction(
+  '[Agents] Restart Client Agent Failure',
+  props<{ clientId: string; error: string }>(),
+);
+
 // Clear Selected Agent Actions
 export const clearSelectedClientAgent = createAction(
   '[Agents] Clear Selected Client Agent',

@@ -603,6 +603,147 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
+   * Start all Docker containers for an agent (main, VNC, SSH).
+   * @param id - The UUID of the agent
+   * @returns The agent response DTO
+   * @throws NotFoundException if agent is not found
+   */
+  async start(id: string): Promise<AgentResponseDto> {
+    const agent = await this.agentsRepository.findByIdOrThrow(id);
+
+    if (agent.containerId) {
+      try {
+        await this.dockerService.startContainer(agent.containerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.error(
+          `Failed to start agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
+          err.stack,
+        );
+        throw error;
+      }
+    }
+
+    if (agent.vncContainerId) {
+      try {
+        await this.dockerService.startContainer(agent.vncContainerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.warn(
+          `Failed to start VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
+        );
+      }
+    }
+
+    if (agent.sshContainerId) {
+      try {
+        await this.dockerService.startContainer(agent.sshContainerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.warn(
+          `Failed to start SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
+        );
+      }
+    }
+
+    return this.mapToResponseDto(agent);
+  }
+
+  /**
+   * Stop all Docker containers for an agent (main, VNC, SSH).
+   * @param id - The UUID of the agent
+   * @returns The agent response DTO
+   * @throws NotFoundException if agent is not found
+   */
+  async stop(id: string): Promise<AgentResponseDto> {
+    const agent = await this.agentsRepository.findByIdOrThrow(id);
+
+    if (agent.containerId) {
+      try {
+        await this.dockerService.stopContainer(agent.containerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.error(
+          `Failed to stop agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
+          err.stack,
+        );
+        throw error;
+      }
+    }
+
+    if (agent.vncContainerId) {
+      try {
+        await this.dockerService.stopContainer(agent.vncContainerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.warn(
+          `Failed to stop VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
+        );
+      }
+    }
+
+    if (agent.sshContainerId) {
+      try {
+        await this.dockerService.stopContainer(agent.sshContainerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.warn(
+          `Failed to stop SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
+        );
+      }
+    }
+
+    return this.mapToResponseDto(agent);
+  }
+
+  /**
+   * Restart all Docker containers for an agent (main, VNC, SSH).
+   * @param id - The UUID of the agent
+   * @returns The agent response DTO
+   * @throws NotFoundException if agent is not found
+   */
+  async restart(id: string): Promise<AgentResponseDto> {
+    const agent = await this.agentsRepository.findByIdOrThrow(id);
+
+    if (agent.containerId) {
+      try {
+        await this.dockerService.restartContainer(agent.containerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.error(
+          `Failed to restart agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
+          err.stack,
+        );
+        throw error;
+      }
+    }
+
+    if (agent.vncContainerId) {
+      try {
+        await this.dockerService.restartContainer(agent.vncContainerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.warn(
+          `Failed to restart VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
+        );
+      }
+    }
+
+    if (agent.sshContainerId) {
+      try {
+        await this.dockerService.restartContainer(agent.sshContainerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.warn(
+          `Failed to restart SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
+        );
+      }
+    }
+
+    return this.mapToResponseDto(agent);
+  }
+
+  /**
    * Verify agent credentials.
    * @param id - The UUID of the agent
    * @param password - The plain text password to verify

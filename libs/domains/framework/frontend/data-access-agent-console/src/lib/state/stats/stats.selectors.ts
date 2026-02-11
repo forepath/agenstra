@@ -7,6 +7,8 @@ export const selectStatsState = createFeatureSelector<StatsState>('stats');
 // Base selectors
 export const selectStatsByContainer = createSelector(selectStatsState, (state) => state.statsByContainer);
 
+export const selectRunningOverrides = createSelector(selectStatsState, (state) => state.runningOverrides);
+
 /**
  * Generate composite key for stats lookup
  */
@@ -33,6 +35,21 @@ export const selectContainerStats = (clientId: string, agentId: string) =>
 export const selectCurrentContainerStats = (clientId: string, agentId: string) =>
   createSelector(selectContainerStats(clientId, agentId), (stats) => {
     return stats.length > 0 ? stats[stats.length - 1] : null;
+  });
+
+/**
+ * Select container run status (running true/false) for a specific container.
+ * Prefers the optimistic override (set after start/stop/restart success) so the UI updates
+ * immediately; when a new containerStats event arrives the override is cleared and socket data is used.
+ * @param clientId - The client ID
+ * @param agentId - The agent ID
+ */
+export const selectContainerRunningStatus = (clientId: string, agentId: string) =>
+  createSelector(selectCurrentContainerStats(clientId, agentId), selectRunningOverrides, (entry, overrides) => {
+    const key = getStatsKey(clientId, agentId);
+    if (key in overrides) return overrides[key];
+    if (entry?.status != null) return entry.status.running;
+    return null;
   });
 
 /**

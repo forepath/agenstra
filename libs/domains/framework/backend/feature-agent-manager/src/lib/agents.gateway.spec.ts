@@ -153,8 +153,9 @@ describe('AgentsGateway', () => {
     // Setup default mocks
     agentMessagesService.getChatHistory.mockResolvedValue([]);
     agentMessagesService.countMessages.mockResolvedValue(0);
-    // Mock getContainerStats
+    // Mock getContainerStats and getContainerStatus
     dockerService.getContainerStats = jest.fn();
+    dockerService.getContainerStatus = jest.fn().mockResolvedValue({ running: true });
   });
 
   afterEach(() => {
@@ -2564,6 +2565,7 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
@@ -2572,14 +2574,14 @@ describe('AgentsGateway', () => {
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Verify stats were fetched and broadcast immediately
+      expect(dockerService.getContainerStatus).toHaveBeenCalledWith(mockAgent.containerId);
       expect(dockerService.getContainerStats).toHaveBeenCalledWith(mockAgent.containerId);
-      // Verify stats were emitted via broadcastToAgent (which uses socket.emit)
       expect(mockSocket.emit).toHaveBeenCalledWith(
         'containerStats',
         expect.objectContaining({
           success: true,
           data: {
+            status: { running: true },
             stats: mockStats,
             timestamp: expect.any(String),
           },
@@ -2592,6 +2594,7 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
@@ -2604,36 +2607,31 @@ describe('AgentsGateway', () => {
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Clear initial call
+      // Clear initial calls
+      (dockerService.getContainerStatus as jest.Mock).mockClear();
       (dockerService.getContainerStats as jest.Mock).mockClear();
       const emitSpy = jest.fn();
       mockSocket.emit = emitSpy;
-      // Update socket reference after resetting emit
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
-      // Ensure socket is still connected
       mockSocket.connected = true;
-      // Ensure authenticated clients map still has the socket
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
-      // Advance timer by 5 seconds (interval period)
       jest.advanceTimersByTime(5000);
 
-      // Wait for async operations to complete
-      // Use flushPromises equivalent - wait for all pending promises
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
 
-      // Verify stats were fetched again
+      expect(dockerService.getContainerStatus).toHaveBeenCalledWith(mockAgent.containerId);
       expect(dockerService.getContainerStats).toHaveBeenCalledWith(mockAgent.containerId);
-      // Verify stats were emitted
       expect(emitSpy).toHaveBeenCalledWith(
         'containerStats',
         expect.objectContaining({
           success: true,
           data: {
+            status: { running: true },
             stats: mockStats,
             timestamp: expect.any(String),
           },
@@ -2653,7 +2651,7 @@ describe('AgentsGateway', () => {
 
       await gateway.handleLogin({ agentId: agentWithoutContainer.id, password: 'password123' }, mockSocket as Socket);
 
-      // Verify stats were not fetched
+      expect(dockerService.getContainerStatus).not.toHaveBeenCalled();
       expect(dockerService.getContainerStats).not.toHaveBeenCalled();
     });
 
@@ -2661,6 +2659,7 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
@@ -2685,6 +2684,7 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
@@ -2711,6 +2711,7 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
       (dockerService.getContainerStats as jest.Mock).mockRejectedValue(new Error('Stats error'));
 
       const socketId = mockSocket.id || 'test-socket-id';
@@ -2719,20 +2720,52 @@ describe('AgentsGateway', () => {
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Verify interval still exists (broadcasting continues)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
 
-      // Advance timer and verify it tries again
       jest.advanceTimersByTime(5000);
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(dockerService.getContainerStatus).toHaveBeenCalledTimes(2);
       expect(dockerService.getContainerStats).toHaveBeenCalledTimes(2);
+    });
+
+    it('should broadcast container status and null stats when container is stopped', async () => {
+      agentsRepository.findById.mockResolvedValue(mockAgent);
+      agentsService.verifyCredentials.mockResolvedValue(true);
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: false });
+      (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
+
+      const socketId = mockSocket.id || 'test-socket-id';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).socketById.set(socketId, mockSocket);
+
+      await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
+
+      expect(dockerService.getContainerStatus).toHaveBeenCalledWith(mockAgent.containerId);
+      expect(dockerService.getContainerStats).not.toHaveBeenCalled();
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'containerStats',
+        expect.objectContaining({
+          success: true,
+          data: {
+            status: { running: false },
+            stats: null,
+            timestamp: expect.any(String),
+          },
+          timestamp: expect.any(String),
+        }),
+      );
     });
 
     it('should not create duplicate intervals for the same agent', async () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';

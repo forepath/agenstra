@@ -55,6 +55,9 @@ describe('AgentsService', () => {
     createNetwork: jest.fn(),
     deleteNetwork: jest.fn(),
     sendCommandToContainer: jest.fn(),
+    startContainer: jest.fn(),
+    stopContainer: jest.fn(),
+    restartContainer: jest.fn(),
   };
 
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
@@ -1013,6 +1016,148 @@ describe('AgentsService', () => {
       expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
       expect(dockerService.deleteContainer).not.toHaveBeenCalled();
       expect(repository.delete).toHaveBeenCalledWith('test-uuid');
+    });
+  });
+
+  describe('start', () => {
+    it('should start agent main container and return agent', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      dockerService.startContainer.mockResolvedValue(undefined);
+
+      const result = await service.start('test-uuid');
+
+      expect(result.id).toBe(mockAgent.id);
+      expect(result.name).toBe(mockAgent.name);
+      expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
+      expect(dockerService.startContainer).toHaveBeenCalledWith(mockAgent.containerId);
+      expect(dockerService.startContainer).toHaveBeenCalledTimes(1);
+    });
+
+    it('should start agent with VNC and SSH containers', async () => {
+      const agentWithVncSsh = {
+        ...mockAgent,
+        vncContainerId: 'vnc-container-id',
+        sshContainerId: 'ssh-container-id',
+      };
+      mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
+      dockerService.startContainer.mockResolvedValue(undefined);
+
+      const result = await service.start('test-uuid');
+
+      expect(result.id).toBe(agentWithVncSsh.id);
+      expect(dockerService.startContainer).toHaveBeenCalledWith(agentWithVncSsh.containerId);
+      expect(dockerService.startContainer).toHaveBeenCalledWith(agentWithVncSsh.vncContainerId);
+      expect(dockerService.startContainer).toHaveBeenCalledWith(agentWithVncSsh.sshContainerId);
+      expect(dockerService.startContainer).toHaveBeenCalledTimes(3);
+    });
+
+    it('should throw when agent not found', async () => {
+      const notFoundError = new Error('Agent not found');
+      mockRepository.findByIdOrThrow.mockRejectedValue(notFoundError);
+
+      await expect(service.start('non-existent')).rejects.toThrow('Agent not found');
+      expect(dockerService.startContainer).not.toHaveBeenCalled();
+    });
+
+    it('should throw when main container start fails', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      dockerService.startContainer.mockRejectedValue(new Error('Docker start failed'));
+
+      await expect(service.start('test-uuid')).rejects.toThrow('Docker start failed');
+    });
+  });
+
+  describe('stop', () => {
+    it('should stop agent main container and return agent', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      dockerService.stopContainer.mockResolvedValue(undefined);
+
+      const result = await service.stop('test-uuid');
+
+      expect(result.id).toBe(mockAgent.id);
+      expect(result.name).toBe(mockAgent.name);
+      expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
+      expect(dockerService.stopContainer).toHaveBeenCalledWith(mockAgent.containerId);
+      expect(dockerService.stopContainer).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stop agent with VNC and SSH containers', async () => {
+      const agentWithVncSsh = {
+        ...mockAgent,
+        vncContainerId: 'vnc-container-id',
+        sshContainerId: 'ssh-container-id',
+      };
+      mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
+      dockerService.stopContainer.mockResolvedValue(undefined);
+
+      const result = await service.stop('test-uuid');
+
+      expect(result.id).toBe(agentWithVncSsh.id);
+      expect(dockerService.stopContainer).toHaveBeenCalledWith(agentWithVncSsh.containerId);
+      expect(dockerService.stopContainer).toHaveBeenCalledWith(agentWithVncSsh.vncContainerId);
+      expect(dockerService.stopContainer).toHaveBeenCalledWith(agentWithVncSsh.sshContainerId);
+      expect(dockerService.stopContainer).toHaveBeenCalledTimes(3);
+    });
+
+    it('should throw when agent not found', async () => {
+      mockRepository.findByIdOrThrow.mockRejectedValue(new Error('Agent not found'));
+
+      await expect(service.stop('non-existent')).rejects.toThrow('Agent not found');
+      expect(dockerService.stopContainer).not.toHaveBeenCalled();
+    });
+
+    it('should throw when main container stop fails', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      dockerService.stopContainer.mockRejectedValue(new Error('Docker stop failed'));
+
+      await expect(service.stop('test-uuid')).rejects.toThrow('Docker stop failed');
+    });
+  });
+
+  describe('restart', () => {
+    it('should restart agent main container and return agent', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      dockerService.restartContainer.mockResolvedValue(undefined);
+
+      const result = await service.restart('test-uuid');
+
+      expect(result.id).toBe(mockAgent.id);
+      expect(result.name).toBe(mockAgent.name);
+      expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
+      expect(dockerService.restartContainer).toHaveBeenCalledWith(mockAgent.containerId);
+      expect(dockerService.restartContainer).toHaveBeenCalledTimes(1);
+    });
+
+    it('should restart agent with VNC and SSH containers', async () => {
+      const agentWithVncSsh = {
+        ...mockAgent,
+        vncContainerId: 'vnc-container-id',
+        sshContainerId: 'ssh-container-id',
+      };
+      mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
+      dockerService.restartContainer.mockResolvedValue(undefined);
+
+      const result = await service.restart('test-uuid');
+
+      expect(result.id).toBe(agentWithVncSsh.id);
+      expect(dockerService.restartContainer).toHaveBeenCalledWith(agentWithVncSsh.containerId);
+      expect(dockerService.restartContainer).toHaveBeenCalledWith(agentWithVncSsh.vncContainerId);
+      expect(dockerService.restartContainer).toHaveBeenCalledWith(agentWithVncSsh.sshContainerId);
+      expect(dockerService.restartContainer).toHaveBeenCalledTimes(3);
+    });
+
+    it('should throw when agent not found', async () => {
+      mockRepository.findByIdOrThrow.mockRejectedValue(new Error('Agent not found'));
+
+      await expect(service.restart('non-existent')).rejects.toThrow('Agent not found');
+      expect(dockerService.restartContainer).not.toHaveBeenCalled();
+    });
+
+    it('should throw when main container restart fails', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      dockerService.restartContainer.mockRejectedValue(new Error('Docker restart failed'));
+
+      await expect(service.restart('test-uuid')).rejects.toThrow('Docker restart failed');
     });
   });
 

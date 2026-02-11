@@ -235,6 +235,60 @@ export class ClientsController {
   }
 
   /**
+   * Start all containers for an agent for a specific client.
+   * Only accessible if the user has access to the client.
+   * @param id - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @param req - The request object
+   * @returns The agent response DTO
+   */
+  @Post(':id/agents/:agentId/start')
+  async startClientAgent(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AgentResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    return await this.clientAgentProxyService.startClientAgent(id, agentId);
+  }
+
+  /**
+   * Stop all containers for an agent for a specific client.
+   * Only accessible if the user has access to the client.
+   * @param id - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @param req - The request object
+   * @returns The agent response DTO
+   */
+  @Post(':id/agents/:agentId/stop')
+  async stopClientAgent(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AgentResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    return await this.clientAgentProxyService.stopClientAgent(id, agentId);
+  }
+
+  /**
+   * Restart all containers for an agent for a specific client.
+   * Only accessible if the user has access to the client.
+   * @param id - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @param req - The request object
+   * @returns The agent response DTO
+   */
+  @Post(':id/agents/:agentId/restart')
+  async restartClientAgent(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AgentResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    return await this.clientAgentProxyService.restartClientAgent(id, agentId);
+  }
+
+  /**
    * Get a single client by ID.
    * Only accessible if the user has access to the client.
    * @param id - The UUID of the client

@@ -31,6 +31,7 @@ export const processContainerStats$ = createEffect(
         // Create stats entry with both clientId and agentId
         const entry: ContainerStatsEntry = {
           stats: statsData.stats,
+          status: statsData.status,
           timestamp: statsData.timestamp,
           receivedAt: Date.now(),
           clientId: selectedClientId || 'unknown', // Use selected clientId or fallback
