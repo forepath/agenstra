@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.33.0](https://github.com/forepath/agenstra/compare/v1.32.0...v1.33.0) (2026-02-11)
+
+
+### Features
+
+* workspace power actions ([#205](https://github.com/forepath/agenstra/issues/205)) ([417f86f](https://github.com/forepath/agenstra/commit/417f86fa1f05c7193a4b6a2b8a6e75b4ff91697d))
+
 ## [1.32.0](https://github.com/forepath/agenstra/compare/v1.31.0...v1.32.0) (2026-02-09)
 
 
