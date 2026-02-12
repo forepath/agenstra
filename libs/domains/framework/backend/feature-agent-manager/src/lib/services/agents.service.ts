@@ -266,6 +266,7 @@ export class AgentsService implements OnApplicationBootstrap {
     const dockerImage = provider.getDockerImage();
     const virtualWorkspaceDockerImage = provider.getVirtualWorkspaceDockerImage();
     const sshConnectionDockerImage = provider.getSshConnectionDockerImage();
+    const basePath = provider.getBasePath?.() || '/app';
 
     // Create a docker container
     const containerId = await this.dockerService.createContainer({
@@ -278,11 +279,12 @@ export class AgentsService implements OnApplicationBootstrap {
         GIT_TOKEN: process.env.GIT_TOKEN,
         GIT_PASSWORD: process.env.GIT_PASSWORD,
         GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+        ...(provider.getEnvironmentVariables ? provider.getEnvironmentVariables() : {}),
       },
       volumes: [
         {
           hostPath: agentVolumePath,
-          containerPath: '/app',
+          containerPath: basePath,
           readOnly: false,
         },
       ],
@@ -297,9 +299,14 @@ export class AgentsService implements OnApplicationBootstrap {
       }
 
       const escapedUrl = this.escapeForShell(repositoryUrl);
+      const repositoryPath = provider.getRepositoryPath ? basePath + provider.getRepositoryPath() : basePath;
+      const escapedRepositoryPath = this.escapeForShell(repositoryPath);
 
       // Clone the repository to the agent volume
-      await this.dockerService.sendCommandToContainer(containerId, `sh -c "git clone ${escapedUrl} /app"`);
+      await this.dockerService.sendCommandToContainer(
+        containerId,
+        `sh -c "git clone ${escapedUrl} ${escapedRepositoryPath}"`,
+      );
 
       // Create SSH connection container
       let sshConnection:
@@ -321,7 +328,7 @@ export class AgentsService implements OnApplicationBootstrap {
           volumes: [
             {
               hostPath: agentVolumePath,
-              containerPath: '/app',
+              containerPath: basePath,
               readOnly: false,
             },
           ],
@@ -365,7 +372,7 @@ export class AgentsService implements OnApplicationBootstrap {
           volumes: [
             {
               hostPath: agentVolumePath,
-              containerPath: '/root/repository',
+              containerPath: '/root/context',
               readOnly: false,
             },
           ],

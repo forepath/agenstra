@@ -1019,6 +1019,375 @@
         }
       </div>
     }
+    @if (shouldShowGateway$ | async) {
+      <div
+        class="section__column section__column--gateway d-flex flex-column"
+        [class.active-column]="(activeClientId$ | async) && (selectedAgent$ | async)"
+        [class.mobile-overlay]="editorOpen() && chatVisible()"
+      >
+        <div class="p-3 border-bottom bg-body-tertiary">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Back button (mobile only) -->
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary d-block d-md-none"
+                (click)="onChatBackButton()"
+                [disabled]="!(selectedAgent$ | async)"
+                [title]="getChatBackTitle()"
+              >
+                <i class="bi bi-arrow-left"></i>
+              </button>
+              @if (activeClient$ | async; as activeClient) {
+                @if (selectedAgent$ | async; as selectedAgent) {
+                  @if ({ running: getAgentContainerRunning$(activeClient.id, selectedAgent.id) | async }; as status) {
+                    <span
+                      class="rounded-circle d-inline-block flex-shrink-0 me-2"
+                      [ngClass]="status.running ? 'bg-success' : 'bg-danger'"
+                      style="width: 0.5rem; height: 0.5rem"
+                      [attr.aria-label]="status.running ? 'Container started' : 'Container stopped'"
+                    ></span>
+                  }
+                }
+              }
+              <h5 class="mb-0 fw-semibold" i18n="@@featureChat-gatewayHeader">Gateway</h5>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              @if (activeClient$ | async; as activeClient) {
+                @if (selectedAgent$ | async; as selectedAgent) {
+                  @if ({ running: getAgentContainerRunning$(activeClient.id, selectedAgent.id) | async }; as status) {
+                    <div class="btn-group" role="group">
+                      @if (status.running !== true) {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-success"
+                          (click)="onStartAgent(activeClient.id, selectedAgent.id)"
+                          [disabled]="(agentsStarting$ | async) === true"
+                          i18n-title="@@featureChat-startEnvironmentTitle"
+                          title="Start environment"
+                        >
+                          @if (agentsStarting$ | async) {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          } @else {
+                            <i class="bi bi-play-fill" aria-hidden="true"></i>
+                          }
+                          <span class="visually-hidden" i18n="@@featureChat-startEnvironment">Start environment</span>
+                        </button>
+                      }
+                      @if (status.running === true) {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="onStopAgent(activeClient.id, selectedAgent.id)"
+                          [disabled]="(agentsStopping$ | async) === true"
+                          i18n-title="@@featureChat-stopEnvironmentTitle"
+                          title="Stop environment"
+                        >
+                          @if (agentsStopping$ | async) {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          } @else {
+                            <i class="bi bi-stop-fill" aria-hidden="true"></i>
+                          }
+                          <span class="visually-hidden" i18n="@@featureChat-stopEnvironment">Stop environment</span>
+                        </button>
+                      }
+                      @if (status.running != null) {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-warning"
+                          (click)="onRestartAgent(activeClient.id, selectedAgent.id)"
+                          [disabled]="(agentsRestarting$ | async) === true"
+                          i18n-title="@@featureChat-restartEnvironmentTitle"
+                          title="Restart environment"
+                        >
+                          @if (agentsRestarting$ | async) {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          } @else {
+                            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                          }
+                          <span class="visually-hidden" i18n="@@featureChat-restartEnvironment"
+                            >Restart environment</span
+                          >
+                        </button>
+                      }
+                    </div>
+                  }
+                }
+              }
+              <div class="btn-group" role="group">
+                @if (socketConnected$ | async) {
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-success"
+                    [disabled]="socketDisconnecting$ | async"
+                    (click)="onDisconnectSocket()"
+                    [title]="getSocketStatusTitle((socketReconnecting$ | async) ?? false)"
+                  >
+                    @if (socketReconnecting$ | async) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    } @else {
+                      <i class="bi bi-wifi"></i>
+                    }
+                    <span class="visually-hidden" i18n="@@featureChat-connected">Connected</span>
+                  </button>
+                } @else {
+                  @if (socketReconnecting$ | async; as isReconnecting) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-warning"
+                      [disabled]="true"
+                      i18n-title="@@featureChat-reconnecting"
+                      title="Reconnecting..."
+                    >
+                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                      @if (socketReconnectAttempts$ | async; as attempts) {
+                        <span class="ms-1">({{ attempts }})</span>
+                      }
+                      <span class="visually-hidden" i18n="@@featureChat-reconnectingVisuallyHidden"
+                        >Reconnecting...</span
+                      >
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      [disabled]="socketConnecting$ | async"
+                      (click)="onConnectSocket()"
+                      i18n-title="@@featureChat-disconnected"
+                      title="Disconnected"
+                    >
+                      @if (socketConnecting$ | async) {
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                      } @else {
+                        <i class="bi bi-wifi-off"></i>
+                      }
+                      <span class="visually-hidden" i18n="@@featureChat-disconnected">Disconnected</span>
+                    </button>
+                  }
+                }
+              </div>
+              @if (!editorOpen()) {
+                <div class="btn-group" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="onToggleEditor(true, getOpenInNewWindow())"
+                    [title]="getOpenEditorTitle()"
+                  >
+                    <i class="bi bi-code-square"></i>
+                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openEditor">Open Editor</span>
+                  </button>
+                </div>
+              }
+              @if (activeClient$ | async; as activeClient) {
+                @if (selectedAgent$ | async; as selectedAgent) {
+                  @if (selectedAgent.vnc?.port && (activeClient$ | async)) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="onToggleVNC(activeClient, selectedAgent)"
+                    >
+                      <i class="bi bi-window-desktop"></i>
+                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openVirtualDesktop"
+                        >Open Virtual Desktop</span
+                      >
+                    </button>
+                  }
+                  @if (selectedAgent.ssh?.port) {
+                    <button
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-primary]="showSSHCommand()"
+                      [class.btn-outline-primary]="!showSSHCommand()"
+                      (click)="onToggleSSHCommand()"
+                    >
+                      <i class="bi bi-terminal"></i>
+                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-sshAccess">SSH Access</span>
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-outline-primary]="!deploymentManagerOpen()"
+                    [class.btn-primary]="deploymentManagerOpen()"
+                    (click)="onToggleDeploymentManager(true, getDeploymentOpenInNewWindow())"
+                    [title]="getDeploymentManagerToggleTitle()"
+                  >
+                    <i class="bi bi-rocket-takeoff"></i>
+                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openDeployments">Open Deployments</span>
+                  </button>
+                }
+              }
+            </div>
+          </div>
+          @if (showSSHCommand()) {
+            @if (selectedAgent$ | async; as selectedAgent) {
+              @if (activeClient$ | async; as activeClient) {
+                @if (activeClient?.endpoint && selectedAgent.ssh?.port) {
+                  <div class="d-flex justify-content-between mb-2 mt-3 flex-column gap-2">
+                    <div class="border bg-body rounded small p-3 fw-normal text-wrap text-start d-block w-100">
+                      <label class="form-label d-block mb-2 fw-bold" i18n="@@featureChat-sshCommand">SSH Command</label>
+                      <div class="code-block border">
+                        {{
+                          buildSSHCommand(
+                            activeClient?.endpoint || '',
+                            selectedAgent.ssh?.port || 22,
+                            undefined,
+                            selectedAgent.ssh?.password
+                          )
+                        }}
+                      </div>
+                    </div>
+                    <div class="border bg-body rounded small p-3 fw-normal text-wrap text-start d-block w-100">
+                      <label class="form-label d-block mb-2 fw-bold" i18n="@@featureChat-remoteWorkspaceConfig"
+                        >Remote Workspace Configuration</label
+                      >
+                      If you want to connect to this workspace with an editor like Cursor or VS Code via SSH, add the
+                      following lines to your
+                      <code class="text-primary d-inline-block border border-primary rounded px-1">~/.ssh/config</code>
+                      file:
+                      <div class="code-block border mb-3">
+                        Host remote-workspace<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;HostName {{ getHostname(activeClient?.endpoint || '', false) }}<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;User ssh<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;Port {{ selectedAgent.ssh?.port }}<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;StrictHostKeyChecking no
+                      </div>
+                      <div class="alert alert-primary mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle"></i>
+                        <span
+                          >The password for the
+                          <code class="text-primary d-inline-block border border-primary rounded px-1">ssh</code> user
+                          is
+                          <code class="text-primary d-inline-block border border-primary rounded px-1">{{
+                            selectedAgent.ssh?.password
+                          }}</code
+                          >. The repository path is
+                          <code class="text-primary d-inline-block border border-primary rounded px-1">/app</code
+                          >.</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+            }
+          }
+        </div>
+
+        <!-- Gateway quickstart guide -->
+        <div
+          #gatewayQuickstartContainer
+          class="gateway-quickstart-container flex-grow-1 overflow-auto p-3 bg-body-secondary"
+        >
+          @if (activeClientId$ | async; as clientId) {
+            @if (selectedAgent$ | async; as selectedAgent) {
+              <div class="gateway-quickstart-steps">
+                <div class="gateway-quickstart-step mb-4">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="h6 fw-bold mb-0" i18n="@@featureChat-gatewayQuickstartStep1Title">
+                        Step 1: Create the OpenClaw configuration
+                      </h3>
+                    </div>
+                    <div class="card-body">
+                      <p class="text-body-secondary small mb-3" i18n="@@featureChat-gatewayQuickstartStep1Intro">
+                        Create the default OpenClaw configuration file in the container. This writes
+                        <code class="text-primary border border-primary rounded px-1">.openclaw/openclaw.json</code>
+                        so the gateway can load its settings.
+                      </p>
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        [disabled]="
+                          (openclawConfigExists$ | async) === true || (isWritingOpenClawConfig$ | async) === true
+                        "
+                        (click)="createOpenClawConfig(clientId, selectedAgent.id)"
+                      >
+                        @if (isWritingOpenClawConfig$ | async) {
+                          <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        }
+                        <span i18n="@@featureChat-gatewayQuickstartCreateConfig">Create OpenClaw configuration</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="gateway-quickstart-step mb-4">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="h6 fw-bold mb-0" i18n="@@featureChat-gatewayQuickstartStep2AdaptTitle">
+                        Step 2: Adapt the configuration
+                      </h3>
+                    </div>
+                    <div class="card-body">
+                      <p class="text-body-secondary small mb-3" i18n="@@featureChat-gatewayQuickstartStep2AdaptIntro">
+                        Edit the configuration in the editor to customize the gateway settings, adding and configuring
+                        channels, AI models, and more.
+                      </p>
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="onToggleEditor(true, getOpenInNewWindow())"
+                      >
+                        <span i18n="@@featureChat-gatewayQuickstartOpenEditor">Open Editor</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="gateway-quickstart-step mb-4">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="h6 fw-bold mb-0" i18n="@@featureChat-gatewayQuickstartStep3Title">
+                        Step 3: Restart the agent
+                      </h3>
+                    </div>
+                    <div class="card-body">
+                      <p class="text-body-secondary small mb-3" i18n="@@featureChat-gatewayQuickstartStep3Intro">
+                        Restart the agent so it picks up the new configuration.
+                      </p>
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        [disabled]="(agentsRestarting$ | async) === true"
+                        (click)="onRestartAgent(clientId, selectedAgent.id)"
+                      >
+                        @if (agentsRestarting$ | async) {
+                          <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        }
+                        <span i18n="@@featureChat-gatewayQuickstartRestartAgent">Restart the agent</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="gateway-quickstart-step">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="h6 fw-bold mb-0" i18n="@@featureChat-gatewayQuickstartStep4Title">
+                        Step 4: Start chatting
+                      </h3>
+                    </div>
+                    <div class="card-body">
+                      <p class="text-body-secondary small mb-0" i18n="@@featureChat-gatewayQuickstartStep4Intro">
+                        You are all set. Say hello to your new bot in the chat, try a question, or start a task. Have
+                        fun!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Container Stats Status Bar (shown when editor is closed) -->
+        @if (!editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
+          <framework-container-stats-status-bar
+            [clientId]="(activeClientId$ | async)!"
+            [agentId]="(selectedAgent$ | async)!.id"
+          ></framework-container-stats-status-bar>
+        }
+      </div>
+    }
   </section>
 </div>
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DockerService } from '../../services/docker.service';
 import { AgentProvider, AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
 
@@ -8,7 +8,6 @@ import { AgentProvider, AgentProviderOptions, AgentResponseObject } from '../age
  */
 @Injectable()
 export class OpenCodeAgentProvider implements AgentProvider {
-  private readonly logger = new Logger(OpenCodeAgentProvider.name);
   private static readonly TYPE = 'opencode';
 
   constructor(private readonly dockerService: DockerService) {}
@@ -63,7 +62,7 @@ export class OpenCodeAgentProvider implements AgentProvider {
   }
 
   /**
-   * Send a message to the cursor-agent and get a response.
+   * Send a message to the opencode-agent and get a response.
    * @param agentId - The UUID of the agent
    * @param containerId - The Docker container ID where the agent is running
    * @param message - The message to send to the agent
