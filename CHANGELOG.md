@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.34.0](https://github.com/forepath/agenstra/compare/v1.33.0...v1.34.0) (2026-02-12)
+
+
+### Features
+
+* dynamic agent provider files basepath ([#208](https://github.com/forepath/agenstra/issues/208)) ([3aae34b](https://github.com/forepath/agenstra/commit/3aae34b89c3957877a092bebb0a1e89b35f205d0))
+* openclaw support ([#209](https://github.com/forepath/agenstra/issues/209)) ([8c32505](https://github.com/forepath/agenstra/commit/8c325052a94df288a8e4a3d04d22af214772f8a6))
+
+
+### Bug Fixes
+
+* hide chat toggle conditionally ([#212](https://github.com/forepath/agenstra/issues/212)) ([eb95db1](https://github.com/forepath/agenstra/commit/eb95db1647367b7ca24a021a6de01f218221e402))
+
+
+### Chores
+
+* update screenshot and provider ([#213](https://github.com/forepath/agenstra/issues/213)) ([4c3df59](https://github.com/forepath/agenstra/commit/4c3df59fc674fe5e70f0ecd3634af053563b7e63))
+
 ## [1.33.0](https://github.com/forepath/agenstra/compare/v1.32.0...v1.33.0) (2026-02-11)
 
 
