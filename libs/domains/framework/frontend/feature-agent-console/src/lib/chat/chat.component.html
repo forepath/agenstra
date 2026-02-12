@@ -37,17 +37,19 @@
               <i class="bi" [class.bi-folder]="fileTreeVisible()" [class.bi-folder-x]="!fileTreeVisible()"></i>
               <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-fileTree">File Tree</span>
             </button>
-            <button
-              type="button"
-              class="btn btn-sm"
-              [class.btn-outline-primary]="!chatVisible()"
-              [class.btn-primary]="chatVisible()"
-              (click)="onToggleChat()"
-              [title]="getChatToggleTitle()"
-            >
-              <i class="bi" [class.bi-chat-dots]="chatVisible()" [class.bi-chat-dots-fill]="!chatVisible()"></i>
-              <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-chat">Chat</span>
-            </button>
+            @if ((selectedAgent$ | async)?.agentType !== 'openclaw') {
+              <button
+                type="button"
+                class="btn btn-sm"
+                [class.btn-outline-primary]="!chatVisible()"
+                [class.btn-primary]="chatVisible()"
+                (click)="onToggleChat()"
+                [title]="getChatToggleTitle()"
+              >
+                <i class="bi" [class.bi-chat-dots]="chatVisible()" [class.bi-chat-dots-fill]="!chatVisible()"></i>
+                <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-chat">Chat</span>
+              </button>
+            }
             <button
               type="button"
               class="btn btn-sm"
