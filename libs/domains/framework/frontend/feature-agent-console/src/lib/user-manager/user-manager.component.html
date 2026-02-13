@@ -55,10 +55,10 @@
           @for (user of usersExcludingSelf(); track user.id) {
             <div class="list-group-item d-flex justify-content-between align-items-center border-bottom">
               <div>
-                <div class="fw-semibold">{{ user.email }}</div>
+                <div class="fw-semibold mb-2">{{ user.email }}</div>
                 <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                   <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <span class="badge bg-secondary me-1">{{ user.role }}</span>
+                    <span class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2">{{ user.role }}</span>
                     @if (user.emailConfirmedAt) {
                       <span class="text-success"
                         ><i class="bi bi-check-circle me-1"></i
