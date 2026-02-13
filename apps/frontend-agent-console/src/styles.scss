@@ -11,3 +11,18 @@ $primary: #7a3fff;
   font-size: 0.75rem;
   color: var(--bs-white);
 }
+
+.info-badge {
+  font-size: 0.75rem;
+}
+
+.list-group-item.active {
+  .status-badge {
+    background-color: var(--bs-white) !important;
+    color: var(--bs-primary) !important;
+  }
+
+  .info-badge {
+    background-color: #692eee !important;
+  }
+}

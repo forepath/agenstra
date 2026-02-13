@@ -173,22 +173,22 @@
                             <strong class="text-truncate me-2">{{ client.name }}</strong>
                           </div>
                           @if (client.description) {
-                            <small class="text-muted text-truncate">{{ client.description }}</small>
+                            <small class="text-muted text-truncate mb-2">{{ client.description }}</small>
                           }
-                          <div class="d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                            <small class="text-muted mt-1">
+                          <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                            <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                               <i class="bi bi-globe me-1"></i>
                               {{ getHostname(client.endpoint) }}
                             </small>
                             @if (parseGitRepository(client.config?.gitRepositoryUrl); as repo) {
-                              <small class="text-muted mt-1">
+                              <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                 <i class="bi bi-git me-1"></i>
                                 {{ repo }}
                               </small>
                             }
                             @if (getClientProviderDisplayName$(client.id) | async; as providerName) {
                               @if (providerName) {
-                                <small class="text-muted mt-1">
+                                <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                   <i class="bi bi-cloud-fill me-1"></i>
                                   {{ providerName }}
                                 </small>
@@ -337,22 +337,22 @@
                             }
                           </div>
                           @if (agent.description) {
-                            <small class="text-muted text-truncate">{{ agent.description }}</small>
+                            <small class="text-muted text-truncate mb-2">{{ agent.description }}</small>
                           }
                           @if ((activeClient$ | async) || agent.vnc || agent.git?.repositoryUrl) {
-                            <div class="d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                              <small class="text-muted mt-1">
+                            <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                              <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                 <i class="bi bi-box me-1"></i>
                                 {{ getContainerTypeDisplayName(agent.containerType) }}
                               </small>
                               @if (activeClient$ | async; as activeClient) {
-                                <small class="text-muted mt-1">
+                                <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                   <i class="bi bi-robot me-1"></i>
                                   {{ getAgentTypeDisplayName(agent.agentType, activeClient) }}
                                 </small>
                                 @if (!agent.git?.repositoryUrl) {
                                   @if (parseGitRepository(activeClient.config?.gitRepositoryUrl); as repo) {
-                                    <small class="text-muted mt-1">
+                                    <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                       <i class="bi bi-git me-1"></i>
                                       {{ repo }}
                                     </small>
@@ -360,19 +360,19 @@
                                 }
                               }
                               @if (agent.git?.repositoryUrl) {
-                                <small class="text-muted mt-1">
+                                <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                   <i class="bi bi-git me-1"></i>
                                   {{ parseGitRepository(agent.git?.repositoryUrl) }}
                                 </small>
                               }
                               @if (agent.vnc?.port) {
-                                <small class="text-muted mt-1">
+                                <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                   <i class="bi bi-window-desktop me-1"></i>
                                   <span i18n="@@featureChat-virtualDesktop">Virtual Desktop</span>
                                 </small>
                               }
                               @if (agent.ssh?.port) {
-                                <small class="text-muted mt-1">
+                                <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                   <i class="bi bi-terminal me-1"></i>
                                   <span i18n="@@featureChat-sshAccess">SSH Access</span>
                                 </small>
@@ -978,7 +978,6 @@
               } @else {
                 <i class="bi bi-send"></i>
               }
-              <span i18n="@@featureChat-send">Send</span>
             </button>
           </div>
           <div class="input-group input-group-sm mt-2">
@@ -1285,7 +1284,7 @@
           @if (activeClientId$ | async; as clientId) {
             @if (selectedAgent$ | async; as selectedAgent) {
               <div class="gateway-quickstart-steps">
-                <div class="gateway-quickstart-step mb-4">
+                <div class="gateway-quickstart-step mb-3">
                   <div class="card">
                     <div class="card-header">
                       <h3 class="h6 fw-bold mb-0" i18n="@@featureChat-gatewayQuickstartStep1Title">
@@ -1314,7 +1313,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="gateway-quickstart-step mb-4">
+                <div class="gateway-quickstart-step mb-3">
                   <div class="card">
                     <div class="card-header">
                       <h3 class="h6 fw-bold mb-0" i18n="@@featureChat-gatewayQuickstartStep2AdaptTitle">
@@ -1336,7 +1335,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="gateway-quickstart-step mb-4">
+                <div class="gateway-quickstart-step mb-3">
                   <div class="card">
                     <div class="card-header">
                       <h3 class="h6 fw-bold mb-0" i18n="@@featureChat-gatewayQuickstartStep3Title">
