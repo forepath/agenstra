@@ -1,0 +1,37 @@
+@import '../page.component.scss';
+
+// Pricing carousel scroll buttons
+.pricing-carousel-scroll-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  z-index: 1;
+  width: 100%;
+
+  .pricing-carousel-scroll-button-left {
+    transform: translateX(-50%);
+  }
+
+  .pricing-carousel-scroll-button-right {
+    transform: translateX(50%);
+  }
+
+  .btn {
+    &:disabled {
+      --bs-btn-disabled-opacity: 1;
+      --bs-btn-disabled-bg: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+      --bs-btn-disabled-border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+
+      i {
+        opacity: 0.25;
+      }
+    }
+  }
+}
+
+// Ensure list icons align tightly with text
+.bi-check-circle-fill,
+.bi-info-circle-fill {
+  line-height: 1;
+}

@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-md navbar-dark p-0">
     <div class="container d-flex align-items-center justify-content-between gap-2 navbar-content">
       <div class="d-flex align-items-center gap-3">
-        <a routerLink="/" fragment="hero" class="brand-icon-container me-2 fs-3 bg-primary p-3">
+        <a routerLink="/" class="brand-icon-container me-2 fs-3 bg-primary p-3">
           <img
             src="assets/images/icon_light.svg"
             i18n-alt="@@featurePortal-brandAlt"
@@ -27,39 +27,50 @@
           <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a
+                routerLink="/"
                 class="nav-link text-white"
-                href="#solution"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }"
                 (click)="closeMobileMenu()"
-                i18n="@@featurePortal-navSolution"
-                >Solution</a
+                i18n="@@featurePortal-navPlatform"
+                >Platform</a
               >
             </li>
             <li class="nav-item">
               <a
+                routerLink="/agentctx"
                 class="nav-link text-white"
-                href="#features"
+                routerLinkActive="active"
                 (click)="closeMobileMenu()"
-                i18n="@@featurePortal-navFeatures"
-                >Features</a
+                i18n="@@featurePortal-navAgentctx"
+                >AgentCTX</a
               >
             </li>
             <li class="nav-item">
               <a
+                routerLink="/desktop"
                 class="nav-link text-white"
-                href="#security"
+                routerLinkActive="active"
                 (click)="closeMobileMenu()"
-                i18n="@@featurePortal-navSecurity"
-                >Security &amp; Data</a
+                i18n="@@featurePortal-navDesktop"
+                >Desktop</a
               >
             </li>
             <li class="nav-item">
               <a
+                routerLink="/pricing"
                 class="nav-link text-white"
-                href="#pricing"
+                routerLinkActive="active"
                 (click)="closeMobileMenu()"
                 i18n="@@featurePortal-navPricing"
                 >Pricing</a
               >
+            </li>
+            <li class="nav-item">
+              <span class="nav-link text-white d-flex align-items-center gap-2 pe-2 disabled" aria-disabled="true">
+                <span i18n="@@featurePortal-navCloud">Cloud</span>
+                <span class="badge bg-primary" i18n="@@featurePortal-navCloudSoon">Soon</span>
+              </span>
             </li>
             <li class="nav-item">
               <a
@@ -90,21 +101,20 @@
   </nav>
 </header>
 <router-outlet></router-outlet>
-<footer class="footer bg-body-tertiary position-relative overflow-hidden">
-  <div class="gradient-overlay gradient-overlay-footer"></div>
-  <div class="container py-10 position-relative">
+<footer class="footer bg-dark text-white position-relative overflow-hidden">
+  <div class="container">
     <div class="row">
       <div class="col-md-4 mb-3 mb-md-0">
         <img src="assets/images/favicon.svg" i18n-alt="@@featurePortal-brandAlt" alt="Agenstra" class="brand-icon" />
         <h5 class="fw-bold my-3" i18n="@@featurePortal-footerBrand">Agenstra</h5>
-        <p class="text-muted small mb-0" i18n="@@featurePortal-footerTagline">
+        <p class="fs-6 mb-5" i18n="@@featurePortal-footerTagline">
           Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact
           with agents in real-time, and edit code directly in their containers.
         </p>
         <div class="d-flex align-items-center gap-3 mt-4 fs-3">
           <a
             href="https://github.com/forepath/agenstra"
-            class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1"
+            class="text-decoration-none text-white small d-inline-flex align-items-center gap-1"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -112,7 +122,7 @@
           </a>
           <a
             href="https://www.linkedin.com/showcase/agenstra"
-            class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1"
+            class="text-decoration-none text-white small d-inline-flex align-items-center gap-1"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -120,14 +130,14 @@
           </a>
           <a
             href="https://x.com/AgenstraAI"
-            class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1"
+            class="text-decoration-none text-white small d-inline-flex align-items-center gap-1"
             target="_blank"
             rel="noopener noreferrer"
           >
             <i class="bi bi-twitter-x"></i>
           </a>
         </div>
-        <p class="text-muted small mb-0 mt-4" i18n="@@featurePortal-footerListings">
+        <p class="text-white small mb-3 mt-4" i18n="@@featurePortal-footerListings">
           <span class="fw-bold">Want to learn even more?</span> Check out the Agenstra listings on these platforms:
         </p>
         <ul class="list-unstyled mb-0 d-flex align-items-center gap-2 flex-wrap flex-row mt-2">
@@ -136,7 +146,7 @@
               href="https://www.producthunt.com/products/agenstra"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-decoration-none text-muted small d-flex align-items-center gap-1 flex-nowrap"
+              class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded small text-decoration-none"
             >
               <i class="bi bi-arrow-up-right"></i>
               Product Hunt
@@ -147,7 +157,7 @@
               href="https://devhunt.org/tool/agenstra"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-decoration-none text-muted small d-flex align-items-center gap-1 flex-nowrap"
+              class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded small text-decoration-none"
             >
               <i class="bi bi-arrow-up-right"></i>
               DevHunt
@@ -158,7 +168,7 @@
               href="https://www.saashub.com/agenstra"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-decoration-none text-muted small d-flex align-items-center gap-1 flex-nowrap"
+              class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded small text-decoration-none"
             >
               <i class="bi bi-arrow-up-right"></i>
               SaaSHub
@@ -193,34 +203,44 @@
         </div>
       </div>
       <div class="col-md-3 offset-md-2">
-        <h6 class="fw-bold mb-3" i18n="@@featurePortal-footerInformation">Information</h6>
+        <h6 class="fw-bold mb-3" i18n="@@featurePortal-footerProduct">Product</h6>
         <ul class="list-unstyled mb-0">
           <li class="mb-2">
-            <a href="#solution" class="text-decoration-none text-muted small" i18n="@@featurePortal-navSolution"
-              >Solution</a
+            <a routerLink="/" class="text-decoration-none text-white small" i18n="@@featurePortal-navPlatform"
+              >Platform</a
             >
           </li>
           <li class="mb-2">
-            <a href="#features" class="text-decoration-none text-muted small" i18n="@@featurePortal-navFeatures"
-              >Features</a
+            <a routerLink="/agentctx" class="text-decoration-none text-white small" i18n="@@featurePortal-agentctxLink"
+              >AgentCTX</a
             >
           </li>
           <li class="mb-2">
-            <a href="#security" class="text-decoration-none text-muted small" i18n="@@featurePortal-navSecurity"
-              >Security &amp; Data</a
+            <a
+              routerLink="/desktop"
+              class="text-decoration-none text-white small"
+              i18n="@@featurePortal-footerDesktopLink"
+              >Desktop</a
             >
           </li>
           <li class="mb-2">
-            <a href="#pricing" class="text-decoration-none text-muted small" i18n="@@featurePortal-navPricing"
+            <a
+              routerLink="/pricing"
+              class="text-decoration-none text-white small"
+              i18n="@@featurePortal-footerPricingLink"
               >Pricing</a
             >
+          </li>
+          <li class="mb-2 d-flex align-items-center gap-2">
+            <span class="text-white small" i18n="@@featurePortal-navCloud">Cloud</span>
+            <span class="badge bg-primary" i18n="@@featurePortal-navCloudSoon">Soon</span>
           </li>
           <li class="mb-2">
             <a
               href="https://downloads.agenstra.com/"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-decoration-none text-muted small"
+              class="text-decoration-none text-white small"
               i18n="@@featurePortal-footerDownloads"
               >Downloads</a
             >
@@ -228,7 +248,7 @@
           <li class="mb-2">
             <a
               href="https://docs.agenstra.com"
-              class="text-decoration-none text-muted small"
+              class="text-decoration-none text-white small"
               target="_blank"
               rel="noopener noreferrer"
               i18n="@@featurePortal-footerDocumentation"
@@ -238,34 +258,12 @@
         </ul>
       </div>
       <div class="col-md-3">
-        <h6 class="fw-bold mb-3" i18n="@@featurePortal-footerTools">Tools</h6>
-        <ul class="list-unstyled mb-3">
-          <li class="mb-2">
-            <a
-              routerLink="/agentctx"
-              fragment="hero"
-              class="text-decoration-none text-muted small"
-              i18n="@@featurePortal-agentctxLink"
-              >AgentCTX</a
-            >
-          </li>
-          <li class="mb-2">
-            <a
-              routerLink="/desktop"
-              fragment="hero"
-              class="text-decoration-none text-muted small"
-              i18n="@@featurePortal-footerDesktopLink"
-              >Desktop</a
-            >
-          </li>
-        </ul>
         <h6 class="fw-bold mb-3" i18n="@@featurePortal-footerLegal">Legal</h6>
         <ul class="list-unstyled mb-0">
           <li class="mb-2">
             <a
               routerLink="/legal/disclosure"
-              fragment="hero"
-              class="text-decoration-none text-muted small"
+              class="text-decoration-none text-white small"
               i18n="@@featurePortal-legalDisclosureLink"
               >Legal Disclosure</a
             >
@@ -273,8 +271,7 @@
           <li class="mb-2">
             <a
               routerLink="/legal/privacy"
-              fragment="hero"
-              class="text-decoration-none text-muted small"
+              class="text-decoration-none text-white small"
               i18n="@@featurePortal-privacyPolicyLink"
               >Privacy Policy</a
             >
@@ -283,7 +280,7 @@
       </div>
     </div>
   </div>
-  <div class="bg-primary text-white py-3">
+  <div class="text-white py-5">
     <div class="container">
       <div class="row">
         <div class="col-md-12 text-center">
