@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.35.1](https://github.com/forepath/agenstra/compare/v1.35.0...v1.35.1) (2026-02-14)
+
+
+### Bug Fixes
+
+* container nesting ([#216](https://github.com/forepath/agenstra/issues/216)) ([fe46e7c](https://github.com/forepath/agenstra/commit/fe46e7c9cb420b9a2363e680d61e184d8dde4bca))
+
 ## [1.35.0](https://github.com/forepath/agenstra/compare/v1.34.0...v1.35.0) (2026-02-14)
 
 
