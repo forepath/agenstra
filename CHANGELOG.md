@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.35.0](https://github.com/forepath/agenstra/compare/v1.34.0...v1.35.0) (2026-02-14)
+
+
+### Features
+
+* landingpage concept ([#215](https://github.com/forepath/agenstra/issues/215)) ([0792015](https://github.com/forepath/agenstra/commit/0792015769fa865edfacb8f17126f72fd6676276))
+
+
+### Chores
+
+* ui cleanup ([#214](https://github.com/forepath/agenstra/issues/214)) ([ae1aa9b](https://github.com/forepath/agenstra/commit/ae1aa9b1eaa9196e76871147f3f2bfab407f8af1))
+
 ## [1.34.0](https://github.com/forepath/agenstra/compare/v1.33.0...v1.34.0) (2026-02-12)
 
 
