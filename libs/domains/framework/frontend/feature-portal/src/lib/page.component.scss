@@ -1,0 +1,191 @@
+section {
+  scroll-margin-top: 80px;
+}
+
+#hero {
+  position: relative;
+  overflow: hidden;
+
+  &:before,
+  &:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(110px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  &:before {
+    animation: hero-orb-float 18s ease-in-out infinite;
+    width: 420px;
+    height: 420px;
+    top: -60px;
+    left: -40px;
+    background: radial-gradient(circle at 30% 30%, #8b5cf6, transparent 60%);
+  }
+
+  &:after {
+    animation: hero-orb-float 22s ease-in-out infinite reverse;
+    width: 520px;
+    height: 520px;
+    bottom: -120px;
+    right: -80px;
+    background: radial-gradient(circle at 70% 70%, #21808d, transparent 65%);
+  }
+}
+
+@keyframes hero-orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(12px, -10px, 0);
+  }
+}
+
+.hero-title {
+  color: rgba(245, 245, 245, 0.85);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.hero-lead,
+.hero-cta-line {
+  color: rgba(245, 245, 245, 0.85);
+}
+
+// Shared CTA section styles
+.cta-lead-light {
+  max-width: 700px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cta-sub-light {
+  max-width: 600px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+// Shared max-width classes for lead paragraphs
+.max-w-650 {
+  max-width: 650px;
+}
+
+.max-w-700 {
+  max-width: 700px;
+}
+
+.max-w-750 {
+  max-width: 750px;
+}
+
+// Shared icon size classes
+.icon-md {
+  font-size: 1.5rem;
+}
+
+.icon-solution {
+  font-size: 1.25rem;
+}
+
+.icon-lg {
+  font-size: 2rem;
+}
+
+.icon-xl {
+  font-size: 2.5rem;
+}
+
+.problem-box {
+  background: rgba(255, 84, 89, 0.05);
+}
+
+.problem-icon {
+  color: var(--bs-danger);
+  font-size: 1.25rem;
+}
+
+// Card Styles
+// Standard card with hover lift effect
+.card-hover {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12) !important;
+  }
+}
+
+// Subtle card hover (smaller lift)
+.card-hover-subtle {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12) !important;
+  }
+}
+
+// Card icon container
+.card-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(139, 92, 246, 0.1);
+  flex-shrink: 0;
+}
+
+// Capability cards with gradient and left border
+.card-capability {
+  border-left: 4px solid transparent;
+}
+
+.card-capability-primary {
+  background: linear-gradient(to right, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
+  border-left-color: var(--bs-primary) !important;
+}
+
+.card-capability-success {
+  background: linear-gradient(to right, rgba(33, 128, 141, 0.05) 0%, transparent 100%);
+  border-left-color: var(--bs-success) !important;
+}
+
+.card-capability-warning {
+  background: linear-gradient(to right, rgba(230, 129, 97, 0.05) 0%, transparent 100%);
+  border-left-color: var(--bs-warning) !important;
+}
+
+.card-capability-secondary {
+  background: linear-gradient(to right, rgba(98, 108, 113, 0.05) 0%, transparent 100%);
+  border-left-color: var(--bs-secondary) !important;
+}
+
+// Integration card with dashed border
+.card-integration {
+  background: #fff;
+  border: 2px dashed rgba(33, 128, 141, 0.3) !important;
+}
+
+// Problem card background
+.card-problem {
+  background: rgba(139, 92, 246, 0.03);
+}
+
+// Iteration/step badge
+.iteration-badge {
+  width: 32px;
+  height: 32px;
+  font-size: 0.875rem;
+}
+
+.logo-partner {
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  max-height: 24px;
+
+  &:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+}

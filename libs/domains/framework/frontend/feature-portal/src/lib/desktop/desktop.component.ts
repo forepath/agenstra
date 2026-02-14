@@ -16,17 +16,18 @@ export class PortalDesktopComponent implements OnInit {
   private readonly metaService = inject(Meta);
 
   ngOnInit(): void {
-    this.titleService.setTitle('Agenstra Desktop - Native app for AI agent management');
+    this.titleService.setTitle(
+      $localize`:@@featurePortalDesktop-metaTitle:Agenstra Desktop - Local Control Center For Your AI Agents`,
+    );
     this.metaService.addTags([
       {
         name: 'description',
-        content:
-          'Agenstra Desktop is the native application for the Agenstra console. Full IDE, chat, file management, and agent control - packaged for Windows, macOS, and Linux. No browser required.',
+        content: $localize`:@@featurePortalDesktop-metaDescription:Agenstra Desktop gives developers a secure local control center for connecting to Agenstra, inspecting agents, and working with context in their daily workflow.`,
       },
       {
         name: 'keywords',
         content:
-          'Agenstra Desktop, Agenstra, native app, desktop application, AI agent management, Electron, Windows, macOS, Linux, agent console, IDE',
+          'Agenstra Desktop, AI agent desktop app, desktop client for AI agent management, local interface for AI agent orchestration, developer desktop app',
       },
       { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
       { name: 'robots', content: 'index, follow' },

@@ -1,6 +1,5 @@
 .header {
-  z-index: 1020; // Bootstrap sticky-top uses 1020, ensure we're on top
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); // Bootstrap's subtle shadow
+  z-index: 1020;
 }
 
 .brand-icon {
@@ -19,8 +18,18 @@
 .nav-link {
   transition: color 0.15s ease-in-out;
 
-  &:hover {
+  &:hover,
+  &.active {
     color: var(--bs-primary) !important;
+  }
+
+  &.disabled {
+    cursor: default;
+    pointer-events: none;
+
+    &:hover {
+      color: inherit !important;
+    }
   }
 }
 
@@ -147,4 +156,8 @@
   &:after {
     display: none;
   }
+}
+
+.text-white {
+  color: rgba(245, 245, 245, 0.85) !important;
 }

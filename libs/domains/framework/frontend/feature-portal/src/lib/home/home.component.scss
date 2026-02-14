@@ -1,355 +1,107 @@
-// Section spacing
-section {
-  scroll-margin-top: 80px; // Account for sticky header
-}
+@import '../page.component.scss';
 
-// Hero section minimum height
-.min-vh-75 {
-  min-height: 75vh;
-}
-
-// Image styling
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-// Card hover effect
-.card {
-  transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
+// Primary button: custom shadow and hover (plan)
+.home-btn-primary {
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
   }
 }
 
-// Gradient overlays for sections with tertiary backgrounds
-.gradient-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
-}
-
-// Hero section - Grid pattern with diagonal gradient, fading from left to right
-.gradient-overlay-hero {
-  background-image:
-    linear-gradient(
-      135deg,
-      rgba(122, 63, 255, 0.12) 0%,
-      rgba(122, 63, 255, 0.04) 25%,
-      transparent 50%,
-      rgba(122, 63, 255, 0.06) 75%,
-      rgba(122, 63, 255, 0.14) 100%
-    ),
-    linear-gradient(to right, transparent 0%, transparent 40%, rgba(122, 63, 255, 0.15) 100%),
-    linear-gradient(rgba(122, 63, 255, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(122, 63, 255, 0.15) 1px, transparent 1px);
-  background-size:
-    200% 200%,
-    100% 100%,
-    80px 80px,
-    80px 80px;
-  background-position:
-    0% 0%,
-    0 0,
-    0 0,
-    0 0;
-  mask-image: linear-gradient(to right, transparent 0%, transparent 40%, black 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 40%, black 100%);
-}
-
-// Features section - Dot pattern with radial gradient, fading from edges to center
-.gradient-overlay-features {
-  background-image:
-    radial-gradient(
-      ellipse at 30% 50%,
-      rgba(122, 63, 255, 0.15) 0%,
-      rgba(122, 63, 255, 0.06) 30%,
-      transparent 60%,
-      rgba(122, 63, 255, 0.1) 100%
-    ),
-    radial-gradient(circle, rgba(122, 63, 255, 0.3) 1.5px, transparent 1.5px);
-  background-size:
-    150% 150%,
-    30px 30px;
-  background-position:
-    30% 50%,
-    0 0;
-  mask-image: linear-gradient(to right, black 0%, black 25%, transparent 45%, transparent 55%, black 75%, black 100%);
-  -webkit-mask-image: linear-gradient(
-    to right,
-    black 0%,
-    black 25%,
-    transparent 45%,
-    transparent 55%,
-    black 75%,
-    black 100%
-  );
-}
-
-// Compliance section - Grid pattern with vertical fade
-.gradient-overlay-compliance {
-  background-image:
-    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.35) 0%, transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.4) 0%, transparent 60%),
-    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
-  background-size:
-    160% 160%,
-    160% 160%,
-    90px 90px,
-    90px 90px;
-  background-position:
-    0 0,
-    100% 100%,
-    0 0,
-    0 0;
-  opacity: 0.6;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-}
-
-// Compliance cards - increase separation from primary background
-.compliance-card {
-  background-color: #ffffff;
-  color: #212529;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  display: flex;
-  flex-direction: column;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out,
-    border-color 0.2s ease-in-out,
-    background-color 0.2s ease-in-out;
+.home-btn-secondary {
+  border-width: 1.5px;
+  border-color: rgba(245, 245, 245, 0.4);
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    border-color: rgba(15, 23, 42, 0.16);
-    background-color: #ffffff;
+    background-color: rgba(245, 245, 245, 0.1);
   }
 }
 
-// Ensure list icons align tightly with text (pricing, compliance, etc.)
-.bi-check-circle-fill,
-.bi-info-circle-fill {
-  line-height: 1;
+// Problem cards: left border accent, light purple tint (plan)
+
+// Security badges: custom colors and shadow (plan)
+.home-security-badge {
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-// Ensure compliance list icons have consistent small size
-.compliance-card .bi-check-circle-fill {
-  font-size: 16px;
+.home-security-badge-teal {
+  background-color: var(--bs-success) !important;
+}
+
+.home-security-badge-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+.home-security-badge-warning {
+  background-color: var(--bs-warning) !important;
+}
+
+// Final CTA section: gradient, rounded, shadow (plan)
+.home-cta-section {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark) 100%);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.25);
+}
+
+#engineering {
+  .engineering-screenshot {
+    position: absolute;
+    bottom: 0;
+    left: 52.5%;
+    min-width: 50%;
+    height: 105%;
+    width: auto;
+  }
+
+  .engineering-text {
+    line-height: 1.5rem;
+  }
+}
+
+// Custom inline style replacements
+.hero-container {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-lead {
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+.section-title-lg {
+  max-width: 800px;
+}
+
+.section-lead,
+.section-lead-md {
+  max-width: 700px;
+}
+
+.section-lead-sm {
+  max-width: 600px;
+}
+
+.icon-md {
+  font-size: 1.5rem;
+}
+
+.icon-solution {
+  font-size: 1.25rem;
+}
+
+.icon-integration {
+  font-size: 3rem;
   color: var(--bs-primary);
 }
 
-// Push list content to bottom when there is extra vertical space
-.compliance-card ul:last-of-type {
-  margin-top: auto;
-}
-
-// IDE screenshot side views with skew effect
-.ide-screenshot-container {
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  top: 0;
-  bottom: 0;
-}
-
-.ide-screenshot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 1rem 0;
-
-  img {
-    max-width: 100%;
-    height: auto;
-    transition: transform 0.3s ease-in-out;
-  }
-}
-
-.ide-screenshot-left {
-  img {
-    transform: perspective(1000px) rotateY(15deg) scale(0.85);
-    transform-origin: center center;
-
-    &:hover {
-      transform: perspective(1000px) rotateY(12deg) scale(0.9);
-    }
-  }
-}
-
-.ide-screenshot-right {
-  img {
-    transform: perspective(1000px) rotateY(-15deg) scale(0.85);
-    transform-origin: center center;
-
-    &:hover {
-      transform: perspective(1000px) rotateY(-12deg) scale(0.9);
-    }
-  }
-}
-
-.ide-screenshot-center {
-  img {
-    transition: transform 0.3s ease-in-out;
-    transform-origin: center center;
-
-    &:hover {
-      transform: scale(1.05);
-    }
-  }
-}
-
-// Dashboard hero section - Stacked images effect
-.dashboard-stack-container {
-  position: relative;
-  left: 6rem; // Move stack to the right, away from left column
-}
-
-.dashboard-stack {
-  position: absolute;
-  width: 100%;
-  transition: transform 0.3s ease-in-out;
-
-  img {
-    transition: transform 0.3s ease-in-out;
-    transform-origin: center center;
-  }
-}
-
-.dashboard-stack-back {
-  z-index: 1;
-  top: 0;
-  right: 0;
-  transform: rotate(8deg) translate(15px, -15px);
-
-  img {
-    opacity: 0.9;
-  }
-
-  &:hover {
-    transform: rotate(6deg) translate(15px, -15px);
-
-    img {
-      transform: scale(1.02);
-    }
-  }
-}
-
-.dashboard-stack-front {
-  z-index: 2;
-  position: relative;
-
-  img {
-    &:hover {
-      transform: scale(1.03);
-    }
-  }
-}
-
-// Mobile and tablet responsive adjustments
-@media (max-width: 991.98px) {
-  .dashboard-stack-container {
-    left: 0; // Reset left offset on mobile/tablet
-    width: 100%; // Full width on mobile
-  }
-
-  .dashboard-stack-back {
-    display: none; // Hide rotated back image on mobile/tablet
-  }
-
-  .dashboard-stack-front {
-    position: relative; // Already relative, but ensure it's not absolute
-    width: 100%; // Full width on mobile
-  }
-
-  .dashboard-stack {
-    position: relative; // Change from absolute to relative on mobile
-    width: 100%;
-  }
-}
-
-// Partner logo styling
-.logo-partner {
-  &:hover {
-    filter: grayscale(0%) opacity(1) !important;
-    transform: scale(1.05);
-  }
-}
-
-.logo-partner-text {
-  .badge {
-    transition: all 0.3s ease;
-
-    &:hover {
-      background-color: var(--bs-primary) !important;
-      color: white !important;
-      transform: scale(1.05);
-    }
-  }
-}
-
-.virtual-workspace-screenshot {
-  position: absolute;
-  left: 55%;
-  top: 0;
-  height: 100%;
-  max-width: none;
-
-  @media (max-width: 767.98px) {
-    position: relative;
-    left: 0;
-    top: 0;
-    height: auto;
-    max-width: 100%;
-    border-radius: var(--bs-border-radius);
-  }
-}
-
-.ssh-connection-screenshot {
-  position: absolute;
-  right: 55%;
-  top: 0;
-  height: 100%;
-  max-width: none;
-
-  @media (max-width: 767.98px) {
-    position: relative;
-    right: 0;
-    top: 0;
-    height: auto;
-    max-width: 100%;
-    border-radius: var(--bs-border-radius);
-  }
-}
-
-.pricing-carousel-scroll-buttons {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 0;
-  z-index: 1;
-  width: 100%;
-
-  .pricing-carousel-scroll-button-left {
-    transform: translateX(-50%);
-  }
-
-  .pricing-carousel-scroll-button-right {
-    transform: translateX(50%);
-  }
+.icon-security-large {
+  font-size: 6rem;
+  opacity: 0.2;
 }
