@@ -25,7 +25,8 @@
 
 .file-tree-sidebar {
   flex: 0 0 300px;
-  min-width: 0;
+  min-width: 150px;
+  max-width: 600px;
   min-height: 0;
   overflow: hidden;
   background-color: var(--bs-body-bg);
@@ -50,6 +51,34 @@
       height: calc(100% - 115px); // Account for toolbar height
       border: none;
     }
+  }
+}
+
+.resize-handle {
+  flex: 0 0 4px;
+  cursor: col-resize;
+  background-color: transparent;
+  position: relative;
+  z-index: 10;
+  transition: background-color 0.15s ease-in-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -2px;
+    right: -2px;
+    z-index: 10;
+  }
+
+  &:hover,
+  &:active {
+    background-color: var(--bs-primary);
+  }
+
+  @media (max-width: 767.98px) {
+    display: none !important;
   }
 }
 

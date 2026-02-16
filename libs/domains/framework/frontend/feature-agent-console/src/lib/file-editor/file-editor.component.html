@@ -1,9 +1,11 @@
 <div class="file-editor-container d-flex h-100">
   <!-- File Tree Sidebar with Git Manager below -->
   <div
+    #fileTreeSidebar
     class="file-tree-sidebar border-end d-flex flex-column"
     [class.d-none]="!fileTreeVisible() && !gitManagerVisible()"
     [class.mobile-overlay]="fileTreeVisible() || gitManagerVisible()"
+    [style.flex-basis.px]="sidebarWidth()"
   >
     @if (clientId() && agentId()) {
       <!-- File Tree Header with Back Button (mobile only, hidden when only git manager is visible) -->
@@ -87,6 +89,14 @@
       </div>
     }
   </div>
+
+  <!-- Resize Handle -->
+  <div
+    class="resize-handle"
+    [class.d-none]="!fileTreeVisible() && !gitManagerVisible()"
+    (mousedown)="onResizeStart($event)"
+    (touchstart)="onResizeStart($event)"
+  ></div>
 
   <!-- Editor Area -->
   <div class="editor-area flex-grow-1 d-flex flex-column">
