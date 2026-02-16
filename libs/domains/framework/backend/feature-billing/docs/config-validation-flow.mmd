@@ -1,0 +1,5 @@
+flowchart TB
+    Input["Requested Config"] --> Schema["Service Type Config Schema"]
+    Schema --> Validator["validateConfigSchema"]
+    Validator -->|Valid| Proceed["Provisioning + Subscription"]
+    Validator -->|Invalid| Error["400 Validation Error"]
