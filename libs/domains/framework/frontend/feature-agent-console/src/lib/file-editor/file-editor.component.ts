@@ -8,6 +8,7 @@ import {
   ElementRef,
   inject,
   input,
+  NgZone,
   OnDestroy,
   output,
   signal,
@@ -57,11 +58,13 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly actions$ = inject(Actions);
   private readonly location = inject(Location);
+  private readonly ngZone = inject(NgZone);
 
   @ViewChild('tabsContainer', { static: false }) tabsContainerRef?: ElementRef<HTMLDivElement>;
   @ViewChild('tabsWrapper', { static: false }) tabsWrapperRef?: ElementRef<HTMLDivElement>;
   @ViewChild('fileUpdateModal', { static: false }) fileUpdateModalRef?: ElementRef<HTMLDivElement>;
   @ViewChild('saveOverrideModal', { static: false }) saveOverrideModalRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('fileTreeSidebar', { static: false }) fileTreeSidebarRef?: ElementRef<HTMLDivElement>;
 
   // Inputs
   clientId = input.required<string>();
@@ -98,6 +101,15 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private readonly rejectedFileUpdates = signal<Map<string, string>>(new Map());
   // Track files we just saved to ignore our own notifications: filePath -> timestamp when saved
   private readonly recentlySavedFiles = signal<Map<string, number>>(new Map());
+
+  // Sidebar resize state
+  private readonly SIDEBAR_MIN_WIDTH = 150;
+  private readonly SIDEBAR_MAX_WIDTH = 600;
+  private readonly SIDEBAR_DEFAULT_WIDTH = 300;
+  readonly sidebarWidth = signal<number>(300);
+  private isResizing = false;
+  private readonly boundOnResizeMove = this.onResizeMove.bind(this);
+  private readonly boundOnResizeEnd = this.onResizeEnd.bind(this);
 
   // Autosave debounce subject
   private readonly autosaveTrigger$ = new Subject<void>();
@@ -1217,6 +1229,57 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
+  /** Start sidebar resize on mousedown/touchstart */
+  onResizeStart(event: MouseEvent | TouchEvent): void {
+    event.preventDefault();
+    this.isResizing = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    // Run outside Angular zone for performance during drag
+    this.ngZone.runOutsideAngular(() => {
+      document.addEventListener('mousemove', this.boundOnResizeMove);
+      document.addEventListener('mouseup', this.boundOnResizeEnd);
+      document.addEventListener('touchmove', this.boundOnResizeMove);
+      document.addEventListener('touchend', this.boundOnResizeEnd);
+    });
+  }
+
+  private onResizeMove(event: MouseEvent | TouchEvent): void {
+    if (!this.isResizing) return;
+
+    const sidebarEl = this.fileTreeSidebarRef?.nativeElement;
+    if (!sidebarEl) return;
+
+    const containerRect = sidebarEl.parentElement?.getBoundingClientRect();
+    if (!containerRect) return;
+
+    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    let newWidth = clientX - containerRect.left;
+    newWidth = Math.max(this.SIDEBAR_MIN_WIDTH, Math.min(this.SIDEBAR_MAX_WIDTH, newWidth));
+
+    // Apply width directly on the element for smooth dragging
+    sidebarEl.style.flexBasis = `${newWidth}px`;
+    this.ngZone.run(() => {
+      this.sidebarWidth.set(newWidth);
+    });
+  }
+
+  private onResizeEnd(): void {
+    if (!this.isResizing) return;
+    this.isResizing = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+
+    document.removeEventListener('mousemove', this.boundOnResizeMove);
+    document.removeEventListener('mouseup', this.boundOnResizeEnd);
+    document.removeEventListener('touchmove', this.boundOnResizeMove);
+    document.removeEventListener('touchend', this.boundOnResizeEnd);
+
+    // Recalculate tabs after resize
+    this.recalculateTabs();
+  }
+
   ngOnDestroy(): void {
     // Clear all open tabs when component is destroyed
     if (this.clientId() && this.agentId()) {
@@ -1226,5 +1289,10 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    // Clean up resize listeners in case component is destroyed mid-drag
+    document.removeEventListener('mousemove', this.boundOnResizeMove);
+    document.removeEventListener('mouseup', this.boundOnResizeEnd);
+    document.removeEventListener('touchmove', this.boundOnResizeMove);
+    document.removeEventListener('touchend', this.boundOnResizeEnd);
   }
 }
