@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant User
+    participant BillingAPI
+    participant UsageStore
+    participant InvoiceNinja
+    participant Database
+
+    User->>BillingAPI: POST /usage/record
+    BillingAPI->>UsageStore: Store usage record
+    UsageStore-->>BillingAPI: record id
+    BillingAPI-->>User: 200 UsageRecordResponse
+
+    User->>BillingAPI: POST /invoices/:subscriptionId
+    BillingAPI->>Database: Fetch subscription + plan
+    BillingAPI->>Database: Fetch latest usage
+    BillingAPI->>InvoiceNinja: Sync customer profile
+    InvoiceNinja-->>BillingAPI: clientId
+    BillingAPI->>InvoiceNinja: POST /invoices
+    InvoiceNinja-->>BillingAPI: invoice id + preAuthUrl
+    BillingAPI->>Database: Insert invoice ref
+    BillingAPI-->>User: 200 CreateInvoiceResponse

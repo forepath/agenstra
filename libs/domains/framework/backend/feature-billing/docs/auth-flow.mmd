@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant User
+    participant BillingAPI
+    participant AuthGuard
+
+    User->>BillingAPI: HTTP Request (Bearer/API key)
+    BillingAPI->>AuthGuard: HybridAuthGuard
+
+    alt API key auth
+        AuthGuard-->>BillingAPI: apiKeyAuthenticated=true
+    else Keycloak/users auth
+        AuthGuard-->>BillingAPI: user identity + roles
+    end
+
+    BillingAPI-->>User: Authorized response

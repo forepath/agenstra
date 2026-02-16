@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> active
+    active --> pending_cancel: cancel request
+    pending_cancel --> active: resume
+    pending_cancel --> canceled: effective_at reached
+    active --> pending_backorder: unavailable
+    pending_backorder --> active: provisioned
+    pending_backorder --> canceled: cancel
