@@ -30,30 +30,30 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { AddClientUserDto } from '../dto/add-client-user.dto';
+import {
+  AddClientUserDto,
+  checkClientAccess,
+  ClientUserResponseDto,
+  ClientUsersRepository,
+  ClientUsersService,
+  ensureClientAccess,
+  getUserFromRequest,
+  type RequestWithUser,
+  UserRole,
+} from '@forepath/identity/backend';
 import { ClientResponseDto } from '../dto/client-response.dto';
-import { ClientUserResponseDto } from '../dto/client-user-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
-import { UserRole } from '../entities/user.entity';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
-import { ClientUsersService } from '../services/client-users.service';
 import { ClientsService } from '../services/clients.service';
 import { ProvisioningService } from '../services/provisioning.service';
-import {
-  checkClientAccess,
-  ensureClientAccess,
-  getUserFromRequest,
-  type RequestWithUser,
-} from '../utils/client-access.utils';
 
 /**
  * Controller for client management endpoints.

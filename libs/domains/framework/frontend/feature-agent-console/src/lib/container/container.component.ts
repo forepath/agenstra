@@ -6,7 +6,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/ro
 import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { combineLatest, filter, map, startWith } from 'rxjs';
-import { StandaloneLoadingService } from '../standalone-loading.service';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { ThemeService } from '../theme.service';
 
 @Component({

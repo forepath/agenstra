@@ -1,10 +1,12 @@
-import { ClientsModule, KeycloakUserSyncModule, MonitoringModule, UsersAuthModule } from '@forepath/framework/backend';
+import { ClientsModule, MonitoringModule } from '@forepath/framework/backend';
 import {
   getAuthenticationMethod,
   getHybridAuthGuards,
   getRateLimitConfig,
   KeycloakModule,
   KeycloakService,
+  KeycloakUserSyncModule,
+  UsersAuthModule,
 } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';

@@ -7,11 +7,10 @@ import {
   UpdateAgentDto,
 } from '@forepath/framework/backend/feature-agent-manager';
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { AuthenticationType, ClientAgentCredentialsService } from '@forepath/identity/backend';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { AuthenticationType } from '../entities/client.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
-import { ClientAgentCredentialsService } from './client-agent-credentials.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 

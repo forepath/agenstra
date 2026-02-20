@@ -4,15 +4,18 @@ import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
+import {
+  AuthenticationType,
+  ClientEntity,
+  ClientUserRole,
+  ClientUsersRepository,
+  KeycloakTokenService,
+  UserRole,
+} from '@forepath/identity/backend';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
-import { AuthenticationType, ClientEntity } from '../entities/client.entity';
-import { ClientUserRole } from '../entities/client-user.entity';
-import { UserRole } from '../entities/user.entity';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
-import { KeycloakTokenService } from './keycloak-token.service';
 import { StatisticsService } from './statistics.service';
 
 /**

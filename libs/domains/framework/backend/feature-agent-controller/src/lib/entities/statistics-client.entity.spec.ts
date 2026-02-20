@@ -1,4 +1,4 @@
-import { AuthenticationType } from './client.entity';
+import { AuthenticationType } from '@forepath/identity/backend';
 import { StatisticsClientEntity } from './statistics-client.entity';
 
 describe('StatisticsClientEntity', () => {

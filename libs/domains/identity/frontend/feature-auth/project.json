@@ -1,0 +1,21 @@
+{
+  "name": "identity-frontend-feature-auth",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/identity/frontend/feature-auth/src",
+  "prefix": "identity",
+  "projectType": "library",
+  "tags": ["domain:identity", "scope:frontend", "type:feature"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/identity/frontend/feature-auth/jest.config.ts",
+        "tsConfig": "libs/domains/identity/frontend/feature-auth/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

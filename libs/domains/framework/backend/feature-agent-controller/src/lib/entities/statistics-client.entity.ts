@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { AuthenticationType } from './client.entity';
+import { AuthenticationType } from '@forepath/identity/backend';
 
 /**
  * Shadow table for clients. Stores references to original clients for statistics

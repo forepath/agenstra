@@ -1,10 +1,9 @@
 import { Controller, Get, Param, ParseIntPipe, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 import { ChatDirection } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
+import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsQueryService } from '../services/statistics-query.service';
-import { ensureClientAccess, type RequestWithUser } from '../utils/client-access.utils';
 
 /**
  * Controller for client-scoped statistics endpoints.

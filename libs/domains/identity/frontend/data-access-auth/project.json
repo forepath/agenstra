@@ -1,0 +1,21 @@
+{
+  "name": "identity-frontend-data-access-auth",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/identity/frontend/data-access-auth/src",
+  "prefix": "identity",
+  "projectType": "library",
+  "tags": ["domain:identity", "scope:frontend", "type:data-access"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/identity/frontend/data-access-auth/jest.config.ts",
+        "tsConfig": "libs/domains/identity/frontend/data-access-auth/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
