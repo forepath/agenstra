@@ -1,9 +1,9 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { AuthenticationType } from '@forepath/identity/backend';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { randomBytes } from 'crypto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
-import { AuthenticationType } from '../entities/client.entity';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientsService } from './clients.service';

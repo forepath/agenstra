@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { AuthenticationType, ClientUserRole } from '@forepath/identity/backend';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { FilterDropDirection, StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection, StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
 import { ChatDirection, StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
-import { AuthenticationType } from '../entities/client.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
-import { ClientUserRole } from '../entities/client-user.entity';
 import { StatisticsClientUserEntity } from '../entities/statistics-client-user.entity';
 import {
   StatisticsEntityEventEntity,

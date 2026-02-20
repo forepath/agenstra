@@ -1,7 +1,4 @@
 import {
-  ClientAgentCredentialEntity,
-  ClientEntity,
-  ClientUserEntity,
   ProvisioningReferenceEntity,
   StatisticsAgentEntity,
   StatisticsChatFilterDropEntity,
@@ -12,8 +9,8 @@ import {
   StatisticsEntityEventEntity,
   StatisticsProvisioningReferenceEntity,
   StatisticsUserEntity,
-  UserEntity,
 } from '@forepath/framework/backend';
+import { ClientAgentCredentialEntity, ClientEntity, ClientUserEntity, UserEntity } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 /**

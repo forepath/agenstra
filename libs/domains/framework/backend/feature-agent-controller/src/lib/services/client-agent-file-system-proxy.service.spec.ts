@@ -7,9 +7,8 @@ import {
 } from '@forepath/framework/backend/feature-agent-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
-import { AuthenticationType } from '../entities/client.entity';
-import { ClientEntity } from '../entities/client.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentFileSystemProxyService } from './client-agent-file-system-proxy.service';
 import { ClientsService } from './clients.service';

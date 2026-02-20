@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ClientUserRole } from './client-user.entity';
+import { ClientUserRole } from '@forepath/identity/backend';
 import { StatisticsClientEntity } from './statistics-client.entity';
 import { StatisticsUserEntity } from './statistics-user.entity';
 

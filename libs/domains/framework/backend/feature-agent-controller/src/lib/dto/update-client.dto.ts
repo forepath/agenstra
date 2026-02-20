@@ -1,5 +1,5 @@
 import { IsEnum, IsInt, IsOptional, IsString, IsUrl, Max, Min } from 'class-validator';
-import { AuthenticationType } from '../entities/client.entity';
+import { AuthenticationType } from '@forepath/identity/backend';
 
 /**
  * DTO for updating an existing client.

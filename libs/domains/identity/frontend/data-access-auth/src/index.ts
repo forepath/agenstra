@@ -1,0 +1,7 @@
+export * from './lib/services/auth.service';
+export * from './lib/state/authentication/authentication.actions';
+export * from './lib/state/authentication/authentication.effects';
+export * from './lib/state/authentication/authentication.facade';
+export * from './lib/state/authentication/authentication.reducer';
+export * from './lib/state/authentication/authentication.selectors';
+export * from './lib/state/authentication/authentication.types';

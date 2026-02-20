@@ -1,6 +1,6 @@
+import { ClientEntity, UserEntity, UsersRepository } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientEntity } from '../entities/client.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
@@ -10,10 +10,8 @@ import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsProvisioningReferenceEntity } from '../entities/statistics-provisioning-reference.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
-import { UserEntity } from '../entities/user.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
-import { UsersRepository } from '../repositories/users.repository';
 import { StatisticsClientSyncService } from '../services/statistics-client-sync.service';
 import { StatisticsQueryService } from '../services/statistics-query.service';
 import { StatisticsUserSyncService } from '../services/statistics-user-sync.service';

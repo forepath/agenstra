@@ -1,4 +1,4 @@
-import { AuthenticationType, ClientEntity } from './client.entity';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { ProvisioningReferenceEntity } from './provisioning-reference.entity';
 
 describe('ProvisioningReferenceEntity', () => {

@@ -11,16 +11,19 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
-import { AuthenticationType } from '../entities/client.entity';
+import {
+  AuthenticationType,
+  ClientAgentCredentialsRepository,
+  ClientUsersRepository,
+  SocketAuthService,
+  buildRequestFromSocketUser,
+  ensureClientAccess,
+} from '@forepath/identity/backend';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
-import { ClientAgentCredentialsRepository } from '../repositories/client-agent-credentials.repository';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from '../services/clients.service';
-import { SocketAuthService } from '../services/socket-auth.service';
 import { StatisticsService } from '../services/statistics.service';
-import { buildRequestFromSocketUser, ensureClientAccess } from '../utils/client-access.utils';
 // socket.io-client is required at runtime when forwarding; avoid static import to keep optional dependency for tests
 // Using type-only import for ClientSocket to avoid runtime dependency
 

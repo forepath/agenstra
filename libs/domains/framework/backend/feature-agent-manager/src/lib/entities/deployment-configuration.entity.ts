@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { createAes256GcmTransformer } from '../utils/encryption.transformer';
+import { createAes256GcmTransformer } from '@forepath/shared/backend';
 import { AgentEntity } from './agent.entity';
 
 /**

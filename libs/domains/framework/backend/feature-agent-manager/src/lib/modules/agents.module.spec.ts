@@ -30,7 +30,7 @@ import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
-import { PasswordService } from '../services/password.service';
+import { PasswordService } from '@forepath/identity/backend';
 import { AgentsModule } from './agents.module';
 
 describe('AgentsModule', () => {

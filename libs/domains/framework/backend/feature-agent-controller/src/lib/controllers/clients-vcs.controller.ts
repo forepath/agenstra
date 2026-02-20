@@ -24,10 +24,9 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
+import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
-import { ensureClientAccess, type RequestWithUser } from '../utils/client-access.utils';
 
 /**
  * Controller for proxied agent VCS (Version Control System) operations.

@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ClientUserRole } from '../entities/client-user.entity';
-import { UserRole } from '../entities/user.entity';
+import { ClientUserRole, UserRole } from '@forepath/identity/backend';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ChatDirection } from '../entities/statistics-chat-io.entity';

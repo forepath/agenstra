@@ -11,7 +11,7 @@ import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
-import { PasswordService } from './password.service';
+import { PasswordService } from '@forepath/identity/backend';
 
 /**
  * Service for agent business logic operations.

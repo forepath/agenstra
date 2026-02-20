@@ -11,7 +11,7 @@ import {
 } from '@forepath/framework/backend/feature-agent-manager';
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
+import { ClientUsersRepository } from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientsVcsController } from './clients-vcs.controller';
