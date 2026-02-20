@@ -38,6 +38,7 @@ import { UsersService } from '../services/users.service';
     UsersAuthGuard,
     KeycloakRolesGuard,
     { provide: APP_GUARD, useClass: KeycloakAuthGuard },
+    { provide: APP_GUARD, useClass: KeycloakRolesGuard },
   ],
   exports: [UsersRepository],
 })

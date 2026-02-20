@@ -78,6 +78,7 @@ export * from './lib/entities/statistics-entity-event.entity';
 export * from './lib/entities/statistics-provisioning-reference.entity';
 export * from './lib/entities/statistics-user.entity';
 export * from './lib/modules/clients.module';
+export * from './lib/modules/identity-statistics-bridge.module';
 export * from './lib/modules/statistics.module';
 export * from './lib/repositories/clients.repository';
 export * from './lib/repositories/statistics.repository';

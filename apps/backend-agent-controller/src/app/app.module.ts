@@ -1,4 +1,4 @@
-import { ClientsModule, MonitoringModule } from '@forepath/framework/backend';
+import { ClientsModule, IdentityStatisticsBridgeModule, MonitoringModule } from '@forepath/framework/backend';
 import {
   getAuthenticationMethod,
   getHybridAuthGuards,
@@ -26,6 +26,7 @@ const authMethod = getAuthenticationMethod();
       : []),
     ...(authMethod === 'users' ? [UsersAuthModule] : []),
     ClientsModule,
+    IdentityStatisticsBridgeModule,
     MonitoringModule,
   ],
   // Use hybrid guards (checks STATIC_API_KEY to determine authentication method)
