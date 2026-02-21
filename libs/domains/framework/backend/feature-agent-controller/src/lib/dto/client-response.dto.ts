@@ -1,5 +1,5 @@
 import { ConfigResponseDto } from '@forepath/framework/backend/feature-agent-manager';
-import { AuthenticationType } from '../entities/client.entity';
+import { AuthenticationType } from '@forepath/identity/backend';
 
 /**
  * DTO for client API responses.

@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { createAes256GcmTransformer } from '../utils/encryption.transformer';
-import { ClientEntity } from './client.entity';
+import { createAes256GcmTransformer } from '@forepath/shared/backend';
+import { ClientEntity } from '@forepath/identity/backend';
 
 /**
  * Entity representing a provisioning reference for a client.

@@ -1,17 +1,20 @@
 import { ConfigResponseDto } from '@forepath/framework/backend/feature-agent-manager';
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import {
+  AuthenticationType,
+  ClientEntity,
+  ClientUsersRepository,
+  KeycloakTokenService,
+  UserRole,
+} from '@forepath/identity/backend';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
-import { AuthenticationType, ClientEntity } from '../entities/client.entity';
-import { UserRole } from '../entities/user.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { ClientsService } from './clients.service';
-import { KeycloakTokenService } from './keycloak-token.service';
 import { StatisticsService } from './statistics.service';
 
 describe('ClientsService', () => {

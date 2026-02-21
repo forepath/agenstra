@@ -1,14 +1,15 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
+import { ClientUsersRepository } from '@forepath/identity/backend';
+import * as clientAccessUtils from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsQueryService } from '../services/statistics-query.service';
-import * as clientAccessUtils from '../utils/client-access.utils';
 import { ClientStatisticsController } from './client-statistics.controller';
 
-jest.mock('../utils/client-access.utils', () => ({
-  ensureClientAccess: jest.fn(),
-}));
+jest.mock('@forepath/identity/backend', () => {
+  const actual = jest.requireActual('@forepath/identity/backend');
+  return { ...actual, ensureClientAccess: jest.fn() };
+});
 
 describe('ClientStatisticsController', () => {
   let controller: ClientStatisticsController;

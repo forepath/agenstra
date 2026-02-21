@@ -1,6 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
+import { ClientUsersRepository } from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
 import { ClientsDeploymentsController } from './clients-deployments.controller';

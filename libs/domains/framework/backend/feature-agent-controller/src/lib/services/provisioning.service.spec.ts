@@ -1,7 +1,7 @@
 import { BadRequestException, forwardRef, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
-import { AuthenticationType, ClientEntity } from '../entities/client.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ProvisioningProvider, ProvisionedServer, ServerInfo } from '../providers/provisioning-provider.interface';

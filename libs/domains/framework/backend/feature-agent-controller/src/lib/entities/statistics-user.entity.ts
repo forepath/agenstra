@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { UserRole } from './user.entity';
+import { UserRole } from '@forepath/identity/backend';
 
 /**
  * Shadow table for users. Stores references to original users for statistics

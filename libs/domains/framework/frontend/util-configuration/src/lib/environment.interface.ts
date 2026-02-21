@@ -1,3 +1,18 @@
+import type {
+  ApiKeyAuthenticationConfig,
+  AuthenticationConfig,
+  KeycloakAuthenticationConfig,
+  UsersAuthenticationConfig,
+} from '@forepath/identity/frontend';
+
+// Re-export auth config types from identity for backward compatibility
+export type {
+  AuthenticationConfig,
+  KeycloakAuthenticationConfig,
+  ApiKeyAuthenticationConfig,
+  UsersAuthenticationConfig,
+};
+
 export interface Environment {
   production: boolean;
   controller: {
@@ -16,26 +31,4 @@ export interface Environment {
     domain: string;
     privacyPolicyUrl: string;
   };
-}
-
-export type AuthenticationConfig =
-  | KeycloakAuthenticationConfig
-  | ApiKeyAuthenticationConfig
-  | UsersAuthenticationConfig;
-
-export interface KeycloakAuthenticationConfig {
-  type: 'keycloak';
-  authServerUrl: string;
-  realm: string;
-  clientId: string;
-}
-
-export interface ApiKeyAuthenticationConfig {
-  type: 'api-key';
-  apiKey?: string;
-}
-
-export interface UsersAuthenticationConfig {
-  type: 'users';
-  disableSignup?: boolean;
 }

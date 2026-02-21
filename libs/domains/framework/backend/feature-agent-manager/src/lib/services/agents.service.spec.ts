@@ -10,7 +10,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentsService } from './agents.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
-import { PasswordService } from './password.service';
+import { PasswordService } from '@forepath/identity/backend';
 
 describe('AgentsService', () => {
   let service: AgentsService;

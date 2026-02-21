@@ -1,6 +1,108 @@
-export * from './lib/interceptors/auth.interceptor.provider';
+// Re-export auth symbols from identity for backward compatibility
+export {
+  // Interceptor
+  getAuthInterceptor,
+  // Service
+  AuthService,
+  // Facade
+  AuthenticationFacade,
+  // Reducer
+  authenticationReducer,
+  // Actions
+  login,
+  loginSuccess,
+  loginFailure,
+  logout,
+  logoutSuccess,
+  logoutFailure,
+  checkAuthentication,
+  checkAuthenticationSuccess,
+  checkAuthenticationFailure,
+  register,
+  registerSuccess,
+  registerFailure,
+  confirmEmail,
+  confirmEmailSuccess,
+  confirmEmailFailure,
+  requestPasswordReset,
+  requestPasswordResetSuccess,
+  requestPasswordResetFailure,
+  resetPassword,
+  resetPasswordSuccess,
+  resetPasswordFailure,
+  changePassword,
+  changePasswordSuccess,
+  changePasswordFailure,
+  clearError,
+  clearSuccessMessage,
+  loadUsers,
+  loadUsersSuccess,
+  loadUsersFailure,
+  loadUsersBatch,
+  createUser,
+  createUserSuccess,
+  createUserFailure,
+  updateUser,
+  updateUserSuccess,
+  updateUserFailure,
+  deleteUser,
+  deleteUserSuccess,
+  deleteUserFailure,
+  // Selectors
+  selectAuthenticationState,
+  selectIsAuthenticated,
+  selectAuthenticationType,
+  selectUser,
+  selectAuthenticationLoading,
+  selectAuthenticationError,
+  selectSuccessMessage,
+  selectIsNotAuthenticated,
+  selectRegistering,
+  selectConfirmingEmail,
+  selectRequestingPasswordReset,
+  selectResettingPassword,
+  selectChangingPassword,
+  selectUsers,
+  selectUsersLoading,
+  selectUsersError,
+  selectCreatingUser,
+  selectUpdatingUser,
+  selectDeletingUser,
+  selectIsAdmin,
+  selectCanAccessUserManager,
+  // Effects
+  login$,
+  loginSuccessRedirect$,
+  logout$,
+  logoutSuccessRedirect$,
+  checkAuthentication$,
+  register$,
+  registerSuccessRedirect$,
+  confirmEmail$,
+  confirmEmailSuccessRedirect$,
+  requestPasswordReset$,
+  requestPasswordResetSuccessRedirect$,
+  resetPassword$,
+  resetPasswordSuccessRedirect$,
+  changePassword$,
+  loadUsers$,
+  loadUsersBatch$,
+  createUser$,
+  updateUser$,
+  deleteUser$,
+  // Types
+  type AuthenticationState,
+  type UserInfo,
+  type UserRole,
+  type LoginResponse,
+  type RegisterResponse,
+  type UserResponseDto,
+  type CreateUserDto,
+  type UpdateUserDto,
+  type ListUsersParams,
+} from '@forepath/identity/frontend';
+
 export * from './lib/services/agents.service';
-export * from './lib/services/auth.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/deployments.service';
 export * from './lib/services/env.service';
@@ -13,12 +115,6 @@ export * from './lib/state/agents/agents.facade';
 export * from './lib/state/agents/agents.reducer';
 export * from './lib/state/agents/agents.selectors';
 export * from './lib/state/agents/agents.types';
-export * from './lib/state/authentication/authentication.actions';
-export * from './lib/state/authentication/authentication.effects';
-export * from './lib/state/authentication/authentication.facade';
-export * from './lib/state/authentication/authentication.reducer';
-export * from './lib/state/authentication/authentication.selectors';
-export * from './lib/state/authentication/authentication.types';
 export * from './lib/state/clients/clients.actions';
 export * from './lib/state/clients/clients.effects';
 export * from './lib/state/clients/clients.facade';

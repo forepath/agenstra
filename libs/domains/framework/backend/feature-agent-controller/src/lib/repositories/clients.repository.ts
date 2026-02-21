@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuthenticationType, ClientEntity } from '../entities/client.entity';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 
 /**
  * Repository for client database operations.

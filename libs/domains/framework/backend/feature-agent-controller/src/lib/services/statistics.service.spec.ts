@@ -1,4 +1,4 @@
-import { AuthenticationType, ClientEntity } from '../entities/client.entity';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
