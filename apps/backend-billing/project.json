@@ -60,7 +60,11 @@
       "dependsOn": ["build"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "mkdir -p dist/apps/backend-billing/src/migrations && npx tsc $(find apps/backend-billing/src/migrations -name '*.ts') --outDir dist/apps/backend-billing/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/backend-billing/src/migrations"
+        "commands": [
+          "mkdir -p dist/apps/backend-billing/src/migrations",
+          "(npx tsc $(find apps/backend-billing/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/backend-billing/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/backend-billing/src/migrations 2>/dev/null || true)",
+          "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/backend-billing/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations"
+        ]
       }
     },
     "prune": {

@@ -1,0 +1,94 @@
+<div class="section__container">
+  <div class="section__header">
+    <h1 class="section__title">Billing</h1>
+  </div>
+
+  <div class="section__content">
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Customer Profile</h5>
+          </div>
+          <div class="card-body">
+            @if (loading$ | async) {
+              <div class="d-flex justify-content-center py-3">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+              </div>
+            } @else {
+              <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-control" formControlName="firstName" />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-control" formControlName="lastName" />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Company</label>
+                  <input type="text" class="form-control" formControlName="company" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Address</label>
+                  <input type="text" class="form-control" formControlName="address" />
+                </div>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" formControlName="email" />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-control" formControlName="phone" />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Country</label>
+                  <input type="text" class="form-control" formControlName="country" />
+                </div>
+                @if (error$ | async; as error) {
+                  <div class="alert alert-danger">{{ error }}</div>
+                }
+                <button type="submit" class="btn btn-primary" [disabled]="updating$ | async">
+                  @if (updating$ | async) {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                  }
+                  Save Profile
+                </button>
+              </form>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Subscriptions & Invoices</h5>
+          </div>
+          <div class="card-body">
+            @if ((subscriptions$ | async)?.length === 0) {
+              <p class="text-muted">No subscriptions found.</p>
+            } @else {
+              <div class="list-group">
+                @for (subscription of subscriptions$ | async; track subscription.id) {
+                  <button
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                    [class.active]="selectedSubscriptionId === subscription.id"
+                    (click)="onSelectSubscription(subscription.id)"
+                  >
+                    <span>Subscription {{ subscription.id }}</span>
+                    <span class="badge bg-secondary">{{ subscription.status }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+{
+  "production": false,
+  "controller": {
+    "restApiUrl": "http://localhost:3100/api",
+    "websocketUrl": "http://localhost:8081/clients"
+  },
+  "billing": {
+    "restApiUrl": "http://localhost:3200/api"
+  },
+  "authentication": {
+    "type": "api-key"
+  },
+  "chatModelOptions": {
+    "cursor": {},
+    "opencode": {}
+  },
+  "editor": {
+    "openInNewWindow": true
+  },
+  "deployment": {
+    "openInNewWindow": true
+  },
+  "cookieConsent": {
+    "domain": ".agenstra.com",
+    "privacyPolicyUrl": "https://www.agenstra.com/legal/privacy"
+  }
+}

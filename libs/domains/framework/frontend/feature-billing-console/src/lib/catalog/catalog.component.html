@@ -1,0 +1,131 @@
+<div class="section__container">
+  <div class="section__header">
+    <h1 class="section__title">Service Catalog</h1>
+    @if (isAdmin$ | async) {
+      <button
+        class="btn btn-primary btn-sm"
+        (click)="activeTab === 'service-types' ? onCreateServiceType() : onCreateServicePlan()"
+      >
+        <i class="bi bi-plus-lg me-1"></i>
+        Create {{ activeTab === 'service-types' ? 'Service Type' : 'Service Plan' }}
+      </button>
+    }
+  </div>
+
+  <ul class="nav nav-tabs px-3 pt-2 bg-body">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'service-types'" (click)="setActiveTab('service-types')">
+        Service Types
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'service-plans'" (click)="setActiveTab('service-plans')">
+        Service Plans
+      </button>
+    </li>
+  </ul>
+
+  <div class="section__content">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    } @else {
+      @if (activeTab === 'service-types') {
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Name</th>
+                <th>Provider</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (serviceType of serviceTypes$ | async; track serviceType.id) {
+                <tr>
+                  <td>
+                    <code>{{ serviceType.key }}</code>
+                  </td>
+                  <td>{{ serviceType.name }}</td>
+                  <td>{{ serviceType.provider }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.bg-success]="serviceType.isActive"
+                      [class.bg-secondary]="!serviceType.isActive"
+                    >
+                      {{ serviceType.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (isAdmin$ | async) {
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" (click)="onEditServiceType(serviceType.id)">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="onDeleteServiceType(serviceType.id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Service Type</th>
+                <th>Billing</th>
+                <th>Base Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (servicePlan of servicePlans$ | async; track servicePlan.id) {
+                <tr>
+                  <td>{{ servicePlan.name }}</td>
+                  <td>{{ servicePlan.serviceTypeId }}</td>
+                  <td>{{ servicePlan.billingIntervalValue }} {{ servicePlan.billingIntervalType }}</td>
+                  <td>{{ servicePlan.basePrice ?? '-' }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.bg-success]="servicePlan.isActive"
+                      [class.bg-secondary]="!servicePlan.isActive"
+                    >
+                      {{ servicePlan.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (isAdmin$ | async) {
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" (click)="onEditServicePlan(servicePlan.id)">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="onDeleteServicePlan(servicePlan.id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+</div>
