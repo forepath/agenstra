@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: agent-controller-postgres
+    container_name: billing-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -14,17 +14,16 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - agent-controller-network
+      - billing-network
     restart: unless-stopped
 
-  backend-agent-controller:
-    image: ghcr.io/forepath/agenstra-controller-api:latest
-    container_name: agent-controller-api
+  backend-billing:
+    image: ghcr.io/forepath/agenstra-billing-api:latest
+    container_name: billing-api
     environment:
       # Backend API configuration
       HOST: 0.0.0.0
-      PORT: 3100
-      WEBSOCKET_PORT: 8081
+      PORT: 3200
       NODE_ENV: development
       # Database configuration
       DB_HOST: postgres
@@ -34,7 +33,6 @@ services:
       DB_DATABASE: postgres
       # Environment variables for the provisioning providers
       HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
-      DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
       # Authentication method configuration
       AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
       # Environment variables for disabling signup
@@ -66,31 +64,43 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
+      # InvoiceNinja configuration
+      INVOICE_NINJA_BASE_URL: ${INVOICE_NINJA_BASE_URL:-}
+      INVOICE_NINJA_API_TOKEN: ${INVOICE_NINJA_API_TOKEN:-}
+      # Scheduler intervals (in milliseconds)
+      BILLING_SCHEDULER_INTERVAL: ${BILLING_SCHEDULER_INTERVAL:-60000}
+      BILLING_SCHEDULER_BATCH_SIZE: ${BILLING_SCHEDULER_BATCH_SIZE:-100}
+      EXPIRATION_SCHEDULER_INTERVAL: ${EXPIRATION_SCHEDULER_INTERVAL:-60000}
+      EXPIRATION_SCHEDULER_BATCH_SIZE: ${EXPIRATION_SCHEDULER_BATCH_SIZE:-100}
+      REMINDER_SCHEDULER_INTERVAL: ${REMINDER_SCHEDULER_INTERVAL:-60000}
+      REMINDER_SCHEDULER_BATCH_SIZE: ${REMINDER_SCHEDULER_BATCH_SIZE:-100}
+      REMINDER_DAYS: ${REMINDER_DAYS:-3}
+      BACKORDER_RETRY_INTERVAL: ${BACKORDER_RETRY_INTERVAL:-60000}
+      BACKORDER_RETRY_BATCH_SIZE: ${BACKORDER_RETRY_BATCH_SIZE:-100}
     ports:
-      - '3100:3100'
-      - '8081:8081'
+      - '3200:3200'
     depends_on:
       postgres:
         condition: service_healthy
       mailhog:
         condition: service_started
     networks:
-      - agent-controller-network
+      - billing-network
     restart: unless-stopped
 
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: mailhog-agent-controller
+    container_name: mailhog-billing
     ports:
-      - '1025:1025'
-      - '8025:8025'
+      - '1026:1025'
+      - '8026:8025'
     networks:
-      - agent-controller-network
+      - billing-network
     restart: unless-stopped
 
 volumes:
   postgres_data:
 
 networks:
-  agent-controller-network:
+  billing-network:
     driver: bridge
