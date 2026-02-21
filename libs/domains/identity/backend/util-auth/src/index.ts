@@ -18,3 +18,6 @@ export * from './lib/entities/authentication-type.enum';
 export * from './lib/entities/client.entity.types';
 export * from './lib/client-access.utils';
 export * from './lib/statistics.interface';
+
+// Migrations
+export * from './lib/migrations/1765000000000_CreateUsersTable';
