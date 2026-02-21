@@ -1,0 +1,47 @@
+<div class="d-flex flex-column vh-100">
+  @if (isAuthenticated$ | async) {
+    <header class="d-flex align-items-center px-3 py-2 border-bottom bg-body">
+      <div class="d-flex align-items-center">
+        <span class="fw-bold me-3">Billing Console</span>
+      </div>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        @if (user$ | async; as user) {
+          <span class="small text-muted me-2">{{ user.email }}</span>
+        }
+        <button class="btn btn-sm btn-outline-secondary" (click)="toggleTheme()" title="Toggle theme">
+          <i class="bi" [class.bi-moon]="!themeService.isDarkMode()" [class.bi-sun]="themeService.isDarkMode()"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger" (click)="onLogout()">Logout</button>
+      </div>
+    </header>
+    <div class="d-flex flex-grow-1 overflow-hidden">
+      <nav class="sidebar d-flex flex-column border-end bg-body p-2" style="width: 200px; min-width: 200px">
+        @if (isAdmin$ | async) {
+          <a routerLink="/catalog" routerLinkActive="active" class="sidebar__item">
+            <i class="bi bi-box-seam me-1"></i>
+            <span class="small">Catalog</span>
+          </a>
+        }
+        <a routerLink="/subscriptions" routerLinkActive="active" class="sidebar__item">
+          <i class="bi bi-credit-card me-1"></i>
+          <span class="small">Subscriptions</span>
+        </a>
+        <a routerLink="/billing" routerLinkActive="active" class="sidebar__item">
+          <i class="bi bi-receipt me-1"></i>
+          <span class="small">Billing</span>
+        </a>
+        <a routerLink="/backorders" routerLinkActive="active" class="sidebar__item">
+          <i class="bi bi-clock-history me-1"></i>
+          <span class="small">Backorders</span>
+        </a>
+      </nav>
+      <main class="flex-grow-1 overflow-auto">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  } @else {
+    <main class="flex-grow-1">
+      <router-outlet></router-outlet>
+    </main>
+  }
+</div>

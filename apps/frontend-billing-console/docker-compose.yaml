@@ -1,0 +1,18 @@
+services:
+  frontend-billing-console-server:
+    image: ghcr.io/forepath/billing-console-server:latest
+    container_name: billing-console-server
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4201
+      NODE_ENV: production
+      DEFAULT_LOCALE: en
+    ports:
+      - '4201:4201'
+    networks:
+      - billing-console-network
+    restart: unless-stopped
+
+networks:
+  billing-console-network:
+    driver: bridge

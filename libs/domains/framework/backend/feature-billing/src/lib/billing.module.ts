@@ -1,4 +1,5 @@
 import { getAuthenticationMethod, KeycloakService, UserEntity } from '@forepath/identity/backend';
+import { EmailService } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
@@ -45,6 +46,9 @@ import { SubscriptionService } from './services/subscription.service';
 import { UsageService } from './services/usage.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
+import { SubscriptionBillingScheduler } from './services/subscription-billing.scheduler';
+import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
+import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
 
 const authMethod = getAuthenticationMethod();
 
@@ -91,6 +95,10 @@ const authMethod = getAuthenticationMethod();
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
+    SubscriptionBillingScheduler,
+    SubscriptionExpirationScheduler,
+    SubscriptionRenewalReminderScheduler,
+    EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
     InvoiceRefsRepository,
@@ -117,6 +125,10 @@ const authMethod = getAuthenticationMethod();
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
+    SubscriptionBillingScheduler,
+    SubscriptionExpirationScheduler,
+    SubscriptionRenewalReminderScheduler,
+    EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
     InvoiceRefsRepository,

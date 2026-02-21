@@ -1,11 +1,14 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { BackorderService } from './backorder.service';
 import { BackordersRepository } from '../repositories/backorders.repository';
+import { BackorderService } from './backorder.service';
 
 @Injectable()
 export class BackorderRetryService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BackorderRetryService.name);
   private intervalHandle?: NodeJS.Timeout;
+
+  private readonly intervalMs = parseInt(process.env.BACKORDER_RETRY_INTERVAL_MS ?? '60000', 10);
+  private readonly batchSize = parseInt(process.env.BACKORDER_RETRY_BATCH_SIZE ?? '100', 10);
 
   constructor(
     private readonly backordersRepository: BackordersRepository,
@@ -13,9 +16,10 @@ export class BackorderRetryService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit(): void {
+    this.logger.log(`Initializing billing scheduler with ${this.intervalMs}ms interval`);
     this.intervalHandle = setInterval(() => {
       void this.processPendingBackorders();
-    }, 60000);
+    }, this.intervalMs);
   }
 
   onModuleDestroy(): void {
@@ -25,12 +29,19 @@ export class BackorderRetryService implements OnModuleInit, OnModuleDestroy {
   }
 
   async processPendingBackorders(): Promise<void> {
-    const pending = await this.backordersRepository.findAllPending(100, 0);
+    const pending = await this.backordersRepository.findAllPending(this.batchSize, 0);
+
+    if (pending.length === 0) {
+      return;
+    }
+
+    this.logger.log(`Processing ${pending.length} pending backorders`);
+
     for (const backorder of pending) {
       try {
         await this.backorderService.retry(backorder.id);
       } catch (error) {
-        this.logger.warn(`Failed to retry backorder ${backorder.id}: ${(error as Error).message}`);
+        this.logger.error(`Failed to retry backorder ${backorder.id}: ${(error as Error).message}`);
       }
     }
   }

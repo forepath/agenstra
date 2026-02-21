@@ -12,4 +12,10 @@ export class ProvisioningService {
 
     return null;
   }
+
+  async deprovision(provider: string, serverId: string): Promise<void> {
+    if (provider === 'hetzner') {
+      await this.hetznerProvisioningService.deprovisionServer(serverId);
+    }
+  }
 }
