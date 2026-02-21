@@ -63,7 +63,7 @@ describe('ConfigService', () => {
 
   describe('getAvailableAgentTypes', () => {
     it('should return array of agent types with display names', () => {
-      const agentTypes = ['cursor', 'opencode', 'openclaw'];
+      const agentTypes = ['cursor'];
       agentProviderFactory.getRegisteredTypes.mockReturnValue(agentTypes);
 
       const result = service.getAvailableAgentTypes();
