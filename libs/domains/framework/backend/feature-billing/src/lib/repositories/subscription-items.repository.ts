@@ -32,4 +32,8 @@ export class SubscriptionItemsRepository {
     entity.provisioningStatus = status as any;
     return await this.repository.save(entity);
   }
+
+  async findBySubscription(subscriptionId: string): Promise<SubscriptionItemEntity[]> {
+    return await this.repository.find({ where: { subscriptionId } });
+  }
 }

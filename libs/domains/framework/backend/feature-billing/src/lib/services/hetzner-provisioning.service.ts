@@ -59,4 +59,22 @@ export class HetznerProvisioningService {
       throw new BadRequestException(`Failed to provision server: ${axiosError.message}`);
     }
   }
+
+  async deprovisionServer(serverId: string): Promise<void> {
+    if (!this.apiToken) {
+      this.logger.warn('HETZNER_API_TOKEN not set, skipping deprovisioning');
+      return;
+    }
+
+    try {
+      await axios.delete(`https://api.hetzner.cloud/v1/servers/${serverId}`, {
+        headers: { Authorization: `Bearer ${this.apiToken}` },
+      });
+      this.logger.log(`Successfully deprovisioned Hetzner server ${serverId}`);
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      this.logger.error(`Failed to deprovision Hetzner server ${serverId}: ${axiosError.message}`);
+      throw new BadRequestException(`Failed to deprovision server: ${axiosError.message}`);
+    }
+  }
 }

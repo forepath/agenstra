@@ -41,4 +41,38 @@ export class SubscriptionsRepository {
     Object.assign(entity, dto);
     return await this.repository.save(entity);
   }
+
+  async findDueForBilling(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
+    return await this.repository
+      .createQueryBuilder('subscription')
+      .where('subscription.status = :status', { status: 'active' })
+      .andWhere('subscription.nextBillingAt <= :now', { now })
+      .orderBy('subscription.nextBillingAt', 'ASC')
+      .take(limit)
+      .getMany();
+  }
+
+  async findDueForCancellation(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
+    return await this.repository
+      .createQueryBuilder('subscription')
+      .where('subscription.status = :status', { status: 'pending_cancel' })
+      .andWhere('subscription.cancelEffectiveAt <= :now', { now })
+      .orderBy('subscription.cancelEffectiveAt', 'ASC')
+      .take(limit)
+      .getMany();
+  }
+
+  async findUpcomingRenewals(withinDays: number, now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
+    const futureDate = new Date(now);
+    futureDate.setDate(futureDate.getDate() + withinDays);
+
+    return await this.repository
+      .createQueryBuilder('subscription')
+      .where('subscription.status = :status', { status: 'active' })
+      .andWhere('subscription.nextBillingAt > :now', { now })
+      .andWhere('subscription.nextBillingAt <= :futureDate', { futureDate })
+      .orderBy('subscription.nextBillingAt', 'ASC')
+      .take(limit)
+      .getMany();
+  }
 }

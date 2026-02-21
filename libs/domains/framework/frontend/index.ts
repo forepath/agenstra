@@ -6,3 +6,5 @@ export * from './feature-portal/src';
 export * from './feature-docs/src';
 export * from './util-docs-parser/src';
 export * from './util-cookie-consent/src';
+export * from './data-access-billing-console/src';
+export * from './feature-billing-console/src';
