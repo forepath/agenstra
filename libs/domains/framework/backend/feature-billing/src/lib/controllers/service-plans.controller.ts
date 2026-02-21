@@ -26,8 +26,12 @@ export class ServicePlansController {
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Query('serviceTypeId') serviceTypeId?: string,
   ): Promise<ServicePlanResponseDto[]> {
-    const rows = await this.servicePlansRepository.findAll(limit ?? 10, offset ?? 0);
+    let rows = await this.servicePlansRepository.findAll(limit ?? 10, offset ?? 0);
+    if (serviceTypeId) {
+      rows = rows.filter((row) => row.serviceTypeId === serviceTypeId);
+    }
     return rows.map((row) => this.mapToResponse(row));
   }
 
