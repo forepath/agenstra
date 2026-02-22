@@ -5,7 +5,10 @@
   "prefix": "app",
   "sourceRoot": "apps/frontend-billing-console/src",
   "tags": ["type:app", "scope:frontend"],
-  "implicitDependencies": ["platform-authentication", "backend-billing"],
+  "implicitDependencies": [
+    "platform-authentication",
+    "backend-billing-manager"
+  ],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",

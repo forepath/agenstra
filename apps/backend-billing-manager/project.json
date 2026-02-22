@@ -1,12 +1,12 @@
 {
-  "name": "backend-billing",
+  "name": "backend-billing-manager",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/backend-billing/src",
+  "sourceRoot": "apps/backend-billing-manager/src",
   "projectType": "application",
   "tags": ["type:app", "scope:backend"],
   "implicitDependencies": [
     "platform-authentication",
-    "framework-backend-feature-billing"
+    "framework-backend-feature-billing-manager"
   ],
   "targets": {
     "build": {
@@ -16,14 +16,14 @@
       "options": {
         "target": "node",
         "compiler": "tsc",
-        "outputPath": "dist/apps/backend-billing",
-        "main": "apps/backend-billing/src/main.ts",
-        "tsConfig": "apps/backend-billing/tsconfig.app.json",
+        "outputPath": "dist/apps/backend-billing-manager",
+        "main": "apps/backend-billing-manager/src/main.ts",
+        "tsConfig": "apps/backend-billing-manager/tsconfig.app.json",
         "assets": [
-          "apps/backend-billing/src/assets",
-          "apps/backend-billing/src/migrations"
+          "apps/backend-billing-manager/src/assets",
+          "apps/backend-billing-manager/src/migrations"
         ],
-        "webpackConfig": "apps/backend-billing/webpack.config.cjs",
+        "webpackConfig": "apps/backend-billing-manager/webpack.config.cjs",
         "generatePackageJson": true
       },
       "configurations": {
@@ -38,8 +38,8 @@
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
-        "{workspaceRoot}/dist/apps/backend-billing/package.json",
-        "{workspaceRoot}/dist/apps/backend-billing/package-lock.json"
+        "{workspaceRoot}/dist/apps/backend-billing-manager/package.json",
+        "{workspaceRoot}/dist/apps/backend-billing-manager/package-lock.json"
       ],
       "options": {
         "buildTarget": "build"
@@ -49,7 +49,7 @@
       "dependsOn": ["build"],
       "cache": true,
       "outputs": [
-        "{workspaceRoot}/dist/apps/backend-billing/workspace_modules"
+        "{workspaceRoot}/dist/apps/backend-billing-manager/workspace_modules"
       ],
       "executor": "@nx/js:copy-workspace-modules",
       "options": {
@@ -61,9 +61,9 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "mkdir -p dist/apps/backend-billing/src/migrations",
-          "(npx tsc $(find apps/backend-billing/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/backend-billing/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/backend-billing/src/migrations 2>/dev/null || true)",
-          "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/backend-billing/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations"
+          "mkdir -p dist/apps/backend-billing-manager/src/migrations",
+          "(npx tsc $(find apps/backend-billing-manager/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/backend-billing-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/backend-billing-manager/src/migrations 2>/dev/null || true)",
+          "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/backend-billing-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations"
         ]
       }
     },
@@ -81,15 +81,15 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "backend-billing:build",
+        "buildTarget": "backend-billing-manager:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "backend-billing:build:development"
+          "buildTarget": "backend-billing-manager:build:development"
         },
         "production": {
-          "buildTarget": "backend-billing:build:production"
+          "buildTarget": "backend-billing-manager:build:production"
         }
       }
     },
@@ -97,7 +97,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/backend-billing/jest.config.ts",
+        "jestConfig": "apps/backend-billing-manager/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -107,8 +107,8 @@
       "executor": "@nx-tools/nx-container:build",
       "options": {
         "engine": "docker",
-        "file": "apps/backend-billing/Dockerfile.api",
-        "context": "dist/apps/backend-billing"
+        "file": "apps/backend-billing-manager/Dockerfile.api",
+        "context": "dist/apps/backend-billing-manager"
       },
       "configurations": {
         "test": {
@@ -129,7 +129,7 @@
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/backend-billing",
+        "cwd": "apps/backend-billing-manager",
         "command": "docker compose up -d --force-recreate --remove-orphans"
       }
     },
@@ -138,12 +138,12 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/dist/clients/billing/js"],
       "options": {
-        "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/framework/backend/feature-billing/spec/openapi.yaml -g typescript-axios -o dist/clients/billing/js --additional-properties=npmName=@forepath/agenstra-billing-client,npmVersion=1.0.0,withInterfaces=true && cd dist/clients/billing/js && npm install && npm run build"
+        "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/framework/backend/feature-billing-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/billing-manager/js --additional-properties=npmName=@forepath/agenstra-billing-manager-client,npmVersion=1.0.0,withInterfaces=true && cd dist/clients/billing-manager/js && npm install && npm run build"
       },
       "configurations": {
         "test": {},
         "release": {
-          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/framework/backend/feature-billing/spec/openapi.yaml -g typescript-axios -o dist/clients/billing/js --additional-properties=npmName=@forepath/agenstra-billing-client,npmVersion=$VERSION,withInterfaces=true && cd dist/clients/billing/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish"
+          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/framework/backend/feature-billing-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/billing-manager/js --additional-properties=npmName=@forepath/agenstra-billing-manager-client,npmVersion=$VERSION,withInterfaces=true && cd dist/clients/billing-manager/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish"
         }
       },
       "defaultConfiguration": "test"
