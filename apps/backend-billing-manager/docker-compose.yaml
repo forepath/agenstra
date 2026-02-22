@@ -17,7 +17,7 @@ services:
       - billing-network
     restart: unless-stopped
 
-  backend-billing:
+  backend-billing-manager:
     image: ghcr.io/forepath/agenstra-billing-api:latest
     container_name: billing-api
     environment:

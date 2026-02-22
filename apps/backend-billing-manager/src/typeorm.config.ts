@@ -1,6 +1,7 @@
 import {
   AvailabilitySnapshotEntity,
   BackorderEntity,
+  CustomerProfileEntity,
   InvoiceRefEntity,
   ProviderPriceSnapshotEntity,
   ServicePlanEntity,
@@ -8,7 +9,6 @@ import {
   SubscriptionEntity,
   SubscriptionItemEntity,
   UsageRecordEntity,
-  CustomerProfileEntity,
 } from '@forepath/framework/backend';
 import { UserEntity } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
@@ -43,7 +43,7 @@ export const typeormConfig: DataSourceOptions = {
   ],
   migrations: [
     'src/migrations/*.js',
-    'apps/backend-billing/src/migrations/*.ts',
+    'apps/backend-billing-manager/src/migrations/*.ts',
     'libs/domains/identity/backend/util-auth/src/lib/migrations/*.ts',
   ],
   synchronize: false,
