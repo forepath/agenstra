@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
@@ -12,9 +13,14 @@ import {
 } from './customer-profile.actions';
 
 function normalizeError(error: unknown): string {
+  if (error instanceof HttpErrorResponse && error.error) {
+    const body = error.error;
+    if (typeof body === 'string') return body;
+    if (body && typeof body === 'object' && 'message' in body) return String(body.message);
+  }
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
-  if (error && typeof error === 'object' && 'message' in error) return String(error.message);
+  if (error && typeof error === 'object' && 'message' in error) return String((error as { message: unknown }).message);
   return 'An unexpected error occurred';
 }
 

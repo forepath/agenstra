@@ -25,14 +25,23 @@
       "@forepath/framework/backend/feature-agent-manager": [
         "libs/domains/framework/backend/feature-agent-manager/src/index.ts"
       ],
+      "@forepath/framework/backend/feature-billing-manager": [
+        "libs/domains/framework/backend/feature-billing-manager/src/index.ts"
+      ],
       "@forepath/framework/frontend": [
         "libs/domains/framework/frontend/index.ts"
       ],
       "@forepath/framework/frontend/data-access-agent-console": [
         "libs/domains/framework/frontend/data-access-agent-console/src/index.ts"
       ],
+      "@forepath/framework/frontend/data-access-billing-console": [
+        "libs/domains/framework/frontend/data-access-billing-console/src/index.ts"
+      ],
       "@forepath/framework/frontend/feature-agent-console": [
         "libs/domains/framework/frontend/feature-agent-console/src/index.ts"
+      ],
+      "@forepath/framework/frontend/feature-billing-console": [
+        "libs/domains/framework/frontend/feature-billing-console/src/index.ts"
       ],
       "@forepath/framework/frontend/feature-docs": [
         "libs/domains/framework/frontend/feature-docs/src/index.ts"

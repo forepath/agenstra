@@ -14,14 +14,40 @@ import {
 } from '@nestjs/common';
 import { KeycloakRoles, UsersRoles, UserRole } from '@forepath/identity/backend';
 import { CreateServiceTypeDto } from '../dto/create-service-type.dto';
+import { ProviderDetailDto } from '../dto/provider-detail.dto';
+import { ServerTypeDto } from '../dto/server-type.dto';
 import { ServiceTypeResponseDto } from '../dto/service-type-response.dto';
 import { UpdateServiceTypeDto } from '../dto/update-service-type.dto';
 import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { ProviderRegistryService } from '../services/provider-registry.service';
+import { ProviderServerTypesService } from '../services/provider-server-types.service';
 
 @Controller('service-types')
 export class ServiceTypesController {
-  constructor(private readonly serviceTypesRepository: ServiceTypesRepository) {}
+  constructor(
+    private readonly serviceTypesRepository: ServiceTypesRepository,
+    private readonly providerRegistry: ProviderRegistryService,
+    private readonly providerServerTypesService: ProviderServerTypesService,
+  ) {}
+
+  /**
+   * Get server types with specs and pricing for a provider (e.g. hetzner).
+   * Used by the billing console to show server type dropdown with price and to auto-set base price.
+   */
+  @Get('providers/:providerId/server-types')
+  async getProviderServerTypes(@Param('providerId') providerId: string): Promise<ServerTypeDto[]> {
+    return this.providerServerTypesService.getServerTypes(providerId);
+  }
+
+  /**
+   * Get all registered provider details (id, displayName, configSchema).
+   * Used by clients to build provider selectors and validate provider-specific config.
+   */
+  @Get('providers')
+  async getProviders(): Promise<ProviderDetailDto[]> {
+    return this.providerRegistry.getProviders();
+  }
 
   @Get()
   async list(

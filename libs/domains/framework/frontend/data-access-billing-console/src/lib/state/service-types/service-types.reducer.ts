@@ -7,6 +7,9 @@ import {
   deleteServiceType,
   deleteServiceTypeFailure,
   deleteServiceTypeSuccess,
+  loadProviderDetails,
+  loadProviderDetailsFailure,
+  loadProviderDetailsSuccess,
   loadServiceType,
   loadServiceTypeFailure,
   loadServiceTypes,
@@ -18,11 +21,14 @@ import {
   updateServiceTypeFailure,
   updateServiceTypeSuccess,
 } from './service-types.actions';
-import type { ServiceTypeResponse } from '../../types/billing.types';
+import type { ProviderDetail, ServiceTypeResponse } from '../../types/billing.types';
 
 export interface ServiceTypesState {
   entities: ServiceTypeResponse[];
   selectedServiceType: ServiceTypeResponse | null;
+  providerDetails: ProviderDetail[];
+  providerDetailsLoading: boolean;
+  providerDetailsError: string | null;
   loading: boolean;
   loadingServiceType: boolean;
   creating: boolean;
@@ -34,6 +40,9 @@ export interface ServiceTypesState {
 export const initialServiceTypesState: ServiceTypesState = {
   entities: [],
   selectedServiceType: null,
+  providerDetails: [],
+  providerDetailsLoading: false,
+  providerDetailsError: null,
   loading: false,
   loadingServiceType: false,
   creating: false,
@@ -44,6 +53,23 @@ export const initialServiceTypesState: ServiceTypesState = {
 
 export const serviceTypesReducer = createReducer(
   initialServiceTypesState,
+  // Load Provider Details
+  on(loadProviderDetails, (state) => ({
+    ...state,
+    providerDetailsLoading: true,
+    providerDetailsError: null,
+  })),
+  on(loadProviderDetailsSuccess, (state, { providerDetails }) => ({
+    ...state,
+    providerDetails,
+    providerDetailsLoading: false,
+    providerDetailsError: null,
+  })),
+  on(loadProviderDetailsFailure, (state, { error }) => ({
+    ...state,
+    providerDetailsLoading: false,
+    providerDetailsError: error,
+  })),
   // Load Service Types
   on(loadServiceTypes, (state) => ({
     ...state,

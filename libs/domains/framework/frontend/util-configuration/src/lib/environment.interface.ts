@@ -33,5 +33,6 @@ export interface Environment {
   cookieConsent: {
     domain: string;
     privacyPolicyUrl: string;
+    termsUrl: string;
   };
 }

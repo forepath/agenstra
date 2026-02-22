@@ -9,6 +9,9 @@ import {
   deleteServiceType,
   deleteServiceTypeFailure,
   deleteServiceTypeSuccess,
+  loadProviderDetails,
+  loadProviderDetailsFailure,
+  loadProviderDetailsSuccess,
   loadServiceType,
   loadServiceTypeFailure,
   loadServiceTypes,
@@ -38,6 +41,21 @@ function normalizeError(error: unknown): string {
 }
 
 const BATCH_SIZE = 10;
+
+export const loadProviderDetails$ = createEffect(
+  (actions$ = inject(Actions), serviceTypesService = inject(ServiceTypesService)) => {
+    return actions$.pipe(
+      ofType(loadProviderDetails),
+      switchMap(() =>
+        serviceTypesService.getProviderDetails().pipe(
+          map((providerDetails) => loadProviderDetailsSuccess({ providerDetails })),
+          catchError((error) => of(loadProviderDetailsFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
 
 export const loadServiceTypes$ = createEffect(
   (actions$ = inject(Actions), serviceTypesService = inject(ServiceTypesService)) => {

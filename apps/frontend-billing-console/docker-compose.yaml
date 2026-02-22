@@ -1,7 +1,7 @@
 services:
-  frontend-agent-console-server:
-    image: ghcr.io/forepath/agenstra-console-server:latest
-    container_name: agent-console-server
+  frontend-billing-console-server:
+    image: ghcr.io/forepath/agenstra-billing-console-server:latest
+    container_name: billing-console-server
     environment:
       # Frontend server configuration
       HOST: 0.0.0.0
@@ -11,9 +11,9 @@ services:
     ports:
       - '4500:4500'
     networks:
-      - agent-console-network
+      - billing-console-network
     restart: unless-stopped
 
 networks:
-  agent-console-network:
+  billing-console-network:
     driver: bridge

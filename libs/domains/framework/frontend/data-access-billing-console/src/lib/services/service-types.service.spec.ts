@@ -47,6 +47,21 @@ describe('ServiceTypesService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('getProviderDetails', () => {
+    it('should return provider details from GET /service-types/providers', (done) => {
+      const mockProviders = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: { required: ['location'] } }];
+
+      service.getProviderDetails().subscribe((list) => {
+        expect(list).toEqual(mockProviders);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-types/providers`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockProviders);
+    });
+  });
+
   describe('listServiceTypes', () => {
     it('should return service types array', (done) => {
       const mockList: ServiceTypeResponse[] = [mockServiceType];

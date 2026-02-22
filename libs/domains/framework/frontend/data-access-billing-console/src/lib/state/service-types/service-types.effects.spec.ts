@@ -10,6 +10,9 @@ import {
   deleteServiceType,
   deleteServiceTypeFailure,
   deleteServiceTypeSuccess,
+  loadProviderDetails,
+  loadProviderDetailsFailure,
+  loadProviderDetailsSuccess,
   loadServiceType,
   loadServiceTypeFailure,
   loadServiceTypes,
@@ -24,6 +27,7 @@ import {
 import {
   createServiceType$,
   deleteServiceType$,
+  loadProviderDetails$,
   loadServiceType$,
   loadServiceTypes$,
   loadServiceTypesBatch$,
@@ -48,6 +52,7 @@ describe('ServiceTypesEffects', () => {
 
   beforeEach(() => {
     serviceTypesService = {
+      getProviderDetails: jest.fn(),
       listServiceTypes: jest.fn(),
       getServiceType: jest.fn(),
       createServiceType: jest.fn(),
@@ -60,6 +65,29 @@ describe('ServiceTypesEffects', () => {
     });
 
     actions$ = TestBed.inject(Actions);
+  });
+
+  describe('loadProviderDetails$', () => {
+    it('should return loadProviderDetailsSuccess on success', (done) => {
+      const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: {} }];
+      actions$ = of(loadProviderDetails());
+      serviceTypesService.getProviderDetails.mockReturnValue(of(providerDetails));
+
+      loadProviderDetails$(actions$, serviceTypesService).subscribe((result) => {
+        expect(result).toEqual(loadProviderDetailsSuccess({ providerDetails }));
+        done();
+      });
+    });
+
+    it('should return loadProviderDetailsFailure on error', (done) => {
+      actions$ = of(loadProviderDetails());
+      serviceTypesService.getProviderDetails.mockReturnValue(throwError(() => new Error('Load failed')));
+
+      loadProviderDetails$(actions$, serviceTypesService).subscribe((result) => {
+        expect(result).toEqual(loadProviderDetailsFailure({ error: 'Load failed' }));
+        done();
+      });
+    });
   });
 
   describe('loadServiceTypes$', () => {

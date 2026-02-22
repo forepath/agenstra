@@ -20,15 +20,28 @@ export const selectServiceTypesDeleting = createSelector(selectServiceTypesState
 
 export const selectServiceTypesError = createSelector(selectServiceTypesState, (state) => state.error);
 
+export const selectProviderDetails = createSelector(selectServiceTypesState, (state) => state.providerDetails);
+
+export const selectProviderDetailsLoading = createSelector(
+  selectServiceTypesState,
+  (state) => state.providerDetailsLoading,
+);
+
+export const selectProviderDetailsError = createSelector(
+  selectServiceTypesState,
+  (state) => state.providerDetailsError,
+);
+
 // Combined loading selector (true if any operation is loading)
 export const selectServiceTypesLoadingAny = createSelector(
   selectServiceTypesLoading,
   selectServiceTypeLoading,
+  selectProviderDetailsLoading,
   selectServiceTypesCreating,
   selectServiceTypesUpdating,
   selectServiceTypesDeleting,
-  (loading, loadingServiceType, creating, updating, deleting) =>
-    loading || loadingServiceType || creating || updating || deleting,
+  (loading, loadingServiceType, providerDetailsLoading, creating, updating, deleting) =>
+    loading || loadingServiceType || providerDetailsLoading || creating || updating || deleting,
 );
 
 // Derived selectors

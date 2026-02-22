@@ -69,6 +69,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /service-types/providers:
+    get:
+      summary: Get all provider details
+      operationId: getProviderDetails
+      description: Returns registered provisioning providers with id, display name, and optional config schema for service type creation and subscription config.
+      responses:
+        '200':
+          description: Array of provider details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProviderDetail'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-types/providers/{providerId}/server-types:
+    get:
+      summary: Get server types for a provider
+      operationId: getProviderServerTypes
+      description: Returns server types with specs and pricing for the given provider (e.g. hetzner). Used by the billing console for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: hetzner
+      responses:
+        '200':
+          description: List of server types with id, name, specs, priceMonthly, priceHourly
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServerType'
+        '400':
+          description: Bad request (e.g. provider not supported or token missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /service-types/{id}:
     get:
       summary: Get service type
@@ -1289,6 +1342,37 @@ components:
     UserRole:
       type: string
       enum: [user, admin]
+    ProviderDetail:
+      type: object
+      required: [id, displayName]
+      description: A registered provisioning provider (e.g. Hetzner) with id, display name, and optional config schema.
+      properties:
+        id:
+          type: string
+          description: Provider identifier (e.g. hetzner). Used as the value for service type provider field.
+        displayName:
+          type: string
+          description: Human-readable display name (e.g. Hetzner Cloud).
+        configSchema:
+          type: object
+          description: |
+            Optional JSON schema for provider-specific configuration when creating subscriptions.
+            - `properties`: each property may include `type`, `description`, and optionally `enum` (array of allowed values).
+            - `basePriceFromField`: optional string (e.g. "serverType") indicating which field's selected option drives the plan base price;
+              the UI should fetch options from GET .../providers/{id}/server-types and use the selected option's price as base price.
+    ServerType:
+      type: object
+      description: Provider server type with specs and pricing (from GET .../providers/{providerId}/server-types).
+      properties:
+        id: { type: string, description: 'Unique identifier (e.g. cax11)' }
+        name: { type: string, description: 'Human-readable name' }
+        cores: { type: number }
+        memory: { type: number, description: 'RAM in GB' }
+        disk: { type: number, description: 'Disk in GB' }
+        priceMonthly:
+          { type: number, description: 'Price per month (e.g. EUR)' }
+        priceHourly: { type: number, description: 'Price per hour (e.g. EUR)' }
+        description: { type: string }
     CreateServiceTypeDto:
       type: object
       required: [key, name, provider]

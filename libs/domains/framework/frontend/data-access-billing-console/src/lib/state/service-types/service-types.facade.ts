@@ -5,6 +5,7 @@ import {
   clearSelectedServiceType,
   createServiceType,
   deleteServiceType,
+  loadProviderDetails,
   loadServiceType,
   loadServiceTypes,
   updateServiceType,
@@ -12,6 +13,9 @@ import {
 import {
   selectActiveServiceTypes,
   selectHasServiceTypes,
+  selectProviderDetails,
+  selectProviderDetailsError,
+  selectProviderDetailsLoading,
   selectSelectedServiceType,
   selectServiceTypeById,
   selectServiceTypeByKey,
@@ -28,6 +32,7 @@ import {
 import type {
   CreateServiceTypeDto,
   ListParams,
+  ProviderDetail,
   ServiceTypeResponse,
   UpdateServiceTypeDto,
 } from '../../types/billing.types';
@@ -42,6 +47,34 @@ import type {
 })
 export class ServiceTypesFacade {
   private readonly store = inject(Store);
+
+  /**
+   * Get all registered provider details (id, displayName, configSchema).
+   */
+  getProviderDetails$(): Observable<ProviderDetail[]> {
+    return this.store.select(selectProviderDetails);
+  }
+
+  /**
+   * Get loading state for provider details.
+   */
+  getProviderDetailsLoading$(): Observable<boolean> {
+    return this.store.select(selectProviderDetailsLoading);
+  }
+
+  /**
+   * Get error state for provider details.
+   */
+  getProviderDetailsError$(): Observable<string | null> {
+    return this.store.select(selectProviderDetailsError);
+  }
+
+  /**
+   * Load provider details from the API.
+   */
+  loadProviderDetails(): void {
+    this.store.dispatch(loadProviderDetails());
+  }
 
   /**
    * Get all service types.

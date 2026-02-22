@@ -5,6 +5,7 @@ import {
   clearSelectedServiceType,
   createServiceType,
   deleteServiceType,
+  loadProviderDetails,
   loadServiceType,
   loadServiceTypes,
   updateServiceType,
@@ -58,9 +59,23 @@ describe('ServiceTypesFacade', () => {
         done();
       });
     });
+
+    it('should return provider details observable', (done) => {
+      const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: {} }];
+      store.select.mockReturnValue(of(providerDetails));
+      facade.getProviderDetails$().subscribe((result) => {
+        expect(result).toEqual(providerDetails);
+        done();
+      });
+    });
   });
 
   describe('Action Methods', () => {
+    it('should dispatch loadProviderDetails', () => {
+      facade.loadProviderDetails();
+      expect(store.dispatch).toHaveBeenCalledWith(loadProviderDetails());
+    });
+
     it('should dispatch loadServiceTypes', () => {
       const params: ListParams = { limit: 10 };
       facade.loadServiceTypes(params);

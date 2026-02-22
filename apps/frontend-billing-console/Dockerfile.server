@@ -2,7 +2,7 @@
 # Build the docker image with `npx nx run frontend-billing-console:server-container-image`.
 # Tip: Modify "server-container-image" options in project.json to change docker build args.
 #
-# Run the container with `nx docker:run frontend-agent-console -p 4500:4500`.
+# Run the container with `nx docker:run frontend-billing-console -p 4500:4500`.
 # Exposes the frontend server on port 4500.
 # Uses Alpine-based Node.js image for smaller size and faster builds.
 #

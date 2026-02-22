@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: billing-postgres
+    container_name: billing-manager-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -19,7 +19,7 @@ services:
 
   backend-billing-manager:
     image: ghcr.io/forepath/agenstra-billing-api:latest
-    container_name: billing-api
+    container_name: billing-manager-api
     environment:
       # Backend API configuration
       HOST: 0.0.0.0
@@ -90,7 +90,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: mailhog-billing
+    container_name: billing-manager-mailhog
     ports:
       - '1026:1025'
       - '8026:8025'
