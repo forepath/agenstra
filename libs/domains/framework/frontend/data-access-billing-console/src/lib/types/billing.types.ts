@@ -9,6 +9,25 @@ export type BackorderStatus = 'pending' | 'retrying' | 'fulfilled' | 'cancelled'
 
 export type UserRole = 'user' | 'admin';
 
+// Provider details (GET /service-types/providers)
+export interface ProviderDetail {
+  id: string;
+  displayName: string;
+  configSchema?: Record<string, unknown>;
+}
+
+// Provider server type with specs and pricing (GET .../providers/:id/server-types)
+export interface ServerType {
+  id: string;
+  name: string;
+  cores: number;
+  memory: number;
+  disk: number;
+  priceMonthly?: number;
+  priceHourly?: number;
+  description?: string;
+}
+
 // Service Types
 export interface ServiceTypeResponse {
   id: string;

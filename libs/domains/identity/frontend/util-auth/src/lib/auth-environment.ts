@@ -36,6 +36,11 @@ export type AuthenticationConfig =
 export interface IdentityAuthEnvironment {
   /** The base URL of the REST API (used to scope auth headers to API requests) */
   apiUrl: string;
+  /**
+   * Optional: Additional base URLs that should receive the same auth token (e.g. billing API).
+   * Requests whose URL starts with any of these will get the Authorization header.
+   */
+  additionalApiUrls?: string[];
   /** Authentication configuration */
   authentication: AuthenticationConfig;
   /**

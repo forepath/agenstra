@@ -6,6 +6,8 @@ import { Observable } from 'rxjs';
 import type {
   CreateServiceTypeDto,
   ListParams,
+  ProviderDetail,
+  ServerType,
   ServiceTypeResponse,
   UpdateServiceTypeDto,
 } from '../types/billing.types';
@@ -22,6 +24,23 @@ export class ServiceTypesService {
    */
   private get apiUrl(): string {
     return this.environment.billing.restApiUrl;
+  }
+
+  /**
+   * Get all registered provider details (id, displayName, configSchema).
+   */
+  getProviderDetails(): Observable<ProviderDetail[]> {
+    return this.http.get<ProviderDetail[]>(`${this.apiUrl}/service-types/providers`);
+  }
+
+  /**
+   * Get server types with specs and pricing for a provider (e.g. hetzner).
+   * Used for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
+   */
+  getProviderServerTypes(providerId: string): Observable<ServerType[]> {
+    return this.http.get<ServerType[]>(
+      `${this.apiUrl}/service-types/providers/${encodeURIComponent(providerId)}/server-types`,
+    );
   }
 
   /**

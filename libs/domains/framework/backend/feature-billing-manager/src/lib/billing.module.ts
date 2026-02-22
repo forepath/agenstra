@@ -1,6 +1,6 @@
 import { getAuthenticationMethod, KeycloakService, UserEntity } from '@forepath/identity/backend';
 import { EmailService } from '@forepath/shared/backend';
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 import { AvailabilityController } from './controllers/availability.controller';
@@ -41,6 +41,8 @@ import { InvoiceNinjaService } from './services/invoice-ninja.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
 import { PricingService } from './services/pricing.service';
 import { ProviderPricingService } from './services/provider-pricing.service';
+import { ProviderRegistryService } from './services/provider-registry.service';
+import { ProviderServerTypesService } from './services/provider-server-types.service';
 import { ProvisioningService } from './services/provisioning.service';
 import { SubscriptionService } from './services/subscription.service';
 import { UsageService } from './services/usage.service';
@@ -51,6 +53,29 @@ import { SubscriptionExpirationScheduler } from './services/subscription-expirat
 import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
 
 const authMethod = getAuthenticationMethod();
+
+/**
+ * Default config schema for Hetzner provisioning (serverType, location, optional firewallId).
+ * Matches the shape expected by HetznerProvisioningService.provisionServer.
+ * - basePriceFromField: when set, the UI fetches options from GET .../server-types and uses the selected option's price as plan base price.
+ * - properties may include optional `enum` arrays for static options, or the field named in basePriceFromField gets options from the server-types API.
+ */
+const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
+  required: ['serverType', 'location'],
+  basePriceFromField: 'serverType',
+  properties: {
+    serverType: {
+      type: 'string',
+      description: 'Hetzner server type (options and price from API)',
+    },
+    location: {
+      type: 'string',
+      description: 'Hetzner location',
+      enum: ['fsn1', 'nbg1', 'hel1', 'ash', 'hil', 'sgp'],
+    },
+    firewallId: { type: 'number', description: 'Optional firewall ID to attach to server' },
+  },
+};
 
 @Module({
   imports: [
@@ -88,6 +113,8 @@ const authMethod = getAuthenticationMethod();
     CancellationPolicyService,
     HetznerProvisioningService,
     InvoiceNinjaService,
+    ProviderRegistryService,
+    ProviderServerTypesService,
     InvoiceCreationService,
     ProvisioningService,
     PricingService,
@@ -139,6 +166,17 @@ const authMethod = getAuthenticationMethod();
     SubscriptionsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
+    ProviderRegistryService,
   ],
 })
-export class BillingModule {}
+export class BillingModule implements OnModuleInit {
+  constructor(private readonly providerRegistry: ProviderRegistryService) {}
+
+  onModuleInit(): void {
+    this.providerRegistry.register({
+      id: 'hetzner',
+      displayName: 'Hetzner Cloud',
+      configSchema: HETZNER_CONFIG_SCHEMA,
+    });
+  }
+}

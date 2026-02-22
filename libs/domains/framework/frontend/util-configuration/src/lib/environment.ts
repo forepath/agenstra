@@ -35,5 +35,6 @@ export const environment: Environment = {
   cookieConsent: {
     domain: '.agenstra.com',
     privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
+    termsUrl: 'https://www.agenstra.com/legal/terms',
   },
 };

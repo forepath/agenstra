@@ -2,9 +2,23 @@ import { createAction, props } from '@ngrx/store';
 import type {
   CreateServiceTypeDto,
   ListParams,
+  ProviderDetail,
   ServiceTypeResponse,
   UpdateServiceTypeDto,
 } from '../../types/billing.types';
+
+// Load Provider Details Actions
+export const loadProviderDetails = createAction('[Service Types] Load Provider Details');
+
+export const loadProviderDetailsSuccess = createAction(
+  '[Service Types] Load Provider Details Success',
+  props<{ providerDetails: ProviderDetail[] }>(),
+);
+
+export const loadProviderDetailsFailure = createAction(
+  '[Service Types] Load Provider Details Failure',
+  props<{ error: string }>(),
+);
 
 // Load Service Types Actions
 export const loadServiceTypes = createAction('[Service Types] Load Service Types', props<{ params?: ListParams }>());

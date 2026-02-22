@@ -6,6 +6,9 @@ import {
   deleteServiceType,
   deleteServiceTypeFailure,
   deleteServiceTypeSuccess,
+  loadProviderDetails,
+  loadProviderDetailsFailure,
+  loadProviderDetailsSuccess,
   loadServiceType,
   loadServiceTypeFailure,
   loadServiceTypes,
@@ -49,6 +52,38 @@ describe('serviceTypesReducer', () => {
       const state = serviceTypesReducer(undefined, action as never);
 
       expect(state).toEqual(initialServiceTypesState);
+    });
+  });
+
+  describe('loadProviderDetails', () => {
+    it('should set providerDetailsLoading to true and clear providerDetailsError', () => {
+      const state: ServiceTypesState = {
+        ...initialServiceTypesState,
+        providerDetailsError: 'Previous error',
+      };
+      const newState = serviceTypesReducer(state, loadProviderDetails());
+      expect(newState.providerDetailsLoading).toBe(true);
+      expect(newState.providerDetailsError).toBeNull();
+    });
+  });
+
+  describe('loadProviderDetailsSuccess', () => {
+    it('should set provider details and set providerDetailsLoading to false', () => {
+      const state: ServiceTypesState = { ...initialServiceTypesState, providerDetailsLoading: true };
+      const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: {} }];
+      const newState = serviceTypesReducer(state, loadProviderDetailsSuccess({ providerDetails }));
+      expect(newState.providerDetails).toEqual(providerDetails);
+      expect(newState.providerDetailsLoading).toBe(false);
+      expect(newState.providerDetailsError).toBeNull();
+    });
+  });
+
+  describe('loadProviderDetailsFailure', () => {
+    it('should set providerDetailsError and set providerDetailsLoading to false', () => {
+      const state: ServiceTypesState = { ...initialServiceTypesState, providerDetailsLoading: true };
+      const newState = serviceTypesReducer(state, loadProviderDetailsFailure({ error: 'Load failed' }));
+      expect(newState.providerDetailsError).toBe('Load failed');
+      expect(newState.providerDetailsLoading).toBe(false);
     });
   });
 
