@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { AuthenticationType } from '@forepath/identity/backend';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { AuthenticationType } from '../entities/client.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from './clients.service';
 

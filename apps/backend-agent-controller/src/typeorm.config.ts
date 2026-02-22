@@ -1,7 +1,4 @@
 import {
-  ClientAgentCredentialEntity,
-  ClientEntity,
-  ClientUserEntity,
   ProvisioningReferenceEntity,
   StatisticsAgentEntity,
   StatisticsChatFilterDropEntity,
@@ -12,8 +9,14 @@ import {
   StatisticsEntityEventEntity,
   StatisticsProvisioningReferenceEntity,
   StatisticsUserEntity,
-  UserEntity,
 } from '@forepath/framework/backend';
+import {
+  ClientAgentCredentialEntity,
+  ClientEntity,
+  ClientUserEntity,
+  CreateUsersTable1765000000000,
+  UserEntity,
+} from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 /**
@@ -53,6 +56,8 @@ export const typeormConfig: DataSourceOptions = {
   // The path is resolved relative to process.cwd() at runtime
   // In Docker, working directory is /app, so 'src/migrations/*.js' should work
   migrations: [
+    // Explicit class import for shared migrations from identity domain
+    CreateUsersTable1765000000000,
     // Try production path first (compiled .js files), fallback to development path (.ts files)
     'src/migrations/*.js',
     'apps/backend-agent-controller/src/migrations/*.ts',

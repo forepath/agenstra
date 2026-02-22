@@ -1,10 +1,12 @@
-import { ClientsModule, KeycloakUserSyncModule, MonitoringModule, UsersAuthModule } from '@forepath/framework/backend';
+import { ClientsModule, IdentityStatisticsBridgeModule, MonitoringModule } from '@forepath/framework/backend';
 import {
   getAuthenticationMethod,
   getHybridAuthGuards,
   getRateLimitConfig,
   KeycloakModule,
   KeycloakService,
+  KeycloakUserSyncModule,
+  UsersAuthModule,
 } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
@@ -24,6 +26,7 @@ const authMethod = getAuthenticationMethod();
       : []),
     ...(authMethod === 'users' ? [UsersAuthModule] : []),
     ClientsModule,
+    IdentityStatisticsBridgeModule,
     MonitoringModule,
   ],
   // Use hybrid guards (checks STATIC_API_KEY to determine authentication method)

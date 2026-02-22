@@ -1,0 +1,16 @@
+{
+  "name": "identity-backend-feature-auth",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/identity/backend/feature-auth/src",
+  "projectType": "library",
+  "tags": ["domain:identity", "scope:backend", "type:feature"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/identity/backend/feature-auth/jest.config.ts"
+      }
+    }
+  }
+}

@@ -37,7 +37,7 @@ import { AgentsService } from '../services/agents.service';
 import { ConfigService } from '../services/config.service';
 import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
-import { PasswordService } from '../services/password.service';
+import { PasswordService } from '@forepath/identity/backend';
 
 /**
  * Module for agent management feature.

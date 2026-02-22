@@ -1,26 +1,25 @@
 import { APP_INITIALIZER, inject, Provider } from '@angular/core';
-import type { Environment } from '@forepath/framework/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { KeycloakService } from 'keycloak-angular';
 import Keycloak from 'keycloak-js';
+import { IDENTITY_AUTH_ENVIRONMENT } from './auth-environment';
 
 /**
- * Initializes KeycloakService with the configuration from the environment.
+ * Initializes KeycloakService with the configuration from the identity auth environment.
  * This function is used as an APP_INITIALIZER to ensure Keycloak is initialized
  * before the application starts.
  */
 function initializeKeycloak(): () => Promise<boolean> {
   return () => {
     const keycloakService = inject(KeycloakService);
-    const environment = inject<Environment>(ENVIRONMENT);
+    const authEnv = inject(IDENTITY_AUTH_ENVIRONMENT);
 
-    if (environment.authentication.type === 'keycloak') {
+    if (authEnv.authentication.type === 'keycloak') {
       return keycloakService
         .init({
           config: {
-            url: environment.authentication.authServerUrl,
-            realm: environment.authentication.realm,
-            clientId: environment.authentication.clientId,
+            url: authEnv.authentication.authServerUrl,
+            realm: authEnv.authentication.realm,
+            clientId: authEnv.authentication.clientId,
           },
           initOptions: {
             onLoad: 'check-sso',

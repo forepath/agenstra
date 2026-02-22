@@ -67,7 +67,7 @@ import {
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
-import { StandaloneLoadingService } from '../standalone-loading.service';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 
 // Type declaration for marked library
 interface Marked {

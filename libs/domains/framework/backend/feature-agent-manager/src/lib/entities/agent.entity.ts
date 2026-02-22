@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { createAes256GcmTransformer } from '../utils/encryption.transformer';
+import { createAes256GcmTransformer } from '@forepath/shared/backend';
 
 /**
  * Container type enum representing the type of container.

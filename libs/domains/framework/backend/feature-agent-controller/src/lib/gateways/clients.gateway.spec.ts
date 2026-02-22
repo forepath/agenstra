@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserRole } from '../entities/user.entity';
-import { ClientAgentCredentialsRepository } from '../repositories/client-agent-credentials.repository';
-import { ClientUsersRepository } from '../repositories/client-users.repository';
+import {
+  UserRole,
+  ClientAgentCredentialsRepository,
+  ClientUsersRepository,
+  SocketAuthService,
+} from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from '../services/clients.service';
-import { SocketAuthService } from '../services/socket-auth.service';
 import { StatisticsService } from '../services/statistics.service';
 import { ClientsGateway } from './clients.gateway';
 

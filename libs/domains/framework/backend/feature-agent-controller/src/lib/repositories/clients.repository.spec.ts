@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { AuthenticationType, ClientEntity } from '../entities/client.entity';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { ClientsRepository } from './clients.repository';
 
 describe('ClientsRepository', () => {

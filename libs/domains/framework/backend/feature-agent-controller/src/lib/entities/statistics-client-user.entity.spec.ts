@@ -1,4 +1,4 @@
-import { ClientUserRole } from './client-user.entity';
+import { ClientUserRole } from '@forepath/identity/backend';
 import { StatisticsClientUserEntity } from './statistics-client-user.entity';
 
 describe('StatisticsClientUserEntity', () => {

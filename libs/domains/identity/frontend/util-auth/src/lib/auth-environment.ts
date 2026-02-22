@@ -1,0 +1,68 @@
+import { InjectionToken } from '@angular/core';
+
+/**
+ * Authentication configuration types.
+ * These define the shape of the authentication config section
+ * in the application environment.
+ */
+
+export interface KeycloakAuthenticationConfig {
+  type: 'keycloak';
+  authServerUrl: string;
+  realm: string;
+  clientId: string;
+}
+
+export interface ApiKeyAuthenticationConfig {
+  type: 'api-key';
+  apiKey?: string;
+}
+
+export interface UsersAuthenticationConfig {
+  type: 'users';
+  disableSignup?: boolean;
+}
+
+export type AuthenticationConfig =
+  | KeycloakAuthenticationConfig
+  | ApiKeyAuthenticationConfig
+  | UsersAuthenticationConfig;
+
+/**
+ * Minimal environment interface required by identity auth features.
+ * Consuming applications provide a value for this token that maps
+ * from their full environment to these auth-relevant fields.
+ */
+export interface IdentityAuthEnvironment {
+  /** The base URL of the REST API (used to scope auth headers to API requests) */
+  apiUrl: string;
+  /** Authentication configuration */
+  authentication: AuthenticationConfig;
+  /**
+   * Optional: The full REST API URL for the controller.
+   * Used by the login component to display the API hostname for API-key auth.
+   * If not provided, the apiBaseHostname display is hidden.
+   */
+  controllerApiUrl?: string;
+}
+
+/**
+ * Injection token for the identity auth environment.
+ * Applications must provide this token with an `IdentityAuthEnvironment` value.
+ *
+ * @example
+ * ```typescript
+ * import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+ * import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+ *
+ * {
+ *   provide: IDENTITY_AUTH_ENVIRONMENT,
+ *   useFactory: (env: Environment) => ({
+ *     apiUrl: env.controller.restApiUrl,
+ *     authentication: env.authentication,
+ *   }),
+ *   deps: [ENVIRONMENT],
+ * }
+ * ```
+ */
+export const IDENTITY_AUTH_ENVIRONMENT = new InjectionToken<IdentityAuthEnvironment>('IdentityAuthEnvironment');

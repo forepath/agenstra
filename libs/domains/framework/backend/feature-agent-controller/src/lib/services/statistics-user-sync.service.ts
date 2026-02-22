@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { UsersRepository } from '@forepath/identity/backend';
 import { StatisticsRepository } from '../repositories/statistics.repository';
-import { UsersRepository } from '../repositories/users.repository';
 
 /**
  * Syncs users from the users table to the statistics_users mirror table on container startup.
