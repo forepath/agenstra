@@ -1,0 +1,19 @@
+services:
+  frontend-agent-console-server:
+    image: ghcr.io/forepath/agenstra-console-server:latest
+    container_name: agent-console-server
+    environment:
+      # Frontend server configuration
+      HOST: 0.0.0.0
+      PORT: 4500
+      NODE_ENV: production
+      DEFAULT_LOCALE: en
+    ports:
+      - '4500:4500'
+    networks:
+      - agent-console-network
+    restart: unless-stopped
+
+networks:
+  agent-console-network:
+    driver: bridge
