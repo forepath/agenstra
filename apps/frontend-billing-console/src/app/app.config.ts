@@ -1,7 +1,86 @@
+import { APP_BASE_HREF } from '@angular/common';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { appRoutes } from './app.routes';
+import { provideRouter, RouteReuseStrategy, withRouterConfig } from '@angular/router';
+import { getAuthInterceptor } from '@forepath/framework/frontend/data-access-agent-console';
+import {
+  Environment,
+  ENVIRONMENT,
+  environment,
+  LocaleService,
+  provideLocale,
+} from '@forepath/framework/frontend/util-configuration';
+import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE, provideKeycloak } from '@forepath/identity/frontend';
+import { provideStore } from '@ngrx/store';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { ComponentReuseStrategy } from './strategies/component-reuse.strategy';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(appRoutes)],
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    // Wire identity injection tokens to framework's environment and locale service.
+    // IDENTITY_AUTH_ENVIRONMENT maps the full Environment to the auth-relevant subset.
+    // IDENTITY_LOCALE_SERVICE delegates to the framework's LocaleService.
+    {
+      provide: IDENTITY_AUTH_ENVIRONMENT,
+      useFactory: (env: Environment) => ({
+        apiUrl: env.controller.restApiUrl,
+        additionalApiUrls: env.billing?.restApiUrl ? [env.billing.restApiUrl] : [],
+        authentication: env.authentication,
+        controllerApiUrl: env.controller.restApiUrl,
+      }),
+      deps: [ENVIRONMENT],
+    },
+    {
+      provide: IDENTITY_LOCALE_SERVICE,
+      useExisting: LocaleService,
+    },
+    // Provide KeycloakService before HTTP client so interceptor can inject it
+    ...(environment.authentication.type === 'keycloak' ? provideKeycloak() : []),
+    // Provide HTTP client with auth interceptor (KeycloakService must be available)
+    provideHttpClient(withInterceptors([getAuthInterceptor()])),
+    // NgRx Store - base store required at root level
+    provideStore(),
+    // NgRx Store DevTools - only enabled in non-production environments
+    ...(environment.production
+      ? []
+      : [
+          provideStoreDevtools({
+            maxAge: 25,
+          }),
+        ]),
+    provideRouter(
+      [
+        ...(environment.production
+          ? [
+              {
+                path: 'de',
+                loadChildren: () =>
+                  import('@forepath/framework/frontend/feature-billing-console').then(
+                    (app) => app.billingConsoleRoutes,
+                  ),
+              },
+              {
+                path: 'en',
+                loadChildren: () =>
+                  import('@forepath/framework/frontend/feature-billing-console').then(
+                    (app) => app.billingConsoleRoutes,
+                  ),
+              },
+            ]
+          : []),
+        {
+          path: '',
+          loadChildren: () =>
+            import('@forepath/framework/frontend/feature-billing-console').then((app) => app.billingConsoleRoutes),
+        },
+      ],
+      withRouterConfig({ paramsInheritanceStrategy: 'always' }),
+    ),
+    // Custom RouteReuseStrategy to reuse component instances when navigating between routes with the same component
+    { provide: RouteReuseStrategy, useClass: ComponentReuseStrategy },
+    // Provide APP_BASE_HREF (defaults to '/' if not provided)
+    { provide: APP_BASE_HREF, useValue: '/' },
+    provideLocale(),
+  ],
 };

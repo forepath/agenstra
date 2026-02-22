@@ -54,6 +54,7 @@ export class AuthenticationFacade {
   readonly user$: Observable<{ id: string; email: string; role: string } | null> = this.store.select(selectUser);
   readonly isAdmin$: Observable<boolean> = this.store.select(selectIsAdmin);
   readonly canAccessUserManager$: Observable<boolean> = this.store.select(selectCanAccessUserManager);
+  readonly canAccessBillingAdministration$: Observable<boolean> = this.canAccessUserManager$;
   readonly loading$: Observable<boolean> = this.store.select(selectAuthenticationLoading);
   readonly error$: Observable<string | null> = this.store.select(selectAuthenticationError);
   readonly successMessage$: Observable<string | null> = this.store.select(selectSuccessMessage);

@@ -1,0 +1,160 @@
+<div class="invoices-container border-top d-flex flex-column h-100">
+  <div class="invoices-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureInvoices-title">Invoices</h5>
+  </div>
+  <div class="p-3 flex-grow-1 overflow-auto">
+    @if (invoicesError$ | async; as err) {
+      <div class="alert alert-danger" role="alert">{{ err }}</div>
+    }
+
+    <div class="mb-4">
+      <label for="subscriptionSelect" class="form-label" i18n="@@featureInvoices-selectSubscription"
+        >Subscription</label
+      >
+      <select
+        id="subscriptionSelect"
+        name="subscriptionId"
+        class="form-select"
+        [ngModel]="selectedSubscriptionId"
+        (ngModelChange)="onSelectSubscription($event)"
+        [disabled]="(subscriptions$ | async)?.length === 0"
+      >
+        <option value="" i18n="@@featureInvoices-chooseSubscription">Choose a subscription</option>
+        @for (sub of subscriptions$ | async; track sub.id) {
+          <option [value]="sub.id">
+            @if (servicePlans$ | async; as plans) {
+              {{ planNameByPlanId(sub.planId, plans) }} ({{ sub.status }})
+            } @else {
+              {{ sub.planId }} ({{ sub.status }})
+            }
+          </option>
+        }
+      </select>
+    </div>
+
+    @if (selectedSubscriptionId) {
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0" i18n="@@featureInvoices-invoicesForSubscription">Invoices for this subscription</h2>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="openCreateInvoiceModal()"
+          [disabled]="(invoicesCreating$ | async) === true"
+          i18n="@@featureInvoices-createInvoice"
+        >
+          Create invoice
+        </button>
+      </div>
+
+      @if (invoicesLoading$ | async) {
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+          <span i18n="@@featureInvoices-loading">Loading invoices...</span>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col" i18n="@@featureInvoices-id">ID</th>
+                <th scope="col" i18n="@@featureInvoices-status">Status</th>
+                <th scope="col" i18n="@@featureInvoices-date">Date</th>
+                <th scope="col" i18n="@@featureInvoices-link">Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (inv of invoices$ | async; track inv.id) {
+                <tr>
+                  <td>{{ inv.id }}</td>
+                  <td>
+                    <span class="badge bg-secondary">{{ inv.status ?? '—' }}</span>
+                  </td>
+                  <td>{{ inv.createdAt | date: 'short' }}</td>
+                  <td>
+                    @if (inv.preAuthUrl) {
+                      <a
+                        [href]="inv.preAuthUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        (click)="$event.preventDefault(); openPreAuthUrl(inv.preAuthUrl)"
+                        i18n="@@featureInvoices-openLink"
+                        >Open</a
+                      >
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-body-secondary" i18n="@@featureInvoices-noInvoices">
+                    No invoices for this subscription.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    } @else {
+      <p class="text-body-secondary" i18n="@@featureInvoices-selectFirst">
+        Select a subscription to view and create invoices.
+      </p>
+    }
+  </div>
+</div>
+
+<!-- Create invoice modal -->
+<div
+  class="modal fade"
+  id="createInvoiceModal"
+  tabindex="-1"
+  aria-labelledby="createInvoiceModalLabel"
+  aria-hidden="true"
+  #createInvoiceModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createInvoiceModalLabel" i18n="@@featureInvoices-createInvoice">Create invoice</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          [disabled]="(invoicesCreating$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitCreateInvoice()" #createInvoiceForm="ngForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="createInvoiceDescription" class="form-label" i18n="@@featureInvoices-description"
+              >Description (optional)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="createInvoiceDescription"
+              name="description"
+              [(ngModel)]="createInvoiceDescription"
+              [disabled]="(invoicesCreating$ | async) === true"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureInvoices-close">
+            Close
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="(invoicesCreating$ | async) === true"
+            i18n="@@featureInvoices-submit"
+          >
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

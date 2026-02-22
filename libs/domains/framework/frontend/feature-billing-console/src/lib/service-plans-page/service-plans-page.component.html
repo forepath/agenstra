@@ -1,0 +1,758 @@
+<div class="service-plans-container border-top d-flex flex-column h-100">
+  <div
+    class="service-plans-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center"
+  >
+    <h5 class="mb-0 fw-semibold" i18n="@@featureServicePlans-title">Service Plans</h5>
+  </div>
+  <div class="p-3 flex-grow-1 overflow-auto">
+    @if (error$ | async; as err) {
+      <div class="alert alert-danger" role="alert">{{ err }}</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h5 mb-0" i18n="@@featureServicePlans-list">Service plans</h2>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openCreateModal()"
+        [disabled]="(loadingAny$ | async) === true"
+        i18n="@@featureServicePlans-add"
+      >
+        Add service plan
+      </button>
+    </div>
+
+    @if (loading$ | async) {
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+        <span i18n="@@featureServicePlans-loading">Loading...</span>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col" i18n="@@featureServicePlans-name">Name</th>
+              <th scope="col" i18n="@@featureServicePlans-serviceType">Service type</th>
+              <th scope="col" i18n="@@featureServicePlans-billingInterval">Billing interval</th>
+              <th scope="col" i18n="@@featureServicePlans-active">Active</th>
+              <th scope="col" i18n="@@featureServicePlans-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (plan of servicePlans$ | async; track plan.id) {
+              <tr>
+                <td>{{ plan.name }}</td>
+                <td>
+                  @if (serviceTypes$ | async; as types) {
+                    {{ serviceTypeNameById(types, plan.serviceTypeId) }}
+                  } @else {
+                    {{ plan.serviceTypeId }}
+                  }
+                </td>
+                <td>{{ billingIntervalLabel(plan) }}</td>
+                <td>
+                  @if (plan.isActive) {
+                    <span class="badge bg-success" i18n="@@featureServicePlans-yes">Yes</span>
+                  } @else {
+                    <span class="badge bg-secondary" i18n="@@featureServicePlans-no">No</span>
+                  }
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary me-1"
+                    (click)="openEditModal(plan)"
+                    [disabled]="(loadingAny$ | async) === true"
+                    i18n="@@featureServicePlans-edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="openDeleteConfirm(plan)"
+                    [disabled]="(loadingAny$ | async) === true"
+                    i18n="@@featureServicePlans-delete"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-body-secondary" i18n="@@featureServicePlans-empty">No service plans.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create modal -->
+<div
+  class="modal fade"
+  id="createServicePlanModal"
+  tabindex="-1"
+  aria-labelledby="createServicePlanModalLabel"
+  aria-hidden="true"
+  #createModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createServicePlanModalLabel" i18n="@@featureServicePlans-createTitle">
+          Add service plan
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          [disabled]="(creating$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitCreate()">
+        <div class="modal-body">
+          @if (typesAndProviders$ | async; as data) {
+            <div class="mb-3">
+              <label for="createServiceTypeId" class="form-label" i18n="@@featureServicePlans-serviceType"
+                >Service type</label
+              >
+              <select
+                id="createServiceTypeId"
+                name="serviceTypeId"
+                class="form-select"
+                [(ngModel)]="createForm.serviceTypeId"
+                (ngModelChange)="onCreateServiceTypeIdChange(data.serviceTypes, data.providerDetails)"
+                required
+                [disabled]="(creating$ | async) === true"
+              >
+                <option value="" i18n="@@featureServicePlans-chooseType">Choose a service type</option>
+                @for (st of data.serviceTypes; track st.id) {
+                  <option [value]="st.id">{{ st.name }} ({{ st.key }})</option>
+                }
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="createName" class="form-label" i18n="@@featureServicePlans-name">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="createName"
+                name="name"
+                [(ngModel)]="createForm.name"
+                required
+                [disabled]="(creating$ | async) === true"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="createDescription" class="form-label" i18n="@@featureServicePlans-description"
+                >Description</label
+              >
+              <textarea
+                class="form-control"
+                id="createDescription"
+                name="description"
+                [(ngModel)]="createForm.description"
+                rows="3"
+                [disabled]="(creating$ | async) === true"
+              ></textarea>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label
+                  for="createBillingIntervalType"
+                  class="form-label"
+                  i18n="@@featureServicePlans-billingIntervalType"
+                  >Interval type</label
+                >
+                <select
+                  id="createBillingIntervalType"
+                  name="billingIntervalType"
+                  class="form-select"
+                  [(ngModel)]="createForm.billingIntervalType"
+                  [disabled]="(creating$ | async) === true"
+                >
+                  @for (t of billingIntervalTypes; track t) {
+                    <option [value]="t">{{ t }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label
+                  for="createBillingIntervalValue"
+                  class="form-label"
+                  i18n="@@featureServicePlans-billingIntervalValue"
+                  >Interval value</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="createBillingIntervalValue"
+                  name="billingIntervalValue"
+                  [(ngModel)]="createForm.billingIntervalValue"
+                  min="1"
+                  [disabled]="(creating$ | async) === true"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="createBillingDayOfMonth" class="form-label" i18n="@@featureServicePlans-billingDayOfMonth"
+                  >Billing day of month (1–31)</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="createBillingDayOfMonth"
+                  name="billingDayOfMonth"
+                  [(ngModel)]="createForm.billingDayOfMonth"
+                  min="1"
+                  max="31"
+                  [disabled]="(creating$ | async) === true"
+                />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="createMinCommitmentDays" class="form-label" i18n="@@featureServicePlans-minCommitmentDays"
+                  >Min commitment days</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="createMinCommitmentDays"
+                  name="minCommitmentDays"
+                  [(ngModel)]="createForm.minCommitmentDays"
+                  min="0"
+                  [disabled]="(creating$ | async) === true"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="createNoticeDays" class="form-label" i18n="@@featureServicePlans-noticeDays"
+                  >Notice days</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="createNoticeDays"
+                  name="noticeDays"
+                  [(ngModel)]="createForm.noticeDays"
+                  min="0"
+                  [disabled]="(creating$ | async) === true"
+                />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="createBasePrice" class="form-label" i18n="@@featureServicePlans-basePrice"
+                  >Base price</label
+                >
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  class="form-control"
+                  id="createBasePrice"
+                  name="basePrice"
+                  [(ngModel)]="createForm.basePrice"
+                  [disabled]="(creating$ | async) === true"
+                />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="createMarginPercent" class="form-label" i18n="@@featureServicePlans-marginPercent"
+                  >Margin %</label
+                >
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  class="form-control"
+                  id="createMarginPercent"
+                  name="marginPercent"
+                  [(ngModel)]="createForm.marginPercent"
+                  [disabled]="(creating$ | async) === true"
+                />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="createMarginFixed" class="form-label" i18n="@@featureServicePlans-marginFixed"
+                >Margin fixed</label
+              >
+              <input
+                type="text"
+                inputmode="decimal"
+                class="form-control"
+                id="createMarginFixed"
+                name="marginFixed"
+                [(ngModel)]="createForm.marginFixed"
+                [disabled]="(creating$ | async) === true"
+              />
+            </div>
+            <div class="mb-3">
+              <span class="text-body-secondary" i18n="@@featureServicePlans-estimatedPrice">Estimated price</span>
+              <strong class="ms-2">{{
+                formatEstimatedPrice(
+                  getEstimatedPrice(createForm.basePrice, createForm.marginPercent, createForm.marginFixed)
+                )
+              }}</strong>
+            </div>
+            @if (getProviderSchema(data.serviceTypes, data.providerDetails, createForm.serviceTypeId); as schema) {
+              <div class="mb-3 border rounded p-3 bg-body-secondary">
+                <h6 class="mb-3" i18n="@@featureServicePlans-providerConfigDefaults">Provider default config</h6>
+                @for (key of getProviderConfigKeys(schema); track key) {
+                  <div class="mb-2">
+                    <label [attr.for]="'createProviderConfig_' + key" class="form-label">{{ key }}</label>
+                    @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                      <small class="text-body-secondary d-block mb-1">{{ desc }}</small>
+                    }
+                    @if (
+                      getBasePriceFromField(data.serviceTypes, data.providerDetails, createForm.serviceTypeId) === key
+                    ) {
+                      @if (serverTypesLoading) {
+                        <span class="text-body-secondary" i18n="@@featureServicePlans-loadingServerTypes"
+                          >Loading server types...</span
+                        >
+                      } @else {
+                        <select
+                          [id]="'createProviderConfig_' + key"
+                          class="form-select"
+                          [(ngModel)]="createForm.providerConfigDefaults![key]"
+                          (ngModelChange)="onServerTypeSelectCreate($event)"
+                          [name]="'createProviderConfig_' + key"
+                          [disabled]="(creating$ | async) === true"
+                        >
+                          <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
+                          @for (st of currentServerTypes; track st.id) {
+                            <option [ngValue]="st.id">{{ formatServerTypeOption(st) || st.id }}</option>
+                          }
+                        </select>
+                      }
+                    } @else {
+                      @if (getProviderConfigEnum(schema, key); as enumValues) {
+                        <select
+                          [id]="'createProviderConfig_' + key"
+                          class="form-select"
+                          [(ngModel)]="createForm.providerConfigDefaults![key]"
+                          [name]="'createProviderConfig_' + key"
+                          [disabled]="(creating$ | async) === true"
+                        >
+                          <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
+                          @for (opt of enumValues; track opt) {
+                            <option [ngValue]="opt">{{ opt }}</option>
+                          }
+                        </select>
+                      } @else if (getProviderConfigPropertyType(schema, key) === 'number') {
+                        <input
+                          type="number"
+                          [id]="'createProviderConfig_' + key"
+                          class="form-control"
+                          [(ngModel)]="createForm.providerConfigDefaults![key]"
+                          [name]="'createProviderConfig_' + key"
+                          [disabled]="(creating$ | async) === true"
+                        />
+                      } @else {
+                        <input
+                          type="text"
+                          [id]="'createProviderConfig_' + key"
+                          class="form-control"
+                          [(ngModel)]="createForm.providerConfigDefaults![key]"
+                          [name]="'createProviderConfig_' + key"
+                          [disabled]="(creating$ | async) === true"
+                        />
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+            <div class="form-check mb-3">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="createCancelAtPeriodEnd"
+                name="cancelAtPeriodEnd"
+                [(ngModel)]="createForm.cancelAtPeriodEnd"
+                [disabled]="(creating$ | async) === true"
+              />
+              <label
+                class="form-check-label"
+                for="createCancelAtPeriodEnd"
+                i18n="@@featureServicePlans-cancelAtPeriodEnd"
+                >Cancel at period end</label
+              >
+            </div>
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="createIsActive"
+                name="isActive"
+                [(ngModel)]="createForm.isActive"
+                [disabled]="(creating$ | async) === true"
+              />
+              <label class="form-check-label" for="createIsActive" i18n="@@featureServicePlans-active">Active</label>
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServicePlans-close">
+            Close
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!createForm.serviceTypeId?.trim() || !createForm.name?.trim() || (creating$ | async) === true"
+            i18n="@@featureServicePlans-create"
+          >
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div
+  class="modal fade"
+  id="editServicePlanModal"
+  tabindex="-1"
+  aria-labelledby="editServicePlanModalLabel"
+  aria-hidden="true"
+  #editModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editServicePlanModalLabel" i18n="@@featureServicePlans-editTitle">
+          Edit service plan
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          [disabled]="(updating$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitEdit()">
+        <div class="modal-body">
+          @if (typesAndProviders$ | async; as data) {
+            <div class="mb-3">
+              <label for="editName" class="form-label" i18n="@@featureServicePlans-name">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="editName"
+                name="name"
+                [(ngModel)]="editForm.name"
+                [disabled]="(updating$ | async) === true"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="editDescription" class="form-label" i18n="@@featureServicePlans-description"
+                >Description</label
+              >
+              <textarea
+                class="form-control"
+                id="editDescription"
+                name="description"
+                [(ngModel)]="editForm.description"
+                rows="3"
+                [disabled]="(updating$ | async) === true"
+              ></textarea>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editBillingIntervalType" class="form-label" i18n="@@featureServicePlans-billingIntervalType"
+                  >Interval type</label
+                >
+                <select
+                  id="editBillingIntervalType"
+                  name="billingIntervalType"
+                  class="form-select"
+                  [(ngModel)]="editForm.billingIntervalType"
+                  [disabled]="(updating$ | async) === true"
+                >
+                  @for (t of billingIntervalTypes; track t) {
+                    <option [value]="t">{{ t }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label
+                  for="editBillingIntervalValue"
+                  class="form-label"
+                  i18n="@@featureServicePlans-billingIntervalValue"
+                  >Interval value</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="editBillingIntervalValue"
+                  name="billingIntervalValue"
+                  [(ngModel)]="editForm.billingIntervalValue"
+                  min="1"
+                  [disabled]="(updating$ | async) === true"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editBillingDayOfMonth" class="form-label" i18n="@@featureServicePlans-billingDayOfMonth"
+                  >Billing day of month (1–31)</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="editBillingDayOfMonth"
+                  name="billingDayOfMonth"
+                  [(ngModel)]="editForm.billingDayOfMonth"
+                  min="1"
+                  max="31"
+                  [disabled]="(updating$ | async) === true"
+                />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editMinCommitmentDays" class="form-label" i18n="@@featureServicePlans-minCommitmentDays"
+                  >Min commitment days</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="editMinCommitmentDays"
+                  name="minCommitmentDays"
+                  [(ngModel)]="editForm.minCommitmentDays"
+                  min="0"
+                  [disabled]="(updating$ | async) === true"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="editNoticeDays" class="form-label" i18n="@@featureServicePlans-noticeDays"
+                  >Notice days</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="editNoticeDays"
+                  name="noticeDays"
+                  [(ngModel)]="editForm.noticeDays"
+                  min="0"
+                  [disabled]="(updating$ | async) === true"
+                />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="editBasePrice" class="form-label" i18n="@@featureServicePlans-basePrice">Base price</label>
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  class="form-control"
+                  id="editBasePrice"
+                  name="basePrice"
+                  [(ngModel)]="editForm.basePrice"
+                  [disabled]="(updating$ | async) === true"
+                />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="editMarginPercent" class="form-label" i18n="@@featureServicePlans-marginPercent"
+                  >Margin %</label
+                >
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  class="form-control"
+                  id="editMarginPercent"
+                  name="marginPercent"
+                  [(ngModel)]="editForm.marginPercent"
+                  [disabled]="(updating$ | async) === true"
+                />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editMarginFixed" class="form-label" i18n="@@featureServicePlans-marginFixed"
+                >Margin fixed</label
+              >
+              <input
+                type="text"
+                inputmode="decimal"
+                class="form-control"
+                id="editMarginFixed"
+                name="marginFixed"
+                [(ngModel)]="editForm.marginFixed"
+                [disabled]="(updating$ | async) === true"
+              />
+            </div>
+            <div class="mb-3">
+              <span class="text-body-secondary" i18n="@@featureServicePlans-estimatedPrice">Estimated price</span>
+              <strong class="ms-2">{{
+                formatEstimatedPrice(
+                  getEstimatedPrice(editForm.basePrice, editForm.marginPercent, editForm.marginFixed)
+                )
+              }}</strong>
+            </div>
+            @if (
+              editingPlan && getProviderSchema(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId);
+              as schema
+            ) {
+              <div class="mb-3 border rounded p-3 bg-body-secondary">
+                <h6 class="mb-3" i18n="@@featureServicePlans-providerConfigDefaults">Provider default config</h6>
+                @for (key of getProviderConfigKeys(schema); track key) {
+                  <div class="mb-2">
+                    <label [attr.for]="'editProviderConfig_' + key" class="form-label">{{ key }}</label>
+                    @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                      <small class="text-body-secondary d-block mb-1">{{ desc }}</small>
+                    }
+                    @if (
+                      editingPlan &&
+                      getBasePriceFromField(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId) === key
+                    ) {
+                      @if (serverTypesLoading) {
+                        <span class="text-body-secondary" i18n="@@featureServicePlans-loadingServerTypes"
+                          >Loading server types...</span
+                        >
+                      } @else {
+                        <select
+                          [id]="'editProviderConfig_' + key"
+                          class="form-select"
+                          [(ngModel)]="editForm.providerConfigDefaults![key]"
+                          (ngModelChange)="onServerTypeSelectEdit($event)"
+                          [name]="'editProviderConfig_' + key"
+                          [disabled]="(updating$ | async) === true"
+                        >
+                          <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
+                          @for (st of currentServerTypes; track st.id) {
+                            <option [ngValue]="st.id">{{ formatServerTypeOption(st) || st.id }}</option>
+                          }
+                        </select>
+                      }
+                    } @else {
+                      @if (getProviderConfigEnum(schema, key); as enumValues) {
+                        <select
+                          [id]="'editProviderConfig_' + key"
+                          class="form-select"
+                          [(ngModel)]="editForm.providerConfigDefaults![key]"
+                          [name]="'editProviderConfig_' + key"
+                          [disabled]="(updating$ | async) === true"
+                        >
+                          <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
+                          @for (opt of enumValues; track opt) {
+                            <option [ngValue]="opt">{{ opt }}</option>
+                          }
+                        </select>
+                      } @else if (getProviderConfigPropertyType(schema, key) === 'number') {
+                        <input
+                          type="number"
+                          [id]="'editProviderConfig_' + key"
+                          class="form-control"
+                          [(ngModel)]="editForm.providerConfigDefaults![key]"
+                          [name]="'editProviderConfig_' + key"
+                          [disabled]="(updating$ | async) === true"
+                        />
+                      } @else {
+                        <input
+                          type="text"
+                          [id]="'editProviderConfig_' + key"
+                          class="form-control"
+                          [(ngModel)]="editForm.providerConfigDefaults![key]"
+                          [name]="'editProviderConfig_' + key"
+                          [disabled]="(updating$ | async) === true"
+                        />
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+            <div class="form-check mb-3">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="editCancelAtPeriodEnd"
+                name="cancelAtPeriodEnd"
+                [(ngModel)]="editForm.cancelAtPeriodEnd"
+                [disabled]="(updating$ | async) === true"
+              />
+              <label class="form-check-label" for="editCancelAtPeriodEnd" i18n="@@featureServicePlans-cancelAtPeriodEnd"
+                >Cancel at period end</label
+              >
+            </div>
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="editIsActive"
+                name="isActive"
+                [(ngModel)]="editForm.isActive"
+                [disabled]="(updating$ | async) === true"
+              />
+              <label class="form-check-label" for="editIsActive" i18n="@@featureServicePlans-active">Active</label>
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServicePlans-close">
+            Close
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="(updating$ | async) === true"
+            i18n="@@featureServicePlans-save"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div
+  class="modal fade"
+  id="deleteServicePlanModal"
+  tabindex="-1"
+  aria-labelledby="deleteServicePlanModalLabel"
+  aria-hidden="true"
+  #deleteConfirmModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteServicePlanModalLabel" i18n="@@featureServicePlans-deleteTitle">
+          Delete service plan?
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          [disabled]="(deleting$ | async) === true"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (planToDelete; as plan) {
+          <p i18n="@@featureServicePlans-deleteConfirm">
+            Are you sure you want to delete the service plan &quot;{{ plan.name }}&quot;?
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServicePlans-close">
+          Close
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="(deleting$ | async) === true || !planToDelete"
+          i18n="@@featureServicePlans-confirmDelete"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

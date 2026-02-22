@@ -2,7 +2,7 @@ flowchart TB
     subgraph ADMIN["🔷 Admin API (Service Config)"]
         direction TB
         ADMIN_USE["Use Case: Configure Products & Pricing"]
-        ADMIN_USE --> ADMIN1["🧩 Service Types<br/>GET /service-types<br/>POST /service-types<br/>POST /service-types/:id<br/>DELETE /service-types/:id"]
+        ADMIN_USE --> ADMIN1["🧩 Service Types<br/>GET /service-types<br/>GET /service-types/providers<br/>GET /service-types/providers/:id/server-types<br/>POST /service-types<br/>POST /service-types/:id<br/>DELETE /service-types/:id"]
         ADMIN_USE --> ADMIN2["💳 Service Plans<br/>GET /service-plans<br/>POST /service-plans<br/>POST /service-plans/:id<br/>DELETE /service-plans/:id"]
     end
 
