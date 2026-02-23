@@ -1,6 +1,9 @@
 // Types
 export * from './lib/types/billing.types';
 
+// Constants
+export * from './lib/constants/supported-countries';
+
 // Services
 export * from './lib/services/service-types.service';
 export * from './lib/services/service-plans.service';

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
+import { getInvoiceNinjaCountryId } from '../maps/invoice-ninja-country-id.map';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
 
@@ -75,7 +76,8 @@ export class InvoiceNinjaService {
     }
 
     const displayName = profile.company || `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim();
-    const payload = {
+    const countryId = getInvoiceNinjaCountryId(profile.country);
+    const payload: Record<string, unknown> = {
       name: displayName || profile.email || `Customer ${userId}`,
       first_name: profile.firstName,
       last_name: profile.lastName,
@@ -86,12 +88,40 @@ export class InvoiceNinjaService {
       city: profile.city,
       state: profile.state,
       postal_code: profile.postalCode,
-      country: profile.country,
     };
+    if (countryId != null) {
+      payload.country_id = countryId;
+    }
 
     if (profile.invoiceNinjaClientId) {
-      await this.client.put(`/api/v1/clients/${profile.invoiceNinjaClientId}`, payload);
-      return profile.invoiceNinjaClientId;
+      try {
+        await this.client.put(`/api/v1/clients/${profile.invoiceNinjaClientId}`, payload);
+        return profile.invoiceNinjaClientId;
+      } catch (error) {
+        const axiosError = error as AxiosError;
+        const response = axiosError.response;
+        if (!response) {
+          throw error;
+        }
+
+        const status = response.status;
+        const data = response.data as unknown;
+        const message =
+          typeof data === 'string'
+            ? data
+            : typeof (data as { message?: unknown })?.message === 'string'
+              ? ((data as { message?: string }).message as string)
+              : '';
+
+        const isMissingRemoteClient =
+          status === 404 ||
+          (status === 400 && typeof message === 'string' && message.includes('No query results for model'));
+
+        if (!isMissingRemoteClient) {
+          throw error;
+        }
+        // If the remote client no longer exists, fall through to create a new one
+      }
     }
 
     const response = await this.client.post('/api/v1/clients', payload);
