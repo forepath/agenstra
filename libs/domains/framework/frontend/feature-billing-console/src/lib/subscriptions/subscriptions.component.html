@@ -577,14 +577,18 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <label for="profileCountry" class="form-label" i18n="@@featureSubscriptions-country">Country</label>
-              <input
-                type="text"
-                class="form-control"
+              <select
                 id="profileCountry"
                 name="country"
+                class="form-select"
                 [(ngModel)]="profileForm.country"
                 [disabled]="(customerProfileUpdating$ | async) === true"
-              />
+              >
+                <option value="" i18n="@@featureSubscriptions-chooseCountry">Choose country</option>
+                @for (c of countryOptions; track c.code) {
+                  <option [value]="c.code">{{ c.name }}</option>
+                }
+              </select>
             </div>
             <div class="col-md-6 mb-3">
               <label for="profilePhone" class="form-label" i18n="@@featureSubscriptions-phone">Phone</label>
