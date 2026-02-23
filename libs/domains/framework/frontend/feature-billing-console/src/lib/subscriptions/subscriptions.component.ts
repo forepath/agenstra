@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   BackordersFacade,
   CustomerProfileFacade,
+  INVOICE_NINJA_SUPPORTED_ALPHA2_CODES,
   ServicePlansFacade,
   SubscriptionsFacade,
   type BackorderResponse,
@@ -14,7 +15,25 @@ import {
   type SubscriptionResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { registerLocale, getNames } from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
 import { filter, pairwise, take, withLatestFrom } from 'rxjs';
+
+registerLocale(enLocale as unknown as Parameters<typeof registerLocale>[0]);
+
+export interface CountryOption {
+  code: string;
+  name: string;
+}
+
+const COUNTRY_OPTIONS: CountryOption[] = (() => {
+  const supported = new Set(INVOICE_NINJA_SUPPORTED_ALPHA2_CODES);
+  const names = getNames('en', { select: 'official' });
+  return Object.entries(names)
+    .filter(([code]) => supported.has(code))
+    .map(([code, name]) => ({ code, name: name as string }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+})();
 
 @Component({
   selector: 'framework-billing-subscriptions',
@@ -55,6 +74,8 @@ export class SubscriptionsComponent implements OnInit {
 
   readonly termsUrl = this.environment.cookieConsent.termsUrl;
   readonly privacyUrl = this.environment.cookieConsent.privacyPolicyUrl;
+
+  readonly countryOptions: CountryOption[] = COUNTRY_OPTIONS;
 
   orderPlanId = '';
   orderAutoBackorder = false;
