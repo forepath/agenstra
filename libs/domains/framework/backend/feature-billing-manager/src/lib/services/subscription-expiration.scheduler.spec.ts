@@ -9,18 +9,18 @@ describe('SubscriptionExpirationScheduler', () => {
   const subscriptionItemsRepository = {
     findBySubscription: jest.fn(),
   } as any;
-  const serviceTypesRepository = {
-    findByIdOrThrow: jest.fn(),
-  } as any;
   const provisioningService = {
     deprovision: jest.fn(),
+  } as any;
+  const invoiceCreationService = {
+    createInvoice: jest.fn(),
   } as any;
 
   const scheduler = new SubscriptionExpirationScheduler(
     subscriptionsRepository,
     subscriptionItemsRepository,
-    serviceTypesRepository,
     provisioningService,
+    invoiceCreationService,
   );
 
   beforeEach(() => {
@@ -35,10 +35,20 @@ describe('SubscriptionExpirationScheduler', () => {
       { id: 'item-1', providerReference: 'server-123', serviceType: { provider: 'hetzner' } },
     ]);
     provisioningService.deprovision.mockResolvedValue(undefined);
+    invoiceCreationService.createInvoice.mockResolvedValue(undefined);
 
     await scheduler.processExpiredSubscriptions();
 
     expect(provisioningService.deprovision).toHaveBeenCalledWith('hetzner', 'server-123');
+    expect(invoiceCreationService.createInvoice).toHaveBeenCalledWith(
+      'sub-1',
+      undefined,
+      expect.stringContaining('Final billing for canceled subscription'),
+      expect.objectContaining({
+        billUntil: expect.any(Date),
+        skipIfNoBillableAmount: true,
+      }),
+    );
     expect(subscriptionsRepository.update).toHaveBeenCalledWith('sub-1', {
       status: SubscriptionStatus.CANCELED,
     });

@@ -191,4 +191,52 @@ describe('InvoiceNinjaService', () => {
     expect(mockPost).toHaveBeenCalledTimes(1);
     expect(customerProfilesService.updateInvoiceNinjaClientId).toHaveBeenCalledWith('user-1', 'created-client-id-400');
   });
+
+  it('createInvoiceForSubscription accepts unwrapped response and builds client URL from invitation key', async () => {
+    customerProfilesService.getByUserId.mockResolvedValue({
+      id: 'profile-1',
+      userId: 'user-1',
+      invoiceNinjaClientId: 'client-1',
+      firstName: 'Jane',
+      lastName: 'Doe',
+      country: 'DE',
+      addressLine1: 'Street 1',
+      city: 'Berlin',
+      postalCode: '10115',
+    } as never);
+    mockPut.mockResolvedValue({});
+    invoiceRefsRepository.create.mockResolvedValue({} as never);
+
+    const unwrappedInvoiceResponse = {
+      id: 'inv-xyz',
+      number: 'INV-2024-0001',
+      status_id: '2',
+      invitations: [{ key: 'invitation-key-123', link: '' }],
+    };
+    mockPost.mockResolvedValueOnce({ data: unwrappedInvoiceResponse });
+
+    const service = new InvoiceNinjaService(
+      invoiceRefsRepository,
+      customerProfilesService as unknown as CustomerProfilesService,
+    );
+    const result = await service.createInvoiceForSubscription('sub-1', 'user-1', 99, 'Test description');
+
+    expect(result).toEqual({ invoiceId: 'inv-xyz', preAuthUrl: '/client/invoice/invitation-key-123' });
+    expect(mockPost).toHaveBeenCalledWith(
+      '/api/v1/invoices',
+      expect.objectContaining({
+        client_id: 'client-1',
+        line_items: [{ product_key: 'subscription', notes: 'Test description', cost: 99, quantity: 1 }],
+      }),
+    );
+    expect(invoiceRefsRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subscriptionId: 'sub-1',
+        invoiceNinjaId: 'inv-xyz',
+        invoiceNumber: 'INV-2024-0001',
+        preAuthUrl: '/client/invoice/invitation-key-123',
+        status: '2',
+      }),
+    );
+  });
 });

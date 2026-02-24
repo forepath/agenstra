@@ -2,6 +2,7 @@ import { SubscriptionStatus } from '../entities/subscription.entity';
 
 export class SubscriptionResponseDto {
   id!: string;
+  number!: string;
   planId!: string;
   userId!: string;
   status!: SubscriptionStatus;

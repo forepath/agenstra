@@ -35,13 +35,20 @@ export class SubscriptionService {
   ) {
     const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
-    const validationErrors = validateConfigSchema(serviceType.configSchema, requestedConfig ?? {});
+
+    const baseConfig = plan.providerConfigDefaults ?? {};
+    const effectiveConfig: Record<string, unknown> = {
+      ...(baseConfig || {}),
+      ...(requestedConfig ?? {}),
+    };
+
+    const validationErrors = validateConfigSchema(serviceType.configSchema, effectiveConfig);
     if (validationErrors.length > 0) {
       throw new BadRequestException(validationErrors.join('; '));
     }
 
-    const region = (requestedConfig?.region as string | undefined) ?? 'fsn1';
-    const serverType = (requestedConfig?.serverType as string | undefined) ?? 'cx11';
+    const region = (effectiveConfig.region as string | undefined) ?? 'fsn1';
+    const serverType = (effectiveConfig.serverType as string | undefined) ?? 'cx11';
     const provider = serviceType.provider;
     const availability = await this.availabilityService.checkAvailability(provider, region, serverType);
 
@@ -77,20 +84,20 @@ export class SubscriptionService {
     const subscriptionItem = await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: plan.serviceTypeId,
-      configSnapshot: requestedConfig ?? {},
+      configSnapshot: effectiveConfig,
     });
 
     if (serviceType.provider === 'hetzner') {
       try {
         const provisioningConfig = {
           name: `subscription-${subscription.id}`,
-          serverType: (requestedConfig?.serverType as string | undefined) ?? 'cx11',
-          location: (requestedConfig?.region as string | undefined) ?? 'fsn1',
-          firewallId: requestedConfig?.firewallId as number | undefined,
+          serverType,
+          location: region,
+          firewallId: effectiveConfig.firewallId as number | undefined,
           userData: buildBillingCloudInitUserData({
-            authenticationMethod: (requestedConfig?.authenticationMethod as string | undefined) ?? 'api-key',
-            backendEnv: (requestedConfig?.backendEnv as Record<string, string> | undefined) ?? {},
-            frontendEnv: (requestedConfig?.frontendEnv as Record<string, string> | undefined) ?? {},
+            authenticationMethod: (effectiveConfig.authenticationMethod as string | undefined) ?? 'api-key',
+            backendEnv: (effectiveConfig.backendEnv as Record<string, string> | undefined) ?? {},
+            frontendEnv: (effectiveConfig.frontendEnv as Record<string, string> | undefined) ?? {},
           }),
         };
 
@@ -106,7 +113,7 @@ export class SubscriptionService {
             userId,
             serviceTypeId: plan.serviceTypeId,
             planId,
-            requestedConfigSnapshot: requestedConfig ?? {},
+            requestedConfigSnapshot: effectiveConfig,
             providerErrors: { reason: (error as Error).message },
           });
         }
@@ -119,7 +126,7 @@ export class SubscriptionService {
         userId,
         serviceTypeId: plan.serviceTypeId,
         planId,
-        requestedConfigSnapshot: requestedConfig ?? {},
+        requestedConfigSnapshot: effectiveConfig,
       });
     }
 

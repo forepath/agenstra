@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
 import { AvailabilitySnapshotsRepository } from '../repositories/availability-snapshots.repository';
 
@@ -10,6 +10,8 @@ export interface AvailabilityResult {
 
 @Injectable()
 export class AvailabilityService {
+  private readonly logger = new Logger(AvailabilityService.name);
+
   constructor(private readonly snapshotsRepository: AvailabilitySnapshotsRepository) {}
 
   async checkAvailability(provider: string, region: string, serverType: string): Promise<AvailabilityResult> {
@@ -51,9 +53,24 @@ export class AvailabilityService {
         },
       );
 
-      const limitsResponse = await axios.get<HetznerLimitsResponse>('https://api.hetzner.cloud/v1/limits', {
-        headers: { Authorization: `Bearer ${apiToken}` },
-      });
+      let limitsData: HetznerLimitsResponse | null = null;
+
+      try {
+        const limitsResponse = await axios.get<HetznerLimitsResponse>('https://api.hetzner.cloud/v1/limits', {
+          headers: { Authorization: `Bearer ${apiToken}` },
+        });
+        limitsData = limitsResponse.data;
+      } catch (error) {
+        const axiosError = error as AxiosError;
+
+        if (axiosError.response?.status === 404) {
+          this.logger.warn(
+            'Hetzner /limits endpoint returned 404. Skipping account limit checks but continuing availability evaluation.',
+          );
+        } else {
+          throw error;
+        }
+      }
 
       const serverTypes = response.data.server_types || [];
       const target = serverTypes.find((item) => item.name === serverType);
@@ -64,7 +81,7 @@ export class AvailabilityService {
           isAvailable: false,
           reason: 'Server type not found',
           alternatives: { availableTypes: serverTypes.filter(regionPrices).map((item) => item.name) },
-          rawResponse: { serverTypes: response.data, limits: limitsResponse.data },
+          rawResponse: { serverTypes: response.data, limits: limitsData },
         };
       }
 
@@ -73,7 +90,7 @@ export class AvailabilityService {
           isAvailable: false,
           reason: 'Server type deprecated',
           alternatives: { availableTypes: serverTypes.filter(regionPrices).map((item) => item.name) },
-          rawResponse: { serverTypes: response.data, limits: limitsResponse.data },
+          rawResponse: { serverTypes: response.data, limits: limitsData },
         };
       }
 
@@ -82,26 +99,26 @@ export class AvailabilityService {
           isAvailable: false,
           reason: 'Server type not available in region',
           alternatives: { availableTypes: serverTypes.filter(regionPrices).map((item) => item.name) },
-          rawResponse: { serverTypes: response.data, limits: limitsResponse.data },
+          rawResponse: { serverTypes: response.data, limits: limitsData },
         };
       }
 
-      if (limitsResponse.data?.limits?.max_servers !== null) {
-        const maxServers = limitsResponse.data.limits.max_servers;
-        const currentServers = limitsResponse.data.limits.server_count ?? 0;
+      if (limitsData?.limits != null && limitsData.limits.max_servers !== null) {
+        const maxServers = limitsData.limits.max_servers;
+        const currentServers = limitsData.limits.server_count ?? 0;
         if (maxServers !== undefined && currentServers >= maxServers) {
           return {
             isAvailable: false,
             reason: 'Provider account limit reached',
             alternatives: { availableTypes: serverTypes.filter(regionPrices).map((item) => item.name) },
-            rawResponse: { serverTypes: response.data, limits: limitsResponse.data },
+            rawResponse: { serverTypes: response.data, limits: limitsData },
           };
         }
       }
 
       return {
         isAvailable: true,
-        rawResponse: { serverTypes: response.data, limits: limitsResponse.data },
+        rawResponse: { serverTypes: response.data, limits: limitsData },
       };
     } catch (error) {
       const axiosError = error as AxiosError;

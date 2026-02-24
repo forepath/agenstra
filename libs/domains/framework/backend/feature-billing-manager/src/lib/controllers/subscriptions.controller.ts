@@ -95,6 +95,7 @@ export class SubscriptionsController {
   private mapToResponse(row: SubscriptionEntity): SubscriptionResponseDto {
     return {
       id: row.id,
+      number: row.number,
       planId: row.planId,
       userId: row.userId,
       status: row.status,

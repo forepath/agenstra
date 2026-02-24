@@ -3,16 +3,44 @@
     class="subscriptions-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center"
   >
     <h5 class="mb-0 fw-semibold" i18n="@@featureSubscriptions-title">Plans &amp; Subscriptions</h5>
-    <button
-      type="button"
-      class="btn btn-primary btn-sm"
-      (click)="openOrderPlanModal()"
-      i18n="@@featureSubscriptions-orderPlan"
-    >
-      Order
+    <button type="button" class="btn btn-primary btn-sm" (click)="openOrderPlanModal()">
+      <i class="bi bi-cart me-1"></i>
+      <span i18n="@@featureSubscriptions-orderPlan">Order</span>
     </button>
   </div>
   <div class="p-3 flex-grow-1 overflow-auto">
+    <div class="card border-primary mb-4">
+      <div
+        class="card-header bg-primary border-primary d-flex justify-content-between align-items-center flex-wrap gap-2"
+      >
+        <span class="py-1" i18n="@@featureSubscriptions-customerProfile">Customer profile</span>
+      </div>
+      <div class="card-body">
+        <p class="text-body-secondary mb-2" i18n="@@featureSubscriptions-customerProfileHint">
+          Required for invoicing. Please complete your profile with first name, last name, email, address, city and
+          country.
+        </p>
+        <div class="d-flex align-items-center gap-3 justify-content-between flex-wrap">
+          @if (isCustomerProfileComplete$ | async) {
+            <span class="badge bg-primary" i18n="@@featureSubscriptions-profileComplete">Complete</span>
+          } @else {
+            <span class="badge bg-warning text-dark" i18n="@@featureSubscriptions-profileIncomplete">Incomplete</span>
+          }
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-outline-primary]="(isCustomerProfileComplete$ | async) === true"
+            [class.btn-primary]="(isCustomerProfileComplete$ | async) !== true"
+            (click)="openEditProfileModal()"
+            [disabled]="(customerProfileUpdating$ | async) === true"
+            i18n="@@featureSubscriptions-editProfile"
+          >
+            <i class="bi bi-pencil"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
     @if (subscriptionsError$ | async; as err) {
       <div class="alert alert-danger" role="alert">{{ err }}</div>
     }
@@ -20,157 +48,214 @@
       <div class="alert alert-danger" role="alert">{{ err }}</div>
     }
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="h5 mb-0" i18n="@@featureSubscriptions-mySubscriptions">My subscriptions</h2>
-    </div>
-
     @if (subscriptionsLoading$ | async) {
       <div class="d-flex align-items-center gap-2 mb-3">
         <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
         <span i18n="@@featureSubscriptions-loading">Loading subscriptions...</span>
       </div>
     } @else {
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col" i18n="@@featureSubscriptions-plan">Plan</th>
-              <th scope="col" i18n="@@featureSubscriptions-status">Status</th>
-              <th scope="col" i18n="@@featureSubscriptions-period">Period</th>
-              <th scope="col" i18n="@@featureSubscriptions-nextBilling">Next billing</th>
-              <th scope="col" i18n="@@featureSubscriptions-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (sub of subscriptions$ | async; track sub.id) {
-              <tr>
-                <td>
-                  @if (servicePlans$ | async; as plans) {
-                    {{ planNameByPlanId(plans, sub.planId) }}
-                  } @else {
-                    {{ sub.planId }}
-                  }
-                </td>
-                <td>
-                  <span class="badge bg-secondary">{{ sub.status }}</span>
-                </td>
-                <td>
-                  @if (sub.currentPeriodStart && sub.currentPeriodEnd) {
-                    {{ sub.currentPeriodStart | date: 'shortDate' }} – {{ sub.currentPeriodEnd | date: 'shortDate' }}
-                  } @else {
-                    —
-                  }
-                </td>
-                <td>{{ sub.nextBillingAt ? (sub.nextBillingAt | date: 'shortDate') : '—' }}</td>
-                <td>
-                  @if (sub.status === 'active') {
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-danger me-1"
-                      (click)="openCancelConfirm(sub)"
-                      i18n="@@featureSubscriptions-cancel"
-                    >
-                      Cancel
-                    </button>
-                  }
-                  @if (sub.status === 'pending_cancel') {
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-success"
-                      (click)="openResumeConfirm(sub)"
-                      i18n="@@featureSubscriptions-resume"
-                    >
-                      Resume
-                    </button>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="text-body-secondary" i18n="@@featureSubscriptions-noSubscriptions">
-                  No subscriptions yet.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span class="py-1" i18n="@@featureAudit-chatIoTable">Subscriptions</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" i18n="@@featureSubscriptions-number">Number</th>
+                  <th scope="col" i18n="@@featureSubscriptions-plan">Plan</th>
+                  <th scope="col" i18n="@@featureSubscriptions-status">Status</th>
+                  <th scope="col" i18n="@@featureSubscriptions-period">Period</th>
+                  <th scope="col" i18n="@@featureSubscriptions-nextBilling">Next billing</th>
+                  <th scope="col" i18n="@@featureSubscriptions-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sub of paginatedSubscriptions(); track sub.id) {
+                  <tr>
+                    <td>
+                      {{ sub.number || '—' }}
+                    </td>
+                    <td>
+                      @if (servicePlans$ | async; as plans) {
+                        {{ planNameByPlanId(plans, sub.planId) }}
+                      } @else {
+                        {{ sub.planId }}
+                      }
+                    </td>
+                    <td>
+                      <span class="badge bg-secondary">{{ sub.status }}</span>
+                    </td>
+                    <td>
+                      @if (sub.currentPeriodStart && sub.currentPeriodEnd) {
+                        {{ sub.currentPeriodStart | date: 'shortDate' }} –
+                        {{ sub.currentPeriodEnd | date: 'shortDate' }}
+                      } @else {
+                        —
+                      }
+                    </td>
+                    <td>{{ sub.nextBillingAt ? (sub.nextBillingAt | date: 'shortDate') : '—' }}</td>
+                    <td>
+                      @if (sub.status === 'active') {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger me-1"
+                          (click)="openCancelConfirm(sub)"
+                          i18n="@@featureSubscriptions-cancel"
+                        >
+                          Cancel
+                        </button>
+                      }
+                      @if (sub.status === 'pending_cancel') {
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-success"
+                          (click)="openResumeConfirm(sub)"
+                          i18n="@@featureSubscriptions-resume"
+                        >
+                          Resume
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-body-secondary" i18n="@@featureSubscriptions-noSubscriptions">
+                      No subscriptions yet.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if (subscriptions()) {
+          <div class="card-footer d-flex justify-content-between align-items-center">
+            <small class="text-muted" i18n="@@featureSubscriptions-showingOf"
+              >Showing {{ paginatedSubscriptions().length }} of {{ subscriptions().length }}</small
+            >
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="subscriptionsPage() <= 0">
+                  <a
+                    class="page-link"
+                    href="#"
+                    (click)="onSubscriptionsPageChange(subscriptionsPage() - 1); $event.preventDefault()"
+                    i18n="@@featureSubscriptions-prev"
+                    >Previous</a
+                  >
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link">{{ subscriptionsPage() + 1 }} / {{ subscriptionsTotalPages() }}</span>
+                </li>
+                <li class="page-item" [class.disabled]="subscriptionsPage() >= subscriptionsTotalPages() - 1">
+                  <a
+                    class="page-link"
+                    href="#"
+                    (click)="onSubscriptionsPageChange(subscriptionsPage() + 1); $event.preventDefault()"
+                    i18n="@@featureSubscriptions-next"
+                    >Next</a
+                  >
+                </li>
+              </ul>
+            </nav>
+          </div>
+        }
       </div>
     }
 
-    <h2 class="h5 mt-4 mb-3" i18n="@@featureSubscriptions-backorders">Backorders</h2>
     @if (backordersLoading$ | async) {
       <div class="d-flex align-items-center gap-2 mb-2">
         <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
         <span i18n="@@featureSubscriptions-loadingBackorders">Loading backorders...</span>
       </div>
     } @else {
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col" i18n="@@featureSubscriptions-plan">Plan</th>
-              <th scope="col" i18n="@@featureSubscriptions-status">Status</th>
-              <th scope="col" i18n="@@featureSubscriptions-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (bo of pendingBackorders$ | async; track bo.id) {
-              <tr>
-                <td>{{ bo.planId }}</td>
-                <td>
-                  <span class="badge bg-warning text-dark">{{ bo.status }}</span>
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-primary me-1"
-                    (click)="retryBackorder(bo)"
-                    i18n="@@featureSubscriptions-retry"
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span class="py-1" i18n="@@featureSubscriptions-backorders">Backorders</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" i18n="@@featureSubscriptions-plan">Plan</th>
+                  <th scope="col" i18n="@@featureSubscriptions-status">Status</th>
+                  <th scope="col" i18n="@@featureSubscriptions-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (bo of paginatedBackorders(); track bo.id) {
+                  <tr>
+                    <td>{{ bo.planId }}</td>
+                    <td>
+                      <span class="badge bg-warning text-dark">{{ bo.status }}</span>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary me-1"
+                        (click)="retryBackorder(bo)"
+                        i18n="@@featureSubscriptions-retry"
+                      >
+                        Retry
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="openCancelBackorderConfirm(bo)"
+                        i18n="@@featureSubscriptions-cancel"
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3" class="text-body-secondary" i18n="@@featureSubscriptions-noBackorders">
+                      No pending backorders.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if (backorders()) {
+          <div class="card-footer d-flex justify-content-between align-items-center">
+            <small class="text-muted" i18n="@@featureSubscriptions-showingOf"
+              >Showing {{ paginatedBackorders().length }} of {{ backorders().length }}</small
+            >
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="backordersPage() <= 0">
+                  <a
+                    class="page-link"
+                    href="#"
+                    (click)="onBackordersPageChange(backordersPage() - 1); $event.preventDefault()"
+                    i18n="@@featureSubscriptions-prev"
+                    >Previous</a
                   >
-                    Retry
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-danger"
-                    (click)="openCancelBackorderConfirm(bo)"
-                    i18n="@@featureSubscriptions-cancel"
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link">{{ backordersPage() + 1 }} / {{ backordersTotalPages() }}</span>
+                </li>
+                <li class="page-item" [class.disabled]="backordersPage() >= backordersTotalPages() - 1">
+                  <a
+                    class="page-link"
+                    href="#"
+                    (click)="onBackordersPageChange(backordersPage() + 1); $event.preventDefault()"
+                    i18n="@@featureSubscriptions-next"
+                    >Next</a
                   >
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="3" class="text-body-secondary" i18n="@@featureSubscriptions-noBackorders">
-                  No pending backorders.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        }
       </div>
     }
-
-    <h2 class="h5 mt-4 mb-3" i18n="@@featureSubscriptions-customerProfile">Customer profile</h2>
-    <p class="text-body-secondary mb-2" i18n="@@featureSubscriptions-customerProfileHint">
-      Required for invoicing. Please complete your profile with first name, last name, email, address, city and country.
-    </p>
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-      @if (isCustomerProfileComplete$ | async) {
-        <span class="badge bg-success" i18n="@@featureSubscriptions-profileComplete">Complete</span>
-      } @else {
-        <span class="badge bg-warning text-dark" i18n="@@featureSubscriptions-profileIncomplete">Incomplete</span>
-      }
-      <button
-        type="button"
-        class="btn btn-outline-primary btn-sm"
-        (click)="openEditProfileModal()"
-        [disabled]="(customerProfileUpdating$ | async) === true"
-        i18n="@@featureSubscriptions-editProfile"
-      >
-        Edit profile
-      </button>
-    </div>
   </div>
 </div>
 
@@ -263,7 +348,7 @@
               [disabled]="(subscriptionsCreating$ | async) === true"
             />
             <label class="form-check-label" for="orderAutoBackorder" i18n="@@featureSubscriptions-autoBackorder"
-              >Auto backorder if unavailable</label
+              >Backorder if unavailable</label
             >
           </div>
           <div class="form-check mt-3">

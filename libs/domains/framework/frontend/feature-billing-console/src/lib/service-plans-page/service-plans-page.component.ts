@@ -78,6 +78,20 @@ export class ServicePlansPageComponent implements OnInit {
     return `${plan.billingIntervalValue} ${plan.billingIntervalType}(s)`;
   }
 
+  /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */
+  getPlanTotalPrice(plan: ServicePlanResponse): number | null {
+    return this.getEstimatedPrice(
+      plan.basePrice ?? undefined,
+      plan.marginPercent ?? undefined,
+      plan.marginFixed ?? undefined,
+    );
+  }
+
+  /** Formats plan price for display in list (e.g. "€4.51" or "—"). */
+  formatPlanPrice(plan: ServicePlanResponse): string {
+    return this.formatEstimatedPrice(this.getPlanTotalPrice(plan));
+  }
+
   /** Resolve provider config schema (properties) for a service type, or null. */
   getProviderSchema(
     serviceTypes: ServiceTypeResponse[] | null,

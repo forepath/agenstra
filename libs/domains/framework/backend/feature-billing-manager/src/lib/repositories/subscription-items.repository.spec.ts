@@ -74,16 +74,19 @@ describe('SubscriptionItemsRepository', () => {
     );
   });
 
-  it('finds items by subscription', async () => {
+  it('finds items by subscription with serviceType relation', async () => {
     const items = [
-      { id: 'item-1', subscriptionId: 'sub-1' },
-      { id: 'item-2', subscriptionId: 'sub-1' },
+      { id: 'item-1', subscriptionId: 'sub-1', serviceType: { provider: 'hetzner' } },
+      { id: 'item-2', subscriptionId: 'sub-1', serviceType: { provider: 'hetzner' } },
     ];
     mockRepository.find.mockResolvedValue(items);
 
     const result = await repository.findBySubscription('sub-1');
 
     expect(result).toEqual(items);
-    expect(mockRepository.find).toHaveBeenCalledWith({ where: { subscriptionId: 'sub-1' } });
+    expect(mockRepository.find).toHaveBeenCalledWith({
+      where: { subscriptionId: 'sub-1' },
+      relations: ['serviceType'],
+    });
   });
 });

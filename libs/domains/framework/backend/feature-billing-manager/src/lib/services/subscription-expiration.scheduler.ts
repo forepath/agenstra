@@ -1,9 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
-import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
-import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { ProvisioningService } from './provisioning.service';
+import { InvoiceCreationService } from './invoice-creation.service';
 
 @Injectable()
 export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDestroy {
@@ -16,8 +16,8 @@ export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDe
   constructor(
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
-    private readonly serviceTypesRepository: ServiceTypesRepository,
     private readonly provisioningService: ProvisioningService,
+    private readonly invoiceCreationService: InvoiceCreationService,
   ) {}
 
   onModuleInit(): void {
@@ -54,9 +54,11 @@ export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDe
 
   private async processSubscriptionCancellation(subscription: SubscriptionEntity): Promise<void> {
     const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
+    this.logger.log(`Found ${items.length} items for subscription ${subscription.id}`);
 
     for (const item of items) {
       if (item.providerReference && item.serviceType?.provider) {
+        this.logger.log(`Deprovisioning resource ${item.providerReference} for subscription ${subscription.id}`);
         try {
           await this.provisioningService.deprovision(item.serviceType.provider, item.providerReference);
           this.logger.log(`Deprovisioned resource ${item.providerReference} for subscription ${subscription.id}`);
@@ -66,6 +68,24 @@ export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDe
           );
         }
       }
+    }
+
+    const cancelEffectiveAt = subscription.cancelEffectiveAt ?? new Date();
+
+    try {
+      await this.invoiceCreationService.createInvoice(
+        subscription.id,
+        subscription.userId,
+        `Final billing for canceled subscription ${subscription.id}`,
+        {
+          billUntil: cancelEffectiveAt,
+          skipIfNoBillableAmount: true,
+        },
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Failed to create final invoice for subscription ${subscription.id}: ${(error as Error).message}`,
+      );
     }
 
     await this.subscriptionsRepository.update(subscription.id, {

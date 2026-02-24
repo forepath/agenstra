@@ -38,7 +38,9 @@ export class InvoicesController {
       throw new BadRequestException('User not authenticated');
     }
 
-    return await this.invoiceCreationService.createInvoice(subscriptionId, userInfo.userId, dto.description);
+    return await this.invoiceCreationService.createInvoice(subscriptionId, userInfo.userId, dto.description, {
+      billUntil: new Date(),
+    });
   }
 
   private mapToResponse(row: InvoiceRefEntity): InvoiceResponseDto {
@@ -46,6 +48,7 @@ export class InvoicesController {
       id: row.id,
       subscriptionId: row.subscriptionId,
       invoiceNinjaId: row.invoiceNinjaId,
+      invoiceNumber: row.invoiceNumber,
       preAuthUrl: row.preAuthUrl,
       status: row.status,
       createdAt: row.createdAt,
