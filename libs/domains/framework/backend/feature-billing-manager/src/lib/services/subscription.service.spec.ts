@@ -10,6 +10,16 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { SubscriptionService } from './subscription.service';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+import { buildBillingCloudInitUserData } from '../utils/cloud-init.utils';
+import { validateConfigSchema } from '../utils/config-validation.utils';
+
+jest.mock('../utils/config-validation.utils', () => ({
+  validateConfigSchema: jest.fn().mockReturnValue([]),
+}));
+
+jest.mock('../utils/cloud-init.utils', () => ({
+  buildBillingCloudInitUserData: jest.fn().mockReturnValue('#!/bin/bash\necho hello'),
+}));
 
 describe('SubscriptionService', () => {
   const plansRepository = {
@@ -53,6 +63,8 @@ describe('SubscriptionService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    (validateConfigSchema as jest.Mock).mockReturnValue([]);
+    (buildBillingCloudInitUserData as jest.Mock).mockReturnValue('#!/bin/bash\necho hello');
   });
 
   it('creates subscription with schedule', async () => {
@@ -88,6 +100,69 @@ describe('SubscriptionService', () => {
     expect(itemsRepository.create).toHaveBeenCalled();
     expect(provisioningService.provision).toHaveBeenCalled();
     expect(itemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'srv-1');
+  });
+
+  it('uses plan providerConfigDefaults when requestedConfig is not provided', async () => {
+    (validateConfigSchema as jest.Mock).mockReturnValue([]);
+
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: {
+        region: 'fsn1',
+        serverType: 'cx23',
+        authenticationMethod: 'api-key',
+        backendEnv: { FOO: 'bar' },
+        frontendEnv: { BAR: 'baz' },
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: {},
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    const result = await service.createSubscription('user-1', 'plan-1');
+
+    expect(result.id).toBe('sub-1');
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23');
+    expect(provisioningService.provision).toHaveBeenCalledWith('hetzner', {
+      name: 'subscription-sub-1',
+      serverType: 'cx23',
+      location: 'fsn1',
+      firewallId: undefined,
+      userData: '#!/bin/bash\necho hello',
+    });
+    expect(itemsRepository.create).toHaveBeenCalledWith({
+      subscriptionId: 'sub-1',
+      serviceTypeId: 'stype-1',
+      configSnapshot: {
+        region: 'fsn1',
+        serverType: 'cx23',
+        authenticationMethod: 'api-key',
+        backendEnv: { FOO: 'bar' },
+        frontendEnv: { BAR: 'baz' },
+      },
+    });
+    expect(buildBillingCloudInitUserData).toHaveBeenCalledWith({
+      authenticationMethod: 'api-key',
+      backendEnv: { FOO: 'bar' },
+      frontendEnv: { BAR: 'baz' },
+    });
   });
 
   it('rejects cancel when policy disallows', async () => {

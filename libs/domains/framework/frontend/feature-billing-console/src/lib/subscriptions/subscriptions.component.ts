@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import {
   BackordersFacade,
   CustomerProfileFacade,
@@ -15,11 +16,13 @@ import {
   type SubscriptionResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
-import { registerLocale, getNames } from 'i18n-iso-countries';
+import { getNames, registerLocale } from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import { filter, pairwise, take, withLatestFrom } from 'rxjs';
 
 registerLocale(enLocale as unknown as Parameters<typeof registerLocale>[0]);
+
+const PAGE_SIZE = 10;
 
 export interface CountryOption {
   code: string;
@@ -42,7 +45,7 @@ const COUNTRY_OPTIONS: CountryOption[] = (() => {
   templateUrl: './subscriptions.component.html',
   styleUrls: ['./subscriptions.component.scss'],
 })
-export class SubscriptionsComponent implements OnInit {
+export class SubscriptionsComponent implements OnInit, AfterViewInit {
   @ViewChild('orderPlanModal', { static: false }) private orderPlanModal!: ElementRef<HTMLDivElement>;
   @ViewChild('cancelSubscriptionModal', { static: false }) private cancelSubscriptionModal!: ElementRef<HTMLDivElement>;
   @ViewChild('resumeConfirmModal', { static: false }) private resumeConfirmModal!: ElementRef<HTMLDivElement>;
@@ -56,16 +59,40 @@ export class SubscriptionsComponent implements OnInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   readonly subscriptions$ = this.subscriptionsFacade.getSubscriptions$();
+  readonly subscriptions = toSignal(this.subscriptionsFacade.getSubscriptions$(), {
+    initialValue: [] as SubscriptionResponse[],
+  });
   readonly subscriptionsLoading$ = this.subscriptionsFacade.getSubscriptionsLoading$();
   readonly subscriptionsError$ = this.subscriptionsFacade.getSubscriptionsError$();
   readonly subscriptionsCreating$ = this.subscriptionsFacade.getSubscriptionsCreating$();
+
+  readonly subscriptionsPage = signal(0);
+  readonly paginatedSubscriptions = computed(() => {
+    const list = this.subscriptions();
+    const page = this.subscriptionsPage();
+    const start = page * PAGE_SIZE;
+    return list.slice(start, start + PAGE_SIZE);
+  });
+  readonly subscriptionsTotalPages = computed(() => Math.max(1, Math.ceil(this.subscriptions().length / PAGE_SIZE)));
 
   readonly servicePlans$ = this.servicePlansFacade.getActiveServicePlans$();
   readonly servicePlansLoading$ = this.servicePlansFacade.getServicePlansLoading$();
 
   readonly pendingBackorders$ = this.backordersFacade.getPendingBackorders$();
+  readonly backorders = toSignal(this.backordersFacade.getPendingBackorders$(), {
+    initialValue: [] as BackorderResponse[],
+  });
   readonly backordersLoading$ = this.backordersFacade.getBackordersLoading$();
   readonly backordersError$ = this.backordersFacade.getBackordersError$();
+
+  readonly backordersPage = signal(0);
+  readonly paginatedBackorders = computed(() => {
+    const list = this.backorders();
+    const page = this.backordersPage();
+    const start = page * PAGE_SIZE;
+    return list.slice(start, start + PAGE_SIZE);
+  });
+  readonly backordersTotalPages = computed(() => Math.max(1, Math.ceil(this.backorders().length / PAGE_SIZE)));
 
   readonly customerProfile$ = this.customerProfileFacade.getCustomerProfile$();
   readonly customerProfileUpdating$ = this.customerProfileFacade.getCustomerProfileUpdating$();
@@ -76,6 +103,10 @@ export class SubscriptionsComponent implements OnInit {
   readonly privacyUrl = this.environment.cookieConsent.privacyPolicyUrl;
 
   readonly countryOptions: CountryOption[] = COUNTRY_OPTIONS;
+
+  private readonly route = inject(ActivatedRoute);
+
+  private initialPlanIdFromQuery: string | null = null;
 
   orderPlanId = '';
   orderAutoBackorder = false;
@@ -127,11 +158,35 @@ export class SubscriptionsComponent implements OnInit {
     return plans.find((p) => p.id === planId) ?? null;
   }
 
+  onSubscriptionsPageChange(page: number): void {
+    this.subscriptionsPage.set(page);
+  }
+
+  onBackordersPageChange(page: number): void {
+    this.backordersPage.set(page);
+  }
+
   ngOnInit(): void {
     this.subscriptionsFacade.loadSubscriptions();
     this.servicePlansFacade.loadServicePlans();
     this.backordersFacade.loadBackorders();
     this.customerProfileFacade.loadCustomerProfile();
+  }
+
+  ngAfterViewInit(): void {
+    const queryParamMap = this.route.snapshot.queryParamMap;
+    const planParam = queryParamMap.get('plan');
+    this.initialPlanIdFromQuery = planParam?.trim() || null;
+
+    const orderParam = queryParamMap.get('order');
+    if (orderParam === 'true') {
+      this.openOrderPlanModal();
+    }
+
+    const profileParam = queryParamMap.get('profile');
+    if (profileParam === 'true') {
+      this.openEditProfileModal();
+    }
   }
 
   constructor() {
@@ -165,16 +220,26 @@ export class SubscriptionsComponent implements OnInit {
       });
   }
 
-  openOrderPlanModal(): void {
+  openOrderPlanModal(preferredPlanId?: string | null): void {
     this.orderPlanId = '';
     this.orderAutoBackorder = true;
     this.orderAcceptLegal = false;
+
+    const effectivePreferredPlanId = (preferredPlanId ?? this.initialPlanIdFromQuery)?.trim();
+
     this.servicePlans$
       .pipe(
         filter((plans) => (plans?.length ?? 0) > 0),
         take(1),
       )
       .subscribe((plans) => {
+        if (effectivePreferredPlanId) {
+          const matchingPlan = plans.find((plan) => plan.id === effectivePreferredPlanId);
+          if (matchingPlan) {
+            this.orderPlanId = matchingPlan.id;
+            return;
+          }
+        }
         this.orderPlanId = plans[0].id;
       });
     this.showModal(this.orderPlanModal);
@@ -233,9 +298,14 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   openEditProfileModal(): void {
+    this.showModal(this.editProfileModal);
+
     this.customerProfileFacade
       .getCustomerProfile$()
-      .pipe(take(1))
+      .pipe(
+        filter((profile) => profile !== null),
+        take(1),
+      )
       .subscribe((profile) => {
         this.profileForm = {
           firstName: profile?.firstName ?? undefined,
@@ -250,7 +320,6 @@ export class SubscriptionsComponent implements OnInit {
           email: profile?.email ?? undefined,
           phone: profile?.phone ?? undefined,
         };
-        this.showModal(this.editProfileModal);
       });
   }
 

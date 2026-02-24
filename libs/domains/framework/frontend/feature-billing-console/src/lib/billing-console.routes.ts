@@ -22,10 +22,10 @@ import {
   loadBackordersBatch$,
   loadCustomerProfile$,
   loadInvoices$,
+  loadProviderDetails$,
   loadServicePlan$,
   loadServicePlans$,
   loadServicePlansBatch$,
-  loadProviderDetails$,
   loadServiceType$,
   loadServiceTypes$,
   loadServiceTypesBatch$,
@@ -61,12 +61,13 @@ export const billingConsoleRoutes: Route[] = [
     path: '',
     component: BillingConsoleContainerComponent,
     children: [
-      ...identityAuthRoutes,
       {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',
       },
+      // Identity auth routes (login, register, password reset, email confirmation, user management)
+      ...identityAuthRoutes,
       {
         path: 'dashboard',
         pathMatch: 'full',

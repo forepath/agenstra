@@ -54,6 +54,10 @@ describe('SubscriptionBillingScheduler', () => {
       'sub-1',
       'user-1',
       'Recurring billing for Basic Plan',
+      expect.objectContaining({
+        billUntil: expect.any(Date),
+        skipIfNoBillableAmount: true,
+      }),
     );
     expect(subscriptionsRepository.update).toHaveBeenCalled();
   });
@@ -86,6 +90,10 @@ describe('SubscriptionBillingScheduler', () => {
       'sub-2',
       'user-2',
       'Recurring billing for Plan 2',
+      expect.objectContaining({
+        billUntil: expect.any(Date),
+        skipIfNoBillableAmount: true,
+      }),
     );
   });
 });

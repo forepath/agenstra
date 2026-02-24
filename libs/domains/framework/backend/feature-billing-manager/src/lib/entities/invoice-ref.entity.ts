@@ -6,6 +6,9 @@ export class InvoiceRefEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'invoice_number' })
+  invoiceNumber?: string;
+
   @Column({ type: 'uuid', name: 'subscription_id' })
   subscriptionId!: string;
 

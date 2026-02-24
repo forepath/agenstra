@@ -14,6 +14,13 @@ export class InvoiceRefsRepository {
     return await this.repository.find({ where: { subscriptionId }, order: { createdAt: 'DESC' } });
   }
 
+  async findLatestBySubscription(subscriptionId: string): Promise<InvoiceRefEntity | null> {
+    return await this.repository.findOne({
+      where: { subscriptionId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async create(dto: Partial<InvoiceRefEntity>): Promise<InvoiceRefEntity> {
     const entity = this.repository.create(dto);
     return await this.repository.save(entity);

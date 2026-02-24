@@ -21,6 +21,9 @@ export class SubscriptionEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;
 
+  @Column({ type: 'varchar', length: 50, unique: true, name: 'number' })
+  number!: string;
+
   @Column({ type: 'uuid', name: 'plan_id' })
   planId!: string;
 

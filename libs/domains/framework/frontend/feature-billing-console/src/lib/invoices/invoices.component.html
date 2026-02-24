@@ -23,9 +23,9 @@
         @for (sub of subscriptions$ | async; track sub.id) {
           <option [value]="sub.id">
             @if (servicePlans$ | async; as plans) {
-              {{ planNameByPlanId(sub.planId, plans) }} ({{ sub.status }})
+              {{ sub.number || '—' }} – {{ planNameByPlanId(sub.planId, plans) }} ({{ sub.status }})
             } @else {
-              {{ sub.planId }} ({{ sub.status }})
+              {{ sub.number || '—' }} – {{ sub.planId }} ({{ sub.status }})
             }
           </option>
         }
@@ -39,7 +39,8 @@
           type="button"
           class="btn btn-primary"
           (click)="openCreateInvoiceModal()"
-          [disabled]="(invoicesCreating$ | async) === true"
+          [disabled]="(isCreateInvoiceDisabled$ | async) === true"
+          [attr.title]="(selectedSubscription$ | async)?.status === 'canceled' ? createInvoiceDisabledTitle : null"
           i18n="@@featureInvoices-createInvoice"
         >
           Create invoice
@@ -56,7 +57,7 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col" i18n="@@featureInvoices-id">ID</th>
+                <th scope="col" i18n="@@featureInvoices-id">Invoice number</th>
                 <th scope="col" i18n="@@featureInvoices-status">Status</th>
                 <th scope="col" i18n="@@featureInvoices-date">Date</th>
                 <th scope="col" i18n="@@featureInvoices-link">Link</th>
@@ -65,7 +66,7 @@
             <tbody>
               @for (inv of invoices$ | async; track inv.id) {
                 <tr>
-                  <td>{{ inv.id }}</td>
+                  <td>{{ inv.invoiceNumber || '—' }}</td>
                   <td>
                     <span class="badge bg-secondary">{{ inv.status ?? '—' }}</span>
                   </td>

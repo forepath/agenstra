@@ -59,6 +59,7 @@ describe('Stats Selectors', () => {
     receivedAt: number,
   ): ContainerStatsEntry => ({
     stats: mockStats,
+    status: { running: true },
     timestamp,
     receivedAt,
     clientId,

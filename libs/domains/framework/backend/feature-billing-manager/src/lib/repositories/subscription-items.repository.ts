@@ -34,6 +34,9 @@ export class SubscriptionItemsRepository {
   }
 
   async findBySubscription(subscriptionId: string): Promise<SubscriptionItemEntity[]> {
-    return await this.repository.find({ where: { subscriptionId } });
+    return await this.repository.find({
+      where: { subscriptionId },
+      relations: ['serviceType'],
+    });
   }
 }

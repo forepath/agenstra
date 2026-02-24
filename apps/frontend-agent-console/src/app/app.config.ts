@@ -10,7 +10,12 @@ import {
   LocaleService,
   provideLocale,
 } from '@forepath/framework/frontend/util-configuration';
-import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE, provideKeycloak } from '@forepath/identity/frontend';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  IDENTITY_LOCALE_SERVICE,
+  LOGIN_SUCCESS_REDIRECT_TARGET,
+  provideKeycloak,
+} from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { ComponentReuseStrategy } from './strategies/component-reuse.strategy';
@@ -33,6 +38,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: IDENTITY_LOCALE_SERVICE,
       useExisting: LocaleService,
+    },
+    {
+      provide: LOGIN_SUCCESS_REDIRECT_TARGET,
+      useValue: ['/clients'],
     },
     // Provide KeycloakService before HTTP client so interceptor can inject it
     ...(environment.authentication.type === 'keycloak' ? provideKeycloak() : []),

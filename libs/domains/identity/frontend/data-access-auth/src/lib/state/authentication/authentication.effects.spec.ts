@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment, IdentityLocaleService } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE } from '@forepath/identity/frontend';
+import { LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { KeycloakService } from 'keycloak-angular';
@@ -108,6 +109,10 @@ describe('AuthenticationEffects', () => {
         {
           provide: IDENTITY_LOCALE_SERVICE,
           useValue: mockLocaleService,
+        },
+        {
+          provide: LOGIN_SUCCESS_REDIRECT_TARGET,
+          useValue: ['/clients'],
         },
       ],
     });
@@ -642,13 +647,15 @@ describe('AuthenticationEffects', () => {
       mockRouter.navigate = jest.fn().mockResolvedValue(true);
       mockLocaleService.buildAbsoluteUrl = jest.fn().mockReturnValue(['/clients']);
 
-      loginSuccessRedirect$(actions$, mockRouter as any, mockLocaleService).subscribe({
-        complete: () => {
-          expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/clients']);
-          expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
-          done();
-        },
+      TestBed.runInInjectionContext(() => {
+        loginSuccessRedirect$(actions$, mockRouter as any, mockLocaleService).subscribe({
+          complete: () => {
+            expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['/clients']);
+            expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+            done();
+          },
+        });
       });
     });
 
@@ -659,13 +666,15 @@ describe('AuthenticationEffects', () => {
       mockRouter.navigate = jest.fn().mockResolvedValue(true);
       mockLocaleService.buildAbsoluteUrl = jest.fn().mockReturnValue(['/clients']);
 
-      loginSuccessRedirect$(actions$, mockRouter as any, mockLocaleService).subscribe({
-        complete: () => {
-          expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
-          expect(mockRouter.navigate).toHaveBeenCalledWith(['/clients']);
-          expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
-          done();
-        },
+      TestBed.runInInjectionContext(() => {
+        loginSuccessRedirect$(actions$, mockRouter as any, mockLocaleService).subscribe({
+          complete: () => {
+            expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['/clients']);
+            expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+            done();
+          },
+        });
       });
     });
   });
