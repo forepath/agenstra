@@ -46,6 +46,19 @@ describe('InvoicesService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('getInvoicesSummary', () => {
+    it('should return open and overdue summary', (done) => {
+      const response = { openOverdueCount: 2, openOverdueTotal: 150.5 };
+      service.getInvoicesSummary().subscribe((res) => {
+        expect(res).toEqual(response);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/invoices/summary`);
+      expect(req.request.method).toBe('GET');
+      req.flush(response);
+    });
+  });
+
   describe('listInvoices', () => {
     it('should return invoices array for a subscription', (done) => {
       const mockInvoices: InvoiceResponse[] = [mockInvoice];
@@ -89,6 +102,23 @@ describe('InvoicesService', () => {
       const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}`);
       expect(req.request.body).toEqual({});
       req.flush({ invoiceId: 'inv-1', preAuthUrl: 'https://example.com' });
+    });
+  });
+
+  describe('refreshInvoiceLink', () => {
+    it('should POST to refresh-link and return preAuthUrl', (done) => {
+      const invoiceRefId = 'ref-1';
+      const response = { preAuthUrl: 'https://example.com/new-link' };
+
+      service.refreshInvoiceLink(subscriptionId, invoiceRefId).subscribe((res) => {
+        expect(res).toEqual(response);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/refresh-link`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush(response);
     });
   });
 });

@@ -25,6 +25,9 @@ export class InvoiceRefEntity {
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'status' })
   status?: string;
 
+  @Column({ type: 'decimal', precision: 12, scale: 4, nullable: true, name: 'balance' })
+  balance?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

@@ -1,14 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { getInvoiceNinjaCountryId } from '../maps/invoice-ninja-country-id.map';
-import { CustomerProfilesService } from './customer-profiles.service';
 import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
+import { CustomerProfilesService } from './customer-profiles.service';
 
 interface InvoiceNinjaInvoiceResponse {
   id?: string;
   url?: string;
   status_id?: string | number;
   number?: string | number;
+  balance?: number | string;
   invitations?: Array<{ key?: string; link?: string }>;
 }
 
@@ -32,8 +33,8 @@ export class InvoiceNinjaService {
     });
   }
 
-  async listInvoices(subscriptionId: string) {
-    return await this.invoiceRefsRepository.findBySubscription(subscriptionId);
+  async listInvoices(userId: string, subscriptionId: string) {
+    return await this.invoiceRefsRepository.findBySubscription(userId, subscriptionId);
   }
 
   async createInvoiceRef(
@@ -55,6 +56,60 @@ export class InvoiceNinjaService {
   async fetchInvoiceDetails(invoiceId: string) {
     const response = await this.client.get(`/api/v1/invoices/${invoiceId}`);
     return response.data;
+  }
+
+  /**
+   * Fetches a fresh client/invite URL for an invoice from Invoice Ninja (e.g. for "Open" when the previous link expired).
+   * Returns null when the invoice is not found or the API request fails.
+   */
+  async getInvoiceClientLink(invoiceNinjaId: string): Promise<string | null> {
+    const details = await this.getInvoiceDetailsForSync(invoiceNinjaId);
+    return details?.preAuthUrl ?? null;
+  }
+
+  /**
+   * Fetches invoice status, number, balance, and client/invite URL from Invoice Ninja for syncing to local refs.
+   * Returns null when the invoice is not found or the API request fails.
+   */
+  async getInvoiceDetailsForSync(invoiceId: string): Promise<{
+    status?: string;
+    invoiceNumber?: string;
+    preAuthUrl?: string;
+    balance?: number;
+  } | null> {
+    let raw: unknown;
+    try {
+      const response = await this.client.get(`/api/v1/invoices/${invoiceId}`);
+      raw = response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      if (axiosError.response?.status === 404) {
+        return null;
+      }
+      this.logger.warn(`Invoice Ninja get invoice failed for ${invoiceId}: ${(error as Error).message}`);
+      return null;
+    }
+
+    const data: InvoiceNinjaInvoiceResponse | undefined =
+      raw && typeof raw === 'object' && 'data' in raw
+        ? (raw as { data?: InvoiceNinjaInvoiceResponse }).data
+        : (raw as InvoiceNinjaInvoiceResponse);
+
+    const status = data?.status_id != null ? String(data.status_id) : undefined;
+    const invoiceNumber = data?.number != null ? String(data.number) : undefined;
+    const preAuthUrl = this.resolveInvoiceClientUrl(data);
+    const balance =
+      data?.balance !== undefined && data?.balance !== null
+        ? typeof data.balance === 'number'
+          ? data.balance
+          : parseFloat(String(data.balance))
+        : undefined;
+    if (balance !== undefined && Number.isNaN(balance)) {
+      this.logger.warn(`Invoice Ninja invoice ${invoiceId} returned invalid balance: ${data?.balance}`);
+    }
+    const balanceNum = balance !== undefined && !Number.isNaN(balance) ? balance : undefined;
+
+    return { status, invoiceNumber, preAuthUrl, balance: balanceNum };
   }
 
   async createInvoiceForSubscription(subscriptionId: string, userId: string, amount: number, description?: string) {
@@ -80,6 +135,11 @@ export class InvoiceNinjaService {
       const response = await this.client.post<{ data?: InvoiceNinjaInvoiceResponse } | InvoiceNinjaInvoiceResponse>(
         '/api/v1/invoices',
         payload,
+        {
+          params: {
+            send_email: 'true',
+          },
+        },
       );
       rawResponse = response.data;
     } catch (error) {
@@ -155,6 +215,14 @@ export class InvoiceNinjaService {
       city: profile.city,
       state: profile.state,
       postal_code: profile.postalCode,
+      contacts: [
+        {
+          first_name: profile.firstName,
+          last_name: profile.lastName,
+          phone: profile.phone,
+          email: profile.email,
+        },
+      ],
     };
     if (countryId != null) {
       payload.country_id = countryId;
