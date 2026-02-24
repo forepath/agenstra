@@ -58,15 +58,14 @@ export class InvoiceCreationService {
     );
 
     const total = baseAmount + usageCost;
-    const roundedTotal = Math.round(total * 100) / 100;
-
-    if (roundedTotal < MIN_BILLABLE_AMOUNT) {
+    if (total < MIN_BILLABLE_AMOUNT) {
       if (options?.skipIfNoBillableAmount) {
         return;
       }
       throw new BadRequestException('No billable amount since last invoice');
     }
 
+    const roundedTotal = Math.round(total * 100) / 100;
     return await this.invoiceNinjaService.createInvoiceForSubscription(
       subscriptionId,
       userId,

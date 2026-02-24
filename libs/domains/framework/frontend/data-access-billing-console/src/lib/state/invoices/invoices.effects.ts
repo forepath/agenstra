@@ -9,6 +9,12 @@ import {
   loadInvoices,
   loadInvoicesFailure,
   loadInvoicesSuccess,
+  loadInvoicesSummary,
+  loadInvoicesSummaryFailure,
+  loadInvoicesSummarySuccess,
+  loadOpenOverdueInvoices,
+  loadOpenOverdueInvoicesFailure,
+  loadOpenOverdueInvoicesSuccess,
 } from './invoices.actions';
 
 function normalizeError(error: unknown): string {
@@ -17,6 +23,36 @@ function normalizeError(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) return String(error.message);
   return 'An unexpected error occurred';
 }
+
+export const loadInvoicesSummary$ = createEffect(
+  (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
+    return actions$.pipe(
+      ofType(loadInvoicesSummary),
+      switchMap(() =>
+        invoicesService.getInvoicesSummary().pipe(
+          map((summary) => loadInvoicesSummarySuccess({ summary })),
+          catchError((error) => of(loadInvoicesSummaryFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const loadOpenOverdueInvoices$ = createEffect(
+  (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
+    return actions$.pipe(
+      ofType(loadOpenOverdueInvoices),
+      switchMap(() =>
+        invoicesService.getOpenOverdueInvoices().pipe(
+          map((invoices) => loadOpenOverdueInvoicesSuccess({ invoices })),
+          catchError((error) => of(loadOpenOverdueInvoicesFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
 
 export const loadInvoices$ = createEffect(
   (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {

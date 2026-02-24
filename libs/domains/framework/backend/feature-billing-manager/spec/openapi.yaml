@@ -1039,6 +1039,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /invoices/summary:
+    get:
+      summary: Get open and overdue invoices summary
+      operationId: getInvoicesSummary
+      description: Returns count and total balance of open and overdue invoices for the current user across all subscriptions.
+      responses:
+        '200':
+          description: Open and overdue invoices summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoicesSummaryResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/open-overdue:
+    get:
+      summary: List open and overdue invoices
+      operationId: listOpenOverdueInvoices
+      description: Returns all open and overdue invoices for the current user across subscriptions, with balance and optional subscription number.
+      responses:
+        '200':
+          description: Array of open and overdue invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /invoices/{subscriptionId}:
     get:
       summary: List invoices
@@ -1061,7 +1099,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     post:
-      summary: Create invoice
+      summary: Create invoice (admin only)
       operationId: createInvoice
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
@@ -1086,6 +1124,45 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/{subscriptionId}/ref/{invoiceRefId}/refresh-link:
+    post:
+      summary: Refresh invoice invite link
+      operationId: refreshInvoiceLink
+      description: Fetches a fresh client/invite URL for the invoice (e.g. after the previous link expired) and returns it.
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Invoice ref ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: New invite link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshInvoiceLinkResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Invoice not found or link unavailable
           content:
             application/json:
               schema:
@@ -1638,11 +1715,35 @@ components:
         invoiceNumber: { type: string, nullable: true }
         preAuthUrl: { type: string }
         status: { type: string, nullable: true }
+        balance:
+          { type: number, nullable: true, description: Invoice balance due }
+        subscriptionNumber:
+          {
+            type: string,
+            nullable: true,
+            description: Subscription number when listing across subscriptions,
+          }
         createdAt: { type: string, format: date-time }
     CreateInvoiceResponse:
       type: object
       properties:
         invoiceId: { type: string }
+        preAuthUrl: { type: string }
+    InvoicesSummaryResponse:
+      type: object
+      description: Count and total balance of open and overdue invoices for the current user.
+      properties:
+        openOverdueCount:
+          type: integer
+          minimum: 0
+          description: Number of open and overdue invoices
+        openOverdueTotal:
+          type: number
+          minimum: 0
+          description: Sum of balances due for those invoices
+    RefreshInvoiceLinkResponse:
+      type: object
+      properties:
         preAuthUrl: { type: string }
     UsageSummary:
       type: object

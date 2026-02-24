@@ -5,5 +5,8 @@ export class InvoiceResponseDto {
   invoiceNumber?: string;
   preAuthUrl!: string;
   status?: string;
+  balance?: number;
+  /** Subscription number (e.g. SUB-000001) when listing across subscriptions. */
+  subscriptionNumber?: string;
   createdAt!: Date;
 }
