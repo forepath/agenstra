@@ -238,6 +238,8 @@ export interface InvoiceResponse {
   invoiceNumber?: string | null;
   preAuthUrl: string;
   status?: string | null;
+  balance?: number | null;
+  subscriptionNumber?: string | null;
   createdAt: string;
 }
 
@@ -248,6 +250,15 @@ export interface CreateInvoiceDto {
 export interface CreateInvoiceResponse {
   invoiceId: string;
   preAuthUrl: string;
+}
+
+export interface RefreshInvoiceLinkResponse {
+  preAuthUrl: string;
+}
+
+export interface InvoicesSummaryResponse {
+  openOverdueCount: number;
+  openOverdueTotal: number;
 }
 
 // Usage

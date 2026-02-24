@@ -10,8 +10,14 @@ import {
   loadInvoices,
   loadInvoicesFailure,
   loadInvoicesSuccess,
+  loadInvoicesSummary,
+  loadInvoicesSummaryFailure,
+  loadInvoicesSummarySuccess,
+  loadOpenOverdueInvoices,
+  loadOpenOverdueInvoicesFailure,
+  loadOpenOverdueInvoicesSuccess,
 } from './invoices.actions';
-import { createInvoice$, loadInvoices$ } from './invoices.effects';
+import { createInvoice$, loadInvoices$, loadInvoicesSummary$, loadOpenOverdueInvoices$ } from './invoices.effects';
 import type { InvoiceResponse } from '../../types/billing.types';
 
 describe('InvoicesEffects', () => {
@@ -31,6 +37,8 @@ describe('InvoicesEffects', () => {
     invoicesService = {
       listInvoices: jest.fn(),
       createInvoice: jest.fn(),
+      getInvoicesSummary: jest.fn(),
+      getOpenOverdueInvoices: jest.fn(),
     } as never;
 
     TestBed.configureTestingModule({
@@ -38,6 +46,54 @@ describe('InvoicesEffects', () => {
     });
 
     actions$ = TestBed.inject(Actions);
+  });
+
+  describe('loadInvoicesSummary$', () => {
+    it('should return loadInvoicesSummarySuccess on success', (done) => {
+      const summary = { openOverdueCount: 2, openOverdueTotal: 100 };
+      actions$ = of(loadInvoicesSummary());
+      invoicesService.getInvoicesSummary.mockReturnValue(of(summary));
+
+      loadInvoicesSummary$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadInvoicesSummarySuccess({ summary }));
+        expect(invoicesService.getInvoicesSummary).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should return loadInvoicesSummaryFailure on error', (done) => {
+      actions$ = of(loadInvoicesSummary());
+      invoicesService.getInvoicesSummary.mockReturnValue(throwError(() => new Error('Summary failed')));
+
+      loadInvoicesSummary$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadInvoicesSummaryFailure({ error: 'Summary failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('loadOpenOverdueInvoices$', () => {
+    it('should return loadOpenOverdueInvoicesSuccess on success', (done) => {
+      const invoices = [mockInvoice];
+      actions$ = of(loadOpenOverdueInvoices());
+      invoicesService.getOpenOverdueInvoices.mockReturnValue(of(invoices));
+
+      loadOpenOverdueInvoices$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadOpenOverdueInvoicesSuccess({ invoices }));
+        expect(invoicesService.getOpenOverdueInvoices).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should return loadOpenOverdueInvoicesFailure on error', (done) => {
+      actions$ = of(loadOpenOverdueInvoices());
+      invoicesService.getOpenOverdueInvoices.mockReturnValue(throwError(() => new Error('Open overdue failed')));
+
+      loadOpenOverdueInvoices$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadOpenOverdueInvoicesFailure({ error: 'Open overdue failed' }));
+        done();
+      });
+    });
   });
 
   describe('loadInvoices$', () => {

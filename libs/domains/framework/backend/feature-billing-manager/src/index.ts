@@ -95,6 +95,7 @@ export * from './lib/services/provider-pricing.service';
 export * from './lib/services/provisioning.service';
 export * from './lib/services/subscription.service';
 export * from './lib/services/usage.service';
+export * from './lib/services/invoice-sync.scheduler';
 export * from './lib/services/subscription-billing.scheduler';
 export * from './lib/services/subscription-expiration.scheduler';
 export * from './lib/services/subscription-renewal-reminder.scheduler';

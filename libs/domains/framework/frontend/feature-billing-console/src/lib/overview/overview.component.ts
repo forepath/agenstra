@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import {
   BackordersFacade,
   CustomerProfileFacade,
+  InvoicesFacade,
   SubscriptionsFacade,
 } from '@forepath/framework/frontend/data-access-billing-console';
 
@@ -18,8 +19,11 @@ export class OverviewComponent implements OnInit {
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
+  private readonly invoicesFacade = inject(InvoicesFacade);
 
   readonly subscriptions$ = this.subscriptionsFacade.getSubscriptions$();
+  readonly invoicesSummary$ = this.invoicesFacade.getInvoicesSummary$();
+  readonly invoicesSummaryLoading$ = this.invoicesFacade.getInvoicesSummaryLoading$();
   readonly subscriptionsLoading$ = this.subscriptionsFacade.getSubscriptionsLoading$();
   readonly subscriptionsError$ = this.subscriptionsFacade.getSubscriptionsError$();
   readonly activeSubscriptions$ = this.subscriptionsFacade.getActiveSubscriptions$();
@@ -37,5 +41,6 @@ export class OverviewComponent implements OnInit {
     this.subscriptionsFacade.loadSubscriptions();
     this.backordersFacade.loadBackorders();
     this.customerProfileFacade.loadCustomerProfile();
+    this.invoicesFacade.loadInvoicesSummary();
   }
 }

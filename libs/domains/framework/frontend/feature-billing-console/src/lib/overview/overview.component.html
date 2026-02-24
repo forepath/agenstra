@@ -23,106 +23,90 @@
       }
     }
 
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-md-6 col-lg-4">
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
         <div class="card h-100">
           <div class="card-body">
-            <h5 class="card-title d-flex align-items-center gap-2">
-              <i class="bi bi-list-check text-primary"></i>
-              <span i18n="@@featureOverview-activePlans">Active plans</span>
-            </h5>
-            <p class="card-text mb-0">
-              @if (activeSubscriptions$ | async; as active) {
-                <span class="fs-4 fw-bold">{{ active.length }}</span>
-                <span class="text-body-secondary ms-1" i18n="@@featureOverview-activePlansCount"
-                  >active subscription(s)</span
-                >
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOverview-activePlans">Active plans</h6>
+            @if (activeSubscriptions$ | async; as active) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ active.length }}</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOverview-backorders">Backorders</h6>
+            @if (pendingBackorders$ | async; as pending) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ pending.length }}</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card border-warning h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-warning small" i18n="@@featureOverview-openOverdueCount">
+              Open and overdue invoices
+            </h6>
+            @if (invoicesSummaryLoading$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </p>
+            } @else {
+              @if (invoicesSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueCount }}</p>
               } @else {
-                <span class="text-body-secondary">—</span>
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
               }
-            </p>
-            <a
-              routerLink="/subscriptions"
-              class="btn btn-sm btn-outline-primary mt-2"
-              i18n="@@featureOverview-managePlans"
-            >
-              Manage plans
+            }
+            <a routerLink="/invoices" class="btn btn-sm btn-warning mt-2" i18n="@@featureOverview-viewInvoices">
+              View invoices
             </a>
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card h-100">
+      <div class="col-12 col-md-6">
+        <div
+          class="card h-100"
+          [class.border-warning]="!(customerProfileLoading$ | async) && !(isCustomerProfileComplete$ | async)"
+          [class.border-success]="!(customerProfileLoading$ | async) && (isCustomerProfileComplete$ | async)"
+        >
           <div class="card-body">
-            <h5 class="card-title d-flex align-items-center gap-2">
-              <i class="bi bi-clock-history text-warning"></i>
-              <span i18n="@@featureOverview-backorders">Backorders</span>
-            </h5>
-            <p class="card-text mb-0">
-              @if (pendingBackorders$ | async; as pending) {
-                @if (pending.length > 0) {
-                  <span class="fs-4 fw-bold text-warning">{{ pending.length }}</span>
-                  <span class="text-body-secondary ms-1" i18n="@@featureOverview-pendingBackorders">pending</span>
-                } @else {
-                  <span class="text-body-secondary" i18n="@@featureOverview-noBackorders">None</span>
-                }
-              } @else {
-                <span class="text-body-secondary">—</span>
-              }
-            </p>
-            <a
-              routerLink="/subscriptions"
-              class="btn btn-sm btn-outline-primary mt-2"
-              i18n="@@featureOverview-viewBackorders"
+            <h6
+              class="card-subtitle mb-1 small"
+              [class.text-muted]="customerProfileLoading$ | async"
+              [class.text-warning]="!(customerProfileLoading$ | async) && !(isCustomerProfileComplete$ | async)"
+              [class.text-success]="!(customerProfileLoading$ | async) && (isCustomerProfileComplete$ | async)"
+              i18n="@@featureOverview-customerProfile"
             >
-              View backorders
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title d-flex align-items-center gap-2">
-              <i
-                class="bi bi-person-vcard"
-                [class.text-success]="(isCustomerProfileComplete$ | async) === true"
-                [class.text-secondary]="(isCustomerProfileComplete$ | async) !== true"
-              ></i>
-              <span i18n="@@featureOverview-customerProfile">Customer profile</span>
-            </h5>
-            <p class="card-text mb-0">
-              @if (customerProfileLoading$ | async) {
-                <span class="text-body-secondary" i18n="@@featureOverview-loadingProfile">Loading...</span>
-              } @else if (isCustomerProfileComplete$ | async) {
-                <span class="text-success" i18n="@@featureOverview-profileComplete">Complete</span>
-              } @else {
-                <span class="text-warning" i18n="@@featureOverview-profileIncomplete">Incomplete</span>
-              }
-            </p>
+              Customer profile
+            </h6>
+            @if (customerProfileLoading$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary" i18n="@@featureOverview-loadingProfile">
+                Loading...
+              </p>
+            } @else if (isCustomerProfileComplete$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold" i18n="@@featureOverview-profileComplete">Complete</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold" i18n="@@featureOverview-profileIncomplete">Incomplete</p>
+            }
             <a
               routerLink="/subscriptions"
               [queryParams]="{ profile: 'true' }"
-              class="btn btn-sm btn-outline-primary mt-2"
+              class="btn btn-sm mt-2"
+              [class.btn-warning]="!(customerProfileLoading$ | async) && !(isCustomerProfileComplete$ | async)"
+              [class.btn-success]="!(customerProfileLoading$ | async) && (isCustomerProfileComplete$ | async)"
               i18n="@@featureOverview-editProfile"
             >
               Edit profile
             </a>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title" i18n="@@featureOverview-quickLinks">Quick links</h5>
-        <div class="d-flex flex-wrap gap-2">
-          <a routerLink="/subscriptions" class="btn btn-primary" i18n="@@featureOverview-orderOrManagePlans">
-            Order or manage plans
-          </a>
-          <a routerLink="/invoices" class="btn btn-outline-primary" i18n="@@featureOverview-viewInvoices">
-            View invoices
-          </a>
         </div>
       </div>
     </div>

@@ -9,6 +9,10 @@ import {
   selectInvoicesLoadingAny,
   selectInvoicesState,
   selectHasInvoicesBySubscriptionId,
+  selectRefreshingInvoiceRefId,
+  selectInvoicesSummary,
+  selectInvoicesSummaryLoading,
+  selectInvoicesSummaryError,
 } from './invoices.selectors';
 import type { InvoiceResponse } from '../../types/billing.types';
 
@@ -58,6 +62,49 @@ describe('Invoices Selectors', () => {
       const state = createState({ creating: true });
       const rootState = { invoices: state };
       expect(selectInvoicesCreating(rootState as never)).toBe(true);
+    });
+  });
+
+  describe('selectRefreshingInvoiceRefId', () => {
+    it('should return refreshingInvoiceRefId', () => {
+      const state = createState({ refreshingInvoiceRefId: 'ref-1' });
+      const rootState = { invoices: state };
+      expect(selectRefreshingInvoiceRefId(rootState as never)).toBe('ref-1');
+    });
+    it('should return null when not refreshing', () => {
+      const state = createState();
+      const rootState = { invoices: state };
+      expect(selectRefreshingInvoiceRefId(rootState as never)).toBeNull();
+    });
+  });
+
+  describe('selectInvoicesSummary', () => {
+    it('should return summary', () => {
+      const summary = { openOverdueCount: 2, openOverdueTotal: 150 };
+      const state = createState({ summary });
+      const rootState = { invoices: state };
+      expect(selectInvoicesSummary(rootState as never)).toEqual(summary);
+    });
+    it('should return null when no summary', () => {
+      const state = createState();
+      const rootState = { invoices: state };
+      expect(selectInvoicesSummary(rootState as never)).toBeNull();
+    });
+  });
+
+  describe('selectInvoicesSummaryLoading', () => {
+    it('should return summaryLoading', () => {
+      const state = createState({ summaryLoading: true });
+      const rootState = { invoices: state };
+      expect(selectInvoicesSummaryLoading(rootState as never)).toBe(true);
+    });
+  });
+
+  describe('selectInvoicesSummaryError', () => {
+    it('should return summaryError', () => {
+      const state = createState({ summaryError: 'Summary failed' });
+      const rootState = { invoices: state };
+      expect(selectInvoicesSummaryError(rootState as never)).toBe('Summary failed');
     });
   });
 

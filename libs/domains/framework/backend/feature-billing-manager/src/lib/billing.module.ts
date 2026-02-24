@@ -48,6 +48,7 @@ import { SubscriptionService } from './services/subscription.service';
 import { UsageService } from './services/usage.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
+import { InvoiceSyncScheduler } from './services/invoice-sync.scheduler';
 import { SubscriptionBillingScheduler } from './services/subscription-billing.scheduler';
 import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
 import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
@@ -122,6 +123,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
+    InvoiceSyncScheduler,
     SubscriptionBillingScheduler,
     SubscriptionExpirationScheduler,
     SubscriptionRenewalReminderScheduler,
@@ -152,6 +154,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
+    InvoiceSyncScheduler,
     SubscriptionBillingScheduler,
     SubscriptionExpirationScheduler,
     SubscriptionRenewalReminderScheduler,

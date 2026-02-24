@@ -228,6 +228,9 @@ describe('InvoiceNinjaService', () => {
         client_id: 'client-1',
         line_items: [{ product_key: 'subscription', notes: 'Test description', cost: 99, quantity: 1 }],
       }),
+      expect.objectContaining({
+        params: { send_email: 'true' },
+      }),
     );
     expect(invoiceRefsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -238,5 +241,69 @@ describe('InvoiceNinjaService', () => {
         status: '2',
       }),
     );
+  });
+
+  describe('getInvoiceDetailsForSync balance', () => {
+    it('returns balance when API includes it', async () => {
+      mockClient.get.mockResolvedValueOnce({
+        data: {
+          id: 'inv-1',
+          status_id: '2',
+          number: 'INV-001',
+          balance: 99.99,
+        },
+      });
+      const service = new InvoiceNinjaService(
+        invoiceRefsRepository,
+        customerProfilesService as unknown as CustomerProfilesService,
+      );
+      const result = await service.getInvoiceDetailsForSync('inv-1');
+      expect(result?.balance).toBe(99.99);
+    });
+
+    it('parses string balance as number', async () => {
+      mockClient.get.mockResolvedValueOnce({
+        data: {
+          id: 'inv-1',
+          status_id: '2',
+          balance: '42.50',
+        },
+      });
+      const service = new InvoiceNinjaService(
+        invoiceRefsRepository,
+        customerProfilesService as unknown as CustomerProfilesService,
+      );
+      const result = await service.getInvoiceDetailsForSync('inv-1');
+      expect(result?.balance).toBe(42.5);
+    });
+  });
+
+  describe('getInvoiceClientLink', () => {
+    it('returns preAuthUrl from getInvoiceDetailsForSync', async () => {
+      mockClient.get.mockResolvedValueOnce({
+        data: {
+          id: 'inv-1',
+          status_id: '2',
+          number: 'INV-001',
+          url: 'https://app.invoiceninja.com/client/invoice/abc123',
+        },
+      });
+      const service = new InvoiceNinjaService(
+        invoiceRefsRepository,
+        customerProfilesService as unknown as CustomerProfilesService,
+      );
+      const result = await service.getInvoiceClientLink('inv-1');
+      expect(result).toBe('https://app.invoiceninja.com/client/invoice/abc123');
+    });
+
+    it('returns null when getInvoiceDetailsForSync returns null', async () => {
+      mockClient.get.mockRejectedValueOnce({ response: { status: 404 } });
+      const service = new InvoiceNinjaService(
+        invoiceRefsRepository,
+        customerProfilesService as unknown as CustomerProfilesService,
+      );
+      const result = await service.getInvoiceClientLink('inv-missing');
+      expect(result).toBeNull();
+    });
   });
 });
