@@ -62,6 +62,10 @@ export class SubscriptionBillingScheduler implements OnModuleInit, OnModuleDestr
       subscription.id,
       subscription.userId,
       `Recurring billing for ${plan.name}`,
+      {
+        billUntil: subscription.nextBillingAt ?? new Date(),
+        skipIfNoBillableAmount: true,
+      },
     );
 
     const schedule = this.billingScheduleService.calculateSchedule(

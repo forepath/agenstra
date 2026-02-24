@@ -1528,6 +1528,7 @@ components:
       type: object
       properties:
         id: { type: string, format: uuid }
+        number: { type: string }
         planId: { type: string, format: uuid }
         userId: { type: string, format: uuid }
         status:
@@ -1634,6 +1635,7 @@ components:
         id: { type: string, format: uuid }
         subscriptionId: { type: string, format: uuid }
         invoiceNinjaId: { type: string }
+        invoiceNumber: { type: string, nullable: true }
         preAuthUrl: { type: string }
         status: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }

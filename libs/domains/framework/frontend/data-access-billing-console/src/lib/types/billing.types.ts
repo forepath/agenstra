@@ -115,6 +115,7 @@ export interface UpdateServicePlanDto {
 // Subscriptions
 export interface SubscriptionResponse {
   id: string;
+  number: string;
   planId: string;
   userId: string;
   status: SubscriptionStatus;
@@ -234,6 +235,7 @@ export interface InvoiceResponse {
   id: string;
   subscriptionId: string;
   invoiceNinjaId: string;
+  invoiceNumber?: string | null;
   preAuthUrl: string;
   status?: string | null;
   createdAt: string;

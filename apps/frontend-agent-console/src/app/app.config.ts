@@ -2,8 +2,17 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, RouteReuseStrategy, withRouterConfig } from '@angular/router';
 import { getAuthInterceptor } from '@forepath/framework/frontend/data-access-agent-console';
-import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/framework/frontend/util-configuration';
-import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
+import {
+  Environment,
+  ENVIRONMENT,
+  environment,
+  provideLocale,
+} from '@forepath/framework/frontend/util-configuration';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  LOGIN_SUCCESS_REDIRECT_TARGET,
+  provideKeycloak,
+} from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { ComponentReuseStrategy } from './strategies/component-reuse.strategy';
@@ -21,6 +30,10 @@ export const appConfig: ApplicationConfig = {
         controllerApiUrl: env.controller.restApiUrl,
       }),
       deps: [ENVIRONMENT],
+    },
+    {
+      provide: LOGIN_SUCCESS_REDIRECT_TARGET,
+      useValue: ['/clients'],
     },
     {
       provide: LOGIN_SUCCESS_REDIRECT_TARGET,

@@ -1,10 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject } from 'rxjs';
-import { filter, pairwise, switchMap } from 'rxjs';
-import { of } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import {
   InvoicesFacade,
   ServicePlansFacade,
@@ -12,6 +9,7 @@ import {
   type CreateInvoiceDto,
   type ServicePlanResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
+import { BehaviorSubject, combineLatest, filter, map, of, pairwise, switchMap } from 'rxjs';
 
 @Component({
   selector: 'framework-billing-invoices',
@@ -31,6 +29,9 @@ export class InvoicesComponent implements OnInit {
   readonly servicePlans$ = this.servicePlansFacade.getServicePlans$();
 
   readonly selectedSubscriptionId$ = new BehaviorSubject<string>('');
+  readonly selectedSubscription$ = combineLatest([this.subscriptions$, this.selectedSubscriptionId$]).pipe(
+    map(([subscriptions, id]) => subscriptions.find((s) => s.id === id) ?? null),
+  );
   readonly invoices$ = this.selectedSubscriptionId$.pipe(
     switchMap((id) => (id ? this.invoicesFacade.getInvoicesBySubscriptionId$(id) : of([]))),
   );
@@ -39,7 +40,15 @@ export class InvoicesComponent implements OnInit {
   readonly invoicesCreating$ = this.invoicesFacade.getInvoicesCreating$();
   readonly invoicesError$ = this.invoicesFacade.getInvoicesError$();
 
+  /** True when the selected subscription is finalized (canceled), so no further invoices can be created. */
+  readonly isCreateInvoiceDisabled$ = combineLatest([this.invoicesCreating$, this.selectedSubscription$]).pipe(
+    map(([creating, sub]) => creating === true || (sub?.status === 'canceled' && sub?.nextBillingAt !== null)),
+  );
+
   createInvoiceDescription = '';
+
+  /** Shown when Create invoice is disabled because the subscription is finalized (canceled). */
+  readonly createInvoiceDisabledTitle = $localize`:@@featureInvoices-createInvoiceDisabledFinalized:Subscription is finalized; no further invoices can be created.`;
 
   planNameByPlanId(planId: string, plans: ServicePlanResponse[] | null): string {
     if (!plans) return planId;
