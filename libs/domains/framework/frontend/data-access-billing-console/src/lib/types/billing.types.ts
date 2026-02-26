@@ -144,6 +144,24 @@ export interface ResumeSubscriptionDto {
   reason?: string;
 }
 
+// Subscription items and server info (overview / provisioned services)
+export type ProvisioningStatus = 'pending' | 'active' | 'failed';
+
+export interface SubscriptionItemResponse {
+  id: string;
+  subscriptionId: string;
+  serviceTypeId: string;
+  provisioningStatus: ProvisioningStatus;
+}
+
+export interface ServerInfoResponse {
+  name: string;
+  publicIp: string;
+  privateIp?: string;
+  status: string;
+  metadata?: Record<string, unknown>;
+}
+
 // Backorders
 export interface BackorderResponse {
   id: string;

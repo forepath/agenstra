@@ -9,6 +9,7 @@ import { InvoicesController } from './controllers/invoices.controller';
 import { PricingController } from './controllers/pricing.controller';
 import { ServicePlansController } from './controllers/service-plans.controller';
 import { ServiceTypesController } from './controllers/service-types.controller';
+import { SubscriptionItemsController } from './controllers/subscription-items.controller';
 import { SubscriptionsController } from './controllers/subscriptions.controller';
 import { UsageController } from './controllers/usage.controller';
 import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.entity';
@@ -50,6 +51,7 @@ import { CustomerProfilesService } from './services/customer-profiles.service';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
 import { InvoiceSyncScheduler } from './services/invoice-sync.scheduler';
 import { SubscriptionBillingScheduler } from './services/subscription-billing.scheduler';
+import { SubscriptionItemServerService } from './services/subscription-item-server.service';
 import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
 import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
 
@@ -99,6 +101,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     ServiceTypesController,
     ServicePlansController,
     AvailabilityController,
+    SubscriptionItemsController,
     SubscriptionsController,
     BackordersController,
     PricingController,
@@ -118,6 +121,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     ProviderServerTypesService,
     InvoiceCreationService,
     ProvisioningService,
+    SubscriptionItemServerService,
     PricingService,
     ProviderPricingService,
     SubscriptionService,
@@ -149,6 +153,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoiceNinjaService,
     InvoiceCreationService,
     ProvisioningService,
+    SubscriptionItemServerService,
     PricingService,
     ProviderPricingService,
     SubscriptionService,

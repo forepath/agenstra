@@ -39,4 +39,20 @@ export class SubscriptionItemsRepository {
       relations: ['serviceType'],
     });
   }
+
+  async findByIdAndSubscriptionId(id: string, subscriptionId: string): Promise<SubscriptionItemEntity | null> {
+    return await this.repository.findOne({
+      where: { id, subscriptionId },
+      relations: ['serviceType', 'subscription'],
+    });
+  }
+
+  async updateServerInfoSnapshot(id: string, snapshot: Record<string, unknown>): Promise<SubscriptionItemEntity> {
+    const entity = await this.repository.findOne({ where: { id } });
+    if (!entity) {
+      throw new Error(`Subscription item ${id} not found`);
+    }
+    entity.serverInfoSnapshot = snapshot;
+    return await this.repository.save(entity);
+  }
 }
