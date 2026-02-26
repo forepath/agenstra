@@ -110,5 +110,109 @@
         </div>
       </div>
     </div>
+
+    @if (overviewServerInfoError$ | async; as error) {
+      <div class="alert alert-warning mt-3" role="alert">
+        {{ error }}
+      </div>
+    }
+
+    <section class="mt-4" aria-labelledby="overview-servers-heading">
+      @if (overviewServerInfoLoading$ | async) {
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+          <span i18n="@@featureOverview-loadingServerInfo">Loading server info...</span>
+        </div>
+      }
+      <div class="row g-3">
+        @for (item of subscriptionsWithServerInfo$ | async; track item.subscription.id) {
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="py-1">
+                  <span i18n="@@featureOverview-agenstraCloudInstance">Agenstra</span>
+                  @if (item.serverInfo.metadata!['provider']) {
+                    <span class="d-block small">
+                      {{ getProviderName(item.serverInfo.metadata!['provider']) }}
+                      <span> · </span>
+                      {{ item.serverInfo.metadata!['datacenter'] || item.serverInfo.metadata!['location'] }}
+                    </span>
+                  }
+                </div>
+                <span
+                  class="badge status-badge d-flex align-items-center justify-content-center"
+                  [class.bg-success]="item.serverInfo.status === 'running'"
+                  [class.bg-danger]="item.serverInfo.status === 'off'"
+                >
+                  <i
+                    class="bi"
+                    [class.bi-play-fill]="item.serverInfo.status === 'running'"
+                    [class.bi-stop-fill]="item.serverInfo.status === 'off'"
+                  ></i>
+                </span>
+              </div>
+              <div class="card-body">
+                <p class="card-title mb-1 fw-semibold">
+                  {{ item.subscription.number }}
+                  <a routerLink="/subscriptions" class="ms-1">
+                    <i class="bi bi-arrow-right small"></i>
+                  </a>
+                </p>
+                <p class="mb-0 small" i18n="@@featureOverview-publicIP">Public IP: {{ item.serverInfo.publicIp }}</p>
+                @if (item.serverInfo.privateIp) {
+                  <p class="mb-0 small" i18n="@@featureOverview-privateIP">
+                    Private IP: {{ item.serverInfo.privateIp }}
+                  </p>
+                }
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Server actions">
+                    @if (item.serverInfo.status === 'off') {
+                      <button
+                        type="button"
+                        class="btn btn-outline-success"
+                        [disabled]="(serverActionInProgressMap$ | async)?.[item.subscription.id] !== undefined"
+                        (click)="serverInfoFacade.startServer(item.subscription.id, item.itemId)"
+                      >
+                        <i class="bi bi-play-fill"></i>
+                        <span class="visually-hidden" i18n="@@featureOverview-serverStart">Start</span>
+                      </button>
+                    }
+                    @if (item.serverInfo.status === 'running') {
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        [disabled]="(serverActionInProgressMap$ | async)?.[item.subscription.id] !== undefined"
+                        (click)="serverInfoFacade.stopServer(item.subscription.id, item.itemId)"
+                      >
+                        <i class="bi bi-stop-fill"></i>
+                        <span class="visually-hidden" i18n="@@featureOverview-serverStop">Stop</span>
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-warning"
+                      [disabled]="(serverActionInProgressMap$ | async)?.[item.subscription.id] !== undefined"
+                      (click)="serverInfoFacade.restartServer(item.subscription.id, item.itemId)"
+                    >
+                      <i class="bi bi-arrow-clockwise"></i>
+                      <span class="visually-hidden" i18n="@@featureOverview-serverRestart">Restart</span>
+                    </button>
+                  </div>
+                  <a
+                    href="https://{{ item.serverInfo.publicIp }}"
+                    target="_blank"
+                    class="btn btn-sm btn-primary"
+                    [class.disabled]="item.serverInfo.status !== 'running'"
+                  >
+                    <i class="bi bi-box-arrow-up-right me-2"></i>
+                    <span i18n="@@featureOverview-openConsole">Console</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
   </div>
 </div>

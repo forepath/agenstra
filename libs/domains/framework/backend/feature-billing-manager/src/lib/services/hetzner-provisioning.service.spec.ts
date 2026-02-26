@@ -122,4 +122,182 @@ describe('HetznerProvisioningService', () => {
     const service = new HetznerProvisioningService();
     await expect(service.deprovisionServer('12345')).rejects.toThrow(BadRequestException);
   });
+
+  describe('getServerInfo', () => {
+    it('returns server info when API returns valid server', async () => {
+      mockedAxios.get.mockResolvedValueOnce({
+        data: {
+          server: {
+            id: 12345,
+            name: 'subscription-abc-123',
+            status: 'running',
+            public_net: { ipv4: { ip: '1.2.3.4' } },
+            private_net: [{ ip: '10.0.0.1', network: 1 }],
+            datacenter: {
+              name: 'fsn1-dc14',
+              location: { name: 'fsn1' },
+            },
+          },
+        },
+      });
+
+      const service = new HetznerProvisioningService();
+      const result = await service.getServerInfo('12345');
+
+      expect(result).toEqual({
+        serverId: '12345',
+        name: 'subscription-abc-123',
+        publicIp: '1.2.3.4',
+        privateIp: '10.0.0.1',
+        status: 'running',
+        metadata: { location: 'fsn1', datacenter: 'fsn1-dc14' },
+      });
+      expect(mockedAxios.get).toHaveBeenCalledWith('https://api.hetzner.cloud/v1/servers/12345', {
+        headers: { Authorization: 'Bearer test-token' },
+      });
+    });
+
+    it('returns server info with empty publicIp when not yet assigned', async () => {
+      mockedAxios.get.mockResolvedValueOnce({
+        data: {
+          server: {
+            id: 999,
+            name: 'starting-server',
+            status: 'starting',
+            public_net: {},
+            private_net: [],
+            datacenter: { name: 'nbg1-dc3', location: { name: 'nbg1' } },
+          },
+        },
+      });
+
+      const service = new HetznerProvisioningService();
+      const result = await service.getServerInfo('999');
+
+      expect(result.publicIp).toBe('');
+      expect(result.privateIp).toBeUndefined();
+      expect(result.status).toBe('starting');
+      expect(result.metadata).toEqual({ location: 'nbg1', datacenter: 'nbg1-dc3' });
+    });
+
+    it('throws when API token not set', async () => {
+      delete process.env.HETZNER_API_TOKEN;
+
+      const service = new HetznerProvisioningService();
+      await expect(service.getServerInfo('12345')).rejects.toThrow('HETZNER_API_TOKEN environment variable is not set');
+      expect(mockedAxios.get).not.toHaveBeenCalled();
+    });
+
+    it('throws when server not found (404)', async () => {
+      const notFoundError = Object.assign(new Error('Request failed with status code 404'), {
+        response: { status: 404 },
+      });
+      mockedAxios.get.mockRejectedValue(notFoundError);
+
+      const service = new HetznerProvisioningService();
+      await expect(service.getServerInfo('99999')).rejects.toThrow(BadRequestException);
+      await expect(service.getServerInfo('99999')).rejects.toThrow('Server 99999 not found');
+    });
+
+    it('throws when API response has no server object', async () => {
+      mockedAxios.get.mockResolvedValue({ data: {} });
+
+      const service = new HetznerProvisioningService();
+      await expect(service.getServerInfo('12345')).rejects.toThrow(BadRequestException);
+      await expect(service.getServerInfo('12345')).rejects.toThrow('Invalid response from Hetzner API');
+    });
+
+    it('throws on generic API error', async () => {
+      mockedAxios.get.mockRejectedValue({ message: 'Network error' });
+
+      const service = new HetznerProvisioningService();
+      await expect(service.getServerInfo('12345')).rejects.toThrow(BadRequestException);
+      await expect(service.getServerInfo('12345')).rejects.toThrow('Failed to get server info');
+    });
+  });
+
+  describe('startServer', () => {
+    it('calls Hetzner poweron action', async () => {
+      mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
+
+      const service = new HetznerProvisioningService();
+      await service.startServer('12345');
+
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'https://api.hetzner.cloud/v1/servers/12345/actions/poweron',
+        {},
+        { headers: { Authorization: 'Bearer test-token' } },
+      );
+    });
+
+    it('throws when API token not set', async () => {
+      delete process.env.HETZNER_API_TOKEN;
+      const service = new HetznerProvisioningService();
+      await expect(service.startServer('12345')).rejects.toThrow(BadRequestException);
+      await expect(service.startServer('12345')).rejects.toThrow('HETZNER_API_TOKEN');
+    });
+
+    it('throws on API error', async () => {
+      mockedAxios.post.mockRejectedValue({ message: 'Conflict' });
+      const service = new HetznerProvisioningService();
+      await expect(service.startServer('12345')).rejects.toThrow(BadRequestException);
+      await expect(service.startServer('12345')).rejects.toThrow('Failed to start server');
+    });
+  });
+
+  describe('stopServer', () => {
+    it('calls Hetzner poweroff action', async () => {
+      mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
+
+      const service = new HetznerProvisioningService();
+      await service.stopServer('12345');
+
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'https://api.hetzner.cloud/v1/servers/12345/actions/poweroff',
+        {},
+        { headers: { Authorization: 'Bearer test-token' } },
+      );
+    });
+
+    it('throws when API token not set', async () => {
+      delete process.env.HETZNER_API_TOKEN;
+      const service = new HetznerProvisioningService();
+      await expect(service.stopServer('12345')).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws on API error', async () => {
+      mockedAxios.post.mockRejectedValue({ message: 'Server not found' });
+      const service = new HetznerProvisioningService();
+      await expect(service.stopServer('12345')).rejects.toThrow(BadRequestException);
+      await expect(service.stopServer('12345')).rejects.toThrow('Failed to stop server');
+    });
+  });
+
+  describe('restartServer', () => {
+    it('calls Hetzner reboot action', async () => {
+      mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
+
+      const service = new HetznerProvisioningService();
+      await service.restartServer('12345');
+
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'https://api.hetzner.cloud/v1/servers/12345/actions/reboot',
+        {},
+        { headers: { Authorization: 'Bearer test-token' } },
+      );
+    });
+
+    it('throws when API token not set', async () => {
+      delete process.env.HETZNER_API_TOKEN;
+      const service = new HetznerProvisioningService();
+      await expect(service.restartServer('12345')).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws on API error', async () => {
+      mockedAxios.post.mockRejectedValue({ message: 'Timeout' });
+      const service = new HetznerProvisioningService();
+      await expect(service.restartServer('12345')).rejects.toThrow(BadRequestException);
+      await expect(service.restartServer('12345')).rejects.toThrow('Failed to restart server');
+    });
+  });
 });

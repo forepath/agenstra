@@ -5,8 +5,10 @@ import {
   BackordersFacade,
   CustomerProfileFacade,
   InvoicesFacade,
+  SubscriptionServerInfoFacade,
   SubscriptionsFacade,
 } from '@forepath/framework/frontend/data-access-billing-console';
+import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'framework-billing-overview',
@@ -17,6 +19,7 @@ import {
 })
 export class OverviewComponent implements OnInit {
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
+  readonly serverInfoFacade = inject(SubscriptionServerInfoFacade);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly invoicesFacade = inject(InvoicesFacade);
@@ -27,6 +30,11 @@ export class OverviewComponent implements OnInit {
   readonly subscriptionsLoading$ = this.subscriptionsFacade.getSubscriptionsLoading$();
   readonly subscriptionsError$ = this.subscriptionsFacade.getSubscriptionsError$();
   readonly activeSubscriptions$ = this.subscriptionsFacade.getActiveSubscriptions$();
+
+  readonly subscriptionsWithServerInfo$ = this.serverInfoFacade.getSubscriptionsWithServerInfo$();
+  readonly overviewServerInfoLoading$ = this.serverInfoFacade.getOverviewServerInfoLoading$();
+  readonly overviewServerInfoError$ = this.serverInfoFacade.getOverviewServerInfoError$();
+  readonly serverActionInProgressMap$ = this.serverInfoFacade.getServerActionInProgressMap$();
 
   readonly backorders$ = this.backordersFacade.getBackorders$();
   readonly pendingBackorders$ = this.backordersFacade.getPendingBackorders$();
@@ -42,5 +50,26 @@ export class OverviewComponent implements OnInit {
     this.backordersFacade.loadBackorders();
     this.customerProfileFacade.loadCustomerProfile();
     this.invoicesFacade.loadInvoicesSummary();
+    this.subscriptionsLoading$
+      .pipe(
+        filter((loading) => !loading),
+        take(1),
+      )
+      .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
+  }
+
+  getProviderName(provider: {} | undefined): string | undefined {
+    if (!provider) {
+      return undefined;
+    }
+
+    switch (provider) {
+      case 'hetzner':
+        return 'Hetzner Cloud';
+      case 'digitalocean':
+        return 'DigitalOcean';
+      default:
+        return undefined;
+    }
   }
 }
