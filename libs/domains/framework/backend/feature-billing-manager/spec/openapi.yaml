@@ -881,6 +881,211 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items:
+    get:
+      summary: List subscription items
+      operationId: listSubscriptionItems
+      description: Returns items for the subscription (id, provisioningStatus, serviceTypeId). User must own the subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of subscription items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionItemResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/server-info:
+    get:
+      summary: Get server info for a provisioned subscription item
+      operationId: getSubscriptionItemServerInfo
+      description: Returns live server info from the provider and updates the cached snapshot. Only available when provisioning is finished (status active). User must own the subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Subscription ID
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Subscription item ID
+      responses:
+        '200':
+          description: Server info (provider-agnostic)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInfoResponse'
+        '400':
+          description: Not provisioned or not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/actions/start:
+    post:
+      summary: Start server for a provisioned subscription item
+      operationId: startSubscriptionItemServer
+      description: User must own the subscription. Item must be provisioned (status active).
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerActionResponse'
+        '400':
+          description: Not provisioned or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/actions/stop:
+    post:
+      summary: Stop server for a provisioned subscription item
+      operationId: stopSubscriptionItemServer
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerActionResponse'
+        '400':
+          description: Not provisioned or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/actions/restart:
+    post:
+      summary: Restart server for a provisioned subscription item
+      operationId: restartSubscriptionItemServer
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerActionResponse'
+        '400':
+          description: Not provisioned or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /backorders:
     get:
       summary: List backorders
@@ -1629,6 +1834,39 @@ components:
       type: object
       properties:
         reason: { type: string }
+    SubscriptionItemResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        subscriptionId: { type: string, format: uuid }
+        serviceTypeId: { type: string, format: uuid }
+        provisioningStatus: { type: string, enum: [pending, active, failed] }
+    ServerInfoResponse:
+      type: object
+      description: Server info for display (status, IPs, etc.). Provider-specific IDs are not exposed.
+      properties:
+        name: { type: string, description: Server name in provider console }
+        publicIp: { type: string, description: Public IP address }
+        privateIp:
+          {
+            type: string,
+            nullable: true,
+            description: Private IP if applicable,
+          }
+        status: { type: string, description: e.g. running, starting, stopped }
+        metadata:
+          {
+            type: object,
+            nullable: true,
+            description: Provider-specific metadata (e.g. location,
+            datacenter,
+            provider),
+          }
+    ServerActionResponse:
+      type: object
+      properties:
+        success:
+          { type: boolean, description: True when the action was accepted }
     BackorderResponse:
       type: object
       properties:

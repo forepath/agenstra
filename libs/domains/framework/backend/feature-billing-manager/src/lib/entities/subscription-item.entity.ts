@@ -44,6 +44,10 @@ export class SubscriptionItemEntity {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'provider_reference' })
   providerReference?: string;
 
+  /** Cached server info from provider (e.g. status, publicIp); no secrets, not encrypted */
+  @Column({ type: 'jsonb', nullable: true, name: 'server_info_snapshot' })
+  serverInfoSnapshot?: Record<string, unknown>;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
