@@ -28,7 +28,7 @@ import {
   selectOpenOverdueListLoading,
   selectRefreshingInvoiceRefId,
 } from './invoices.selectors';
-import type { CreateInvoiceDto, InvoiceResponse } from '../../types/billing.types';
+import type { CreateInvoiceDto, InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
 import { InvoicesService } from '../../services/invoices.service';
 
 @Injectable({
@@ -62,7 +62,7 @@ export class InvoicesFacade {
     return this.store.select(selectRefreshingInvoiceRefId);
   }
 
-  getInvoicesSummary$(): Observable<{ openOverdueCount: number; openOverdueTotal: number } | null> {
+  getInvoicesSummary$(): Observable<InvoicesSummaryResponse | null> {
     return this.store.select(selectInvoicesSummary);
   }
 

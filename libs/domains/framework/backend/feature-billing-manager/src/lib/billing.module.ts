@@ -16,6 +16,7 @@ import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.ent
 import { BackorderEntity } from './entities/backorder.entity';
 import { CustomerProfileEntity } from './entities/customer-profile.entity';
 import { InvoiceRefEntity } from './entities/invoice-ref.entity';
+import { OpenPositionEntity } from './entities/open-position.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
 import { ServiceTypeEntity } from './entities/service-type.entity';
@@ -25,7 +26,9 @@ import { UsageRecordEntity } from './entities/usage-record.entity';
 import { AvailabilitySnapshotsRepository } from './repositories/availability-snapshots.repository';
 import { BackordersRepository } from './repositories/backorders.repository';
 import { InvoiceRefsRepository } from './repositories/invoice-refs.repository';
+import { OpenPositionsRepository } from './repositories/open-positions.repository';
 import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-snapshots.repository';
+import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
 import { ServicePlansRepository } from './repositories/service-plans.repository';
 import { ServiceTypesRepository } from './repositories/service-types.repository';
 import { SubscriptionItemsRepository } from './repositories/subscription-items.repository';
@@ -54,6 +57,7 @@ import { SubscriptionBillingScheduler } from './services/subscription-billing.sc
 import { SubscriptionItemServerService } from './services/subscription-item-server.service';
 import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
 import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
+import { OpenPositionInvoiceScheduler } from './services/open-position-invoice.scheduler';
 
 const authMethod = getAuthenticationMethod();
 
@@ -89,6 +93,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
       SubscriptionItemEntity,
       UsageRecordEntity,
       InvoiceRefEntity,
+      OpenPositionEntity,
       ProviderPriceSnapshotEntity,
       BackorderEntity,
       AvailabilitySnapshotEntity,
@@ -131,10 +136,13 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionBillingScheduler,
     SubscriptionExpirationScheduler,
     SubscriptionRenewalReminderScheduler,
+    OpenPositionInvoiceScheduler,
     EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
     InvoiceRefsRepository,
+    OpenPositionsRepository,
+    UsersBillingDayRepository,
     ProviderPriceSnapshotsRepository,
     ServicePlansRepository,
     ServiceTypesRepository,
@@ -163,10 +171,13 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionBillingScheduler,
     SubscriptionExpirationScheduler,
     SubscriptionRenewalReminderScheduler,
+    OpenPositionInvoiceScheduler,
     EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
     InvoiceRefsRepository,
+    OpenPositionsRepository,
+    UsersBillingDayRepository,
     ProviderPriceSnapshotsRepository,
     ServicePlansRepository,
     ServiceTypesRepository,

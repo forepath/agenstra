@@ -205,7 +205,7 @@ describe('InvoiceNinjaService', () => {
       postalCode: '10115',
     } as never);
     mockPut.mockResolvedValue({});
-    invoiceRefsRepository.create.mockResolvedValue({} as never);
+    invoiceRefsRepository.create.mockResolvedValue({ id: 'ref-1' } as never);
 
     const unwrappedInvoiceResponse = {
       id: 'inv-xyz',
@@ -221,7 +221,11 @@ describe('InvoiceNinjaService', () => {
     );
     const result = await service.createInvoiceForSubscription('sub-1', 'user-1', 99, 'Test description');
 
-    expect(result).toEqual({ invoiceId: 'inv-xyz', preAuthUrl: '/client/invoice/invitation-key-123' });
+    expect(result).toEqual({
+      invoiceId: 'inv-xyz',
+      preAuthUrl: '/client/invoice/invitation-key-123',
+      invoiceRefId: 'ref-1',
+    });
     expect(mockPost).toHaveBeenCalledWith(
       '/api/v1/invoices',
       expect.objectContaining({
@@ -241,6 +245,59 @@ describe('InvoiceNinjaService', () => {
         status: '2',
       }),
     );
+  });
+
+  describe('createInvoiceWithLineItems', () => {
+    it('creates one invoice with multiple line items and returns invoiceRefId', async () => {
+      customerProfilesService.getByUserId.mockResolvedValue({
+        id: 'profile-1',
+        userId: 'user-1',
+        invoiceNinjaClientId: 'client-1',
+      } as never);
+      mockPut.mockResolvedValue({});
+      invoiceRefsRepository.create.mockResolvedValue({ id: 'ref-1' } as never);
+      const lineItems = [
+        { description: 'Subscription 123', amount: 50 },
+        { description: 'Subscription 456', amount: 30 },
+      ];
+      mockPost.mockResolvedValueOnce({
+        data: {
+          id: 'inv-acc',
+          number: 'INV-ACC-001',
+          status_id: '2',
+          invitations: [{ key: 'key-acc', link: '' }],
+        },
+      });
+
+      const service = new InvoiceNinjaService(
+        invoiceRefsRepository,
+        customerProfilesService as unknown as CustomerProfilesService,
+      );
+      const result = await service.createInvoiceWithLineItems('user-1', lineItems, 'sub-1');
+
+      expect(result).toEqual({
+        invoiceId: 'inv-acc',
+        preAuthUrl: '/client/invoice/key-acc',
+        invoiceRefId: 'ref-1',
+      });
+      expect(mockPost).toHaveBeenCalledWith(
+        '/api/v1/invoices',
+        expect.objectContaining({
+          client_id: 'client-1',
+          line_items: [
+            { product_key: 'subscription', notes: 'Subscription 123', cost: 50, quantity: 1 },
+            { product_key: 'subscription', notes: 'Subscription 456', cost: 30, quantity: 1 },
+          ],
+        }),
+        expect.any(Object),
+      );
+      expect(invoiceRefsRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subscriptionId: 'sub-1',
+          invoiceNinjaId: 'inv-acc',
+        }),
+      );
+    });
   });
 
   describe('getInvoiceDetailsForSync balance', () => {

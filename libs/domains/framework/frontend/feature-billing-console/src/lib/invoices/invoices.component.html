@@ -48,6 +48,44 @@
           </div>
         </div>
       </div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureInvoices-nextBillingDay">
+              Your next billing day
+            </h6>
+            @if (invoicesSummaryLoading$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </p>
+            } @else {
+              @if (invoicesSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.billingDayOfMonth | nextBillingDay }}</p>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+              }
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureInvoices-unbilledTotal">Unbilled amount</h6>
+            @if (invoicesSummaryLoading$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </p>
+            } @else {
+              @if (invoicesSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.unbilledTotal | number: '1.2-2' }}€</p>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+              }
+            }
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card mb-4">

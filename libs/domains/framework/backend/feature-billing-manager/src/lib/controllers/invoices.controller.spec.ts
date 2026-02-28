@@ -4,6 +4,7 @@ import { InvoicesController } from './invoices.controller';
 import { InvoiceCreationService } from '../services/invoice-creation.service';
 import { InvoiceNinjaService } from '../services/invoice-ninja.service';
 import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
+import { UsersBillingDayRepository } from '../repositories/users-billing-day.repository';
 import { SubscriptionService } from '../services/subscription.service';
 
 describe('InvoicesController', () => {
@@ -14,6 +15,8 @@ describe('InvoicesController', () => {
   let invoiceRefsRepository: jest.Mocked<
     Pick<InvoiceRefsRepository, 'findByIdAndSubscriptionId' | 'findOpenOverdueSummaryByUserId' | 'update'>
   >;
+  let usersBillingDayRepository: jest.Mocked<Pick<UsersBillingDayRepository, 'getEffectiveBillingDayForUser'>>;
+  let invoiceCreationService: jest.Mocked<Pick<InvoiceCreationService, 'getUnbilledTotalForUser'>>;
   let subscriptionService: jest.Mocked<Pick<SubscriptionService, 'getSubscription'>>;
 
   const subscriptionId = '11111111-1111-4111-8111-111111111111';
@@ -32,6 +35,12 @@ describe('InvoicesController', () => {
       findOpenOverdueSummaryByUserId: jest.fn().mockResolvedValue({ count: 0, totalBalance: 0 }),
       update: jest.fn().mockResolvedValue({}),
     };
+    usersBillingDayRepository = {
+      getEffectiveBillingDayForUser: jest.fn().mockResolvedValue(10),
+    };
+    invoiceCreationService = {
+      getUnbilledTotalForUser: jest.fn().mockResolvedValue(0),
+    };
     subscriptionService = {
       getSubscription: jest.fn().mockResolvedValue({ id: subscriptionId, userId }),
     };
@@ -40,8 +49,9 @@ describe('InvoicesController', () => {
       controllers: [InvoicesController],
       providers: [
         { provide: InvoiceNinjaService, useValue: invoiceNinjaService },
-        { provide: InvoiceCreationService, useValue: {} },
+        { provide: InvoiceCreationService, useValue: invoiceCreationService },
         { provide: InvoiceRefsRepository, useValue: invoiceRefsRepository },
+        { provide: UsersBillingDayRepository, useValue: usersBillingDayRepository },
         { provide: SubscriptionService, useValue: subscriptionService },
       ],
     }).compile();
@@ -50,20 +60,31 @@ describe('InvoicesController', () => {
   });
 
   describe('getSummary', () => {
-    it('returns openOverdueCount and openOverdueTotal for authenticated user', async () => {
+    it('returns openOverdueCount, openOverdueTotal, billingDayOfMonth and unbilledTotal for authenticated user', async () => {
       invoiceRefsRepository.findOpenOverdueSummaryByUserId = jest
         .fn()
         .mockResolvedValue({ count: 3, totalBalance: 150.5 });
+      usersBillingDayRepository.getEffectiveBillingDayForUser = jest.fn().mockResolvedValue(15);
+      invoiceCreationService.getUnbilledTotalForUser = jest.fn().mockResolvedValue(42.75);
 
       const result = await controller.getSummary(reqWithUser as never);
 
-      expect(result).toEqual({ openOverdueCount: 3, openOverdueTotal: 150.5 });
+      expect(result).toEqual({
+        openOverdueCount: 3,
+        openOverdueTotal: 150.5,
+        billingDayOfMonth: 15,
+        unbilledTotal: 42.75,
+      });
       expect(invoiceRefsRepository.findOpenOverdueSummaryByUserId).toHaveBeenCalledWith(userId);
+      expect(usersBillingDayRepository.getEffectiveBillingDayForUser).toHaveBeenCalledWith(userId);
+      expect(invoiceCreationService.getUnbilledTotalForUser).toHaveBeenCalledWith(userId);
     });
 
     it('throws BadRequestException when user not authenticated', async () => {
       await expect(controller.getSummary({} as never)).rejects.toThrow(BadRequestException);
       expect(invoiceRefsRepository.findOpenOverdueSummaryByUserId).not.toHaveBeenCalled();
+      expect(usersBillingDayRepository.getEffectiveBillingDayForUser).not.toHaveBeenCalled();
+      expect(invoiceCreationService.getUnbilledTotalForUser).not.toHaveBeenCalled();
     });
   });
 

@@ -1,6 +1,6 @@
+import { BillingIntervalType } from '../entities/service-plan.entity';
 import { BillingScheduleService } from './billing-schedule.service';
 import { SubscriptionBillingScheduler } from './subscription-billing.scheduler';
-import { BillingIntervalType } from '../entities/service-plan.entity';
 
 describe('SubscriptionBillingScheduler', () => {
   const subscriptionsRepository = {
@@ -14,8 +14,8 @@ describe('SubscriptionBillingScheduler', () => {
     findByIdOrThrow: jest.fn(),
   } as any;
   const billingScheduleService = new BillingScheduleService();
-  const invoiceCreationService = {
-    createInvoice: jest.fn(),
+  const openPositionsRepository = {
+    create: jest.fn(),
   } as any;
 
   const scheduler = new SubscriptionBillingScheduler(
@@ -23,20 +23,21 @@ describe('SubscriptionBillingScheduler', () => {
     servicePlansRepository,
     serviceTypesRepository,
     billingScheduleService,
-    invoiceCreationService,
+    openPositionsRepository,
   );
 
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  it('processes due subscriptions', async () => {
+  it('processes due subscriptions by creating open position', async () => {
     subscriptionsRepository.findDueForBilling.mockResolvedValue([
       {
         id: 'sub-1',
         userId: 'user-1',
         planId: 'plan-1',
         status: 'active',
+        number: '123456',
       },
     ]);
     servicePlansRepository.findByIdOrThrow.mockResolvedValue({
@@ -46,19 +47,19 @@ describe('SubscriptionBillingScheduler', () => {
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
     });
-    invoiceCreationService.createInvoice.mockResolvedValue({});
+    openPositionsRepository.create.mockResolvedValue({});
 
     await scheduler.processDueSubscriptions();
 
-    expect(invoiceCreationService.createInvoice).toHaveBeenCalledWith(
-      'sub-1',
-      'user-1',
-      'Recurring billing for Basic Plan',
+    expect(openPositionsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        billUntil: expect.any(Date),
+        subscriptionId: 'sub-1',
+        userId: 'user-1',
+        description: 'Subscription 123456',
         skipIfNoBillableAmount: true,
       }),
     );
+    expect(openPositionsRepository.create.mock.calls[0][0].billUntil).toBeInstanceOf(Date);
     expect(subscriptionsRepository.update).toHaveBeenCalled();
   });
 
@@ -67,13 +68,13 @@ describe('SubscriptionBillingScheduler', () => {
 
     await scheduler.processDueSubscriptions();
 
-    expect(invoiceCreationService.createInvoice).not.toHaveBeenCalled();
+    expect(openPositionsRepository.create).not.toHaveBeenCalled();
   });
 
   it('continues processing on individual errors', async () => {
     subscriptionsRepository.findDueForBilling.mockResolvedValue([
-      { id: 'sub-1', userId: 'user-1', planId: 'plan-1' },
-      { id: 'sub-2', userId: 'user-2', planId: 'plan-2' },
+      { id: 'sub-1', userId: 'user-1', planId: 'plan-1', number: '123456' },
+      { id: 'sub-2', userId: 'user-2', planId: 'plan-2', number: '654321' },
     ]);
     servicePlansRepository.findByIdOrThrow.mockRejectedValueOnce(new Error('Plan not found')).mockResolvedValueOnce({
       id: 'plan-2',
@@ -81,17 +82,16 @@ describe('SubscriptionBillingScheduler', () => {
       billingIntervalType: BillingIntervalType.MONTH,
       billingIntervalValue: 1,
     });
-    invoiceCreationService.createInvoice.mockResolvedValue({});
+    openPositionsRepository.create.mockResolvedValue({});
 
     await scheduler.processDueSubscriptions();
 
-    expect(invoiceCreationService.createInvoice).toHaveBeenCalledTimes(1);
-    expect(invoiceCreationService.createInvoice).toHaveBeenCalledWith(
-      'sub-2',
-      'user-2',
-      'Recurring billing for Plan 2',
+    expect(openPositionsRepository.create).toHaveBeenCalledTimes(1);
+    expect(openPositionsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        billUntil: expect.any(Date),
+        subscriptionId: 'sub-2',
+        userId: 'user-2',
+        description: 'Subscription 654321',
         skipIfNoBillableAmount: true,
       }),
     );

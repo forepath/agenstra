@@ -80,7 +80,7 @@ describe('Invoices Selectors', () => {
 
   describe('selectInvoicesSummary', () => {
     it('should return summary', () => {
-      const summary = { openOverdueCount: 2, openOverdueTotal: 150 };
+      const summary = { openOverdueCount: 2, openOverdueTotal: 150, billingDayOfMonth: 1, unbilledTotal: 0 };
       const state = createState({ summary });
       const rootState = { invoices: state };
       expect(selectInvoicesSummary(rootState as never)).toEqual(summary);

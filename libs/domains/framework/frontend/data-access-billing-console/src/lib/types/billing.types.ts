@@ -277,6 +277,10 @@ export interface RefreshInvoiceLinkResponse {
 export interface InvoicesSummaryResponse {
   openOverdueCount: number;
   openOverdueTotal: number;
+  /** Day of month (1-28) when the user is billed for open positions. */
+  billingDayOfMonth: number;
+  /** Total amount of unbilled open positions (to be invoiced on the next billing day). */
+  unbilledTotal: number;
 }
 
 // Usage

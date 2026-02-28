@@ -1,9 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
+import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { ProvisioningService } from './provisioning.service';
-import { InvoiceCreationService } from './invoice-creation.service';
 
 @Injectable()
 export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDestroy {
@@ -17,7 +17,7 @@ export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDe
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
     private readonly provisioningService: ProvisioningService,
-    private readonly invoiceCreationService: InvoiceCreationService,
+    private readonly openPositionsRepository: OpenPositionsRepository,
   ) {}
 
   onModuleInit(): void {
@@ -73,18 +73,16 @@ export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDe
     const cancelEffectiveAt = subscription.cancelEffectiveAt ?? new Date();
 
     try {
-      await this.invoiceCreationService.createInvoice(
-        subscription.id,
-        subscription.userId,
-        `Final billing for canceled subscription ${subscription.id}`,
-        {
-          billUntil: cancelEffectiveAt,
-          skipIfNoBillableAmount: true,
-        },
-      );
+      await this.openPositionsRepository.create({
+        subscriptionId: subscription.id,
+        userId: subscription.userId,
+        description: `Subscription ${subscription.number}`,
+        billUntil: cancelEffectiveAt,
+        skipIfNoBillableAmount: true,
+      });
     } catch (error) {
       this.logger.warn(
-        `Failed to create final invoice for subscription ${subscription.id}: ${(error as Error).message}`,
+        `Failed to record open position for subscription ${subscription.id}: ${(error as Error).message}`,
       );
     }
 
