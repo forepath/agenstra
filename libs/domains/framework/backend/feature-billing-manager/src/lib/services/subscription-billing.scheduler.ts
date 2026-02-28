@@ -1,11 +1,11 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionEntity } from '../entities/subscription.entity';
-import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { BillingScheduleService } from './billing-schedule.service';
-import { InvoiceCreationService } from './invoice-creation.service';
-import { BillingIntervalType } from '../entities/service-plan.entity';
 
 @Injectable()
 export class SubscriptionBillingScheduler implements OnModuleInit, OnModuleDestroy {
@@ -20,7 +20,7 @@ export class SubscriptionBillingScheduler implements OnModuleInit, OnModuleDestr
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly serviceTypesRepository: ServiceTypesRepository,
     private readonly billingScheduleService: BillingScheduleService,
-    private readonly invoiceCreationService: InvoiceCreationService,
+    private readonly openPositionsRepository: OpenPositionsRepository,
   ) {}
 
   onModuleInit(): void {
@@ -58,15 +58,13 @@ export class SubscriptionBillingScheduler implements OnModuleInit, OnModuleDestr
   private async processSubscriptionBilling(subscription: SubscriptionEntity): Promise<void> {
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
 
-    await this.invoiceCreationService.createInvoice(
-      subscription.id,
-      subscription.userId,
-      `Recurring billing for ${plan.name}`,
-      {
-        billUntil: subscription.nextBillingAt ?? new Date(),
-        skipIfNoBillableAmount: true,
-      },
-    );
+    await this.openPositionsRepository.create({
+      subscriptionId: subscription.id,
+      userId: subscription.userId,
+      description: `Subscription ${subscription.number}`,
+      billUntil: subscription.nextBillingAt ?? new Date(),
+      skipIfNoBillableAmount: true,
+    });
 
     const schedule = this.billingScheduleService.calculateSchedule(
       plan.billingIntervalType as BillingIntervalType,

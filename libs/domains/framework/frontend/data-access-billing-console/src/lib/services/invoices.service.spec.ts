@@ -48,7 +48,7 @@ describe('InvoicesService', () => {
 
   describe('getInvoicesSummary', () => {
     it('should return open and overdue summary', (done) => {
-      const response = { openOverdueCount: 2, openOverdueTotal: 150.5 };
+      const response = { openOverdueCount: 2, openOverdueTotal: 150.5, billingDayOfMonth: 28, unbilledTotal: 42.1 };
       service.getInvoicesSummary().subscribe((res) => {
         expect(res).toEqual(response);
         done();

@@ -9,6 +9,10 @@ Backend billing module providing subscription management, backorders, availabili
 - Backorder management for provider capacity failures.
 - Availability snapshots and pricing previews.
 - Invoice listing via stored InvoiceNinja pre-auth links.
+- **Open positions and user billing day:** Recurring and final subscription charges are recorded as open positions.
+  On each user's billing day (default: day of month of registration, capped at 28), one accumulated invoice per user
+  is created with all of that user's unbilled positions as line items. This reduces the number of invoices (one per
+  user per billing day). The user billing day is independent of the service plan's `billing_day_of_month`.
 - Customer profile management for invoicing metadata.
 - Usage-based pricing supported via usage records.
 
@@ -27,6 +31,7 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 - INVOICE_NINJA_API_TOKEN
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE
 - HETZNER_API_TOKEN
+- OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL (optional; default 86400000 ms = daily)
 
 ## Users Authentication
 
@@ -75,6 +80,7 @@ The cloud-init user data installs Docker and deploys a docker-compose stack cont
 - docs/overview.mmd
 - docs/sequence-subscription-order.mmd
 - docs/sequence-invoicing.mmd
+- docs/sequence-open-positions-billing-day.mmd (open positions, user billing day, billing-day invoice scheduler)
 - docs/sequence-backorder-retry.mmd
 - docs/provisioning-architecture.mmd
 - docs/subscription-lifecycle.mmd

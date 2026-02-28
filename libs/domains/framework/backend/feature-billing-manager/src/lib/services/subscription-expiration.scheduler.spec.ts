@@ -12,43 +12,43 @@ describe('SubscriptionExpirationScheduler', () => {
   const provisioningService = {
     deprovision: jest.fn(),
   } as any;
-  const invoiceCreationService = {
-    createInvoice: jest.fn(),
+  const openPositionsRepository = {
+    create: jest.fn(),
   } as any;
 
   const scheduler = new SubscriptionExpirationScheduler(
     subscriptionsRepository,
     subscriptionItemsRepository,
     provisioningService,
-    invoiceCreationService,
+    openPositionsRepository,
   );
 
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  it('processes expired subscriptions', async () => {
+  it('processes expired subscriptions by creating open position', async () => {
     subscriptionsRepository.findDueForCancellation.mockResolvedValue([
-      { id: 'sub-1', status: SubscriptionStatus.PENDING_CANCEL },
+      { id: 'sub-1', userId: 'user-1', status: SubscriptionStatus.PENDING_CANCEL, number: '123456' },
     ]);
     subscriptionItemsRepository.findBySubscription.mockResolvedValue([
       { id: 'item-1', providerReference: 'server-123', serviceType: { provider: 'hetzner' } },
     ]);
     provisioningService.deprovision.mockResolvedValue(undefined);
-    invoiceCreationService.createInvoice.mockResolvedValue(undefined);
+    openPositionsRepository.create.mockResolvedValue(undefined);
 
     await scheduler.processExpiredSubscriptions();
 
     expect(provisioningService.deprovision).toHaveBeenCalledWith('hetzner', 'server-123');
-    expect(invoiceCreationService.createInvoice).toHaveBeenCalledWith(
-      'sub-1',
-      undefined,
-      expect.stringContaining('Final billing for canceled subscription'),
+    expect(openPositionsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        billUntil: expect.any(Date),
+        subscriptionId: 'sub-1',
+        userId: 'user-1',
+        description: expect.stringContaining('Subscription'),
         skipIfNoBillableAmount: true,
       }),
     );
+    expect(openPositionsRepository.create.mock.calls[0][0].billUntil).toBeInstanceOf(Date);
     expect(subscriptionsRepository.update).toHaveBeenCalledWith('sub-1', {
       status: SubscriptionStatus.CANCELED,
     });
@@ -59,6 +59,7 @@ describe('SubscriptionExpirationScheduler', () => {
 
     await scheduler.processExpiredSubscriptions();
 
+    expect(openPositionsRepository.create).not.toHaveBeenCalled();
     expect(subscriptionsRepository.update).not.toHaveBeenCalled();
   });
 

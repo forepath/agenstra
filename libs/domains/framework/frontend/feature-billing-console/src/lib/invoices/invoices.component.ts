@@ -11,13 +11,14 @@ import {
   type ServicePlanResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
 import { BehaviorSubject, combineLatest, filter, map, of, pairwise, switchMap } from 'rxjs';
+import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 
 const PAGE_SIZE = 10;
 
 @Component({
   selector: 'framework-billing-invoices',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NextBillingDayPipe],
   templateUrl: './invoices.component.html',
   styleUrls: ['./invoices.component.scss'],
 })

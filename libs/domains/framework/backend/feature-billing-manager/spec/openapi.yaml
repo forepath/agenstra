@@ -2,7 +2,14 @@ openapi: 3.1.0
 info:
   title: Billing Service API
   version: 1.0.0
-  description: HTTP API for billing, subscriptions, and provisioning.
+  description: |
+    HTTP API for billing, subscriptions, and provisioning.
+
+    **Open positions and user billing day:** Recurring and final subscription charges are recorded as "open positions"
+    instead of creating invoices immediately. A scheduler runs on each user's billing day (stored on the user;
+    default is the registration day capped at 28) and creates one accumulated invoice per user containing all of that
+    user's unbilled open positions as line items. This reduces the number of invoices (one per user per billing day).
+    Separate from the service plan's billing_day_of_month, which controls subscription period alignment.
   contact:
     name: ForePath
     email: hi@forepath.io
@@ -1969,7 +1976,7 @@ components:
         preAuthUrl: { type: string }
     InvoicesSummaryResponse:
       type: object
-      description: Count and total balance of open and overdue invoices for the current user.
+      description: Count and total balance of open and overdue invoices for the current user, plus the user's billing day.
       properties:
         openOverdueCount:
           type: integer
@@ -1979,6 +1986,15 @@ components:
           type: number
           minimum: 0
           description: Sum of balances due for those invoices
+        billingDayOfMonth:
+          type: integer
+          minimum: 1
+          maximum: 28
+          description: Day of month (1-28) when the user is billed for open positions (default from registration day, capped at 28)
+        unbilledTotal:
+          type: number
+          minimum: 0
+          description: Total amount of unbilled open positions (to be invoiced on the next billing day)
     RefreshInvoiceLinkResponse:
       type: object
       properties:

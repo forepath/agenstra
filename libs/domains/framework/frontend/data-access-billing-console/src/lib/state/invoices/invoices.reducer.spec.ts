@@ -127,7 +127,7 @@ describe('invoicesReducer', () => {
   describe('loadInvoicesSummarySuccess', () => {
     it('should set summary and clear summaryLoading', () => {
       const state: InvoicesState = { ...initialInvoicesState, summaryLoading: true };
-      const summary = { openOverdueCount: 3, openOverdueTotal: 200 };
+      const summary = { openOverdueCount: 3, openOverdueTotal: 200, billingDayOfMonth: 15, unbilledTotal: 50 };
       const newState = invoicesReducer(state, loadInvoicesSummarySuccess({ summary }));
       expect(newState.summary).toEqual(summary);
       expect(newState.summaryLoading).toBe(false);
