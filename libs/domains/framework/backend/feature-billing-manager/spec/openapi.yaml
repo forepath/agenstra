@@ -1969,6 +1969,13 @@ components:
             description: Subscription number when listing across subscriptions,
           }
         createdAt: { type: string, format: date-time }
+        dueDate:
+          {
+            type: string,
+            format: date,
+            nullable: true,
+            description: Invoice due date from provider,
+          }
     CreateInvoiceResponse:
       type: object
       properties:
