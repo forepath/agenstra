@@ -69,7 +69,7 @@ export class InvoiceRefsRepository {
 
   async update(
     id: string,
-    dto: Partial<Pick<InvoiceRefEntity, 'status' | 'preAuthUrl' | 'invoiceNumber' | 'balance'>>,
+    dto: Partial<Pick<InvoiceRefEntity, 'status' | 'preAuthUrl' | 'invoiceNumber' | 'balance' | 'dueDate'>>,
   ): Promise<InvoiceRefEntity> {
     const entity = await this.repository.findOne({ where: { id } });
     if (!entity) {

@@ -148,6 +148,7 @@ export class InvoicesController {
       balance: balance !== undefined && !Number.isNaN(balance) ? balance : undefined,
       subscriptionNumber,
       createdAt: row.createdAt,
+      dueDate: row.dueDate,
     };
   }
 }

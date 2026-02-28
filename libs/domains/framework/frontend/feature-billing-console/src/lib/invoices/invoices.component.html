@@ -112,6 +112,7 @@
                     <th scope="col" i18n="@@featureInvoices-id">Invoice number</th>
                     <th scope="col" i18n="@@featureInvoices-status">Status</th>
                     <th scope="col" i18n="@@featureInvoices-date">Date</th>
+                    <th scope="col" i18n="@@featureInvoices-dueDate">Due date</th>
                     <th scope="col" i18n="@@featureInvoices-amount">Amount</th>
                     <th scope="col" i18n="@@featureInvoices-link">Link</th>
                   </tr>
@@ -125,6 +126,7 @@
                         <span class="badge bg-secondary">{{ getInvoiceStatus(inv.status) ?? '—' }}</span>
                       </td>
                       <td>{{ inv.createdAt | date: 'short' }}</td>
+                      <td>{{ inv.dueDate ? (inv.dueDate | date: 'short') : '—' }}</td>
                       <td>{{ inv.balance != null ? (inv.balance | number: '1.2-2') + ' €' : '—' }}</td>
                       <td>
                         @if ((refreshingInvoiceRefId$ | async) === inv.id) {
@@ -146,7 +148,7 @@
                     </tr>
                   } @empty {
                     <tr>
-                      <td colspan="6" class="text-body-secondary" i18n="@@featureInvoices-noOpenOverdue">
+                      <td colspan="7" class="text-body-secondary" i18n="@@featureInvoices-noOpenOverdue">
                         No open or overdue invoices.
                       </td>
                     </tr>
@@ -203,6 +205,7 @@
                     <th scope="col" i18n="@@featureInvoices-id">Invoice number</th>
                     <th scope="col" i18n="@@featureInvoices-status">Status</th>
                     <th scope="col" i18n="@@featureInvoices-date">Date</th>
+                    <th scope="col" i18n="@@featureInvoices-dueDate">Due date</th>
                     <th scope="col" i18n="@@featureInvoices-amount">Amount</th>
                     <th scope="col" i18n="@@featureInvoices-link">Link</th>
                   </tr>
@@ -215,6 +218,7 @@
                         <span class="badge bg-secondary">{{ getInvoiceStatus(inv.status) ?? '—' }}</span>
                       </td>
                       <td>{{ inv.createdAt | date: 'short' }}</td>
+                      <td>{{ inv.dueDate ? (inv.dueDate | date: 'short') : '—' }}</td>
                       <td>{{ inv.balance != null ? (inv.balance | number: '1.2-2') + ' €' : '—' }}</td>
                       <td>
                         @if ((refreshingInvoiceRefId$ | async) === inv.id) {
@@ -225,7 +229,7 @@
                         } @else {
                           <button
                             type="button"
-                            class="btn btn-link link-primary p-0 text-start"
+                            class="btn btn-primary btn-sm"
                             (click)="openInvoiceLink(inv)"
                             i18n="@@featureInvoices-openLink"
                           >
@@ -236,7 +240,7 @@
                     </tr>
                   } @empty {
                     <tr>
-                      <td colspan="5" class="text-body-secondary" i18n="@@featureInvoices-noInvoices">
+                      <td colspan="6" class="text-body-secondary" i18n="@@featureInvoices-noInvoices">
                         No invoices for this subscription.
                       </td>
                     </tr>

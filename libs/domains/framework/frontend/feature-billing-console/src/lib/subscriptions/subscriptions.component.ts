@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -105,6 +115,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   readonly countryOptions: CountryOption[] = COUNTRY_OPTIONS;
 
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   private initialPlanIdFromQuery: string | null = null;
 
@@ -197,7 +208,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       .pipe(
         pairwise(),
         filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.hideModal(this.orderPlanModal);
@@ -211,7 +222,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         pairwise(),
         filter(([prev, curr]) => prev === true && curr === false),
         withLatestFrom(profileFacade.getCustomerProfileError$()),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(([, error]) => {
         if (!error) {

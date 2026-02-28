@@ -259,6 +259,7 @@ export interface InvoiceResponse {
   balance?: number | null;
   subscriptionNumber?: string | null;
   createdAt: string;
+  dueDate?: string | null;
 }
 
 export interface CreateInvoiceDto {

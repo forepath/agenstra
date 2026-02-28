@@ -10,6 +10,7 @@ interface InvoiceNinjaInvoiceResponse {
   status_id?: string | number;
   number?: string | number;
   balance?: number | string;
+  due_date?: string;
   invitations?: Array<{ key?: string; link?: string }>;
 }
 
@@ -76,6 +77,7 @@ export class InvoiceNinjaService {
     invoiceNumber?: string;
     preAuthUrl?: string;
     balance?: number;
+    dueDate?: Date;
   } | null> {
     let raw: unknown;
     try {
@@ -108,8 +110,16 @@ export class InvoiceNinjaService {
       this.logger.warn(`Invoice Ninja invoice ${invoiceId} returned invalid balance: ${data?.balance}`);
     }
     const balanceNum = balance !== undefined && !Number.isNaN(balance) ? balance : undefined;
+    const dueDateRaw = data?.due_date;
+    const dueDate =
+      dueDateRaw != null && typeof dueDateRaw === 'string'
+        ? (() => {
+            const d = new Date(dueDateRaw);
+            return Number.isNaN(d.getTime()) ? undefined : d;
+          })()
+        : undefined;
 
-    return { status, invoiceNumber, preAuthUrl, balance: balanceNum };
+    return { status, invoiceNumber, preAuthUrl, balance: balanceNum, dueDate };
   }
 
   async createInvoiceForSubscription(subscriptionId: string, userId: string, amount: number, description?: string) {
