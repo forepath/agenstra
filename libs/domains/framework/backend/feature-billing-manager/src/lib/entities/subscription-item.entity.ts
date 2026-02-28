@@ -44,6 +44,10 @@ export class SubscriptionItemEntity {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'provider_reference' })
   providerReference?: string;
 
+  /** Single-level subdomain for DNS (e.g. awesome-armadillo-abc12) used for hostname.baseDomain */
+  @Column({ type: 'varchar', length: 128, nullable: true, name: 'hostname' })
+  hostname?: string;
+
   /** Cached server info from provider (e.g. status, publicIp); no secrets, not encrypted */
   @Column({ type: 'jsonb', nullable: true, name: 'server_info_snapshot' })
   serverInfoSnapshot?: Record<string, unknown>;

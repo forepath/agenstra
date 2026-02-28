@@ -16,4 +16,8 @@ export interface ServerInfo {
   status: string;
   /** Optional provider-specific metadata (e.g. location, datacenter, region) */
   metadata?: Record<string, unknown>;
+  /** Single-level subdomain (e.g. awesome-armadillo-abc12) when DNS is provisioned */
+  hostname?: string;
+  /** Full DNS name (e.g. awesome-armadillo-abc12.cloud-agent.net) for display */
+  hostnameFqdn?: string;
 }

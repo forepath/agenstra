@@ -4,6 +4,7 @@ import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { ProvisioningService } from './provisioning.service';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionService } from './subscription.service';
+import { CloudflareDnsService } from './cloudflare-dns.service';
 import { ServerInfo } from '../utils/provisioning.utils';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class SubscriptionItemServerService {
     private readonly subscriptionService: SubscriptionService,
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
     private readonly provisioningService: ProvisioningService,
+    private readonly cloudflareDnsService: CloudflareDnsService,
   ) {}
 
   /**
@@ -26,6 +28,7 @@ export class SubscriptionItemServerService {
       subscriptionId: item.subscriptionId,
       serviceTypeId: item.serviceTypeId,
       provisioningStatus: item.provisioningStatus,
+      hostname: item.hostname,
     }));
   }
 
@@ -54,6 +57,8 @@ export class SubscriptionItemServerService {
     }
 
     const metadata = { ...info.metadata, provider };
+    const hostname = item.hostname;
+    const hostnameFqdn = hostname ? this.cloudflareDnsService.getFqdn(hostname) : undefined;
 
     await this.subscriptionItemsRepository.updateServerInfoSnapshot(itemId, {
       serverId: info.serverId,
@@ -64,7 +69,7 @@ export class SubscriptionItemServerService {
       metadata,
     });
 
-    return { ...info, metadata };
+    return { ...info, metadata, hostname, hostnameFqdn };
   }
 
   async startServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {

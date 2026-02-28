@@ -8,4 +8,8 @@ export interface ServerInfoResponseDto {
   privateIp?: string;
   status: string;
   metadata?: Record<string, unknown>;
+  /** Single-level subdomain when DNS is provisioned (e.g. awesome-armadillo-abc12) */
+  hostname?: string;
+  /** Full DNS name for display (e.g. awesome-armadillo-abc12.cloud-agent.net) */
+  hostnameFqdn?: string;
 }

@@ -3,7 +3,9 @@ sequenceDiagram
     participant BackorderRetryService
     participant BackorderService
     participant AvailabilityService
+    participant HostnameReservationService
     participant ProvisioningService
+    participant CloudflareDnsService
     participant Database
 
     Scheduler->>BackorderRetryService: processPendingBackorders()
@@ -16,9 +18,15 @@ sequenceDiagram
         AvailabilityService-->>BackorderService: availability result
         alt Available
             BackorderService->>Database: INSERT subscription + subscription_item
-            BackorderService->>ProvisioningService: provision(provider, config)
+            BackorderService->>HostnameReservationService: reserveHostname(itemId)
+            HostnameReservationService->>Database: INSERT reserved_hostnames, UPDATE item.hostname
+            HostnameReservationService-->>BackorderService: hostname
+            BackorderService->>ProvisioningService: provision(provider, config with name=hostname)
             ProvisioningService-->>BackorderService: serverId
-            BackorderService->>Database: UPDATE subscription_item.provider_reference
+            BackorderService->>Database: UPDATE subscription_item.provider_reference, status
+            BackorderService->>ProvisioningService: getServerInfo(provider, serverId)
+            ProvisioningService-->>BackorderService: publicIp
+            BackorderService->>CloudflareDnsService: createARecord(hostname, publicIp)
             BackorderService->>Database: UPDATE backorder status = fulfilled
         else Not available
             BackorderService->>Database: UPDATE backorder status = retrying

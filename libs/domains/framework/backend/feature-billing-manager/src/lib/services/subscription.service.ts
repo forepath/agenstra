@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
 import { AvailabilityService } from './availability.service';
+import { CloudflareDnsService } from './cloudflare-dns.service';
+import { HostnameReservationService } from './hostname-reservation.service';
 import { ProvisioningService } from './provisioning.service';
 import { validateConfigSchema } from '../utils/config-validation.utils';
 import { buildBillingCloudInitUserData } from '../utils/cloud-init.utils';
@@ -15,6 +17,8 @@ import { BillingIntervalType } from '../entities/service-plan.entity';
 
 @Injectable()
 export class SubscriptionService {
+  private readonly logger = new Logger(SubscriptionService.name);
+
   constructor(
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly serviceTypesRepository: ServiceTypesRepository,
@@ -25,6 +29,8 @@ export class SubscriptionService {
     private readonly backorderService: BackorderService,
     private readonly availabilityService: AvailabilityService,
     private readonly provisioningService: ProvisioningService,
+    private readonly hostnameReservationService: HostnameReservationService,
+    private readonly cloudflareDnsService: CloudflareDnsService,
   ) {}
 
   async createSubscription(
@@ -88,9 +94,11 @@ export class SubscriptionService {
     });
 
     if (serviceType.provider === 'hetzner') {
+      let hostname: string | null = null;
       try {
+        hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
         const provisioningConfig = {
-          name: `subscription-${subscription.id}`,
+          name: hostname,
           serverType,
           location: region,
           firewallId: effectiveConfig.firewallId as number | undefined,
@@ -105,8 +113,27 @@ export class SubscriptionService {
         if (provisioned?.serverId) {
           await this.subscriptionItemsRepository.updateProviderReference(subscriptionItem.id, provisioned.serverId);
           await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'active');
+          const serverInfo = await this.provisioningService.getServerInfo(serviceType.provider, provisioned.serverId);
+          if (serverInfo?.publicIp) {
+            try {
+              await this.cloudflareDnsService.createARecord(hostname, serverInfo.publicIp);
+            } catch (dnsError) {
+              this.logger.warn(
+                `DNS record creation failed for ${hostname}, server provisioned with IP ${serverInfo.publicIp}: ${(dnsError as Error).message}`,
+              );
+            }
+          }
         }
       } catch (error) {
+        if (hostname) {
+          try {
+            await this.hostnameReservationService.releaseHostname(subscriptionItem.id);
+          } catch (releaseError) {
+            this.logger.warn(
+              `Failed to release hostname after provisioning failure: ${(releaseError as Error).message}`,
+            );
+          }
+        }
         await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'failed');
         if (autoBackorder) {
           await this.backorderService.create({
