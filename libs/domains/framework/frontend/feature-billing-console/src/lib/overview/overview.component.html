@@ -1,0 +1,223 @@
+<div class="overview-container border-top d-flex flex-column h-100">
+  <div class="overview-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureOverview-title">Overview</h5>
+  </div>
+  <div class="p-3 flex-grow-1 overflow-auto">
+    @if (subscriptionsError$ | async; as error) {
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+    }
+    @if (backordersError$ | async; as error) {
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+    }
+
+    @if (subscriptionsLoading$ | async; as loading) {
+      @if (loading) {
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+          <span i18n="@@featureOverview-loadingSubscriptions">Loading subscriptions...</span>
+        </div>
+      }
+    }
+
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOverview-activePlans">Active plans</h6>
+            @if (activeSubscriptions$ | async; as active) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ active.length }}</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOverview-backorders">Backorders</h6>
+            @if (pendingBackorders$ | async; as pending) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ pending.length }}</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card border-warning h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-warning small" i18n="@@featureOverview-openOverdueCount">
+              Open and overdue invoices
+            </h6>
+            @if (invoicesSummaryLoading$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </p>
+            } @else {
+              @if (invoicesSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueCount }}</p>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+              }
+            }
+            <a routerLink="/invoices" class="btn btn-sm btn-warning mt-2" i18n="@@featureOverview-viewInvoices">
+              View invoices
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div
+          class="card h-100"
+          [class.border-warning]="!(customerProfileLoading$ | async) && !(isCustomerProfileComplete$ | async)"
+          [class.border-success]="!(customerProfileLoading$ | async) && (isCustomerProfileComplete$ | async)"
+        >
+          <div class="card-body">
+            <h6
+              class="card-subtitle mb-1 small"
+              [class.text-muted]="customerProfileLoading$ | async"
+              [class.text-warning]="!(customerProfileLoading$ | async) && !(isCustomerProfileComplete$ | async)"
+              [class.text-success]="!(customerProfileLoading$ | async) && (isCustomerProfileComplete$ | async)"
+              i18n="@@featureOverview-customerProfile"
+            >
+              Customer profile
+            </h6>
+            @if (customerProfileLoading$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary" i18n="@@featureOverview-loadingProfile">
+                Loading...
+              </p>
+            } @else if (isCustomerProfileComplete$ | async) {
+              <p class="card-title mb-0 fs-4 fw-bold" i18n="@@featureOverview-profileComplete">Complete</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold" i18n="@@featureOverview-profileIncomplete">Incomplete</p>
+            }
+            <a
+              routerLink="/subscriptions"
+              [queryParams]="{ profile: 'true' }"
+              class="btn btn-sm mt-2"
+              [class.btn-warning]="!(customerProfileLoading$ | async) && !(isCustomerProfileComplete$ | async)"
+              [class.btn-success]="!(customerProfileLoading$ | async) && (isCustomerProfileComplete$ | async)"
+              i18n="@@featureOverview-editProfile"
+            >
+              Edit profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (overviewServerInfoError$ | async; as error) {
+      <div class="alert alert-warning mt-3" role="alert">
+        {{ error }}
+      </div>
+    }
+
+    <section class="mt-4" aria-labelledby="overview-servers-heading">
+      @if (overviewServerInfoLoading$ | async) {
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+          <span i18n="@@featureOverview-loadingServerInfo">Loading server info...</span>
+        </div>
+      }
+      <div class="row g-3">
+        @for (item of subscriptionsWithServerInfo$ | async; track item.subscription.id) {
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="py-1">
+                  <span i18n="@@featureOverview-agenstraCloudInstance">Agenstra</span>
+                  @if (item.serverInfo.metadata!['provider']) {
+                    <span class="d-block small">
+                      {{ getProviderName(item.serverInfo.metadata!['provider']) }}
+                      <span> · </span>
+                      {{ item.serverInfo.metadata!['datacenter'] || item.serverInfo.metadata!['location'] }}
+                    </span>
+                  }
+                </div>
+                <span
+                  class="badge status-badge d-flex align-items-center justify-content-center"
+                  [class.bg-success]="item.serverInfo.status === 'running'"
+                  [class.bg-danger]="item.serverInfo.status === 'off'"
+                >
+                  <i
+                    class="bi"
+                    [class.bi-play-fill]="item.serverInfo.status === 'running'"
+                    [class.bi-stop-fill]="item.serverInfo.status === 'off'"
+                  ></i>
+                </span>
+              </div>
+              <div class="card-body">
+                <p class="card-title mb-1 fw-semibold">
+                  {{ item.subscription.number }}
+                  <a routerLink="/subscriptions" class="ms-1">
+                    <i class="bi bi-arrow-right small"></i>
+                  </a>
+                </p>
+                <p class="mb-0 small" i18n="@@featureOverview-publicIP">Public IP: {{ item.serverInfo.publicIp }}</p>
+                @if (item.serverInfo.hostnameFqdn) {
+                  <p class="mb-0 small" i18n="@@featureOverview-hostname">
+                    Hostname: {{ item.serverInfo.hostnameFqdn }}
+                  </p>
+                }
+                @if (item.serverInfo.privateIp) {
+                  <p class="mb-0 small" i18n="@@featureOverview-privateIP">
+                    Private IP: {{ item.serverInfo.privateIp }}
+                  </p>
+                }
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Server actions">
+                    @if (item.serverInfo.status === 'off') {
+                      <button
+                        type="button"
+                        class="btn btn-outline-success"
+                        [disabled]="(serverActionInProgressMap$ | async)?.[item.subscription.id] !== undefined"
+                        (click)="serverInfoFacade.startServer(item.subscription.id, item.itemId)"
+                      >
+                        <i class="bi bi-play-fill"></i>
+                        <span class="visually-hidden" i18n="@@featureOverview-serverStart">Start</span>
+                      </button>
+                    }
+                    @if (item.serverInfo.status === 'running') {
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        [disabled]="(serverActionInProgressMap$ | async)?.[item.subscription.id] !== undefined"
+                        (click)="serverInfoFacade.stopServer(item.subscription.id, item.itemId)"
+                      >
+                        <i class="bi bi-stop-fill"></i>
+                        <span class="visually-hidden" i18n="@@featureOverview-serverStop">Stop</span>
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-warning"
+                      [disabled]="(serverActionInProgressMap$ | async)?.[item.subscription.id] !== undefined"
+                      (click)="serverInfoFacade.restartServer(item.subscription.id, item.itemId)"
+                    >
+                      <i class="bi bi-arrow-clockwise"></i>
+                      <span class="visually-hidden" i18n="@@featureOverview-serverRestart">Restart</span>
+                    </button>
+                  </div>
+                  <a
+                    href="https://{{ item.serverInfo.hostnameFqdn || item.serverInfo.publicIp }}"
+                    target="_blank"
+                    class="btn btn-sm btn-primary"
+                    [class.disabled]="item.serverInfo.status !== 'running'"
+                  >
+                    <i class="bi bi-box-arrow-up-right me-2"></i>
+                    <span i18n="@@featureOverview-openConsole">Console</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+</div>

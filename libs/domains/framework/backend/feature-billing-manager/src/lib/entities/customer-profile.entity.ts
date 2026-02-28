@@ -1,0 +1,52 @@
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
+@Entity('billing_customer_profiles')
+export class CustomerProfileEntity {
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  id!: string;
+
+  @Column({ type: 'uuid', name: 'user_id', unique: true })
+  userId!: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'first_name' })
+  firstName?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'last_name' })
+  lastName?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'company' })
+  company?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'address_line_1' })
+  addressLine1?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'address_line_2' })
+  addressLine2?: string;
+
+  @Column({ type: 'varchar', length: 30, nullable: true, name: 'postal_code' })
+  postalCode?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'city' })
+  city?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'state' })
+  state?: string;
+
+  @Column({ type: 'varchar', length: 2, nullable: true, name: 'country' })
+  country?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'email' })
+  email?: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true, name: 'phone' })
+  phone?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'invoice_ninja_client_id' })
+  invoiceNinjaClientId?: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt!: Date;
+}

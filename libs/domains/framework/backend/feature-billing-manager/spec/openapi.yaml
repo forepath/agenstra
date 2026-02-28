@@ -1,0 +1,2045 @@
+openapi: 3.1.0
+info:
+  title: Billing Service API
+  version: 1.0.0
+  description: |
+    HTTP API for billing, subscriptions, and provisioning.
+
+    **Open positions and user billing day:** Recurring and final subscription charges are recorded as "open positions"
+    instead of creating invoices immediately. A scheduler runs on each user's billing day (stored on the user;
+    default is the registration day capped at 28) and creates one accumulated invoice per user containing all of that
+    user's unbilled open positions as line items. This reduces the number of invoices (one per user per billing day).
+    Separate from the service plan's billing_day_of_month, which controls subscription period alignment.
+  contact:
+    name: ForePath
+    email: hi@forepath.io
+    url: https://forepath.io
+servers:
+  - url: http://localhost:3200/api
+    description: Local development
+security:
+  - bearerAuth: []
+paths:
+  /service-types:
+    get:
+      summary: List service types
+      operationId: listServiceTypes
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Array of service types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceTypeResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create service type (admin only)
+      operationId: createServiceType
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceTypeDto'
+      responses:
+        '201':
+          description: Service type created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceTypeResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-types/providers:
+    get:
+      summary: Get all provider details
+      operationId: getProviderDetails
+      description: Returns registered provisioning providers with id, display name, and optional config schema for service type creation and subscription config.
+      responses:
+        '200':
+          description: Array of provider details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProviderDetail'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-types/providers/{providerId}/server-types:
+    get:
+      summary: Get server types for a provider
+      operationId: getProviderServerTypes
+      description: Returns server types with specs and pricing for the given provider (e.g. hetzner). Used by the billing console for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: hetzner
+      responses:
+        '200':
+          description: List of server types with id, name, specs, priceMonthly, priceHourly
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServerType'
+        '400':
+          description: Bad request (e.g. provider not supported or token missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-types/{id}:
+    get:
+      summary: Get service type
+      operationId: getServiceType
+      parameters:
+        - $ref: '#/components/parameters/ServiceTypeId'
+      responses:
+        '200':
+          description: Service type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceTypeResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Update service type (admin only)
+      operationId: updateServiceType
+      parameters:
+        - $ref: '#/components/parameters/ServiceTypeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServiceTypeDto'
+      responses:
+        '200':
+          description: Service type updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceTypeResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete service type (admin only)
+      operationId: deleteServiceType
+      parameters:
+        - $ref: '#/components/parameters/ServiceTypeId'
+      responses:
+        '204':
+          description: Service type deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-plans:
+    get:
+      summary: List service plans
+      operationId: listServicePlans
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Array of service plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServicePlanResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create service plan (admin only)
+      operationId: createServicePlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServicePlanDto'
+      responses:
+        '201':
+          description: Service plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePlanResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-plans/{id}:
+    get:
+      summary: Get service plan
+      operationId: getServicePlan
+      parameters:
+        - $ref: '#/components/parameters/ServicePlanId'
+      responses:
+        '200':
+          description: Service plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePlanResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Update service plan (admin only)
+      operationId: updateServicePlan
+      parameters:
+        - $ref: '#/components/parameters/ServicePlanId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServicePlanDto'
+      responses:
+        '200':
+          description: Service plan updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePlanResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete service plan (admin only)
+      operationId: deleteServicePlan
+      parameters:
+        - $ref: '#/components/parameters/ServicePlanId'
+      responses:
+        '204':
+          description: Service plan deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /availability/check:
+    post:
+      summary: Check availability
+      operationId: checkAvailability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityCheckDto'
+      responses:
+        '200':
+          description: Availability result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '400':
+          description: Invalid request or provider error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /availability/alternatives:
+    post:
+      summary: Get availability alternatives
+      operationId: checkAvailabilityAlternatives
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityCheckDto'
+      responses:
+        '200':
+          description: Availability result with alternatives
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '400':
+          description: Invalid request or provider error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/login:
+    post:
+      summary: Login
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/register:
+    post:
+      summary: Register
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Signup disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/confirm-email:
+    post:
+      summary: Confirm email
+      operationId: confirmEmail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmEmailDto'
+      responses:
+        '200':
+          description: Email confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid or expired confirmation code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/request-password-reset:
+    post:
+      summary: Request password reset
+      operationId: requestPasswordReset
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPasswordResetDto'
+      responses:
+        '200':
+          description: Password reset requested
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/reset-password:
+    post:
+      summary: Reset password
+      operationId: resetPassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordDto'
+      responses:
+        '200':
+          description: Password reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid or expired reset code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/change-password:
+    post:
+      summary: Change password
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordDto'
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users:
+    get:
+      summary: List users (admin only)
+      operationId: listUsers
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Array of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create user (admin only)
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users/{id}:
+    get:
+      summary: Get user (admin only)
+      operationId: getUser
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Update user (admin only)
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserDto'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete user (admin only)
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: User deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions:
+    get:
+      summary: List subscriptions
+      operationId: listSubscriptions
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Array of subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create subscription
+      operationId: createSubscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionDto'
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '400':
+          description: Validation error or configuration unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{id}:
+    get:
+      summary: Get subscription
+      operationId: getSubscription
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      responses:
+        '200':
+          description: Subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{id}/cancel:
+    post:
+      summary: Cancel subscription
+      operationId: cancelSubscription
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelSubscriptionDto'
+      responses:
+        '200':
+          description: Subscription cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '400':
+          description: Cancellation not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{id}/resume:
+    post:
+      summary: Resume subscription
+      operationId: resumeSubscription
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumeSubscriptionDto'
+      responses:
+        '200':
+          description: Subscription resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '400':
+          description: Resume not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items:
+    get:
+      summary: List subscription items
+      operationId: listSubscriptionItems
+      description: Returns items for the subscription (id, provisioningStatus, serviceTypeId). User must own the subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of subscription items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionItemResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/server-info:
+    get:
+      summary: Get server info for a provisioned subscription item
+      operationId: getSubscriptionItemServerInfo
+      description: Returns live server info from the provider and updates the cached snapshot. Only available when provisioning is finished (status active). User must own the subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Subscription ID
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Subscription item ID
+      responses:
+        '200':
+          description: Server info (provider-agnostic)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInfoResponse'
+        '400':
+          description: Not provisioned or not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/actions/start:
+    post:
+      summary: Start server for a provisioned subscription item
+      operationId: startSubscriptionItemServer
+      description: User must own the subscription. Item must be provisioned (status active).
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerActionResponse'
+        '400':
+          description: Not provisioned or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/actions/stop:
+    post:
+      summary: Stop server for a provisioned subscription item
+      operationId: stopSubscriptionItemServer
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerActionResponse'
+        '400':
+          description: Not provisioned or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/items/{itemId}/actions/restart:
+    post:
+      summary: Restart server for a provisioned subscription item
+      operationId: restartSubscriptionItemServer
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerActionResponse'
+        '400':
+          description: Not provisioned or bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subscription or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /backorders:
+    get:
+      summary: List backorders
+      operationId: listBackorders
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Array of backorders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BackorderResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /backorders/{id}/retry:
+    post:
+      summary: Retry backorder
+      operationId: retryBackorder
+      parameters:
+        - $ref: '#/components/parameters/BackorderId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackorderRetryDto'
+      responses:
+        '200':
+          description: Backorder retried
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackorderResponse'
+        '400':
+          description: Retry failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /backorders/{id}/cancel:
+    post:
+      summary: Cancel backorder
+      operationId: cancelBackorder
+      parameters:
+        - $ref: '#/components/parameters/BackorderId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackorderCancelDto'
+      responses:
+        '200':
+          description: Backorder cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackorderResponse'
+        '400':
+          description: Cancel failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /pricing/preview:
+    post:
+      summary: Preview pricing
+      operationId: previewPricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricingPreviewDto'
+      responses:
+        '200':
+          description: Pricing preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingPreviewResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /customer-profile:
+    get:
+      summary: Get customer profile
+      operationId: getCustomerProfile
+      responses:
+        '200':
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Update customer profile
+      operationId: updateCustomerProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerProfileDto'
+      responses:
+        '200':
+          description: Customer profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/summary:
+    get:
+      summary: Get open and overdue invoices summary
+      operationId: getInvoicesSummary
+      description: Returns count and total balance of open and overdue invoices for the current user across all subscriptions.
+      responses:
+        '200':
+          description: Open and overdue invoices summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoicesSummaryResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/open-overdue:
+    get:
+      summary: List open and overdue invoices
+      operationId: listOpenOverdueInvoices
+      description: Returns all open and overdue invoices for the current user across subscriptions, with balance and optional subscription number.
+      responses:
+        '200':
+          description: Array of open and overdue invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/{subscriptionId}:
+    get:
+      summary: List invoices
+      operationId: listInvoices
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      responses:
+        '200':
+          description: Array of invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create invoice (admin only)
+      operationId: createInvoice
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceDto'
+      responses:
+        '200':
+          description: Invoice created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateInvoiceResponse'
+        '400':
+          description: Invoice creation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/{subscriptionId}/ref/{invoiceRefId}/refresh-link:
+    post:
+      summary: Refresh invoice invite link
+      operationId: refreshInvoiceLink
+      description: Fetches a fresh client/invite URL for the invoice (e.g. after the previous link expired) and returns it.
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Invoice ref ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: New invite link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshInvoiceLinkResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Invoice not found or link unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /usage/summary/{subscriptionId}:
+    get:
+      summary: Usage summary
+      operationId: getUsageSummary
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      responses:
+        '200':
+          description: Usage summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /usage/record:
+    post:
+      summary: Record usage
+      operationId: recordUsage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUsageRecordDto'
+      responses:
+        '200':
+          description: Usage recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageRecordResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    Limit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 0
+      description: Maximum number of results to return (default 10)
+    Offset:
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+      description: Number of results to skip (default 0)
+    ServiceTypeId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Service type ID
+    ServicePlanId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Service plan ID
+    SubscriptionId:
+      in: path
+      name: subscriptionId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Subscription ID
+    BackorderId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Backorder ID
+    UserId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: User ID
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        error:
+          type: string
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    LoginDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserResponse'
+    RegisterDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    RegisterResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        message:
+          type: string
+    ConfirmEmailDto:
+      type: object
+      required: [email, code]
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+    RequestPasswordResetDto:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordDto:
+      type: object
+      required: [email, code, newPassword]
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+    ChangePasswordDto:
+      type: object
+      required: [currentPassword, newPassword, newPasswordConfirmation]
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+        newPasswordConfirmation:
+          type: string
+          format: password
+          minLength: 8
+    CreateUserDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/UserRole'
+    UpdateUserDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/UserRole'
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+        emailConfirmedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    UserRole:
+      type: string
+      enum: [user, admin]
+    ProviderDetail:
+      type: object
+      required: [id, displayName]
+      description: A registered provisioning provider (e.g. Hetzner) with id, display name, and optional config schema.
+      properties:
+        id:
+          type: string
+          description: Provider identifier (e.g. hetzner). Used as the value for service type provider field.
+        displayName:
+          type: string
+          description: Human-readable display name (e.g. Hetzner Cloud).
+        configSchema:
+          type: object
+          description: |
+            Optional JSON schema for provider-specific configuration when creating subscriptions.
+            - `properties`: each property may include `type`, `description`, and optionally `enum` (array of allowed values).
+            - `basePriceFromField`: optional string (e.g. "serverType") indicating which field's selected option drives the plan base price;
+              the UI should fetch options from GET .../providers/{id}/server-types and use the selected option's price as base price.
+    ServerType:
+      type: object
+      description: Provider server type with specs and pricing (from GET .../providers/{providerId}/server-types).
+      properties:
+        id: { type: string, description: 'Unique identifier (e.g. cax11)' }
+        name: { type: string, description: 'Human-readable name' }
+        cores: { type: number }
+        memory: { type: number, description: 'RAM in GB' }
+        disk: { type: number, description: 'Disk in GB' }
+        priceMonthly:
+          { type: number, description: 'Price per month (e.g. EUR)' }
+        priceHourly: { type: number, description: 'Price per hour (e.g. EUR)' }
+        description: { type: string }
+    CreateServiceTypeDto:
+      type: object
+      required: [key, name, provider]
+      properties:
+        key:
+          type: string
+          description: Unique service type key
+        name:
+          type: string
+          description: Display name
+        description:
+          type: string
+          description: Optional description
+        provider:
+          type: string
+          description: Provider identifier (e.g. hetzner)
+        configSchema:
+          type: object
+          description: JSON schema for provider configuration
+        isActive:
+          type: boolean
+          description: Whether the service type is active
+    UpdateServiceTypeDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        provider:
+          type: string
+        configSchema:
+          type: object
+        isActive:
+          type: boolean
+    ServiceTypeResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        key: { type: string }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        provider: { type: string }
+        configSchema: { type: object }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateServicePlanDto:
+      type: object
+      required: [serviceTypeId, name, billingIntervalType, billingIntervalValue]
+      properties:
+        serviceTypeId:
+          type: string
+          format: uuid
+          description: Service type ID
+        name:
+          type: string
+        description:
+          type: string
+        billingIntervalType:
+          type: string
+          enum: [hour, day, month]
+        billingIntervalValue:
+          type: integer
+          minimum: 1
+        billingDayOfMonth:
+          type: integer
+          minimum: 1
+          maximum: 31
+        cancelAtPeriodEnd:
+          type: boolean
+        minCommitmentDays:
+          type: integer
+        noticeDays:
+          type: integer
+        basePrice:
+          type: string
+          description: Decimal string
+        marginPercent:
+          type: string
+          description: Decimal string
+        marginFixed:
+          type: string
+          description: Decimal string
+        providerConfigDefaults:
+          type: object
+        isActive:
+          type: boolean
+    UpdateServicePlanDto:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        billingIntervalType: { type: string, enum: [hour, day, month] }
+        billingIntervalValue: { type: integer, minimum: 1 }
+        billingDayOfMonth: { type: integer, minimum: 1, maximum: 31 }
+        cancelAtPeriodEnd: { type: boolean }
+        minCommitmentDays: { type: integer }
+        noticeDays: { type: integer }
+        basePrice: { type: string }
+        marginPercent: { type: string }
+        marginFixed: { type: string }
+        providerConfigDefaults: { type: object }
+        isActive: { type: boolean }
+    ServicePlanResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        serviceTypeId: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        billingIntervalType: { type: string, enum: [hour, day, month] }
+        billingIntervalValue: { type: integer }
+        billingDayOfMonth: { type: integer, nullable: true }
+        cancelAtPeriodEnd: { type: boolean }
+        minCommitmentDays: { type: integer }
+        noticeDays: { type: integer }
+        basePrice: { type: string, nullable: true }
+        marginPercent: { type: string, nullable: true }
+        marginFixed: { type: string, nullable: true }
+        providerConfigDefaults: { type: object }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AvailabilityCheckDto:
+      type: object
+      required: [serviceTypeId, region, serverType]
+      properties:
+        serviceTypeId:
+          type: string
+          format: uuid
+        region:
+          type: string
+        serverType:
+          type: string
+        requestedConfig:
+          type: object
+    AvailabilityResponse:
+      type: object
+      properties:
+        isAvailable: { type: boolean }
+        reason: { type: string }
+        alternatives: { type: object }
+    CreateSubscriptionDto:
+      type: object
+      required: [planId]
+      properties:
+        planId: { type: string, format: uuid }
+        requestedConfig: { type: object }
+        preferredAlternatives: { type: object }
+        autoBackorder: { type: boolean }
+    SubscriptionResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        number: { type: string }
+        planId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        status:
+          {
+            type: string,
+            enum: [active, pending_backorder, pending_cancel, canceled],
+          }
+        currentPeriodStart: { type: string, format: date-time, nullable: true }
+        currentPeriodEnd: { type: string, format: date-time, nullable: true }
+        nextBillingAt: { type: string, format: date-time, nullable: true }
+        cancelRequestedAt: { type: string, format: date-time, nullable: true }
+        cancelEffectiveAt: { type: string, format: date-time, nullable: true }
+        resumedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CancelSubscriptionDto:
+      type: object
+      properties:
+        reason: { type: string }
+    ResumeSubscriptionDto:
+      type: object
+      properties:
+        reason: { type: string }
+    SubscriptionItemResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        subscriptionId: { type: string, format: uuid }
+        serviceTypeId: { type: string, format: uuid }
+        provisioningStatus: { type: string, enum: [pending, active, failed] }
+        hostname:
+          {
+            type: string,
+            nullable: true,
+            description: Single-level subdomain when provisioned (e.g. awesome-armadillo-abc12),
+          }
+    ServerInfoResponse:
+      type: object
+      description: Server info for display (status, IPs, etc.). Provider-specific IDs are not exposed.
+      properties:
+        name: { type: string, description: Server name in provider console }
+        publicIp: { type: string, description: Public IP address }
+        privateIp:
+          {
+            type: string,
+            nullable: true,
+            description: Private IP if applicable,
+          }
+        status: { type: string, description: e.g. running, starting, stopped }
+        metadata:
+          {
+            type: object,
+            nullable: true,
+            description: Provider-specific metadata (e.g. location,
+            datacenter,
+            provider),
+          }
+        hostname:
+          {
+            type: string,
+            nullable: true,
+            description: Single-level subdomain when DNS is provisioned,
+          }
+        hostnameFqdn:
+          {
+            type: string,
+            nullable: true,
+            description: Full DNS name for display (e.g. awesome-armadillo-abc12.cloud-agent.net),
+          }
+    ServerActionResponse:
+      type: object
+      properties:
+        success:
+          { type: boolean, description: True when the action was accepted }
+    BackorderResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        serviceTypeId: { type: string, format: uuid }
+        planId: { type: string, format: uuid }
+        status:
+          {
+            type: string,
+            enum: [pending, retrying, fulfilled, cancelled, failed],
+          }
+        failureReason: { type: string, nullable: true }
+        requestedConfigSnapshot: { type: object }
+        providerErrors: { type: object }
+        preferredAlternatives: { type: object }
+        retryAfter: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    BackorderRetryDto:
+      type: object
+      properties:
+        reason: { type: string }
+        overrideConfig: { type: object }
+    BackorderCancelDto:
+      type: object
+      properties:
+        reason: { type: string }
+    PricingPreviewDto:
+      type: object
+      properties:
+        planId: { type: string, format: uuid }
+        requestedConfig: { type: object }
+    PricingPreviewResponse:
+      type: object
+      properties:
+        basePrice: { type: number }
+        marginPercent: { type: number }
+        marginFixed: { type: number }
+        totalPrice: { type: number }
+    CustomerProfileDto:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        company: { type: string }
+        addressLine1: { type: string }
+        addressLine2: { type: string }
+        postalCode: { type: string }
+        city: { type: string }
+        state: { type: string }
+        country: { type: string, minLength: 2, maxLength: 2 }
+        email: { type: string, format: email }
+        phone: { type: string }
+    CustomerProfileResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        company: { type: string, nullable: true }
+        addressLine1: { type: string, nullable: true }
+        addressLine2: { type: string, nullable: true }
+        postalCode: { type: string, nullable: true }
+        city: { type: string, nullable: true }
+        state: { type: string, nullable: true }
+        country: { type: string, nullable: true }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, nullable: true }
+        invoiceNinjaClientId: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateInvoiceDto:
+      type: object
+      properties:
+        description: { type: string }
+    InvoiceResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        subscriptionId: { type: string, format: uuid }
+        invoiceNinjaId: { type: string }
+        invoiceNumber: { type: string, nullable: true }
+        preAuthUrl: { type: string }
+        status: { type: string, nullable: true }
+        balance:
+          { type: number, nullable: true, description: Invoice balance due }
+        subscriptionNumber:
+          {
+            type: string,
+            nullable: true,
+            description: Subscription number when listing across subscriptions,
+          }
+        createdAt: { type: string, format: date-time }
+        dueDate:
+          {
+            type: string,
+            format: date,
+            nullable: true,
+            description: Invoice due date from provider,
+          }
+    CreateInvoiceResponse:
+      type: object
+      properties:
+        invoiceId: { type: string }
+        preAuthUrl: { type: string }
+    InvoicesSummaryResponse:
+      type: object
+      description: Count and total balance of open and overdue invoices for the current user, plus the user's billing day.
+      properties:
+        openOverdueCount:
+          type: integer
+          minimum: 0
+          description: Number of open and overdue invoices
+        openOverdueTotal:
+          type: number
+          minimum: 0
+          description: Sum of balances due for those invoices
+        billingDayOfMonth:
+          type: integer
+          minimum: 1
+          maximum: 28
+          description: Day of month (1-28) when the user is billed for open positions (default from registration day, capped at 28)
+        unbilledTotal:
+          type: number
+          minimum: 0
+          description: Total amount of unbilled open positions (to be invoiced on the next billing day)
+    RefreshInvoiceLinkResponse:
+      type: object
+      properties:
+        preAuthUrl: { type: string }
+    UsageSummary:
+      type: object
+      properties:
+        subscriptionId: { type: string, format: uuid }
+        periodStart: { type: string, format: date-time }
+        periodEnd: { type: string, format: date-time }
+        usagePayload: { type: object }
+    CreateUsageRecordDto:
+      type: object
+      required: [subscriptionId, periodStart, periodEnd, usagePayload]
+      properties:
+        subscriptionId: { type: string, format: uuid }
+        periodStart: { type: string, format: date-time }
+        periodEnd: { type: string, format: date-time }
+        usagePayload: { type: object }
+    UsageRecordResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }

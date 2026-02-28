@@ -1,13 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
+import type { IdentityAuthEnvironment, IdentityLocaleService } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE } from '@forepath/identity/frontend';
-import type { IdentityLocaleService } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
 import { catchError, from, map, of, switchMap, tap } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
 import {
   changePassword,
   changePasswordFailure,
@@ -173,11 +172,12 @@ export const loginSuccessRedirect$ = createEffect(
     actions$ = inject(Actions),
     router = inject(Router),
     localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE),
+    redirectTarget = inject<string[]>(LOGIN_SUCCESS_REDIRECT_TARGET),
   ) => {
     return actions$.pipe(
       ofType(loginSuccess),
       tap(() => {
-        router.navigate(localeService.buildAbsoluteUrl(['/clients']));
+        router.navigate(localeService.buildAbsoluteUrl(redirectTarget));
       }),
     );
   },

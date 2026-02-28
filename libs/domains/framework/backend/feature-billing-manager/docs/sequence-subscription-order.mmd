@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant User
+    participant BillingAPI
+    participant AvailabilityService
+    participant ProvisioningService
+    participant HetznerAPI
+    participant Database
+
+    User->>BillingAPI: POST /subscriptions
+    BillingAPI->>AvailabilityService: checkAvailability(provider, region, serverType)
+    AvailabilityService->>HetznerAPI: GET /server_types + /limits
+    HetznerAPI-->>AvailabilityService: availability + limits
+    AvailabilityService-->>BillingAPI: AvailabilityResponse
+
+    alt Available
+        BillingAPI->>Database: INSERT subscription
+        BillingAPI->>Database: INSERT subscription_item
+        BillingAPI->>ProvisioningService: provision(provider, config)
+        ProvisioningService->>HetznerAPI: POST /servers
+        HetznerAPI-->>ProvisioningService: serverId
+        ProvisioningService->>HetznerAPI: POST /firewalls/:id/attach
+        ProvisioningService-->>BillingAPI: serverId
+        BillingAPI->>Database: UPDATE subscription_item.provider_reference
+        BillingAPI-->>User: 201 SubscriptionResponse
+    else Not available
+        BillingAPI->>Database: INSERT backorder (optional)
+        BillingAPI-->>User: 400 Configuration not available
+    end

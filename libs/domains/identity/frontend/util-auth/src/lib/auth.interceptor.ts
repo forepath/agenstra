@@ -18,7 +18,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const keycloakService = inject(KeycloakService, { optional: true });
 
   const apiUrl = authEnv.apiUrl;
-  if (!apiUrl || !req.url.startsWith(apiUrl)) {
+  const additionalUrls = authEnv.additionalApiUrls ?? [];
+  const urlMatches =
+    (apiUrl && req.url.startsWith(apiUrl)) || additionalUrls.some((base) => base && req.url.startsWith(base));
+  if (!urlMatches) {
     return next(req);
   }
 

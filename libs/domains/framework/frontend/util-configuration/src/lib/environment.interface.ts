@@ -19,6 +19,9 @@ export interface Environment {
     restApiUrl: string;
     websocketUrl: string;
   };
+  billing: {
+    restApiUrl: string;
+  };
   authentication: AuthenticationConfig;
   chatModelOptions: { [provider: string]: Record<string, string> };
   editor: {
@@ -30,5 +33,6 @@ export interface Environment {
   cookieConsent: {
     domain: string;
     privacyPolicyUrl: string;
+    termsUrl: string;
   };
 }
