@@ -79,7 +79,7 @@ describe('InvoicesFacade', () => {
     });
 
     it('should return invoices summary observable', (done) => {
-      const summary = { openOverdueCount: 2, openOverdueTotal: 100 };
+      const summary = { openOverdueCount: 2, openOverdueTotal: 100, billingDayOfMonth: 10, unbilledTotal: 25 };
       store.select.mockReturnValue(of(summary));
       facade.getInvoicesSummary$().subscribe((result) => {
         expect(result).toEqual(summary);

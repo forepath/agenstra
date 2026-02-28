@@ -14,6 +14,7 @@ import { CreateInvoiceDto } from '../dto/create-invoice.dto';
 import { InvoiceResponseDto } from '../dto/invoice-response.dto';
 import { InvoiceRefEntity } from '../entities/invoice-ref.entity';
 import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
+import { UsersBillingDayRepository } from '../repositories/users-billing-day.repository';
 import { InvoiceCreationService } from '../services/invoice-creation.service';
 import { InvoiceNinjaService } from '../services/invoice-ninja.service';
 import { SubscriptionService } from '../services/subscription.service';
@@ -26,6 +27,10 @@ export class RefreshInvoiceLinkResponseDto {
 export class InvoicesSummaryResponseDto {
   openOverdueCount!: number;
   openOverdueTotal!: number;
+  /** Day of month (1-28) when the user is billed for open positions. */
+  billingDayOfMonth!: number;
+  /** Total amount of unbilled open positions (to be invoiced on the next billing day). */
+  unbilledTotal!: number;
 }
 
 @Controller('invoices')
@@ -35,6 +40,7 @@ export class InvoicesController {
     private readonly invoiceCreationService: InvoiceCreationService,
     private readonly invoiceRefsRepository: InvoiceRefsRepository,
     private readonly subscriptionService: SubscriptionService,
+    private readonly usersBillingDayRepository: UsersBillingDayRepository,
   ) {}
 
   @Get('summary')
@@ -43,10 +49,16 @@ export class InvoicesController {
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
-    const summary = await this.invoiceRefsRepository.findOpenOverdueSummaryByUserId(userInfo.userId);
+    const [summary, billingDayOfMonth, unbilledTotal] = await Promise.all([
+      this.invoiceRefsRepository.findOpenOverdueSummaryByUserId(userInfo.userId),
+      this.usersBillingDayRepository.getEffectiveBillingDayForUser(userInfo.userId),
+      this.invoiceCreationService.getUnbilledTotalForUser(userInfo.userId),
+    ]);
     return {
       openOverdueCount: summary.count,
       openOverdueTotal: summary.totalBalance,
+      billingDayOfMonth,
+      unbilledTotal,
     };
   }
 

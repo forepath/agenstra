@@ -174,8 +174,80 @@ export class InvoiceNinjaService {
 
     const statusId = data?.status_id != null ? String(data.status_id) : undefined;
     const invoiceNumber = data?.number != null ? String(data.number) : undefined;
-    await this.createInvoiceRef(subscriptionId, invoiceId, preAuthUrl, statusId, invoiceNumber);
-    return { invoiceId, preAuthUrl };
+    const ref = await this.createInvoiceRef(subscriptionId, invoiceId, preAuthUrl, statusId, invoiceNumber);
+    return { invoiceId, preAuthUrl, invoiceRefId: ref.id };
+  }
+
+  /**
+   * Creates one invoice with multiple line items (e.g. accumulated open positions for a user).
+   * Uses primarySubscriptionId for the stored invoice ref.
+   */
+  async createInvoiceWithLineItems(
+    userId: string,
+    lineItems: { description: string; amount: number }[],
+    primarySubscriptionId: string,
+  ): Promise<{ invoiceId: string; preAuthUrl: string; invoiceRefId: string }> {
+    const clientId = await this.syncCustomerProfile(userId);
+    if (!clientId) {
+      throw new Error('InvoiceNinja client not available');
+    }
+
+    const payload = {
+      client_id: clientId,
+      line_items: lineItems.map((item) => ({
+        product_key: 'subscription',
+        notes: item.description || 'Subscription charge',
+        cost: item.amount,
+        quantity: 1,
+      })),
+    };
+
+    let rawResponse: unknown;
+    try {
+      const response = await this.client.post<{ data?: InvoiceNinjaInvoiceResponse } | InvoiceNinjaInvoiceResponse>(
+        '/api/v1/invoices',
+        payload,
+        {
+          params: {
+            send_email: 'true',
+          },
+        },
+      );
+      rawResponse = response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
+      const status = axiosError.response?.status;
+      const body = axiosError.response?.data;
+      const message =
+        typeof body?.message === 'string'
+          ? body?.message
+          : body?.errors
+            ? JSON.stringify(body.errors)
+            : axiosError.message;
+      this.logger.warn(
+        `Invoice Ninja create invoice failed: status=${status} message=${message}${body ? ` body=${JSON.stringify(body)}` : ''}`,
+      );
+      throw new Error(`Invoice Ninja API error: ${message}`);
+    }
+
+    const data: InvoiceNinjaInvoiceResponse | undefined =
+      rawResponse && typeof rawResponse === 'object' && 'data' in rawResponse
+        ? (rawResponse as { data?: InvoiceNinjaInvoiceResponse }).data
+        : (rawResponse as InvoiceNinjaInvoiceResponse);
+
+    const invoiceId = data?.id;
+    const preAuthUrl = this.resolveInvoiceClientUrl(data);
+    if (!invoiceId || !preAuthUrl) {
+      this.logger.warn(
+        `Invoice Ninja create response missing id or client URL (hasId=${Boolean(invoiceId)} hasInvitations=${Boolean(data?.invitations?.length)})`,
+      );
+      throw new Error('Failed to create invoice: invalid response from Invoice Ninja');
+    }
+
+    const statusId = data?.status_id != null ? String(data.status_id) : undefined;
+    const invoiceNumber = data?.number != null ? String(data.number) : undefined;
+    const ref = await this.createInvoiceRef(primarySubscriptionId, invoiceId, preAuthUrl, statusId, invoiceNumber);
+    return { invoiceId, preAuthUrl, invoiceRefId: ref.id };
   }
 
   private resolveInvoiceClientUrl(data: InvoiceNinjaInvoiceResponse | undefined): string | undefined {
