@@ -38,6 +38,7 @@ describe('SubscriptionService', () => {
     create: jest.fn(),
     updateProviderReference: jest.fn(),
     updateProvisioningStatus: jest.fn(),
+    updateHostname: jest.fn().mockResolvedValue({}),
   } as unknown as SubscriptionItemsRepository;
   const scheduleService = new BillingScheduleService();
   const cancellationPolicyService = new CancellationPolicyService();
@@ -47,7 +48,17 @@ describe('SubscriptionService', () => {
   const availabilityService = {
     checkAvailability: jest.fn(),
   } as unknown as AvailabilityService;
-  const provisioningService = { provision: jest.fn() } as any;
+  const provisioningService = {
+    provision: jest.fn(),
+    getServerInfo: jest.fn().mockResolvedValue({ publicIp: '1.2.3.4' }),
+  } as any;
+  const hostnameReservationService = {
+    reserveHostname: jest.fn().mockResolvedValue('awesome-armadillo-abc12'),
+    releaseHostname: jest.fn().mockResolvedValue(undefined),
+  } as any;
+  const cloudflareDnsService = {
+    createARecord: jest.fn().mockResolvedValue(undefined),
+  } as any;
 
   const service = new SubscriptionService(
     plansRepository,
@@ -59,12 +70,16 @@ describe('SubscriptionService', () => {
     backorderService,
     availabilityService,
     provisioningService,
+    hostnameReservationService,
+    cloudflareDnsService,
   );
 
   beforeEach(() => {
     jest.resetAllMocks();
     (validateConfigSchema as jest.Mock).mockReturnValue([]);
     (buildBillingCloudInitUserData as jest.Mock).mockReturnValue('#!/bin/bash\necho hello');
+    hostnameReservationService.reserveHostname.mockResolvedValue('awesome-armadillo-abc12');
+    provisioningService.getServerInfo.mockResolvedValue({ publicIp: '1.2.3.4' });
   });
 
   it('creates subscription with schedule', async () => {
@@ -140,13 +155,15 @@ describe('SubscriptionService', () => {
 
     expect(result.id).toBe('sub-1');
     expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23');
+    expect(hostnameReservationService.reserveHostname).toHaveBeenCalledWith('item-1');
     expect(provisioningService.provision).toHaveBeenCalledWith('hetzner', {
-      name: 'subscription-sub-1',
+      name: 'awesome-armadillo-abc12',
       serverType: 'cx23',
       location: 'fsn1',
       firewallId: undefined,
       userData: '#!/bin/bash\necho hello',
     });
+    expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '1.2.3.4');
     expect(itemsRepository.create).toHaveBeenCalledWith({
       subscriptionId: 'sub-1',
       serviceTypeId: 'stype-1',

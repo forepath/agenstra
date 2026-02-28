@@ -55,4 +55,13 @@ export class SubscriptionItemsRepository {
     entity.serverInfoSnapshot = snapshot;
     return await this.repository.save(entity);
   }
+
+  async updateHostname(id: string, hostname: string | null): Promise<SubscriptionItemEntity> {
+    const entity = await this.repository.findOne({ where: { id } });
+    if (!entity) {
+      throw new Error(`Subscription item ${id} not found`);
+    }
+    entity.hostname = hostname ?? undefined;
+    return await this.repository.save(entity);
+  }
 }

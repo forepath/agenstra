@@ -1,6 +1,14 @@
 import { BackorderService } from './backorder.service';
 
 describe('BackorderService', () => {
+  const hostnameReservationService = {
+    reserveHostname: jest.fn().mockResolvedValue('awesome-armadillo-abc12'),
+    releaseHostname: jest.fn().mockResolvedValue(undefined),
+  } as any;
+  const cloudflareDnsService = {
+    createARecord: jest.fn().mockResolvedValue(undefined),
+  } as any;
+
   it('creates backorder', async () => {
     const repository = { create: jest.fn().mockResolvedValue({ id: 'b1' }) } as any;
     const service = new BackorderService(
@@ -22,6 +30,8 @@ describe('BackorderService', () => {
         }),
       } as any,
       { provision: jest.fn().mockResolvedValue({ serverId: 'srv-1' }) } as any,
+      hostnameReservationService,
+      cloudflareDnsService,
     );
     const result = await service.create({
       userId: 'u1',
@@ -47,6 +57,11 @@ describe('BackorderService', () => {
       create: jest.fn().mockResolvedValue({ id: 'item-1' }),
       updateProviderReference: jest.fn(),
       updateProvisioningStatus: jest.fn(),
+      updateHostname: jest.fn().mockResolvedValue({}),
+    } as any;
+    const provisioningService = {
+      provision: jest.fn().mockResolvedValue({ serverId: 'srv-1' }),
+      getServerInfo: jest.fn().mockResolvedValue({ publicIp: '1.2.3.4' }),
     } as any;
     const service = new BackorderService(
       backordersRepository,
@@ -62,10 +77,19 @@ describe('BackorderService', () => {
           nextBillingAt: new Date(),
         }),
       } as any,
-      { provision: jest.fn().mockResolvedValue({ serverId: 'srv-1' }) } as any,
+      provisioningService,
+      hostnameReservationService,
+      cloudflareDnsService,
     );
 
     await service.retry('b1');
+    expect(hostnameReservationService.reserveHostname).toHaveBeenCalledWith('item-1');
+    expect(provisioningService.provision).toHaveBeenCalledWith(
+      'hetzner',
+      expect.objectContaining({ name: 'awesome-armadillo-abc12' }),
+    );
     expect(subscriptionItemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'srv-1');
+    expect(provisioningService.getServerInfo).toHaveBeenCalledWith('hetzner', 'srv-1');
+    expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '1.2.3.4');
   });
 });

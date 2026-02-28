@@ -6,4 +6,6 @@ export interface SubscriptionItemResponseDto {
   subscriptionId: string;
   serviceTypeId: string;
   provisioningStatus: 'pending' | 'active' | 'failed';
+  /** Single-level subdomain when provisioned (e.g. awesome-armadillo-abc12) */
+  hostname?: string;
 }

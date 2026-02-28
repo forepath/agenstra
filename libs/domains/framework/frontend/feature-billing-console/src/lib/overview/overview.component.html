@@ -159,6 +159,11 @@
                   </a>
                 </p>
                 <p class="mb-0 small" i18n="@@featureOverview-publicIP">Public IP: {{ item.serverInfo.publicIp }}</p>
+                @if (item.serverInfo.hostnameFqdn) {
+                  <p class="mb-0 small" i18n="@@featureOverview-hostname">
+                    Hostname: {{ item.serverInfo.hostnameFqdn }}
+                  </p>
+                }
                 @if (item.serverInfo.privateIp) {
                   <p class="mb-0 small" i18n="@@featureOverview-privateIP">
                     Private IP: {{ item.serverInfo.privateIp }}
@@ -199,7 +204,7 @@
                     </button>
                   </div>
                   <a
-                    href="https://{{ item.serverInfo.publicIp }}"
+                    href="https://{{ item.serverInfo.hostnameFqdn || item.serverInfo.publicIp }}"
                     target="_blank"
                     class="btn btn-sm btn-primary"
                     [class.disabled]="item.serverInfo.status !== 'running'"

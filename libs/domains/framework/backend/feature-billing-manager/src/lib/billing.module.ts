@@ -20,6 +20,7 @@ import { OpenPositionEntity } from './entities/open-position.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
 import { ServiceTypeEntity } from './entities/service-type.entity';
+import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import { SubscriptionItemEntity } from './entities/subscription-item.entity';
 import { UsageRecordEntity } from './entities/usage-record.entity';
@@ -31,6 +32,7 @@ import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-
 import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
 import { ServicePlansRepository } from './repositories/service-plans.repository';
 import { ServiceTypesRepository } from './repositories/service-types.repository';
+import { ReservedHostnamesRepository } from './repositories/reserved-hostnames.repository';
 import { SubscriptionItemsRepository } from './repositories/subscription-items.repository';
 import { SubscriptionsRepository } from './repositories/subscriptions.repository';
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
@@ -40,7 +42,9 @@ import { BackorderService } from './services/backorder.service';
 import { BackorderRetryService } from './services/backorder-retry.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { CancellationPolicyService } from './services/cancellation-policy.service';
+import { CloudflareDnsService } from './services/cloudflare-dns.service';
 import { HetznerProvisioningService } from './services/hetzner-provisioning.service';
+import { HostnameReservationService } from './services/hostname-reservation.service';
 import { InvoiceNinjaService } from './services/invoice-ninja.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
 import { PricingService } from './services/pricing.service';
@@ -91,6 +95,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
       ServicePlanEntity,
       SubscriptionEntity,
       SubscriptionItemEntity,
+      ReservedHostnameEntity,
       UsageRecordEntity,
       InvoiceRefEntity,
       OpenPositionEntity,
@@ -120,6 +125,8 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     BackorderRetryService,
     BillingScheduleService,
     CancellationPolicyService,
+    CloudflareDnsService,
+    HostnameReservationService,
     HetznerProvisioningService,
     InvoiceNinjaService,
     ProviderRegistryService,
@@ -146,6 +153,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     ProviderPriceSnapshotsRepository,
     ServicePlansRepository,
     ServiceTypesRepository,
+    ReservedHostnamesRepository,
     SubscriptionItemsRepository,
     SubscriptionsRepository,
     UsageRecordsRepository,
@@ -157,6 +165,8 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     BackorderRetryService,
     BillingScheduleService,
     CancellationPolicyService,
+    CloudflareDnsService,
+    HostnameReservationService,
     HetznerProvisioningService,
     InvoiceNinjaService,
     InvoiceCreationService,
@@ -181,6 +191,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     ProviderPriceSnapshotsRepository,
     ServicePlansRepository,
     ServiceTypesRepository,
+    ReservedHostnamesRepository,
     SubscriptionItemsRepository,
     SubscriptionsRepository,
     UsageRecordsRepository,
