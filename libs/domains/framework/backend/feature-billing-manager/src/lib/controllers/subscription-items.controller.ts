@@ -82,6 +82,8 @@ function toServerInfoResponse(info: {
   privateIp?: string;
   status: string;
   metadata?: Record<string, unknown>;
+  hostname?: string;
+  hostnameFqdn?: string;
 }): ServerInfoResponseDto {
   return {
     name: info.name,
@@ -89,5 +91,7 @@ function toServerInfoResponse(info: {
     privateIp: info.privateIp,
     status: info.status,
     metadata: info.metadata,
+    hostname: info.hostname,
+    hostnameFqdn: info.hostnameFqdn,
   };
 }

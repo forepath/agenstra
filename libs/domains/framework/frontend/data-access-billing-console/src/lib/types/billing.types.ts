@@ -152,6 +152,7 @@ export interface SubscriptionItemResponse {
   subscriptionId: string;
   serviceTypeId: string;
   provisioningStatus: ProvisioningStatus;
+  hostname?: string | null;
 }
 
 export interface ServerInfoResponse {
@@ -160,6 +161,8 @@ export interface ServerInfoResponse {
   privateIp?: string;
   status: string;
   metadata?: Record<string, unknown>;
+  hostname?: string | null;
+  hostnameFqdn?: string | null;
 }
 
 // Backorders

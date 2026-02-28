@@ -15,12 +15,20 @@ describe('SubscriptionExpirationScheduler', () => {
   const openPositionsRepository = {
     create: jest.fn(),
   } as any;
+  const hostnameReservationService = {
+    releaseHostname: jest.fn().mockResolvedValue(undefined),
+  } as any;
+  const cloudflareDnsService = {
+    deleteRecord: jest.fn().mockResolvedValue(undefined),
+  } as any;
 
   const scheduler = new SubscriptionExpirationScheduler(
     subscriptionsRepository,
     subscriptionItemsRepository,
     provisioningService,
     openPositionsRepository,
+    hostnameReservationService,
+    cloudflareDnsService,
   );
 
   beforeEach(() => {
@@ -109,5 +117,27 @@ describe('SubscriptionExpirationScheduler', () => {
     expect(subscriptionsRepository.update).toHaveBeenCalledWith('sub-1', {
       status: SubscriptionStatus.CANCELED,
     });
+  });
+
+  it('removes DNS record and releases hostname when item has hostname', async () => {
+    subscriptionsRepository.findDueForCancellation.mockResolvedValue([
+      { id: 'sub-1', userId: 'user-1', status: SubscriptionStatus.PENDING_CANCEL, number: '123456' },
+    ]);
+    subscriptionItemsRepository.findBySubscription.mockResolvedValue([
+      {
+        id: 'item-1',
+        hostname: 'awesome-armadillo-abc12',
+        providerReference: 'server-123',
+        serviceType: { provider: 'hetzner' },
+      },
+    ]);
+    provisioningService.deprovision.mockResolvedValue(undefined);
+    openPositionsRepository.create.mockResolvedValue(undefined);
+
+    await scheduler.processExpiredSubscriptions();
+
+    expect(cloudflareDnsService.deleteRecord).toHaveBeenCalledWith('awesome-armadillo-abc12');
+    expect(hostnameReservationService.releaseHostname).toHaveBeenCalledWith('item-1');
+    expect(provisioningService.deprovision).toHaveBeenCalledWith('hetzner', 'server-123');
   });
 });

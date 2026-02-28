@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { BackorderEntity, BackorderStatus } from '../entities/backorder.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
 import { AvailabilityService } from './availability.service';
@@ -8,10 +8,14 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { BillingScheduleService } from './billing-schedule.service';
+import { CloudflareDnsService } from './cloudflare-dns.service';
+import { HostnameReservationService } from './hostname-reservation.service';
 import { ProvisioningService } from './provisioning.service';
 
 @Injectable()
 export class BackorderService {
+  private readonly logger = new Logger(BackorderService.name);
+
   constructor(
     private readonly backordersRepository: BackordersRepository,
     private readonly availabilityService: AvailabilityService,
@@ -21,6 +25,8 @@ export class BackorderService {
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
     private readonly billingScheduleService: BillingScheduleService,
     private readonly provisioningService: ProvisioningService,
+    private readonly hostnameReservationService: HostnameReservationService,
+    private readonly cloudflareDnsService: CloudflareDnsService,
   ) {}
 
   async create(data: {
@@ -93,9 +99,11 @@ export class BackorderService {
     });
 
     if (serviceType.provider === 'hetzner') {
+      let hostname: string | null = null;
       try {
+        hostname = await this.hostnameReservationService.reserveHostname(baseItem.id);
         const provisioningConfig = {
-          name: `subscription-${subscription.id}`,
+          name: hostname,
           serverType: (backorder.requestedConfigSnapshot?.serverType as string | undefined) ?? 'cx11',
           location: (backorder.requestedConfigSnapshot?.region as string | undefined) ?? 'fsn1',
           firewallId: backorder.requestedConfigSnapshot?.firewallId as number | undefined,
@@ -105,8 +113,27 @@ export class BackorderService {
         if (provisioned?.serverId) {
           await this.subscriptionItemsRepository.updateProviderReference(baseItem.id, provisioned.serverId);
           await this.subscriptionItemsRepository.updateProvisioningStatus(baseItem.id, 'active');
+          const serverInfo = await this.provisioningService.getServerInfo(serviceType.provider, provisioned.serverId);
+          if (serverInfo?.publicIp) {
+            try {
+              await this.cloudflareDnsService.createARecord(hostname, serverInfo.publicIp);
+            } catch (dnsError) {
+              this.logger.warn(
+                `DNS record creation failed for ${hostname}, server provisioned with IP ${serverInfo.publicIp}: ${(dnsError as Error).message}`,
+              );
+            }
+          }
         }
       } catch (error) {
+        if (hostname) {
+          try {
+            await this.hostnameReservationService.releaseHostname(baseItem.id);
+          } catch (releaseError) {
+            this.logger.warn(
+              `Failed to release hostname after provisioning failure: ${(releaseError as Error).message}`,
+            );
+          }
+        }
         await this.subscriptionItemsRepository.updateProvisioningStatus(baseItem.id, 'failed');
         throw error;
       }
