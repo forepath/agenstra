@@ -67,7 +67,7 @@ export class InvoiceSyncScheduler implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    const updates: Partial<Pick<InvoiceRefEntity, 'status' | 'invoiceNumber' | 'balance'>> = {};
+    const updates: Partial<Pick<InvoiceRefEntity, 'status' | 'invoiceNumber' | 'balance' | 'dueDate'>> = {};
     if (details.status !== undefined && details.status !== ref.status) {
       updates.status = details.status;
     }
@@ -76,6 +76,13 @@ export class InvoiceSyncScheduler implements OnModuleInit, OnModuleDestroy {
     }
     if (details.balance !== undefined && details.balance !== ref.balance) {
       updates.balance = details.balance;
+    }
+    if (details.dueDate !== undefined) {
+      const same =
+        ref.dueDate != null && details.dueDate != null && ref.dueDate.getTime() === details.dueDate.getTime();
+      if (!same) {
+        updates.dueDate = details.dueDate;
+      }
     }
 
     if (Object.keys(updates).length === 0) {

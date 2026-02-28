@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter, pairwise } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import {
   ServiceTypesFacade,
   type CreateServiceTypeDto,
   type ServiceTypeResponse,
   type UpdateServiceTypeDto,
 } from '@forepath/framework/frontend/data-access-billing-console';
+import { filter, pairwise } from 'rxjs';
 
 @Component({
   selector: 'framework-billing-service-types-page',
@@ -23,6 +23,7 @@ export class ServiceTypesPageComponent implements OnInit {
   @ViewChild('deleteConfirmModal', { static: false }) private deleteConfirmModal!: ElementRef<HTMLDivElement>;
 
   private readonly facade = inject(ServiceTypesFacade);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly serviceTypes$ = this.facade.getServiceTypes$();
   readonly providerDetails$ = this.facade.getProviderDetails$();
@@ -46,7 +47,7 @@ export class ServiceTypesPageComponent implements OnInit {
       .pipe(
         pairwise(),
         filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.hideModal(this.createModal);
@@ -57,7 +58,7 @@ export class ServiceTypesPageComponent implements OnInit {
       .pipe(
         pairwise(),
         filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.hideModal(this.editModal);
@@ -68,7 +69,7 @@ export class ServiceTypesPageComponent implements OnInit {
       .pipe(
         pairwise(),
         filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.hideModal(this.deleteConfirmModal);

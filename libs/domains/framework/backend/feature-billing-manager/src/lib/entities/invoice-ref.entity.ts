@@ -28,6 +28,9 @@ export class InvoiceRefEntity {
   @Column({ type: 'decimal', precision: 12, scale: 4, nullable: true, name: 'balance' })
   balance?: number;
 
+  @Column({ type: 'date', nullable: true, name: 'due_date' })
+  dueDate?: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }
