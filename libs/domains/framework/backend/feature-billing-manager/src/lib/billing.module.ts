@@ -85,6 +85,37 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
       enum: ['fsn1', 'nbg1', 'hel1', 'ash', 'hil', 'sgp'],
     },
     firewallId: { type: 'number', description: 'Optional firewall ID to attach to server' },
+    authenticationMethod: {
+      type: 'string',
+      description: 'Authentication method for the agent (users, api-key, keycloak)',
+    },
+    staticApiKey: {
+      type: 'string',
+      description: 'Static API key (required when authenticationMethod is api-key)',
+    },
+    disableSignup: { type: 'boolean', description: 'Whether to disable user signup' },
+    smtp: {
+      type: 'object',
+      description: 'SMTP configuration for email',
+      properties: {
+        host: { type: 'string' },
+        port: { type: 'number' },
+        user: { type: 'string' },
+        password: { type: 'string' },
+        from: { type: 'string' },
+      },
+    },
+    keycloak: {
+      type: 'object',
+      description: 'Keycloak configuration (when authenticationMethod is keycloak)',
+      properties: {
+        serverUrl: { type: 'string' },
+        authServerUrl: { type: 'string' },
+        realm: { type: 'string' },
+        clientId: { type: 'string' },
+        clientSecret: { type: 'string' },
+      },
+    },
   },
 };
 

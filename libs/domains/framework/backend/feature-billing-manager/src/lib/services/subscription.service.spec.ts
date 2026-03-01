@@ -10,7 +10,7 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { SubscriptionService } from './subscription.service';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
-import { buildBillingCloudInitUserData } from '../utils/cloud-init.utils';
+import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
 
 jest.mock('../utils/config-validation.utils', () => ({
@@ -18,6 +18,21 @@ jest.mock('../utils/config-validation.utils', () => ({
 }));
 
 jest.mock('../utils/cloud-init.utils', () => ({
+  buildCloudInitConfigFromRequest: jest
+    .fn()
+    .mockImplementation((effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
+      host: {
+        hostname,
+        fqdn: `${hostname}.${baseDomain ?? 'cloud-agent.net'}`,
+      },
+      backend: {
+        authentication: {
+          authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
+          disableSignup: false,
+        },
+        encryption: { encryptionKey: 'mock-key', jwtSecret: 'mock-secret' },
+      },
+    })),
   buildBillingCloudInitUserData: jest.fn().mockReturnValue('#!/bin/bash\necho hello'),
 }));
 
@@ -77,6 +92,21 @@ describe('SubscriptionService', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     (validateConfigSchema as jest.Mock).mockReturnValue([]);
+    (buildCloudInitConfigFromRequest as jest.Mock).mockImplementation(
+      (effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
+        host: {
+          hostname,
+          fqdn: `${hostname}.${baseDomain ?? 'cloud-agent.net'}`,
+        },
+        backend: {
+          authentication: {
+            authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
+            disableSignup: false,
+          },
+          encryption: { encryptionKey: 'mock-key', jwtSecret: 'mock-secret' },
+        },
+      }),
+    );
     (buildBillingCloudInitUserData as jest.Mock).mockReturnValue('#!/bin/bash\necho hello');
     hostnameReservationService.reserveHostname.mockResolvedValue('awesome-armadillo-abc12');
     provisioningService.getServerInfo.mockResolvedValue({ publicIp: '1.2.3.4' });
@@ -175,11 +205,33 @@ describe('SubscriptionService', () => {
         frontendEnv: { BAR: 'baz' },
       },
     });
-    expect(buildBillingCloudInitUserData).toHaveBeenCalledWith({
-      authenticationMethod: 'api-key',
-      backendEnv: { FOO: 'bar' },
-      frontendEnv: { BAR: 'baz' },
-    });
+    expect(buildCloudInitConfigFromRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        region: 'fsn1',
+        serverType: 'cx23',
+        authenticationMethod: 'api-key',
+      }),
+      'awesome-armadillo-abc12',
+      'cloud-agent.net',
+    );
+    expect(buildBillingCloudInitUserData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        host: {
+          hostname: 'awesome-armadillo-abc12',
+          fqdn: 'awesome-armadillo-abc12.cloud-agent.net',
+        },
+        backend: expect.objectContaining({
+          authentication: expect.objectContaining({
+            authenticationMethod: 'api-key',
+            disableSignup: false,
+          }),
+          encryption: expect.objectContaining({
+            encryptionKey: expect.any(String),
+            jwtSecret: expect.any(String),
+          }),
+        }),
+      }),
+    );
   });
 
   it('rejects cancel when policy disallows', async () => {

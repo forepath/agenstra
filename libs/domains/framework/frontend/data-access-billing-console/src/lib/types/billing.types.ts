@@ -129,6 +129,33 @@ export interface SubscriptionResponse {
   updatedAt: string;
 }
 
+/** SMTP configuration for cloud-init (email). */
+export interface SmtpConfig {
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+  from?: string;
+}
+
+/** Keycloak configuration (when authenticationMethod is keycloak). */
+export interface KeycloakConfig {
+  serverUrl?: string;
+  authServerUrl?: string;
+  realm?: string;
+  clientId?: string;
+  clientSecret?: string;
+}
+
+/** Cloud-init related part of requestedConfig (authentication, SMTP). */
+export interface RequestedConfigCloudInit {
+  authenticationMethod?: string;
+  staticApiKey?: string;
+  disableSignup?: boolean;
+  smtp?: SmtpConfig;
+  keycloak?: KeycloakConfig;
+}
+
 export interface CreateSubscriptionDto {
   planId: string;
   requestedConfig?: Record<string, unknown>;

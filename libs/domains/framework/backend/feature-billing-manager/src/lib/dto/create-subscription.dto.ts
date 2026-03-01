@@ -5,6 +5,10 @@ export class CreateSubscriptionDto {
   @IsString({ message: 'Plan ID must be a string' })
   planId!: string;
 
+  /**
+   * Optional configuration merged with plan defaults for provisioning.
+   * May include: authenticationMethod, disableSignup, smtp (host, port, user, password, from), keycloak.
+   */
   @IsOptional()
   @IsObject({ message: 'Requested config must be an object' })
   requestedConfig?: Record<string, unknown>;
