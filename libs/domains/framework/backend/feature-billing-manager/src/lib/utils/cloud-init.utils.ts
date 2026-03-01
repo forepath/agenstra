@@ -1,44 +1,440 @@
+import { randomBytes } from 'crypto';
+
 export interface CloudInitConfig {
-  backendEnv?: Record<string, string>;
-  frontendEnv?: Record<string, string>;
-  authenticationMethod?: string;
+  host: {
+    hostname: string;
+    /** Fully qualified domain name (e.g. awesome-armadillo-abc12.cloud-agent.net) for SSL and CORS */
+    fqdn: string;
+  };
+  proxy: {
+    httpPort: number;
+    httpsPort: number;
+    websocketPort: number;
+  };
+  frontend: {
+    host: string;
+    port: number;
+    nodeEnv: string;
+    defaultLocale: string;
+  };
+  backend: {
+    host: string;
+    port: number;
+    websocketPort: number;
+    nodeEnv: string;
+    defaultLocale: string;
+    provisioning?: {
+      hetznerApiToken?: string;
+      digitaloceanApiToken?: string;
+    };
+    database?: {
+      host: string;
+      port: number;
+      username: string;
+      password: string;
+      database: string;
+    };
+    authentication: {
+      authenticationMethod: string;
+      staticApiKey?: string;
+      keycloak?: {
+        serverUrl: string;
+        authServerUrl: string;
+        realm: string;
+        clientId: string;
+        clientSecret: string;
+      };
+      disableSignup: boolean;
+    };
+    encryption: {
+      jwtSecret: string;
+      encryptionKey: string;
+    };
+    smtp: {
+      host: string;
+      port: number;
+      user: string;
+      password: string;
+      from: string;
+    };
+    cors: {
+      origin: string;
+    };
+    rateLimit: {
+      enabled: boolean;
+      ttl: number;
+      limit: number;
+    };
+  };
+}
+
+/**
+ * Builds a full CloudInitConfig from effectiveConfig (plan defaults + requestedConfig) and hostname.
+ * Generates random encryptionKey and jwtSecret. SMTP and auth options come from effectiveConfig with defaults.
+ * @param baseDomain - Base domain for FQDN (e.g. cloud-agent.net). Defaults to cloud-agent.net.
+ */
+export function buildCloudInitConfigFromRequest(
+  effectiveConfig: Record<string, unknown>,
+  hostname: string,
+  baseDomain = 'cloud-agent.net',
+): CloudInitConfig {
+  const encryptionKey = randomBytes(32).toString('base64');
+  const jwtSecret = randomBytes(32).toString('hex');
+  const fqdn = `${hostname}.${baseDomain}`;
+
+  const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
+  const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
+
+  return {
+    host: { hostname, fqdn },
+    proxy: {
+      httpPort: 80,
+      httpsPort: 443,
+      websocketPort: 8443,
+    },
+    frontend: {
+      host: '0.0.0.0',
+      port: 4200,
+      nodeEnv: 'production',
+      defaultLocale: 'en',
+    },
+    backend: {
+      host: '0.0.0.0',
+      port: 3100,
+      websocketPort: 8081,
+      nodeEnv: 'production',
+      defaultLocale: 'en',
+      database: {
+        host: 'postgres',
+        port: 5432,
+        username: 'postgres',
+        password: 'postgres',
+        database: 'postgres',
+      },
+      authentication: {
+        authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
+        disableSignup: (effectiveConfig.disableSignup as boolean) ?? false,
+        staticApiKey: (effectiveConfig.staticApiKey as string) ?? '',
+        ...(keycloak && {
+          keycloak: {
+            serverUrl: (keycloak.serverUrl as string) ?? '',
+            authServerUrl: (keycloak.authServerUrl as string) ?? '',
+            realm: (keycloak.realm as string) ?? '',
+            clientId: (keycloak.clientId as string) ?? '',
+            clientSecret: (keycloak.clientSecret as string) ?? '',
+          },
+        }),
+      },
+      encryption: { encryptionKey, jwtSecret },
+      smtp: {
+        host: (smtp?.host as string) ?? 'mailhog',
+        port: (smtp?.port as number) ?? 1025,
+        user: (smtp?.user as string) ?? '',
+        password: (smtp?.password as string) ?? '',
+        from: (smtp?.from as string) ?? 'noreply@localhost',
+      },
+      cors: { origin: `https://${fqdn}` },
+      rateLimit: { enabled: false, ttl: 60, limit: 100 },
+    },
+  };
 }
 
 export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
-  const backendEnv = formatEnv(config.backendEnv ?? {}, [
-    'HOST=0.0.0.0',
-    'PORT=3100',
-    'WEBSOCKET_PORT=8081',
-    'NODE_ENV=production',
-    'DB_HOST=postgres',
-    'DB_PORT=5432',
-    'DB_USERNAME=postgres',
-    'DB_PASSWORD=postgres',
-    'DB_DATABASE=postgres',
-    `AUTHENTICATION_METHOD=${config.authenticationMethod ?? 'api-key'}`,
+  const backendEnv = formatEnv([
+    // Backend web server configuration
+    `HOST=${config.backend?.host ?? '0.0.0.0'}`,
+    `PORT=${config.backend?.port ?? '3100'}`,
+    `WEBSOCKET_PORT=${config.backend?.websocketPort ?? '8081'}`,
+    `NODE_ENV=${config.backend?.nodeEnv ?? 'production'}`,
+    // Database configuration
+    `DB_HOST=${config.backend?.database?.host ?? 'postgres'}`,
+    `DB_PORT=${config.backend?.database?.port ?? '5432'}`,
+    `DB_USERNAME=${config.backend?.database?.username ?? 'postgres'}`,
+    `DB_PASSWORD=${config.backend?.database?.password ?? 'postgres'}`,
+    `DB_DATABASE=${config.backend?.database?.database ?? 'postgres'}`,
+    // Authentication method configuration
+    `AUTHENTICATION_METHOD=${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
+    `STATIC_API_KEY=${config.backend?.authentication?.staticApiKey ?? ''}`,
+    `KEYCLOAK_SERVER_URL=${config.backend?.authentication?.keycloak?.serverUrl ?? ''}`,
+    `KEYCLOAK_AUTH_SERVER_URL=${config.backend?.authentication?.keycloak?.authServerUrl ?? ''}`,
+    `KEYCLOAK_REALM=${config.backend?.authentication?.keycloak?.realm ?? ''}`,
+    `KEYCLOAK_CLIENT_ID=${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
+    `KEYCLOAK_CLIENT_SECRET=${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
+    // Environment variables for the provisioning providers
+    `HETZNER_API_TOKEN=${config.backend?.provisioning?.hetznerApiToken ?? ''}`,
+    `DIGITALOCEAN_API_TOKEN=${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
+    // Environment variables for disabling signup
+    `DISABLE_SIGNUP=${config.backend?.authentication?.disableSignup ?? 'false'}`,
+    // Environment variables for encryption
+    `ENCRYPTION_KEY=${config.backend?.encryption?.encryptionKey ?? ''}`,
+    // Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
+    `JWT_SECRET=${config.backend?.encryption?.jwtSecret ?? ''}`,
+    // SMTP / MailHog configuration (for email confirmation and password reset)
+    `SMTP_HOST=${config.backend?.smtp?.host ?? 'mailhog'}`,
+    `SMTP_PORT=${config.backend?.smtp?.port ?? '1025'}`,
+    `SMTP_USER=${config.backend?.smtp?.user ?? ''}`,
+    `SMTP_PASSWORD=${config.backend?.smtp?.password ?? ''}`,
+    `EMAIL_FROM=${config.backend?.smtp?.from ?? 'noreply@localhost'}`,
+    // CORS configuration (comma-separated list of allowed origins)
+    `CORS_ORIGIN=${config.backend?.cors?.origin ?? ''}`,
+    // Rate limiting configuration
+    `RATE_LIMIT_ENABLED=${config.backend?.rateLimit?.enabled ?? 'false'}`,
+    `RATE_LIMIT_TTL=${config.backend?.rateLimit?.ttl ?? '60'}`,
+    `RATE_LIMIT_LIMIT=${config.backend?.rateLimit?.limit ?? '100'}`,
   ]);
 
-  const frontendEnv = formatEnv(config.frontendEnv ?? {}, [
-    'HOST=0.0.0.0',
-    'PORT=4200',
-    'NODE_ENV=production',
-    'DEFAULT_LOCALE=en',
+  const frontendEnv = formatEnv([
+    // Frontend web server configuration
+    `HOST=${config.frontend?.host ?? '0.0.0.0'}`,
+    `PORT=${config.frontend?.port ?? '4200'}`,
+    `NODE_ENV=${config.frontend?.nodeEnv ?? 'production'}`,
+    `DEFAULT_LOCALE=${config.frontend?.defaultLocale ?? 'en'}`,
   ]);
 
-  const compose = `services:\n  postgres:\n    image: postgres:16-alpine\n    container_name: agent-controller-postgres\n    environment:\n      POSTGRES_USER: postgres\n      POSTGRES_PASSWORD: postgres\n      POSTGRES_DB: postgres\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n    healthcheck:\n      test: ['CMD-SHELL', 'pg_isready -U postgres']\n      interval: 10s\n      timeout: 5s\n      retries: 5\n    networks:\n      - agent-controller-network\n    restart: unless-stopped\n\n  backend-agent-controller:\n    image: ghcr.io/forepath/agenstra-controller-api:latest\n    container_name: agent-controller-api\n    environment:\n${backendEnv}\n    ports:\n      - '3100:3100'\n      - '8081:8081'\n    depends_on:\n      postgres:\n        condition: service_healthy\n    networks:\n      - agent-controller-network\n    restart: unless-stopped\n\n  frontend-agent-console-server:\n    image: ghcr.io/forepath/agenstra-console-server:latest\n    container_name: agent-console-server\n    environment:\n${frontendEnv}\n    ports:\n      - '4200:4200'\n    networks:\n      - agent-controller-network\n    restart: unless-stopped\n\nvolumes:\n  postgres_data:\n\nnetworks:\n  agent-controller-network:\n    driver: bridge\n`;
+  const dockerCompose = `services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: agent-controller-postgres
+    environment:
+      POSTGRES_USER: ${config.backend?.database?.username ?? 'postgres'}
+      POSTGRES_PASSWORD: ${config.backend?.database?.password ?? 'postgres'}
+      POSTGRES_DB: ${config.backend?.database?.database ?? 'postgres'}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${config.backend?.database?.username ?? 'postgres'}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
 
-  const script = `#!/bin/bash\nset -euo pipefail\n\napt-get update -qq\napt-get install -y ca-certificates curl\ncurl -fsSL https://get.docker.com -o get-docker.sh\nsh ./get-docker.sh\nrm -f get-docker.sh\nsystemctl enable docker\nsystemctl start docker\n\nmkdir -p /opt/agent-stack\ncat > /opt/agent-stack/docker-compose.yaml <<'EOF'\n${compose}\nEOF\n\ncd /opt/agent-stack\ndocker compose up -d\n`;
+  backend-agent-controller:
+    image: ghcr.io/forepath/agenstra-controller-api:latest
+    container_name: agent-controller-api
+    environment:
+${backendEnv}
+    ports:
+      - '127.0.0.1:${config.backend?.port ?? '3100'}:${config.backend?.port ?? '3100'}'
+      - '127.0.0.1:${config.backend?.websocketPort ?? '8081'}:${config.backend?.websocketPort ?? '8081'}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+  frontend-agent-console-server:
+    image: ghcr.io/forepath/agenstra-console-server:latest
+    container_name: agent-console-server
+    environment:
+${frontendEnv}
+    ports:
+      - '127.0.0.1:${config.frontend?.port ?? '4200'}:${config.frontend?.port ?? '4200'}'
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: agent-controller-nginx
+    ports:
+      - '${config.proxy?.httpPort ?? '80'}:${config.proxy?.httpPort ?? '80'}'
+      - '${config.proxy?.httpsPort ?? '443'}:${config.proxy?.httpsPort ?? '443'}'
+      - '${config.proxy?.websocketPort ?? '8443'}:${config.proxy?.websocketPort ?? '8443'}'
+    depends_on:
+      - frontend-agent-console-server
+      - backend-agent-controller
+    volumes:
+      - /opt/agent-controller/sites-enabled:/etc/nginx/sites-enabled:ro
+      - /opt/agent-controller/ssl:/etc/nginx/ssl:ro
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  agent-controller-network:
+    driver: bridge
+`;
+
+  const nginxConfig = `
+server {
+    listen ${config.proxy?.httpPort ?? '80'};
+    server_name _;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen ${config.proxy?.httpsPort ?? '443'} ssl http2;
+    server_name _;
+
+    ssl_certificate /etc/nginx/ssl/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx-selfsigned.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://127.0.0.1:${config.frontend?.port ?? '4200'};
+    }
+
+    location /backend/ {
+        proxy_pass http://127.0.0.1:${config.backend?.port ?? '3100'}/;
+    }
+}
+
+server {
+    listen ${config.proxy?.websocketPort ?? '8443'} ssl http2;
+    server_name _;
+
+    ssl_certificate /etc/nginx/ssl/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx-selfsigned.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://127.0.0.1:${config.backend?.websocketPort ?? '8081'};
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+`;
+
+  const script = `#!/bin/bash
+set -euo pipefail
+
+# Cloud-init user-data script for agent-controller provisioning
+# This script is executed by cloud-init during server initialization
+
+# Logging function
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a /var/log/agent-controller-provisioning.log
+}
+
+log "Starting server provisioning script (cloud-init user-data)"
+
+# Ensure network is ready (cloud-init should have this ready, but we verify)
+log "Verifying network connectivity..."
+for i in {1..10}; do
+    if ping -c 1 -W 2 8.8.8.8 > /dev/null 2>&1; then
+        log "Network is ready"
+        break
+    fi
+    if [ $i -eq 10 ]; then
+        log "WARNING: Network connectivity check failed, continuing anyway"
+    fi
+    sleep 1
+done
+
+# Update system
+export DEBIAN_FRONTEND=noninteractive
+log "Updating system packages..."
+apt-get update -qq
+apt-get upgrade -y -qq
+
+# Install openssl for SSL certificate generation
+log "Installing openssl..."
+apt-get install -y openssl
+
+# Install Docker using the convenience script
+# Official method: https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script
+log "Installing prerequisites for Docker installation..."
+apt-get update -qq
+apt-get install -y ca-certificates curl
+
+log "Installing Docker using convenience script..."
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh ./get-docker.sh
+rm -f get-docker.sh
+
+# Start and enable Docker service
+log "Starting Docker service..."
+systemctl enable docker
+systemctl start docker
+
+# Wait for Docker to be ready and verify it's working
+log "Waiting for Docker to be ready..."
+for i in {1..30}; do
+    if docker info > /dev/null 2>&1; then
+        log "Docker is ready"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        log "ERROR: Docker failed to start after 30 attempts"
+        exit 1
+    fi
+    sleep 2
+done
+
+# Verify Docker is working
+if ! docker info > /dev/null 2>&1; then
+    log "ERROR: Docker is not working properly"
+    exit 1
+fi
+
+# Create directory for agent-controller
+log "Creating agent-controller directory..."
+mkdir -p /opt/agent-controller
+
+# Create nginx sites-enabled directory
+log "Creating nginx sites-enabled directory..."
+mkdir -p /opt/agent-controller/sites-enabled
+
+# Create nginx configuration file
+log "Creating nginx configuration file..."
+cat > /opt/agent-controller/sites-enabled/agent-controller.conf <<'EOF'
+${nginxConfig}
+EOF
+
+# Create nginx ssl directory
+log "Creating nginx ssl directory..."
+mkdir -p /opt/agent-controller/ssl
+
+# Generate self-signed SSL certificate for nginx
+log "Generating self-signed SSL certificate..."
+mkdir -p /opt/agent-controller/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /opt/agent-controller/ssl/nginx-selfsigned.key \
+    -out /opt/agent-controller/ssl/nginx-selfsigned.crt \
+    -subj "/C=DE/ST=Nordrhein-Westfalen/L=Herford/O=Agenstra/CN=${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}" \
+    -addext "subjectAltName=DNS:${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}" 2>/dev/null || {
+    log "WARNING: Failed to generate SSL certificate, nginx will not work properly"
+}
+
+chmod 600 /opt/agent-controller/ssl/nginx-selfsigned.key
+chmod 644 /opt/agent-controller/ssl/nginx-selfsigned.crt
+
+# Create docker-compose.yaml file
+log "Creating docker-compose.yaml file..."
+cat > /opt/agent-controller/docker-compose.yaml <<'EOF'
+${dockerCompose}
+EOF
+
+# Start agent-controller container
+log "Starting agent-controller container..."
+cd /opt/agent-controller
+docker compose up -d || {
+    log "ERROR: Failed to start agent-controller container"
+    docker compose logs || true
+    exit 1
+}
+
+log "agent-controller provisioning completed successfully at $(date)"
+`;
 
   return Buffer.from(script).toString('base64');
 }
 
-function formatEnv(additional: Record<string, string>, defaults: string[]): string {
-  const lines = [...defaults];
-  for (const [key, value] of Object.entries(additional)) {
-    if (!key || value === undefined) {
-      continue;
-    }
-    lines.push(`${key}=${value}`);
-  }
+function formatEnv(lines: string[]): string {
   return lines.map((line) => `      ${line}`).join('\n');
 }

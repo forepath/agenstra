@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BackorderEntity, BackorderStatus } from '../entities/backorder.entity';
+import { SubscriptionStatus } from '../entities/subscription.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
-import { AvailabilityService } from './availability.service';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
-import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
-import { SubscriptionStatus } from '../entities/subscription.entity';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
+import { AvailabilityService } from './availability.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { HostnameReservationService } from './hostname-reservation.service';
@@ -102,12 +103,22 @@ export class BackorderService {
       let hostname: string | null = null;
       try {
         hostname = await this.hostnameReservationService.reserveHostname(baseItem.id);
+        const effectiveConfig: Record<string, unknown> = {
+          ...(plan.providerConfigDefaults ?? {}),
+          ...(backorder.requestedConfigSnapshot ?? {}),
+        };
         const provisioningConfig = {
           name: hostname,
-          serverType: (backorder.requestedConfigSnapshot?.serverType as string | undefined) ?? 'cx11',
-          location: (backorder.requestedConfigSnapshot?.region as string | undefined) ?? 'fsn1',
-          firewallId: backorder.requestedConfigSnapshot?.firewallId as number | undefined,
-          userData: (backorder.requestedConfigSnapshot?.userData as string | undefined) ?? '',
+          serverType: (effectiveConfig.serverType as string) ?? 'cx11',
+          location: (effectiveConfig.region as string) ?? 'fsn1',
+          firewallId: effectiveConfig.firewallId as number | undefined,
+          userData: buildBillingCloudInitUserData(
+            buildCloudInitConfigFromRequest(
+              effectiveConfig,
+              hostname,
+              process.env.DNS_BASE_DOMAIN ?? 'cloud-agent.net',
+            ),
+          ),
         };
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);
         if (provisioned?.serverId) {

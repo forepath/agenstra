@@ -32,6 +32,8 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE
 - HETZNER_API_TOKEN
 - OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL (optional; default 86400000 ms = daily)
+- CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID (for DNS A record creation on provisioned servers)
+- DNS_BASE_DOMAIN (optional; default `cloud-agent.net`) – base domain for FQDN in SSL certificates and CORS
 
 ## Users Authentication
 
@@ -74,6 +76,9 @@ The cloud-init user data installs Docker and deploys a docker-compose stack cont
 - postgres
 - backend-agent-controller
 - frontend-agent-console
+
+Nginx proxies `/backend/` to the backend API (with path stripped). SSL certificates and CORS are configured using
+the FQDN (`hostname.DNS_BASE_DOMAIN`) for proper HTTPS and same-origin requests.
 
 ## Diagrams
 

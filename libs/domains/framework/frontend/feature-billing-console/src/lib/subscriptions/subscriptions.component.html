@@ -267,6 +267,7 @@
   aria-labelledby="orderPlanModalLabel"
   aria-hidden="true"
   #orderPlanModal
+  (hidden.bs.modal)="resetOrderRequestedConfig()"
 >
   <div class="modal-dialog">
     <div class="modal-content">
@@ -332,6 +333,240 @@
                           >{{ selectedPlan.noticeDays }} <span i18n="@@featureSubscriptions-days">days</span></strong
                         >
                       </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-body border rounded">
+                      <h6 class="mb-3" i18n="@@featureSubscriptions-cloudInitConfig">Instance configuration</h6>
+                      <div class="mb-3">
+                        <label for="orderAuthMethod" class="form-label" i18n="@@featureSubscriptions-authMethod"
+                          >Authentication method</label
+                        >
+                        <select
+                          id="orderAuthMethod"
+                          name="authMethod"
+                          class="form-select"
+                          [ngModel]="orderRequestedConfig.authenticationMethod"
+                          (ngModelChange)="onAuthMethodChange($event)"
+                          [disabled]="(subscriptionsCreating$ | async) === true"
+                          aria-describedby="orderAuthMethodHelp"
+                        >
+                          <option [ngValue]="'users'" i18n="@@featureSubscriptions-authUsers">Users</option>
+                          <option [ngValue]="'api-key'" i18n="@@featureSubscriptions-authApiKey">API Key</option>
+                          <option [ngValue]="'keycloak'" i18n="@@featureSubscriptions-authKeycloak">Keycloak</option>
+                        </select>
+                        <span
+                          id="orderAuthMethodHelp"
+                          class="form-text text-body-secondary"
+                          i18n="@@featureSubscriptions-authMethodHelp"
+                        >
+                          How users authenticate to the agent instance.
+                        </span>
+                      </div>
+                      <div [ngSwitch]="authMethod()">
+                        <div *ngSwitchCase="'users'" class="form-check mb-3">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="orderDisableSignup"
+                            name="disableSignup"
+                            [(ngModel)]="orderRequestedConfig.disableSignup"
+                            [disabled]="(subscriptionsCreating$ | async) === true"
+                            aria-describedby="orderDisableSignupHelp"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="orderDisableSignup"
+                            i18n="@@featureSubscriptions-disableSignup"
+                          >
+                            Disable signup
+                          </label>
+                          <span
+                            id="orderDisableSignupHelp"
+                            class="form-text text-body-secondary d-block"
+                            i18n="@@featureSubscriptions-disableSignupHelp"
+                          >
+                            Prevents new user registration on this instance.
+                          </span>
+                        </div>
+                        <div *ngSwitchCase="'api-key'" class="mb-3">
+                          <label for="orderStaticApiKey" class="form-label" i18n="@@featureSubscriptions-staticApiKey">
+                            Static API Key
+                          </label>
+                          <input
+                            type="password"
+                            id="orderStaticApiKey"
+                            name="staticApiKey"
+                            class="form-control"
+                            [(ngModel)]="orderRequestedConfig.staticApiKey"
+                            [disabled]="(subscriptionsCreating$ | async) === true"
+                            aria-describedby="orderStaticApiKeyHelp"
+                            aria-label="Static API Key"
+                          />
+                          <span
+                            id="orderStaticApiKeyHelp"
+                            class="form-text text-body-secondary"
+                            i18n="@@featureSubscriptions-staticApiKeyHelp"
+                          >
+                            API key for authenticating requests. Required when using api-key authentication.
+                          </span>
+                        </div>
+                        <ng-container *ngSwitchCase="'keycloak'">
+                          <fieldset class="mb-3">
+                            <legend class="form-label fs-6" i18n="@@featureSubscriptions-keycloakSection">
+                              Keycloak
+                            </legend>
+                            <div class="mb-2">
+                              <label for="orderKeycloakServerUrl" class="form-label visually-hidden"
+                                >Keycloak server URL</label
+                              >
+                              <input
+                                type="url"
+                                id="orderKeycloakServerUrl"
+                                name="keycloakServerUrl"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
+                                placeholder="https://keycloak.example.com"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Keycloak server URL"
+                              />
+                            </div>
+                            <div class="mb-2">
+                              <label for="orderKeycloakAuthServerUrl" class="form-label visually-hidden"
+                                >Keycloak auth server URL</label
+                              >
+                              <input
+                                type="url"
+                                id="orderKeycloakAuthServerUrl"
+                                name="keycloakAuthServerUrl"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
+                                placeholder="https://keycloak.example.com/auth"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Keycloak auth server URL"
+                              />
+                            </div>
+                            <div class="row g-2 mb-2">
+                              <div class="col-md-6">
+                                <label for="orderKeycloakRealm" class="form-label visually-hidden"
+                                  >Keycloak realm</label
+                                >
+                                <input
+                                  type="text"
+                                  id="orderKeycloakRealm"
+                                  name="keycloakRealm"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.keycloak.realm"
+                                  placeholder="realm"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Keycloak realm"
+                                />
+                              </div>
+                              <div class="col-md-6">
+                                <label for="orderKeycloakClientId" class="form-label visually-hidden"
+                                  >Keycloak client ID</label
+                                >
+                                <input
+                                  type="text"
+                                  id="orderKeycloakClientId"
+                                  name="keycloakClientId"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.keycloak.clientId"
+                                  placeholder="client-id"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Keycloak client ID"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label for="orderKeycloakClientSecret" class="form-label visually-hidden"
+                                >Keycloak client secret</label
+                              >
+                              <input
+                                type="password"
+                                id="orderKeycloakClientSecret"
+                                name="keycloakClientSecret"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Keycloak client secret"
+                              />
+                            </div>
+                          </fieldset>
+                        </ng-container>
+                      </div>
+                      <fieldset class="mb-0">
+                        <legend class="form-label fs-6" i18n="@@featureSubscriptions-smtpSection">
+                          SMTP (optional)
+                        </legend>
+                        <div class="row g-2 mb-2">
+                          <div class="col-md-8">
+                            <label for="orderSmtpHost" class="form-label visually-hidden">SMTP host</label>
+                            <input
+                              type="text"
+                              id="orderSmtpHost"
+                              name="smtpHost"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.smtp.host"
+                              placeholder="mailhog"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="SMTP host"
+                            />
+                          </div>
+                          <div class="col-md-4">
+                            <label for="orderSmtpPort" class="form-label visually-hidden">SMTP port</label>
+                            <input
+                              type="number"
+                              id="orderSmtpPort"
+                              name="smtpPort"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.smtp.port"
+                              placeholder="1025"
+                              min="1"
+                              max="65535"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="SMTP port"
+                            />
+                          </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                          <div class="col-md-6">
+                            <label for="orderSmtpUser" class="form-label visually-hidden">SMTP user</label>
+                            <input
+                              type="text"
+                              id="orderSmtpUser"
+                              name="smtpUser"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.smtp.user"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="SMTP user"
+                            />
+                          </div>
+                          <div class="col-md-6">
+                            <label for="orderSmtpPassword" class="form-label visually-hidden">SMTP password</label>
+                            <input
+                              type="password"
+                              id="orderSmtpPassword"
+                              name="smtpPassword"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.smtp.password"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="SMTP password"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label for="orderSmtpFrom" class="form-label visually-hidden">From address</label>
+                          <input
+                            type="text"
+                            id="orderSmtpFrom"
+                            name="smtpFrom"
+                            class="form-control"
+                            [(ngModel)]="orderRequestedConfig.smtp.from"
+                            placeholder="noreply@localhost"
+                            [disabled]="(subscriptionsCreating$ | async) === true"
+                            aria-label="From address"
+                          />
+                        </div>
+                      </fieldset>
                     </div>
                   }
                 }

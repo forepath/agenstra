@@ -1,19 +1,19 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { BackorderService } from './backorder.service';
-import { BillingScheduleService } from './billing-schedule.service';
-import { CancellationPolicyService } from './cancellation-policy.service';
-import { AvailabilityService } from './availability.service';
-import { CloudflareDnsService } from './cloudflare-dns.service';
-import { HostnameReservationService } from './hostname-reservation.service';
-import { ProvisioningService } from './provisioning.service';
-import { validateConfigSchema } from '../utils/config-validation.utils';
-import { buildBillingCloudInitUserData } from '../utils/cloud-init.utils';
+import { BillingIntervalType } from '../entities/service-plan.entity';
+import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
-import { BillingIntervalType } from '../entities/service-plan.entity';
+import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
+import { validateConfigSchema } from '../utils/config-validation.utils';
+import { AvailabilityService } from './availability.service';
+import { BackorderService } from './backorder.service';
+import { BillingScheduleService } from './billing-schedule.service';
+import { CancellationPolicyService } from './cancellation-policy.service';
+import { CloudflareDnsService } from './cloudflare-dns.service';
+import { HostnameReservationService } from './hostname-reservation.service';
+import { ProvisioningService } from './provisioning.service';
 
 @Injectable()
 export class SubscriptionService {
@@ -102,11 +102,13 @@ export class SubscriptionService {
           serverType,
           location: region,
           firewallId: effectiveConfig.firewallId as number | undefined,
-          userData: buildBillingCloudInitUserData({
-            authenticationMethod: (effectiveConfig.authenticationMethod as string | undefined) ?? 'api-key',
-            backendEnv: (effectiveConfig.backendEnv as Record<string, string> | undefined) ?? {},
-            frontendEnv: (effectiveConfig.frontendEnv as Record<string, string> | undefined) ?? {},
-          }),
+          userData: buildBillingCloudInitUserData(
+            buildCloudInitConfigFromRequest(
+              effectiveConfig,
+              hostname,
+              process.env.DNS_BASE_DOMAIN ?? 'cloud-agent.net',
+            ),
+          ),
         };
 
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);

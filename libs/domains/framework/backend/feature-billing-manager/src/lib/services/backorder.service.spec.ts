@@ -1,4 +1,15 @@
+import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
 import { BackorderService } from './backorder.service';
+
+jest.mock('../utils/cloud-init.utils', () => ({
+  buildCloudInitConfigFromRequest: jest
+    .fn()
+    .mockImplementation((config: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
+      host: { hostname, fqdn: `${hostname}.${baseDomain ?? 'cloud-agent.net'}` },
+      backend: { authentication: { authenticationMethod: 'users', disableSignup: false }, encryption: {} },
+    })),
+  buildBillingCloudInitUserData: jest.fn().mockReturnValue('base64-cloud-init-userdata'),
+}));
 
 describe('BackorderService', () => {
   const hostnameReservationService = {
@@ -84,9 +95,18 @@ describe('BackorderService', () => {
 
     await service.retry('b1');
     expect(hostnameReservationService.reserveHostname).toHaveBeenCalledWith('item-1');
+    expect(buildCloudInitConfigFromRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ region: 'fsn1', serverType: 'cx11' }),
+      'awesome-armadillo-abc12',
+      'cloud-agent.net',
+    );
+    expect(buildBillingCloudInitUserData).toHaveBeenCalled();
     expect(provisioningService.provision).toHaveBeenCalledWith(
       'hetzner',
-      expect.objectContaining({ name: 'awesome-armadillo-abc12' }),
+      expect.objectContaining({
+        name: 'awesome-armadillo-abc12',
+        userData: 'base64-cloud-init-userdata',
+      }),
     );
     expect(subscriptionItemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'srv-1');
     expect(provisioningService.getServerInfo).toHaveBeenCalledWith('hetzner', 'srv-1');

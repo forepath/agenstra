@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   computed,
   DestroyRef,
@@ -67,6 +68,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly subscriptions$ = this.subscriptionsFacade.getSubscriptions$();
   readonly subscriptions = toSignal(this.subscriptionsFacade.getSubscriptions$(), {
@@ -122,6 +124,40 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   orderPlanId = '';
   orderAutoBackorder = false;
   orderAcceptLegal = false;
+  /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
+  authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
+
+  onAuthMethodChange(value: 'users' | 'api-key' | 'keycloak'): void {
+    this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: value };
+    this.authMethod.set(value);
+    this.cdr.detectChanges();
+  }
+
+  orderRequestedConfig: {
+    authenticationMethod: 'users' | 'api-key' | 'keycloak';
+    staticApiKey: string;
+    disableSignup: boolean;
+    smtp: { host: string; port: number; user: string; password: string; from: string };
+    keycloak: { serverUrl: string; authServerUrl: string; realm: string; clientId: string; clientSecret: string };
+  } = {
+    authenticationMethod: 'users',
+    staticApiKey: '',
+    disableSignup: false,
+    smtp: {
+      host: 'mailhog',
+      port: 1025,
+      user: '',
+      password: '',
+      from: 'noreply@localhost',
+    },
+    keycloak: {
+      serverUrl: '',
+      authServerUrl: '',
+      realm: '',
+      clientId: '',
+      clientSecret: '',
+    },
+  };
   subscriptionToCancel: SubscriptionResponse | null = null;
   subscriptionToResume: SubscriptionResponse | null = null;
   backorderToRetry: BackorderResponse | null = null;
@@ -215,6 +251,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         this.orderPlanId = '';
         this.orderAutoBackorder = true;
         this.orderAcceptLegal = false;
+        this.resetOrderRequestedConfig();
       });
     profileFacade
       .getCustomerProfileUpdating$()
@@ -235,6 +272,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     this.orderPlanId = '';
     this.orderAutoBackorder = true;
     this.orderAcceptLegal = false;
+    this.resetOrderRequestedConfig();
 
     const effectivePreferredPlanId = (preferredPlanId ?? this.initialPlanIdFromQuery)?.trim();
 
@@ -258,8 +296,21 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   onSubmitOrderPlan(): void {
     if (!this.orderPlanId?.trim()) return;
+    const cfg = this.orderRequestedConfig;
+    const requestedConfig: Record<string, unknown> = {
+      authenticationMethod: cfg.authenticationMethod,
+      disableSignup: cfg.disableSignup,
+      smtp: { ...cfg.smtp },
+    };
+    if (cfg.authenticationMethod === 'api-key' && cfg.staticApiKey?.trim()) {
+      requestedConfig['staticApiKey'] = cfg.staticApiKey.trim();
+    }
+    if (cfg.authenticationMethod === 'keycloak') {
+      requestedConfig['keycloak'] = { ...cfg.keycloak };
+    }
     const dto: CreateSubscriptionDto = {
       planId: this.orderPlanId.trim(),
+      requestedConfig,
       autoBackorder: this.orderAutoBackorder,
     };
     this.subscriptionsFacade.createSubscription(dto);
@@ -354,6 +405,29 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         modal.show();
       }
     }
+  }
+
+  resetOrderRequestedConfig(): void {
+    this.authMethod.set('users');
+    this.orderRequestedConfig = {
+      authenticationMethod: 'users',
+      staticApiKey: '',
+      disableSignup: false,
+      smtp: {
+        host: 'mailhog',
+        port: 1025,
+        user: '',
+        password: '',
+        from: 'noreply@localhost',
+      },
+      keycloak: {
+        serverUrl: '',
+        authServerUrl: '',
+        realm: '',
+        clientId: '',
+        clientSecret: '',
+      },
+    };
   }
 
   private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
