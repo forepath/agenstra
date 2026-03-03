@@ -1,6 +1,6 @@
 /**
  * Generates DigitalOcean-style hostnames: adjective-noun-xxxxx (single-level subdomain, no dots).
- * Used for DNS records like awesome-armadillo-abc12.cloud-agent.net so SSL can be issued.
+ * Used for DNS records like awesome-armadillo-abc12.spirde.com so SSL can be issued.
  */
 
 const ADJECTIVES = [

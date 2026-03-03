@@ -18,6 +18,6 @@ export interface ServerInfo {
   metadata?: Record<string, unknown>;
   /** Single-level subdomain (e.g. awesome-armadillo-abc12) when DNS is provisioned */
   hostname?: string;
-  /** Full DNS name (e.g. awesome-armadillo-abc12.cloud-agent.net) for display */
+  /** Full DNS name (e.g. awesome-armadillo-abc12.spirde.com) for display */
   hostnameFqdn?: string;
 }

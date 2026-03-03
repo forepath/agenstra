@@ -1811,7 +1811,7 @@ components:
         Optional cloud-init and provisioning config merged with plan defaults.
         May also include provider-specific fields (e.g. serverType, location, firewallId for Hetzner).
         The FQDN (hostname.DNS_BASE_DOMAIN) is used for SSL certificates and CORS; DNS_BASE_DOMAIN
-        defaults to cloud-agent.net when not set.
+        defaults to spirde.com when not set.
       additionalProperties: true
       properties:
         authenticationMethod:
@@ -1845,6 +1845,12 @@ components:
             realm: { type: string }
             clientId: { type: string }
             clientSecret: { type: string }
+        hetznerApiToken:
+          type: string
+          description: Optional Hetzner API token for nested provisioning from the instance. Sensitive.
+        digitaloceanApiToken:
+          type: string
+          description: Optional DigitalOcean API token for nested provisioning from the instance. Sensitive.
     CreateSubscriptionDto:
       type: object
       required: [planId]
@@ -1926,7 +1932,7 @@ components:
           {
             type: string,
             nullable: true,
-            description: Full DNS name for display (e.g. awesome-armadillo-abc12.cloud-agent.net),
+            description: Full DNS name for display (e.g. awesome-armadillo-abc12.spirde.com),
           }
     ServerActionResponse:
       type: object

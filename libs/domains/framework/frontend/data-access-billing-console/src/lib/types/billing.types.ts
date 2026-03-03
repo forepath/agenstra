@@ -147,13 +147,17 @@ export interface KeycloakConfig {
   clientSecret?: string;
 }
 
-/** Cloud-init related part of requestedConfig (authentication, SMTP). */
+/** Cloud-init related part of requestedConfig (authentication, SMTP, optional provisioning tokens). */
 export interface RequestedConfigCloudInit {
   authenticationMethod?: string;
   staticApiKey?: string;
   disableSignup?: boolean;
   smtp?: SmtpConfig;
   keycloak?: KeycloakConfig;
+  /** Optional Hetzner API token for nested provisioning from the instance. */
+  hetznerApiToken?: string;
+  /** Optional DigitalOcean API token for nested provisioning from the instance. */
+  digitaloceanApiToken?: string;
 }
 
 export interface CreateSubscriptionDto {

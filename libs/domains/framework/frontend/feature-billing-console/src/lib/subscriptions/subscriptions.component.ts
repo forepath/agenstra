@@ -139,6 +139,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     disableSignup: boolean;
     smtp: { host: string; port: number; user: string; password: string; from: string };
     keycloak: { serverUrl: string; authServerUrl: string; realm: string; clientId: string; clientSecret: string };
+    hetznerApiToken: string;
+    digitaloceanApiToken: string;
   } = {
     authenticationMethod: 'users',
     staticApiKey: '',
@@ -157,6 +159,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       clientId: '',
       clientSecret: '',
     },
+    hetznerApiToken: '',
+    digitaloceanApiToken: '',
   };
   subscriptionToCancel: SubscriptionResponse | null = null;
   subscriptionToResume: SubscriptionResponse | null = null;
@@ -308,6 +312,12 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     if (cfg.authenticationMethod === 'keycloak') {
       requestedConfig['keycloak'] = { ...cfg.keycloak };
     }
+    if (cfg.hetznerApiToken?.trim()) {
+      requestedConfig['hetznerApiToken'] = cfg.hetznerApiToken.trim();
+    }
+    if (cfg.digitaloceanApiToken?.trim()) {
+      requestedConfig['digitaloceanApiToken'] = cfg.digitaloceanApiToken.trim();
+    }
     const dto: CreateSubscriptionDto = {
       planId: this.orderPlanId.trim(),
       requestedConfig,
@@ -427,6 +437,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         clientId: '',
         clientSecret: '',
       },
+      hetznerApiToken: '',
+      digitaloceanApiToken: '',
     };
   }
 

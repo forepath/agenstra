@@ -28,15 +28,15 @@ describe('CloudflareDnsService', () => {
   });
 
   it('getFqdn returns subdomain.baseDomain', () => {
-    process.env.DNS_BASE_DOMAIN = 'cloud-agent.net';
+    process.env.DNS_BASE_DOMAIN = 'spirde.com';
     const service = new CloudflareDnsService();
-    expect(service.getFqdn('awesome-armadillo-abc12')).toBe('awesome-armadillo-abc12.cloud-agent.net');
+    expect(service.getFqdn('awesome-armadillo-abc12')).toBe('awesome-armadillo-abc12.spirde.com');
   });
 
   it('getFqdn uses default base domain when DNS_BASE_DOMAIN not set', () => {
     delete process.env.DNS_BASE_DOMAIN;
     const service = new CloudflareDnsService();
-    expect(service.getFqdn('foo')).toBe('foo.cloud-agent.net');
+    expect(service.getFqdn('foo')).toBe('foo.spirde.com');
   });
 
   it('createARecord posts to Cloudflare API', async () => {
@@ -49,7 +49,7 @@ describe('CloudflareDnsService', () => {
       'https://api.cloudflare.com/client/v4/zones/zone-123/dns_records',
       expect.objectContaining({
         type: 'A',
-        name: 'awesome-armadillo-abc12.cloud-agent.net',
+        name: 'awesome-armadillo-abc12.spirde.com',
         content: '1.2.3.4',
         ttl: 1,
         proxied: false,
@@ -75,7 +75,7 @@ describe('CloudflareDnsService', () => {
 
   it('deleteRecord fetches by name and deletes each record', async () => {
     mockedAxios.get.mockResolvedValue({
-      data: { result: [{ id: 'rec-1', type: 'A', name: 'awesome-armadillo-abc12.cloud-agent.net' }] },
+      data: { result: [{ id: 'rec-1', type: 'A', name: 'awesome-armadillo-abc12.spirde.com' }] },
     });
     mockedAxios.delete.mockResolvedValue({ data: {} });
     const service = new CloudflareDnsService();

@@ -6,16 +6,16 @@ describe('cloud-init.utils', () => {
       const config = buildCloudInitConfigFromRequest(
         { authenticationMethod: 'users' },
         'awesome-armadillo-abc12',
-        'cloud-agent.net',
+        'spirde.com',
       );
       expect(config.host.hostname).toBe('awesome-armadillo-abc12');
-      expect(config.host.fqdn).toBe('awesome-armadillo-abc12.cloud-agent.net');
-      expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.cloud-agent.net');
+      expect(config.host.fqdn).toBe('awesome-armadillo-abc12.spirde.com');
+      expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
     });
 
-    it('defaults baseDomain to cloud-agent.net when not provided', () => {
+    it('defaults baseDomain to spirde.com when not provided', () => {
       const config = buildCloudInitConfigFromRequest({}, 'foo');
-      expect(config.host.fqdn).toBe('foo.cloud-agent.net');
+      expect(config.host.fqdn).toBe('foo.spirde.com');
     });
 
     it('generates random encryptionKey and jwtSecret', () => {
@@ -26,12 +26,30 @@ describe('cloud-init.utils', () => {
       expect(config1.backend.encryption.encryptionKey).not.toBe(config2.backend.encryption.encryptionKey);
       expect(config1.backend.encryption.jwtSecret).not.toBe(config2.backend.encryption.jwtSecret);
     });
+
+    it('sets provisioning tokens from effectiveConfig when provided', () => {
+      const config = buildCloudInitConfigFromRequest(
+        {
+          hetznerApiToken: 'secret-hetzner',
+          digitaloceanApiToken: 'secret-do',
+        },
+        'host1',
+      );
+      expect(config.backend.provisioning?.hetznerApiToken).toBe('secret-hetzner');
+      expect(config.backend.provisioning?.digitaloceanApiToken).toBe('secret-do');
+    });
+
+    it('defaults provisioning tokens to empty string when not provided', () => {
+      const config = buildCloudInitConfigFromRequest({}, 'host1');
+      expect(config.backend.provisioning?.hetznerApiToken).toBe('');
+      expect(config.backend.provisioning?.digitaloceanApiToken).toBe('');
+    });
   });
 
   describe('buildBillingCloudInitUserData', () => {
-    it('produces nginx proxy_pass with trailing slash to strip /backend prefix', () => {
+    it('produces nginx proxy_pass for /backend/ location', () => {
       const config: CloudInitConfig = {
-        host: { hostname: 'test', fqdn: 'test.cloud-agent.net' },
+        host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
@@ -59,13 +77,14 @@ describe('cloud-init.utils', () => {
             password: '',
             from: 'noreply@localhost',
           },
-          cors: { origin: 'https://test.cloud-agent.net' },
+          cors: { origin: 'https://test.spirde.com' },
           rateLimit: { enabled: false, ttl: 60, limit: 100 },
         },
       };
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
-      expect(script).toContain('proxy_pass http://127.0.0.1:3100/;');
+      expect(script).toContain('location /backend/');
+      expect(script).toContain('proxy_pass http://host.docker.internal:3100');
     });
 
     it('uses fqdn in SSL certificate subjectAltName', () => {

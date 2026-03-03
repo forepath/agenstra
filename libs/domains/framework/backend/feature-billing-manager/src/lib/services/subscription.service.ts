@@ -106,7 +106,7 @@ export class SubscriptionService {
             buildCloudInitConfigFromRequest(
               effectiveConfig,
               hostname,
-              process.env.DNS_BASE_DOMAIN ?? 'cloud-agent.net',
+              process.env.DNS_BASE_DOMAIN ?? 'spirde.com',
             ),
           ),
         };

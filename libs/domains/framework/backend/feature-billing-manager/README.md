@@ -33,7 +33,7 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 - HETZNER_API_TOKEN
 - OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL (optional; default 86400000 ms = daily)
 - CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID (for DNS A record creation on provisioned servers)
-- DNS_BASE_DOMAIN (optional; default `cloud-agent.net`) – base domain for FQDN in SSL certificates and CORS
+- DNS_BASE_DOMAIN (optional; default `spirde.com`) – base domain for FQDN in SSL certificates and CORS
 
 ## Users Authentication
 
@@ -70,6 +70,11 @@ For Hetzner provisioning, the following config keys are used:
 - location (string, required by default schema; enum pre-populated in UI)
 - serverType (string, required; options and price from GET .../server-types; selection can auto-set plan base price)
 - firewallId (number, optional)
+
+Optional instance configuration (requestedConfig) can include authentication (users, api-key, keycloak), SMTP, and optional provisioning tokens so the instance can provision additional servers itself:
+
+- hetznerApiToken (string, optional) – Hetzner API token for nested provisioning from the instance
+- digitaloceanApiToken (string, optional) – DigitalOcean API token for nested provisioning from the instance
 
 The cloud-init user data installs Docker and deploys a docker-compose stack containing:
 
