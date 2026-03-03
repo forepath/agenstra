@@ -4,7 +4,7 @@ import { isValidSubdomainHostname } from '../utils/hostname-generator.utils';
 
 /**
  * Cloudflare DNS API: create and delete A records for provisioned servers.
- * Uses single-level subdomains only (e.g. awesome-armadillo-abc12.cloud-agent.net) for SSL.
+ * Uses single-level subdomains only (e.g. awesome-armadillo-abc12.spirde.com) for SSL.
  */
 @Injectable()
 export class CloudflareDnsService {
@@ -16,7 +16,7 @@ export class CloudflareDnsService {
   constructor() {
     this.apiToken = process.env.CLOUDFLARE_API_TOKEN ?? '';
     this.zoneId = process.env.CLOUDFLARE_ZONE_ID ?? '';
-    this.baseDomain = process.env.DNS_BASE_DOMAIN ?? 'cloud-agent.net';
+    this.baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
     if (!this.apiToken || !this.zoneId) {
       this.logger.warn(
         'CLOUDFLARE_API_TOKEN or CLOUDFLARE_ZONE_ID not set. DNS record creation/removal will be skipped.',

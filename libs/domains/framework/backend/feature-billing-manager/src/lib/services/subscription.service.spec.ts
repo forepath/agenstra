@@ -1,17 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
-import { BillingScheduleService } from './billing-schedule.service';
-import { CancellationPolicyService } from './cancellation-policy.service';
-import { AvailabilityService } from './availability.service';
-import { BackorderService } from './backorder.service';
+import { BillingIntervalType } from '../entities/service-plan.entity';
+import { SubscriptionStatus } from '../entities/subscription.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { SubscriptionService } from './subscription.service';
-import { BillingIntervalType } from '../entities/service-plan.entity';
-import { SubscriptionStatus } from '../entities/subscription.entity';
 import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
+import { AvailabilityService } from './availability.service';
+import { BackorderService } from './backorder.service';
+import { BillingScheduleService } from './billing-schedule.service';
+import { CancellationPolicyService } from './cancellation-policy.service';
+import { SubscriptionService } from './subscription.service';
 
 jest.mock('../utils/config-validation.utils', () => ({
   validateConfigSchema: jest.fn().mockReturnValue([]),
@@ -23,7 +23,7 @@ jest.mock('../utils/cloud-init.utils', () => ({
     .mockImplementation((effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
       host: {
         hostname,
-        fqdn: `${hostname}.${baseDomain ?? 'cloud-agent.net'}`,
+        fqdn: `${hostname}.${baseDomain ?? 'spirde.com'}`,
       },
       backend: {
         authentication: {
@@ -96,7 +96,7 @@ describe('SubscriptionService', () => {
       (effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
         host: {
           hostname,
-          fqdn: `${hostname}.${baseDomain ?? 'cloud-agent.net'}`,
+          fqdn: `${hostname}.${baseDomain ?? 'spirde.com'}`,
         },
         backend: {
           authentication: {
@@ -212,13 +212,13 @@ describe('SubscriptionService', () => {
         authenticationMethod: 'api-key',
       }),
       'awesome-armadillo-abc12',
-      'cloud-agent.net',
+      'spirde.com',
     );
     expect(buildBillingCloudInitUserData).toHaveBeenCalledWith(
       expect.objectContaining({
         host: {
           hostname: 'awesome-armadillo-abc12',
-          fqdn: 'awesome-armadillo-abc12.cloud-agent.net',
+          fqdn: 'awesome-armadillo-abc12.spirde.com',
         },
         backend: expect.objectContaining({
           authentication: expect.objectContaining({

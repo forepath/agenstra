@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 export interface CloudInitConfig {
   host: {
     hostname: string;
-    /** Fully qualified domain name (e.g. awesome-armadillo-abc12.cloud-agent.net) for SSL and CORS */
+    /** Fully qualified domain name (e.g. awesome-armadillo-abc12.spirde.com) for SSL and CORS */
     fqdn: string;
   };
   proxy: {
@@ -71,12 +71,12 @@ export interface CloudInitConfig {
 /**
  * Builds a full CloudInitConfig from effectiveConfig (plan defaults + requestedConfig) and hostname.
  * Generates random encryptionKey and jwtSecret. SMTP and auth options come from effectiveConfig with defaults.
- * @param baseDomain - Base domain for FQDN (e.g. cloud-agent.net). Defaults to cloud-agent.net.
+ * @param baseDomain - Base domain for FQDN (e.g. spirde.com). Defaults to spirde.com.
  */
 export function buildCloudInitConfigFromRequest(
   effectiveConfig: Record<string, unknown>,
   hostname: string,
-  baseDomain = 'cloud-agent.net',
+  baseDomain = 'spirde.com',
 ): CloudInitConfig {
   const encryptionKey = randomBytes(32).toString('base64');
   const jwtSecret = randomBytes(32).toString('hex');
@@ -135,6 +135,10 @@ export function buildCloudInitConfigFromRequest(
       },
       cors: { origin: `https://${fqdn}` },
       rateLimit: { enabled: false, ttl: 60, limit: 100 },
+      provisioning: {
+        hetznerApiToken: (effectiveConfig.hetznerApiToken as string) ?? '',
+        digitaloceanApiToken: (effectiveConfig.digitaloceanApiToken as string) ?? '',
+      },
     },
   };
 }
@@ -142,54 +146,84 @@ export function buildCloudInitConfigFromRequest(
 export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
   const backendEnv = formatEnv([
     // Backend web server configuration
-    `HOST=${config.backend?.host ?? '0.0.0.0'}`,
-    `PORT=${config.backend?.port ?? '3100'}`,
-    `WEBSOCKET_PORT=${config.backend?.websocketPort ?? '8081'}`,
-    `NODE_ENV=${config.backend?.nodeEnv ?? 'production'}`,
+    `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
+    `PORT: ${config.backend?.port ?? '3100'}`,
+    `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8081'}`,
+    `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     // Database configuration
-    `DB_HOST=${config.backend?.database?.host ?? 'postgres'}`,
-    `DB_PORT=${config.backend?.database?.port ?? '5432'}`,
-    `DB_USERNAME=${config.backend?.database?.username ?? 'postgres'}`,
-    `DB_PASSWORD=${config.backend?.database?.password ?? 'postgres'}`,
-    `DB_DATABASE=${config.backend?.database?.database ?? 'postgres'}`,
+    `DB_HOST: ${config.backend?.database?.host ?? 'postgres'}`,
+    `DB_PORT: ${config.backend?.database?.port ?? '5432'}`,
+    `DB_USERNAME: ${config.backend?.database?.username ?? 'postgres'}`,
+    `DB_PASSWORD: ${config.backend?.database?.password ?? 'postgres'}`,
+    `DB_DATABASE: ${config.backend?.database?.database ?? 'postgres'}`,
     // Authentication method configuration
-    `AUTHENTICATION_METHOD=${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
-    `STATIC_API_KEY=${config.backend?.authentication?.staticApiKey ?? ''}`,
-    `KEYCLOAK_SERVER_URL=${config.backend?.authentication?.keycloak?.serverUrl ?? ''}`,
-    `KEYCLOAK_AUTH_SERVER_URL=${config.backend?.authentication?.keycloak?.authServerUrl ?? ''}`,
-    `KEYCLOAK_REALM=${config.backend?.authentication?.keycloak?.realm ?? ''}`,
-    `KEYCLOAK_CLIENT_ID=${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
-    `KEYCLOAK_CLIENT_SECRET=${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
+    `AUTHENTICATION_METHOD: ${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
+    `STATIC_API_KEY: ${config.backend?.authentication?.staticApiKey ?? ''}`,
+    `KEYCLOAK_SERVER_URL: ${config.backend?.authentication?.keycloak?.serverUrl ?? ''}`,
+    `KEYCLOAK_AUTH_SERVER_URL: ${config.backend?.authentication?.keycloak?.authServerUrl ?? ''}`,
+    `KEYCLOAK_REALM: ${config.backend?.authentication?.keycloak?.realm ?? ''}`,
+    `KEYCLOAK_CLIENT_ID: ${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
+    `KEYCLOAK_CLIENT_SECRET: ${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
     // Environment variables for the provisioning providers
-    `HETZNER_API_TOKEN=${config.backend?.provisioning?.hetznerApiToken ?? ''}`,
-    `DIGITALOCEAN_API_TOKEN=${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
+    `HETZNER_API_TOKEN: ${config.backend?.provisioning?.hetznerApiToken ?? ''}`,
+    `DIGITALOCEAN_API_TOKEN: ${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
     // Environment variables for disabling signup
-    `DISABLE_SIGNUP=${config.backend?.authentication?.disableSignup ?? 'false'}`,
+    `DISABLE_SIGNUP: ${config.backend?.authentication?.disableSignup ?? 'false'}`,
     // Environment variables for encryption
-    `ENCRYPTION_KEY=${config.backend?.encryption?.encryptionKey ?? ''}`,
+    `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
     // Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
-    `JWT_SECRET=${config.backend?.encryption?.jwtSecret ?? ''}`,
+    `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
     // SMTP / MailHog configuration (for email confirmation and password reset)
-    `SMTP_HOST=${config.backend?.smtp?.host ?? 'mailhog'}`,
-    `SMTP_PORT=${config.backend?.smtp?.port ?? '1025'}`,
-    `SMTP_USER=${config.backend?.smtp?.user ?? ''}`,
-    `SMTP_PASSWORD=${config.backend?.smtp?.password ?? ''}`,
-    `EMAIL_FROM=${config.backend?.smtp?.from ?? 'noreply@localhost'}`,
+    `SMTP_HOST: ${config.backend?.smtp?.host ?? 'mailhog'}`,
+    `SMTP_PORT: ${config.backend?.smtp?.port ?? '1025'}`,
+    `SMTP_USER: ${config.backend?.smtp?.user ?? ''}`,
+    `SMTP_PASSWORD: ${config.backend?.smtp?.password ?? ''}`,
+    `EMAIL_FROM: ${config.backend?.smtp?.from ?? 'noreply@localhost'}`,
     // CORS configuration (comma-separated list of allowed origins)
-    `CORS_ORIGIN=${config.backend?.cors?.origin ?? ''}`,
+    `CORS_ORIGIN: ${config.backend?.cors?.origin ?? ''}`,
     // Rate limiting configuration
-    `RATE_LIMIT_ENABLED=${config.backend?.rateLimit?.enabled ?? 'false'}`,
-    `RATE_LIMIT_TTL=${config.backend?.rateLimit?.ttl ?? '60'}`,
-    `RATE_LIMIT_LIMIT=${config.backend?.rateLimit?.limit ?? '100'}`,
+    `RATE_LIMIT_ENABLED: ${config.backend?.rateLimit?.enabled ?? 'false'}`,
+    `RATE_LIMIT_TTL: ${config.backend?.rateLimit?.ttl ?? '60'}`,
+    `RATE_LIMIT_LIMIT: ${config.backend?.rateLimit?.limit ?? '100'}`,
   ]);
 
   const frontendEnv = formatEnv([
     // Frontend web server configuration
-    `HOST=${config.frontend?.host ?? '0.0.0.0'}`,
-    `PORT=${config.frontend?.port ?? '4200'}`,
-    `NODE_ENV=${config.frontend?.nodeEnv ?? 'production'}`,
-    `DEFAULT_LOCALE=${config.frontend?.defaultLocale ?? 'en'}`,
+    `HOST: ${config.frontend?.host ?? '0.0.0.0'}`,
+    `PORT: ${config.frontend?.port ?? '4200'}`,
+    `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
+    `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
   ]);
+
+  const frontendConfig: any = {
+    production: true,
+    controller: {
+      restApiUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/api`,
+      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/sockets/clients`,
+    },
+    billing: {
+      restApiUrl: '',
+    },
+    authentication: {
+      type: 'users',
+      disableSignup: false,
+    },
+    chatModelOptions: {
+      cursor: {},
+      opencode: {},
+    },
+    editor: {
+      openInNewWindow: true,
+    },
+    deployment: {
+      openInNewWindow: true,
+    },
+    cookieConsent: {
+      domain: `.${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
+      privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
+      termsUrl: 'https://www.agenstra.com/legal/terms',
+    },
+  };
 
   const dockerCompose = `services:
   postgres:
@@ -216,8 +250,8 @@ export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
     environment:
 ${backendEnv}
     ports:
-      - '127.0.0.1:${config.backend?.port ?? '3100'}:${config.backend?.port ?? '3100'}'
-      - '127.0.0.1:${config.backend?.websocketPort ?? '8081'}:${config.backend?.websocketPort ?? '8081'}'
+      - '${config.backend?.port ?? '3100'}:${config.backend?.port ?? '3100'}'
+      - '${config.backend?.websocketPort ?? '8081'}:${config.backend?.websocketPort ?? '8081'}'
     depends_on:
       postgres:
         condition: service_healthy
@@ -228,10 +262,11 @@ ${backendEnv}
   frontend-agent-console-server:
     image: ghcr.io/forepath/agenstra-console-server:latest
     container_name: agent-console-server
+    command: ['/bin/sh', '-c', 'CONFIG=https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/config.json node server.cjs']
     environment:
 ${frontendEnv}
     ports:
-      - '127.0.0.1:${config.frontend?.port ?? '4200'}:${config.frontend?.port ?? '4200'}'
+      - '${config.frontend?.port ?? '4200'}:${config.frontend?.port ?? '4200'}'
     networks:
       - agent-controller-network
     restart: unless-stopped
@@ -247,7 +282,7 @@ ${frontendEnv}
       - frontend-agent-console-server
       - backend-agent-controller
     volumes:
-      - /opt/agent-controller/sites-enabled:/etc/nginx/sites-enabled:ro
+      - /opt/agent-controller/sites-enabled:/etc/nginx/conf.d:ro
       - /opt/agent-controller/ssl:/etc/nginx/ssl:ro
     networks:
       - agent-controller-network
@@ -278,26 +313,15 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        proxy_pass http://127.0.0.1:${config.frontend?.port ?? '4200'};
+        proxy_pass http://agent-console-server:${config.frontend?.port ?? '4200'};
     }
 
-    location /backend/ {
-        proxy_pass http://127.0.0.1:${config.backend?.port ?? '3100'}/;
+    location /api/ {
+        proxy_pass http://agent-controller-api:${config.backend?.port ?? '3100'};
     }
-}
 
-server {
-    listen ${config.proxy?.websocketPort ?? '8443'} ssl http2;
-    server_name _;
-
-    ssl_certificate /etc/nginx/ssl/nginx-selfsigned.crt;
-    ssl_certificate_key /etc/nginx/ssl/nginx-selfsigned.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-
-    location / {
-        proxy_pass http://127.0.0.1:${config.backend?.websocketPort ?? '8081'};
-
+    location /sockets/ {
+        proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -306,6 +330,10 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
+    }
+
+    location /config.json {
+        return 200 '${JSON.stringify(frontendConfig || {})}';
     }
 }
 `;
@@ -392,7 +420,7 @@ mkdir -p /opt/agent-controller/sites-enabled
 
 # Create nginx configuration file
 log "Creating nginx configuration file..."
-cat > /opt/agent-controller/sites-enabled/agent-controller.conf <<'EOF'
+cat > /opt/agent-controller/sites-enabled/default.conf <<'EOF'
 ${nginxConfig}
 EOF
 
@@ -436,5 +464,14 @@ log "agent-controller provisioning completed successfully at $(date)"
 }
 
 function formatEnv(lines: string[]): string {
-  return lines.map((line) => `      ${line}`).join('\n');
+  return lines
+    .map((line) => {
+      line = line.trim();
+
+      if (line.length === 0) return null;
+
+      return `      ${line}`;
+    })
+    .filter((line) => line !== null)
+    .join('\n');
 }

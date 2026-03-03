@@ -5,7 +5,7 @@ jest.mock('../utils/cloud-init.utils', () => ({
   buildCloudInitConfigFromRequest: jest
     .fn()
     .mockImplementation((config: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
-      host: { hostname, fqdn: `${hostname}.${baseDomain ?? 'cloud-agent.net'}` },
+      host: { hostname, fqdn: `${hostname}.${baseDomain ?? 'spirde.com'}` },
       backend: { authentication: { authenticationMethod: 'users', disableSignup: false }, encryption: {} },
     })),
   buildBillingCloudInitUserData: jest.fn().mockReturnValue('base64-cloud-init-userdata'),
@@ -98,7 +98,7 @@ describe('BackorderService', () => {
     expect(buildCloudInitConfigFromRequest).toHaveBeenCalledWith(
       expect.objectContaining({ region: 'fsn1', serverType: 'cx11' }),
       'awesome-armadillo-abc12',
-      'cloud-agent.net',
+      'spirde.com',
     );
     expect(buildBillingCloudInitUserData).toHaveBeenCalled();
     expect(provisioningService.provision).toHaveBeenCalledWith(

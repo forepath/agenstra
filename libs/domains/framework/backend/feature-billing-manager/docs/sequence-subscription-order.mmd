@@ -6,6 +6,7 @@ sequenceDiagram
     participant HetznerAPI
     participant Database
 
+    %% requestedConfig may include authenticationMethod, smtp, keycloak, hetznerApiToken, digitaloceanApiToken (optional)
     User->>BillingAPI: POST /subscriptions
     BillingAPI->>AvailabilityService: checkAvailability(provider, region, serverType)
     AvailabilityService->>HetznerAPI: GET /server_types + /limits

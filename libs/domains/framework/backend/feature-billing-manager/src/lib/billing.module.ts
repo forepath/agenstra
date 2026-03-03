@@ -116,6 +116,14 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
         clientSecret: { type: 'string' },
       },
     },
+    hetznerApiToken: {
+      type: 'string',
+      description: 'Optional Hetzner API token for nested provisioning from the instance',
+    },
+    digitaloceanApiToken: {
+      type: 'string',
+      description: 'Optional DigitalOcean API token for nested provisioning from the instance',
+    },
   },
 };
 
