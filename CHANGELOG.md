@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.0](https://github.com/forepath/agenstra/compare/v1.35.1...v1.36.0) (2026-03-03)
+
+
+### Features
+
+* file-tree resize edge ([#217](https://github.com/forepath/agenstra/issues/217)) ([72be40b](https://github.com/forepath/agenstra/commit/72be40b8a5679ad9803598b5a83c43ac239ebb5a))
+
+
+### Bug Fixes
+
+* maximum bundle sizes ([#230](https://github.com/forepath/agenstra/issues/230)) ([c260dcb](https://github.com/forepath/agenstra/commit/c260dcb94e49c3dcdc48309f574eebca94a8cdbb))
+
+
+### Code Refactoring
+
+* extract authentication feature ([#220](https://github.com/forepath/agenstra/issues/220)) ([4c9e3ce](https://github.com/forepath/agenstra/commit/4c9e3ce9aaf3c58532a8dad63d0820e088bc6da9))
+* unified service structure ([#218](https://github.com/forepath/agenstra/issues/218)) ([08dd406](https://github.com/forepath/agenstra/commit/08dd40605a6f3162716405cf603e935457a0825f))
+
 ## [1.35.1](https://github.com/forepath/agenstra/compare/v1.35.0...v1.35.1) (2026-02-14)
 
 
