@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.1](https://github.com/forepath/agenstra/compare/v1.36.0...v1.36.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* frontend docker image build ([#231](https://github.com/forepath/agenstra/issues/231)) ([b4b1496](https://github.com/forepath/agenstra/commit/b4b149640a6ed6951020537a92fb92e87c6dc13d))
+
 ## [1.36.0](https://github.com/forepath/agenstra/compare/v1.35.1...v1.36.0) (2026-03-03)
 
 
