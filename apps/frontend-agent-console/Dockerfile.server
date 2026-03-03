@@ -24,7 +24,7 @@ EXPOSE ${PORT}
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci && npm cache clean --force
+RUN npm i --omit=dev && npm cache clean --force
 
 # Copy application code
 COPY . /app
