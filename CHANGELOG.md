@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.2](https://github.com/forepath/agenstra/compare/v1.36.1...v1.36.2) (2026-03-06)
+
+
+### Bug Fixes
+
+* duplicate migrations ([#236](https://github.com/forepath/agenstra/issues/236)) ([5db283e](https://github.com/forepath/agenstra/commit/5db283eb793513d6fa5c2f04de935227cc1fa352))
+
 ## [1.36.1](https://github.com/forepath/agenstra/compare/v1.36.0...v1.36.1) (2026-03-03)
 
 
