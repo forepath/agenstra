@@ -8,6 +8,7 @@ import {
   type DeploymentRun,
   type Workflow,
 } from '@forepath/framework/frontend/data-access-agent-console';
+import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, map, Observable, take } from 'rxjs';
 import { DeploymentConfigurationComponent } from './deployment-configuration/deployment-configuration.component';
@@ -24,6 +25,7 @@ import { DeploymentRunsListComponent } from './deployment-runs-list/deployment-r
 export class DeploymentManagerComponent implements AfterViewInit {
   private readonly deploymentsFacade = inject(DeploymentsFacade);
   private readonly location = inject(Location);
+  private readonly localeService = inject(LocaleService);
   private readonly actions$ = inject(Actions);
 
   // Inputs
@@ -344,17 +346,28 @@ export class DeploymentManagerComponent implements AfterViewInit {
         // Only update if the value has changed
         if (currentValue !== encodedValue) {
           url.searchParams.set(key, encodedValue);
-          this.location.replaceState(url.pathname + url.search + url.hash);
+          this.replaceStateWithoutDuplicateLocale(url.pathname, url.search, url.hash);
         }
       } else {
         // Only remove if it exists
         if (currentValue !== null) {
           url.searchParams.delete(key);
-          this.location.replaceState(url.pathname + url.search + url.hash);
+          this.replaceStateWithoutDuplicateLocale(url.pathname, url.search, url.hash);
         }
       }
     } catch (error) {
       console.warn('Failed to update query parameter:', error);
     }
+  }
+
+  private replaceStateWithoutDuplicateLocale(pathname: string, search: string, hash: string): void {
+    const availableLocales = this.localeService.getAvailableLocales().map((loc) => loc.code);
+    const pathSegments = pathname.split('/').filter(Boolean);
+    const firstSegment = pathSegments[0] ?? '';
+    const pathnameWithoutLocale =
+      availableLocales.includes(firstSegment) && pathSegments.length > 1
+        ? '/' + pathSegments.slice(1).join('/')
+        : pathname;
+    this.location.replaceState(pathnameWithoutLocale + search + hash);
   }
 }

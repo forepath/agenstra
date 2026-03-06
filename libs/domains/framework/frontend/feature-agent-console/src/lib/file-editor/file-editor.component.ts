@@ -27,6 +27,7 @@ import {
   type OpenTab,
   type WriteFileDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
+import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, filter, map, Observable, of, Subject, switchMap, take } from 'rxjs';
 import { ContainerStatsStatusBarComponent } from './container-stats-status-bar/container-stats-status-bar.component';
@@ -58,6 +59,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly actions$ = inject(Actions);
   private readonly location = inject(Location);
+  private readonly localeService = inject(LocaleService);
   private readonly ngZone = inject(NgZone);
 
   @ViewChild('tabsContainer', { static: false }) tabsContainerRef?: ElementRef<HTMLDivElement>;
@@ -1204,8 +1206,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       } else {
         url.searchParams.delete('file');
       }
-      // Use replaceState to update URL without triggering navigation
-      this.location.replaceState(url.pathname + url.search + url.hash);
+      let pathname = url.pathname;
+      const availableLocales = this.localeService.getAvailableLocales().map((loc) => loc.code);
+      const pathSegments = pathname.split('/').filter(Boolean);
+      const firstSegment = pathSegments[0] ?? '';
+      if (availableLocales.includes(firstSegment) && pathSegments.length > 1) {
+        pathname = '/' + pathSegments.slice(1).join('/');
+      }
+      this.location.replaceState(pathname + url.search + url.hash);
     });
   }
 
