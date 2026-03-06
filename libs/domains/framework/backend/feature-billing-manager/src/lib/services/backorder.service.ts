@@ -113,11 +113,7 @@ export class BackorderService {
           location: (effectiveConfig.region as string) ?? 'fsn1',
           firewallId: effectiveConfig.firewallId as number | undefined,
           userData: buildBillingCloudInitUserData(
-            buildCloudInitConfigFromRequest(
-              effectiveConfig,
-              hostname,
-              process.env.DNS_BASE_DOMAIN ?? 'spirde.com',
-            ),
+            buildCloudInitConfigFromRequest(effectiveConfig, hostname, process.env.DNS_BASE_DOMAIN ?? 'spirde.com'),
           ),
         };
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);

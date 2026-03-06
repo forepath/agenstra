@@ -103,11 +103,7 @@ export class SubscriptionService {
           location: region,
           firewallId: effectiveConfig.firewallId as number | undefined,
           userData: buildBillingCloudInitUserData(
-            buildCloudInitConfigFromRequest(
-              effectiveConfig,
-              hostname,
-              process.env.DNS_BASE_DOMAIN ?? 'spirde.com',
-            ),
+            buildCloudInitConfigFromRequest(effectiveConfig, hostname, process.env.DNS_BASE_DOMAIN ?? 'spirde.com'),
           ),
         };
 

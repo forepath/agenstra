@@ -1,7 +1,7 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, RouteReuseStrategy, withRouterConfig } from '@angular/router';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { getAuthInterceptor } from '@forepath/framework/frontend/data-access-agent-console';
 import {
   Environment,
@@ -18,7 +18,6 @@ import {
 } from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { ComponentReuseStrategy } from './strategies/component-reuse.strategy';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -86,8 +85,6 @@ export const appConfig: ApplicationConfig = {
       ],
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),
     ),
-    // Custom RouteReuseStrategy to reuse component instances when navigating between routes with the same component
-    { provide: RouteReuseStrategy, useClass: ComponentReuseStrategy },
     // Provide APP_BASE_HREF (defaults to '/' if not provided)
     { provide: APP_BASE_HREF, useValue: '/' },
     provideLocale(),
