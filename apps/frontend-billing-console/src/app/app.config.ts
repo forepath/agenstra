@@ -1,4 +1,3 @@
-import { APP_BASE_HREF } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
@@ -7,12 +6,10 @@ import {
   Environment,
   ENVIRONMENT,
   environment,
-  LocaleService,
-  provideLocale,
+  provideLocale
 } from '@forepath/framework/frontend/util-configuration';
 import {
   IDENTITY_AUTH_ENVIRONMENT,
-  IDENTITY_LOCALE_SERVICE,
   LOGIN_SUCCESS_REDIRECT_TARGET,
   provideKeycloak,
 } from '@forepath/identity/frontend';
@@ -24,7 +21,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     // Wire identity injection tokens to framework's environment and locale service.
     // IDENTITY_AUTH_ENVIRONMENT maps the full Environment to the auth-relevant subset.
-    // IDENTITY_LOCALE_SERVICE delegates to the framework's LocaleService.
     {
       provide: IDENTITY_AUTH_ENVIRONMENT,
       useFactory: (env: Environment) => ({
@@ -34,10 +30,6 @@ export const appConfig: ApplicationConfig = {
         controllerApiUrl: env.controller.restApiUrl,
       }),
       deps: [ENVIRONMENT],
-    },
-    {
-      provide: IDENTITY_LOCALE_SERVICE,
-      useExisting: LocaleService,
     },
     {
       provide: LOGIN_SUCCESS_REDIRECT_TARGET,
@@ -59,34 +51,28 @@ export const appConfig: ApplicationConfig = {
         ]),
     provideRouter(
       [
-        ...(environment.production
-          ? [
-              {
-                path: 'de',
-                loadChildren: () =>
-                  import('@forepath/framework/frontend/feature-billing-console').then(
-                    (app) => app.billingConsoleRoutes,
-                  ),
-              },
-              {
-                path: 'en',
-                loadChildren: () =>
-                  import('@forepath/framework/frontend/feature-billing-console').then(
-                    (app) => app.billingConsoleRoutes,
-                  ),
-              },
-            ]
-          : []),
         {
           path: '',
           loadChildren: () =>
             import('@forepath/framework/frontend/feature-billing-console').then((app) => app.billingConsoleRoutes),
         },
+        ...(environment.production
+          ? [
+              {
+                path: 'de',
+                loadChildren: () =>
+                  import('@forepath/framework/frontend/feature-billing-console').then((app) => app.billingConsoleRoutes),
+              },
+              {
+                path: 'en',
+                loadChildren: () =>
+                  import('@forepath/framework/frontend/feature-billing-console').then((app) => app.billingConsoleRoutes),
+              },
+            ]
+          : []),
       ],
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),
     ),
-    // Provide APP_BASE_HREF (defaults to '/' if not provided)
-    { provide: APP_BASE_HREF, useValue: '/' },
     provideLocale(),
   ],
 };
