@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.6](https://github.com/forepath/agenstra/compare/v1.36.5...v1.36.6) (2026-03-06)
+
+
+### Bug Fixes
+
+* browser history replacement ([#240](https://github.com/forepath/agenstra/issues/240)) ([e6556ed](https://github.com/forepath/agenstra/commit/e6556edfaba5ce5bba0bc8e4030afe7e73d47d8c))
+
 ## [1.36.5](https://github.com/forepath/agenstra/compare/v1.36.4...v1.36.5) (2026-03-06)
 
 
