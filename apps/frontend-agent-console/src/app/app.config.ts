@@ -49,6 +49,20 @@ export const appConfig: ApplicationConfig = {
         ]),
     provideRouter(
       [
+        ...(environment.production
+          ? [
+              {
+                path: 'de',
+                loadChildren: () =>
+                  import('@forepath/framework/frontend/feature-agent-console').then((app) => app.agentConsoleRoutes),
+              },
+              {
+                path: 'en',
+                loadChildren: () =>
+                  import('@forepath/framework/frontend/feature-agent-console').then((app) => app.agentConsoleRoutes),
+              },
+            ]
+          : []),
         {
           path: '',
           loadChildren: () =>
