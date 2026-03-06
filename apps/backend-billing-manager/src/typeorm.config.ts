@@ -48,7 +48,6 @@ export const typeormConfig: DataSourceOptions = {
   migrations: [
     'src/migrations/*.js',
     'apps/backend-billing-manager/src/migrations/*.ts',
-    'libs/domains/identity/backend/util-auth/src/lib/migrations/*.ts',
   ],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
