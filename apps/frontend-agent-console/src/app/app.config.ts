@@ -1,7 +1,6 @@
-import { APP_BASE_HREF } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { RouteReuseStrategy, provideRouter, withRouterConfig } from '@angular/router';
+import { provideRouter, RouteReuseStrategy, withRouterConfig } from '@angular/router';
 import { getAuthInterceptor } from '@forepath/framework/frontend/data-access-agent-console';
 import {
   Environment,
@@ -74,8 +73,6 @@ export const appConfig: ApplicationConfig = {
     ),
     // Custom RouteReuseStrategy to reuse component instances when navigating between routes with the same component
     { provide: RouteReuseStrategy, useClass: ComponentReuseStrategy },
-    // Provide APP_BASE_HREF (defaults to '/' if not provided)
-    { provide: APP_BASE_HREF, useValue: '/' },
     provideLocale(),
   ],
 };
