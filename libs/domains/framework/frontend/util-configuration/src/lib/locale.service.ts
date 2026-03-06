@@ -1,4 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
+import { APP_BASE_HREF, isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { ENVIRONMENT } from './environment.token';
 
@@ -18,6 +18,7 @@ const AVAILABLE_LOCALES: LocaleOption[] = [
 export class LocaleService {
   private environment = inject(ENVIRONMENT);
   private platformId = inject(PLATFORM_ID);
+  private baseHref = inject(APP_BASE_HREF, { optional: true });
 
   /**
    * Returns the list of available locales for the language switcher.
@@ -70,6 +71,11 @@ export class LocaleService {
 
     const locale = window.location.pathname.split('/')[1] ?? '';
     if (!locale) {
+      return path;
+    }
+
+    const baseHref = this.baseHref ?? '/';
+    if (baseHref !== '/') {
       return path;
     }
 
