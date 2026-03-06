@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.4](https://github.com/forepath/agenstra/compare/v1.36.3...v1.36.4) (2026-03-06)
+
+
+### Bug Fixes
+
+* application base href override ([#238](https://github.com/forepath/agenstra/issues/238)) ([b718de8](https://github.com/forepath/agenstra/commit/b718de8e9d0e6d231aec990c45ded9fedaa5f553))
+
 ## [1.36.3](https://github.com/forepath/agenstra/compare/v1.36.2...v1.36.3) (2026-03-06)
 
 
