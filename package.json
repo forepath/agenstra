@@ -148,7 +148,7 @@
     "@storybook/react": "9.1.8",
     "@storybook/react-vite": "9.1.8",
     "@xterm/xterm": "5.5.0",
-    "axios": "1.12.2",
+    "axios": "1.13.5",
     "bcrypt": "6.0.0",
     "bootstrap": "5.3.8",
     "bootstrap-icons": "1.13.1",
