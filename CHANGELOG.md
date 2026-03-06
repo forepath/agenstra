@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.5](https://github.com/forepath/agenstra/compare/v1.36.4...v1.36.5) (2026-03-06)
+
+
+### Bug Fixes
+
+* duplicate locale segment when already in base href ([#239](https://github.com/forepath/agenstra/issues/239)) ([1c13134](https://github.com/forepath/agenstra/commit/1c1313453b4ed1979b9e210a658ca4a4b05e724a))
+
 ## [1.36.4](https://github.com/forepath/agenstra/compare/v1.36.3...v1.36.4) (2026-03-06)
 
 
