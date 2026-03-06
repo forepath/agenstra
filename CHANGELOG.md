@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.3](https://github.com/forepath/agenstra/compare/v1.36.2...v1.36.3) (2026-03-06)
+
+
+### Bug Fixes
+
+* route-limited component reuse-strategy ([#237](https://github.com/forepath/agenstra/issues/237)) ([8238795](https://github.com/forepath/agenstra/commit/8238795165bc8d2f04c8833d90fbfeabe5beb240))
+
 ## [1.36.2](https://github.com/forepath/agenstra/compare/v1.36.1...v1.36.2) (2026-03-06)
 
 
