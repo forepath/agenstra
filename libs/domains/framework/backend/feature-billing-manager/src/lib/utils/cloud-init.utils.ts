@@ -21,6 +21,7 @@ export interface CloudInitConfig {
     host: string;
     port: number;
     websocketPort: number;
+    websocketNamespace: string;
     nodeEnv: string;
     defaultLocale: string;
     provisioning?: {
@@ -102,6 +103,7 @@ export function buildCloudInitConfigFromRequest(
       host: '0.0.0.0',
       port: 3100,
       websocketPort: 8081,
+      websocketNamespace: 'websocket',
       nodeEnv: 'production',
       defaultLocale: 'en',
       database: {
@@ -149,6 +151,7 @@ export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3100'}`,
     `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8081'}`,
+    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'websocket'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     // Database configuration
     `DB_HOST: ${config.backend?.database?.host ?? 'postgres'}`,
@@ -199,7 +202,7 @@ export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
     production: true,
     controller: {
       restApiUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/api`,
-      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/sockets/clients`,
+      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/${config.backend?.websocketNamespace ?? 'websocket'}`,
     },
     billing: {
       restApiUrl: '',
@@ -330,7 +333,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /sockets/ {
+    location /${config.backend?.websocketNamespace ?? 'websocket'} {
         proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;

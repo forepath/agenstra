@@ -2,17 +2,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
 import { getAuthInterceptor } from '@forepath/framework/frontend/data-access-agent-console';
-import {
-  Environment,
-  ENVIRONMENT,
-  environment,
-  provideLocale
-} from '@forepath/framework/frontend/util-configuration';
-import {
-  IDENTITY_AUTH_ENVIRONMENT,
-  LOGIN_SUCCESS_REDIRECT_TARGET,
-  provideKeycloak,
-} from '@forepath/identity/frontend';
+import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/framework/frontend/util-configuration';
+import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 
@@ -61,12 +52,16 @@ export const appConfig: ApplicationConfig = {
               {
                 path: 'de',
                 loadChildren: () =>
-                  import('@forepath/framework/frontend/feature-billing-console').then((app) => app.billingConsoleRoutes),
+                  import('@forepath/framework/frontend/feature-billing-console').then(
+                    (app) => app.billingConsoleRoutes,
+                  ),
               },
               {
                 path: 'en',
                 loadChildren: () =>
-                  import('@forepath/framework/frontend/feature-billing-console').then((app) => app.billingConsoleRoutes),
+                  import('@forepath/framework/frontend/feature-billing-console').then(
+                    (app) => app.billingConsoleRoutes,
+                  ),
               },
             ]
           : []),
