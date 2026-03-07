@@ -3,11 +3,6 @@ import { inject, Injectable, InjectionToken } from '@angular/core';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Observable } from 'rxjs';
 
-/**
- * Injection token for the redirect target after successful login.
- * Applications should provide this with an array of route segments (e.g. ['/clients'] or ['/dashboard']).
- */
-export const LOGIN_SUCCESS_REDIRECT_TARGET = new InjectionToken<string[]>('LOGIN_SUCCESS_REDIRECT_TARGET');
 import type {
   CreateUserDto,
   LoginResponse,
@@ -15,6 +10,16 @@ import type {
   UpdateUserDto,
   UserResponseDto,
 } from '../state/authentication/authentication.types';
+
+/**
+ * Injection token to configure the post-login redirect target.
+ *
+ * The value should be an array of path segments suitable for
+ * `Router.navigate`, e.g. `['/clients']` or `['/dashboard']`.
+ *
+ * Defaults to `['/clients']` to preserve existing behavior.
+ */
+export const LOGIN_SUCCESS_REDIRECT_TARGET = new InjectionToken<string[]>('LoginSuccessRedirectTarget');
 
 @Injectable({
   providedIn: 'root',

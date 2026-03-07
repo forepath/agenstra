@@ -46,6 +46,12 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 255, name: 'keycloak_sub', nullable: true })
   keycloakSub?: string;
 
+  /**
+   * Day of month (1-28) when the user is billed for open positions. Null means use registration day (createdAt), capped at 28.
+   */
+  @Column({ type: 'int', name: 'billing_day_of_month', nullable: true })
+  billingDayOfMonth?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

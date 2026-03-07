@@ -1,0 +1,19 @@
+flowchart LR
+    User["👤 User"] --> API["Billing API"]
+    API --> Availability["Availability Service"]
+    Availability --> HetznerAPI["Hetzner Cloud API"]
+
+    API --> Provisioning["Provisioning Service"]
+    Provisioning --> HetznerProvisioner["Hetzner Provisioning Service"]
+    HetznerProvisioner --> HetznerAPI
+
+    API --> DB["Postgres"]
+    DB --> Subscription["Subscriptions"]
+    DB --> Items["Subscription Items"]
+    DB --> Backorders["Backorders"]
+
+    style API fill:#e6f0ff,stroke:#4a90e2,stroke-width:3px
+    style Provisioning fill:#fff4e6,stroke:#ff8c42,stroke-width:3px
+    style HetznerProvisioner fill:#fff4e6,stroke:#ff8c42
+    style Availability fill:#e6ffe6,stroke:#4a9e2,stroke-width:3px
+    style DB fill:#f0f0f0,stroke:#666,stroke-width:2px

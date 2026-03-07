@@ -157,6 +157,7 @@
     "dockerode": "4.0.9",
     "express": "4.21.2",
     "gray-matter": "4.0.3",
+    "i18n-iso-countries": "7.14.0",
     "ionicons": "7.4.0",
     "keycloak-angular": "19.0.2",
     "keycloak-connect": "24.0.1",

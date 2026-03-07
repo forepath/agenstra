@@ -44,15 +44,10 @@ export const typeormConfig: DataSourceOptions = {
     StatisticsChatFilterFlagEntity,
     StatisticsEntityEventEntity,
   ],
-  // Migration paths:
-  // - In development with TypeScript: use path from workspace root
-  // - In production/Docker: use relative path from working directory (/app)
-  // The path is resolved relative to process.cwd() at runtime
-  // In Docker, working directory is /app, so 'src/migrations/*.js' should work
   migrations: [
-    // Compiled .js in Docker; .ts for dev CLI (compile-migrations copies identity migrations into src/migrations)
     'src/migrations/*.js',
     'apps/backend-agent-controller/src/migrations/*.ts',
+    'libs/domains/identity/backend/util-auth/src/lib/migrations/*.ts',
   ],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',

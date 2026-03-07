@@ -1,0 +1,390 @@
+<div class="service-types-container border-top d-flex flex-column h-100">
+  <div
+    class="service-types-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center"
+  >
+    <h5 class="mb-0 fw-semibold" i18n="@@featureServiceTypes-title">Service Types</h5>
+  </div>
+  <div class="p-3 flex-grow-1 overflow-auto">
+    @if (error$ | async; as err) {
+      <div class="alert alert-danger" role="alert">{{ err }}</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h5 mb-0" i18n="@@featureServiceTypes-list">Service types</h2>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openCreateModal()"
+        [disabled]="(loadingAny$ | async) === true"
+        i18n="@@featureServiceTypes-add"
+      >
+        Add service type
+      </button>
+    </div>
+
+    @if (loading$ | async) {
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+        <span i18n="@@featureServiceTypes-loading">Loading...</span>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col" i18n="@@featureServiceTypes-key">Key</th>
+              <th scope="col" i18n="@@featureServiceTypes-name">Name</th>
+              <th scope="col" i18n="@@featureServiceTypes-provider">Provider</th>
+              <th scope="col" i18n="@@featureServiceTypes-active">Active</th>
+              <th scope="col" i18n="@@featureServiceTypes-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (st of serviceTypes$ | async; track st.id) {
+              <tr>
+                <td>
+                  <code>{{ st.key }}</code>
+                </td>
+                <td>{{ st.name }}</td>
+                <td>{{ st.provider }}</td>
+                <td>
+                  @if (st.isActive) {
+                    <span class="badge bg-success" i18n="@@featureServiceTypes-yes">Yes</span>
+                  } @else {
+                    <span class="badge bg-secondary" i18n="@@featureServiceTypes-no">No</span>
+                  }
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary me-1"
+                    (click)="openEditModal(st)"
+                    [disabled]="(loadingAny$ | async) === true"
+                    i18n="@@featureServiceTypes-edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="openDeleteConfirm(st)"
+                    [disabled]="(loadingAny$ | async) === true"
+                    i18n="@@featureServiceTypes-delete"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-body-secondary" i18n="@@featureServiceTypes-empty">No service types.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create modal -->
+<div
+  class="modal fade"
+  id="createServiceTypeModal"
+  tabindex="-1"
+  aria-labelledby="createServiceTypeModalLabel"
+  aria-hidden="true"
+  #createModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createServiceTypeModalLabel" i18n="@@featureServiceTypes-createTitle">
+          Add service type
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          [disabled]="(creating$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitCreate()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="createKey" class="form-label" i18n="@@featureServiceTypes-key">Key</label>
+            <input
+              type="text"
+              class="form-control"
+              id="createKey"
+              name="key"
+              [(ngModel)]="createForm.key"
+              required
+              [disabled]="(creating$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="createName" class="form-label" i18n="@@featureServiceTypes-name">Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="createName"
+              name="name"
+              [(ngModel)]="createForm.name"
+              required
+              [disabled]="(creating$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="createDescription" class="form-label" i18n="@@featureServiceTypes-description"
+              >Description</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="createDescription"
+              name="description"
+              [(ngModel)]="createForm.description"
+              [disabled]="(creating$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="createProvider" class="form-label" i18n="@@featureServiceTypes-provider">Provider</label>
+            @if (providerDetailsLoading$ | async) {
+              <div class="form-control-plaintext text-body-secondary" i18n="@@featureServiceTypes-loadingProviders">
+                Loading providers...
+              </div>
+            } @else {
+              @if (providerDetails$ | async; as providers) {
+                @if (providers.length > 0) {
+                  <select
+                    id="createProvider"
+                    name="provider"
+                    class="form-select"
+                    [(ngModel)]="createForm.provider"
+                    required
+                    [disabled]="(creating$ | async) === true"
+                  >
+                    <option value="" i18n="@@featureServiceTypes-chooseProvider">Choose a provider</option>
+                    @for (p of providers; track p.id) {
+                      <option [value]="p.id">{{ p.displayName }}</option>
+                    }
+                  </select>
+                } @else {
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="createProvider"
+                    name="provider"
+                    [(ngModel)]="createForm.provider"
+                    required
+                    [disabled]="(creating$ | async) === true"
+                    i18n-placeholder="@@featureServiceTypes-providerPlaceholder"
+                    placeholder="e.g. hetzner"
+                  />
+                  <small class="text-body-secondary" i18n="@@featureServiceTypes-noProvidersHint"
+                    >No providers configured. Enter provider id manually.</small
+                  >
+                }
+              }
+            }
+          </div>
+          <div class="form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="createIsActive"
+              name="isActive"
+              [(ngModel)]="createForm.isActive"
+              [disabled]="(creating$ | async) === true"
+            />
+            <label class="form-check-label" for="createIsActive" i18n="@@featureServiceTypes-active">Active</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServiceTypes-close">
+            Close
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="
+              !createForm.key.trim() ||
+              !createForm.name.trim() ||
+              !createForm.provider.trim() ||
+              (creating$ | async) === true
+            "
+            i18n="@@featureServiceTypes-create"
+          >
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div
+  class="modal fade"
+  id="editServiceTypeModal"
+  tabindex="-1"
+  aria-labelledby="editServiceTypeModalLabel"
+  aria-hidden="true"
+  #editModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editServiceTypeModalLabel" i18n="@@featureServiceTypes-editTitle">
+          Edit service type
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          [disabled]="(updating$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitEdit()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editName" class="form-label" i18n="@@featureServiceTypes-name">Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="editName"
+              name="name"
+              [(ngModel)]="editForm.name"
+              [disabled]="(updating$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="editDescription" class="form-label" i18n="@@featureServiceTypes-description">Description</label>
+            <input
+              type="text"
+              class="form-control"
+              id="editDescription"
+              name="description"
+              [(ngModel)]="editForm.description"
+              [disabled]="(updating$ | async) === true"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="editProvider" class="form-label" i18n="@@featureServiceTypes-provider">Provider</label>
+            @if (providerDetailsLoading$ | async) {
+              <div class="form-control-plaintext text-body-secondary" i18n="@@featureServiceTypes-loadingProviders">
+                Loading providers...
+              </div>
+            } @else {
+              @if (providerDetails$ | async; as providers) {
+                @if (providers.length > 0) {
+                  <select
+                    id="editProvider"
+                    name="provider"
+                    class="form-select"
+                    [(ngModel)]="editForm.provider"
+                    [disabled]="(updating$ | async) === true"
+                  >
+                    <option value="" i18n="@@featureServiceTypes-chooseProvider">Choose a provider</option>
+                    @for (p of providers; track p.id) {
+                      <option [value]="p.id">{{ p.displayName }}</option>
+                    }
+                  </select>
+                } @else {
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editProvider"
+                    name="provider"
+                    [(ngModel)]="editForm.provider"
+                    [disabled]="(updating$ | async) === true"
+                    i18n-placeholder="@@featureServiceTypes-providerPlaceholder"
+                    placeholder="e.g. hetzner"
+                  />
+                  <small class="text-body-secondary" i18n="@@featureServiceTypes-noProvidersHint"
+                    >No providers configured. Enter provider id manually.</small
+                  >
+                }
+              }
+            }
+          </div>
+          <div class="form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="editIsActive"
+              name="isActive"
+              [(ngModel)]="editForm.isActive"
+              [disabled]="(updating$ | async) === true"
+            />
+            <label class="form-check-label" for="editIsActive" i18n="@@featureServiceTypes-active">Active</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServiceTypes-close">
+            Close
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="(updating$ | async) === true"
+            i18n="@@featureServiceTypes-save"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div
+  class="modal fade"
+  id="deleteServiceTypeModal"
+  tabindex="-1"
+  aria-labelledby="deleteServiceTypeModalLabel"
+  aria-hidden="true"
+  #deleteConfirmModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteServiceTypeModalLabel" i18n="@@featureServiceTypes-deleteTitle">
+          Delete service type?
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          [disabled]="(deleting$ | async) === true"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (serviceTypeToDelete; as st) {
+          <p i18n="@@featureServiceTypes-deleteConfirm">
+            Are you sure you want to delete the service type &quot;{{ st.name }}&quot; ({{ st.key }})?
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServiceTypes-close">
+          Close
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="(deleting$ | async) === true || !serviceTypeToDelete"
+          i18n="@@featureServiceTypes-confirmDelete"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

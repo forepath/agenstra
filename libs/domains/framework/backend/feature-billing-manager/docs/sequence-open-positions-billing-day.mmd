@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant BillingScheduler as SubscriptionBillingScheduler
+    participant ExpirationScheduler as SubscriptionExpirationScheduler
+    participant OpenPositions as OpenPositionsRepository
+    participant BillingDayScheduler as OpenPositionInvoiceScheduler
+    participant InvoiceCreation as InvoiceCreationService
+    participant UsersRepo as UsersBillingDayRepository
+
+    Note over BillingScheduler,OpenPositions: When a subscription is due for billing or cancellation
+    BillingScheduler->>OpenPositions: "create position"
+    ExpirationScheduler->>OpenPositions: "create position, then cancel subscription"
+
+    Note over BillingDayScheduler,InvoiceCreation: On each user billing day, daily run
+    BillingDayScheduler->>UsersRepo: "findUserIdsWithBillingDay"
+    UsersRepo-->>BillingDayScheduler: userIds
+    loop For each user
+        BillingDayScheduler->>OpenPositions: "findUnbilledByUserId"
+        OpenPositions-->>BillingDayScheduler: positions
+        BillingDayScheduler->>InvoiceCreation: "createAccumulatedInvoice"
+        InvoiceCreation-->>BillingDayScheduler: "invoiceRefId or skip"
+        InvoiceCreation->>OpenPositions: "markBilled for each position"
+    end
