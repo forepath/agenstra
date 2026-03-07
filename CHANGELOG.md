@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.37.0](https://github.com/forepath/agenstra/compare/v1.36.8...v1.37.0) (2026-03-07)
+
+
+### Features
+
+* dynamic websocket namespace ([#243](https://github.com/forepath/agenstra/issues/243)) ([8dcb99c](https://github.com/forepath/agenstra/commit/8dcb99ce2d92cd56c35faa8678f399a25464035d))
+
 ## [1.36.8](https://github.com/forepath/agenstra/compare/v1.36.7...v1.36.8) (2026-03-07)
 
 
