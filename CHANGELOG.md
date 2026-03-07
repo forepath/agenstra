@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.8](https://github.com/forepath/agenstra/compare/v1.36.7...v1.36.8) (2026-03-07)
+
+
+### Bug Fixes
+
+* remove faulty redirect url builder ([#242](https://github.com/forepath/agenstra/issues/242)) ([3a97e40](https://github.com/forepath/agenstra/commit/3a97e403773dde53697a78cf397d6161f280af0d))
+
 ## [1.36.7](https://github.com/forepath/agenstra/compare/v1.36.6...v1.36.7) (2026-03-07)
 
 
