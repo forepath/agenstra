@@ -156,7 +156,7 @@ const createErrorResponse = (message: string, code?: string, details?: string): 
  * Authenticates sessions exclusively against the database-backed agent management system.
  */
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8080'), {
-  namespace: 'agents',
+  namespace: process.env.WEBSOCKET_NAMESPACE || 'agents',
   cors: {
     origin: '*', // adjust for production
   },
