@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.36.7](https://github.com/forepath/agenstra/compare/v1.36.6...v1.36.7) (2026-03-07)
+
+
+### Bug Fixes
+
+* re-register de and en routes ([#241](https://github.com/forepath/agenstra/issues/241)) ([3d90942](https://github.com/forepath/agenstra/commit/3d909429c5b79518bca64f4f4578066fa3f6d073))
+
 ## [1.36.6](https://github.com/forepath/agenstra/compare/v1.36.5...v1.36.6) (2026-03-06)
 
 
