@@ -25,6 +25,7 @@ services:
       HOST: 0.0.0.0
       PORT: 3000
       WEBSOCKET_PORT: 8080
+      WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-agents}
       NODE_ENV: development
       # Cursor agent configuration
       CURSOR_API_KEY: ${CURSOR_API_KEY:-}

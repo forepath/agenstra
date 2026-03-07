@@ -1,3 +1,11 @@
+import {
+  AuthenticationType,
+  ClientAgentCredentialsRepository,
+  ClientUsersRepository,
+  SocketAuthService,
+  buildRequestFromSocketUser,
+  ensureClientAccess,
+} from '@forepath/identity/backend';
 import { BadRequestException, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -11,14 +19,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
-import {
-  AuthenticationType,
-  ClientAgentCredentialsRepository,
-  ClientUsersRepository,
-  SocketAuthService,
-  buildRequestFromSocketUser,
-  ensureClientAccess,
-} from '@forepath/identity/backend';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
@@ -38,7 +38,7 @@ interface ForwardPayload {
 }
 
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8081'), {
-  namespace: 'clients',
+  namespace: process.env.WEBSOCKET_NAMESPACE || 'clients',
   cors: { origin: '*' },
 })
 export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

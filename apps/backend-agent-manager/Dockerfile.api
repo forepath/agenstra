@@ -13,6 +13,7 @@ FROM docker.io/debian:trixie-slim
 ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV WEBSOCKET_PORT=8080
+ENV WEBSOCKET_NAMESPACE=agents
 ENV NODE_ENV=development
 
 # Environment variables for the cursor-agent

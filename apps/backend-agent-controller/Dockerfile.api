@@ -13,6 +13,7 @@ FROM docker.io/debian:trixie-slim
 ENV HOST=0.0.0.0
 ENV PORT=3100
 ENV WEBSOCKET_PORT=8081
+ENV WEBSOCKET_NAMESPACE=clients
 ENV NODE_ENV=development
 
 # Environment variables for the database
