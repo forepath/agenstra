@@ -43,7 +43,6 @@ import { IdentityUserManagerComponent } from './user-manager/user-manager.compon
  *
  * The consuming application must provide:
  * - `IDENTITY_AUTH_ENVIRONMENT` token with `IdentityAuthEnvironment` value
- * - `IDENTITY_LOCALE_SERVICE` token with `IdentityLocaleService` implementation
  *
  * @example
  * ```typescript

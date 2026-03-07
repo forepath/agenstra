@@ -1,11 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import {
-  IDENTITY_AUTH_ENVIRONMENT,
-  IDENTITY_LOCALE_SERVICE,
-  type IdentityLocaleService,
-} from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { KeycloakService } from 'keycloak-angular';
 
 /**
@@ -28,7 +24,6 @@ const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 export const loginGuard: CanActivateFn = (_route, _state) => {
   const environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);
   const router = inject(Router);
-  const localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE);
 
   if (environment.authentication.type === 'keycloak') {
     const keycloakService = inject(KeycloakService, { optional: true });
@@ -37,7 +32,7 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
       const isAuthenticated = keycloakService.isLoggedIn();
       if (isAuthenticated) {
         // User is already authenticated, redirect to dashboard
-        return router.createUrlTree(localeService.buildAbsoluteUrl(['/clients']) as string[]);
+        return router.createUrlTree(['/clients']);
       } else {
         // Login to Keycloak
         keycloakService.login();
@@ -52,14 +47,14 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
     const envApiKey = environment.authentication.apiKey;
     if (envApiKey) {
       // API key found in environment, user is "logged in", redirect to dashboard
-      return router.createUrlTree(localeService.buildAbsoluteUrl(['/clients']) as string[]);
+      return router.createUrlTree(['/clients']);
     }
 
     // Check if API key exists in localStorage
     const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
     if (storedApiKey) {
       // API key found in localStorage, user is "logged in", redirect to dashboard
-      return router.createUrlTree(localeService.buildAbsoluteUrl(['/clients']) as string[]);
+      return router.createUrlTree(['/clients']);
     }
 
     // No API key found, allow access to login
@@ -73,7 +68,7 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
         const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
         const exp = payload.exp ? payload.exp * 1000 : 0;
         if (exp > Date.now()) {
-          return router.createUrlTree(localeService.buildAbsoluteUrl(['/clients']) as string[]);
+          return router.createUrlTree(['/clients']);
         }
       } catch {
         // Invalid JWT, allow access to login

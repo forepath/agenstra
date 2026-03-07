@@ -46,7 +46,7 @@ import {
   type UpdateEnvironmentVariableDto,
   type WriteFileDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
-import { ENVIRONMENT, LocaleService, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
 import {
   catchError,
   combineLatest,
@@ -120,7 +120,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly route = inject(ActivatedRoute);
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
-  private readonly localeService = inject(LocaleService);
 
   @ViewChild('chatMessagesContainer', { static: false })
   private chatMessagesContainer!: ElementRef<HTMLDivElement>;
@@ -967,9 +966,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         // Update local selected agent ID
         this.selectedAgentId.set(currentAgentId);
         // Navigate to the agent route
-        this.router.navigate(
-          this.localeService.buildAbsoluteUrl(['/clients', this.activeClientId, 'agents', currentAgentId]),
-        );
+        this.router.navigate(['/clients', this.activeClientId, 'agents', currentAgentId]);
         // Reset message count when switching agents
         this.previousMessageCount = 0;
         this.lastUserMessageTimestamp.set(null);
@@ -1333,7 +1330,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       });
       // Navigate to base route
       if (navigate) {
-        this.router.navigate(this.localeService.buildAbsoluteUrl(['/']));
+        this.router.navigate(['/']);
       }
       // Reset message count
       this.previousMessageCount = 0;
@@ -1355,7 +1352,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       if (navigate) {
-        this.router.navigate(this.localeService.buildAbsoluteUrl(['/clients', clientId]));
+        this.router.navigate(['/clients', clientId]);
       }
 
       this.clientsFacade.setActiveClient(clientId);
@@ -1389,7 +1386,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     } else {
       // Select the agent
       if (navigate) {
-        this.router.navigate(this.localeService.buildAbsoluteUrl(['/clients', this.activeClientId, 'agents', agentId]));
+        this.router.navigate(['/clients', this.activeClientId, 'agents', agentId]);
       }
 
       this.selectedAgentId.set(agentId);
@@ -1427,7 +1424,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
     // Navigate to client route (without agent) if requested
     if (navigate) {
-      this.router.navigate(this.localeService.buildAbsoluteUrl(['/clients', clientId]));
+      this.router.navigate(['/clients', clientId]);
     }
     // Reset message count
     this.previousMessageCount = 0;
@@ -1528,25 +1525,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       const filePath = this.route.snapshot.queryParams['file'];
       if (filePath && !wasOpen) {
         // Navigate with file query parameter
-        this.router.navigate(
-          this.localeService.buildAbsoluteUrl([
-            '/clients',
-            this.activeClientId,
-            'agents',
-            this.selectedAgentId(),
-            'editor',
-          ]),
-          {
-            queryParams: { file: filePath },
-          },
-        );
+        this.router.navigate(['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'editor'], {
+          queryParams: { file: filePath },
+        });
       } else {
         this.router.navigate(
-          this.localeService.buildAbsoluteUrl(
-            wasOpen
-              ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
-              : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'editor'],
-          ),
+          wasOpen
+            ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
+            : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'editor'],
         );
       }
     }
@@ -1793,11 +1779,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (navigate) {
       this.router.navigate(
-        this.localeService.buildAbsoluteUrl(
-          wasOpen
-            ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
-            : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'deployments'],
-        ),
+        wasOpen
+          ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
+          : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'deployments'],
       );
     }
   }

@@ -1,7 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable, InjectionToken } from '@angular/core';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Observable } from 'rxjs';
+
+/**
+ * Injection token for the redirect target after successful login.
+ * Applications should provide this with an array of route segments (e.g. ['/clients'] or ['/dashboard']).
+ */
+export const LOGIN_SUCCESS_REDIRECT_TARGET = new InjectionToken<string[]>('LOGIN_SUCCESS_REDIRECT_TARGET');
 import type {
   CreateUserDto,
   LoginResponse,
