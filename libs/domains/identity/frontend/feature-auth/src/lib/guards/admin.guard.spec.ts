@@ -1,7 +1,7 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { AuthenticationFacade, IDENTITY_LOCALE_SERVICE } from '@forepath/identity/frontend';
+import { AuthenticationFacade } from '@forepath/identity/frontend';
 import { of } from 'rxjs';
 import { adminGuard } from './admin.guard';
 
@@ -9,7 +9,6 @@ describe('adminGuard', () => {
   let mockRouter: jest.Mocked<Router>;
   let mockRoute: ActivatedRouteSnapshot;
   let mockState: RouterStateSnapshot;
-  let mockLocaleService: { buildAbsoluteUrl: jest.Mock };
 
   const setupTestBed = (canAccess: boolean): Injector => {
     TestBed.resetTestingModule();
@@ -26,10 +25,6 @@ describe('adminGuard', () => {
           provide: Router,
           useValue: mockRouter,
         },
-        {
-          provide: IDENTITY_LOCALE_SERVICE,
-          useValue: mockLocaleService,
-        },
       ],
     });
     return TestBed.inject(Injector);
@@ -42,10 +37,6 @@ describe('adminGuard', () => {
 
     mockRoute = {} as ActivatedRouteSnapshot;
     mockState = {} as RouterStateSnapshot;
-
-    mockLocaleService = {
-      buildAbsoluteUrl: jest.fn((path: unknown[]) => path),
-    };
 
     jest.clearAllMocks();
   });

@@ -1,4 +1,4 @@
-import { createFeatureSelector } from '@ngrx/store';
+import { initialStatsState, type StatsState } from './stats.reducer';
 import {
   selectContainerStats,
   selectContainerStatsCount,
@@ -11,7 +11,6 @@ import {
   selectStatsByContainer,
   selectStatsState,
 } from './stats.selectors';
-import { initialStatsState, type StatsState } from './stats.reducer';
 import type { ContainerStatsEntry } from './stats.types';
 
 describe('Stats Selectors', () => {
@@ -58,6 +57,7 @@ describe('Stats Selectors', () => {
     timestamp: string,
     receivedAt: number,
   ): ContainerStatsEntry => ({
+    status: { running: true },
     stats: mockStats,
     timestamp,
     receivedAt,

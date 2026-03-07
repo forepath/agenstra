@@ -4,7 +4,7 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IdentityAuthEnvironment } from '../../../../util-auth/src';
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE, isAuthenticated } from '../../../../util-auth/src';
+import { IDENTITY_AUTH_ENVIRONMENT, isAuthenticated } from '../../../../util-auth/src';
 import { authGuard } from './auth.guard';
 
 // Mock keycloak-angular to avoid ES module import issues with keycloak-js in Jest.
@@ -27,8 +27,6 @@ describe('authGuard', () => {
   let mockEnvironment: IdentityAuthEnvironment;
   let mockIsAuthenticated: jest.MockedFunction<typeof isAuthenticated>;
 
-  let mockLocaleService: { buildAbsoluteUrl: jest.Mock };
-
   const setupTestBed = (environmentOverrides?: Partial<IdentityAuthEnvironment>): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -40,10 +38,6 @@ describe('authGuard', () => {
         {
           provide: Router,
           useValue: mockRouter,
-        },
-        {
-          provide: IDENTITY_LOCALE_SERVICE,
-          useValue: mockLocaleService,
         },
       ],
     });
@@ -77,10 +71,6 @@ describe('authGuard', () => {
     };
 
     mockIsAuthenticated = isAuthenticated as jest.MockedFunction<typeof isAuthenticated>;
-
-    mockLocaleService = {
-      buildAbsoluteUrl: jest.fn((path: unknown[]) => path),
-    };
 
     jest.clearAllMocks();
   });

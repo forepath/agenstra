@@ -3,13 +3,7 @@ import { Router, type CanActivateFn } from '@angular/router';
 // Import from util-auth barrel directly to avoid circular dependency
 // (feature-auth is re-exported from the @forepath/identity/frontend barrel)
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import {
-  IDENTITY_AUTH_ENVIRONMENT,
-  IDENTITY_LOCALE_SERVICE,
-  type IdentityAuthEnvironment,
-  type IdentityLocaleService,
-  isAuthenticated,
-} from '../../../../util-auth/src';
+import { IDENTITY_AUTH_ENVIRONMENT, isAuthenticated, type IdentityAuthEnvironment } from '../../../../util-auth/src';
 
 /**
  * LocalStorage key for storing the API key
@@ -31,7 +25,6 @@ const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 export const authGuard: CanActivateFn = (route, state) => {
   const environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);
   const router = inject(Router);
-  const localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE);
 
   if (environment.authentication.type === 'keycloak') {
     // Use Keycloak guard for authentication
@@ -54,7 +47,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     }
 
     // No API key found in environment or localStorage, redirect to login
-    return router.createUrlTree(localeService.buildAbsoluteUrl(['/login']) as string[]);
+    return router.createUrlTree(['/login']);
   }
 
   if (environment.authentication.type === 'users') {
@@ -70,9 +63,9 @@ export const authGuard: CanActivateFn = (route, state) => {
         // Invalid JWT, fall through to redirect
       }
     }
-    return router.createUrlTree(localeService.buildAbsoluteUrl(['/login']) as string[]);
+    return router.createUrlTree(['/login']);
   }
 
   // For other authentication types, redirect to login
-  return router.createUrlTree(localeService.buildAbsoluteUrl(['/login']) as string[]);
+  return router.createUrlTree(['/login']);
 };

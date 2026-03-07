@@ -2,12 +2,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE } from '@forepath/identity/frontend';
-import type { IdentityLocaleService } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
 import { catchError, from, map, of, switchMap, tap } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
 import {
   changePassword,
   changePasswordFailure,
@@ -169,15 +168,11 @@ export const login$ = createEffect(
 );
 
 export const loginSuccessRedirect$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    router = inject(Router),
-    localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE),
-  ) => {
+  (actions$ = inject(Actions), router = inject(Router), redirectTarget = inject(LOGIN_SUCCESS_REDIRECT_TARGET)) => {
     return actions$.pipe(
       ofType(loginSuccess),
       tap(() => {
-        router.navigate(localeService.buildAbsoluteUrl(['/clients']));
+        router.navigate(redirectTarget);
       }),
     );
   },
@@ -215,15 +210,11 @@ export const logout$ = createEffect(
 );
 
 export const logoutSuccessRedirect$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    router = inject(Router),
-    localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE),
-  ) => {
+  (actions$ = inject(Actions), router = inject(Router)) => {
     return actions$.pipe(
       ofType(logoutSuccess),
       tap(() => {
-        router.navigate(localeService.buildAbsoluteUrl(['/login']));
+        router.navigate(['/login']);
       }),
     );
   },
@@ -323,15 +314,11 @@ export const register$ = createEffect(
 );
 
 export const registerSuccessRedirect$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    router = inject(Router),
-    localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE),
-  ) => {
+  (actions$ = inject(Actions), router = inject(Router)) => {
     return actions$.pipe(
       ofType(registerSuccess),
       tap(({ user }) => {
-        router.navigate(localeService.buildAbsoluteUrl(['/confirm-email']), {
+        router.navigate(['/confirm-email'], {
           queryParams: { email: user.email },
         });
       }),
@@ -356,15 +343,11 @@ export const confirmEmail$ = createEffect(
 );
 
 export const confirmEmailSuccessRedirect$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    router = inject(Router),
-    localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE),
-  ) => {
+  (actions$ = inject(Actions), router = inject(Router)) => {
     return actions$.pipe(
       ofType(confirmEmailSuccess),
       tap(() => {
-        router.navigate(localeService.buildAbsoluteUrl(['/login']));
+        router.navigate(['/login']);
       }),
     );
   },
@@ -387,15 +370,11 @@ export const requestPasswordReset$ = createEffect(
 );
 
 export const requestPasswordResetSuccessRedirect$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    router = inject(Router),
-    localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE),
-  ) => {
+  (actions$ = inject(Actions), router = inject(Router)) => {
     return actions$.pipe(
       ofType(requestPasswordResetSuccess),
       tap(({ email }) => {
-        router.navigate(localeService.buildAbsoluteUrl(['/request-password-reset-confirmation']), {
+        router.navigate(['/request-password-reset-confirmation'], {
           queryParams: email ? { email } : {},
         });
       }),
@@ -420,15 +399,11 @@ export const resetPassword$ = createEffect(
 );
 
 export const resetPasswordSuccessRedirect$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    router = inject(Router),
-    localeService = inject<IdentityLocaleService>(IDENTITY_LOCALE_SERVICE),
-  ) => {
+  (actions$ = inject(Actions), router = inject(Router)) => {
     return actions$.pipe(
       ofType(resetPasswordSuccess),
       tap(() => {
-        router.navigate(localeService.buildAbsoluteUrl(['/login']));
+        router.navigate(['/login']);
       }),
     );
   },

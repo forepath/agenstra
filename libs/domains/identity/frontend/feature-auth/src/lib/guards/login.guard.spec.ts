@@ -2,7 +2,7 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { KeycloakService } from 'keycloak-angular';
 import { loginGuard } from './login.guard';
 
@@ -19,7 +19,6 @@ describe('loginGuard', () => {
   let mockState: RouterStateSnapshot;
   let mockEnvironment: IdentityAuthEnvironment;
   let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
-  let mockLocaleService: { buildAbsoluteUrl: jest.Mock };
 
   const setupTestBed = (
     environmentOverrides?: Partial<IdentityAuthEnvironment>,
@@ -39,10 +38,6 @@ describe('loginGuard', () => {
         {
           provide: KeycloakService,
           useValue: keycloakServiceOverride ?? mockKeycloakService,
-        },
-        {
-          provide: IDENTITY_LOCALE_SERVICE,
-          useValue: mockLocaleService,
         },
       ],
     });
@@ -80,10 +75,6 @@ describe('loginGuard', () => {
       login: jest.fn(),
     };
 
-    mockLocaleService = {
-      buildAbsoluteUrl: jest.fn((path: unknown[]) => path),
-    };
-
     jest.clearAllMocks();
   });
 
@@ -116,7 +107,6 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
       expect(mockIsLoggedIn).toHaveBeenCalled();
     });
@@ -170,7 +160,6 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
     });
 
@@ -187,7 +176,6 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
       expect(window.localStorage.getItem).toHaveBeenCalledWith('agent-controller-api-key');
     });
@@ -206,7 +194,6 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
       // Should check environment first, so localStorage might not be checked
     });
@@ -270,7 +257,6 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockLocaleService.buildAbsoluteUrl).toHaveBeenCalledWith(['/clients']);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
     });
 

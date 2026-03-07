@@ -2,14 +2,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, RouteReuseStrategy, withRouterConfig } from '@angular/router';
 import { getAuthInterceptor } from '@forepath/framework/frontend/data-access-agent-console';
-import {
-  Environment,
-  ENVIRONMENT,
-  environment,
-  LocaleService,
-  provideLocale,
-} from '@forepath/framework/frontend/util-configuration';
-import { IDENTITY_AUTH_ENVIRONMENT, IDENTITY_LOCALE_SERVICE, provideKeycloak } from '@forepath/identity/frontend';
+import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/framework/frontend/util-configuration';
+import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { ComponentReuseStrategy } from './strategies/component-reuse.strategy';
@@ -19,7 +13,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     // Wire identity injection tokens to framework's environment and locale service.
     // IDENTITY_AUTH_ENVIRONMENT maps the full Environment to the auth-relevant subset.
-    // IDENTITY_LOCALE_SERVICE delegates to the framework's LocaleService.
     {
       provide: IDENTITY_AUTH_ENVIRONMENT,
       useFactory: (env: Environment) => ({
@@ -30,8 +23,8 @@ export const appConfig: ApplicationConfig = {
       deps: [ENVIRONMENT],
     },
     {
-      provide: IDENTITY_LOCALE_SERVICE,
-      useExisting: LocaleService,
+      provide: LOGIN_SUCCESS_REDIRECT_TARGET,
+      useValue: ['/clients'],
     },
     // Provide KeycloakService before HTTP client so interceptor can inject it
     ...(environment.authentication.type === 'keycloak' ? provideKeycloak() : []),

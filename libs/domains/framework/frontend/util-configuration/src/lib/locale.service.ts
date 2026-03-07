@@ -1,4 +1,4 @@
-import { APP_BASE_HREF, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { ENVIRONMENT } from './environment.token';
 
@@ -18,7 +18,6 @@ const AVAILABLE_LOCALES: LocaleOption[] = [
 export class LocaleService {
   private environment = inject(ENVIRONMENT);
   private platformId = inject(PLATFORM_ID);
-  private baseHref = inject(APP_BASE_HREF, { optional: true });
 
   /**
    * Returns the list of available locales for the language switcher.
@@ -58,29 +57,5 @@ export class LocaleService {
     const hash = window.location.hash ? window.location.hash : '';
     const path = currentRoute ? `/${langCode}/${currentRoute}` : `/${langCode}`;
     return `${window.location.origin}${path}${queryString}${hash}`;
-  }
-
-  buildAbsoluteUrl(path: any[]): any[] {
-    if (!this.environment.production) {
-      return path;
-    }
-
-    if (!isPlatformBrowser(this.platformId)) {
-      return path;
-    }
-
-    const locale = window.location.pathname.split('/')[1] ?? '';
-    if (!locale) {
-      return path;
-    }
-
-    const baseHref = this.baseHref ?? '/';
-    if (baseHref !== '/') {
-      return path;
-    }
-
-    path = path.map((p) => (p.startsWith('/') ? p.slice(1) : p));
-
-    return ['/', locale, ...path];
   }
 }

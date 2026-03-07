@@ -1,15 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { clearAllStatsHistory, clearStatsHistory } from './stats.actions';
 import { StatsFacade } from './stats.facade';
-import { clearAllStatsHistory, clearStatsHistory, containerStatsReceived } from './stats.actions';
-import type { ContainerStatsEntry } from './stats.types';
 import type { StatsState } from './stats.reducer';
+import type { ContainerStatsEntry } from './stats.types';
 
 describe('StatsFacade', () => {
   let facade: StatsFacade;
   let store: MockStore<{ stats: StatsState }>;
   const initialState = {
     stats: {
+      runningOverrides: {},
       statsByContainer: {},
       maxEntriesPerContainer: 1000,
     },
@@ -58,6 +59,7 @@ describe('StatsFacade', () => {
     timestamp: string,
     receivedAt: number,
   ): ContainerStatsEntry => ({
+    status: { running: true },
     stats: mockStats,
     timestamp,
     receivedAt,
@@ -80,6 +82,7 @@ describe('StatsFacade', () => {
       const entry2 = createEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2],
           },
@@ -107,6 +110,7 @@ describe('StatsFacade', () => {
       const entry2 = createEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2],
           },
@@ -135,6 +139,7 @@ describe('StatsFacade', () => {
       const entry3 = createEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000);
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2, entry3],
           },
@@ -159,6 +164,7 @@ describe('StatsFacade', () => {
       const entry3 = createEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000);
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2, entry3],
           },
@@ -182,6 +188,7 @@ describe('StatsFacade', () => {
     it('should return the count of stats for a container', (done) => {
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': [
               createEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000),
@@ -204,6 +211,7 @@ describe('StatsFacade', () => {
     it('should return all container keys that have stats', (done) => {
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': [createEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000)],
             'client-1:agent-2': [createEntry('client-1', 'agent-2', '2024-01-01T00:00:00.000Z', 2000)],
@@ -229,6 +237,7 @@ describe('StatsFacade', () => {
       ];
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': entries,
           },
@@ -252,6 +261,7 @@ describe('StatsFacade', () => {
       ];
       store.setState({
         stats: {
+          runningOverrides: {},
           statsByContainer: {
             'client-1:agent-1': entries,
           },
