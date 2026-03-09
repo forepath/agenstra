@@ -105,6 +105,7 @@ describe('Subscription Server Info Selectors', () => {
       expect(result[0].subscription).toEqual(mockSubscription);
       expect(result[0].serverInfo).toEqual(mockServerInfo);
       expect(result[0].itemId).toBe('item-1');
+      expect(result[0].service).toBe('controller');
     });
 
     it('should exclude subscriptions without server info', () => {

@@ -337,6 +337,32 @@
                     <div class="mt-3 p-3 bg-body border rounded">
                       <h6 class="mb-3" i18n="@@featureSubscriptions-cloudInitConfig">Instance configuration</h6>
                       <div class="mb-3">
+                        <label for="orderService" class="form-label" i18n="@@featureSubscriptions-service"
+                          >Service</label
+                        >
+                        <select
+                          id="orderService"
+                          name="service"
+                          class="form-select"
+                          [ngModel]="orderRequestedConfig.service"
+                          (ngModelChange)="onServiceChange($event)"
+                          [disabled]="(subscriptionsCreating$ | async) === true"
+                          aria-describedby="orderServiceHelp"
+                        >
+                          <option [ngValue]="'controller'" i18n="@@featureSubscriptions-serviceController">
+                            Controller
+                          </option>
+                          <option [ngValue]="'manager'" i18n="@@featureSubscriptions-serviceManager">Manager</option>
+                        </select>
+                        <span
+                          id="orderServiceHelp"
+                          class="form-text text-body-secondary"
+                          i18n="@@featureSubscriptions-serviceHelp"
+                        >
+                          Controller runs the full stack; Manager runs the agent manager only.
+                        </span>
+                      </div>
+                      <div class="mb-3">
                         <label for="orderAuthMethod" class="form-label" i18n="@@featureSubscriptions-authMethod"
                           >Authentication method</label
                         >
@@ -349,7 +375,9 @@
                           [disabled]="(subscriptionsCreating$ | async) === true"
                           aria-describedby="orderAuthMethodHelp"
                         >
-                          <option [ngValue]="'users'" i18n="@@featureSubscriptions-authUsers">Users</option>
+                          @if (orderRequestedConfig.service === 'controller') {
+                            <option [ngValue]="'users'" i18n="@@featureSubscriptions-authUsers">Users</option>
+                          }
                           <option [ngValue]="'api-key'" i18n="@@featureSubscriptions-authApiKey">API Key</option>
                           <option [ngValue]="'keycloak'" i18n="@@featureSubscriptions-authKeycloak">Keycloak</option>
                         </select>
@@ -362,31 +390,33 @@
                         </span>
                       </div>
                       <div [ngSwitch]="authMethod()">
-                        <div *ngSwitchCase="'users'" class="form-check mb-3">
-                          <input
-                            type="checkbox"
-                            class="form-check-input"
-                            id="orderDisableSignup"
-                            name="disableSignup"
-                            [(ngModel)]="orderRequestedConfig.disableSignup"
-                            [disabled]="(subscriptionsCreating$ | async) === true"
-                            aria-describedby="orderDisableSignupHelp"
-                          />
-                          <label
-                            class="form-check-label"
-                            for="orderDisableSignup"
-                            i18n="@@featureSubscriptions-disableSignup"
-                          >
-                            Disable signup
-                          </label>
-                          <span
-                            id="orderDisableSignupHelp"
-                            class="form-text text-body-secondary d-block"
-                            i18n="@@featureSubscriptions-disableSignupHelp"
-                          >
-                            Prevents new user registration on this instance.
-                          </span>
-                        </div>
+                        @if (orderRequestedConfig.service === 'controller') {
+                          <div *ngSwitchCase="'users'" class="form-check mb-3">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="orderDisableSignup"
+                              name="disableSignup"
+                              [(ngModel)]="orderRequestedConfig.disableSignup"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-describedby="orderDisableSignupHelp"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="orderDisableSignup"
+                              i18n="@@featureSubscriptions-disableSignup"
+                            >
+                              Disable signup
+                            </label>
+                            <span
+                              id="orderDisableSignupHelp"
+                              class="form-text text-body-secondary d-block"
+                              i18n="@@featureSubscriptions-disableSignupHelp"
+                            >
+                              Prevents new user registration on this instance.
+                            </span>
+                          </div>
+                        }
                         <div *ngSwitchCase="'api-key'" class="mb-3">
                           <label for="orderStaticApiKey" class="form-label" i18n="@@featureSubscriptions-staticApiKey">
                             Static API Key
@@ -567,58 +597,196 @@
                           />
                         </div>
                       </fieldset>
-                      <fieldset class="mt-3 mb-0">
-                        <legend class="form-label fs-6" i18n="@@featureSubscriptions-provisioningSection">
-                          Provisioning (optional)
-                        </legend>
-                        <p
-                          class="form-text text-body-secondary small mb-2"
-                          i18n="@@featureSubscriptions-provisioningHelp"
-                        >
-                          If you want this instance to provision additional servers via Hetzner or DigitalOcean, provide
-                          the API tokens. Leave empty otherwise.
-                        </p>
-                        <div class="row g-2 mb-2">
-                          <div class="col-md-6">
-                            <label
-                              for="orderHetznerApiToken"
-                              class="form-label"
-                              i18n="@@featureSubscriptions-hetznerApiToken"
-                            >
-                              Hetzner API token
-                            </label>
-                            <input
-                              type="password"
-                              id="orderHetznerApiToken"
-                              name="hetznerApiToken"
-                              class="form-control"
-                              [(ngModel)]="orderRequestedConfig.hetznerApiToken"
-                              [disabled]="(subscriptionsCreating$ | async) === true"
-                              aria-label="Hetzner API token"
-                              autocomplete="off"
-                            />
-                          </div>
-                          <div class="col-md-6">
-                            <label
-                              for="orderDigitaloceanApiToken"
-                              class="form-label"
-                              i18n="@@featureSubscriptions-digitaloceanApiToken"
-                            >
-                              DigitalOcean API token
-                            </label>
-                            <input
-                              type="password"
-                              id="orderDigitaloceanApiToken"
-                              name="digitaloceanApiToken"
-                              class="form-control"
-                              [(ngModel)]="orderRequestedConfig.digitaloceanApiToken"
-                              [disabled]="(subscriptionsCreating$ | async) === true"
-                              aria-label="DigitalOcean API token"
-                              autocomplete="off"
-                            />
-                          </div>
+                      @if (orderRequestedConfig.service === 'manager') {
+                        <div class="mt-3 mb-2">
+                          <label for="orderCursorApiKey" class="form-label" i18n="@@featureSubscriptions-cursorApiKey">
+                            Cursor API key (optional)
+                          </label>
+                          <input
+                            type="password"
+                            id="orderCursorApiKey"
+                            name="cursorApiKey"
+                            class="form-control"
+                            [(ngModel)]="orderRequestedConfig.cursorApiKey"
+                            placeholder="Cursor API key for agent communication"
+                            [disabled]="(subscriptionsCreating$ | async) === true"
+                            aria-label="Cursor API key"
+                            autocomplete="off"
+                          />
+                          <span class="form-text text-body-secondary" i18n="@@featureSubscriptions-cursorApiKeyHelp">
+                            Used by the manager to communicate with Cursor for agent containers. Leave empty if not
+                            using Cursor agents.
+                          </span>
                         </div>
-                      </fieldset>
+                        <fieldset class="mt-3 mb-0">
+                          <legend class="form-label fs-6" i18n="@@featureSubscriptions-gitSection">
+                            Git (optional)
+                          </legend>
+                          <p class="form-text text-body-secondary small mb-2" i18n="@@featureSubscriptions-gitHelp">
+                            Git configuration for the agent manager (repository URL, credentials, commit author). Leave
+                            empty if not using Git-backed agents.
+                          </p>
+                          <div class="mb-2">
+                            <label for="orderGitRepositoryUrl" class="form-label visually-hidden"
+                              >Git repository URL</label
+                            >
+                            <input
+                              type="url"
+                              id="orderGitRepositoryUrl"
+                              name="gitRepositoryUrl"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.git.repositoryUrl"
+                              placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="Git repository URL"
+                            />
+                          </div>
+                          <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                              <label for="orderGitUsername" class="form-label visually-hidden">Git username</label>
+                              <input
+                                type="text"
+                                id="orderGitUsername"
+                                name="gitUsername"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.git.username"
+                                placeholder="Username (HTTPS)"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Git username"
+                              />
+                            </div>
+                            <div class="col-md-6">
+                              <label for="orderGitToken" class="form-label visually-hidden">Git token</label>
+                              <input
+                                type="password"
+                                id="orderGitToken"
+                                name="gitToken"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.git.token"
+                                placeholder="Token / PAT"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Git token"
+                                autocomplete="off"
+                              />
+                            </div>
+                          </div>
+                          <div class="mb-2">
+                            <label for="orderGitPassword" class="form-label visually-hidden">Git password</label>
+                            <input
+                              type="password"
+                              id="orderGitPassword"
+                              name="gitPassword"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.git.password"
+                              placeholder="Password (alternative to token)"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="Git password"
+                              autocomplete="off"
+                            />
+                          </div>
+                          <div class="mb-2">
+                            <label for="orderGitPrivateKey" class="form-label visually-hidden"
+                              >Git SSH private key</label
+                            >
+                            <textarea
+                              id="orderGitPrivateKey"
+                              name="gitPrivateKey"
+                              class="form-control font-monospace small"
+                              rows="4"
+                              [(ngModel)]="orderRequestedConfig.git.privateKey"
+                              placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ... (for git@ URLs)"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="Git SSH private key"
+                            ></textarea>
+                          </div>
+                          <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                              <label for="orderGitCommitAuthorName" class="form-label visually-hidden"
+                                >Commit author name</label
+                              >
+                              <input
+                                type="text"
+                                id="orderGitCommitAuthorName"
+                                name="gitCommitAuthorName"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.git.commitAuthorName"
+                                placeholder="Author name"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Commit author name"
+                              />
+                            </div>
+                            <div class="col-md-6">
+                              <label for="orderGitCommitAuthorEmail" class="form-label visually-hidden"
+                                >Commit author email</label
+                              >
+                              <input
+                                type="email"
+                                id="orderGitCommitAuthorEmail"
+                                name="gitCommitAuthorEmail"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.git.commitAuthorEmail"
+                                placeholder="author@example.com"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Commit author email"
+                              />
+                            </div>
+                          </div>
+                        </fieldset>
+                      }
+                      @if (orderRequestedConfig.service === 'controller') {
+                        <fieldset class="mt-3 mb-0">
+                          <legend class="form-label fs-6" i18n="@@featureSubscriptions-provisioningSection">
+                            Provisioning (optional)
+                          </legend>
+                          <p
+                            class="form-text text-body-secondary small mb-2"
+                            i18n="@@featureSubscriptions-provisioningHelp"
+                          >
+                            If you want this instance to provision additional servers via Hetzner or DigitalOcean,
+                            provide the API tokens. Leave empty otherwise.
+                          </p>
+                          <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                              <label
+                                for="orderHetznerApiToken"
+                                class="form-label"
+                                i18n="@@featureSubscriptions-hetznerApiToken"
+                              >
+                                Hetzner API token
+                              </label>
+                              <input
+                                type="password"
+                                id="orderHetznerApiToken"
+                                name="hetznerApiToken"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.hetznerApiToken"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="Hetzner API token"
+                                autocomplete="off"
+                              />
+                            </div>
+                            <div class="col-md-6">
+                              <label
+                                for="orderDigitaloceanApiToken"
+                                class="form-label"
+                                i18n="@@featureSubscriptions-digitaloceanApiToken"
+                              >
+                                DigitalOcean API token
+                              </label>
+                              <input
+                                type="password"
+                                id="orderDigitaloceanApiToken"
+                                name="digitaloceanApiToken"
+                                class="form-control"
+                                [(ngModel)]="orderRequestedConfig.digitaloceanApiToken"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                aria-label="DigitalOcean API token"
+                                autocomplete="off"
+                              />
+                            </div>
+                          </div>
+                        </fieldset>
+                      }
                     </div>
                   }
                 }

@@ -1,9 +1,11 @@
 import { randomBytes } from 'crypto';
 
-export interface CloudInitConfig {
+import { formatEnvLines } from './env.utils';
+
+export interface AgentManagerCloudInitConfig {
   host: {
     hostname: string;
-    /** Fully qualified domain name (e.g. awesome-armadillo-abc12.spirde.com) for SSL and CORS */
+    /** Fully qualified domain name for SSL and CORS */
     fqdn: string;
   };
   proxy: {
@@ -11,23 +13,12 @@ export interface CloudInitConfig {
     httpsPort: number;
     websocketPort: number;
   };
-  frontend: {
-    host: string;
-    port: number;
-    nodeEnv: string;
-    defaultLocale: string;
-  };
   backend: {
     host: string;
     port: number;
     websocketPort: number;
-    websocketNamespace: string;
+    websocketNamespace?: string;
     nodeEnv: string;
-    defaultLocale: string;
-    provisioning?: {
-      hetznerApiToken?: string;
-      digitaloceanApiToken?: string;
-    };
     database?: {
       host: string;
       port: number;
@@ -35,8 +26,9 @@ export interface CloudInitConfig {
       password: string;
       database: string;
     };
+    /** Manager supports only api-key or keycloak; not users */
     authentication: {
-      authenticationMethod: string;
+      authenticationMethod: 'api-key' | 'keycloak';
       staticApiKey?: string;
       keycloak?: {
         serverUrl: string;
@@ -45,10 +37,8 @@ export interface CloudInitConfig {
         clientId: string;
         clientSecret: string;
       };
-      disableSignup: boolean;
     };
     encryption: {
-      jwtSecret: string;
       encryptionKey: string;
     };
     smtp: {
@@ -61,30 +51,47 @@ export interface CloudInitConfig {
     cors: {
       origin: string;
     };
-    rateLimit: {
-      enabled: boolean;
-      ttl: number;
-      limit: number;
+    /** Git configuration for agent-manager (optional). Passed as GIT_* env vars. */
+    git?: {
+      repositoryUrl?: string;
+      username?: string;
+      token?: string;
+      password?: string;
+      privateKey?: string;
+      commitAuthorName?: string;
+      commitAuthorEmail?: string;
     };
+    /** Cursor API key for agent-manager (optional). Passed as CURSOR_API_KEY env var. */
+    cursorApiKey?: string;
   };
 }
 
 /**
- * Builds a full CloudInitConfig from effectiveConfig (plan defaults + requestedConfig) and hostname.
- * Generates random encryptionKey and jwtSecret. SMTP and auth options come from effectiveConfig with defaults.
+ * Builds AgentManagerCloudInitConfig from effectiveConfig (plan defaults + requestedConfig) and hostname.
+ * Manager does not support 'users' auth: if authenticationMethod is 'users', it is coerced to 'api-key'.
+ * Does not read disableSignup or provisioning tokens (hetznerApiToken, digitaloceanApiToken).
+ *
  * @param baseDomain - Base domain for FQDN (e.g. spirde.com). Defaults to spirde.com.
  */
-export function buildCloudInitConfigFromRequest(
+export function buildAgentManagerCloudInitConfigFromRequest(
   effectiveConfig: Record<string, unknown>,
   hostname: string,
   baseDomain = 'spirde.com',
-): CloudInitConfig {
+): AgentManagerCloudInitConfig {
   const encryptionKey = randomBytes(32).toString('base64');
-  const jwtSecret = randomBytes(32).toString('hex');
   const fqdn = `${hostname}.${baseDomain}`;
 
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
+  const git = effectiveConfig.git as Record<string, unknown> | undefined;
+
+  let authMethod = (effectiveConfig.authenticationMethod as string) ?? 'api-key';
+  if (authMethod === 'users') {
+    authMethod = 'api-key';
+  }
+  if (authMethod !== 'api-key' && authMethod !== 'keycloak') {
+    authMethod = 'api-key';
+  }
 
   return {
     host: { hostname, fqdn },
@@ -93,19 +100,12 @@ export function buildCloudInitConfigFromRequest(
       httpsPort: 443,
       websocketPort: 8443,
     },
-    frontend: {
-      host: '0.0.0.0',
-      port: 4200,
-      nodeEnv: 'production',
-      defaultLocale: 'en',
-    },
     backend: {
       host: '0.0.0.0',
-      port: 3100,
-      websocketPort: 8081,
+      port: 3000,
+      websocketPort: 8080,
       websocketNamespace: 'websocket',
       nodeEnv: 'production',
-      defaultLocale: 'en',
       database: {
         host: 'postgres',
         port: 5432,
@@ -114,8 +114,7 @@ export function buildCloudInitConfigFromRequest(
         database: 'postgres',
       },
       authentication: {
-        authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
-        disableSignup: (effectiveConfig.disableSignup as boolean) ?? false,
+        authenticationMethod: authMethod as 'api-key' | 'keycloak',
         staticApiKey: (effectiveConfig.staticApiKey as string) ?? '',
         ...(keycloak && {
           keycloak: {
@@ -127,7 +126,7 @@ export function buildCloudInitConfigFromRequest(
           },
         }),
       },
-      encryption: { encryptionKey, jwtSecret },
+      encryption: { encryptionKey },
       smtp: {
         host: (smtp?.host as string) ?? 'mailhog',
         port: (smtp?.port as number) ?? 1025,
@@ -136,30 +135,35 @@ export function buildCloudInitConfigFromRequest(
         from: (smtp?.from as string) ?? 'noreply@localhost',
       },
       cors: { origin: `https://${fqdn}` },
-      rateLimit: { enabled: false, ttl: 60, limit: 100 },
-      provisioning: {
-        hetznerApiToken: (effectiveConfig.hetznerApiToken as string) ?? '',
-        digitaloceanApiToken: (effectiveConfig.digitaloceanApiToken as string) ?? '',
-      },
+      ...(git !== undefined && {
+        git: {
+          repositoryUrl: (git.repositoryUrl as string) ?? '',
+          username: (git.username as string) ?? '',
+          token: (git.token as string) ?? '',
+          password: (git.password as string) ?? '',
+          privateKey: (git.privateKey as string) ?? '',
+          commitAuthorName: (git.commitAuthorName as string) ?? '',
+          commitAuthorEmail: (git.commitAuthorEmail as string) ?? '',
+        },
+      }),
+      ...((effectiveConfig.cursorApiKey as string)?.trim()
+        ? { cursorApiKey: (effectiveConfig.cursorApiKey as string).trim() }
+        : {}),
     },
   };
 }
 
-export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
-  const backendEnv = formatEnv([
-    // Backend web server configuration
+export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInitConfig): string {
+  const backendEnv = formatEnvLines([
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
-    `PORT: ${config.backend?.port ?? '3100'}`,
-    `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8081'}`,
-    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'websocket'}`,
+    `PORT: ${config.backend?.port ?? '3000'}`,
+    `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8080'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
-    // Database configuration
     `DB_HOST: ${config.backend?.database?.host ?? 'postgres'}`,
     `DB_PORT: ${config.backend?.database?.port ?? '5432'}`,
     `DB_USERNAME: ${config.backend?.database?.username ?? 'postgres'}`,
     `DB_PASSWORD: ${config.backend?.database?.password ?? 'postgres'}`,
     `DB_DATABASE: ${config.backend?.database?.database ?? 'postgres'}`,
-    // Authentication method configuration
     `AUTHENTICATION_METHOD: ${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
     `STATIC_API_KEY: ${config.backend?.authentication?.staticApiKey ?? ''}`,
     `KEYCLOAK_SERVER_URL: ${config.backend?.authentication?.keycloak?.serverUrl ?? ''}`,
@@ -167,71 +171,35 @@ export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
     `KEYCLOAK_REALM: ${config.backend?.authentication?.keycloak?.realm ?? ''}`,
     `KEYCLOAK_CLIENT_ID: ${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
     `KEYCLOAK_CLIENT_SECRET: ${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
-    // Environment variables for the provisioning providers
-    `HETZNER_API_TOKEN: ${config.backend?.provisioning?.hetznerApiToken ?? ''}`,
-    `DIGITALOCEAN_API_TOKEN: ${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
-    // Environment variables for disabling signup
-    `DISABLE_SIGNUP: ${config.backend?.authentication?.disableSignup ?? 'false'}`,
-    // Environment variables for encryption
     `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
-    // Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
-    `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
-    // SMTP / MailHog configuration (for email confirmation and password reset)
     `SMTP_HOST: ${config.backend?.smtp?.host ?? 'mailhog'}`,
     `SMTP_PORT: ${config.backend?.smtp?.port ?? '1025'}`,
     `SMTP_USER: ${config.backend?.smtp?.user ?? ''}`,
     `SMTP_PASSWORD: ${config.backend?.smtp?.password ?? ''}`,
     `EMAIL_FROM: ${config.backend?.smtp?.from ?? 'noreply@localhost'}`,
-    // CORS configuration (comma-separated list of allowed origins)
     `CORS_ORIGIN: ${config.backend?.cors?.origin ?? ''}`,
-    // Rate limiting configuration
-    `RATE_LIMIT_ENABLED: ${config.backend?.rateLimit?.enabled ?? 'false'}`,
-    `RATE_LIMIT_TTL: ${config.backend?.rateLimit?.ttl ?? '60'}`,
-    `RATE_LIMIT_LIMIT: ${config.backend?.rateLimit?.limit ?? '100'}`,
+    ...(config.backend?.cursorApiKey?.trim() ? [`CURSOR_API_KEY: ${config.backend.cursorApiKey.trim()}`] : []),
+    ...(config.backend?.git
+      ? [
+          ...(config.backend.git.repositoryUrl ? [`GIT_REPOSITORY_URL: ${config.backend.git.repositoryUrl}`] : []),
+          ...(config.backend.git.username ? [`GIT_USERNAME: ${config.backend.git.username}`] : []),
+          ...(config.backend.git.token ? [`GIT_TOKEN: ${config.backend.git.token}`] : []),
+          ...(config.backend.git.password ? [`GIT_PASSWORD: ${config.backend.git.password}`] : []),
+          ...(config.backend.git.privateKey ? [`GIT_PRIVATE_KEY: ${config.backend.git.privateKey}`] : []),
+          ...(config.backend.git.commitAuthorName
+            ? [`GIT_COMMIT_AUTHOR_NAME: ${config.backend.git.commitAuthorName}`]
+            : []),
+          ...(config.backend.git.commitAuthorEmail
+            ? [`GIT_COMMIT_AUTHOR_EMAIL: ${config.backend.git.commitAuthorEmail}`]
+            : []),
+        ]
+      : []),
   ]);
-
-  const frontendEnv = formatEnv([
-    // Frontend web server configuration
-    `HOST: ${config.frontend?.host ?? '0.0.0.0'}`,
-    `PORT: ${config.frontend?.port ?? '4200'}`,
-    `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
-    `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
-  ]);
-
-  const frontendConfig: any = {
-    production: true,
-    controller: {
-      restApiUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/api`,
-      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/${config.backend?.websocketNamespace ?? 'websocket'}`,
-    },
-    billing: {
-      restApiUrl: '',
-    },
-    authentication: {
-      type: 'users',
-      disableSignup: false,
-    },
-    chatModelOptions: {
-      cursor: {},
-      opencode: {},
-    },
-    editor: {
-      openInNewWindow: true,
-    },
-    deployment: {
-      openInNewWindow: true,
-    },
-    cookieConsent: {
-      domain: `.${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
-      privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
-      termsUrl: 'https://www.agenstra.com/legal/terms',
-    },
-  };
 
   const dockerCompose = `services:
   postgres:
     image: postgres:16-alpine
-    container_name: agent-controller-postgres
+    container_name: agent-manager-postgres
     environment:
       POSTGRES_USER: ${config.backend?.database?.username ?? 'postgres'}
       POSTGRES_PASSWORD: ${config.backend?.database?.password ?? 'postgres'}
@@ -244,58 +212,47 @@ export function buildBillingCloudInitUserData(config: CloudInitConfig): string {
       timeout: 5s
       retries: 5
     networks:
-      - agent-controller-network
+      - agent-manager-network
     restart: unless-stopped
 
-  backend-agent-controller:
-    image: ghcr.io/forepath/agenstra-controller-api:latest
-    container_name: agent-controller-api
+  backend-agent-manager:
+    image: ghcr.io/forepath/agenstra-manager-api:latest
+    container_name: agent-manager-api
     environment:
 ${backendEnv}
     ports:
-      - '${config.backend?.port ?? '3100'}:${config.backend?.port ?? '3100'}'
-      - '${config.backend?.websocketPort ?? '8081'}:${config.backend?.websocketPort ?? '8081'}'
+      - '${config.backend?.port ?? '3000'}:${config.backend?.port ?? '3000'}'
+      - '${config.backend?.websocketPort ?? '8080'}:${config.backend?.websocketPort ?? '8080'}'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - agent-controller-network
-    restart: unless-stopped
-
-  frontend-agent-console-server:
-    image: ghcr.io/forepath/agenstra-console-server:latest
-    container_name: agent-console-server
-    command: ['/bin/sh', '-c', 'CONFIG=https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/config.json node server.cjs']
-    environment:
-${frontendEnv}
-    ports:
-      - '${config.frontend?.port ?? '4200'}:${config.frontend?.port ?? '4200'}'
-    networks:
-      - agent-controller-network
+      - agent-manager-network
     restart: unless-stopped
 
   nginx:
     image: nginx:alpine
-    container_name: agent-controller-nginx
+    container_name: agent-manager-nginx
     ports:
       - '${config.proxy?.httpPort ?? '80'}:${config.proxy?.httpPort ?? '80'}'
       - '${config.proxy?.httpsPort ?? '443'}:${config.proxy?.httpsPort ?? '443'}'
       - '${config.proxy?.websocketPort ?? '8443'}:${config.proxy?.websocketPort ?? '8443'}'
-    depends_on:
-      - frontend-agent-console-server
-      - backend-agent-controller
     volumes:
-      - /opt/agent-controller/sites-enabled:/etc/nginx/conf.d:ro
-      - /opt/agent-controller/ssl:/etc/nginx/ssl:ro
+      - /opt/agent-manager/sites-enabled:/etc/nginx/conf.d:ro
+      - /opt/agent-manager/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend-agent-manager
     networks:
-      - agent-controller-network
+      - agent-manager-network
     restart: unless-stopped
 
 volumes:
   postgres_data:
 
 networks:
-  agent-controller-network:
+  agent-manager-network:
     driver: bridge
 `;
 
@@ -316,16 +273,7 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        proxy_pass http://agent-console-server:${config.frontend?.port ?? '4200'};
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /api/ {
-        proxy_pass http://agent-controller-api:${config.backend?.port ?? '3100'};
+        proxy_pass http://agent-manager-api:${config.backend?.port ?? '3000'};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -334,7 +282,7 @@ server {
     }
 
     location /${config.backend?.websocketNamespace ?? 'websocket'} {
-        proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
+        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -346,7 +294,7 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
+        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -356,28 +304,21 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
     }
-
-    location /config.json {
-        return 200 '${JSON.stringify(frontendConfig || {})}';
-    }
 }
 `;
 
   const script = `#!/bin/bash
 set -euo pipefail
 
-# Cloud-init user-data script for agent-controller provisioning
+# Cloud-init user-data script for agent-manager provisioning
 # This script is executed by cloud-init during server initialization
 
-# Logging function
 log() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a /var/log/agent-controller-provisioning.log
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a /var/log/agent-manager-provisioning.log
 }
 
 log "Starting server provisioning script (cloud-init user-data)"
 
-# Ensure network is ready (cloud-init should have this ready, but we verify)
-log "Verifying network connectivity..."
 for i in {1..10}; do
     if ping -c 1 -W 2 8.8.8.8 > /dev/null 2>&1; then
         log "Network is ready"
@@ -389,18 +330,14 @@ for i in {1..10}; do
     sleep 1
 done
 
-# Update system
 export DEBIAN_FRONTEND=noninteractive
 log "Updating system packages..."
 apt-get update -qq
 apt-get upgrade -y -qq
 
-# Install openssl for SSL certificate generation
 log "Installing openssl..."
 apt-get install -y openssl
 
-# Install Docker using the convenience script
-# Official method: https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script
 log "Installing prerequisites for Docker installation..."
 apt-get update -qq
 apt-get install -y ca-certificates curl
@@ -410,12 +347,10 @@ curl -fsSL https://get.docker.com -o get-docker.sh
 sh ./get-docker.sh
 rm -f get-docker.sh
 
-# Start and enable Docker service
 log "Starting Docker service..."
 systemctl enable docker
 systemctl start docker
 
-# Wait for Docker to be ready and verify it's working
 log "Waiting for Docker to be ready..."
 for i in {1..30}; do
     if docker info > /dev/null 2>&1; then
@@ -429,74 +364,59 @@ for i in {1..30}; do
     sleep 2
 done
 
-# Verify Docker is working
 if ! docker info > /dev/null 2>&1; then
     log "ERROR: Docker is not working properly"
     exit 1
 fi
 
-# Create directory for agent-controller
-log "Creating agent-controller directory..."
-mkdir -p /opt/agent-controller
+# Create directory for agent-manager
+log "Creating agent-manager directory..."
+mkdir -p /opt/agent-manager
 
 # Create nginx sites-enabled directory
 log "Creating nginx sites-enabled directory..."
-mkdir -p /opt/agent-controller/sites-enabled
+mkdir -p /opt/agent-manager/sites-enabled
 
-# Create nginx configuration file
 log "Creating nginx configuration file..."
-cat > /opt/agent-controller/sites-enabled/default.conf <<'EOF'
+cat > /opt/agent-manager/sites-enabled/default.conf <<'EOF'
 ${nginxConfig}
 EOF
 
 # Create nginx ssl directory
 log "Creating nginx ssl directory..."
-mkdir -p /opt/agent-controller/ssl
+mkdir -p /opt/agent-manager/ssl
 
 # Generate self-signed SSL certificate for nginx
 log "Generating self-signed SSL certificate..."
-mkdir -p /opt/agent-controller/ssl
+mkdir -p /opt/agent-manager/ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /opt/agent-controller/ssl/nginx-selfsigned.key \
-    -out /opt/agent-controller/ssl/nginx-selfsigned.crt \
+    -keyout /opt/agent-manager/ssl/nginx-selfsigned.key \
+    -out /opt/agent-manager/ssl/nginx-selfsigned.crt \
     -subj "/C=DE/ST=Nordrhein-Westfalen/L=Herford/O=Agenstra/CN=${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}" \
     -addext "subjectAltName=DNS:${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}" 2>/dev/null || {
     log "WARNING: Failed to generate SSL certificate, nginx will not work properly"
 }
 
-chmod 600 /opt/agent-controller/ssl/nginx-selfsigned.key
-chmod 644 /opt/agent-controller/ssl/nginx-selfsigned.crt
+chmod 600 /opt/agent-manager/ssl/nginx-selfsigned.key
+chmod 644 /opt/agent-manager/ssl/nginx-selfsigned.crt
 
 # Create docker-compose.yaml file
 log "Creating docker-compose.yaml file..."
-cat > /opt/agent-controller/docker-compose.yaml <<'EOF'
+cat > /opt/agent-manager/docker-compose.yaml <<'EOF'
 ${dockerCompose}
 EOF
 
-# Start agent-controller container
-log "Starting agent-controller container..."
-cd /opt/agent-controller
+# Start agent-manager container
+log "Starting agent-manager container..."
+cd /opt/agent-manager
 docker compose up -d || {
-    log "ERROR: Failed to start agent-controller container"
+    log "ERROR: Failed to start agent-manager container"
     docker compose logs || true
     exit 1
 }
 
-log "agent-controller provisioning completed successfully at $(date)"
+log "agent-manager provisioning completed successfully at $(date)"
 `;
 
   return Buffer.from(script).toString('base64');
-}
-
-function formatEnv(lines: string[]): string {
-  return lines
-    .map((line) => {
-      line = line.trim();
-
-      if (line.length === 0) return null;
-
-      return `      ${line}`;
-    })
-    .filter((line) => line !== null)
-    .join('\n');
 }

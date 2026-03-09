@@ -45,6 +45,7 @@ export function loadOverviewServerInfoEffect(
           loadOverviewServerInfoSuccess({
             serverInfoBySubscriptionId: {},
             activeItemIdBySubscriptionId: {},
+            serviceBySubscriptionId: {},
           }),
         );
       }
@@ -55,15 +56,20 @@ export function loadOverviewServerInfoEffect(
       ).pipe(
         switchMap((results) => {
           const toFetch: { subscriptionId: string; itemId: string }[] = [];
+          const serviceBySubscriptionId: Record<string, 'controller' | 'manager'> = {};
           results.forEach(({ sub, items }) => {
             const active = items.find((i) => i.provisioningStatus === 'active');
-            if (active) toFetch.push({ subscriptionId: sub.id, itemId: active.id });
+            if (active) {
+              toFetch.push({ subscriptionId: sub.id, itemId: active.id });
+              serviceBySubscriptionId[sub.id] = active.service ?? 'controller';
+            }
           });
           if (toFetch.length === 0) {
             return of(
               loadOverviewServerInfoSuccess({
                 serverInfoBySubscriptionId: {},
                 activeItemIdBySubscriptionId: {},
+                serviceBySubscriptionId: {},
               }),
             );
           }
@@ -84,6 +90,7 @@ export function loadOverviewServerInfoEffect(
               return loadOverviewServerInfoSuccess({
                 serverInfoBySubscriptionId,
                 activeItemIdBySubscriptionId,
+                serviceBySubscriptionId,
               });
             }),
           );

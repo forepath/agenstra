@@ -8,6 +8,8 @@ export const loadOverviewServerInfoSuccess = createAction(
   props<{
     serverInfoBySubscriptionId: Record<string, ServerInfoResponse>;
     activeItemIdBySubscriptionId: Record<string, string>;
+    /** Service (controller/manager) per subscription id from active item config. */
+    serviceBySubscriptionId?: Record<string, 'controller' | 'manager'>;
   }>(),
 );
 

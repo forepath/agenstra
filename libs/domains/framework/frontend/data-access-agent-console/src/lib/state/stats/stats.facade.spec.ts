@@ -13,7 +13,6 @@ describe('StatsFacade', () => {
       runningOverrides: {},
       statsByContainer: {},
       maxEntriesPerContainer: 1000,
-      runningOverrides: {},
     },
   };
 
@@ -62,7 +61,6 @@ describe('StatsFacade', () => {
   ): ContainerStatsEntry => ({
     status: { running: true },
     stats: mockStats,
-    status: { running: true },
     timestamp,
     receivedAt,
     clientId,
@@ -89,7 +87,6 @@ describe('StatsFacade', () => {
             'client-1:agent-1': [entry1, entry2],
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 
@@ -118,7 +115,6 @@ describe('StatsFacade', () => {
             'client-1:agent-1': [entry1, entry2],
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 
@@ -148,7 +144,6 @@ describe('StatsFacade', () => {
             'client-1:agent-1': [entry1, entry2, entry3],
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 
@@ -174,7 +169,6 @@ describe('StatsFacade', () => {
             'client-1:agent-1': [entry1, entry2, entry3],
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 
@@ -203,7 +197,6 @@ describe('StatsFacade', () => {
             ],
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 
@@ -224,7 +217,6 @@ describe('StatsFacade', () => {
             'client-1:agent-2': [createEntry('client-1', 'agent-2', '2024-01-01T00:00:00.000Z', 2000)],
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 
@@ -250,7 +242,6 @@ describe('StatsFacade', () => {
             'client-1:agent-1': entries,
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 
@@ -275,7 +266,6 @@ describe('StatsFacade', () => {
             'client-1:agent-1': entries,
           },
           maxEntriesPerContainer: 1000,
-          runningOverrides: {},
         },
       });
 

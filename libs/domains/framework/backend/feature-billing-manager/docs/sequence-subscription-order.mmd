@@ -6,8 +6,8 @@ sequenceDiagram
     participant HetznerAPI
     participant Database
 
-    %% requestedConfig may include authenticationMethod, smtp, keycloak, hetznerApiToken, digitaloceanApiToken (optional)
-    User->>BillingAPI: POST /subscriptions
+    %% requestedConfig includes service (controller|manager), authenticationMethod, smtp, keycloak, optional provisioning (controller only)
+    User->>BillingAPI: POST /subscriptions (planId, requestedConfig with service)
     BillingAPI->>AvailabilityService: checkAvailability(provider, region, serverType)
     AvailabilityService->>HetznerAPI: GET /server_types + /limits
     HetznerAPI-->>AvailabilityService: availability + limits
@@ -16,7 +16,8 @@ sequenceDiagram
     alt Available
         BillingAPI->>Database: INSERT subscription
         BillingAPI->>Database: INSERT subscription_item
-        BillingAPI->>ProvisioningService: provision(provider, config)
+        note over BillingAPI: Build userData: if service=manager use agent-manager.utils else agent-controller.utils
+        BillingAPI->>ProvisioningService: provision(provider, config with userData)
         ProvisioningService->>HetznerAPI: POST /servers
         HetznerAPI-->>ProvisioningService: serverId
         ProvisioningService->>HetznerAPI: POST /firewalls/:id/attach

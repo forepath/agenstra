@@ -21,6 +21,8 @@ export type ServerActionType = 'start' | 'stop' | 'restart';
 export interface SubscriptionServerInfoState {
   serverInfoBySubscriptionId: Record<string, ServerInfoResponse>;
   activeItemIdBySubscriptionId: Record<string, string>;
+  /** Service (controller/manager) per subscription id from active item. */
+  serviceBySubscriptionId: Record<string, 'controller' | 'manager'>;
   loading: boolean;
   error: string | null;
   actionInProgress: Record<string, ServerActionType>;
@@ -29,6 +31,7 @@ export interface SubscriptionServerInfoState {
 export const initialSubscriptionServerInfoState: SubscriptionServerInfoState = {
   serverInfoBySubscriptionId: {},
   activeItemIdBySubscriptionId: {},
+  serviceBySubscriptionId: {},
   loading: false,
   error: null,
   actionInProgress: {},
@@ -55,13 +58,17 @@ export const subscriptionServerInfoReducer = createReducer(
     loading: true,
     error: null,
   })),
-  on(loadOverviewServerInfoSuccess, (state, { serverInfoBySubscriptionId, activeItemIdBySubscriptionId }) => ({
-    ...state,
-    serverInfoBySubscriptionId,
-    activeItemIdBySubscriptionId,
-    loading: false,
-    error: null,
-  })),
+  on(
+    loadOverviewServerInfoSuccess,
+    (state, { serverInfoBySubscriptionId, activeItemIdBySubscriptionId, serviceBySubscriptionId }) => ({
+      ...state,
+      serverInfoBySubscriptionId: serverInfoBySubscriptionId ?? {},
+      activeItemIdBySubscriptionId: activeItemIdBySubscriptionId ?? {},
+      serviceBySubscriptionId: serviceBySubscriptionId ?? {},
+      loading: false,
+      error: null,
+    }),
+  ),
   on(loadOverviewServerInfoFailure, (state, { error }) => ({
     ...state,
     loading: false,

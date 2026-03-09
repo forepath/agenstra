@@ -131,6 +131,11 @@
               <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="py-1">
                   <span i18n="@@featureOverview-agenstraCloudInstance">Agenstra</span>
+                  @if (item.service === 'manager') {
+                    <span i18n="@@featureOverview-agenstraManager"> - Manager</span>
+                  } @else {
+                    <span i18n="@@featureOverview-agenstraController"> - Controller</span>
+                  }
                   @if (item.serverInfo.metadata!['provider']) {
                     <span class="d-block small">
                       {{ getProviderName(item.serverInfo.metadata!['provider']) }}
@@ -203,15 +208,17 @@
                       <span class="visually-hidden" i18n="@@featureOverview-serverRestart">Restart</span>
                     </button>
                   </div>
-                  <a
-                    href="https://{{ item.serverInfo.hostnameFqdn || item.serverInfo.publicIp }}"
-                    target="_blank"
-                    class="btn btn-sm btn-primary"
-                    [class.disabled]="item.serverInfo.status !== 'running'"
-                  >
-                    <i class="bi bi-box-arrow-up-right me-2"></i>
-                    <span i18n="@@featureOverview-openConsole">Console</span>
-                  </a>
+                  @if (item.service === 'controller') {
+                    <a
+                      href="https://{{ item.serverInfo.hostnameFqdn || item.serverInfo.publicIp }}"
+                      target="_blank"
+                      class="btn btn-sm btn-primary"
+                      [class.disabled]="item.serverInfo.status !== 'running'"
+                    >
+                      <i class="bi bi-box-arrow-up-right me-2"></i>
+                      <span i18n="@@featureOverview-openConsole">Console</span>
+                    </a>
+                  }
                 </div>
               </div>
             </div>

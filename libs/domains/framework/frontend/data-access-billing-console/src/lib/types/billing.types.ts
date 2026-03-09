@@ -147,8 +147,21 @@ export interface KeycloakConfig {
   clientSecret?: string;
 }
 
+/** Git configuration for manager instances (GIT_* env vars). */
+export interface GitConfig {
+  repositoryUrl?: string;
+  username?: string;
+  token?: string;
+  password?: string;
+  privateKey?: string;
+  commitAuthorName?: string;
+  commitAuthorEmail?: string;
+}
+
 /** Cloud-init related part of requestedConfig (authentication, SMTP, optional provisioning tokens). */
 export interface RequestedConfigCloudInit {
+  /** Product service - controller (full stack) or manager (agent manager only). */
+  service?: 'controller' | 'manager';
   authenticationMethod?: string;
   staticApiKey?: string;
   disableSignup?: boolean;
@@ -158,6 +171,10 @@ export interface RequestedConfigCloudInit {
   hetznerApiToken?: string;
   /** Optional DigitalOcean API token for nested provisioning from the instance. */
   digitaloceanApiToken?: string;
+  /** Optional Git configuration for manager instances. */
+  git?: GitConfig;
+  /** Optional Cursor API key for manager instances (CURSOR_API_KEY env var). */
+  cursorApiKey?: string;
 }
 
 export interface CreateSubscriptionDto {
@@ -184,6 +201,8 @@ export interface SubscriptionItemResponse {
   serviceTypeId: string;
   provisioningStatus: ProvisioningStatus;
   hostname?: string | null;
+  /** Product service: controller (full stack) or manager (agent manager only). Defaults to controller. */
+  service?: 'controller' | 'manager';
 }
 
 export interface ServerInfoResponse {

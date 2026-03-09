@@ -81,7 +81,11 @@ describe('Subscription Server Info Effects', () => {
 
     loadOverviewServerInfoEffect(actions$, store as never, subscriptionItemsService).subscribe((result) => {
       expect(result).toEqual(
-        loadOverviewServerInfoSuccess({ serverInfoBySubscriptionId: {}, activeItemIdBySubscriptionId: {} }),
+        loadOverviewServerInfoSuccess({
+          serverInfoBySubscriptionId: {},
+          activeItemIdBySubscriptionId: {},
+          serviceBySubscriptionId: {},
+        }),
       );
       done();
     });
@@ -98,6 +102,7 @@ describe('Subscription Server Info Effects', () => {
         loadOverviewServerInfoSuccess({
           serverInfoBySubscriptionId: { 'sub-1': mockServerInfo },
           activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
+          serviceBySubscriptionId: { 'sub-1': 'controller' },
         }),
       );
       expect(subscriptionItemsService.listSubscriptionItems).toHaveBeenCalledWith('sub-1');
@@ -115,7 +120,11 @@ describe('Subscription Server Info Effects', () => {
 
     loadOverviewServerInfoEffect(actions$, store as never, subscriptionItemsService).subscribe((result) => {
       expect(result).toEqual(
-        loadOverviewServerInfoSuccess({ serverInfoBySubscriptionId: {}, activeItemIdBySubscriptionId: {} }),
+        loadOverviewServerInfoSuccess({
+          serverInfoBySubscriptionId: {},
+          activeItemIdBySubscriptionId: {},
+          serviceBySubscriptionId: {},
+        }),
       );
       expect(subscriptionItemsService.getServerInfo).not.toHaveBeenCalled();
       done();
@@ -150,6 +159,7 @@ describe('Subscription Server Info Effects', () => {
         loadOverviewServerInfoSuccess({
           serverInfoBySubscriptionId: { 'sub-1': mockServerInfo },
           activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
+          serviceBySubscriptionId: { 'sub-1': 'controller' },
         }),
       );
       expect(subscriptionItemsService.listSubscriptionItems).toHaveBeenCalledTimes(1);

@@ -72,9 +72,14 @@ const authMethod = getAuthenticationMethod();
  * - properties may include optional `enum` arrays for static options, or the field named in basePriceFromField gets options from the server-types API.
  */
 const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
-  required: ['serverType', 'location'],
+  required: ['serverType', 'location', 'service'],
   basePriceFromField: 'serverType',
   properties: {
+    service: {
+      type: 'string',
+      description: 'Product service: controller (full stack) or manager (agent manager only)',
+      enum: ['controller', 'manager'],
+    },
     serverType: {
       type: 'string',
       description: 'Hetzner server type (options and price from API)',
@@ -123,6 +128,23 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     digitaloceanApiToken: {
       type: 'string',
       description: 'Optional DigitalOcean API token for nested provisioning from the instance',
+    },
+    git: {
+      type: 'object',
+      description: 'Optional Git configuration for manager instances (GIT_* env vars)',
+      properties: {
+        repositoryUrl: { type: 'string', description: 'Git repository URL' },
+        username: { type: 'string', description: 'Git username (HTTPS)' },
+        token: { type: 'string', description: 'Git token (e.g. PAT)' },
+        password: { type: 'string', description: 'Git password (alternative to token)' },
+        privateKey: { type: 'string', description: 'SSH private key for git@ URLs' },
+        commitAuthorName: { type: 'string', description: 'Default commit author name' },
+        commitAuthorEmail: { type: 'string', description: 'Default commit author email' },
+      },
+    },
+    cursorApiKey: {
+      type: 'string',
+      description: 'Optional Cursor API key for manager instances (CURSOR_API_KEY env var). Sensitive.',
     },
   },
 };

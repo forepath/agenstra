@@ -23,13 +23,18 @@ export class SubscriptionItemServerService {
     await this.subscriptionService.getSubscription(subscriptionId, userId);
 
     const items = await this.subscriptionItemsRepository.findBySubscription(subscriptionId);
-    return items.map((item) => ({
-      id: item.id,
-      subscriptionId: item.subscriptionId,
-      serviceTypeId: item.serviceTypeId,
-      provisioningStatus: item.provisioningStatus,
-      hostname: item.hostname,
-    }));
+    return items.map((item) => {
+      const service = item.configSnapshot?.service as string | undefined;
+      const serviceVal = service === 'manager' ? ('manager' as const) : ('controller' as const);
+      return {
+        id: item.id,
+        subscriptionId: item.subscriptionId,
+        serviceTypeId: item.serviceTypeId,
+        provisioningStatus: item.provisioningStatus,
+        hostname: item.hostname,
+        service: serviceVal,
+      };
+    });
   }
 
   /**

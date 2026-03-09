@@ -5,7 +5,14 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
+import {
+  buildBillingCloudInitUserData,
+  buildCloudInitConfigFromRequest,
+} from '../utils/cloud-init/agent-controller.utils';
+import {
+  buildAgentManagerCloudInitConfigFromRequest,
+  buildAgentManagerCloudInitUserData,
+} from '../utils/cloud-init/agent-manager.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
@@ -17,7 +24,7 @@ jest.mock('../utils/config-validation.utils', () => ({
   validateConfigSchema: jest.fn().mockReturnValue([]),
 }));
 
-jest.mock('../utils/cloud-init.utils', () => ({
+jest.mock('../utils/cloud-init/agent-controller.utils', () => ({
   buildCloudInitConfigFromRequest: jest
     .fn()
     .mockImplementation((effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
@@ -34,6 +41,11 @@ jest.mock('../utils/cloud-init.utils', () => ({
       },
     })),
   buildBillingCloudInitUserData: jest.fn().mockReturnValue('#!/bin/bash\necho hello'),
+}));
+
+jest.mock('../utils/cloud-init/agent-manager.utils', () => ({
+  buildAgentManagerCloudInitConfigFromRequest: jest.fn().mockReturnValue({ host: {}, backend: {} }),
+  buildAgentManagerCloudInitUserData: jest.fn().mockReturnValue('#!/bin/bash\necho manager'),
 }));
 
 describe('SubscriptionService', () => {
@@ -231,6 +243,48 @@ describe('SubscriptionService', () => {
           }),
         }),
       }),
+    );
+  });
+
+  it('calls manager cloud-init builder when service is manager', async () => {
+    (buildAgentManagerCloudInitUserData as jest.Mock).mockReturnValue('#!/bin/bash\necho manager');
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', { region: 'fsn1', service: 'manager' });
+
+    expect(buildAgentManagerCloudInitConfigFromRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ region: 'fsn1', service: 'manager' }),
+      'awesome-armadillo-abc12',
+      'spirde.com',
+    );
+    expect(buildAgentManagerCloudInitUserData).toHaveBeenCalled();
+    expect(buildCloudInitConfigFromRequest).not.toHaveBeenCalled();
+    expect(buildBillingCloudInitUserData).not.toHaveBeenCalled();
+    expect(provisioningService.provision).toHaveBeenCalledWith(
+      'hetzner',
+      expect.objectContaining({ userData: '#!/bin/bash\necho manager' }),
     );
   });
 

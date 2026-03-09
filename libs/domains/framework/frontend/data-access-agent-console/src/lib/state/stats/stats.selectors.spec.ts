@@ -59,7 +59,6 @@ describe('Stats Selectors', () => {
   ): ContainerStatsEntry => ({
     status: { running: true },
     stats: mockStats,
-    status: { running: true },
     timestamp,
     receivedAt,
     clientId,

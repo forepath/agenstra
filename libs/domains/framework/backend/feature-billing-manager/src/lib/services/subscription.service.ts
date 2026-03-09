@@ -5,7 +5,14 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
+import {
+  buildBillingCloudInitUserData,
+  buildCloudInitConfigFromRequest,
+} from '../utils/cloud-init/agent-controller.utils';
+import {
+  buildAgentManagerCloudInitConfigFromRequest,
+  buildAgentManagerCloudInitUserData,
+} from '../utils/cloud-init/agent-manager.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
@@ -53,6 +60,11 @@ export class SubscriptionService {
       throw new BadRequestException(validationErrors.join('; '));
     }
 
+    const service = (effectiveConfig.service as string) ?? 'controller';
+    if (service === 'manager' && (effectiveConfig.authenticationMethod as string) === 'users') {
+      effectiveConfig.authenticationMethod = 'api-key';
+    }
+
     const region = (effectiveConfig.region as string | undefined) ?? 'fsn1';
     const serverType = (effectiveConfig.serverType as string | undefined) ?? 'cx11';
     const provider = serviceType.provider;
@@ -97,14 +109,19 @@ export class SubscriptionService {
       let hostname: string | null = null;
       try {
         hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
+        const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
+        const userData =
+          service === 'manager'
+            ? buildAgentManagerCloudInitUserData(
+                buildAgentManagerCloudInitConfigFromRequest(effectiveConfig, hostname, baseDomain),
+              )
+            : buildBillingCloudInitUserData(buildCloudInitConfigFromRequest(effectiveConfig, hostname, baseDomain));
         const provisioningConfig = {
           name: hostname,
           serverType,
           location: region,
           firewallId: effectiveConfig.firewallId as number | undefined,
-          userData: buildBillingCloudInitUserData(
-            buildCloudInitConfigFromRequest(effectiveConfig, hostname, process.env.DNS_BASE_DOMAIN ?? 'spirde.com'),
-          ),
+          userData,
         };
 
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);

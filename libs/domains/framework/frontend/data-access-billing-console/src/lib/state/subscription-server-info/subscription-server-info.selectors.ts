@@ -7,6 +7,8 @@ export interface SubscriptionWithServerInfo {
   subscription: SubscriptionResponse;
   serverInfo: ServerInfoResponse;
   itemId: string;
+  /** Product service from active item config: controller or manager. Defaults to controller. */
+  service: 'controller' | 'manager';
 }
 
 const selectSubscriptionServerInfoState = createFeatureSelector<SubscriptionServerInfoState>('subscriptionServerInfo');
@@ -19,6 +21,11 @@ export const selectServerInfoBySubscriptionId = createSelector(
 export const selectActiveItemIdBySubscriptionId = createSelector(
   selectSubscriptionServerInfoState,
   (state) => state.activeItemIdBySubscriptionId,
+);
+
+export const selectServiceBySubscriptionId = createSelector(
+  selectSubscriptionServerInfoState,
+  (state) => state.serviceBySubscriptionId,
 );
 
 export const selectOverviewServerInfoLoading = createSelector(
@@ -43,7 +50,13 @@ export const selectSubscriptionsWithServerInfo = createSelector(
   selectSubscriptionsEntities,
   selectServerInfoBySubscriptionId,
   selectActiveItemIdBySubscriptionId,
-  (subscriptions, serverInfoBySubscriptionId, activeItemIdBySubscriptionId): SubscriptionWithServerInfo[] =>
+  selectServiceBySubscriptionId,
+  (
+    subscriptions,
+    serverInfoBySubscriptionId,
+    activeItemIdBySubscriptionId,
+    serviceBySubscriptionId,
+  ): SubscriptionWithServerInfo[] =>
     subscriptions
       .filter(
         (sub) =>
@@ -55,5 +68,6 @@ export const selectSubscriptionsWithServerInfo = createSelector(
         subscription,
         serverInfo: serverInfoBySubscriptionId[subscription.id],
         itemId: activeItemIdBySubscriptionId[subscription.id],
+        service: serviceBySubscriptionId[subscription.id] ?? 'controller',
       })),
 );

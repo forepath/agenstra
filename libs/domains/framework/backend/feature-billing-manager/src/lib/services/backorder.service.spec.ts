@@ -1,7 +1,10 @@
-import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest } from '../utils/cloud-init.utils';
+import {
+  buildBillingCloudInitUserData,
+  buildCloudInitConfigFromRequest,
+} from '../utils/cloud-init/agent-controller.utils';
 import { BackorderService } from './backorder.service';
 
-jest.mock('../utils/cloud-init.utils', () => ({
+jest.mock('../utils/cloud-init/agent-controller.utils', () => ({
   buildCloudInitConfigFromRequest: jest
     .fn()
     .mockImplementation((config: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
@@ -9,6 +12,11 @@ jest.mock('../utils/cloud-init.utils', () => ({
       backend: { authentication: { authenticationMethod: 'users', disableSignup: false }, encryption: {} },
     })),
   buildBillingCloudInitUserData: jest.fn().mockReturnValue('base64-cloud-init-userdata'),
+}));
+
+jest.mock('../utils/cloud-init/agent-manager.utils', () => ({
+  buildAgentManagerCloudInitConfigFromRequest: jest.fn().mockReturnValue({ host: {}, backend: {} }),
+  buildAgentManagerCloudInitUserData: jest.fn().mockReturnValue('base64-manager-userdata'),
 }));
 
 describe('BackorderService', () => {

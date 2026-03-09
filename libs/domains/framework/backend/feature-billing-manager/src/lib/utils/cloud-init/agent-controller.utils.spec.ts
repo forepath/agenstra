@@ -1,4 +1,8 @@
-import { buildBillingCloudInitUserData, buildCloudInitConfigFromRequest, CloudInitConfig } from './cloud-init.utils';
+import {
+  buildBillingCloudInitUserData,
+  buildCloudInitConfigFromRequest,
+  CloudInitConfig,
+} from './agent-controller.utils';
 
 describe('cloud-init.utils', () => {
   describe('buildCloudInitConfigFromRequest', () => {
@@ -47,7 +51,7 @@ describe('cloud-init.utils', () => {
   });
 
   describe('buildBillingCloudInitUserData', () => {
-    it('produces nginx proxy_pass for /backend/ location', () => {
+    it('produces nginx config with api location and agent-controller', () => {
       const config: CloudInitConfig = {
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
@@ -56,6 +60,7 @@ describe('cloud-init.utils', () => {
           host: '0.0.0.0',
           port: 3100,
           websocketPort: 8081,
+          websocketNamespace: 'websocket',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -83,8 +88,8 @@ describe('cloud-init.utils', () => {
       };
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
-      expect(script).toContain('location /backend/');
-      expect(script).toContain('proxy_pass http://host.docker.internal:3100');
+      expect(script).toContain('location /api/');
+      expect(script).toContain('agent-controller-api');
     });
 
     it('uses fqdn in SSL certificate subjectAltName', () => {
@@ -96,6 +101,7 @@ describe('cloud-init.utils', () => {
           host: '0.0.0.0',
           port: 3100,
           websocketPort: 8081,
+          websocketNamespace: 'websocket',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {

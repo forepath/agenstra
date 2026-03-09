@@ -127,6 +127,15 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
   authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
 
+  onServiceChange(value: 'controller' | 'manager'): void {
+    this.orderRequestedConfig = { ...this.orderRequestedConfig, service: value };
+    if (value === 'manager' && this.orderRequestedConfig.authenticationMethod === 'users') {
+      this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: 'api-key' };
+      this.authMethod.set('api-key');
+    }
+    this.cdr.detectChanges();
+  }
+
   onAuthMethodChange(value: 'users' | 'api-key' | 'keycloak'): void {
     this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: value };
     this.authMethod.set(value);
@@ -134,6 +143,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   orderRequestedConfig: {
+    service: 'controller' | 'manager';
     authenticationMethod: 'users' | 'api-key' | 'keycloak';
     staticApiKey: string;
     disableSignup: boolean;
@@ -141,7 +151,18 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     keycloak: { serverUrl: string; authServerUrl: string; realm: string; clientId: string; clientSecret: string };
     hetznerApiToken: string;
     digitaloceanApiToken: string;
+    git: {
+      repositoryUrl: string;
+      username: string;
+      token: string;
+      password: string;
+      privateKey: string;
+      commitAuthorName: string;
+      commitAuthorEmail: string;
+    };
+    cursorApiKey: string;
   } = {
+    service: 'controller',
     authenticationMethod: 'users',
     staticApiKey: '',
     disableSignup: false,
@@ -161,6 +182,16 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     },
     hetznerApiToken: '',
     digitaloceanApiToken: '',
+    git: {
+      repositoryUrl: '',
+      username: '',
+      token: '',
+      password: '',
+      privateKey: '',
+      commitAuthorName: '',
+      commitAuthorEmail: '',
+    },
+    cursorApiKey: '',
   };
   subscriptionToCancel: SubscriptionResponse | null = null;
   subscriptionToResume: SubscriptionResponse | null = null;
@@ -302,21 +333,50 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     if (!this.orderPlanId?.trim()) return;
     const cfg = this.orderRequestedConfig;
     const requestedConfig: Record<string, unknown> = {
+      service: cfg.service,
       authenticationMethod: cfg.authenticationMethod,
-      disableSignup: cfg.disableSignup,
       smtp: { ...cfg.smtp },
     };
+    if (cfg.service === 'controller') {
+      requestedConfig['disableSignup'] = cfg.disableSignup;
+    }
     if (cfg.authenticationMethod === 'api-key' && cfg.staticApiKey?.trim()) {
       requestedConfig['staticApiKey'] = cfg.staticApiKey.trim();
     }
     if (cfg.authenticationMethod === 'keycloak') {
       requestedConfig['keycloak'] = { ...cfg.keycloak };
     }
-    if (cfg.hetznerApiToken?.trim()) {
-      requestedConfig['hetznerApiToken'] = cfg.hetznerApiToken.trim();
+    if (cfg.service === 'controller') {
+      if (cfg.hetznerApiToken?.trim()) {
+        requestedConfig['hetznerApiToken'] = cfg.hetznerApiToken.trim();
+      }
+      if (cfg.digitaloceanApiToken?.trim()) {
+        requestedConfig['digitaloceanApiToken'] = cfg.digitaloceanApiToken.trim();
+      }
     }
-    if (cfg.digitaloceanApiToken?.trim()) {
-      requestedConfig['digitaloceanApiToken'] = cfg.digitaloceanApiToken.trim();
+    if (cfg.service === 'manager') {
+      const hasGit =
+        (cfg.git?.repositoryUrl?.trim() ?? '') !== '' ||
+        (cfg.git?.username?.trim() ?? '') !== '' ||
+        (cfg.git?.token?.trim() ?? '') !== '' ||
+        (cfg.git?.password?.trim() ?? '') !== '' ||
+        (cfg.git?.privateKey?.trim() ?? '') !== '' ||
+        (cfg.git?.commitAuthorName?.trim() ?? '') !== '' ||
+        (cfg.git?.commitAuthorEmail?.trim() ?? '') !== '';
+      if (hasGit) {
+        requestedConfig['git'] = {
+          repositoryUrl: (cfg.git?.repositoryUrl ?? '').trim() || undefined,
+          username: (cfg.git?.username ?? '').trim() || undefined,
+          token: (cfg.git?.token ?? '').trim() || undefined,
+          password: (cfg.git?.password ?? '').trim() || undefined,
+          privateKey: (cfg.git?.privateKey ?? '').trim() || undefined,
+          commitAuthorName: (cfg.git?.commitAuthorName ?? '').trim() || undefined,
+          commitAuthorEmail: (cfg.git?.commitAuthorEmail ?? '').trim() || undefined,
+        };
+      }
+      if (cfg.cursorApiKey?.trim()) {
+        requestedConfig['cursorApiKey'] = cfg.cursorApiKey.trim();
+      }
     }
     const dto: CreateSubscriptionDto = {
       planId: this.orderPlanId.trim(),
@@ -420,6 +480,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   resetOrderRequestedConfig(): void {
     this.authMethod.set('users');
     this.orderRequestedConfig = {
+      service: 'controller',
       authenticationMethod: 'users',
       staticApiKey: '',
       disableSignup: false,
@@ -439,6 +500,16 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       },
       hetznerApiToken: '',
       digitaloceanApiToken: '',
+      git: {
+        repositoryUrl: '',
+        username: '',
+        token: '',
+        password: '',
+        privateKey: '',
+        commitAuthorName: '',
+        commitAuthorEmail: '',
+      },
+      cursorApiKey: '',
     };
   }
 

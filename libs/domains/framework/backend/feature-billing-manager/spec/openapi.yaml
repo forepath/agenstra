@@ -1812,8 +1812,13 @@ components:
         May also include provider-specific fields (e.g. serverType, location, firewallId for Hetzner).
         The FQDN (hostname.DNS_BASE_DOMAIN) is used for SSL certificates and CORS; DNS_BASE_DOMAIN
         defaults to spirde.com when not set.
+        For service manager, disableSignup and provisioning tokens are ignored; authenticationMethod must be api-key or keycloak (not users).
       additionalProperties: true
       properties:
+        service:
+          type: string
+          enum: [controller, manager]
+          description: Product service - controller (full stack) or manager (agent manager only). Required when using Hetzner schema.
         authenticationMethod:
           type: string
           description: Authentication method (users, api-key, keycloak). Default users.
@@ -1851,6 +1856,27 @@ components:
         digitaloceanApiToken:
           type: string
           description: Optional DigitalOcean API token for nested provisioning from the instance. Sensitive.
+        git:
+          type: object
+          description: Optional Git configuration for manager instances (GIT_* env vars).
+          properties:
+            repositoryUrl: { type: string, description: 'Git repository URL' }
+            username: { type: string, description: 'Git username (HTTPS)' }
+            token: { type: string, description: 'Git token (e.g. PAT)' }
+            password:
+              {
+                type: string,
+                description: 'Git password (alternative to token)',
+              }
+            privateKey:
+              { type: string, description: 'SSH private key for git@ URLs' }
+            commitAuthorName:
+              { type: string, description: 'Default commit author name' }
+            commitAuthorEmail:
+              { type: string, description: 'Default commit author email' }
+        cursorApiKey:
+          type: string
+          description: Optional Cursor API key for manager instances (CURSOR_API_KEY env var). Sensitive.
     CreateSubscriptionDto:
       type: object
       required: [planId]
@@ -1900,6 +1926,12 @@ components:
             type: string,
             nullable: true,
             description: Single-level subdomain when provisioned (e.g. awesome-armadillo-abc12),
+          }
+        service:
+          {
+            type: string,
+            enum: [controller, manager],
+            description: Product service from config snapshot; controller (full stack) or manager (agent manager only). Defaults to controller.,
           }
     ServerInfoResponse:
       type: object

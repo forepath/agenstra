@@ -25,7 +25,9 @@ describe('SubscriptionServerInfoFacade', () => {
     status: 'running',
   };
 
-  const mockWithServerInfo = [{ subscription: mockSubscription, serverInfo: mockServerInfo, itemId: 'item-1' }];
+  const mockWithServerInfo = [
+    { subscription: mockSubscription, serverInfo: mockServerInfo, itemId: 'item-1', service: 'controller' as const },
+  ];
 
   beforeEach(() => {
     store = { select: jest.fn(), dispatch: jest.fn() } as never;
