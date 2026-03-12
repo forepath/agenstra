@@ -2,9 +2,33 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 
+const REQUIRED_PROFILE_FIELDS: (keyof CustomerProfileEntity)[] = [
+  'firstName',
+  'lastName',
+  'email',
+  'addressLine1',
+  'city',
+  'country',
+];
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 @Injectable()
 export class CustomerProfilesService {
   constructor(private readonly customerProfilesRepository: CustomerProfilesRepository) {}
+
+  /**
+   * Returns true if the profile exists and all required fields for ordering are non-null and non-empty.
+   * Required: firstName, lastName, email, addressLine1, city, country.
+   */
+  isProfileComplete(profile: CustomerProfileEntity | null): boolean {
+    if (profile === null) {
+      return false;
+    }
+    return REQUIRED_PROFILE_FIELDS.every((field) => isNonEmptyString(profile[field]));
+  }
 
   async getByUserId(userId: string): Promise<CustomerProfileEntity | null> {
     return await this.customerProfilesRepository.findByUserId(userId);

@@ -45,6 +45,10 @@ The migration `apps/backend-billing-manager/src/migrations/1767101000000_CreateU
 Use `GET /customer-profile` to retrieve the profile and `POST /customer-profile` to update it. The profile is synced
 to InvoiceNinja on invoice list requests.
 
+**Required for ordering (step 0):** Subscription creation (`POST /subscriptions`) requires a complete customer billing
+profile. The backend returns 400 if the profile is missing or incomplete. Required fields: first name, last name, email,
+address line, city, country. See `docs/billing-profile-required-for-order-spec.md` and `docs/sequence-subscription-order.mmd`.
+
 Usage records can be posted to `POST /usage/record` and will be included in invoice creation if a `usagePayload` with
 `totalCost` or `usageCost` is present, or when `units` and `unitPrice` are provided.
 
@@ -64,7 +68,9 @@ Usage records can be posted to `POST /usage/record` and will be included in invo
 
 ## Provisioning Config
 
-Subscription creation accepts provider-specific configuration that is validated against the service type schema.
+Subscription creation (`POST /subscriptions`) first checks that the customer billing profile is complete (see Customer
+Profile above); otherwise the request is rejected with 400. It then accepts provider-specific configuration that is
+validated against the service type schema.
 For Hetzner provisioning, the following config keys are used:
 
 - location (string, required by default schema; enum pre-populated in UI)
@@ -88,7 +94,8 @@ the FQDN (`hostname.DNS_BASE_DOMAIN`) for proper HTTPS and same-origin requests.
 ## Diagrams
 
 - docs/overview.mmd
-- docs/sequence-subscription-order.mmd
+- docs/sequence-subscription-order.mmd (order flow: step 0 = profile completeness, then availability and provisioning)
+- docs/billing-profile-required-for-order-spec.md (spec for profile-required-for-order behavior)
 - docs/sequence-invoicing.mmd
 - docs/sequence-open-positions-billing-day.mmd (open positions, user billing day, billing-day invoice scheduler)
 - docs/sequence-backorder-retry.mmd

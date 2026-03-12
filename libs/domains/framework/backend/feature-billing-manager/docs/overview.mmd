@@ -9,7 +9,7 @@ flowchart TB
     subgraph USER["👤 User API (Subscriptions)"]
         direction TB
         USER_USE["Use Case: Order & Manage Subscriptions"]
-        USER_USE --> USER1["📝 Create Subscription<br/>POST /subscriptions"]
+        USER_USE --> USER1["📝 Create Subscription<br/>POST /subscriptions<br/>(requires complete customer profile)"]
         USER_USE --> USER2["📋 List Subscriptions<br/>GET /subscriptions"]
         USER_USE --> USER3["🔍 Get Subscription<br/>GET /subscriptions/:id"]
         USER_USE --> USER4["✖ Cancel Subscription<br/>POST /subscriptions/:id/cancel"]

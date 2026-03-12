@@ -1,6 +1,7 @@
 sequenceDiagram
     participant User
     participant BillingAPI
+    participant CustomerProfilesService
     participant AvailabilityService
     participant ProvisioningService
     participant HetznerAPI
@@ -8,23 +9,30 @@ sequenceDiagram
 
     %% requestedConfig includes service (controller|manager), authenticationMethod, smtp, keycloak, optional provisioning (controller only)
     User->>BillingAPI: POST /subscriptions (planId, requestedConfig with service)
-    BillingAPI->>AvailabilityService: checkAvailability(provider, region, serverType)
-    AvailabilityService->>HetznerAPI: GET /server_types + /limits
-    HetznerAPI-->>AvailabilityService: availability + limits
-    AvailabilityService-->>BillingAPI: AvailabilityResponse
+    BillingAPI->>CustomerProfilesService: getByUserId(userId)
+    CustomerProfilesService-->>BillingAPI: profile
 
-    alt Available
-        BillingAPI->>Database: INSERT subscription
-        BillingAPI->>Database: INSERT subscription_item
-        note over BillingAPI: Build userData: if service=manager use agent-manager.utils else agent-controller.utils
-        BillingAPI->>ProvisioningService: provision(provider, config with userData)
-        ProvisioningService->>HetznerAPI: POST /servers
-        HetznerAPI-->>ProvisioningService: serverId
-        ProvisioningService->>HetznerAPI: POST /firewalls/:id/attach
-        ProvisioningService-->>BillingAPI: serverId
-        BillingAPI->>Database: UPDATE subscription_item.provider_reference
-        BillingAPI-->>User: 201 SubscriptionResponse
-    else Not available
-        BillingAPI->>Database: INSERT backorder (optional)
-        BillingAPI-->>User: 400 Configuration not available
+    alt Profile missing or incomplete
+        BillingAPI-->>User: 400 Customer billing profile must be complete
+    else Profile complete
+        BillingAPI->>AvailabilityService: checkAvailability(provider, region, serverType)
+        AvailabilityService->>HetznerAPI: GET /server_types + /limits
+        HetznerAPI-->>AvailabilityService: availability + limits
+        AvailabilityService-->>BillingAPI: AvailabilityResponse
+
+        alt Available
+            BillingAPI->>Database: INSERT subscription
+            BillingAPI->>Database: INSERT subscription_item
+            note over BillingAPI: Build userData: if service=manager use agent-manager.utils else agent-controller.utils
+            BillingAPI->>ProvisioningService: provision(provider, config with userData)
+            ProvisioningService->>HetznerAPI: POST /servers
+            HetznerAPI-->>ProvisioningService: serverId
+            ProvisioningService->>HetznerAPI: POST /firewalls/:id/attach
+            ProvisioningService-->>BillingAPI: serverId
+            BillingAPI->>Database: UPDATE subscription_item.provider_reference
+            BillingAPI-->>User: 201 SubscriptionResponse
+        else Not available
+            BillingAPI->>Database: INSERT backorder (optional)
+            BillingAPI-->>User: 400 Configuration not available
+        end
     end

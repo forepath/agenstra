@@ -19,6 +19,7 @@ import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
+import { CustomerProfilesService } from './customer-profiles.service';
 import { HostnameReservationService } from './hostname-reservation.service';
 import { ProvisioningService } from './provisioning.service';
 
@@ -38,6 +39,7 @@ export class SubscriptionService {
     private readonly provisioningService: ProvisioningService,
     private readonly hostnameReservationService: HostnameReservationService,
     private readonly cloudflareDnsService: CloudflareDnsService,
+    private readonly customerProfilesService: CustomerProfilesService,
   ) {}
 
   async createSubscription(
@@ -46,6 +48,13 @@ export class SubscriptionService {
     requestedConfig?: Record<string, unknown>,
     autoBackorder = false,
   ) {
+    const profile = await this.customerProfilesService.getByUserId(userId);
+    if (!this.customerProfilesService.isProfileComplete(profile)) {
+      throw new BadRequestException(
+        'Customer billing profile must be complete before ordering. Please complete your profile.',
+      );
+    }
+
     const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
 

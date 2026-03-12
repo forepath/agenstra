@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   BackordersFacade,
   CustomerProfileFacade,
@@ -52,7 +52,7 @@ const COUNTRY_OPTIONS: CountryOption[] = (() => {
 @Component({
   selector: 'framework-billing-subscriptions',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './subscriptions.component.html',
   styleUrls: ['./subscriptions.component.scss'],
 })

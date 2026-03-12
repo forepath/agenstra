@@ -18,6 +18,7 @@ import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
+import { CustomerProfilesService } from './customer-profiles.service';
 import { SubscriptionService } from './subscription.service';
 
 jest.mock('../utils/config-validation.utils', () => ({
@@ -87,6 +88,22 @@ describe('SubscriptionService', () => {
     createARecord: jest.fn().mockResolvedValue(undefined),
   } as any;
 
+  const completeProfile = {
+    id: 'cp-1',
+    userId: 'user-1',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john@example.com',
+    addressLine1: '123 Main St',
+    city: 'Berlin',
+    country: 'DE',
+  };
+
+  const customerProfilesService = {
+    getByUserId: jest.fn().mockResolvedValue(completeProfile),
+    isProfileComplete: jest.fn().mockReturnValue(true),
+  } as unknown as CustomerProfilesService;
+
   const service = new SubscriptionService(
     plansRepository,
     typesRepository,
@@ -99,10 +116,13 @@ describe('SubscriptionService', () => {
     provisioningService,
     hostnameReservationService,
     cloudflareDnsService,
+    customerProfilesService,
   );
 
   beforeEach(() => {
     jest.resetAllMocks();
+    (customerProfilesService.getByUserId as jest.Mock).mockResolvedValue(completeProfile);
+    (customerProfilesService.isProfileComplete as jest.Mock).mockReturnValue(true);
     (validateConfigSchema as jest.Mock).mockReturnValue([]);
     (buildCloudInitConfigFromRequest as jest.Mock).mockImplementation(
       (effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
@@ -286,6 +306,31 @@ describe('SubscriptionService', () => {
       'hetzner',
       expect.objectContaining({ userData: '#!/bin/bash\necho manager' }),
     );
+  });
+
+  it('throws BadRequestException when customer profile is null', async () => {
+    (customerProfilesService.getByUserId as jest.Mock).mockResolvedValue(null);
+    (customerProfilesService.isProfileComplete as jest.Mock).mockReturnValue(false);
+
+    await expect(service.createSubscription('user-1', 'plan-1')).rejects.toThrow(BadRequestException);
+    await expect(service.createSubscription('user-1', 'plan-1')).rejects.toThrow(
+      'Customer billing profile must be complete before ordering',
+    );
+    expect(plansRepository.findByIdOrThrow).not.toHaveBeenCalled();
+  });
+
+  it('throws BadRequestException when customer profile is incomplete', async () => {
+    (customerProfilesService.getByUserId as jest.Mock).mockResolvedValue({
+      ...completeProfile,
+      firstName: null,
+    });
+    (customerProfilesService.isProfileComplete as jest.Mock).mockReturnValue(false);
+
+    await expect(service.createSubscription('user-1', 'plan-1')).rejects.toThrow(BadRequestException);
+    await expect(service.createSubscription('user-1', 'plan-1')).rejects.toThrow(
+      'Customer billing profile must be complete before ordering',
+    );
+    expect(plansRepository.findByIdOrThrow).not.toHaveBeenCalled();
   });
 
   it('rejects cancel when policy disallows', async () => {

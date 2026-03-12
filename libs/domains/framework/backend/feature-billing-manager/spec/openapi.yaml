@@ -790,7 +790,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubscriptionResponse'
         '400':
-          description: Validation error or configuration unavailable
+          description: >-
+            Validation error, configuration unavailable, or customer billing profile missing/incomplete.
+            A complete profile is required (first name, last name, email, address line, city, country) before ordering.
           content:
             application/json:
               schema:
