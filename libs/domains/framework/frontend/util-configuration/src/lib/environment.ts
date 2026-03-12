@@ -6,6 +6,9 @@ export const environment: Environment = {
     restApiUrl: 'http://localhost:3100/api',
     websocketUrl: 'http://localhost:8081/clients',
   },
+  billing: {
+    restApiUrl: 'http://localhost:3200/api',
+  },
   authentication: {
     /*
     type: 'api-key',
@@ -32,5 +35,6 @@ export const environment: Environment = {
   cookieConsent: {
     domain: '.agenstra.com',
     privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
+    termsUrl: 'https://www.agenstra.com/legal/terms',
   },
 };

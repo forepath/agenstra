@@ -105,6 +105,10 @@ describe('AuthenticationEffects', () => {
           provide: LOGIN_SUCCESS_REDIRECT_TARGET,
           useValue: ['/clients'],
         },
+        {
+          provide: LOGIN_SUCCESS_REDIRECT_TARGET,
+          useValue: ['/clients'],
+        },
       ],
     });
 

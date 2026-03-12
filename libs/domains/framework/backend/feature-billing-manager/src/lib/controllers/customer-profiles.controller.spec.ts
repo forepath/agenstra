@@ -1,0 +1,26 @@
+import { Test } from '@nestjs/testing';
+import { CustomerProfilesController } from './customer-profiles.controller';
+import { CustomerProfilesService } from '../services/customer-profiles.service';
+import { InvoiceNinjaService } from '../services/invoice-ninja.service';
+
+describe('CustomerProfilesController', () => {
+  it('returns null when no profile', async () => {
+    const moduleRef = await Test.createTestingModule({
+      controllers: [CustomerProfilesController],
+      providers: [
+        {
+          provide: CustomerProfilesService,
+          useValue: { getByUserId: jest.fn().mockResolvedValue(null), upsert: jest.fn() },
+        },
+        {
+          provide: InvoiceNinjaService,
+          useValue: { syncCustomerProfile: jest.fn() },
+        },
+      ],
+    }).compile();
+
+    const controller = moduleRef.get(CustomerProfilesController);
+    const result = await controller.get({ user: { id: 'user-1', roles: ['user'] } } as any);
+    expect(result).toBeNull();
+  });
+});
