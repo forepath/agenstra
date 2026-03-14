@@ -1,5 +1,6 @@
 import { Route } from '@angular/router';
 import { PortalAgentCtxComponent } from './agentctx/agentctx.component';
+import { PortalCloudComponent } from './cloud/cloud.component';
 import { PortalContainerComponent } from './container/container.component';
 import { PortalDesktopComponent } from './desktop/desktop.component';
 import { PortalHomeComponent } from './home/home.component';
@@ -23,6 +24,10 @@ export const portalRoutes: Route[] = [
       {
         path: 'desktop',
         component: PortalDesktopComponent,
+      },
+      {
+        path: 'cloud',
+        component: PortalCloudComponent,
       },
       {
         path: 'pricing',
