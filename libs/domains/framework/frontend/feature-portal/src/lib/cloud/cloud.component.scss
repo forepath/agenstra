@@ -1,0 +1,83 @@
+@import '../page.component.scss';
+
+// Dotted world map
+.cloud-map-figure {
+  max-width: 100%;
+}
+
+.cloud-map-svg {
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+}
+
+.cloud-map-continents circle {
+  opacity: 0.7;
+}
+
+.cloud-map-datacenters circle {
+  stroke: var(--bs-body-bg);
+  stroke-width: 2;
+}
+
+.cloud-map-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cloud-map-legend-continent {
+  background-color: var(--bs-gray-400);
+}
+
+.cloud-map-legend-datacenter {
+  background-color: var(--bs-primary);
+}
+
+// Placeholder image block (for future screenshots)
+.cloud-placeholder-img {
+  width: 100%;
+  min-height: 260px;
+  max-width: 420px;
+}
+
+.cloud-placeholder-icon {
+  font-size: 4rem;
+  opacity: 0.4;
+}
+
+// Integration section icons (match home)
+.cloud-icon-integration {
+  font-size: 3rem;
+  color: var(--bs-primary);
+}
+
+// Security section large icon
+.cloud-icon-security-large {
+  font-size: 6rem;
+  opacity: 0.2;
+}
+
+// Security badges (match home pattern)
+.cloud-security-badge {
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.cloud-security-badge-teal {
+  background-color: var(--bs-success) !important;
+}
+
+.cloud-security-badge-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+.cloud-security-badge-warning {
+  background-color: var(--bs-warning) !important;
+}
+
+.logo-partner--small {
+  max-height: 16px;
+}

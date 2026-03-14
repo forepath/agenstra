@@ -58,6 +58,16 @@
             </li>
             <li class="nav-item">
               <a
+                routerLink="/cloud"
+                class="nav-link text-white"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+                i18n="@@featurePortal-navCloud"
+                >Cloud</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
                 routerLink="/pricing"
                 class="nav-link text-white"
                 routerLinkActive="active"
@@ -65,12 +75,6 @@
                 i18n="@@featurePortal-navPricing"
                 >Pricing</a
               >
-            </li>
-            <li class="nav-item">
-              <span class="nav-link text-white d-flex align-items-center gap-2 pe-2 disabled" aria-disabled="true">
-                <span i18n="@@featurePortal-navCloud">Cloud</span>
-                <span class="badge bg-primary" i18n="@@featurePortal-navCloudSoon">Soon</span>
-              </span>
             </li>
             <li class="nav-item">
               <a
@@ -224,16 +228,17 @@
             >
           </li>
           <li class="mb-2">
+            <a routerLink="/cloud" class="text-decoration-none text-white small" i18n="@@featurePortal-navCloud"
+              >Cloud</a
+            >
+          </li>
+          <li class="mb-2">
             <a
               routerLink="/pricing"
               class="text-decoration-none text-white small"
               i18n="@@featurePortal-footerPricingLink"
               >Pricing</a
             >
-          </li>
-          <li class="mb-2 d-flex align-items-center gap-2">
-            <span class="text-white small" i18n="@@featurePortal-navCloud">Cloud</span>
-            <span class="badge bg-primary" i18n="@@featurePortal-navCloudSoon">Soon</span>
           </li>
           <li class="mb-2">
             <a

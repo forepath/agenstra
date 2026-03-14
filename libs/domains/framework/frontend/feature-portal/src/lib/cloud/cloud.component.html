@@ -1,0 +1,318 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white">
+  <div class="container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalCloud-heroTitle">
+        <span class="text-primary">Fully managed control plane</span> for your AI agents
+      </h1>
+      <p class="lead mb-4 mx-auto hero-lead max-w-750" i18n="@@featurePortalCloud-heroLead">
+        Run Agenstra as a fully managed cloud service. Your agents stay in the tools, clouds, and environments you
+        already use. You don't deploy infrastructure or operate the control plane.
+      </p>
+      <p class="fs-6 mb-5 hero-cta-line mx-auto max-w-700" i18n="@@featurePortalCloud-heroSupport">
+        Design, deploy, and govern agentic systems for coding and prototyping from day one. Scale from first pilot to
+        team-wide rollout.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a
+          href="mailto:hi@agenstra.com"
+          class="btn btn-primary btn-lg px-4 py-3 rounded-2 cta-btn-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+          i18n="@@featurePortalCloud-heroCtaPrimary"
+        >
+          <i class="bi bi-chat-dots me-2" aria-hidden="true"></i>
+          Talk to us
+        </a>
+        <a
+          routerLink="."
+          fragment="why"
+          class="btn btn-outline-light btn-lg px-4 py-3 rounded-2 cta-btn-secondary"
+          i18n="@@featurePortalCloud-heroCtaSecondary"
+        >
+          <i class="bi bi-trophy me-2" aria-hidden="true"></i>
+          See how it works
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Cloud Providers Section -->
+<section class="py-5 bg-body-tertiary">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
+          <img src="assets/images/logos/hetzner.svg" alt="Hetzner" class="img-fluid logo-partner logo-partner--small" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 1. Control without the ops -->
+<section id="why" class="py-10 bg-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-5 mb-lg-0">
+        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalCloud-whyTitle">Control without the ops</h2>
+        <p class="lead text-muted mb-4" i18n="@@featurePortalCloud-whyLead">
+          Most teams don't struggle to create agents. They struggle to keep them consistent, observable, and under
+          control as adoption grows. That's especially true when those agents are coding assistants and tools spread
+          across repos and editors.
+        </p>
+        <p class="text-muted mb-4" i18n="@@featurePortalCloud-whyCopy">
+          Agenstra Cloud gives you that control without deploying or operating the platform yourself. You connect to a
+          fully managed control plane and focus on modeling agents, defining policies, and keeping context and
+          guardrails consistent across your coding tools. We handle upgrades and scaling.
+        </p>
+        <ul class="list-unstyled mb-4">
+          <li class="d-flex align-items-start mb-3">
+            <i class="bi bi-shield-check text-success me-3 mt-1 flex-shrink-0 icon-solution" aria-hidden="true"></i>
+            <span class="lh-lg" i18n="@@featurePortalCloud-whyCard1"
+              >You don't run or maintain any self-hosted infrastructure.</span
+            >
+          </li>
+          <li class="d-flex align-items-start mb-3">
+            <i class="bi bi-sliders text-success me-3 mt-1 flex-shrink-0 icon-solution" aria-hidden="true"></i>
+            <span class="lh-lg" i18n="@@featurePortalCloud-whyCard2"
+              >You can model agents, policies, and workflows from day one.</span
+            >
+          </li>
+          <li class="d-flex align-items-start mb-4">
+            <i class="bi bi-graph-up-arrow text-success me-3 mt-1 flex-shrink-0 icon-solution" aria-hidden="true"></i>
+            <span class="lh-lg" i18n="@@featurePortalCloud-whyCard3"
+              >Upgrades and scaling are handled by the platform.</span
+            >
+          </li>
+        </ul>
+        <p class="fw-medium text-dark mb-2" i18n="@@featurePortalCloud-whyTechIntro">Same platform, fully managed.</p>
+        <p class="text-muted small mb-0" i18n="@@featurePortalCloud-whyTechCopy">
+          You get agent managers, prompts, tools, policies, and environments. These are the same concepts you use with
+          self-hosted Agenstra. One interface lets you register and manage remote agent managers, define once and reuse
+          across agents and coding tools, and route traffic between dev, staging, and production.
+        </p>
+      </div>
+      <div class="col-lg-5 offset-lg-1 text-center">
+        <div
+          class="cloud-placeholder-img rounded-3 d-inline-flex align-items-center justify-content-center bg-body-secondary border"
+        >
+          <i class="bi bi-cloud-check text-primary cloud-placeholder-icon" aria-hidden="true"></i>
+          <span class="visually-hidden" i18n="@@featurePortalCloud-whyImgAlt"
+            >Placeholder: Control plane dashboard</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Global footprint, your infrastructure, and guardrails -->
+<section id="global" class="py-10 bg-body-tertiary position-relative overflow-hidden">
+  <div class="container">
+    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-globalTitle">
+      Global footprint, your infrastructure
+    </h2>
+    <p class="lead text-center text-muted mb-5 mx-auto max-w-700" i18n="@@featurePortalCloud-globalLead">
+      Agenstra Cloud runs in multiple regions. You connect from any environment and plug in your code hosting, CI, and
+      agent frameworks. You keep control of your data and infrastructure. We run the control plane and guardrails.
+    </p>
+    <figure class="cloud-map-figure mb-5" aria-label="World map with datacenter locations">
+      <framework-portal-cloud-map></framework-portal-cloud-map>
+    </figure>
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover text-center">
+          <i class="bi bi-cloud-fill mx-auto mb-3 cloud-icon-integration" aria-hidden="true"></i>
+          <h3 class="h6 fw-medium mt-3 mb-0" i18n="@@featurePortalCloud-connectItem1">Cloud, on-prem, or hybrid</h3>
+          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalCloud-connectItem1Desc">
+            Your agent runtimes can live in your preferred environment.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover text-center">
+          <i class="bi bi-plug-fill mx-auto mb-3 cloud-icon-integration" aria-hidden="true"></i>
+          <h3 class="h6 fw-medium mt-3 mb-0" i18n="@@featurePortalCloud-connectItem2">Code and CI</h3>
+          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalCloud-connectItem2Desc">
+            Integrate with code hosting, CI, observability, and secret management.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover text-center">
+          <i class="bi bi-shield-lock mx-auto mb-3 cloud-icon-integration" aria-hidden="true"></i>
+          <h3 class="h6 fw-medium mt-3 mb-0" i18n="@@featurePortalCloud-connectItem3">You keep control</h3>
+          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalCloud-connectItem3Desc">
+            Your data and infrastructure stay yours. We run the control plane.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
+      <h3 class="h5 fw-semibold mb-3 text-dark" i18n="@@featurePortalCloud-securityTitle">
+        Security, governance, and observability first
+      </h3>
+      <p class="text-muted mb-4" i18n="@@featurePortalCloud-securityLead">
+        When agents can deploy code or access repos and tools, guardrails are not optional. Agenstra Cloud gives
+        security and platform teams a single place to see what agents can access or execute and how policies are
+        enforced. It also gives them a governed surface for monitoring and adjusting behavior.
+      </p>
+      <ul class="list-unstyled mb-4">
+        <li class="mb-2" i18n="@@featurePortalCloud-securityItem1">Central policies govern tool and data access.</li>
+        <li class="mb-2" i18n="@@featurePortalCloud-securityItem2">
+          Audit logs record agent activity and config changes.
+        </li>
+        <li class="mb-2" i18n="@@featurePortalCloud-securityItem3">
+          Dev, staging, and production stay clearly separated.
+        </li>
+        <li class="mb-0" i18n="@@featurePortalCloud-securityItem4">
+          You can test prompts and policies before rollout.
+        </li>
+      </ul>
+      <div class="d-flex flex-wrap gap-3">
+        <span
+          class="badge rounded-pill px-4 py-2 cloud-security-badge cloud-security-badge-teal"
+          i18n="@@featurePortalCloud-securityBadge1"
+          >Policies</span
+        >
+        <span
+          class="badge rounded-pill px-4 py-2 cloud-security-badge cloud-security-badge-primary"
+          i18n="@@featurePortalCloud-securityBadge2"
+          >Audit logs</span
+        >
+        <span
+          class="badge rounded-pill px-4 py-2 cloud-security-badge cloud-security-badge-warning"
+          i18n="@@featurePortalCloud-securityBadge3"
+          >Testing</span
+        >
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. From first project to team-wide + getting started -->
+<section id="scale" class="py-10 bg-white">
+  <div class="container">
+    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-scaleTitle">
+      From first project to team-wide rollout
+    </h2>
+    <p class="lead text-center text-muted mb-5 mx-auto max-w-700" i18n="@@featurePortalCloud-scaleLead">
+      Agenstra Cloud is built for coding and prototyping. Start with one repo or one team. When context, guardrails, and
+      workflows prove out, roll out to more projects without rethinking the platform.
+    </p>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
+      <div class="col">
+        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
+          <i class="bi bi-code-slash text-primary icon-md mb-2" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalCloud-scaleCard1">AI coding assistants</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalCloud-scaleCard1Desc">
+            One control plane for context, prompts, and guardrails across Cursor, Copilot, and other coding tools.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
+          <i class="bi bi-lightning text-primary icon-md mb-2" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalCloud-scaleCard2">Prototyping and testing</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalCloud-scaleCard2Desc">
+            Build and test agent workflows and policies in non-prod before you roll out to more repos or production.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
+          <i class="bi bi-journals text-primary icon-md mb-2" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalCloud-scaleCard3">Team and multi-repo</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalCloud-scaleCard3Desc">
+            Shared context, prompts, and policies across repos so the whole team codes with the same rules.
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
+          <i class="bi bi-arrow-up-right text-primary icon-md mb-2" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalCloud-scaleCard4">Scale when ready</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalCloud-scaleCard4Desc">
+            Start with one project or team. Then extend to more repos and environments as you grow.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5 mb-5">
+      <h3 class="h5 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-gettingStartedTitle">
+        Getting started
+      </h3>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+          <div class="d-flex align-items-start">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >1</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step1">Connect a non-production environment first</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-flex align-items-start">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >2</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step2">Register existing agents or agent managers</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-flex align-items-start">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >3</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step3">Explore, test, and refine guardrails</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-flex align-items-start">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >4</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step4">Extend to staging and production</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section id="cta" class="py-10 bg-dark">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-primary rounded-4 text-center text-white p-5 shadow-sm">
+          <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalCloud-ctaTitle">Ready to run Agenstra in the cloud?</h2>
+          <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featurePortalCloud-ctaLead">
+            Talk to us about access, pricing, and how Agenstra Cloud fits your tools and environments.
+          </p>
+          <div class="d-flex justify-content-center">
+            <a
+              href="mailto:hi@agenstra.com"
+              class="btn btn-light btn-lg px-5 py-3 rounded-2 fw-semibold cta-btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featurePortalCloud-ctaPrimary"
+            >
+              Register for free
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
