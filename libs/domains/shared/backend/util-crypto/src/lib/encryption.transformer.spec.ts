@@ -1,4 +1,4 @@
-import { createAes256GcmTransformer } from './encryption.transformer';
+import { createAes256GcmTransformer, createJsonAes256GcmTransformer } from './encryption.transformer';
 
 describe('createAes256GcmTransformer (AES-256-GCM)', () => {
   const ORIGINAL_ENV = process.env;
@@ -66,5 +66,44 @@ describe('createAes256GcmTransformer (AES-256-GCM)', () => {
   it('should throw when ENCRYPTION_KEY is not 32 bytes after decoding', () => {
     process.env.ENCRYPTION_KEY = Buffer.from('short-key').toString('base64'); // not 32 bytes
     expect(() => createAes256GcmTransformer()).toThrow('ENCRYPTION_KEY must decode to 32 bytes (AES-256).');
+  });
+});
+
+describe('createJsonAes256GcmTransformer', () => {
+  const ORIGINAL_ENV = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...ORIGINAL_ENV };
+    delete process.env.ENCRYPTION_KEY;
+  });
+
+  afterEach(() => {
+    process.env = ORIGINAL_ENV;
+  });
+
+  it('should encrypt and decrypt a JSON object (round-trip)', () => {
+    const transformer = createJsonAes256GcmTransformer();
+    const obj = { region: 'fsn1', serverType: 'cx11', service: 'controller' };
+
+    const stored = transformer.to(obj);
+    expect(stored).toBeTruthy();
+    expect(typeof stored).toBe('string');
+    expect(stored).not.toContain('fsn1');
+
+    const decrypted = transformer.from(stored!);
+    expect(decrypted).toEqual(obj);
+  });
+
+  it('should return {} for null/undefined stored value', () => {
+    const transformer = createJsonAes256GcmTransformer();
+    expect(transformer.from(null)).toEqual({});
+    expect(transformer.from(undefined)).toEqual({});
+  });
+
+  it('should return null from to() for null/undefined input', () => {
+    const transformer = createJsonAes256GcmTransformer();
+    expect(transformer.to(null)).toBeNull();
+    expect(transformer.to(undefined)).toBeNull();
   });
 });

@@ -16,6 +16,8 @@ services:
     networks:
       - billing-network
     restart: unless-stopped
+    ports:
+      - '5433:5432'
 
   backend-billing-manager:
     image: ghcr.io/forepath/agenstra-billing-api:latest

@@ -14,6 +14,7 @@ import {
   buildAgentManagerCloudInitConfigFromRequest,
   buildAgentManagerCloudInitUserData,
 } from '../utils/cloud-init/agent-manager.utils';
+import { generateSshKeyPair } from '../utils/ssh-key.utils';
 import { AvailabilityService } from './availability.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
@@ -118,6 +119,9 @@ export class BackorderService {
         if (service === 'manager' && (effectiveConfig.authenticationMethod as string) === 'users') {
           effectiveConfig.authenticationMethod = 'api-key';
         }
+        const { publicKey, privateKey } = generateSshKeyPair();
+        await this.subscriptionItemsRepository.updateSshPrivateKey(baseItem.id, privateKey);
+        effectiveConfig.sshPublicKey = publicKey;
         const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
         const userData =
           service === 'manager'

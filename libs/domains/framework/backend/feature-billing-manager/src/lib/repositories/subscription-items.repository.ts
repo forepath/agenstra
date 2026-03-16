@@ -64,4 +64,13 @@ export class SubscriptionItemsRepository {
     entity.hostname = hostname ?? undefined;
     return await this.repository.save(entity);
   }
+
+  async updateSshPrivateKey(id: string, privateKeyPlain: string): Promise<SubscriptionItemEntity> {
+    const entity = await this.repository.findOne({ where: { id } });
+    if (!entity) {
+      throw new Error(`Subscription item ${id} not found`);
+    }
+    entity.sshPrivateKey = privateKeyPlain;
+    return await this.repository.save(entity);
+  }
 }

@@ -89,4 +89,31 @@ describe('SubscriptionItemsRepository', () => {
       relations: ['serviceType'],
     });
   });
+
+  it('updates ssh private key', async () => {
+    const existing = {
+      id: 'item-1',
+      subscriptionId: 'sub-1',
+      sshPrivateKey: undefined,
+    };
+    mockRepository.findOne.mockResolvedValue(existing);
+    const saved = { ...existing, sshPrivateKey: '-----BEGIN OPENSSH PRIVATE KEY-----\n...' };
+    mockRepository.save.mockResolvedValue(saved);
+
+    const result = await repository.updateSshPrivateKey('item-1', '-----BEGIN OPENSSH PRIVATE KEY-----\n...');
+
+    expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: 'item-1' } });
+    expect(mockRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'item-1', sshPrivateKey: '-----BEGIN OPENSSH PRIVATE KEY-----\n...' }),
+    );
+    expect(result.sshPrivateKey).toBe('-----BEGIN OPENSSH PRIVATE KEY-----\n...');
+  });
+
+  it('throws when item not found for ssh private key update', async () => {
+    mockRepository.findOne.mockResolvedValue(null);
+
+    await expect(repository.updateSshPrivateKey('nonexistent', '-----BEGIN OPENSSH PRIVATE KEY-----')).rejects.toThrow(
+      'Subscription item nonexistent not found',
+    );
+  });
 });

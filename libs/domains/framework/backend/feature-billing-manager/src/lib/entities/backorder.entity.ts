@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { createJsonAes256GcmTransformer } from '@forepath/shared/backend';
 
 export enum BackorderStatus {
   PENDING = 'pending',
@@ -22,7 +23,13 @@ export class BackorderEntity {
   @Column({ type: 'uuid', name: 'plan_id' })
   planId!: string;
 
-  @Column({ type: 'jsonb', name: 'requested_config_snapshot', default: () => "'{}'::jsonb" })
+  /** Requested config snapshot; encrypted at rest via AES-256-GCM. */
+  @Column({
+    type: 'text',
+    name: 'requested_config_snapshot',
+    nullable: true,
+    transformer: createJsonAes256GcmTransformer(),
+  })
   requestedConfigSnapshot!: Record<string, unknown>;
 
   @Column({ type: 'enum', enum: BackorderStatus, name: 'status', default: BackorderStatus.PENDING })

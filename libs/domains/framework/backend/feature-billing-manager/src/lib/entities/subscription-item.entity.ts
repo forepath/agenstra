@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { createAes256GcmTransformer, createJsonAes256GcmTransformer } from '@forepath/shared/backend';
 import { ServiceTypeEntity } from './service-type.entity';
 import { SubscriptionEntity } from './subscription.entity';
 
@@ -35,7 +36,13 @@ export class SubscriptionItemEntity {
   @JoinColumn({ name: 'service_type_id' })
   serviceType?: ServiceTypeEntity;
 
-  @Column({ type: 'jsonb', name: 'config_snapshot', default: () => "'{}'::jsonb" })
+  /** Plan/config snapshot; encrypted at rest via AES-256-GCM. */
+  @Column({
+    type: 'text',
+    name: 'config_snapshot',
+    nullable: true,
+    transformer: createJsonAes256GcmTransformer(),
+  })
   configSnapshot!: Record<string, unknown>;
 
   @Column({ type: 'enum', enum: ProvisioningStatus, name: 'provisioning_status', default: ProvisioningStatus.PENDING })
@@ -51,6 +58,15 @@ export class SubscriptionItemEntity {
   /** Cached server info from provider (e.g. status, publicIp); no secrets, not encrypted */
   @Column({ type: 'jsonb', nullable: true, name: 'server_info_snapshot' })
   serverInfoSnapshot?: Record<string, unknown>;
+
+  /** SSH private key for server access; encrypted at rest via AES-256-GCM. Never exposed via API. */
+  @Column({
+    type: 'text',
+    nullable: true,
+    name: 'ssh_private_key',
+    transformer: createAes256GcmTransformer(),
+  })
+  sshPrivateKey?: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

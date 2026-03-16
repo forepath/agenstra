@@ -14,6 +14,7 @@ import {
   buildAgentManagerCloudInitUserData,
 } from '../utils/cloud-init/agent-manager.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
+import { generateSshKeyPair } from '../utils/ssh-key.utils';
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
@@ -118,6 +119,9 @@ export class SubscriptionService {
       let hostname: string | null = null;
       try {
         hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
+        const { publicKey, privateKey } = generateSshKeyPair();
+        await this.subscriptionItemsRepository.updateSshPrivateKey(subscriptionItem.id, privateKey);
+        effectiveConfig.sshPublicKey = publicKey;
         const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
         const userData =
           service === 'manager'

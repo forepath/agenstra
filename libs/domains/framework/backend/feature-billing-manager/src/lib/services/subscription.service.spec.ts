@@ -67,6 +67,7 @@ describe('SubscriptionService', () => {
     updateProviderReference: jest.fn(),
     updateProvisioningStatus: jest.fn(),
     updateHostname: jest.fn().mockResolvedValue({}),
+    updateSshPrivateKey: jest.fn().mockResolvedValue({}),
   } as unknown as SubscriptionItemsRepository;
   const scheduleService = new BillingScheduleService();
   const cancellationPolicyService = new CancellationPolicyService();
@@ -226,22 +227,27 @@ describe('SubscriptionService', () => {
       userData: '#!/bin/bash\necho hello',
     });
     expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '1.2.3.4');
-    expect(itemsRepository.create).toHaveBeenCalledWith({
-      subscriptionId: 'sub-1',
-      serviceTypeId: 'stype-1',
-      configSnapshot: {
-        region: 'fsn1',
-        serverType: 'cx23',
-        authenticationMethod: 'api-key',
-        backendEnv: { FOO: 'bar' },
-        frontendEnv: { BAR: 'baz' },
-      },
-    });
+    expect(itemsRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subscriptionId: 'sub-1',
+        serviceTypeId: 'stype-1',
+        configSnapshot: expect.objectContaining({
+          region: 'fsn1',
+          serverType: 'cx23',
+          authenticationMethod: 'api-key',
+          backendEnv: { FOO: 'bar' },
+          frontendEnv: { BAR: 'baz' },
+        }),
+      }),
+    );
+    expect(itemsRepository.updateSshPrivateKey).toHaveBeenCalledWith('item-1', expect.any(String));
+    expect((itemsRepository.updateSshPrivateKey as jest.Mock).mock.calls[0][1].length).toBeGreaterThan(0);
     expect(buildCloudInitConfigFromRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         region: 'fsn1',
         serverType: 'cx23',
         authenticationMethod: 'api-key',
+        sshPublicKey: expect.any(String),
       }),
       'awesome-armadillo-abc12',
       'spirde.com',
@@ -294,8 +300,9 @@ describe('SubscriptionService', () => {
 
     await service.createSubscription('user-1', 'plan-1', { region: 'fsn1', service: 'manager' });
 
+    expect(itemsRepository.updateSshPrivateKey).toHaveBeenCalledWith('item-1', expect.any(String));
     expect(buildAgentManagerCloudInitConfigFromRequest).toHaveBeenCalledWith(
-      expect.objectContaining({ region: 'fsn1', service: 'manager' }),
+      expect.objectContaining({ region: 'fsn1', service: 'manager', sshPublicKey: expect.any(String) }),
       'awesome-armadillo-abc12',
       'spirde.com',
     );

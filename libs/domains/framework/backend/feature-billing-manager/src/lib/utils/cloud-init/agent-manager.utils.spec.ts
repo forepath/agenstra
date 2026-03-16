@@ -113,11 +113,25 @@ describe('agent-manager.utils', () => {
       expect(config1.backend.cursorApiKey).toBeUndefined();
       expect(config2.backend.cursorApiKey).toBeUndefined();
     });
+
+    it('sets ssh.publicKey from effectiveConfig.sshPublicKey when provided', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest(
+        { authenticationMethod: 'api-key', sshPublicKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ user@host' },
+        'host1',
+      );
+      expect(config.ssh.publicKey).toBe('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ user@host');
+    });
+
+    it('defaults ssh.publicKey to empty string when not provided', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host1');
+      expect(config.ssh.publicKey).toBe('');
+    });
   });
 
   describe('buildAgentManagerCloudInitUserData', () => {
     it('produces nginx config with api location and agent-manager', () => {
       const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         backend: {
@@ -146,6 +160,7 @@ describe('agent-manager.utils', () => {
 
     it('returns base64-encoded script containing agent-manager and docker compose', () => {
       const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         backend: {
@@ -180,6 +195,7 @@ describe('agent-manager.utils', () => {
 
     it('uses fqdn in SSL certificate subjectAltName', () => {
       const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
         host: { hostname: 'my-instance', fqdn: 'my-instance.example.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         backend: {
@@ -201,6 +217,7 @@ describe('agent-manager.utils', () => {
 
     it('includes GIT_* env vars in backend container when config.backend.git is set', () => {
       const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         backend: {
@@ -239,6 +256,7 @@ describe('agent-manager.utils', () => {
 
     it('omits GIT_* env vars when config.backend.git is absent', () => {
       const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         backend: {
@@ -267,6 +285,7 @@ describe('agent-manager.utils', () => {
 
     it('includes CURSOR_API_KEY in backend env when config.backend.cursorApiKey is set', () => {
       const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         backend: {
@@ -295,6 +314,7 @@ describe('agent-manager.utils', () => {
 
     it('omits CURSOR_API_KEY when config.backend.cursorApiKey is absent', () => {
       const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
         backend: {
@@ -318,6 +338,68 @@ describe('agent-manager.utils', () => {
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
       expect(script).not.toContain('CURSOR_API_KEY');
+    });
+
+    it('includes ssh.publicKey in authorized_keys in the script when set', () => {
+      const key = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ user@host';
+      const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: key },
+        host: { hostname: 'test', fqdn: 'test.spirde.com' },
+        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        backend: {
+          host: '0.0.0.0',
+          port: 3000,
+          websocketPort: 8080,
+          nodeEnv: 'production',
+          database: {
+            host: 'postgres',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            database: 'postgres',
+          },
+          authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
+          encryption: { encryptionKey: 'enc' },
+          smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
+          cors: { origin: 'https://test.spirde.com' },
+        },
+      };
+      const b64 = buildAgentManagerCloudInitUserData(config);
+      const script = Buffer.from(b64, 'base64').toString('utf-8');
+      expect(script).toContain('/root/.ssh/authorized_keys');
+      expect(script).toContain(key);
+    });
+
+    it('configures OpenSSH server with sshd_config and restarts service', () => {
+      const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
+        host: { hostname: 'test', fqdn: 'test.spirde.com' },
+        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        backend: {
+          host: '0.0.0.0',
+          port: 3000,
+          websocketPort: 8080,
+          nodeEnv: 'production',
+          database: {
+            host: 'postgres',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            database: 'postgres',
+          },
+          authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
+          encryption: { encryptionKey: 'enc' },
+          smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
+          cors: { origin: 'https://test.spirde.com' },
+        },
+      };
+      const b64 = buildAgentManagerCloudInitUserData(config);
+      const script = Buffer.from(b64, 'base64').toString('utf-8');
+      expect(script).toContain('/etc/ssh/sshd_config');
+      expect(script).toContain('PermitRootLogin yes');
+      expect(script).toContain('PasswordAuthentication no');
+      expect(script).toContain('Configuring SSH server');
+      expect(script).toContain('service ssh restart');
     });
   });
 });

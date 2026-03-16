@@ -3,6 +3,9 @@ import { randomBytes } from 'crypto';
 import { formatEnvLines } from './env.utils';
 
 export interface AgentManagerCloudInitConfig {
+  ssh: {
+    publicKey: string;
+  };
   host: {
     hostname: string;
     /** Fully qualified domain name for SSL and CORS */
@@ -94,6 +97,9 @@ export function buildAgentManagerCloudInitConfigFromRequest(
   }
 
   return {
+    ssh: {
+      publicKey: (effectiveConfig.sshPublicKey as string) ?? '',
+    },
     host: { hostname, fqdn },
     proxy: {
       httpPort: 80,
@@ -307,6 +313,18 @@ server {
 }
 `;
 
+  const sshConfig = `
+Include /etc/ssh/sshd_config.d/*.conf
+PermitRootLogin yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+UsePAM yes
+X11Forwarding yes
+PrintMotd no
+AcceptEnv LANG LC_*
+Subsystem       sftp    /usr/lib/openssh/sftp-server
+`;
+
   const script = `#!/bin/bash
 set -euo pipefail
 
@@ -335,9 +353,33 @@ log "Updating system packages..."
 apt-get update -qq
 apt-get upgrade -y -qq
 
+# Install openssh server
+log "Installing openssh server..."
+apt-get install -y openssh-server ssh
+
+# Add SSH public key
+log "Adding SSH public key..."
+mkdir -p /root/.ssh
+echo "${config.ssh?.publicKey ?? ''}" > /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
+# Configure SSH server
+log "Configuring SSH server..."
+cat > /etc/ssh/sshd_config <<'EOF'
+${sshConfig}
+EOF
+service ssh restart
+
+# Set SSH password permanently
+log "Setting SSH password permanently..."
+chage -d 1 -m 0 -M 99999 -I -1 -E -1 root
+
+# Install openssl for SSL certificate generation
 log "Installing openssl..."
 apt-get install -y openssl
 
+# Install Docker using the convenience script
+# Official method: https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script
 log "Installing prerequisites for Docker installation..."
 apt-get update -qq
 apt-get install -y ca-certificates curl

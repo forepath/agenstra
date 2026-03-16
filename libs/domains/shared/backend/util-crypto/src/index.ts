@@ -1,1 +1,1 @@
-export { createAes256GcmTransformer } from './lib/encryption.transformer';
+export { createAes256GcmTransformer, createJsonAes256GcmTransformer } from './lib/encryption.transformer';

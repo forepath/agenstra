@@ -56,3 +56,29 @@ export function createAes256GcmTransformer(): ValueTransformer {
     },
   };
 }
+
+/**
+ * Creates a ColumnTransformer that encrypts/decrypts a JSON object (Record<string, unknown>) using AES-256-GCM.
+ * Serializes the object to JSON before encrypting; decrypts and parses on read.
+ * Uses the same ENCRYPTION_KEY as createAes256GcmTransformer.
+ */
+export function createJsonAes256GcmTransformer(): ValueTransformer {
+  const gcm = createAes256GcmTransformer();
+  return {
+    to(value: Record<string, unknown> | null | undefined): string | null {
+      if (value == null) return null;
+      const json = JSON.stringify(value);
+      return gcm.to(json) as string | null;
+    },
+    from(stored: string | null | undefined): Record<string, unknown> {
+      if (stored == null) return {};
+      const dec = gcm.from(stored);
+      if (dec == null || dec === '') return {};
+      try {
+        return JSON.parse(dec) as Record<string, unknown>;
+      } catch {
+        return {};
+      }
+    },
+  };
+}

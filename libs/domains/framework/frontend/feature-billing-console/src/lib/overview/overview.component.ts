@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   BackordersFacade,
@@ -36,6 +36,10 @@ export class OverviewComponent implements OnInit {
   readonly overviewServerInfoError$ = this.serverInfoFacade.getOverviewServerInfoError$();
   readonly serverActionInProgressMap$ = this.serverInfoFacade.getServerActionInProgressMap$();
 
+  @ViewChild('sshKeyModal') sshKeyModalRef?: ElementRef<HTMLDivElement>;
+  sshKeyForModal = '';
+  sshKeyModalHostname = '';
+
   readonly backorders$ = this.backordersFacade.getBackorders$();
   readonly pendingBackorders$ = this.backordersFacade.getPendingBackorders$();
   readonly backordersLoading$ = this.backordersFacade.getBackordersLoading$();
@@ -56,6 +60,51 @@ export class OverviewComponent implements OnInit {
         take(1),
       )
       .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
+  }
+
+  openSshKeyModal(sshPrivateKey: string | null | undefined, hostname: string | null | undefined): void {
+    this.sshKeyForModal = sshPrivateKey ?? '';
+    this.sshKeyModalHostname = hostname ?? '';
+    if (this.sshKeyModalRef) {
+      this.showModal(this.sshKeyModalRef);
+    }
+  }
+
+  hideSshKeyModal(): void {
+    if (this.sshKeyModalRef) {
+      this.hideModal(this.sshKeyModalRef);
+    }
+  }
+
+  private showModal(modalElement: ElementRef<HTMLDivElement> | undefined): void {
+    if (modalElement?.nativeElement) {
+      const modal = (
+        window as unknown as {
+          bootstrap?: {
+            Modal?: {
+              getOrCreateInstance: (el: HTMLElement) => { show: () => void };
+              getInstance: (el: HTMLElement) => { hide: () => void } | null;
+            };
+          };
+        }
+      ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+      if (modal) {
+        modal.show();
+      }
+    }
+  }
+
+  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
+    if (modalElement?.nativeElement) {
+      const modal = (
+        window as unknown as {
+          bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
+        }
+      ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+      if (modal) {
+        modal.hide();
+      }
+    }
   }
 
   getProviderName(provider: {} | undefined): string | undefined {

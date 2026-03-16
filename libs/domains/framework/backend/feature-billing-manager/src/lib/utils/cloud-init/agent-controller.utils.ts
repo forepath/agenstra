@@ -3,6 +3,9 @@ import { randomBytes } from 'crypto';
 import { formatEnvLines as formatEnv } from './env.utils';
 
 export interface AgentControllerCloudInitConfig {
+  ssh: {
+    publicKey: string;
+  };
   host: {
     hostname: string;
     /** Fully qualified domain name (e.g. awesome-armadillo-abc12.spirde.com) for SSL and CORS */
@@ -89,6 +92,9 @@ export function buildAgentControllerCloudInitConfigFromRequest(
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
 
   return {
+    ssh: {
+      publicKey: (effectiveConfig.sshPublicKey as string) ?? '',
+    },
     host: { hostname, fqdn },
     proxy: {
       httpPort: 80,
@@ -365,6 +371,18 @@ server {
 }
 `;
 
+  const sshConfig = `
+Include /etc/ssh/sshd_config.d/*.conf
+PermitRootLogin yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+UsePAM yes
+X11Forwarding yes
+PrintMotd no
+AcceptEnv LANG LC_*
+Subsystem       sftp    /usr/lib/openssh/sftp-server
+`;
+
   const script = `#!/bin/bash
 set -euo pipefail
 
@@ -396,6 +414,27 @@ export DEBIAN_FRONTEND=noninteractive
 log "Updating system packages..."
 apt-get update -qq
 apt-get upgrade -y -qq
+
+# Install openssh server
+log "Installing openssh server..."
+apt-get install -y openssh-server ssh
+
+# Add SSH public key
+log "Adding SSH public key..."
+mkdir -p /root/.ssh
+echo "${config.ssh?.publicKey ?? ''}" > /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
+# Configure SSH server
+log "Configuring SSH server..."
+cat > /etc/ssh/sshd_config <<'EOF'
+${sshConfig}
+EOF
+service ssh restart
+
+# Set SSH password permanently
+log "Setting SSH password permanently..."
+chage -d 1 -m 0 -M 99999 -I -1 -E -1 root
 
 # Install openssl for SSL certificate generation
 log "Installing openssl..."

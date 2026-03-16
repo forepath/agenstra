@@ -77,6 +77,7 @@ describe('BackorderService', () => {
       updateProviderReference: jest.fn(),
       updateProvisioningStatus: jest.fn(),
       updateHostname: jest.fn().mockResolvedValue({}),
+      updateSshPrivateKey: jest.fn().mockResolvedValue({}),
     } as any;
     const provisioningService = {
       provision: jest.fn().mockResolvedValue({ serverId: 'srv-1' }),
@@ -103,8 +104,9 @@ describe('BackorderService', () => {
 
     await service.retry('b1');
     expect(hostnameReservationService.reserveHostname).toHaveBeenCalledWith('item-1');
+    expect(subscriptionItemsRepository.updateSshPrivateKey).toHaveBeenCalledWith('item-1', expect.any(String));
     expect(buildCloudInitConfigFromRequest).toHaveBeenCalledWith(
-      expect.objectContaining({ region: 'fsn1', serverType: 'cx11' }),
+      expect.objectContaining({ region: 'fsn1', serverType: 'cx11', sshPublicKey: expect.any(String) }),
       'awesome-armadillo-abc12',
       'spirde.com',
     );

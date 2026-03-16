@@ -1968,6 +1968,12 @@ components:
             nullable: true,
             description: Full DNS name for display (e.g. awesome-armadillo-abc12.spirde.com),
           }
+        sshPrivateKey:
+          {
+            type: string,
+            nullable: true,
+            description: SSH private key for the provisioned server (use for SSH access). Omitted when not set.,
+          }
     ServerActionResponse:
       type: object
       properties:

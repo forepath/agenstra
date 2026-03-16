@@ -91,6 +91,12 @@ The cloud-init user data installs Docker and deploys a docker-compose stack cont
 Nginx proxies `/backend/` to the backend API (with path stripped). SSL certificates and CORS are configured using
 the FQDN (`hostname.DNS_BASE_DOMAIN`) for proper HTTPS and same-origin requests.
 
+## Server info
+
+`GET /subscriptions/{subscriptionId}/items/{itemId}/server-info` returns live server info for a provisioned subscription
+item (status, public/private IP, hostname, FQDN). The response also includes `sshPrivateKey` when the item has an SSH
+keypair stored (generated at provisioning); use it for SSH access to the server.
+
 ## Diagrams
 
 - docs/overview.mmd
