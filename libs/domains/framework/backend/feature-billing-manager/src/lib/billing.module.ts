@@ -62,6 +62,8 @@ import { SubscriptionItemServerService } from './services/subscription-item-serv
 import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
 import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
 import { OpenPositionInvoiceScheduler } from './services/open-position-invoice.scheduler';
+import { SubscriptionItemUpdateScheduler } from './services/subscription-item-update.scheduler';
+import { SshExecutorService } from './services/ssh-executor.service';
 
 const authMethod = getAuthenticationMethod();
 
@@ -219,6 +221,8 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
+    SubscriptionItemUpdateScheduler,
+    SshExecutorService,
   ],
   exports: [
     AvailabilityService,

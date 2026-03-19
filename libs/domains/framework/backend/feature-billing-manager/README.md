@@ -32,6 +32,7 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE
 - HETZNER_API_TOKEN
 - OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL (optional; default 86400000 ms = daily)
+- SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL (optional; default 86400000 ms = 24 hours; SSH update scheduler)
 - CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID (for DNS A record creation on provisioned servers)
 - DNS_BASE_DOMAIN (optional; default `spirde.com`) – base domain for FQDN in SSL certificates and CORS
 
@@ -94,8 +95,16 @@ the FQDN (`hostname.DNS_BASE_DOMAIN`) for proper HTTPS and same-origin requests.
 ## Server info
 
 `GET /subscriptions/{subscriptionId}/items/{itemId}/server-info` returns live server info for a provisioned subscription
-item (status, public/private IP, hostname, FQDN). The response also includes `sshPrivateKey` when the item has an SSH
-keypair stored (generated at provisioning); use it for SSH access to the server.
+item (status, public/private IP, hostname, FQDN).
+
+## Subscription item update scheduler
+
+A scheduler runs at a configurable interval (`SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`, default 24 hours), connects to each
+provisioned subscription host via SSH (using the key stored on the subscription item), and runs
+`docker compose up -d --pull=always` in the app directory (`/opt/agent-controller` or `/opt/agent-manager`). This pulls
+the latest images and recreates containers so updates are applied. Failures are logged on the host to
+`/var/log/agent-controller-update.log` or `/var/log/agent-manager-update.log`. See
+`docs/sequence-subscription-item-update.mmd` for the flow.
 
 ## Diagrams
 
@@ -105,6 +114,7 @@ keypair stored (generated at provisioning); use it for SSH access to the server.
 - docs/sequence-invoicing.mmd
 - docs/sequence-open-positions-billing-day.mmd (open positions, user billing day, billing-day invoice scheduler)
 - docs/sequence-backorder-retry.mmd
+- docs/sequence-subscription-item-update.mmd (update scheduler: SSH + docker compose pull)
 - docs/provisioning-architecture.mmd
 - docs/subscription-lifecycle.mmd
 - docs/auth-flow.mmd

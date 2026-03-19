@@ -529,6 +529,17 @@ log "agent-controller provisioning completed successfully at $(date)"
   return Buffer.from(script).toString('base64');
 }
 
+const AGENT_CONTROLLER_UPDATE_LOG = '/var/log/agent-controller-update.log';
+
+/**
+ * Builds the shell command to run on a provisioned agent-controller host to pull latest images
+ * and recreate containers (docker compose up -d --pull=always). Logs to agent-controller-update.log.
+ * Use when executing updates over SSH from the billing scheduler.
+ */
+export function buildAgentControllerUpdateCommand(): string {
+  return `log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a ${AGENT_CONTROLLER_UPDATE_LOG}; }; log "Starting update"; cd /opt/agent-controller && docker compose up -d --pull=always 2>&1 | tee -a ${AGENT_CONTROLLER_UPDATE_LOG} || { log "ERROR: Update failed"; exit 1; }; log "Update completed"`;
+}
+
 export {
   buildAgentControllerCloudInitUserData as buildBillingCloudInitUserData,
   buildAgentControllerCloudInitConfigFromRequest as buildCloudInitConfigFromRequest,

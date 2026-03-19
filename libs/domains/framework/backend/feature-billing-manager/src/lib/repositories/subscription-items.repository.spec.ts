@@ -2,17 +2,34 @@ import { SubscriptionItemsRepository } from './subscription-items.repository';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 
 describe('SubscriptionItemsRepository', () => {
+  const mockGetMany = jest.fn();
+  const mockAndWhere = jest.fn().mockReturnThis();
+  const mockWhere = jest.fn().mockReturnThis();
+  const mockInnerJoinAndSelect = jest.fn().mockReturnThis();
+  const createQueryBuilderReturn = {
+    innerJoinAndSelect: mockInnerJoinAndSelect,
+    where: mockWhere,
+    andWhere: mockAndWhere,
+    getMany: mockGetMany,
+  };
+  const mockCreateQueryBuilder = jest.fn(() => createQueryBuilderReturn);
+
   const mockRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    createQueryBuilder: mockCreateQueryBuilder,
   };
 
-  const repository = new SubscriptionItemsRepository(mockRepository as any);
+  const repository = new SubscriptionItemsRepository(mockRepository as never);
 
   beforeEach(() => {
     jest.resetAllMocks();
+    mockCreateQueryBuilder.mockImplementation(() => createQueryBuilderReturn);
+    mockWhere.mockReturnThis();
+    mockAndWhere.mockReturnThis();
+    mockInnerJoinAndSelect.mockReturnThis();
   });
 
   it('creates subscription item', async () => {
@@ -115,5 +132,30 @@ describe('SubscriptionItemsRepository', () => {
     await expect(repository.updateSshPrivateKey('nonexistent', '-----BEGIN OPENSSH PRIVATE KEY-----')).rejects.toThrow(
       'Subscription item nonexistent not found',
     );
+  });
+
+  it('findProvisionedWithSshKey returns items with active provisioning, provider reference, ssh key, and active subscription', async () => {
+    const items = [
+      {
+        id: 'item-1',
+        subscriptionId: 'sub-1',
+        providerReference: 'srv-1',
+        sshPrivateKey: 'key',
+        subscription: { status: 'active' },
+        serviceType: { provider: 'hetzner' },
+      },
+    ];
+    mockGetMany.mockResolvedValue(items);
+
+    const result = await repository.findProvisionedWithSshKey();
+
+    expect(mockCreateQueryBuilder).toHaveBeenCalledWith('item');
+    expect(mockInnerJoinAndSelect).toHaveBeenCalledWith('item.subscription', 'sub');
+    expect(mockInnerJoinAndSelect).toHaveBeenCalledWith('item.serviceType', 'st');
+    expect(mockWhere).toHaveBeenCalledWith('item.provisioning_status = :status', { status: 'active' });
+    expect(mockAndWhere).toHaveBeenCalledWith('item.provider_reference IS NOT NULL');
+    expect(mockAndWhere).toHaveBeenCalledWith('item.ssh_private_key IS NOT NULL');
+    expect(mockAndWhere).toHaveBeenCalledWith('sub.status = :subStatus', { subStatus: 'active' });
+    expect(result).toEqual(items);
   });
 });

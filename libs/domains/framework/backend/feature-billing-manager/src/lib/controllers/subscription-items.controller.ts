@@ -84,7 +84,6 @@ function toServerInfoResponse(info: {
   metadata?: Record<string, unknown>;
   hostname?: string;
   hostnameFqdn?: string;
-  sshPrivateKey?: string;
 }): ServerInfoResponseDto {
   return {
     name: info.name,
@@ -94,6 +93,5 @@ function toServerInfoResponse(info: {
     metadata: info.metadata,
     hostname: info.hostname,
     hostnameFqdn: info.hostnameFqdn,
-    sshPrivateKey: info.sshPrivateKey,
   };
 }

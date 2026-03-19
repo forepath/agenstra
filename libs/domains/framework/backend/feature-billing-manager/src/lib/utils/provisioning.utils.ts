@@ -20,6 +20,4 @@ export interface ServerInfo {
   hostname?: string;
   /** Full DNS name (e.g. awesome-armadillo-abc12.spirde.com) for display */
   hostnameFqdn?: string;
-  /** SSH private key for the provisioned server (stored encrypted on the subscription item). */
-  sshPrivateKey?: string;
 }

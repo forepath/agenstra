@@ -213,8 +213,6 @@ export interface ServerInfoResponse {
   metadata?: Record<string, unknown>;
   hostname?: string | null;
   hostnameFqdn?: string | null;
-  /** SSH private key for the provisioned server. Omitted when not set. */
-  sshPrivateKey?: string | null;
 }
 
 // Backorders

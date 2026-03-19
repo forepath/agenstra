@@ -208,29 +208,17 @@
                       <span class="visually-hidden" i18n="@@featureOverview-serverRestart">Restart</span>
                     </button>
                   </div>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary"
-                      (click)="openSshKeyModal(item.serverInfo.sshPrivateKey, item.serverInfo.publicIp)"
-                      i18n-title="@@featureOverview-showSshKey"
-                      title="Show SSH private key"
+                  @if (item.service === 'controller') {
+                    <a
+                      href="https://{{ item.serverInfo.hostnameFqdn || item.serverInfo.publicIp }}"
+                      target="_blank"
+                      class="btn btn-sm btn-primary"
+                      [class.disabled]="item.serverInfo.status !== 'running'"
                     >
-                      <i class="bi bi-key"></i>
-                      <span class="visually-hidden" i18n="@@featureOverview-showSshKey">SSH key</span>
-                    </button>
-                    @if (item.service === 'controller') {
-                      <a
-                        href="https://{{ item.serverInfo.hostnameFqdn || item.serverInfo.publicIp }}"
-                        target="_blank"
-                        class="btn btn-sm btn-primary ms-1"
-                        [class.disabled]="item.serverInfo.status !== 'running'"
-                      >
-                        <i class="bi bi-box-arrow-up-right me-2"></i>
-                        <span i18n="@@featureOverview-openConsole">Console</span>
-                      </a>
-                    }
-                  </div>
+                      <i class="bi bi-box-arrow-up-right me-2"></i>
+                      <span i18n="@@featureOverview-openConsole">Console</span>
+                    </a>
+                  }
                 </div>
               </div>
             </div>
@@ -238,59 +226,5 @@
         }
       </div>
     </section>
-  </div>
-</div>
-
-<!-- SSH private key modal -->
-<div
-  class="modal fade"
-  id="sshKeyModal"
-  tabindex="-1"
-  aria-labelledby="sshKeyModalLabel"
-  aria-hidden="true"
-  #sshKeyModal
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="sshKeyModalLabel" i18n="@@featureOverview-sshKeyModalTitle">SSH private key</h5>
-        <button type="button" class="btn-close" (click)="hideSshKeyModal()" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (sshKeyForModal) {
-          @if (sshKeyModalHostname) {
-            <div class="input-group mb-2">
-              <span class="input-group-text" i18n="@@featureOverview-sshKeyModalHost">Host</span>
-              <input
-                type="text"
-                class="form-control font-monospace"
-                [value]="sshKeyModalHostname + ':22'"
-                readonly
-                aria-label="SSH host and port"
-              />
-            </div>
-          }
-          <p class="small text-body-secondary mb-2" i18n="@@featureOverview-sshKeyModalHint">
-            Use this key for SSH access to the server. Copy and save it securely.
-          </p>
-          <textarea
-            class="form-control font-monospace small"
-            rows="12"
-            readonly
-            [value]="sshKeyForModal"
-            aria-label="SSH private key contents"
-          ></textarea>
-        } @else {
-          <p class="mb-0 text-body-secondary" i18n="@@featureOverview-sshKeyNotAvailable">
-            No SSH private key is available for this item.
-          </p>
-        }
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="hideSshKeyModal()" i18n="@@featureOverview-close">
-          Close
-        </button>
-      </div>
-    </div>
   </div>
 </div>

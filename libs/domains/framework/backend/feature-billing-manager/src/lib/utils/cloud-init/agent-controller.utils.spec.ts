@@ -1,4 +1,5 @@
 import {
+  buildAgentControllerUpdateCommand,
   buildBillingCloudInitUserData,
   buildCloudInitConfigFromRequest,
   CloudInitConfig,
@@ -210,6 +211,16 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('PasswordAuthentication no');
       expect(script).toContain('Configuring SSH server');
       expect(script).toContain('service ssh restart');
+    });
+  });
+
+  describe('buildAgentControllerUpdateCommand', () => {
+    it('returns a command that logs to agent-controller-update.log and runs docker compose up -d --pull=always', () => {
+      const cmd = buildAgentControllerUpdateCommand();
+      expect(cmd).toContain('/var/log/agent-controller-update.log');
+      expect(cmd).toContain('cd /opt/agent-controller');
+      expect(cmd).toContain('docker compose up -d --pull=always');
+      expect(cmd).toContain('ERROR: Update failed');
     });
   });
 });

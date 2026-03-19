@@ -12,6 +12,4 @@ export interface ServerInfoResponseDto {
   hostname?: string;
   /** Full DNS name for display (e.g. awesome-armadillo-abc12.spirde.com) */
   hostnameFqdn?: string;
-  /** SSH private key for the provisioned server (use for SSH access). Omitted when not set. */
-  sshPrivateKey?: string;
 }

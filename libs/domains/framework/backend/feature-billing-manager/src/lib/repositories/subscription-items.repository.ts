@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubscriptionItemEntity } from '../entities/subscription-item.entity';
+import { SubscriptionStatus } from '../entities/subscription.entity';
 
 @Injectable()
 export class SubscriptionItemsRepository {
@@ -72,5 +73,21 @@ export class SubscriptionItemsRepository {
     }
     entity.sshPrivateKey = privateKeyPlain;
     return await this.repository.save(entity);
+  }
+
+  /**
+   * Returns provisioned subscription items that have an SSH private key and belong to an active subscription.
+   * Used by the update scheduler to run docker compose pull/up over SSH.
+   */
+  async findProvisionedWithSshKey(): Promise<SubscriptionItemEntity[]> {
+    return await this.repository
+      .createQueryBuilder('item')
+      .innerJoinAndSelect('item.subscription', 'sub')
+      .innerJoinAndSelect('item.serviceType', 'st')
+      .where('item.provisioning_status = :status', { status: 'active' })
+      .andWhere('item.provider_reference IS NOT NULL')
+      .andWhere('item.ssh_private_key IS NOT NULL')
+      .andWhere('sub.status = :subStatus', { subStatus: SubscriptionStatus.ACTIVE })
+      .getMany();
   }
 }

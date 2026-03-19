@@ -1,6 +1,7 @@
 import {
   buildAgentManagerCloudInitConfigFromRequest,
   buildAgentManagerCloudInitUserData,
+  buildAgentManagerUpdateCommand,
   AgentManagerCloudInitConfig,
 } from './agent-manager.utils';
 
@@ -400,6 +401,16 @@ describe('agent-manager.utils', () => {
       expect(script).toContain('PasswordAuthentication no');
       expect(script).toContain('Configuring SSH server');
       expect(script).toContain('service ssh restart');
+    });
+  });
+
+  describe('buildAgentManagerUpdateCommand', () => {
+    it('returns a command that logs to agent-manager-update.log and runs docker compose up -d --pull=always', () => {
+      const cmd = buildAgentManagerUpdateCommand();
+      expect(cmd).toContain('/var/log/agent-manager-update.log');
+      expect(cmd).toContain('cd /opt/agent-manager');
+      expect(cmd).toContain('docker compose up -d --pull=always');
+      expect(cmd).toContain('ERROR: Update failed');
     });
   });
 });

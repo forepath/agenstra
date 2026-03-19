@@ -14,7 +14,7 @@ flowchart TB
         USER_USE --> USER3["🔍 Get Subscription<br/>GET /subscriptions/:id"]
         USER_USE --> USER4["✖ Cancel Subscription<br/>POST /subscriptions/:id/cancel"]
         USER_USE --> USER5["▶ Resume Subscription<br/>POST /subscriptions/:id/resume"]
-        USER_USE --> USER6["🖥️ Get Server Info<br/>GET /subscriptions/:id/items/:itemId/server-info<br/>(status, IPs, hostname, sshPrivateKey)"]
+        USER_USE --> USER6["🖥️ Get Server Info<br/>GET /subscriptions/:id/items/:itemId/server-info<br/>(status, IPs, hostname)"]
     end
 
     subgraph BILLING["🧾 Billing & Invoices"]

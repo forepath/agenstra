@@ -74,13 +74,7 @@ export class SubscriptionItemServerService {
       metadata,
     });
 
-    return {
-      ...info,
-      metadata,
-      hostname,
-      hostnameFqdn,
-      sshPrivateKey: item.sshPrivateKey ?? undefined,
-    };
+    return { ...info, metadata, hostname, hostnameFqdn };
   }
 
   async startServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {
