@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import type { SubscriptionResponse } from '../../types/billing.types';
 import {
   cancelSubscription,
   cancelSubscriptionFailure,
@@ -18,7 +19,6 @@ import {
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
 } from './subscriptions.actions';
-import type { SubscriptionResponse } from '../../types/billing.types';
 
 export interface SubscriptionsState {
   entities: SubscriptionResponse[];
@@ -101,7 +101,7 @@ export const subscriptionsReducer = createReducer(
   })),
   on(createSubscriptionSuccess, (state, { subscription }) => ({
     ...state,
-    entities: [...state.entities, subscription],
+    entities: [subscription, ...state.entities],
     selectedSubscription: subscription,
     creating: false,
     error: null,
