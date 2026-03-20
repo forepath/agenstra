@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 
 @Injectable()
@@ -24,6 +24,24 @@ export class ServicePlansRepository {
 
   async findAll(limit = 10, offset = 0): Promise<ServicePlanEntity[]> {
     return await this.repository.find({ take: limit, skip: offset, order: { createdAt: 'DESC' } });
+  }
+
+  /**
+   * Active plans with service type relation for public catalog (no inactive or config filtering here).
+   */
+  async findActiveWithServiceType(limit: number, offset: number, serviceTypeId?: string): Promise<ServicePlanEntity[]> {
+    const where: FindOptionsWhere<ServicePlanEntity> = { isActive: true };
+    const trimmedTypeId = serviceTypeId?.trim();
+    if (trimmedTypeId) {
+      where.serviceTypeId = trimmedTypeId;
+    }
+    return await this.repository.find({
+      where,
+      relations: ['serviceType'],
+      take: limit,
+      skip: offset,
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async create(dto: Partial<ServicePlanEntity>): Promise<ServicePlanEntity> {

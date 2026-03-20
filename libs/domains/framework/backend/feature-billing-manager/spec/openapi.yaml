@@ -20,6 +20,49 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /public/service-plan-offerings:
+    get:
+      summary: List public service plan offerings (unauthenticated)
+      description: |
+        Returns active plans with fields suitable for external marketing or pricing cards: title, description,
+        billing interval, customer total price, and ordering highlights. Does not include provider configuration,
+        margins, or internal defaults.
+      operationId: listPublicServicePlanOfferings
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+          description: Page size (capped at 100; default 50)
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of results to skip
+        - name: serviceTypeId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter by service type ID
+      responses:
+        '200':
+          description: Array of public plan offerings (active plans only)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicServicePlanOffering'
   /service-types:
     get:
       summary: List service types
@@ -1724,6 +1767,45 @@ components:
         text:
           type: string
           maxLength: 512
+    PublicServicePlanOffering:
+      type: object
+      required:
+        - id
+        - name
+        - serviceTypeId
+        - serviceTypeName
+        - billingIntervalType
+        - billingIntervalValue
+        - totalPrice
+        - orderingHighlights
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        serviceTypeId:
+          type: string
+          format: uuid
+        serviceTypeName:
+          type: string
+          description: Display name of the service type (no config schema)
+        billingIntervalType:
+          type: string
+          enum: [hour, day, month]
+        billingIntervalValue:
+          type: integer
+          minimum: 1
+        totalPrice:
+          type: number
+          description: Customer-facing total price (same formula as internal pricing preview; margin breakdown not exposed)
+        orderingHighlights:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePlanOrderingHighlight'
     CreateServicePlanDto:
       type: object
       required: [serviceTypeId, name, billingIntervalType, billingIntervalValue]

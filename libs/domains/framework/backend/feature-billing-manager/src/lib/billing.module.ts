@@ -7,6 +7,7 @@ import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
 import { InvoicesController } from './controllers/invoices.controller';
 import { PricingController } from './controllers/pricing.controller';
+import { PublicServicePlanOfferingsController } from './controllers/public-service-plan-offerings.controller';
 import { ServicePlansController } from './controllers/service-plans.controller';
 import { ServiceTypesController } from './controllers/service-types.controller';
 import { SubscriptionItemsController } from './controllers/subscription-items.controller';
@@ -172,6 +173,7 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
   ],
   controllers: [
     ServiceTypesController,
+    PublicServicePlanOfferingsController,
     ServicePlansController,
     AvailabilityController,
     SubscriptionItemsController,

@@ -44,11 +44,18 @@ flowchart TB
         AVAIL_USE --> AVAIL5["🗑️ Cancel Backorder<br/>POST /backorders/:id/cancel"]
     end
 
+    subgraph PUB["🌐 Public (no auth)"]
+        direction TB
+        PUB_USE["Use Case: External pricing / marketing cards"]
+        PUB_USE --> PUB1["📋 Plan offerings<br/>GET /public/service-plan-offerings<br/>(active plans: title, description, interval, total price, highlights)"]
+    end
+
     Start([Billing Feature]) --> ADMIN
     Start --> USER
     Start --> BILLING
     Start --> PROFILE
     Start --> AVAIL
+    Start --> PUB
 
     style ADMIN fill:#e6f0ff,stroke:#4a90e2,stroke-width:3px
     style USER fill:#f0e6ff,stroke:#8c42ff,stroke-width:3px
@@ -60,3 +67,5 @@ flowchart TB
     style BILL_USE fill:#d6ffd6,stroke:#4a9e2
     style PROFILE_USE fill:#ffe6d6,stroke:#ff6b42
     style AVAIL_USE fill:#ffe6cc,stroke:#ff8c42
+    style PUB fill:#eef6ee,stroke:#2d6a4f,stroke-width:3px
+    style PUB_USE fill:#d8f0dc,stroke:#2d6a4f

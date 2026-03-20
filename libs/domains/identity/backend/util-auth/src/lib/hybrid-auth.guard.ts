@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
+import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 
 /** Supported authentication methods. */
 export type AuthenticationMethod = 'api-key' | 'keycloak' | 'users';
@@ -41,6 +42,14 @@ export class HybridAuthGuard implements CanActivate {
 
     // Allow health check endpoint without authentication
     if (path === '/api/health') {
+      return true;
+    }
+
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
       return true;
     }
 
