@@ -31,6 +31,7 @@ describe('ServicePlansFacade', () => {
     minCommitmentDays: 0,
     noticeDays: 0,
     providerConfigDefaults: {},
+    orderingHighlights: [],
     isActive: true,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',

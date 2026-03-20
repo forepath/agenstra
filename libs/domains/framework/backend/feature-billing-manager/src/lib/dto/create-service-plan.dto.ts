@@ -1,4 +1,7 @@
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -9,8 +12,10 @@ import {
   IsString,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { BillingIntervalType } from '../entities/service-plan.entity';
+import { ServicePlanOrderingHighlightDto } from './service-plan-ordering-highlight.dto';
 
 export class CreateServicePlanDto {
   @IsNotEmpty({ message: 'Service type ID is required' })
@@ -69,6 +74,13 @@ export class CreateServicePlanDto {
   @IsOptional()
   @IsObject({ message: 'Provider config defaults must be an object' })
   providerConfigDefaults?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsArray({ message: 'Ordering highlights must be an array' })
+  @ArrayMaxSize(50, { message: 'At most 50 ordering highlights are allowed' })
+  @ValidateNested({ each: true })
+  @Type(() => ServicePlanOrderingHighlightDto)
+  orderingHighlights?: ServicePlanOrderingHighlightDto[];
 
   @IsOptional()
   @IsBoolean({ message: 'isActive must be a boolean' })

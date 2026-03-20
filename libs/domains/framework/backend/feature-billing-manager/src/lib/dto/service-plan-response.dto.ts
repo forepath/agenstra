@@ -1,4 +1,4 @@
-import { BillingIntervalType } from '../entities/service-plan.entity';
+import { BillingIntervalType, ServicePlanOrderingHighlight } from '../entities/service-plan.entity';
 
 export class ServicePlanResponseDto {
   id!: string;
@@ -15,6 +15,7 @@ export class ServicePlanResponseDto {
   marginPercent?: string;
   marginFixed?: string;
   providerConfigDefaults!: Record<string, unknown>;
+  orderingHighlights!: ServicePlanOrderingHighlight[];
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

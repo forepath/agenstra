@@ -16,6 +16,7 @@ export * from './lib/dto/backorder-retry.dto';
 export * from './lib/dto/cancel-subscription.dto';
 export * from './lib/dto/create-invoice.dto';
 export * from './lib/dto/create-service-plan.dto';
+export * from './lib/dto/service-plan-ordering-highlight.dto';
 export * from './lib/dto/create-service-type.dto';
 export * from './lib/dto/create-subscription.dto';
 export * from './lib/dto/create-usage-record.dto';

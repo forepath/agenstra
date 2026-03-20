@@ -274,7 +274,7 @@
   #orderPlanModal
   (hidden.bs.modal)="resetOrderRequestedConfig()"
 >
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="orderPlanModalLabel" i18n="@@featureSubscriptions-orderPlan">Order plan</h5>
@@ -313,6 +313,21 @@
                         style="white-space: pre-wrap"
                         [innerHTML]="selectedPlan.description"
                       ></div>
+                    }
+                    @if (selectedPlan.orderingHighlights?.length) {
+                      <div
+                        class="mt-3 text-body-secondary small p-3 bg-body border rounded"
+                        style="white-space: pre-wrap"
+                      >
+                        <ul class="list-unstyled d-flex flex-column gap-2 mt-0 mb-0 small">
+                          @for (line of selectedPlan.orderingHighlights; track $index) {
+                            <li class="d-flex gap-3 align-items-center justify-content-start lh-1">
+                              <i class="fs-7 p-2 bg-body-tertiary border rounded" [class]="line.icon"></i>
+                              <span>{{ line.text }}</span>
+                            </li>
+                          }
+                        </ul>
+                      </div>
                     }
                     <div class="mt-3 p-3 bg-body border rounded">
                       <div class="text-body-secondary small">

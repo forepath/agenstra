@@ -1,5 +1,20 @@
-import { IsBoolean, IsEnum, IsInt, IsNumberString, IsObject, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNumberString,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { BillingIntervalType } from '../entities/service-plan.entity';
+import { ServicePlanOrderingHighlightDto } from './service-plan-ordering-highlight.dto';
 
 export class UpdateServicePlanDto {
   @IsOptional()
@@ -54,6 +69,13 @@ export class UpdateServicePlanDto {
   @IsOptional()
   @IsObject({ message: 'Provider config defaults must be an object' })
   providerConfigDefaults?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsArray({ message: 'Ordering highlights must be an array' })
+  @ArrayMaxSize(50, { message: 'At most 50 ordering highlights are allowed' })
+  @ValidateNested({ each: true })
+  @Type(() => ServicePlanOrderingHighlightDto)
+  orderingHighlights?: ServicePlanOrderingHighlightDto[];
 
   @IsOptional()
   @IsBoolean({ message: 'isActive must be a boolean' })

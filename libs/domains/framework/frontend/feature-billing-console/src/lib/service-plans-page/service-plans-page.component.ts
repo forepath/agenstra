@@ -12,6 +12,7 @@ import {
   type CreateServicePlanDto,
   type ProviderDetail,
   type ServerType,
+  type ServicePlanOrderingHighlight,
   type ServicePlanResponse,
   type ServiceTypeResponse,
   type UpdateServicePlanDto,
@@ -225,6 +226,49 @@ export class ServicePlansPageComponent implements OnInit {
     }
   }
 
+  addOrderingHighlight(form: 'create' | 'edit'): void {
+    const row: ServicePlanOrderingHighlight = { icon: '', text: '' };
+    if (form === 'create') {
+      this.createForm.orderingHighlights = [...(this.createForm.orderingHighlights ?? []), row];
+    } else {
+      this.editForm.orderingHighlights = [...(this.editForm.orderingHighlights ?? []), row];
+    }
+  }
+
+  removeOrderingHighlight(form: 'create' | 'edit', index: number): void {
+    if (form === 'create') {
+      const list = [...(this.createForm.orderingHighlights ?? [])];
+      list.splice(index, 1);
+      this.createForm.orderingHighlights = list;
+    } else {
+      const list = [...(this.editForm.orderingHighlights ?? [])];
+      list.splice(index, 1);
+      this.editForm.orderingHighlights = list;
+    }
+  }
+
+  moveOrderingHighlight(form: 'create' | 'edit', index: number, direction: -1 | 1): void {
+    const formRef = form === 'create' ? this.createForm : this.editForm;
+    const list = [...(formRef.orderingHighlights ?? [])];
+    const next = index + direction;
+    if (next < 0 || next >= list.length) return;
+    [list[index], list[next]] = [list[next], list[index]];
+    formRef.orderingHighlights = list;
+  }
+
+  private sanitizeOrderingHighlights(
+    highlights: ServicePlanOrderingHighlight[] | undefined,
+  ): ServicePlanOrderingHighlight[] {
+    if (!highlights?.length) return [];
+    return highlights
+      .map((h) => ({ icon: h.icon?.trim() ?? '', text: h.text?.trim() ?? '' }))
+      .filter((h) => h.icon.length > 0 && h.text.length > 0);
+  }
+
+  orderingHighlightCount(plan: ServicePlanResponse): number {
+    return plan.orderingHighlights?.length ?? 0;
+  }
+
   formatServerTypeOption(st: ServerType): string {
     const name = st.name ?? st.id ?? '';
     const cores = st.cores ?? 0;
@@ -288,6 +332,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginPercent: undefined,
       marginFixed: undefined,
       providerConfigDefaults: {},
+      orderingHighlights: [],
       isActive: true,
     };
   }
@@ -307,6 +352,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginPercent: undefined,
       marginFixed: undefined,
       providerConfigDefaults: {},
+      orderingHighlights: [],
       isActive: true,
     };
   }
@@ -378,6 +424,9 @@ export class ServicePlansPageComponent implements OnInit {
         plan.providerConfigDefaults && Object.keys(plan.providerConfigDefaults).length > 0
           ? { ...plan.providerConfigDefaults }
           : {},
+      orderingHighlights: plan.orderingHighlights?.length
+        ? plan.orderingHighlights.map((h) => ({ icon: h.icon, text: h.text }))
+        : [],
       isActive: plan.isActive,
     };
     this.typesAndProviders$.pipe(take(1)).subscribe((data) => {
@@ -399,6 +448,7 @@ export class ServicePlansPageComponent implements OnInit {
       this.createForm.providerConfigDefaults,
       this.createForm.serviceTypeId,
     );
+    const orderingHighlights = this.sanitizeOrderingHighlights(this.createForm.orderingHighlights);
     this.plansFacade.createServicePlan({
       serviceTypeId: this.createForm.serviceTypeId.trim(),
       name: this.createForm.name.trim(),
@@ -414,6 +464,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginPercent: this.createForm.marginPercent?.trim() || undefined,
       marginFixed: this.createForm.marginFixed?.trim() || undefined,
       providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
+      orderingHighlights: orderingHighlights.length > 0 ? orderingHighlights : undefined,
       isActive: this.createForm.isActive ?? true,
     });
   }
@@ -425,6 +476,7 @@ export class ServicePlansPageComponent implements OnInit {
       this.editForm.providerConfigDefaults,
       serviceTypeId,
     );
+    const orderingHighlights = this.sanitizeOrderingHighlights(this.editForm.orderingHighlights);
     this.plansFacade.updateServicePlan(this.editForm.id, {
       name: this.editForm.name,
       description: this.editForm.description,
@@ -438,6 +490,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginPercent: this.editForm.marginPercent?.trim() || undefined,
       marginFixed: this.editForm.marginFixed?.trim() || undefined,
       providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
+      orderingHighlights,
       isActive: this.editForm.isActive,
     });
   }

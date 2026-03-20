@@ -9,6 +9,12 @@ import {
 } from 'typeorm';
 import { ServiceTypeEntity } from './service-type.entity';
 
+/** Ordered icon + text line for catalog / ordering UIs (icon is an opaque client-defined key). */
+export interface ServicePlanOrderingHighlight {
+  icon: string;
+  text: string;
+}
+
 export enum BillingIntervalType {
   HOUR = 'hour',
   DAY = 'day',
@@ -62,6 +68,9 @@ export class ServicePlanEntity {
 
   @Column({ type: 'jsonb', name: 'provider_config_defaults', default: () => "'{}'::jsonb" })
   providerConfigDefaults!: Record<string, unknown>;
+
+  @Column({ type: 'jsonb', name: 'ordering_highlights', default: () => "'[]'::jsonb" })
+  orderingHighlights!: ServicePlanOrderingHighlight[];
 
   @Column({ type: 'boolean', name: 'is_active', default: true })
   isActive!: boolean;

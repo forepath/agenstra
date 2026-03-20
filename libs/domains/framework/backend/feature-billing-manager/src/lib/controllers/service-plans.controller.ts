@@ -59,6 +59,7 @@ export class ServicePlansController {
       marginPercent: dto.marginPercent,
       marginFixed: dto.marginFixed,
       providerConfigDefaults: dto.providerConfigDefaults ?? {},
+      orderingHighlights: dto.orderingHighlights ?? [],
       isActive: dto.isActive ?? true,
     });
     return this.mapToResponse(row);
@@ -84,6 +85,7 @@ export class ServicePlansController {
       marginPercent: dto.marginPercent,
       marginFixed: dto.marginFixed,
       providerConfigDefaults: dto.providerConfigDefaults,
+      ...(dto.orderingHighlights !== undefined ? { orderingHighlights: dto.orderingHighlights } : {}),
       isActive: dto.isActive,
     });
     return this.mapToResponse(row);
@@ -113,6 +115,7 @@ export class ServicePlansController {
       marginPercent: row.marginPercent,
       marginFixed: row.marginFixed,
       providerConfigDefaults: row.providerConfigDefaults ?? {},
+      orderingHighlights: row.orderingHighlights ?? [],
       isActive: row.isActive,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

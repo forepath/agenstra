@@ -136,13 +136,6 @@
                   } @else {
                     <span i18n="@@featureOverview-agenstraController"> - Controller</span>
                   }
-                  @if (item.serverInfo.metadata!['provider']) {
-                    <span class="d-block small">
-                      {{ getProviderName(item.serverInfo.metadata!['provider']) }}
-                      <span> · </span>
-                      {{ item.serverInfo.metadata!['datacenter'] || item.serverInfo.metadata!['location'] }}
-                    </span>
-                  }
                 </div>
                 <span
                   class="badge status-badge d-flex align-items-center justify-content-center"
@@ -163,17 +156,33 @@
                     <i class="bi bi-arrow-right small"></i>
                   </a>
                 </p>
-                <p class="mb-0 small" i18n="@@featureOverview-publicIP">Public IP: {{ item.serverInfo.publicIp }}</p>
-                @if (item.serverInfo.hostnameFqdn) {
-                  <p class="mb-0 small" i18n="@@featureOverview-hostname">
-                    Hostname: {{ item.serverInfo.hostnameFqdn }}
-                  </p>
-                }
-                @if (item.serverInfo.privateIp) {
-                  <p class="mb-0 small" i18n="@@featureOverview-privateIP">
-                    Private IP: {{ item.serverInfo.privateIp }}
-                  </p>
-                }
+                <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                  @if (item.serverInfo.metadata!['provider']) {
+                    <span class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded d-block">
+                      <i class="bi bi-hdd-rack me-1"></i>
+                      <span>{{ getProviderName(item.serverInfo.metadata!['provider']) }}</span>
+                      <span class="info-badge-text bg-body-secondary px-1 small ms-1">{{
+                        item.serverInfo.metadata!['datacenter'] || item.serverInfo.metadata!['location']
+                      }}</span>
+                    </span>
+                  }
+                  @if (item.serverInfo.hostnameFqdn) {
+                    <span class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
+                      <i class="bi bi-globe me-1"></i>
+                      {{ item.serverInfo.hostnameFqdn }}
+                    </span>
+                  }
+                  <span class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
+                    <i class="bi bi-ethernet me-1"></i>
+                    {{ item.serverInfo.publicIp }}
+                  </span>
+                  @if (item.serverInfo.privateIp) {
+                    <span class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
+                      <i class="bi bi-ethernet me-1"></i>
+                      {{ item.serverInfo.privateIp }}
+                    </span>
+                  }
+                </div>
                 <div class="d-flex justify-content-between align-items-center mt-3">
                   <div class="btn-group btn-group-sm" role="group" aria-label="Server actions">
                     @if (item.serverInfo.status === 'off') {

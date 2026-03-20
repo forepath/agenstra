@@ -1711,6 +1711,19 @@ components:
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    ServicePlanOrderingHighlight:
+      type: object
+      required: [icon, text]
+      description: |
+        One ordered line for catalog or checkout UI. `icon` is an opaque string (e.g. icon-set key or URL)
+        interpreted by the client; `text` is human-readable copy shown beside the icon.
+      properties:
+        icon:
+          type: string
+          maxLength: 128
+        text:
+          type: string
+          maxLength: 512
     CreateServicePlanDto:
       type: object
       required: [serviceTypeId, name, billingIntervalType, billingIntervalValue]
@@ -1750,6 +1763,12 @@ components:
           description: Decimal string
         providerConfigDefaults:
           type: object
+        orderingHighlights:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/ServicePlanOrderingHighlight'
+          description: Ordered icon/text lines shown with the plan in addition to description.
         isActive:
           type: boolean
     UpdateServicePlanDto:
@@ -1767,6 +1786,11 @@ components:
         marginPercent: { type: string }
         marginFixed: { type: string }
         providerConfigDefaults: { type: object }
+        orderingHighlights:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/ServicePlanOrderingHighlight'
         isActive: { type: boolean }
     ServicePlanResponse:
       type: object
@@ -1785,6 +1809,11 @@ components:
         marginPercent: { type: string, nullable: true }
         marginFixed: { type: string, nullable: true }
         providerConfigDefaults: { type: object }
+        orderingHighlights:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePlanOrderingHighlight'
+          description: Ordered icon/text lines for display alongside description.
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }

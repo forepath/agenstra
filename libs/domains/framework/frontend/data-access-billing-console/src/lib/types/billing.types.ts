@@ -59,6 +59,11 @@ export interface UpdateServiceTypeDto {
 }
 
 // Service Plans
+export interface ServicePlanOrderingHighlight {
+  icon: string;
+  text: string;
+}
+
 export interface ServicePlanResponse {
   id: string;
   serviceTypeId: string;
@@ -74,6 +79,7 @@ export interface ServicePlanResponse {
   marginPercent?: string | null;
   marginFixed?: string | null;
   providerConfigDefaults: Record<string, unknown>;
+  orderingHighlights: ServicePlanOrderingHighlight[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -93,6 +99,7 @@ export interface CreateServicePlanDto {
   marginPercent?: string;
   marginFixed?: string;
   providerConfigDefaults?: Record<string, unknown>;
+  orderingHighlights?: ServicePlanOrderingHighlight[];
   isActive?: boolean;
 }
 
@@ -109,6 +116,7 @@ export interface UpdateServicePlanDto {
   marginPercent?: string;
   marginFixed?: string;
   providerConfigDefaults?: Record<string, unknown>;
+  orderingHighlights?: ServicePlanOrderingHighlight[];
   isActive?: boolean;
 }
 

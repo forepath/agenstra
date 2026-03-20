@@ -36,6 +36,7 @@
               <th scope="col" i18n="@@featureServicePlans-serviceType">Service type</th>
               <th scope="col" i18n="@@featureServicePlans-billingInterval">Billing interval</th>
               <th scope="col" i18n="@@featureServicePlans-price">Price</th>
+              <th scope="col" i18n="@@featureServicePlans-orderingHighlights">Highlights</th>
               <th scope="col" i18n="@@featureServicePlans-active">Active</th>
               <th scope="col" i18n="@@featureServicePlans-actions">Actions</th>
             </tr>
@@ -53,6 +54,9 @@
                 </td>
                 <td>{{ billingIntervalLabel(plan) }}</td>
                 <td>{{ formatPlanPrice(plan) }}</td>
+                <td>
+                  <span class="badge bg-secondary">{{ orderingHighlightCount(plan) }}</span>
+                </td>
                 <td>
                   @if (plan.isActive) {
                     <span class="badge bg-success" i18n="@@featureServicePlans-yes">Yes</span>
@@ -83,7 +87,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="text-body-secondary" i18n="@@featureServicePlans-empty">No service plans.</td>
+                <td colspan="7" class="text-body-secondary" i18n="@@featureServicePlans-empty">No service plans.</td>
               </tr>
             }
           </tbody>
@@ -162,6 +166,98 @@
                 rows="3"
                 [disabled]="(creating$ | async) === true"
               ></textarea>
+            </div>
+            <div class="mb-3 border rounded p-3 bg-body-secondary">
+              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <label class="form-label mb-0" i18n="@@featureServicePlans-orderingHighlights"
+                  >Ordering highlights</label
+                >
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  (click)="addOrderingHighlight('create')"
+                  [disabled]="(creating$ | async) === true"
+                  i18n="@@featureServicePlans-addHighlight"
+                >
+                  Add line
+                </button>
+              </div>
+              <p class="text-body-secondary small mb-3" i18n="@@featureServicePlans-orderingHighlightsHint">
+                Optional icon key and label text for the order page (in addition to the description).
+              </p>
+              @for (row of createForm.orderingHighlights!; track $index; let i = $index) {
+                <div class="row g-2 mb-2 align-items-end">
+                  <div class="col-12 col-md-3">
+                    <label
+                      class="form-label small mb-0"
+                      for="createHighlightIcon{{ i }}"
+                      i18n="@@featureServicePlans-highlightIcon"
+                      >Icon</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [id]="'createHighlightIcon' + i"
+                      [name]="'createHighlightIcon' + i"
+                      [(ngModel)]="row.icon"
+                      [disabled]="(creating$ | async) === true"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label
+                      class="form-label small mb-0"
+                      for="createHighlightText{{ i }}"
+                      i18n="@@featureServicePlans-highlightText"
+                      >Text</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [id]="'createHighlightText' + i"
+                      [name]="'createHighlightText' + i"
+                      [(ngModel)]="row.text"
+                      [disabled]="(creating$ | async) === true"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="moveOrderingHighlight('create', i, -1)"
+                      [disabled]="i === 0 || (creating$ | async) === true"
+                      title="Move up"
+                      i18n-title="@@featureServicePlans-moveHighlightUp"
+                      aria-label="Move up"
+                      i18n-aria-label="@@featureServicePlans-moveHighlightUp"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="moveOrderingHighlight('create', i, 1)"
+                      [disabled]="i === createForm.orderingHighlights!.length - 1 || (creating$ | async) === true"
+                      title="Move down"
+                      i18n-title="@@featureServicePlans-moveHighlightDown"
+                      aria-label="Move down"
+                      i18n-aria-label="@@featureServicePlans-moveHighlightDown"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="removeOrderingHighlight('create', i)"
+                      [disabled]="(creating$ | async) === true"
+                      i18n="@@featureServicePlans-removeHighlight"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              }
             </div>
             <div class="row">
               <div class="col-md-6 mb-3">
@@ -463,6 +559,98 @@
                 rows="3"
                 [disabled]="(updating$ | async) === true"
               ></textarea>
+            </div>
+            <div class="mb-3 border rounded p-3 bg-body-secondary">
+              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <label class="form-label mb-0" i18n="@@featureServicePlans-orderingHighlights"
+                  >Ordering highlights</label
+                >
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  (click)="addOrderingHighlight('edit')"
+                  [disabled]="(updating$ | async) === true"
+                  i18n="@@featureServicePlans-addHighlight"
+                >
+                  Add line
+                </button>
+              </div>
+              <p class="text-body-secondary small mb-3" i18n="@@featureServicePlans-orderingHighlightsHint">
+                Optional icon key and label text for the order page (in addition to the description).
+              </p>
+              @for (row of editForm.orderingHighlights!; track $index; let i = $index) {
+                <div class="row g-2 mb-2 align-items-end">
+                  <div class="col-12 col-md-3">
+                    <label
+                      class="form-label small mb-0"
+                      for="editHighlightIcon{{ i }}"
+                      i18n="@@featureServicePlans-highlightIcon"
+                      >Icon</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [id]="'editHighlightIcon' + i"
+                      [name]="'editHighlightIcon' + i"
+                      [(ngModel)]="row.icon"
+                      [disabled]="(updating$ | async) === true"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label
+                      class="form-label small mb-0"
+                      for="editHighlightText{{ i }}"
+                      i18n="@@featureServicePlans-highlightText"
+                      >Text</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [id]="'editHighlightText' + i"
+                      [name]="'editHighlightText' + i"
+                      [(ngModel)]="row.text"
+                      [disabled]="(updating$ | async) === true"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="moveOrderingHighlight('edit', i, -1)"
+                      [disabled]="i === 0 || (updating$ | async) === true"
+                      title="Move up"
+                      i18n-title="@@featureServicePlans-moveHighlightUp"
+                      aria-label="Move up"
+                      i18n-aria-label="@@featureServicePlans-moveHighlightUp"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="moveOrderingHighlight('edit', i, 1)"
+                      [disabled]="i === editForm.orderingHighlights!.length - 1 || (updating$ | async) === true"
+                      title="Move down"
+                      i18n-title="@@featureServicePlans-moveHighlightDown"
+                      aria-label="Move down"
+                      i18n-aria-label="@@featureServicePlans-moveHighlightDown"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="removeOrderingHighlight('edit', i)"
+                      [disabled]="(updating$ | async) === true"
+                      i18n="@@featureServicePlans-removeHighlight"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              }
             </div>
             <div class="row">
               <div class="col-md-6 mb-3">
