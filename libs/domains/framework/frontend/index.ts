@@ -8,3 +8,4 @@ export * from './util-cookie-consent/src';
 export * from './util-docs-parser/src';
 export * from './data-access-billing-console/src';
 export * from './feature-billing-console/src';
+export * from './data-access-portal/src';

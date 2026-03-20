@@ -37,6 +37,9 @@
       "@forepath/framework/frontend/data-access-billing-console": [
         "libs/domains/framework/frontend/data-access-billing-console/src/index.ts"
       ],
+      "@forepath/framework/frontend/data-access-portal": [
+        "libs/domains/framework/frontend/data-access-portal/src/index.ts"
+      ],
       "@forepath/framework/frontend/feature-agent-console": [
         "libs/domains/framework/frontend/feature-agent-console/src/index.ts"
       ],

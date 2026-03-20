@@ -16,6 +16,7 @@ describe('Environment interfaces', () => {
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
         },
         authentication: {
           type: 'api-key',
@@ -52,6 +53,7 @@ describe('Environment interfaces', () => {
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
         },
         authentication: {
           type: 'api-key',
@@ -89,6 +91,7 @@ describe('Environment interfaces', () => {
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
         },
         authentication: {
           type: 'api-key',
@@ -127,6 +130,7 @@ describe('Environment interfaces', () => {
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
         },
         authentication: {
           type: 'api-key',

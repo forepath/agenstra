@@ -6,12 +6,16 @@ import {
   ElementRef,
   HostListener,
   inject,
+  LOCALE_ID,
   OnInit,
   signal,
   ViewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { ServicePlansFacade } from '@forepath/framework/frontend/data-access-portal';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
 
 @Component({
   selector: 'framework-portal-pricing',
@@ -24,13 +28,29 @@ import { RouterModule } from '@angular/router';
 export class PortalPricingComponent implements OnInit, AfterViewInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly servicePlansFacade = inject(ServicePlansFacade);
+  private readonly locale = inject(LOCALE_ID);
 
   @ViewChild('pricingCarousel') pricingCarousel!: ElementRef<HTMLDivElement>;
   @ViewChild('enterpriseCard') enterpriseCard!: ElementRef<HTMLDivElement>;
 
   isLastCardVisible = signal<boolean>(true);
 
+  readonly cheapestOffering = toSignal(this.servicePlansFacade.getCheapestServicePlanOffering$(), {
+    initialValue: null,
+  });
+
+  readonly cheapestOfferingLoading = toSignal(this.servicePlansFacade.getCheapestServicePlanOfferingLoading$(), {
+    initialValue: false,
+  });
+
+  readonly billingBaseUrl = this.environment.production
+    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+
   ngOnInit(): void {
+    this.servicePlansFacade.loadCheapestServicePlanOffering();
     this.titleService.setTitle(
       $localize`:@@featurePortalPricing-metaTitle:Agenstra Pricing - Flexible Plans for Every Team`,
     );

@@ -8,6 +8,7 @@ export const environment: Environment = {
   },
   billing: {
     restApiUrl: 'http://localhost:3200/api',
+    frontendUrl: 'http://localhost:4500',
   },
   authentication: {
     /*

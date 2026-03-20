@@ -163,7 +163,7 @@
                 >
                 <div class="card border-0 rounded-2 card-capability card-capability-primary p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-2" i18n="@@featurePortalPricing-businessPrice">
-                    $499/mo
+                    €499/mo
                   </div>
                   <p class="text-muted small mb-0" i18n="@@featurePortalPricing-businessLicense">
                     BUSL-1.1 with Additional Use Grant
@@ -316,18 +316,27 @@
                 <div class="card border-0 rounded-2 card-capability card-capability-primary p-3 mb-3">
                   <div class="mb-2" i18n="@@featurePortalPricing-cloudStartingAt">Starting at</div>
                   <div class="h3 fw-bold">
-                    $99<span class="fs-6 text-muted" i18n="@@featurePortalPricing-cloudPriceUnit">/month</span>
+                    @if (cheapestOfferingLoading()) {
+                      <span class="text-muted" aria-hidden="true">…</span>
+                    } @else {
+                      @if (cheapestOffering(); as cloudPlan) {
+                        €{{ cloudPlan.totalPrice | number: '1.0-2'
+                        }}<span class="fs-6 text-muted" i18n="@@featurePortalPricing-cloudPriceUnit">/month</span>
+                      } @else {
+                        <span class="text-muted" i18n="@@featurePortalPricing-cloudPriceUnavailable">—</span>
+                      }
+                    }
                   </div>
                 </div>
                 <div class="d-grid">
                   <a
-                    href="mailto:hi@agenstra.com"
+                    [href]="billingBaseUrl"
                     class="btn btn-primary py-2 px-4"
                     target="_blank"
                     rel="noopener"
-                    i18n="@@featurePortalPricing-bookDemo"
+                    i18n="@@featurePortalPricing-getStartedNow"
                   >
-                    Book a Demo
+                    Get Started Now
                   </a>
                 </div>
               </div>

@@ -1,4 +1,13 @@
 import { Route } from '@angular/router';
+import {
+  ServicePlansFacade,
+  loadCheapestServicePlanOffering$,
+  loadServicePlans$,
+  loadServicePlansBatch$,
+  servicePlansReducer,
+} from '@forepath/framework/frontend/data-access-portal';
+import { provideEffects } from '@ngrx/effects';
+import { provideState } from '@ngrx/store';
 import { PortalAgentCtxComponent } from './agentctx/agentctx.component';
 import { PortalContainerComponent } from './container/container.component';
 import { PortalDesktopComponent } from './desktop/desktop.component';
@@ -11,6 +20,15 @@ export const portalRoutes: Route[] = [
   {
     path: '',
     component: PortalContainerComponent,
+    providers: [
+      ServicePlansFacade,
+      provideState('servicePlans', servicePlansReducer),
+      provideEffects({
+        loadServicePlans$,
+        loadServicePlansBatch$,
+        loadCheapestServicePlanOffering$,
+      }),
+    ],
     children: [
       {
         path: '',

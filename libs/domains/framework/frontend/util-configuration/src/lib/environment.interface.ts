@@ -7,9 +7,9 @@ import type {
 
 // Re-export auth config types from identity for backward compatibility
 export type {
+  ApiKeyAuthenticationConfig,
   AuthenticationConfig,
   KeycloakAuthenticationConfig,
-  ApiKeyAuthenticationConfig,
   UsersAuthenticationConfig,
 };
 
@@ -21,6 +21,7 @@ export interface Environment {
   };
   billing: {
     restApiUrl: string;
+    frontendUrl: string;
   };
   authentication: AuthenticationConfig;
   chatModelOptions: { [provider: string]: Record<string, string> };
