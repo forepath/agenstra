@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -18,10 +19,12 @@ describe('PublicServicePlanOfferingsController', () => {
 
   let controller: PublicServicePlanOfferingsController;
   let findActiveWithServiceType: jest.Mock;
+  let findAllActiveWithServiceType: jest.Mock;
   let calculate: jest.Mock;
 
   beforeEach(async () => {
     findActiveWithServiceType = jest.fn().mockResolvedValue([planRow]);
+    findAllActiveWithServiceType = jest.fn().mockResolvedValue([planRow]);
     calculate = jest.fn().mockReturnValue({
       basePrice: 10,
       marginPercent: 10,
@@ -32,7 +35,10 @@ describe('PublicServicePlanOfferingsController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [PublicServicePlanOfferingsController],
       providers: [
-        { provide: ServicePlansRepository, useValue: { findActiveWithServiceType } },
+        {
+          provide: ServicePlansRepository,
+          useValue: { findActiveWithServiceType, findAllActiveWithServiceType },
+        },
         { provide: PricingService, useValue: { calculate } },
       ],
     }).compile();
@@ -86,5 +92,56 @@ describe('PublicServicePlanOfferingsController', () => {
     calculate.mockReturnValue({ totalPrice: 5, basePrice: 5, marginPercent: 0, marginFixed: 0 });
     const result = await controller.list(10, 0, undefined);
     expect(result[0].serviceTypeName).toBe('');
+  });
+
+  describe('getCheapest', () => {
+    const planCheap = {
+      ...planRow,
+      id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
+      name: 'Basic',
+    } as ServicePlanEntity;
+    const planExpensive = {
+      ...planRow,
+      id: 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb',
+      name: 'Enterprise',
+    } as ServicePlanEntity;
+
+    it('returns the plan with the lowest totalPrice', async () => {
+      findAllActiveWithServiceType.mockResolvedValue([planExpensive, planCheap]);
+      calculate.mockImplementation((row: ServicePlanEntity) => ({
+        basePrice: 0,
+        marginPercent: 0,
+        marginFixed: 0,
+        totalPrice: row.name === 'Basic' ? 9.99 : 99,
+      }));
+
+      const result = await controller.getCheapest(undefined);
+
+      expect(findAllActiveWithServiceType).toHaveBeenCalledWith(undefined);
+      expect(result.id).toBe(planCheap.id);
+      expect(result.totalPrice).toBe(9.99);
+    });
+
+    it('breaks ties with lexicographically smaller plan id', async () => {
+      const planA = { ...planRow, id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', name: 'A' } as ServicePlanEntity;
+      const planB = { ...planRow, id: 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb', name: 'B' } as ServicePlanEntity;
+      findAllActiveWithServiceType.mockResolvedValue([planB, planA]);
+      calculate.mockReturnValue({ basePrice: 1, marginPercent: 0, marginFixed: 0, totalPrice: 10 });
+
+      const result = await controller.getCheapest(undefined);
+
+      expect(result.id).toBe(planA.id);
+    });
+
+    it('forwards serviceTypeId to findAllActiveWithServiceType', async () => {
+      findAllActiveWithServiceType.mockResolvedValue([planRow]);
+      await controller.getCheapest('22222222-2222-4222-8222-222222222222');
+      expect(findAllActiveWithServiceType).toHaveBeenCalledWith('22222222-2222-4222-8222-222222222222');
+    });
+
+    it('throws NotFoundException when no active plans', async () => {
+      findAllActiveWithServiceType.mockResolvedValue([]);
+      await expect(controller.getCheapest(undefined)).rejects.toBeInstanceOf(NotFoundException);
+    });
   });
 });

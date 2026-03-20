@@ -1,4 +1,4 @@
-import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, NotFoundException, ParseIntPipe, Query } from '@nestjs/common';
 import { Public } from '@forepath/identity/backend';
 import { PublicServicePlanOfferingDto } from '../dto/public-service-plan-offering.dto';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -15,6 +15,28 @@ export class PublicServicePlanOfferingsController {
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly pricingService: PricingService,
   ) {}
+
+  /**
+   * Single active offering with the lowest customer total price (for "from …" copy). Tie-break: lexicographic plan id.
+   */
+  @Get('cheapest')
+  async getCheapest(@Query('serviceTypeId') serviceTypeId?: string): Promise<PublicServicePlanOfferingDto> {
+    const rows = await this.servicePlansRepository.findAllActiveWithServiceType(serviceTypeId);
+    if (rows.length === 0) {
+      throw new NotFoundException('No active service plan offerings');
+    }
+    let bestRow = rows[0];
+    let bestPrice = this.pricingService.calculate(bestRow).totalPrice;
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const price = this.pricingService.calculate(row).totalPrice;
+      if (price < bestPrice || (price === bestPrice && row.id < bestRow.id)) {
+        bestPrice = price;
+        bestRow = row;
+      }
+    }
+    return this.mapToOffering(bestRow);
+  }
 
   @Get()
   async list(

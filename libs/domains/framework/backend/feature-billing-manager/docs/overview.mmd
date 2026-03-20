@@ -48,6 +48,7 @@ flowchart TB
         direction TB
         PUB_USE["Use Case: External pricing / marketing cards"]
         PUB_USE --> PUB1["📋 Plan offerings<br/>GET /public/service-plan-offerings<br/>(active plans: title, description, interval, total price, highlights)"]
+        PUB_USE --> PUB2["💶 Cheapest offering<br/>GET /public/service-plan-offerings/cheapest<br/>(lowest total price, for &quot;from …&quot;)"]
     end
 
     Start([Billing Feature]) --> ADMIN

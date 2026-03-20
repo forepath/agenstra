@@ -44,6 +44,22 @@ export class ServicePlansRepository {
     });
   }
 
+  /**
+   * All active plans with service type (no pagination). Used to pick lowest customer price in application code.
+   */
+  async findAllActiveWithServiceType(serviceTypeId?: string): Promise<ServicePlanEntity[]> {
+    const where: FindOptionsWhere<ServicePlanEntity> = { isActive: true };
+    const trimmedTypeId = serviceTypeId?.trim();
+    if (trimmedTypeId) {
+      where.serviceTypeId = trimmedTypeId;
+    }
+    return await this.repository.find({
+      where,
+      relations: ['serviceType'],
+      order: { id: 'ASC' },
+    });
+  }
+
   async create(dto: Partial<ServicePlanEntity>): Promise<ServicePlanEntity> {
     const entity = this.repository.create(dto);
     return await this.repository.save(entity);

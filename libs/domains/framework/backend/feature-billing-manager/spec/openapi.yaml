@@ -63,6 +63,35 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PublicServicePlanOffering'
+  /public/service-plan-offerings/cheapest:
+    get:
+      summary: Get cheapest public service plan offering (unauthenticated)
+      description: |
+        Returns the single active plan with the lowest customer total price (same pricing formula as the list endpoint).
+        Intended for "from …" / starting-at copy. When multiple plans tie on price, the plan with the lower UUID wins.
+      operationId: getCheapestPublicServicePlanOffering
+      security: []
+      parameters:
+        - name: serviceTypeId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Optional filter — lowest price among active plans for this service type only
+      responses:
+        '200':
+          description: Cheapest active plan offering
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicServicePlanOffering'
+        '404':
+          description: No active plan offerings (or none matching the filter)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /service-types:
     get:
       summary: List service types
