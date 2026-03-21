@@ -162,7 +162,7 @@
         <source>Security-conscious teams</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona3Desc" datatype="html">
-        <source> Govern what AI can see and do </source>
+        <source>Govern what AI can see and do</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona4" datatype="html">
         <source>Open source maintainers</source>
@@ -203,6 +203,144 @@
       <trans-unit id="featurePortalAgentctx-metaKeywords" datatype="html">
         <source>AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth</source>
         </trans-unit>
+      <trans-unit id="featurePortalCloud-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Fully managed control plane<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for your AI agents </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-heroLead" datatype="html">
+        <source> Run Agenstra as a fully managed cloud service. Your agents stay in the tools, clouds, and environments you already use. You don&apos;t deploy infrastructure or operate the control plane. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-heroFrom" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-heroPriceUnit" datatype="html">
+        <source>/month</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-heroPriceUnavailable" datatype="html">
+        <source>—</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-heroCtaPrimary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Talk to us </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-heroCtaSecondary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-trophy me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> See how it works </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserTitle" datatype="html">
+        <source> The same control plane. But without maintaining it yourself! </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserLead" datatype="html">
+        <source> Agenstra Cloud is for teams that want governed agents in coding tools and environments they already use, with upgrades, scaling, and platform operations handled for you. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem1" datatype="html">
+        <source>Connect from cloud, on-prem, or hybrid agent runtimes. Your data and infrastructure stay yours.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem2" datatype="html">
+        <source>Use the same concepts as self-hosted Agenstra: distributed infrastructure, shared prompts, tools, policies, and environments.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem3" datatype="html">
+        <source>Central policies, audit-friendly logs, and clear separation between dev, staging, and production.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem4" datatype="html">
+        <source>Focus on modeling agents and guardrails. We run the managed control plane and keep it up to date.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserClosing" datatype="html">
+        <source> Bring AI agents into how you already build software, without standing up another platform team. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserScreenshotAlt" datatype="html">
+        <source>Agenstra Cloud management interface</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-plansTitle" datatype="html">
+        <source> Cloud plans that match how you work </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-plansLead" datatype="html">
+        <source> Pick a managed plan with clear billing. Each tier reflects service type, interval, and what is included. Same storefront you use to subscribe and scale. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-plansScrollPrev" datatype="html">
+        <source>Previous plans</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-plansScrollNext" datatype="html">
+        <source>Next plans</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-plansEmpty" datatype="html">
+        <source> Plans will appear here when they are available from billing. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planHighlightsFallback" datatype="html">
+        <source>Full feature list is available at checkout.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planCta" datatype="html">
+        <source> Get started </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-gettingStartedTitle" datatype="html">
+        <source> Getting started </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-step1" datatype="html">
+        <source>Choose a plan</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-step2" datatype="html">
+        <source>Log in to the interface</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-step3" datatype="html">
+        <source>Connect your agents</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-step4" datatype="html">
+        <source>Start building</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraTitle" datatype="html">
+        <source> Where the control plane runs </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraLead" datatype="html">
+        <source> Technical outline of the infrastructure behind Agenstra Cloud. We add providers and regions deliberately. Security, latency, and your requirements drive the roadmap. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraLabelDc" datatype="html">
+        <source>Datacenters</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraLabelNet" datatype="html">
+        <source>Network</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraLabelHw" datatype="html">
+        <source>Hardware</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-ctaTitle" datatype="html">
+        <source>Ready to run Agenstra in the cloud?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-ctaLead" datatype="html">
+        <source> Talk to us about access, pricing, and how Agenstra Cloud fits your tools and environments. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-ctaPrimary" datatype="html">
+        <source> Register for free </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraHetznerName" datatype="html">
+        <source>Hetzner Cloud</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraHetznerTagline" datatype="html">
+        <source>European data centers with modern networking and dependable hardware.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraHetznerDc" datatype="html">
+        <source>Nuremberg and Falkenstein (Germany), Helsinki (Finland), Ashburn (US), and Singapore.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraHetznerNet" datatype="html">
+        <source>Redundant uplinks, IPv4 and IPv6, and private networking between your resources where it fits your architecture.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraHetznerHw" datatype="html">
+        <source>NVMe storage and current-generation AMD and Intel CPUs so workloads stay responsive under load.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-metaTitle" datatype="html">
+        <source>Agenstra Cloud - Fully Managed Control Plane For Your AI Agents</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-metaDescription" datatype="html">
+        <source>Agenstra Cloud is the fully managed, cloud hosted control plane for distributed AI agents. Design, deploy, and govern agents across tools, clouds, and environments without operating your own infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-metaKeywords" datatype="html">
+        <source>Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceMonth" datatype="html">
+        <source>/month</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceHour" datatype="html">
+        <source>/hour</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceDay" datatype="html">
+        <source>/day</source>
+        </trans-unit>
       <trans-unit id="featurePortal-brandAlt" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
@@ -218,14 +356,11 @@
       <trans-unit id="featurePortal-navDesktop" datatype="html">
         <source>Desktop</source>
         </trans-unit>
-      <trans-unit id="featurePortal-navPricing" datatype="html">
-        <source>Pricing</source>
-        </trans-unit>
       <trans-unit id="featurePortal-navCloud" datatype="html">
         <source>Cloud</source>
         </trans-unit>
-      <trans-unit id="featurePortal-navCloudSoon" datatype="html">
-        <source>Soon</source>
+      <trans-unit id="featurePortal-navPricing" datatype="html">
+        <source>Pricing</source>
         </trans-unit>
       <trans-unit id="featurePortal-githubAriaLabel" datatype="html">
         <source>GitHub</source>
@@ -495,7 +630,7 @@
         <source>With Agenstra you can:</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem1Title" datatype="html">
-        <source> Register and manage </source>
+        <source>Register and manage</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem1Desc" datatype="html">
         <source> Register and manage multiple remote agent managers from one interface </source>
@@ -1066,7 +1201,7 @@
         <source>Business</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-businessPrice" datatype="html">
-        <source> $499/mo </source>
+        <source> €499/mo </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-businessLicense" datatype="html">
         <source> BUSL-1.1 with Additional Use Grant </source>
@@ -1142,6 +1277,12 @@
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudPriceUnit" datatype="html">
         <source>/month</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-cloudPriceUnavailable" datatype="html">
+        <source>—</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-getStartedNow" datatype="html">
+        <source> Get Started Now </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-paymentInfoTitle" datatype="html">
         <source> Payment &amp; Licensing Information </source>

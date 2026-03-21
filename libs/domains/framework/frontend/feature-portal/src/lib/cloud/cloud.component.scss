@@ -9,6 +9,20 @@
   }
 }
 
+.cloud-teaser-screenshot {
+  position: absolute;
+  bottom: 0;
+  left: 52.5%;
+  min-width: 50%;
+  height: 110%;
+  width: auto;
+}
+
+.provider-logo {
+  display: block;
+  max-height: 24px;
+}
+
 // Dotted world map
 .cloud-map-figure {
   max-width: 100%;
@@ -89,4 +103,53 @@
 
 .logo-partner--small {
   max-height: 16px;
+}
+
+// Plans carousel (pricing page pattern)
+.cloud-plans-carousel-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+
+  .btn {
+    pointer-events: auto;
+
+    &:disabled {
+      --bs-btn-disabled-opacity: 1;
+      --bs-btn-disabled-bg: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+      --bs-btn-disabled-border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+
+      i {
+        opacity: 0.25;
+      }
+    }
+  }
+
+  .cloud-plans-carousel-button-left {
+    transform: translateX(-50%);
+  }
+
+  .cloud-plans-carousel-button-right {
+    transform: translateX(50%);
+  }
+}
+
+.cloud-teaser-map {
+  max-width: 100%;
+}
+
+#why {
+  .engineering-text {
+    line-height: 1.5rem;
+  }
+}
+
+@media (width >= 992px) {
+  .cloud-plans-row {
+    overflow-x: hidden;
+  }
 }
