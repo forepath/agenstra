@@ -1,0 +1,143 @@
+import { CommonModule } from '@angular/common';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  LOCALE_ID,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Meta, Title } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
+import type { PublicServicePlanOffering } from '@forepath/framework/frontend/data-access-portal';
+import { ServicePlansFacade } from '@forepath/framework/frontend/data-access-portal';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+
+export interface CloudInfrastructureProvider {
+  id: string;
+  name: string;
+  tagline: string;
+  datacenters: string;
+  network: string;
+  hardware: string;
+}
+
+@Component({
+  selector: 'framework-portal-cloud',
+  imports: [CommonModule, RouterModule],
+  styleUrls: ['./cloud.component.scss'],
+  templateUrl: './cloud.component.html',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PortalCloudComponent implements OnInit, AfterViewInit {
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly servicePlansFacade = inject(ServicePlansFacade);
+  private readonly locale = inject(LOCALE_ID);
+
+  @ViewChild('plansCarousel') plansCarousel!: ElementRef<HTMLDivElement>;
+
+  readonly billingBaseUrl = this.environment.production
+    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+
+  readonly cheapestOffering = toSignal(this.servicePlansFacade.getCheapestServicePlanOffering$(), {
+    initialValue: null,
+  });
+
+  readonly cheapestOfferingLoading = toSignal(this.servicePlansFacade.getCheapestServicePlanOfferingLoading$(), {
+    initialValue: false,
+  });
+
+  readonly plans = toSignal(this.servicePlansFacade.getServicePlans$(), {
+    initialValue: [],
+  });
+
+  readonly plansLoading = toSignal(this.servicePlansFacade.getServicePlansLoading$(), {
+    initialValue: false,
+  });
+
+  readonly plansScrollAtStart = signal(true);
+  readonly plansScrollAtEnd = signal(false);
+
+  readonly infrastructureProvider: CloudInfrastructureProvider = {
+    id: 'hetzner',
+    name: $localize`:@@featurePortalCloud-infraHetznerName:Hetzner Cloud`,
+    tagline: $localize`:@@featurePortalCloud-infraHetznerTagline:European data centers with modern networking and dependable hardware.`,
+    datacenters: $localize`:@@featurePortalCloud-infraHetznerDc:Nuremberg and Falkenstein (Germany), Helsinki (Finland), Ashburn (US), and Singapore.`,
+    network: $localize`:@@featurePortalCloud-infraHetznerNet:Redundant uplinks, IPv4 and IPv6, and private networking between your resources where it fits your architecture.`,
+    hardware: $localize`:@@featurePortalCloud-infraHetznerHw:NVMe storage and current-generation AMD and Intel CPUs so workloads stay responsive under load.`,
+  };
+
+  readonly planSkeletonPlaceholders = [1, 2, 3] as const;
+
+  ngOnInit(): void {
+    this.titleService.setTitle(
+      $localize`:@@featurePortalCloud-metaTitle:Agenstra Cloud - Fully Managed Control Plane For Your AI Agents`,
+    );
+    this.metaService.addTags([
+      {
+        name: 'description',
+        content: $localize`:@@featurePortalCloud-metaDescription:Agenstra Cloud is the fully managed, cloud hosted control plane for distributed AI agents. Design, deploy, and govern agents across tools, clouds, and environments without operating your own infrastructure.`,
+      },
+      {
+        name: 'keywords',
+        content: $localize`:@@featurePortalCloud-metaKeywords:Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems`,
+      },
+      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
+      { name: 'robots', content: 'index, follow' },
+      { name: 'canonical', content: 'https://agenstra.com/cloud' },
+    ]);
+
+    this.servicePlansFacade.loadCheapestServicePlanOffering();
+    this.servicePlansFacade.loadServicePlans();
+  }
+
+  ngAfterViewInit(): void {
+    queueMicrotask(() => this.syncPlansScrollState());
+  }
+
+  billingIntervalSuffix(plan: PublicServicePlanOffering): string {
+    if (plan.billingIntervalType === 'month' && plan.billingIntervalValue === 1) {
+      return $localize`:@@featurePortalCloud-planPriceMonth:/month`;
+    }
+    if (plan.billingIntervalType === 'hour') {
+      return $localize`:@@featurePortalCloud-planPriceHour:/hour`;
+    }
+    if (plan.billingIntervalType === 'day') {
+      return $localize`:@@featurePortalCloud-planPriceDay:/day`;
+    }
+    return ` / ${plan.billingIntervalValue} ${plan.billingIntervalType}`;
+  }
+
+  syncPlansScrollState(): void {
+    const el = this.plansCarousel?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const epsilon = 8;
+    this.plansScrollAtStart.set(el.scrollLeft <= epsilon);
+    this.plansScrollAtEnd.set(el.scrollLeft + el.clientWidth >= el.scrollWidth - epsilon);
+  }
+
+  scrollCloudPlans(direction: 'left' | 'right'): void {
+    const row = this.plansCarousel?.nativeElement;
+    if (!row) {
+      return;
+    }
+    const col = row.querySelector('.cloud-plan-col') as HTMLElement | null;
+    const gap = 24;
+    const delta = (col?.offsetWidth ?? Math.floor(row.clientWidth * 0.33)) + gap;
+    row.scrollBy({
+      left: direction === 'right' ? delta : -delta,
+      behavior: 'smooth',
+    });
+    window.setTimeout(() => this.syncPlansScrollState(), 400);
+  }
+}

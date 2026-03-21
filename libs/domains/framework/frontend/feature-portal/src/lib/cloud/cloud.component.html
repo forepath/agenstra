@@ -1,0 +1,360 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white">
+  <div class="container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalCloud-heroTitle">
+        <span class="text-primary">Fully managed control plane</span> for your AI agents
+      </h1>
+      <p class="lead mb-4 mx-auto hero-lead max-w-750" i18n="@@featurePortalCloud-heroLead">
+        Run Agenstra as a fully managed cloud service. Your agents stay in the tools, clouds, and environments you
+        already use. You don't deploy infrastructure or operate the control plane.
+      </p>
+      <div class="cloud-hero-price mx-auto mb-5">
+        <div
+          class="card border border-secondary rounded-2 card-capability card-capability-primary p-3 text-center hero-lead shadow-sm"
+        >
+          <div class="mb-2" i18n="@@featurePortalCloud-heroFrom">From</div>
+          <div class="h3 fw-bold hero-lead mb-0">
+            @if (cheapestOfferingLoading()) {
+              <span class="hero-lead" aria-hidden="true">…</span>
+            } @else {
+              @if (cheapestOffering(); as cloudPlan) {
+                €{{ cloudPlan.totalPrice | number: '1.0-2'
+                }}<span class="fs-6 hero-lead fw-normal" i18n="@@featurePortalCloud-heroPriceUnit">/month</span>
+              } @else {
+                <span class="hero-lead fs-6 fw-normal" i18n="@@featurePortalCloud-heroPriceUnavailable">—</span>
+              }
+            }
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a
+          href="mailto:hi@agenstra.com"
+          class="btn btn-primary btn-lg px-4 py-3 rounded-2 cta-btn-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+          i18n="@@featurePortalCloud-heroCtaPrimary"
+        >
+          <i class="bi bi-chat-dots me-2" aria-hidden="true"></i>
+          Talk to us
+        </a>
+        <a
+          routerLink="."
+          fragment="why"
+          class="btn btn-outline-light btn-lg px-4 py-3 rounded-2 cta-btn-secondary"
+          i18n="@@featurePortalCloud-heroCtaSecondary"
+        >
+          <i class="bi bi-trophy me-2" aria-hidden="true"></i>
+          See how it works
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Cloud Providers Section -->
+<section class="py-5 bg-body-tertiary">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
+          <img src="assets/images/logos/hetzner.svg" alt="Hetzner" class="img-fluid logo-partner logo-partner--small" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Product teaser (home “engineering” pattern) -->
+<section id="why" class="position-relative py-10 bg-white overflow-hidden">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-5 mb-lg-0">
+        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalCloud-teaserTitle">
+          The same control plane. But without maintaining it yourself!
+        </h2>
+        <p class="lead text-muted mb-5" i18n="@@featurePortalCloud-teaserLead">
+          Agenstra Cloud is for teams that want governed agents in coding tools and environments they already use, with
+          upgrades, scaling, and platform operations handled for you.
+        </p>
+        <ul class="list-group list-group-flush bg-transparent mb-5">
+          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
+            <i
+              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
+              aria-hidden="true"
+            ></i>
+            <span class="lh-lg engineering-text" i18n="@@featurePortalCloud-teaserItem1"
+              >Connect from cloud, on-prem, or hybrid agent runtimes. Your data and infrastructure stay yours.</span
+            >
+          </li>
+          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
+            <i
+              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
+              aria-hidden="true"
+            ></i>
+            <span class="lh-lg engineering-text" i18n="@@featurePortalCloud-teaserItem2"
+              >Use the same concepts as self-hosted Agenstra: distributed infrastructure, shared prompts, tools,
+              policies, and environments.</span
+            >
+          </li>
+          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
+            <i
+              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
+              aria-hidden="true"
+            ></i>
+            <span class="lh-lg engineering-text" i18n="@@featurePortalCloud-teaserItem3"
+              >Central policies, audit-friendly logs, and clear separation between dev, staging, and production.</span
+            >
+          </li>
+          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
+            <i
+              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
+              aria-hidden="true"
+            ></i>
+            <span class="lh-lg engineering-text" i18n="@@featurePortalCloud-teaserItem4"
+              >Focus on modeling agents and guardrails. We run the managed control plane and keep it up to date.</span
+            >
+          </li>
+        </ul>
+        <p class="text-muted mb-0" i18n="@@featurePortalCloud-teaserClosing">
+          Bring AI agents into how you already build software, without standing up another platform team.
+        </p>
+      </div>
+      <div class="col-lg-6 text-center">
+        <img
+          src="assets/images/screenshots/cloud_framed.png"
+          alt="Agenstra Cloud management interface"
+          class="cloud-teaser-screenshot d-none d-lg-block"
+          i18n-alt="@@featurePortalCloud-teaserScreenshotAlt"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Plans carousel + getting started -->
+<section id="plans" class="py-10 bg-body-tertiary">
+  <div class="container">
+    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-plansTitle">
+      Cloud plans that match how you work
+    </h2>
+    <p class="lead text-center text-muted mb-5 mx-auto max-w-700" i18n="@@featurePortalCloud-plansLead">
+      Pick a managed plan with clear billing. Each tier reflects service type, interval, and what is included. Same
+      storefront you use to subscribe and scale.
+    </p>
+    <div class="position-relative">
+      <div class="cloud-plans-carousel-buttons d-none d-lg-flex justify-content-between align-items-center">
+        <button
+          type="button"
+          class="btn btn-primary cloud-plans-carousel-button-left"
+          (click)="scrollCloudPlans('left')"
+          [disabled]="plansScrollAtStart()"
+        >
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+          <span class="visually-hidden" i18n="@@featurePortalCloud-plansScrollPrev">Previous plans</span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary cloud-plans-carousel-button-right"
+          (click)="scrollCloudPlans('right')"
+          [disabled]="plansScrollAtEnd()"
+        >
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          <span class="visually-hidden" i18n="@@featurePortalCloud-plansScrollNext">Next plans</span>
+        </button>
+      </div>
+      <div
+        #plansCarousel
+        class="row g-4 flex-lg-nowrap overflow-x-hidden position-relative pb-2 pb-lg-5 cloud-plans-row"
+        (scroll)="syncPlansScrollState()"
+      >
+        @if (plansLoading()) {
+          @for (s of planSkeletonPlaceholders; track s) {
+            <div class="col-lg-4 flex-shrink-0 cloud-plan-col" style="min-width: min(100%, 320px)">
+              <div class="card h-100 border-0 shadow-sm placeholder-glow">
+                <div class="card-body p-5">
+                  <span class="placeholder col-8 mb-3"></span>
+                  <span class="placeholder col-5 mb-4"></span>
+                  <span class="placeholder col-12 mb-2"></span>
+                  <span class="placeholder col-11 mb-2"></span>
+                  <span class="placeholder col-10"></span>
+                </div>
+              </div>
+            </div>
+          }
+        } @else if (plans().length === 0) {
+          <div class="col-12 text-center text-muted py-5" i18n="@@featurePortalCloud-plansEmpty">
+            Plans will appear here when they are available from billing.
+          </div>
+        } @else {
+          @for (plan of plans(); track plan.id) {
+            <div class="col-lg-4 flex-shrink-0 cloud-plan-col" style="min-width: min(100%, 320px)">
+              <div class="card h-100 border-0 shadow-sm card-hover">
+                <div class="card-body p-5 d-flex flex-column">
+                  <div class="text-center">
+                    <h3 class="h4 m-0">{{ plan.name }}</h3>
+                    <span class="badge bg-primary px-3 py-2 my-2">{{ plan.serviceTypeName }}</span>
+                    <div class="card border-0 rounded-2 card-capability card-capability-primary p-3 my-3">
+                      <div class="display-6 fw-bold text-primary mb-0">
+                        €{{ plan.totalPrice | number: '1.0-2'
+                        }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  @if (plan.description) {
+                    <p class="text-muted small text-center mb-4 border p-3 rounded-2">{{ plan.description }}</p>
+                  }
+                  <ul class="list-unstyled mb-4 flex-grow-1">
+                    @for (h of plan.orderingHighlights; track h.icon + h.text) {
+                      <li class="mb-3 d-flex gap-3 align-items-center justify-content-start lh-1">
+                        <i
+                          aria-hidden="true"
+                          [attr.class]="
+                            (h.icon && h.icon.trim() ? h.icon : 'bi bi-check-circle-fill') +
+                            ' fs-7 p-2 bg-body-tertiary rounded'
+                          "
+                        ></i>
+                        <span>{{ h.text }}</span>
+                      </li>
+                    }
+                    @if (plan.orderingHighlights.length === 0) {
+                      <li class="mb-0 d-flex align-items-start gap-2 text-muted small">
+                        <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
+                        <span i18n="@@featurePortalCloud-planHighlightsFallback"
+                          >Full feature list is available at checkout.</span
+                        >
+                      </li>
+                    }
+                  </ul>
+                  <div class="d-grid mt-auto">
+                    <a
+                      [href]="billingBaseUrl"
+                      class="btn btn-primary py-2 px-4"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      i18n="@@featurePortalCloud-planCta"
+                    >
+                      Get started
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+    <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
+      <h3 class="h5 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-gettingStartedTitle">
+        Getting started
+      </h3>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+          <div class="d-flex align-items-center">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >1</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step1">Choose a plan</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-flex align-items-center">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >2</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step2">Log in to the interface</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-flex align-items-center">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >3</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step3">Connect your agents</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-flex align-items-center">
+            <span
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge me-3 flex-shrink-0"
+              aria-hidden="true"
+              >4</span
+            >
+            <span class="small" i18n="@@featurePortalCloud-step4">Start building</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Infrastructure / provider outline -->
+<section id="infrastructure" class="py-10 bg-white">
+  <div class="container">
+    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-infraTitle">
+      Where the control plane runs
+    </h2>
+    <p class="lead text-center text-muted mb-5 mx-auto max-w-700" i18n="@@featurePortalCloud-infraLead">
+      Technical outline of the infrastructure behind Agenstra Cloud. We add providers and regions deliberately.
+      Security, latency, and your requirements drive the roadmap.
+    </p>
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-9">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-body p-4 p-lg-5">
+            <img
+              [src]="'assets/images/logos/' + infrastructureProvider.id + '.svg'"
+              [alt]="infrastructureProvider.name"
+              class="img-fluid provider-logo mb-4"
+            />
+            <p class="lead text-muted mb-5">{{ infrastructureProvider.tagline }}</p>
+            <div class="bg-body-tertiary rounded-2 p-4">
+              <dl class="row mb-0 small">
+                <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelDc">Datacenters</dt>
+                <dd class="col-sm-8 mb-3">{{ infrastructureProvider.datacenters }}</dd>
+                <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelNet">Network</dt>
+                <dd class="col-sm-8 mb-3">{{ infrastructureProvider.network }}</dd>
+                <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelHw">Hardware</dt>
+                <dd class="col-sm-8">{{ infrastructureProvider.hardware }}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section id="cta" class="py-10 bg-dark">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-primary rounded-4 text-center text-white p-5 shadow-sm">
+          <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalCloud-ctaTitle">Ready to run Agenstra in the cloud?</h2>
+          <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featurePortalCloud-ctaLead">
+            Talk to us about access, pricing, and how Agenstra Cloud fits your tools and environments.
+          </p>
+          <div class="d-flex justify-content-center">
+            <a
+              [href]="billingBaseUrl"
+              class="btn btn-light btn-lg px-5 py-3 rounded-2 fw-semibold cta-btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featurePortalCloud-ctaPrimary"
+            >
+              Register for free
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
