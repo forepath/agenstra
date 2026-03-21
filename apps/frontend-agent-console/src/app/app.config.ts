@@ -26,10 +26,6 @@ export const appConfig: ApplicationConfig = {
       provide: LOGIN_SUCCESS_REDIRECT_TARGET,
       useValue: ['/clients'],
     },
-    {
-      provide: LOGIN_SUCCESS_REDIRECT_TARGET,
-      useValue: ['/clients'],
-    },
     // Provide KeycloakService before HTTP client so interceptor can inject it
     ...(environment.authentication.type === 'keycloak' ? provideKeycloak() : []),
     // Provide HTTP client with auth interceptor (KeycloakService must be available)

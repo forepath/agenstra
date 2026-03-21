@@ -1,4 +1,59 @@
-import { createAes256GcmTransformer, createJsonAes256GcmTransformer } from './encryption.transformer';
+import {
+  assertProductionEncryptionKeyOrExit,
+  createAes256GcmTransformer,
+  createJsonAes256GcmTransformer,
+} from './encryption.transformer';
+
+describe('assertProductionEncryptionKeyOrExit', () => {
+  const ORIGINAL_ENV = process.env;
+  let exitSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+    exitSpy = jest.spyOn(process, 'exit').mockImplementation(((code?: number) => undefined) as never);
+  });
+
+  afterEach(() => {
+    process.env = ORIGINAL_ENV;
+    exitSpy.mockRestore();
+  });
+
+  it('does nothing when NODE_ENV is not production', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.ENCRYPTION_KEY = '';
+
+    assertProductionEncryptionKeyOrExit();
+
+    expect(exitSpy).not.toHaveBeenCalled();
+  });
+
+  it('exits when NODE_ENV is production and ENCRYPTION_KEY is missing', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ENCRYPTION_KEY = '';
+
+    assertProductionEncryptionKeyOrExit();
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('exits when NODE_ENV is production and ENCRYPTION_KEY is not 32 bytes after base64 decode', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ENCRYPTION_KEY = Buffer.from('short').toString('base64');
+
+    assertProductionEncryptionKeyOrExit();
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('does not exit when NODE_ENV is production and ENCRYPTION_KEY is valid', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.ENCRYPTION_KEY = Buffer.from(Array.from({ length: 32 }, (_, i) => i)).toString('base64');
+
+    assertProductionEncryptionKeyOrExit();
+
+    expect(exitSpy).not.toHaveBeenCalled();
+  });
+});
 
 describe('createAes256GcmTransformer (AES-256-GCM)', () => {
   const ORIGINAL_ENV = process.env;

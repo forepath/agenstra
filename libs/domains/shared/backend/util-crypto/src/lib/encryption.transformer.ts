@@ -1,6 +1,43 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { ValueTransformer } from 'typeorm';
 
+export interface ProductionEncryptionKeyLogger {
+  error(message: string): void;
+}
+
+/**
+ * In production (`NODE_ENV === 'production'`), validates `ENCRYPTION_KEY` and exits the process if it is
+ * missing or not a base64-encoded 32-byte key. No-op in non-production.
+ *
+ * Call once at application bootstrap before any code uses encrypted columns.
+ */
+export function assertProductionEncryptionKeyOrExit(logger?: ProductionEncryptionKeyLogger): void {
+  if (process.env.NODE_ENV !== 'production') {
+    return;
+  }
+
+  const logError = (message: string): void => {
+    if (logger) {
+      logger.error(message);
+    } else {
+      process.stderr.write(`${message}\n`);
+    }
+  };
+
+  const rawKey = process.env.ENCRYPTION_KEY;
+  const envKeyB64 = typeof rawKey === 'string' ? rawKey.trim() : '';
+  if (envKeyB64.length === 0) {
+    logError('FATAL: ENCRYPTION_KEY must be set in production. Exiting.');
+    process.exit(1);
+  }
+
+  const key = Buffer.from(envKeyB64, 'base64');
+  if (key.length !== 32) {
+    logError('FATAL: ENCRYPTION_KEY must be base64-encoded 32 bytes (AES-256) in production. Exiting.');
+    process.exit(1);
+  }
+}
+
 /**
  * Creates a ColumnTransformer that transparently encrypts/decrypts string values using AES-256-GCM.
  * - Encryption key is read from process.env.ENCRYPTION_KEY as base64 (32 bytes required).
