@@ -1,5 +1,14 @@
 @import '../page.component.scss';
 
+// Hero "From" price — same card pattern as pricing page cloud tier
+.cloud-hero-price {
+  max-width: 17rem;
+
+  .card-capability-primary {
+    border-left-color: var(--bs-secondary) !important;
+  }
+}
+
 // Dotted world map
 .cloud-map-figure {
   max-width: 100%;

@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, LOCALE_ID, OnInit } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { ServicePlansFacade } from '@forepath/framework/frontend/data-access-portal';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
 
 import { PortalCloudMapComponent } from './map/map.component';
 
@@ -16,6 +19,21 @@ import { PortalCloudMapComponent } from './map/map.component';
 export class PortalCloudComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly servicePlansFacade = inject(ServicePlansFacade);
+  private readonly locale = inject(LOCALE_ID);
+
+  readonly billingBaseUrl = this.environment.production
+    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+
+  readonly cheapestOffering = toSignal(this.servicePlansFacade.getCheapestServicePlanOffering$(), {
+    initialValue: null,
+  });
+
+  readonly cheapestOfferingLoading = toSignal(this.servicePlansFacade.getCheapestServicePlanOfferingLoading$(), {
+    initialValue: false,
+  });
 
   ngOnInit(): void {
     this.titleService.setTitle(
@@ -34,5 +52,7 @@ export class PortalCloudComponent implements OnInit {
       { name: 'robots', content: 'index, follow' },
       { name: 'canonical', content: 'https://agenstra.com/cloud' },
     ]);
+
+    this.servicePlansFacade.loadCheapestServicePlanOffering();
   }
 }
