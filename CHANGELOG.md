@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.38.2](https://github.com/forepath/agenstra/compare/v1.38.1...v1.38.2) (2026-03-22)
+
+
+### Bug Fixes
+
+* remote config load ([#252](https://github.com/forepath/agenstra/issues/252)) ([95f0249](https://github.com/forepath/agenstra/commit/95f02492acfdc7434472e926a421b313684baa42))
+
 ## [1.38.1](https://github.com/forepath/agenstra/compare/v1.38.0...v1.38.1) (2026-03-22)
 
 
