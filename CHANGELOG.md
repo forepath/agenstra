@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.38.1](https://github.com/forepath/agenstra/compare/v1.38.0...v1.38.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* billing manager fontend image  build ([#251](https://github.com/forepath/agenstra/issues/251)) ([c67ce7b](https://github.com/forepath/agenstra/commit/c67ce7b1c550821d1f6b669857cbad50e368cf67))
+
 ## [1.38.0](https://github.com/forepath/agenstra/compare/v1.37.0...v1.38.0) (2026-03-22)
 
 
