@@ -1,0 +1,72 @@
+flowchart TB
+    subgraph ADMIN["🔷 Admin API (Service Config)"]
+        direction TB
+        ADMIN_USE["Use Case: Configure Products & Pricing"]
+        ADMIN_USE --> ADMIN1["🧩 Service Types<br/>GET /service-types<br/>GET /service-types/providers<br/>GET /service-types/providers/:id/server-types<br/>POST /service-types<br/>POST /service-types/:id<br/>DELETE /service-types/:id"]
+        ADMIN_USE --> ADMIN2["💳 Service Plans<br/>GET /service-plans<br/>POST /service-plans<br/>POST /service-plans/:id<br/>DELETE /service-plans/:id<br/>(plan: description + ordered icon/text highlights)"]
+    end
+
+    subgraph USER["👤 User API (Subscriptions)"]
+        direction TB
+        USER_USE["Use Case: Order & Manage Subscriptions"]
+        USER_USE --> USER1["📝 Create Subscription<br/>POST /subscriptions<br/>(requires complete customer profile)"]
+        USER_USE --> USER2["📋 List Subscriptions<br/>GET /subscriptions"]
+        USER_USE --> USER3["🔍 Get Subscription<br/>GET /subscriptions/:id"]
+        USER_USE --> USER4["✖ Cancel Subscription<br/>POST /subscriptions/:id/cancel"]
+        USER_USE --> USER5["▶ Resume Subscription<br/>POST /subscriptions/:id/resume"]
+        USER_USE --> USER6["🖥️ Get Server Info<br/>GET /subscriptions/:id/items/:itemId/server-info<br/>(status, IPs, hostname)"]
+    end
+
+    subgraph BILLING["🧾 Billing & Invoices"]
+        direction TB
+        BILL_USE["Use Case: Pricing + Invoices"]
+        BILL_USE --> BILL1["💰 Pricing Preview<br/>POST /pricing/preview"]
+        BILL_USE --> BILL2["🧾 List Invoices<br/>GET /invoices/:subscriptionId"]
+        BILL_USE --> BILL3["➕ Create Invoice<br/>POST /invoices/:subscriptionId"]
+        BILL_USE --> BILL4["📊 Usage Summary<br/>GET /usage/summary/:subscriptionId"]
+        BILL_USE --> BILL5["📥 Record Usage<br/>POST /usage/record"]
+    end
+
+    subgraph PROFILE["👤 Customer Profile"]
+        direction TB
+        PROFILE_USE["Use Case: Billing Metadata"]
+        PROFILE_USE --> PROFILE1["📄 Get Profile<br/>GET /customer-profile"]
+        PROFILE_USE --> PROFILE2["✏️ Update Profile<br/>POST /customer-profile"]
+    end
+
+    subgraph AVAIL["⚙️ Availability & Backorders"]
+        direction TB
+        AVAIL_USE["Use Case: Capacity + Retry"]
+        AVAIL_USE --> AVAIL1["✅ Check Availability<br/>POST /availability/check"]
+        AVAIL_USE --> AVAIL2["🧭 Alternatives<br/>POST /availability/alternatives"]
+        AVAIL_USE --> AVAIL3["📋 List Backorders<br/>GET /backorders"]
+        AVAIL_USE --> AVAIL4["🔁 Retry Backorder<br/>POST /backorders/:id/retry"]
+        AVAIL_USE --> AVAIL5["🗑️ Cancel Backorder<br/>POST /backorders/:id/cancel"]
+    end
+
+    subgraph PUB["🌐 Public (no auth)"]
+        direction TB
+        PUB_USE["Use Case: External pricing / marketing cards"]
+        PUB_USE --> PUB1["📋 Plan offerings<br/>GET /public/service-plan-offerings<br/>(active plans: title, description, interval, total price, highlights)"]
+        PUB_USE --> PUB2["💶 Cheapest offering<br/>GET /public/service-plan-offerings/cheapest<br/>(lowest total price, for &quot;from …&quot;)"]
+    end
+
+    Start([Billing Feature]) --> ADMIN
+    Start --> USER
+    Start --> BILLING
+    Start --> PROFILE
+    Start --> AVAIL
+    Start --> PUB
+
+    style ADMIN fill:#e6f0ff,stroke:#4a90e2,stroke-width:3px
+    style USER fill:#f0e6ff,stroke:#8c42ff,stroke-width:3px
+    style BILLING fill:#e6ffe6,stroke:#4a9e2,stroke-width:3px
+    style PROFILE fill:#fff0e6,stroke:#ff6b42,stroke-width:3px
+    style AVAIL fill:#fff4e6,stroke:#ff8c42,stroke-width:3px
+    style ADMIN_USE fill:#d6e9ff,stroke:#4a90e2
+    style USER_USE fill:#e6d6ff,stroke:#8c42ff
+    style BILL_USE fill:#d6ffd6,stroke:#4a9e2
+    style PROFILE_USE fill:#ffe6d6,stroke:#ff6b42
+    style AVAIL_USE fill:#ffe6cc,stroke:#ff8c42
+    style PUB fill:#eef6ee,stroke:#2d6a4f,stroke-width:3px
+    style PUB_USE fill:#d8f0dc,stroke:#2d6a4f

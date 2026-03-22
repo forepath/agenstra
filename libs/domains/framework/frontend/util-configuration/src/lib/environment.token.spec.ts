@@ -95,6 +95,7 @@ describe('environment.token', () => {
       expect(injected).toMatchObject<Environment>({
         production: expect.any(Boolean),
         controller: expect.any(Object),
+        billing: expect.any(Object),
         authentication: expect.any(Object),
         chatModelOptions: expect.any(Object),
         editor: expect.any(Object),
@@ -143,6 +144,7 @@ describe('environment.token', () => {
       expect(service.env).toMatchObject<Environment>({
         production: expect.any(Boolean),
         controller: expect.any(Object),
+        billing: expect.any(Object),
         authentication: expect.any(Object),
         chatModelOptions: expect.any(Object),
         editor: expect.any(Object),

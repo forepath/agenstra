@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Scheduler as SubscriptionItemUpdateScheduler
+    participant Repo as SubscriptionItemsRepository
+    participant Prov as ProvisioningService
+    participant SSH as SshExecutorService
+    participant Host as Provisioned host
+
+    Note over Scheduler: Every SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL (default 24h)
+    Scheduler->>Repo: findProvisionedWithSshKey()
+    Repo-->>Scheduler: items (active, with SSH key)
+
+    loop For each item
+        Scheduler->>Prov: getServerInfo(provider, providerReference)
+        Prov-->>Scheduler: publicIp
+
+        Scheduler->>Scheduler: buildAgentControllerUpdateCommand() or buildAgentManagerUpdateCommand()
+        Note right of Scheduler: Command logs to /var/log/*-update.log on host
+
+        Scheduler->>SSH: exec(host, 22, root, privateKey, command)
+        SSH->>Host: SSH connect + exec
+        Host->>Host: cd /opt/agent-* && docker compose up -d --pull=always
+        Host-->>SSH: stdout/stderr, exit code
+        SSH-->>Scheduler: result
+
+        alt Exit code !== 0
+            Scheduler->>Scheduler: log error (stderr)
+        else Success
+            Scheduler->>Scheduler: log "Update completed"
+        end
+    end

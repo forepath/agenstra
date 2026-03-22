@@ -14,6 +14,10 @@ describe('Environment interfaces', () => {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
         },
+        billing: {
+          restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
+        },
         authentication: {
           type: 'api-key',
         },
@@ -34,6 +38,7 @@ describe('Environment interfaces', () => {
         cookieConsent: {
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
+          termsUrl: 'https://example.com/terms',
         },
       };
       expect(validEnv.production).toBe(true);
@@ -46,6 +51,10 @@ describe('Environment interfaces', () => {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
         },
+        billing: {
+          restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
+        },
         authentication: {
           type: 'api-key',
         },
@@ -66,6 +75,7 @@ describe('Environment interfaces', () => {
         cookieConsent: {
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
+          termsUrl: 'https://example.com/terms',
         },
       };
       expect(validEnv.authentication).toBeDefined();
@@ -79,6 +89,10 @@ describe('Environment interfaces', () => {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
         },
+        billing: {
+          restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
+        },
         authentication: {
           type: 'api-key',
         },
@@ -99,6 +113,7 @@ describe('Environment interfaces', () => {
         cookieConsent: {
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
+          termsUrl: 'https://example.com/terms',
         },
       };
       expect(envWithController.controller).toBeDefined();
@@ -113,6 +128,10 @@ describe('Environment interfaces', () => {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
         },
+        billing: {
+          restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
+        },
         authentication: {
           type: 'api-key',
         },
@@ -133,6 +152,7 @@ describe('Environment interfaces', () => {
         cookieConsent: {
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
+          termsUrl: 'https://example.com/terms',
         },
       };
       expect(env.chatModelOptions).toBeDefined();

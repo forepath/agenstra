@@ -16,11 +16,11 @@ describe('HybridAuthGuard', () => {
     // Save original STATIC_API_KEY
     originalStaticApiKey = process.env.STATIC_API_KEY;
 
-    // Mock ExecutionContext
+    // Mock ExecutionContext (handler/class required for Reflector metadata on @Public routes)
     mockExecutionContext = {
       switchToHttp: jest.fn(),
-      getClass: jest.fn(),
-      getHandler: jest.fn(),
+      getClass: jest.fn().mockReturnValue({}),
+      getHandler: jest.fn().mockReturnValue({}),
       getArgs: jest.fn(),
       getArgByIndex: jest.fn(),
       switchToRpc: jest.fn(),
@@ -99,9 +99,15 @@ describe('HybridAuthGuard', () => {
 
   describe('when STATIC_API_KEY is set', () => {
     const testApiKey = 'test-api-key-123';
+    let getAllAndOverrideSpy: jest.SpyInstance;
 
     beforeEach(() => {
       process.env.STATIC_API_KEY = testApiKey;
+      getAllAndOverrideSpy = jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
+    });
+
+    afterEach(() => {
+      getAllAndOverrideSpy.mockRestore();
     });
 
     it('should allow health check endpoint without authentication', () => {
@@ -268,6 +274,40 @@ describe('HybridAuthGuard', () => {
 
       expect(() => guard.canActivate(mockExecutionContext)).toThrow(UnauthorizedException);
       expect(() => guard.canActivate(mockExecutionContext)).toThrow('Invalid API key');
+    });
+
+    it('should allow unauthenticated access when handler is marked public (IS_PUBLIC_KEY)', () => {
+      process.env.AUTHENTICATION_METHOD = 'api-key';
+      const mockRequest = {
+        url: '/api/public/service-plan-offerings',
+        headers: {},
+      };
+
+      mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+        getRequest: jest.fn().mockReturnValue(mockRequest),
+      });
+      getAllAndOverrideSpy.mockReturnValue(true);
+
+      const result = guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(true);
+      expect(getAllAndOverrideSpy).toHaveBeenCalled();
+    });
+
+    it('should still require API key when not public', () => {
+      process.env.AUTHENTICATION_METHOD = 'api-key';
+      const mockRequest = {
+        url: '/api/service-plans',
+        headers: {},
+      };
+
+      mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+        getRequest: jest.fn().mockReturnValue(mockRequest),
+      });
+      getAllAndOverrideSpy.mockReturnValue(false);
+
+      expect(() => guard.canActivate(mockExecutionContext)).toThrow(UnauthorizedException);
+      expect(() => guard.canActivate(mockExecutionContext)).toThrow('Missing authorization header');
     });
   });
 });

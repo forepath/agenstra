@@ -3,6 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
+import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
@@ -11,6 +12,8 @@ import { AppModule } from './app/app.module';
 import { typeormConfig } from './typeorm.config';
 
 async function bootstrap() {
+  assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
+
   const app = await NestFactory.create(AppModule);
 
   // Configure CORS

@@ -411,7 +411,7 @@ else
     exit 1
 fi
 
-log "Agent-manager provisioning completed successfully at $(date)"
+log "agent-manager provisioning completed successfully at $(date)"
 `;
 
     // Check size limit: Hetzner Cloud user_data is limited to 32KiB (32,768 bytes)
