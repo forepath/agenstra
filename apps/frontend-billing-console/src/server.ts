@@ -5,6 +5,34 @@ import { join, resolve } from 'path';
 const app = express();
 const port = parseInt(process.env['PORT'] || '4200', 10);
 
+/**
+ * Runtime configuration endpoint.
+ * If process.env.CONFIG is set to a URL, this endpoint will proxy the JSON from that URL.
+ * Otherwise, it returns an empty object so the frontend can safely fall back to defaults.
+ */
+app.get('/config', async (req, res) => {
+  const configUrl = process.env['CONFIG'];
+
+  if (!configUrl) {
+    return res.json({});
+  }
+
+  try {
+    const response = await fetch(configUrl);
+
+    if (!response.ok) {
+      console.error(`Failed to fetch CONFIG from ${configUrl}: ${response.status} ${response.statusText}`);
+      return res.status(500).json({});
+    }
+
+    const json = await response.json();
+    return res.json(json);
+  } catch (error) {
+    console.error('Error fetching CONFIG URL:', error);
+    return res.status(500).json({});
+  }
+});
+
 // Base path for the Angular build output
 // When bundled (CommonJS), use the script's directory to find browser directory relative to server bundle
 // When running with ts-node (ES modules), use import.meta.url to find from workspace root
