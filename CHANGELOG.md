@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.38.0](https://github.com/forepath/agenstra/compare/v1.37.0...v1.38.0) (2026-03-22)
+
+
+### Features
+
+* cloud billing module ([#221](https://github.com/forepath/agenstra/issues/221)) ([5c95a9d](https://github.com/forepath/agenstra/commit/5c95a9dc01ee048ee56fadc2b24665c67d7e987e))
+
 ## [1.37.0](https://github.com/forepath/agenstra/compare/v1.36.8...v1.37.0) (2026-03-07)
 
 
