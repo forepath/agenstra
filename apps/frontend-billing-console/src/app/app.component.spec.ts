@@ -1,10 +1,21 @@
 import { TestBed } from '@angular/core/testing';
+import { provideNgcCookieConsent } from 'ngx-cookieconsent';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
+      providers: [
+        provideNgcCookieConsent({
+          cookie: {
+            domain: 'localhost',
+          },
+          position: 'bottom',
+          theme: 'classic',
+          type: 'opt-in',
+        }),
+      ],
     }).compileComponents();
   });
 

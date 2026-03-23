@@ -194,7 +194,7 @@ describe('agent-manager.utils', () => {
       expect(script).not.toContain('JWT_SECRET');
     });
 
-    it('uses fqdn in SSL certificate subjectAltName', () => {
+    it('configures certbot webroot, letsencrypt paths and renewal for fqdn', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'my-instance', fqdn: 'my-instance.example.com' },
@@ -212,6 +212,12 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+      expect(script).toContain('certbot certonly --webroot');
+      expect(script).toContain('/opt/certbot');
+      expect(script).toContain('/.well-known/acme-challenge/');
+      expect(script).toContain('/etc/letsencrypt/live/my-instance.example.com/fullchain.pem');
+      expect(script).toContain('/etc/letsencrypt/live/my-instance.example.com/privkey.pem');
+      expect(script).toContain("certbot renew -q --deploy-hook 'docker exec agent-manager-nginx nginx -s reload'");
       expect(script).toContain('subjectAltName=DNS:my-instance.example.com');
       expect(script).toContain('CN=my-instance.example.com');
     });

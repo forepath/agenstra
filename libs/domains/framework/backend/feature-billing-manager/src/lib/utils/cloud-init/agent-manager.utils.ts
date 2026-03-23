@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 
+import { buildCertbotBootstrapScript } from './certbot-bootstrap.script';
 import { formatEnvLines } from './env.utils';
 
 export interface AgentManagerCloudInitConfig {
@@ -248,6 +249,8 @@ ${backendEnv}
     volumes:
       - /opt/agent-manager/sites-enabled:/etc/nginx/conf.d:ro
       - /opt/agent-manager/ssl:/etc/nginx/ssl:ro
+      - /opt/agent-manager/certbot-webroot:/var/www/certbot:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend-agent-manager
     networks:
@@ -262,19 +265,86 @@ networks:
     driver: bridge
 `;
 
-  const nginxConfig = `
+  const nginxBootstrapConfig = `
 server {
     listen ${config.proxy?.httpPort ?? '80'};
-    server_name _;
-    return 301 https://$host$request_uri;
+    server_name ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type "text/plain";
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
 }
 
 server {
     listen ${config.proxy?.httpsPort ?? '443'} ssl http2;
-    server_name _;
+    server_name ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'};
 
-    ssl_certificate /etc/nginx/ssl/nginx-selfsigned.crt;
-    ssl_certificate_key /etc/nginx/ssl/nginx-selfsigned.key;
+    ssl_certificate /etc/nginx/ssl/bootstrap.crt;
+    ssl_certificate_key /etc/nginx/ssl/bootstrap.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://agent-manager-api:${config.backend?.port ?? '3000'};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /${config.backend?.websocketNamespace ?? 'websocket'} {
+        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /socket.io/ {
+        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+`;
+
+  const nginxLetsEncryptConfig = `
+server {
+    listen ${config.proxy?.httpPort ?? '80'};
+    server_name ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type "text/plain";
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen ${config.proxy?.httpsPort ?? '443'} ssl http2;
+    server_name ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'};
+
+    ssl_certificate /etc/letsencrypt/live/${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
@@ -374,10 +444,6 @@ service ssh restart
 log "Setting SSH password permanently..."
 chage -d 1 -m 0 -M 99999 -I -1 -E -1 root
 
-# Install openssl for SSL certificate generation
-log "Installing openssl..."
-apt-get install -y openssl
-
 # Install Docker using the convenience script
 # Official method: https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script
 log "Installing prerequisites for Docker installation..."
@@ -421,26 +487,26 @@ mkdir -p /opt/agent-manager/sites-enabled
 
 log "Creating nginx configuration file..."
 cat > /opt/agent-manager/sites-enabled/default.conf <<'EOF'
-${nginxConfig}
+${nginxBootstrapConfig}
 EOF
 
 # Create nginx ssl directory
 log "Creating nginx ssl directory..."
 mkdir -p /opt/agent-manager/ssl
 
-# Generate self-signed SSL certificate for nginx
-log "Generating self-signed SSL certificate..."
+# Generate bootstrap SSL certificate for nginx before Let's Encrypt is available
+log "Generating bootstrap SSL certificate..."
 mkdir -p /opt/agent-manager/ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /opt/agent-manager/ssl/nginx-selfsigned.key \
-    -out /opt/agent-manager/ssl/nginx-selfsigned.crt \
+    -keyout /opt/agent-manager/ssl/bootstrap.key \
+    -out /opt/agent-manager/ssl/bootstrap.crt \
     -subj "/C=DE/ST=Nordrhein-Westfalen/L=Herford/O=Agenstra/CN=${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}" \
     -addext "subjectAltName=DNS:${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}" 2>/dev/null || {
-    log "WARNING: Failed to generate SSL certificate, nginx will not work properly"
+    log "WARNING: Failed to generate bootstrap SSL certificate, nginx may not start properly"
 }
 
-chmod 600 /opt/agent-manager/ssl/nginx-selfsigned.key
-chmod 644 /opt/agent-manager/ssl/nginx-selfsigned.crt
+chmod 600 /opt/agent-manager/ssl/bootstrap.key
+chmod 644 /opt/agent-manager/ssl/bootstrap.crt
 
 # Create docker-compose.yaml file
 log "Creating docker-compose.yaml file..."
@@ -456,6 +522,15 @@ docker compose up -d || {
     docker compose logs || true
     exit 1
 }
+
+${buildCertbotBootstrapScript({
+  stackName: 'agent-manager',
+  stackDir: '/opt/agent-manager',
+  nginxContainerName: 'agent-manager-nginx',
+  fqdn: config.host?.fqdn ?? config.host?.hostname ?? 'localhost',
+  letsEncryptEmail: process.env.LETS_ENCRYPT_EMAIL,
+  letsEncryptNginxConfig: nginxLetsEncryptConfig,
+})}
 
 log "agent-manager provisioning completed successfully at $(date)"
 `;

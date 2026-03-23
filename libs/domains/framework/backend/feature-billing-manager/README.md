@@ -89,8 +89,19 @@ The cloud-init user data installs Docker and deploys a docker-compose stack cont
 - backend-agent-controller
 - frontend-agent-console
 
-Nginx proxies `/backend/` to the backend API (with path stripped). SSL certificates and CORS are configured using
-the FQDN (`hostname.DNS_BASE_DOMAIN`) for proper HTTPS and same-origin requests.
+Nginx proxies traffic to the backend/frontend containers and serves ACME HTTP-01 challenges from
+`/.well-known/acme-challenge/`.
+
+TLS is provisioned with Let's Encrypt using Certbot (pip/venv installation under `/opt/certbot`) from cloud-init:
+
+- initial bootstrap certificate is generated with OpenSSL so NGINX can start immediately
+- certs are requested via `certbot certonly --webroot` for the instance FQDN (`hostname.DNS_BASE_DOMAIN`)
+- on success, the NGINX config is switched to `/etc/letsencrypt/live/<fqdn>/fullchain.pem` and `privkey.pem`
+- automatic renewal is configured in `/etc/crontab` and reloads the NGINX container via deploy-hook
+
+To register a real ACME account email, set `LETS_ENCRYPT_EMAIL` in the billing-manager environment.
+Cloud-init also waits for the DNS A record (`proxied: false`) to resolve to the provisioned host before requesting
+the certificate.
 
 ## Server info
 

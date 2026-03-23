@@ -51,7 +51,7 @@ export class CloudflareDnsService {
           name,
           content: ip,
           ttl: 1,
-          proxied: true,
+          proxied: false,
         },
         {
           headers: {
