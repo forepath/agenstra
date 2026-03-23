@@ -300,11 +300,11 @@
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserTitle" datatype="html">
         <source> The same control plane. But without maintaining it yourself! </source>
-        <target> Dieselbe Control Plane – ohne sie selbst zu betreiben! </target>
+        <target> Dieselbe Control Plane - ohne sie selbst zu betreiben! </target>
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserLead" datatype="html">
         <source> Agenstra Cloud is for teams that want governed agents in coding tools and environments they already use, with upgrades, scaling, and platform operations handled for you. </source>
-        <target> Agenstra Cloud richtet sich an Teams, die Agenten in Coding-Tools und Umgebungen steuern möchten, die sie bereits nutzen – inklusive Updates, Skalierung und Plattform-Betrieb durch uns. </target>
+        <target> Agenstra Cloud richtet sich an Teams, die Agenten in Coding-Tools und Umgebungen steuern möchten, die sie bereits nutzen - inklusive Updates, Skalierung und Plattform-Betrieb durch uns. </target>
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserItem1" datatype="html">
         <source>Connect from cloud, on-prem, or hybrid agent runtimes. Your data and infrastructure stay yours.</source>
@@ -320,11 +320,11 @@
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserItem4" datatype="html">
         <source>Focus on modeling agents and guardrails. We run the managed control plane and keep it up to date.</source>
-        <target>Konzentrieren Sie sich auf Agenten und Guardrails – wir betreiben die verwaltete Control Plane und halten sie aktuell.</target>
+        <target>Konzentrieren Sie sich auf Agenten und Guardrails - wir betreiben die verwaltete Control Plane und halten sie aktuell.</target>
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserClosing" datatype="html">
         <source> Bring AI agents into how you already build software, without standing up another platform team. </source>
-        <target> Integrieren Sie KI-Agenten in Ihre bestehende Softwareentwicklung – ohne ein weiteres Plattform-Team aufzubauen. </target>
+        <target> Integrieren Sie KI-Agenten in Ihre bestehende Softwareentwicklung - ohne ein weiteres Plattform-Team aufzubauen. </target>
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserScreenshotAlt" datatype="html">
         <source>Agenstra Cloud management interface</source>
@@ -336,7 +336,7 @@
         </trans-unit>
       <trans-unit id="featurePortalCloud-plansLead" datatype="html">
         <source> Pick a managed plan with clear billing. Each tier reflects service type, interval, and what is included. Same storefront you use to subscribe and scale. </source>
-        <target> Wählen Sie einen verwalteten Tarif mit klarer Abrechnung. Jede Stufe spiegelt Servicetyp, Intervall und Leistungsumfang wider – im selben Shop, in dem Sie abonnieren und skalieren. </target>
+        <target> Wählen Sie einen verwalteten Tarif mit klarer Abrechnung. Jede Stufe spiegelt Servicetyp, Intervall und Leistungsumfang wider - im selben Shop, in dem Sie abonnieren und skalieren. </target>
         </trans-unit>
       <trans-unit id="featurePortalCloud-plansScrollPrev" datatype="html">
         <source>Previous plans</source>
@@ -432,11 +432,11 @@
         </trans-unit>
       <trans-unit id="featurePortalCloud-metaTitle" datatype="html">
         <source>Agenstra Cloud - Fully Managed Control Plane For Your AI Agents</source>
-        <target>Agenstra Cloud – vollständig verwaltete Control Plane für Ihre KI-Agenten</target>
+        <target>Agenstra Cloud - vollständig verwaltete Control Plane für Ihre KI-Agenten</target>
         </trans-unit>
       <trans-unit id="featurePortalCloud-metaDescription" datatype="html">
         <source>Agenstra Cloud is the fully managed, cloud hosted control plane for distributed AI agents. Design, deploy, and govern agents across tools, clouds, and environments without operating your own infrastructure.</source>
-        <target>Agenstra Cloud ist die vollständig verwaltete, cloud-gehostete Control Plane für verteilte KI-Agenten. Entwerfen, bereitstellen und steuern Sie Agenten über Tools, Clouds und Umgebungen hinweg – ohne eigene Infrastruktur zu betreiben.</target>
+        <target>Agenstra Cloud ist die vollständig verwaltete, cloud-gehostete Control Plane für verteilte KI-Agenten. Entwerfen, bereitstellen und steuern Sie Agenten über Tools, Clouds und Umgebungen hinweg - ohne eigene Infrastruktur zu betreiben.</target>
         </trans-unit>
       <trans-unit id="featurePortalCloud-metaKeywords" datatype="html">
         <source>Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems</source>
@@ -1525,6 +1525,286 @@
       <trans-unit id="featurePortalPrivacy-metaKeywords" datatype="html">
         <source>Agenstra, privacy policy, platform, distributed AI agent infrastructure</source>
         <target>Agenstra, Datenschutzerklärung, Plattform, verteilte KI-Agent-Infrastruktur</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-title" datatype="html">
+        <source>Terms of Service</source>
+        <target>Nutzungsbedingungen</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-heroLead" datatype="html">
+        <source> Terms governing Agenstra software, licenses, and managed cloud services under German and European Union law. </source>
+        <target> Regelungen zur Nutzung der Software Agenstra, Lizenzen und unseres verwalteten Cloud-Angebots nach deutschem Recht und Recht der Europäischen Union. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-lastUpdated" datatype="html">
+        <source> Last updated: March 23, 2026 </source>
+        <target> Stand: 23. März 2026 </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeTitle" datatype="html">
+        <source>Scope and Definitions</source>
+        <target>Geltungsbereich und Begriffsbestimmungen</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeDesc1" datatype="html">
+        <source> These Terms of Service (&quot;Terms&quot;) apply to all contracts and legal relationships between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding the Agenstra software, related documentation, self-hosted license offerings, professional and support services, and our managed cloud offering including provision of the software on infrastructure operated or procured by us (&quot;Cloud Service&quot;), unless expressly agreed otherwise in writing (including individual enterprise agreements or separate order forms). </source>
+        <target> Diese Nutzungsbedingungen („Bedingungen“) gelten für alle Verträge und Rechtsbeziehungen zwischen der IPvX UG (haftungsbeschränkt) („wir“, „uns“) und Ihnen in Bezug auf die Software Agenstra, zugehörige Dokumentation, Selbst-Hosting-Lizenzangebote, professionelle Dienstleistungen und Supportleistungen sowie unser verwaltetes Cloud-Angebot einschließlich der Bereitstellung der Software auf von uns betriebener oder beschaffter Infrastruktur („Cloud-Dienst“), sofern nicht ausdrücklich schriftlich etwas anderes vereinbart wurde (einschließlich individueller Enterprise-Vereinbarungen oder separater Bestellformulare). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeDesc2" datatype="html">
+        <source> &quot;Consumer&quot; means any natural person who enters into a legal transaction for purposes that are predominantly outside their trade, business, or profession (Section 13 of the German Civil Code, Bürgerliches Gesetzbuch - BGB). &quot;Entrepreneur&quot; means a natural or legal person or a partnership with legal personality who or which acts in exercise of their trade, business, or profession when entering into a legal transaction (Section 14 BGB). </source>
+        <target> „Verbraucher“ ist jede natürliche Person, die ein Rechtsgeschäft zu Zwecken abschließt, die überwiegend weder ihrer gewerblichen noch ihrer selbständigen beruflichen Tätigkeit zugerechnet werden können (§ 13 Bürgerliches Gesetzbuch - BGB). „Unternehmer“ ist eine natürliche oder juristische Person oder eine rechtsfähige Personengesellschaft, die bei Abschluss eines Rechtsgeschäfts in Ausübung ihrer gewerblichen oder selbständigen beruflichen Tätigkeit handelt (§ 14 BGB). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeDesc3" datatype="html">
+        <source> Conflicting or deviating terms of you shall not apply unless we have expressly agreed to their validity in writing. Individual agreements take precedence over these Terms (Section 305b BGB). </source>
+        <target> Abweichende oder entgegenstehende Bedingungen von Ihnen finden keine Anwendung, sofern wir ihrer Geltung nicht ausdrücklich schriftlich zugestimmt haben. Individuelle Vereinbarungen gehen diesen Bedingungen vor (§ 305b BGB). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsTitle" datatype="html">
+        <source> Product Types, License Models, and Services </source>
+        <target> Produktarten, Lizenzmodelle und Leistungen </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsDesc1" datatype="html">
+        <source> We offer (a) self-hosted software under open-source and source-available license terms (including editions made available under the GNU Affero General Public License version 3 (&quot;AGPL-3.0&quot;) and under the Business Source License 1.1 with Additional Use Grant (&quot;BUSL-1.1&quot;)), (b) paid self-hosted subscriptions and commercial license arrangements (including the &quot;Business&quot; and &quot;Enterprise&quot; tiers described on our pricing pages), (c) ancillary services such as onboarding, support, training, and custom development agreed separately, and (d) the Cloud Service: operation of Agenstra on our or our subprocessors&apos; infrastructure, including server hosting, maintenance, scaling, and backup or monitoring measures as specified in the applicable service description or order. </source>
+        <target> Wir bieten (a) Selbst-Hosting-Software unter Open-Source- und Source-Available-Lizenzbedingungen (einschließlich unter der GNU Affero General Public License Version 3 („AGPL-3.0“) und der Business Source License 1.1 mit Additional Use Grant („BUSL-1.1“) bereitgestellter Editionen), (b) kostenpflichtige Selbst-Hosting-Abonnements und kommerzielle Lizenzvereinbarungen (einschließlich der auf unseren Preisseiten beschriebenen Stufen „Business“ und „Enterprise“), (c) ergänzende Leistungen wie Onboarding, Support, Schulungen und individuelle Entwicklung, die gesondert vereinbart werden, sowie (d) den Cloud-Dienst: Betrieb von Agenstra auf unserer Infrastruktur oder der unserer Unterauftragsverarbeiter, einschließlich Server-Hosting, Wartung, Skalierung sowie Sicherungs- oder Überwachungsmaßnahmen gemäß der jeweiligen Leistungsbeschreibung oder Bestellung. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsDesc2" datatype="html">
+        <source> The respective open-source or source-available license text supplied with the software governs your rights and obligations for the corresponding edition to the extent it is mandatory law or expressly designated as prevailing. Where you obtain a commercial license, subscription, or Cloud Service from us, these Terms supplement and, in case of conflict on commercial and operational matters, prevail over generic source-available terms only to the extent permitted by law and as expressly stated in your order or license grant. </source>
+        <target> Die jeweils der Software beigefügte Open-Source- oder Source-Available-Lizenz regelt Ihre Rechte und Pflichten für die entsprechende Edition, soweit zwingendes Recht dies vorsieht oder sie ausdrücklich als vorrangig bezeichnet ist. Wenn Sie von uns eine kommerzielle Lizenz, ein Abonnement oder den Cloud-Dienst erwerben, ergänzen diese Bedingungen die Lizenz und gehen im Falle eines Widerspruchs bei kommerziellen und betrieblichen Fragen den allgemeinen Source-Available-Bedingungen nur insoweit vor, wie dies gesetzlich zulässig ist und in Ihrer Bestellung oder Lizenzgewährung ausdrücklich festgelegt wurde. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsDesc3" datatype="html">
+        <source> Features, limits, support channels, and eligibility criteria (such as financial thresholds for specific self-hosted tiers) are as described on our website at the time of order unless otherwise agreed in writing. </source>
+        <target> Funktionen, Beschränkungen, Supportkanäle und Zugangsvoraussetzungen (z. B. finanzielle Schwellenwerte für bestimmte Selbst-Hosting-Stufen) entsprechen der Darstellung auf unserer Website zum Zeitpunkt der Bestellung, sofern nicht schriftlich etwas anderes vereinbart wurde. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationTitle" datatype="html">
+        <source> Conclusion of Contract and Pre-Contractual Information </source>
+        <target> Vertragsschluss und vorvertragliche Informationen </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationDesc1" datatype="html">
+        <source> Presentations on our website, in demos, or in marketing materials constitute an invitation to treat (invitatio ad offerendum) and not a binding offer under Sections 145, 146 BGB, unless explicitly marked as binding. A contract is formed when we accept your order, when you accept our written or electronic offer, or when we grant access to paid or Cloud resources, whichever occurs first. </source>
+        <target> Darstellungen auf unserer Website, in Demos oder in Marketingmaterialien stellen eine Aufforderung zur Abgabe eines Angebots (invitatio ad offerendum) und kein bindendes Angebot im Sinne der §§ 145, 146 BGB dar, sofern nicht ausdrücklich als bindend gekennzeichnet. Ein Vertrag kommt zustande, wenn wir Ihre Bestellung annehmen, wenn Sie unser schriftliches oder elektronisches Angebot annehmen oder wenn wir Zugang zu kostenpflichtigen oder Cloud-Ressourcen gewähren - je nachdem, welches Ereignis zuerst eintritt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationDesc2" datatype="html">
+        <source> For consumers and distance contracts, we comply with the statutory information duties for digital products and services under the BGB and the EU Directives implemented therein (including Articles 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB as applicable). You will receive confirmation of the contract on a durable medium where required by law. </source>
+        <target> Gegenüber Verbrauchern und bei Fernabsatzverträgen erfüllen wir die gesetzlichen Informationspflichten für digitale Produkte und Dienstleistungen nach dem BGB und den darin umgesetzten EU-Richtlinien (einschließlich der Art. 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB, soweit einschlägig). Sie erhalten die Vertragsbestätigung auf einem dauerhaften Datenträger, soweit dies gesetzlich vorgeschrieben ist. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationDesc3" datatype="html">
+        <source> You are responsible for the accuracy of registration and billing data. Automated technical steps (e.g., provisioning of a tenant or license key) may constitute acceptance without a separate declaration if this is customary and you have been informed accordingly. </source>
+        <target> Sie sind für die Richtigkeit Ihrer Registrierungs- und Abrechnungsdaten verantwortlich. Automatisierte technische Schritte (z. B. Bereitstellung eines Mandanten oder eines Lizenzschlüssels) können unter den üblichen Gegebenheiten als Annahme ohne gesonderte Willenserklärung gelten, wenn Sie entsprechend informiert wurden. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingTitle" datatype="html">
+        <source>Prices, Taxes, and Payment</source>
+        <target>Preise, Steuern und Zahlung</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingDesc1" datatype="html">
+        <source> Prices are as stated in the order, checkout flow, or written offer, in euros unless otherwise specified. Statutory value-added tax (Umsatzsteuer) or other applicable taxes are added where required by law. </source>
+        <target> Die Preise ergeben sich aus der Bestellung, dem Checkout-Prozess oder dem schriftlichen Angebot in Euro, sofern nicht anders angegeben. Die gesetzliche Umsatzsteuer oder sonstige anfallende Steuern werden berechnet, soweit gesetzlich erforderlich. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingDesc2" datatype="html">
+        <source> Payment methods may include payment cards, direct debit where offered, bank transfer (e.g., for annual commitments or purchase orders), and other means we communicate at checkout. Recurring fees for subscriptions and Cloud Service are due in advance for each billing period unless agreed otherwise. </source>
+        <target> Zahlungsmittel können Zahlungskarten, Lastschrift (sofern angeboten), Banküberweisung (z. B. bei Jahresverträgen oder Bestellungen auf Rechnung) und andere im Checkout mitgeteilte Mittel umfassen. Wiederkehrende Entgelte für Abonnements und den Cloud-Dienst sind jeweils im Voraus für die Abrechnungsperiode fällig, sofern nicht anders vereinbart. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingDesc3" datatype="html">
+        <source> If you default on payment, we may charge statutory default interest (Section 288 BGB) and suspend or terminate services in accordance with law and these Terms. Offsetting against our claims is permitted only with undisputed or legally established counterclaims. </source>
+        <target> Bei Zahlungsverzug können wir gesetzliche Verzugszinsen (§ 288 BGB) berechnen sowie Leistungen nach Maßgabe der gesetzlichen Vorschriften und dieser Bedingungen aussetzen oder kündigen. Ein Aufrechnungsrecht gegen unsere Forderungen besteht nur mit unbestrittenen oder rechtskräftig festgestellten Gegenforderungen. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalTitle" datatype="html">
+        <source> Statutory Right of Withdrawal for Consumers (EU / Germany) </source>
+        <target> Gesetzliches Widerrufsrecht für Verbraucher (EU / Deutschland) </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalDesc1" datatype="html">
+        <source> If you are a Consumer and the contract is a distance or off-premises contract, you generally have a right of withdrawal of fourteen (14) days without giving any reason, in accordance with Sections 355 et seq. BGB and Directive 2011/83/EU (Consumer Rights Directive) as transposed into German law. </source>
+        <target> Sind Sie Verbraucher und liegt ein Fern- oder Außerhaussgeschäft vor, steht Ihnen in der Regel ein Widerrufsrecht von vierzehn (14) Tagen ohne Angabe von Gründen zu, gemäß §§ 355 ff. BGB und der Richtlinie 2011/83/EU (Verbraucherrechterichtlinie) in deutsches Recht umgesetzt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalDesc2" datatype="html">
+        <source> For contracts concerning digital content not supplied on a tangible medium, the right of withdrawal expires if we have begun performance with your prior express consent and you have acknowledged that you thereby lose your right of withdrawal once performance has begun (Section 356(5) BGB). Similar consequences may apply where you request immediate commencement of a service. We will provide the statutory withdrawal information and, where required, a model withdrawal form in a durable medium before or at contract conclusion. </source>
+        <target> Bei Verträgen über digitale Inhalte, die nicht auf einem körperlichen Datenträger bereitgestellt werden, erlischt das Widerrufsrecht, wenn wir mit Ihrer ausdrücklichen Zustimmung vor Ablauf der Widerrufsfrist mit der Ausführung begonnen haben und Sie bestätigt haben, dass Sie mit Beginn der Ausführung Ihr Widerrufsrecht verlieren (§ 356 Abs. 5 BGB). Ähnliche Folgen können gelten, wenn Sie die unverzügliche Ausführung einer Dienstleistung verlangen. Wir stellen Ihnen die gesetzlichen Widerrufsbelehrungen und - soweit erforderlich - ein Muster-Widerrufsformular auf einem dauerhaften Datenträger vor oder bei Vertragsschluss zur Verfügung. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalDesc3" datatype="html">
+        <source> Entrepreneurs are not entitled to a statutory withdrawal right unless individually agreed. </source>
+        <target> Unternehmer steht kein gesetzliches Widerrufsrecht zu, sofern nicht individuell vereinbart. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedTitle" datatype="html">
+        <source> Self-Hosted Software: Rights of Use and Compliance </source>
+        <target> Selbst gehostete Software: Nutzungsrechte und Compliance </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedDesc1" datatype="html">
+        <source> Subject to payment (if applicable) and the applicable license text, we grant you a non-exclusive, non-transferable right to install and run the licensed software in your own environment within the agreed scope (e.g., number of instances, production vs. non-production, or organizational limits in enterprise agreements). </source>
+        <target> Vorbehaltlich der Zahlung (sofern erforderlich) und des maßgeblichen Lizenztexts gewähren wir Ihnen ein einfaches, nicht übertragbares Recht, die lizenzierte Software in Ihrer eigenen Umgebung im vereinbarten Umfang zu installieren und auszuführen (z. B. Anzahl der Instanzen, Produktiv- vs. Nicht-Produktivsysteme oder organisatorische Grenzen in Enterprise-Vereinbarungen). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedDesc2" datatype="html">
+        <source> You must comply with all applicable license conditions, including AGPL-3.0 and BUSL-1.1 obligations such as source-sharing, network-use, and additional-use-grant limits where they apply. You may not circumvent technical protection measures, remove proprietary notices, or sublicense beyond what the license permits. </source>
+        <target> Sie haben alle anwendbaren Lizenzbedingungen einzuhalten, einschließlich der Pflichten aus AGPL-3.0 und BUSL-1.1 wie Bereitstellung von Quellcode, Netzwerknutzung und Grenzen des Additional Use Grant, soweit einschlägig. Sie dürfen keine technischen Schutzmaßnahmen umgehen, keine Schutz- oder Rechtehinweise entfernen und nicht weiterlizenzieren, soweit die Lizenz dies nicht erlaubt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedDesc3" datatype="html">
+        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party models, APIs, or data you connect to Agenstra. </source>
+        <target> Sie betreiben die Infrastruktur und sind für Sicherungen, Absicherung (Hardening), die Einhaltung regulatorischer Vorschriften in Ihrer Umgebung sowie die rechtmäßige Nutzung von Drittmodellen, APIs oder Daten verantwortlich, die Sie mit Agenstra verbinden. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudTitle" datatype="html">
+        <source> Cloud Service, Hosting, and Subprocessors </source>
+        <target> Cloud-Dienst, Hosting und Unterauftragsverarbeiter </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudDesc1" datatype="html">
+        <source> For the Cloud Service we provide access to a managed instance of Agenstra, including hosting on servers operated by us or by qualified infrastructure providers (subprocessors). The primary place of processing, data residency options, and security measures will be described in the applicable order, product documentation, and our Privacy Policy. Processing of personal data is governed by Regulation (EU) 2016/679 (GDPR) and, where applicable, a data processing agreement (Art. 28 GDPR) concluded with you. </source>
+        <target> Im Rahmen des Cloud-Dienstes gewähren wir Zugang zu einer verwalteten Instanz von Agenstra, einschließlich Hosting auf Servern, die von uns oder qualifizierten Infrastrukturanbietern (Unterauftragsverarbeiter) betrieben werden. Der Hauptsitz der Verarbeitung, Optionen zur Datenresidenz und Sicherheitsmaßnahmen werden in der maßgeblichen Bestellung, der Produktdokumentation und unserer Datenschutzerklärung beschrieben. Die Verarbeitung personenbezogener Daten richtet sich nach der Verordnung (EU) 2016/679 (DSGVO) und - soweit einschlägig - einem mit Ihnen geschlossenen Auftragsverarbeitungsvertrag (Art. 28 DSGVO). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudDesc2" datatype="html">
+        <source> We strive to maintain service availability in line with any SLA expressly agreed in your contract. Unless otherwise stated, planned maintenance will, where reasonably practicable, be announced in advance. Temporary interruptions may occur for security, capacity, or legal reasons. </source>
+        <target> Wir bemühen uns, die Verfügbarkeit des Dienstes im Einklang mit einem ausdrücklich in Ihrem Vertrag vereinbarten SLA aufrechtzuerhalten. Vorbehaltlich anderweitiger Regelungen kündigen wir geplante Wartungen, soweit zumutbar, im Voraus an. Vorübergehende Unterbrechungen können aus Gründen der Sicherheit, Kapazität oder aufgrund gesetzlicher Anforderungen auftreten. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudDesc3" datatype="html">
+        <source> You retain responsibility for the content and lawfulness of data and workloads you upload or configure, for user management within your organization, and for credentials and API keys you control. </source>
+        <target> Sie bleiben verantwortlich für Inhalt und Rechtmäßigkeit der von Ihnen hochgeladenen oder konfigurierten Daten und Workloads, für die Benutzerverwaltung innerhalb Ihrer Organisation sowie für Zugangsdaten und API-Schlüssel, die Sie kontrollieren. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportTitle" datatype="html">
+        <source> Support, Service Levels, and Individual Services </source>
+        <target> Support, Service-Levels und individuelle Leistungen </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportDesc1" datatype="html">
+        <source> Support channels (e.g., community, email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased tier or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
+        <target> Supportkanäle (z. B. Community, E-Mail, Telefon, Chat oder Microsoft Teams) und Reaktionsziele richten sich nach der erworbenen Stufe oder der Enterprise-Vereinbarung. Verfügbarkeitsprozentsätze oder ein SLA gelten nur, wenn und soweit ausdrücklich schriftlich vereinbart; im Übrigen bleiben gesetzliche Rechte unberührt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportDesc2" datatype="html">
+        <source> Professional services such as onboarding, training, customization, or development are provided on the basis of separate written specifications, statements of work, or order forms. Unless agreed otherwise, we grant you the rights of use to deliverables as required for the intended use under the contract. </source>
+        <target> Professionelle Dienstleistungen wie Onboarding, Schulung, Anpassung oder Entwicklung erbringen wir auf Grundlage gesonderter schriftlicher Spezifikationen, Leistungsbeschreibungen oder Bestellformulare. Sofern nicht anders vereinbart, gewähren wir Ihnen die zur vertraglich beabsichtigten Nutzung erforderlichen Nutzungsrechte an den Ergebnislieferungen. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportDesc3" datatype="html">
+        <source> Credits or fee reductions for SLA failures, if any, are governed solely by the applicable SLA exhibit. </source>
+        <target> Gutschriften oder Gebührenminderungen bei SLA-Verstößen, sofern vorgesehen, richten sich ausschließlich nach dem maßgeblichen SLA-Anhang. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductTitle" datatype="html">
+        <source> Your Obligations and Acceptable Use </source>
+        <target> Ihre Pflichten und zulässige Nutzung </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductDesc1" datatype="html">
+        <source> You will use Agenstra and related services only in compliance with applicable law, including export control, sanctions, telecommunications, and AI-related regulations where relevant. You must not misuse the services (e.g., to distribute malware, infringe third-party rights, conduct illegal surveillance, or overload systems without authorization). </source>
+        <target> Sie nutzen Agenstra und zugehörige Leistungen nur im Einklang mit geltendem Recht, einschließlich Exportkontrolle, Sanktionen, Telekommunikationsrecht und - soweit einschlägig - KI-bezogener Vorschriften. Sie dürfen die Leistungen nicht missbräuchlich nutzen (z. B. zur Verbreitung von Schadsoftware, zur Verletzung von Rechten Dritter, zur rechtswidrigen Überwachung oder zur unbefugten Überlastung von Systemen). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductDesc2" datatype="html">
+        <source> You are obliged to keep access credentials confidential, to inform us without undue delay of security incidents that may affect our systems, and to cooperate reasonably in troubleshooting. </source>
+        <target> Sie sind verpflichtet, Zugangsdaten vertraulich zu behandeln, uns unverzüglich über Sicherheitsvorfälle zu informieren, die unsere Systeme betreffen können, und bei der Fehleranalyse angemessen mitzuwirken. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductDesc3" datatype="html">
+        <source> We may take proportionate countermeasures, including suspension of access, if you materially breach these obligations or if continued provision would expose us to undue legal or security risk. </source>
+        <target> Wir können angemessene Gegenmaßnahmen ergreifen, einschließlich der Sperrung des Zugangs, wenn Sie diese Pflichten wesentlich verletzen oder die weitere Erbringung uns einem unbilligen Rechts- oder Sicherheitsrisiko aussetzen würde. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesTitle" datatype="html">
+        <source>Updates, Maintenance, and Changes</source>
+        <target>Updates, Wartung und Änderungen</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesDesc1" datatype="html">
+        <source> We may provide updates, patches, and new versions of the software or Cloud Service. For self-hosted deployments, you decide when to apply updates unless security-critical measures are required by law or expressly mandated under your enterprise agreement. </source>
+        <target> Wir können Updates, Patches und neue Versionen der Software oder des Cloud-Dienstes bereitstellen. Bei Selbst-Hosting entscheiden Sie über den Zeitpunkt der Einspielung von Updates, sofern nicht gesetzlich sicherheitskritische Maßnahmen erforderlich sind oder Ihre Enterprise-Vereinbarung etwas anderes vorschreibt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesDesc2" datatype="html">
+        <source> We may modify the Cloud Service for technical, security, or legal reasons if the contractual purpose remains substantially preserved. Material adverse changes will be communicated with reasonable notice where required by law; your statutory rights remain unaffected. </source>
+        <target> Wir können den Cloud-Dienst aus technischen, sicherheits- oder rechtlichen Gründen ändern, wenn der Vertragszweck im Wesentlichen gewahrt bleibt. Wesentliche nachteilige Änderungen teilen wir mit angemessener Vorankündigung mit, soweit gesetzlich erforderlich; Ihre gesetzlichen Rechte bleiben unberührt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesDesc3" datatype="html">
+        <source> Beta or preview features may be offered &quot;as is&quot; without warranty of any particular fitness until generally released. </source>
+        <target> Beta- oder Vorschaufunktionen können „wie besehen“ ohne Gewähr für eine bestimmte Eignung bis zur allgemeinen Freigabe angeboten werden. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipTitle" datatype="html">
+        <source> Intellectual Property and Third-Party Components </source>
+        <target> Geistiges Eigentum und Drittkomponenten </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipDesc1" datatype="html">
+        <source> We or our licensors retain all rights to Agenstra not expressly granted to you. The provisions of the German Act on Copyright and Related Rights (Urheberrechtsgesetz - UrhG) and EU copyright law remain unaffected. </source>
+        <target> Wir oder unsere Lizenzgeber behalten uns alle Rechte an Agenstra vor, die Ihnen nicht ausdrücklich eingeräumt wurden. Die Vorschriften des Urheberrechtsgesetzes (UrhG) und des EU-Urheberrechts bleiben unberührt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipDesc2" datatype="html">
+        <source> The software may include third-party open-source components under their respective licenses. Corresponding notices and license texts are supplied with the software or in documentation. </source>
+        <target> Die Software kann Drittkomponenten unter Open-Source-Lizenzen enthalten. Entsprechende Hinweise und Lizenztexte werden der Software oder der Dokumentation beigefügt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipDesc3" datatype="html">
+        <source> Feedback you provide may be used by us without restriction or royalty, subject to applicable personal data rules. </source>
+        <target> Von Ihnen bereitgestelltes Feedback dürfen wir ohne Einschränkung und ohne Vergütung nutzen, vorbehaltlich geltender datenschutzrechtlicher Vorgaben. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-dataTitle" datatype="html">
+        <source>Data Protection</source>
+        <target>Datenschutz</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-dataDesc" datatype="html">
+        <source> Processing of personal data in connection with our website, contractual relationship, and Cloud Service is described in our Privacy Policy. That policy explains categories of data, purposes, legal bases under the GDPR (including Art. 6 and, where relevant, Art. 28 GDPR for processing on your instructions), retention, and your data subject rights under Chapter III GDPR. In case of conflict between these Terms and the Privacy Policy on data-protection matters, the Privacy Policy prevails. </source>
+        <target> Die Verarbeitung personenbezogener Daten im Zusammenhang mit unserer Website, dem Vertragsverhältnis und dem Cloud-Dienst ist in unserer Datenschutzerklärung beschrieben. Dort werden Kategorien von Daten, Zwecke, Rechtsgrundlagen nach der DSGVO (einschließlich Art. 6 und - soweit einschlägig - Art. 28 DSGVO bei Verarbeitung auf Ihre Weisung), Aufbewahrung sowie Ihre Betroffenenrechte nach Kapitel III DSGVO erläutert. Im Falle eines Widerspruchs zwischen diesen Bedingungen und der Datenschutzerklärung zu datenschutzrechtlichen Fragen geht die Datenschutzerklärung vor. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityTitle" datatype="html">
+        <source>Defects, Warranty, and Liability</source>
+        <target>Mängel, Gewährleistung und Haftung</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityDesc1" datatype="html">
+        <source> For contracts with Consumers, statutory rights regarding defects in digital products or services (including Sections 327 et seq. BGB and the remedies thereunder) apply without restriction, except where mandatory law permits limitation. For Entrepreneurs, warranty for defects is governed by Sections 434 et seq. BGB unless stricter individual agreements exist. </source>
+        <target> Bei Verträgen mit Verbrauchern gelten die gesetzlichen Rechte bei Mängeln digitaler Produkte oder Dienstleistungen (einschließlich §§ 327 ff. BGB und der dortigen Rechtsbehelfe) uneingeschränkt, außer soweit zwingendes Recht eine Beschränkung zulässt. Bei Unternehmern richtet sich die Gewährleistung für Mängel nach §§ 434 ff. BGB, sofern keine strengeren individuellen Vereinbarungen bestehen. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityDesc2" datatype="html">
+        <source> We are liable without limitation for intent (Vorsatz) and gross negligence (grobe Fahrlässigkeit), for injury to life, body, or health, under the German Product Liability Act (Produkthaftungsgesetz - ProdHaftG) where applicable, and under a guarantee (Garantie) if assumed. For simple negligence we are liable only for breach of material contractual obligations (Kardinalpflichten), limited to typical, foreseeable damage, except in the cases in the preceding sentence. The above does not imply a reversal of the burden of proof to your disadvantage. </source>
+        <target> Wir haften unbeschränkt für Vorsatz und grobe Fahrlässigkeit, für Verletzungen von Leben, Körper oder Gesundheit, nach dem Produkthaftungsgesetz (ProdHaftG), soweit anwendbar, sowie aus übernommener Garantie. Bei einfacher Fahrlässigkeit haften wir nur bei Verletzung wesentlicher Vertragspflichten (Kardinalpflichten), begrenzt auf den typischerweise vorhersehbaren Schaden, vorbehaltlich der vorstehenden Fälle. Die vorstehenden Regelungen begründen keine Beweislastumkehr zu Ihrem Nachteil. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityDesc3" datatype="html">
+        <source> Any further exclusion or limitation of liability must be measured against Sections 307 et seq. BGB (including transparency control and content control for standard terms, Section 309 BGB for Consumers). Invalid provisions are replaced by the statutory rule closest in economic purpose. </source>
+        <target> Jede weitergehende Haftungsbeschränkung oder -ausschluss ist an den Maßstab der §§ 307 ff. BGB (einschließlich Transparenz- und Inhaltskontrolle bei Allgemeinen Geschäftsbedingungen, § 309 BGB für Verbraucher) zu messen. Unwirksame Bestimmungen sind durch die dem wirtschaftlichen Zweck am nächsten kommende gesetzliche Regelung zu ersetzen. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termTitle" datatype="html">
+        <source>Term, Termination, and Notice</source>
+        <target>Laufzeit, Kündigung und Fristen</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termDesc1" datatype="html">
+        <source> Subscriptions and Cloud Service run for the term selected at order (e.g., monthly or annual) and renew for equivalent periods unless terminated with notice. Unless otherwise agreed in your order, ordinary termination of recurring plans may require fourteen (14) days&apos; notice to the end of the current billing period, in line with the arrangements published on our pricing pages. </source>
+        <target> Abonnements und der Cloud-Dienst laufen für die bei der Bestellung gewählte Laufzeit (z. B. monatlich oder jährlich) und verlängern sich um gleiche Zeiträume, sofern nicht gekündigt wird. Sofern in Ihrer Bestellung nichts anderes vereinbart ist, kann die ordentliche Kündigung wiederkehrender Pläne eine Frist von vierzehn (14) Tagen zum Ende der laufenden Abrechnungsperiode erfordern, entsprechend den auf unseren Preisseiten veröffentlichten Regelungen. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termDesc2" datatype="html">
+        <source> Either party may terminate for cause (außerordentliche Kündigung) where good cause exists under Section 314 BGB or applicable special provisions. Good cause for us includes persistent payment default, serious acceptable-use violations, or legally required shutdown. </source>
+        <target> Jede Vertragspartei kann aus wichtigem Grund kündigen, wenn ein wichtiger Grund im Sinne des § 314 BGB oder besonderer gesetzlicher Vorschriften vorliegt. Ein wichtiger Grund für uns umfasst insbesondere anhaltenden Zahlungsverzug, schwerwiegende Verstöße gegen die zulässige Nutzung oder eine gesetzlich erforderliche Abschaltung. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termDesc3" datatype="html">
+        <source> Upon termination, your right to use the affected software or Cloud Service ceases; we may delete tenant data after any statutory or agreed retention period. Sections that by nature should survive (e.g., liability, confidentiality, applicable law) remain in effect. </source>
+        <target> Mit Beendigung endet Ihr Recht zur Nutzung der betroffenen Software oder des Cloud-Dienstes; wir können Mandantendaten nach Ablauf gesetzlicher oder vereinbarter Aufbewahrungsfristen löschen. Bestimmungen, die ihrer Natur nach fortgelten sollen (z. B. Haftung, Vertraulichkeit, anwendbares Recht), bleiben wirksam. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalTitle" datatype="html">
+        <source> Amendments, Governing Law, Venue, and Dispute Resolution </source>
+        <target> Änderungen, anwendbares Recht, Gerichtsstand und Streitbeilegung </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-changesDesc1" datatype="html">
+        <source> We may update these Terms to reflect legal requirements, technical developments, or changed service scope. For Consumers, amendments during an ongoing contract require consent unless the change is exclusively to your benefit, is purely ancillary, or is required by law with no disadvantage to you (Section 305c(2) BGB in conjunction with transparency requirements under Sections 307 et seq. BGB). </source>
+        <target> Wir können diese Bedingungen anpassen, um rechtliche Anforderungen, technische Entwicklungen oder eine geänderte Leistungsbeschreibung abzubilden. Gegenüber Verbrauchern bedürfen Änderungen während eines laufenden Vertrags der Zustimmung, es sei denn, die Änderung ist ausschließlich zu Ihren Gunsten, lediglich nebensächlich oder gesetzlich ohne Nachteil für Sie vorgeschrieben (§ 305c Abs. 2 BGB in Verbindung mit den Transparenzanforderungen der §§ 307 ff. BGB). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-changesDesc2" datatype="html">
+        <source> For Entrepreneurs, we may notify you of amended Terms with reasonable notice. If you do not object within the stated period, the amendments may be deemed accepted where legally permissible; we will highlight this consequence in the notice. Your statutory rights, including termination rights, remain unaffected. </source>
+        <target> Gegenüber Unternehmern können wir geänderte Bedingungen mit angemessener Vorankündigung mitteilen. Widersprechen Sie nicht innerhalb der genannten Frist, können die Änderungen dort, wo rechtlich zulässig, als angenommen gelten; wir weisen in der Mitteilung auf diese Rechtsfolge hin. Ihre gesetzlichen Rechte, einschließlich Kündigungsrechten, bleiben unberührt. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc1" datatype="html">
+        <source> These Terms and the contractual relationship are governed by the laws of the Federal Republic of Germany to the exclusion of the UN Convention on Contracts for the International Sale of Goods (CISG). Mandatory consumer protections of the state in which you habitually reside remain unaffected (Article 6(2) of Regulation (EU) No 593/2008 - Rome I). </source>
+        <target> Für diese Bedingungen und das Vertragsverhältnis gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des Übereinkommens der Vereinten Nationen über Verträge über den internationalen Warenkauf (CISG). Zwingende Verbraucherschutzvorschriften des Staates, in dem Sie Ihren gewöhnlichen Aufenthalt haben, bleiben unberührt (Art. 6 Abs. 2 der Verordnung (EU) Nr. 593/2008 - Rom I). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc2" datatype="html">
+        <source> If you are a merchant (Kaufmann) within the meaning of the German Commercial Code (Handelsgesetzbuch - HGB), a legal entity under public law, or a special fund (öffentlich-rechtliches Sondervermögen), the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is our registered seat, where permissible. We remain free to bring action at your general place of jurisdiction. </source>
+        <target> Sind Sie Kaufmann im Sinne des Handelsgesetzbuchs (HGB), juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen, ist ausschließlicher Gerichtsstand für alle Streitigkeiten aus oder im Zusammenhang mit diesen Bedingungen - soweit zulässig - unser eingetragener Sitz. Wir sind berechtigt, Klage auch am allgemeinen Gerichtsstand des Kunden zu erheben. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc3" datatype="html">
+        <source> We are not obliged and not willing to participate in dispute resolution proceedings before a consumer arbitration board (Verbraucherschlichtungsstelle) within the meaning of the German Act on Alternative Dispute Resolution in Consumer Matters (Verbraucherstreitbeilegungsgesetz - VSBG), unless we are required to state a different participation status under mandatory law. </source>
+        <target> Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle im Sinne des Verbraucherstreitbeilegungsgesetzes (VSBG) teilzunehmen, sofern wir nicht nach zwingendem Recht zu einer abweichenden Teilnahmeerklärung verpflichtet sind. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc4" datatype="html">
+        <source> Should individual provisions of these Terms be or become invalid or unenforceable, the remaining provisions shall remain in effect. The invalid or unenforceable provision shall be replaced by a valid provision that comes closest to the economic purpose of the original, to the extent permitted by law (including Sections 306, 307 BGB for standard terms). </source>
+        <target> Sollten einzelne Bestimmungen dieser Bedingungen unwirksam oder undurchsetzbar sein oder werden, bleiben die übrigen Bestimmungen wirksam. Die unwirksame oder undurchsetzbare Bestimmung ist durch eine wirksame Bestimmung zu ersetzen, die dem wirtschaftlichen Zweck der ursprünglichen Bestimmung am nächsten kommt, soweit gesetzlich zulässig (einschließlich §§ 306, 307 BGB für Allgemeine Geschäftsbedingungen). </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ctaTitle" datatype="html">
+        <source>Questions about these terms?</source>
+        <target>Fragen zu diesen Bedingungen?</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ctaLead" datatype="html">
+        <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
+        <target> Wenn Sie Klärungsbedarf zu Lizenzen, dem Cloud-Dienst oder vertraglichen Bedingungen haben, kontaktieren Sie uns bitte über die oben genannten Kontaktdaten. </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ctaContact" datatype="html">
+        <source> Contact us </source>
+        <target> Kontaktieren Sie uns </target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-metaTitle" datatype="html">
+        <source>Agenstra - Terms of Service</source>
+        <target>Agenstra - Nutzungsbedingungen</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-metaDescription" datatype="html">
+        <source>Agenstra is a platform for managing distributed AI agent infrastructure. This is the terms of service for the platform.</source>
+        <target>Agenstra ist eine Plattform zur Verwaltung verteilter KI-Agent-Infrastruktur. Dies sind die Nutzungsbedingungen der Plattform.</target>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-metaKeywords" datatype="html">
+        <source>Agenstra, terms of service, platform, distributed AI agent infrastructure</source>
+        <target>Agenstra, Nutzungsbedingungen, AGB, Plattform, verteilte KI-Agent-Infrastruktur</target>
         </trans-unit>
       <trans-unit id="featurePortalPricing-heroTitle" datatype="html">
         <source> Choose Your <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>License<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>

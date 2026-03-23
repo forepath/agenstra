@@ -410,6 +410,9 @@
       <trans-unit id="featurePortal-legalDisclosureLink" datatype="html">
         <source>Legal Disclosure</source>
         </trans-unit>
+      <trans-unit id="featurePortal-termsOfServiceLink" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
       <trans-unit id="featurePortal-privacyPolicyLink" datatype="html">
         <source>Privacy Policy</source>
         </trans-unit>
@@ -1133,6 +1136,216 @@
         </trans-unit>
       <trans-unit id="featurePortalPrivacy-metaKeywords" datatype="html">
         <source>Agenstra, privacy policy, platform, distributed AI agent infrastructure</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-title" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-heroLead" datatype="html">
+        <source> Terms governing Agenstra software, licenses, and managed cloud services under German and European Union law. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-lastUpdated" datatype="html">
+        <source> Last updated: March 23, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeTitle" datatype="html">
+        <source>Scope and Definitions</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeDesc1" datatype="html">
+        <source> These Terms of Service (&quot;Terms&quot;) apply to all contracts and legal relationships between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding the Agenstra software, related documentation, self-hosted license offerings, professional and support services, and our managed cloud offering including provision of the software on infrastructure operated or procured by us (&quot;Cloud Service&quot;), unless expressly agreed otherwise in writing (including individual enterprise agreements or separate order forms). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeDesc2" datatype="html">
+        <source> &quot;Consumer&quot; means any natural person who enters into a legal transaction for purposes that are predominantly outside their trade, business, or profession (Section 13 of the German Civil Code, Bürgerliches Gesetzbuch - BGB). &quot;Entrepreneur&quot; means a natural or legal person or a partnership with legal personality who or which acts in exercise of their trade, business, or profession when entering into a legal transaction (Section 14 BGB). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-scopeDesc3" datatype="html">
+        <source> Conflicting or deviating terms of you shall not apply unless we have expressly agreed to their validity in writing. Individual agreements take precedence over these Terms (Section 305b BGB). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsTitle" datatype="html">
+        <source> Product Types, License Models, and Services </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsDesc1" datatype="html">
+        <source> We offer (a) self-hosted software under open-source and source-available license terms (including editions made available under the GNU Affero General Public License version 3 (&quot;AGPL-3.0&quot;) and under the Business Source License 1.1 with Additional Use Grant (&quot;BUSL-1.1&quot;)), (b) paid self-hosted subscriptions and commercial license arrangements (including the &quot;Business&quot; and &quot;Enterprise&quot; tiers described on our pricing pages), (c) ancillary services such as onboarding, support, training, and custom development agreed separately, and (d) the Cloud Service: operation of Agenstra on our or our subprocessors&apos; infrastructure, including server hosting, maintenance, scaling, and backup or monitoring measures as specified in the applicable service description or order. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsDesc2" datatype="html">
+        <source> The respective open-source or source-available license text supplied with the software governs your rights and obligations for the corresponding edition to the extent it is mandatory law or expressly designated as prevailing. Where you obtain a commercial license, subscription, or Cloud Service from us, these Terms supplement and, in case of conflict on commercial and operational matters, prevail over generic source-available terms only to the extent permitted by law and as expressly stated in your order or license grant. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-offeringsDesc3" datatype="html">
+        <source> Features, limits, support channels, and eligibility criteria (such as financial thresholds for specific self-hosted tiers) are as described on our website at the time of order unless otherwise agreed in writing. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationTitle" datatype="html">
+        <source> Conclusion of Contract and Pre-Contractual Information </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationDesc1" datatype="html">
+        <source> Presentations on our website, in demos, or in marketing materials constitute an invitation to treat (invitatio ad offerendum) and not a binding offer under Sections 145, 146 BGB, unless explicitly marked as binding. A contract is formed when we accept your order, when you accept our written or electronic offer, or when we grant access to paid or Cloud resources, whichever occurs first. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationDesc2" datatype="html">
+        <source> For consumers and distance contracts, we comply with the statutory information duties for digital products and services under the BGB and the EU Directives implemented therein (including Articles 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB as applicable). You will receive confirmation of the contract on a durable medium where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-contractFormationDesc3" datatype="html">
+        <source> You are responsible for the accuracy of registration and billing data. Automated technical steps (e.g., provisioning of a tenant or license key) may constitute acceptance without a separate declaration if this is customary and you have been informed accordingly. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingTitle" datatype="html">
+        <source>Prices, Taxes, and Payment</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingDesc1" datatype="html">
+        <source> Prices are as stated in the order, checkout flow, or written offer, in euros unless otherwise specified. Statutory value-added tax (Umsatzsteuer) or other applicable taxes are added where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingDesc2" datatype="html">
+        <source> Payment methods may include payment cards, direct debit where offered, bank transfer (e.g., for annual commitments or purchase orders), and other means we communicate at checkout. Recurring fees for subscriptions and Cloud Service are due in advance for each billing period unless agreed otherwise. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-pricingDesc3" datatype="html">
+        <source> If you default on payment, we may charge statutory default interest (Section 288 BGB) and suspend or terminate services in accordance with law and these Terms. Offsetting against our claims is permitted only with undisputed or legally established counterclaims. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalTitle" datatype="html">
+        <source> Statutory Right of Withdrawal for Consumers (EU / Germany) </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalDesc1" datatype="html">
+        <source> If you are a Consumer and the contract is a distance or off-premises contract, you generally have a right of withdrawal of fourteen (14) days without giving any reason, in accordance with Sections 355 et seq. BGB and Directive 2011/83/EU (Consumer Rights Directive) as transposed into German law. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalDesc2" datatype="html">
+        <source> For contracts concerning digital content not supplied on a tangible medium, the right of withdrawal expires if we have begun performance with your prior express consent and you have acknowledged that you thereby lose your right of withdrawal once performance has begun (Section 356(5) BGB). Similar consequences may apply where you request immediate commencement of a service. We will provide the statutory withdrawal information and, where required, a model withdrawal form in a durable medium before or at contract conclusion. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-withdrawalDesc3" datatype="html">
+        <source> Entrepreneurs are not entitled to a statutory withdrawal right unless individually agreed. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedTitle" datatype="html">
+        <source> Self-Hosted Software: Rights of Use and Compliance </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedDesc1" datatype="html">
+        <source> Subject to payment (if applicable) and the applicable license text, we grant you a non-exclusive, non-transferable right to install and run the licensed software in your own environment within the agreed scope (e.g., number of instances, production vs. non-production, or organizational limits in enterprise agreements). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedDesc2" datatype="html">
+        <source> You must comply with all applicable license conditions, including AGPL-3.0 and BUSL-1.1 obligations such as source-sharing, network-use, and additional-use-grant limits where they apply. You may not circumvent technical protection measures, remove proprietary notices, or sublicense beyond what the license permits. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-selfHostedDesc3" datatype="html">
+        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party models, APIs, or data you connect to Agenstra. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudTitle" datatype="html">
+        <source> Cloud Service, Hosting, and Subprocessors </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudDesc1" datatype="html">
+        <source> For the Cloud Service we provide access to a managed instance of Agenstra, including hosting on servers operated by us or by qualified infrastructure providers (subprocessors). The primary place of processing, data residency options, and security measures will be described in the applicable order, product documentation, and our Privacy Policy. Processing of personal data is governed by Regulation (EU) 2016/679 (GDPR) and, where applicable, a data processing agreement (Art. 28 GDPR) concluded with you. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudDesc2" datatype="html">
+        <source> We strive to maintain service availability in line with any SLA expressly agreed in your contract. Unless otherwise stated, planned maintenance will, where reasonably practicable, be announced in advance. Temporary interruptions may occur for security, capacity, or legal reasons. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-cloudDesc3" datatype="html">
+        <source> You retain responsibility for the content and lawfulness of data and workloads you upload or configure, for user management within your organization, and for credentials and API keys you control. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportTitle" datatype="html">
+        <source> Support, Service Levels, and Individual Services </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportDesc1" datatype="html">
+        <source> Support channels (e.g., community, email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased tier or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportDesc2" datatype="html">
+        <source> Professional services such as onboarding, training, customization, or development are provided on the basis of separate written specifications, statements of work, or order forms. Unless agreed otherwise, we grant you the rights of use to deliverables as required for the intended use under the contract. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-supportDesc3" datatype="html">
+        <source> Credits or fee reductions for SLA failures, if any, are governed solely by the applicable SLA exhibit. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductTitle" datatype="html">
+        <source> Your Obligations and Acceptable Use </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductDesc1" datatype="html">
+        <source> You will use Agenstra and related services only in compliance with applicable law, including export control, sanctions, telecommunications, and AI-related regulations where relevant. You must not misuse the services (e.g., to distribute malware, infringe third-party rights, conduct illegal surveillance, or overload systems without authorization). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductDesc2" datatype="html">
+        <source> You are obliged to keep access credentials confidential, to inform us without undue delay of security incidents that may affect our systems, and to cooperate reasonably in troubleshooting. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-conductDesc3" datatype="html">
+        <source> We may take proportionate countermeasures, including suspension of access, if you materially breach these obligations or if continued provision would expose us to undue legal or security risk. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesTitle" datatype="html">
+        <source>Updates, Maintenance, and Changes</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesDesc1" datatype="html">
+        <source> We may provide updates, patches, and new versions of the software or Cloud Service. For self-hosted deployments, you decide when to apply updates unless security-critical measures are required by law or expressly mandated under your enterprise agreement. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesDesc2" datatype="html">
+        <source> We may modify the Cloud Service for technical, security, or legal reasons if the contractual purpose remains substantially preserved. Material adverse changes will be communicated with reasonable notice where required by law; your statutory rights remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-updatesDesc3" datatype="html">
+        <source> Beta or preview features may be offered &quot;as is&quot; without warranty of any particular fitness until generally released. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipTitle" datatype="html">
+        <source> Intellectual Property and Third-Party Components </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipDesc1" datatype="html">
+        <source> We or our licensors retain all rights to Agenstra not expressly granted to you. The provisions of the German Act on Copyright and Related Rights (Urheberrechtsgesetz - UrhG) and EU copyright law remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipDesc2" datatype="html">
+        <source> The software may include third-party open-source components under their respective licenses. Corresponding notices and license texts are supplied with the software or in documentation. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ipDesc3" datatype="html">
+        <source> Feedback you provide may be used by us without restriction or royalty, subject to applicable personal data rules. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-dataTitle" datatype="html">
+        <source>Data Protection</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-dataDesc" datatype="html">
+        <source> Processing of personal data in connection with our website, contractual relationship, and Cloud Service is described in our Privacy Policy. That policy explains categories of data, purposes, legal bases under the GDPR (including Art. 6 and, where relevant, Art. 28 GDPR for processing on your instructions), retention, and your data subject rights under Chapter III GDPR. In case of conflict between these Terms and the Privacy Policy on data-protection matters, the Privacy Policy prevails. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityTitle" datatype="html">
+        <source>Defects, Warranty, and Liability</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityDesc1" datatype="html">
+        <source> For contracts with Consumers, statutory rights regarding defects in digital products or services (including Sections 327 et seq. BGB and the remedies thereunder) apply without restriction, except where mandatory law permits limitation. For Entrepreneurs, warranty for defects is governed by Sections 434 et seq. BGB unless stricter individual agreements exist. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityDesc2" datatype="html">
+        <source> We are liable without limitation for intent (Vorsatz) and gross negligence (grobe Fahrlässigkeit), for injury to life, body, or health, under the German Product Liability Act (Produkthaftungsgesetz - ProdHaftG) where applicable, and under a guarantee (Garantie) if assumed. For simple negligence we are liable only for breach of material contractual obligations (Kardinalpflichten), limited to typical, foreseeable damage, except in the cases in the preceding sentence. The above does not imply a reversal of the burden of proof to your disadvantage. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-liabilityDesc3" datatype="html">
+        <source> Any further exclusion or limitation of liability must be measured against Sections 307 et seq. BGB (including transparency control and content control for standard terms, Section 309 BGB for Consumers). Invalid provisions are replaced by the statutory rule closest in economic purpose. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termTitle" datatype="html">
+        <source>Term, Termination, and Notice</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termDesc1" datatype="html">
+        <source> Subscriptions and Cloud Service run for the term selected at order (e.g., monthly or annual) and renew for equivalent periods unless terminated with notice. Unless otherwise agreed in your order, ordinary termination of recurring plans may require fourteen (14) days&apos; notice to the end of the current billing period, in line with the arrangements published on our pricing pages. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termDesc2" datatype="html">
+        <source> Either party may terminate for cause (außerordentliche Kündigung) where good cause exists under Section 314 BGB or applicable special provisions. Good cause for us includes persistent payment default, serious acceptable-use violations, or legally required shutdown. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-termDesc3" datatype="html">
+        <source> Upon termination, your right to use the affected software or Cloud Service ceases; we may delete tenant data after any statutory or agreed retention period. Sections that by nature should survive (e.g., liability, confidentiality, applicable law) remain in effect. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalTitle" datatype="html">
+        <source> Amendments, Governing Law, Venue, and Dispute Resolution </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-changesDesc1" datatype="html">
+        <source> We may update these Terms to reflect legal requirements, technical developments, or changed service scope. For Consumers, amendments during an ongoing contract require consent unless the change is exclusively to your benefit, is purely ancillary, or is required by law with no disadvantage to you (Section 305c(2) BGB in conjunction with transparency requirements under Sections 307 et seq. BGB). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-changesDesc2" datatype="html">
+        <source> For Entrepreneurs, we may notify you of amended Terms with reasonable notice. If you do not object within the stated period, the amendments may be deemed accepted where legally permissible; we will highlight this consequence in the notice. Your statutory rights, including termination rights, remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc1" datatype="html">
+        <source> These Terms and the contractual relationship are governed by the laws of the Federal Republic of Germany to the exclusion of the UN Convention on Contracts for the International Sale of Goods (CISG). Mandatory consumer protections of the state in which you habitually reside remain unaffected (Article 6(2) of Regulation (EU) No 593/2008 - Rome I). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc2" datatype="html">
+        <source> If you are a merchant (Kaufmann) within the meaning of the German Commercial Code (Handelsgesetzbuch - HGB), a legal entity under public law, or a special fund (öffentlich-rechtliches Sondervermögen), the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is our registered seat, where permissible. We remain free to bring action at your general place of jurisdiction. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc3" datatype="html">
+        <source> We are not obliged and not willing to participate in dispute resolution proceedings before a consumer arbitration board (Verbraucherschlichtungsstelle) within the meaning of the German Act on Alternative Dispute Resolution in Consumer Matters (Verbraucherstreitbeilegungsgesetz - VSBG), unless we are required to state a different participation status under mandatory law. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-finalDesc4" datatype="html">
+        <source> Should individual provisions of these Terms be or become invalid or unenforceable, the remaining provisions shall remain in effect. The invalid or unenforceable provision shall be replaced by a valid provision that comes closest to the economic purpose of the original, to the extent permitted by law (including Sections 306, 307 BGB for standard terms). </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ctaTitle" datatype="html">
+        <source>Questions about these terms?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ctaLead" datatype="html">
+        <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-ctaContact" datatype="html">
+        <source> Contact us </source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-metaTitle" datatype="html">
+        <source>Agenstra - Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-metaDescription" datatype="html">
+        <source>Agenstra is a platform for managing distributed AI agent infrastructure. This is the terms of service for the platform.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalTerms-metaKeywords" datatype="html">
+        <source>Agenstra, terms of service, platform, distributed AI agent infrastructure</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-heroTitle" datatype="html">
         <source> Choose Your <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>License<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>

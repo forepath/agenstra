@@ -139,6 +139,28 @@
             }
           </div>
 
+          @if (termsUrl && privacyPolicyUrl) {
+            <p class="form-check-label mb-3 small">
+              <span i18n="@@featureRegister-legalHintPrefix">By registering, you acknowledge our</span>
+              <a
+                [href]="termsUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="ms-1"
+                i18n="@@featureRegister-termsLink"
+                >Terms and Conditions</a
+              ><span> &amp; </span
+              ><a
+                [href]="privacyPolicyUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="ms-1"
+                i18n="@@featureRegister-privacyLink"
+                >Privacy Policy</a
+              >.
+            </p>
+          }
+
           <!-- Submit Button -->
           <div class="d-grid gap-2">
             <button

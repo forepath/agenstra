@@ -15,6 +15,7 @@ import { PortalDesktopComponent } from './desktop/desktop.component';
 import { PortalHomeComponent } from './home/home.component';
 import { PortalLegalDisclosureComponent } from './legal/disclosure/disclosure.component';
 import { PortalLegalPrivacyComponent } from './legal/privacy/privacy.component';
+import { PortalLegalTermsComponent } from './legal/terms/terms.component';
 import { PortalPricingComponent } from './pricing/pricing.component';
 
 export const portalRoutes: Route[] = [
@@ -58,6 +59,10 @@ export const portalRoutes: Route[] = [
       {
         path: 'legal/privacy',
         component: PortalLegalPrivacyComponent,
+      },
+      {
+        path: 'legal/terms',
+        component: PortalLegalTermsComponent,
       },
       {
         path: '**',

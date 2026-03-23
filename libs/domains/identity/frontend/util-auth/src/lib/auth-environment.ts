@@ -49,6 +49,16 @@ export interface IdentityAuthEnvironment {
    * If not provided, the apiBaseHostname display is hidden.
    */
   controllerApiUrl?: string;
+  /**
+   * Optional: Terms of service URL (e.g. {@code environment.cookieConsent.termsUrl}).
+   * Used by registration UI when both this and {@link privacyPolicyUrl} are set.
+   */
+  termsUrl?: string;
+  /**
+   * Optional: Privacy policy URL (e.g. {@code environment.cookieConsent.privacyPolicyUrl}).
+   * Used by registration UI when both this and {@link termsUrl} are set.
+   */
+  privacyPolicyUrl?: string;
 }
 
 /**
@@ -65,6 +75,8 @@ export interface IdentityAuthEnvironment {
  *   useFactory: (env: Environment) => ({
  *     apiUrl: env.controller.restApiUrl,
  *     authentication: env.authentication,
+ *     termsUrl: env.cookieConsent.termsUrl,
+ *     privacyPolicyUrl: env.cookieConsent.privacyPolicyUrl,
  *   }),
  *   deps: [ENVIRONMENT],
  * }

@@ -19,6 +19,8 @@ export const appConfig: ApplicationConfig = {
         apiUrl: env.controller.restApiUrl,
         authentication: env.authentication,
         controllerApiUrl: env.controller.restApiUrl,
+        termsUrl: env.cookieConsent.termsUrl,
+        privacyPolicyUrl: env.cookieConsent.privacyPolicyUrl,
       }),
       deps: [ENVIRONMENT],
     },
