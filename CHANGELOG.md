@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.38.5](https://github.com/forepath/agenstra/compare/v1.38.4...v1.38.5) (2026-03-23)
+
+
+### Bug Fixes
+
+* billing-portal cookie consent ([#255](https://github.com/forepath/agenstra/issues/255)) ([068cac5](https://github.com/forepath/agenstra/commit/068cac5adbf3052a271050060e3484f6f8ee37b8))
+
 ## [1.38.4](https://github.com/forepath/agenstra/compare/v1.38.3...v1.38.4) (2026-03-23)
 
 
