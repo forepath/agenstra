@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.39.0](https://github.com/forepath/agenstra/compare/v1.38.7...v1.39.0) (2026-03-23)
+
+
+### Features
+
+* letsencrypt support ([#257](https://github.com/forepath/agenstra/issues/257)) ([4fe85d2](https://github.com/forepath/agenstra/commit/4fe85d2608731e2bec05107cd913f2d41660bb59))
+
 ## [1.38.7](https://github.com/forepath/agenstra/compare/v1.38.6...v1.38.7) (2026-03-23)
 
 
