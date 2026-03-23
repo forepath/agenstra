@@ -1255,15 +1255,15 @@
         </trans-unit>
       <trans-unit id="featureFileTree-statusClean" datatype="html">
         <source>In sync with remote - Click to open Version Control</source>
-        <target>Mit Remote synchron – Klicken zum Öffnen der Versionskontrolle</target>
+        <target>Mit Remote synchron - Klicken zum Öffnen der Versionskontrolle</target>
         </trans-unit>
       <trans-unit id="featureFileTree-statusChanges" datatype="html">
         <source>Local changes (staged, unstaged, or unpushed) - Click to open Version Control</source>
-        <target>Lokale Änderungen (gestaged, unstaged oder nicht gepusht) – Klicken zum Öffnen der Versionskontrolle</target>
+        <target>Lokale Änderungen (gestaged, unstaged oder nicht gepusht) - Klicken zum Öffnen der Versionskontrolle</target>
         </trans-unit>
       <trans-unit id="featureFileTree-statusConflict" datatype="html">
         <source>Merge conflicts detected - Click to open Version Control</source>
-        <target>Merge-Konflikte erkannt – Klicken zum Öffnen der Versionskontrolle</target>
+        <target>Merge-Konflikte erkannt - Klicken zum Öffnen der Versionskontrolle</target>
         </trans-unit>
       <trans-unit id="featureFileTree-currentBranchTitle" datatype="html">
         <source>Current branch: <x id="branch" equiv-text="branch"/></source>
@@ -1519,7 +1519,7 @@
         </trans-unit>
       <trans-unit id="featureMonacoEditor-binaryFileMessage" datatype="html">
         <source>Binary file - cannot edit</source>
-        <target>Binärdatei – kann nicht bearbeitet werden</target>
+        <target>Binärdatei - kann nicht bearbeitet werden</target>
         </trans-unit>
       <trans-unit id="featureMonacoEditor-unsavedChanges" datatype="html">
         <source>Unsaved changes</source>
@@ -1575,7 +1575,7 @@
         </trans-unit>
       <trans-unit id="featureLogin-appDescription" datatype="html">
         <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard. </source>
-        <target> Zentrale Steuerung für verteilte KI-Agent-Infrastruktur. Verwalten Sie mehrere Agent-Manager-Instanzen, interagieren Sie in Echtzeit mit Agents und bearbeiten Sie Code direkt in deren Containern – alles von einem leistungsstarken Dashboard aus. </target>
+        <target> Zentrale Steuerung für verteilte KI-Agent-Infrastruktur. Verwalten Sie mehrere Agent-Manager-Instanzen, interagieren Sie in Echtzeit mit Agents und bearbeiten Sie Code direkt in deren Containern - alles von einem leistungsstarken Dashboard aus. </target>
         </trans-unit>
       <trans-unit id="featureLogin-featureDistributedAgent" datatype="html">
         <source>Distributed Agent Management</source>
@@ -1599,7 +1599,7 @@
         </trans-unit>
       <trans-unit id="featureLogin-featureCodeEditorDesc" datatype="html">
         <source>Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time</source>
-        <target>Bearbeiten Sie Dateien direkt in Agent-Containern mit Monaco Editor – lesen, schreiben und verwalten Sie Code in Echtzeit</target>
+        <target>Bearbeiten Sie Dateien direkt in Agent-Containern mit Monaco Editor - lesen, schreiben und verwalten Sie Code in Echtzeit</target>
         </trans-unit>
       <trans-unit id="featureLogin-featureContainer" datatype="html">
         <source>Container Integration</source>
