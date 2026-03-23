@@ -320,7 +320,7 @@
                       <span class="text-muted" aria-hidden="true">…</span>
                     } @else {
                       @if (cheapestOffering(); as cloudPlan) {
-                        €{{ cloudPlan.totalPrice | number: '1.0-2'
+                        €{{ cloudPlan.totalPrice | number: '1.2-2'
                         }}<span class="fs-6 text-muted" i18n="@@featurePortalPricing-cloudPriceUnit">/month</span>
                       } @else {
                         <span class="text-muted" i18n="@@featurePortalPricing-cloudPriceUnavailable">—</span>
