@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.38.6](https://github.com/forepath/agenstra/compare/v1.38.5...v1.38.6) (2026-03-23)
+
+
+### Bug Fixes
+
+* pricing decimals ([#256](https://github.com/forepath/agenstra/issues/256)) ([cc2863c](https://github.com/forepath/agenstra/commit/cc2863c3e79a5e080cccf867a083efbf82a5bf82))
+
 ## [1.38.5](https://github.com/forepath/agenstra/compare/v1.38.4...v1.38.5) (2026-03-23)
 
 
