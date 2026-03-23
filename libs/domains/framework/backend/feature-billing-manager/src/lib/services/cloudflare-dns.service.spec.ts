@@ -52,7 +52,7 @@ describe('CloudflareDnsService', () => {
         name: 'awesome-armadillo-abc12.spirde.com',
         content: '1.2.3.4',
         ttl: 1,
-        proxied: true,
+        proxied: false,
       }),
       expect.objectContaining({
         headers: { Authorization: 'Bearer test-token', 'Content-Type': 'application/json' },
