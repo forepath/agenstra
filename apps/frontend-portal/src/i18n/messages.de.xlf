@@ -546,6 +546,10 @@
         <source>Legal Disclosure</source>
         <target>Impressum</target>
         </trans-unit>
+      <trans-unit id="featurePortal-termsOfServiceLink" datatype="html">
+        <source>Terms of Service</source>
+        <target>Nutzungsbedingungen</target>
+        </trans-unit>
       <trans-unit id="featurePortal-privacyPolicyLink" datatype="html">
         <source>Privacy Policy</source>
         <target>Datenschutzerklärung</target>
