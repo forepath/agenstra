@@ -35,8 +35,12 @@
           }
         ],
         "externalDependencies": ["monaco-editor"],
-        "styles": ["apps/frontend-billing-console/src/styles.scss"],
+        "styles": [
+          "node_modules/cookieconsent/build/cookieconsent.min.css",
+          "apps/frontend-billing-console/src/styles.scss"
+        ],
         "scripts": [
+          "node_modules/cookieconsent/build/cookieconsent.min.js",
           "node_modules/@popperjs/core/dist/umd/popper.min.js",
           "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
           "node_modules/apexcharts/dist/apexcharts.min.js"
