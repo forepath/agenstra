@@ -36,6 +36,10 @@ export class IdentityRegisterComponent implements OnInit {
   error$: Observable<string | null> = this.authFacade.error$;
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
 
+  /** Shown on the registration form when both URLs are configured (e.g. from {@code cookieConsent}). */
+  protected readonly termsUrl = this.environment.termsUrl;
+  protected readonly privacyPolicyUrl = this.environment.privacyPolicyUrl;
+
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';
   }

@@ -326,6 +326,30 @@
         <source>Chat</source>
         <target>Chat</target>
         </trans-unit>
+      <trans-unit id="featureChat-startEnvironmentTitle" datatype="html">
+        <source>Start environment</source>
+        <target>Umgebung starten</target>
+        </trans-unit>
+      <trans-unit id="featureChat-startEnvironment" datatype="html">
+        <source>Start environment</source>
+        <target>Umgebung starten</target>
+        </trans-unit>
+      <trans-unit id="featureChat-stopEnvironmentTitle" datatype="html">
+        <source>Stop environment</source>
+        <target>Umgebung stoppen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-stopEnvironment" datatype="html">
+        <source>Stop environment</source>
+        <target>Umgebung stoppen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-restartEnvironmentTitle" datatype="html">
+        <source>Restart environment</source>
+        <target>Umgebung neu starten</target>
+        </trans-unit>
+      <trans-unit id="featureChat-restartEnvironment" datatype="html">
+        <source>Restart environment</source>
+        <target>Umgebung neu starten</target>
+        </trans-unit>
       <trans-unit id="featureChat-connected" datatype="html">
         <source>Connected</source>
         <target>Verbunden</target>
@@ -393,6 +417,54 @@
       <trans-unit id="featureChat-workspaceConnectionFailed" datatype="html">
         <source>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></source>
         <target>Verbindung zum Arbeitsbereich fehlgeschlagen: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayHeader" datatype="html">
+        <source>Gateway</source>
+        <target>Gateway</target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep1Title" datatype="html">
+        <source> Step 1: Create the OpenClaw configuration </source>
+        <target> Schritt 1: OpenClaw-Konfiguration anlegen </target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep1Intro" datatype="html">
+        <source> Create the default OpenClaw configuration file in the container. This writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary border border-primary rounded px-1&quot;&gt;"/>.openclaw/openclaw.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> so the gateway can load its settings. </source>
+        <target> Legen Sie die Standard-OpenClaw-Konfigurationsdatei im Container an. Dabei wird <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary border border-primary rounded px-1&quot;&gt;"/>.openclaw/openclaw.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> geschrieben, damit das Gateway seine Einstellungen laden kann. </target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartCreateConfig" datatype="html">
+        <source>Create OpenClaw configuration</source>
+        <target>OpenClaw-Konfiguration erstellen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep2AdaptTitle" datatype="html">
+        <source> Step 2: Adapt the configuration </source>
+        <target> Schritt 2: Konfiguration anpassen </target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep2AdaptIntro" datatype="html">
+        <source> Edit the configuration in the editor to customize the gateway settings, adding and configuring channels, AI models, and more. </source>
+        <target> Bearbeiten Sie die Konfiguration im Editor, um Gateway-Einstellungen anzupassen und Kanäle, KI-Modelle und mehr hinzuzufügen und zu konfigurieren. </target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartOpenEditor" datatype="html">
+        <source>Open Editor</source>
+        <target>Editor öffnen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep3Title" datatype="html">
+        <source> Step 3: Restart the agent </source>
+        <target> Schritt 3: Agent neu starten </target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep3Intro" datatype="html">
+        <source> Restart the agent so it picks up the new configuration. </source>
+        <target> Starten Sie den Agenten neu, damit die neue Konfiguration übernommen wird. </target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartRestartAgent" datatype="html">
+        <source>Restart the agent</source>
+        <target>Agent neu starten</target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep4Title" datatype="html">
+        <source> Step 4: Start chatting </source>
+        <target> Schritt 4: Chat starten </target>
+        </trans-unit>
+      <trans-unit id="featureChat-gatewayQuickstartStep4Intro" datatype="html">
+        <source> You are all set. Say hello to your new bot in the chat, try a question, or start a task. Have fun! </source>
+        <target> Sie sind startklar. Begrüßen Sie Ihren neuen Bot im Chat, stellen Sie eine Frage oder starten Sie eine Aufgabe. Viel Erfolg! </target>
         </trans-unit>
       <trans-unit id="featureChat-commandsLabel" datatype="html">
         <source>Commands</source>
@@ -1744,6 +1816,18 @@
       <trans-unit id="featureRegister-passwordsMismatch" datatype="html">
         <source> Passwords do not match. </source>
         <target> Passwörter stimmen nicht überein. </target>
+        </trans-unit>
+      <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
+        <source>By registering, you acknowledge our</source>
+        <target>Mit Ihrer Registrierung erkennen Sie unsere</target>
+        </trans-unit>
+      <trans-unit id="featureRegister-termsLink" datatype="html">
+        <source>Terms and Conditions</source>
+        <target>Allgemeinen Geschäftsbedingungen</target>
+        </trans-unit>
+      <trans-unit id="featureRegister-privacyLink" datatype="html">
+        <source>Privacy Policy</source>
+        <target>Datenschutzerklärung</target>
         </trans-unit>
       <trans-unit id="featureRegister-registering" datatype="html">
         <source>Registering...</source>

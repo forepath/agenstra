@@ -2,6 +2,1180 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureContainer-loadingFile" datatype="html">
+        <source>Loading file...</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-brandAlt" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
+        <source>Toggle dark mode</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-logout" datatype="html">
+        <source>Logout</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-overviewTitle" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-overview" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-subscriptionsTitle" datatype="html">
+        <source>Subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-subscriptions" datatype="html">
+        <source>Plans</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
+        <source>Invoices</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-invoices" datatype="html">
+        <source>Billing</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
+        <source>Providers</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-serviceTypes" datatype="html">
+        <source>Providers</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
+        <source>Plans</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-servicePlans" datatype="html">
+        <source>Plans</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
+        <source>User Management</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-users" datatype="html">
+        <source>Users</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
+        <source>Role <x id="role" equiv-text="role"/></source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-title" datatype="html">
+        <source>Billing</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-openOverdueCount" datatype="html">
+        <source> Open and overdue invoices </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-openOverdueTotal" datatype="html">
+        <source> Open total amount </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-nextBillingDay" datatype="html">
+        <source> Your next billing day </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-unbilledTotal" datatype="html">
+        <source>Unbilled amount</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-openOverdueList" datatype="html">
+        <source>Open and overdue invoices</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-loadingOpenOverdue" datatype="html">
+        <source>Loading open and overdue invoices...</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-subscription" datatype="html">
+        <source>Subscription</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-id" datatype="html">
+        <source>Invoice number</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-status" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-date" datatype="html">
+        <source>Date</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-dueDate" datatype="html">
+        <source>Due date</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-amount" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-link" datatype="html">
+        <source>Link</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-opening" datatype="html">
+        <source>Opening…</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-openLink" datatype="html">
+        <source> Open </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-noOpenOverdue" datatype="html">
+        <source> No open or overdue invoices. </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-selectSubscription" datatype="html">
+        <source>Subscription</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-chooseSubscription" datatype="html">
+        <source>Choose a subscription</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-loading" datatype="html">
+        <source>Loading invoices...</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-invoices" datatype="html">
+        <source>Invoices</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-noInvoices" datatype="html">
+        <source> No invoices for this subscription. </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-showingOf" datatype="html">
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ paginatedInvoices().length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ allInvoices().length }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-prev" datatype="html">
+        <source>Previous</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-next" datatype="html">
+        <source>Next</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-selectFirst" datatype="html">
+        <source>Select a subscription to view invoices.</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-createInvoiceDisabledFinalized" datatype="html">
+        <source>Subscription is finalized; no further invoices can be created.</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusDraft" datatype="html">
+        <source>Draft</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusSent" datatype="html">
+        <source>Sent</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusPartiallyPaid" datatype="html">
+        <source>Partially paid</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusPaid" datatype="html">
+        <source>Paid</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusCancelled" datatype="html">
+        <source>Cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusReversed" datatype="html">
+        <source>Reversed</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusUnpaid" datatype="html">
+        <source>Unpaid</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-title" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-loadingSubscriptions" datatype="html">
+        <source>Loading subscriptions...</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-activePlans" datatype="html">
+        <source>Active plans</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-backorders" datatype="html">
+        <source>Backorders</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-openOverdueCount" datatype="html">
+        <source> Open and overdue invoices </source>
+        </trans-unit>
+      <trans-unit id="featureOverview-viewInvoices" datatype="html">
+        <source> View invoices </source>
+        </trans-unit>
+      <trans-unit id="featureOverview-customerProfile" datatype="html">
+        <source> Customer profile </source>
+        </trans-unit>
+      <trans-unit id="featureOverview-loadingProfile" datatype="html">
+        <source> Loading... </source>
+        </trans-unit>
+      <trans-unit id="featureOverview-profileComplete" datatype="html">
+        <source>Complete</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-profileIncomplete" datatype="html">
+        <source>Incomplete</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-editProfile" datatype="html">
+        <source> Edit profile </source>
+        </trans-unit>
+      <trans-unit id="featureOverview-loadingServerInfo" datatype="html">
+        <source>Loading server info...</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-agenstraCloudInstance" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-agenstraManager" datatype="html">
+        <source> - Manager</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-agenstraController" datatype="html">
+        <source> - Controller</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-serverStart" datatype="html">
+        <source>Start</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-serverStop" datatype="html">
+        <source>Stop</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-serverRestart" datatype="html">
+        <source>Restart</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-openConsole" datatype="html">
+        <source>Console</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-title" datatype="html">
+        <source>Service Plans</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-list" datatype="html">
+        <source>Service plans</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-add" datatype="html">
+        <source> Add service plan </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-name" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-serviceType" datatype="html">
+        <source>Service type</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-billingInterval" datatype="html">
+        <source>Billing interval</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-price" datatype="html">
+        <source>Price</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-orderingHighlights" datatype="html">
+        <source>Highlights</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-active" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-actions" datatype="html">
+        <source>Actions</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-yes" datatype="html">
+        <source>Yes</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-no" datatype="html">
+        <source>No</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-edit" datatype="html">
+        <source> Edit </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-delete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-empty" datatype="html">
+        <source>No service plans.</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-createTitle" datatype="html">
+        <source> Add service plan </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-chooseType" datatype="html">
+        <source>Choose a service type</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-addHighlight" datatype="html">
+        <source> Add line </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-orderingHighlightsHint" datatype="html">
+        <source> Optional icon key and label text for the order page (in addition to the description). </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-highlightIcon" datatype="html">
+        <source>Icon</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-highlightText" datatype="html">
+        <source>Text</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-moveHighlightUp" datatype="html">
+        <source>Move up</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-moveHighlightDown" datatype="html">
+        <source>Move down</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-removeHighlight" datatype="html">
+        <source> Remove </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-billingIntervalType" datatype="html">
+        <source>Interval type</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-billingIntervalValue" datatype="html">
+        <source>Interval value</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-billingDayOfMonth" datatype="html">
+        <source>Billing day of month (1–31)</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-minCommitmentDays" datatype="html">
+        <source>Min commitment days</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-noticeDays" datatype="html">
+        <source>Notice days</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-basePrice" datatype="html">
+        <source>Base price</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-marginPercent" datatype="html">
+        <source>Margin %</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-marginFixed" datatype="html">
+        <source>Margin fixed</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-estimatedPrice" datatype="html">
+        <source>Estimated price</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-providerConfigDefaults" datatype="html">
+        <source>Provider default config</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-loadingServerTypes" datatype="html">
+        <source>Loading server types...</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-chooseOption" datatype="html">
+        <source>Choose...</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
+        <source>Cancel at period end</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-close" datatype="html">
+        <source> Close </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-editTitle" datatype="html">
+        <source> Edit service plan </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-deleteTitle" datatype="html">
+        <source> Delete service plan? </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-deleteConfirm" datatype="html">
+        <source> Are you sure you want to delete the service plan &quot;<x id="INTERPOLATION" equiv-text="{{ plan.name }}"/>&quot;? </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-confirmDelete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-title" datatype="html">
+        <source>Service Types</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-list" datatype="html">
+        <source>Service types</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-add" datatype="html">
+        <source> Add service type </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-key" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-name" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-provider" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-active" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-actions" datatype="html">
+        <source>Actions</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-yes" datatype="html">
+        <source>Yes</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-no" datatype="html">
+        <source>No</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-edit" datatype="html">
+        <source> Edit </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-delete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-empty" datatype="html">
+        <source>No service types.</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-createTitle" datatype="html">
+        <source> Add service type </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-loadingProviders" datatype="html">
+        <source> Loading providers... </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-chooseProvider" datatype="html">
+        <source>Choose a provider</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-providerPlaceholder" datatype="html">
+        <source>e.g. hetzner</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-noProvidersHint" datatype="html">
+        <source>No providers configured. Enter provider id manually.</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-close" datatype="html">
+        <source> Close </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-editTitle" datatype="html">
+        <source> Edit service type </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-deleteTitle" datatype="html">
+        <source> Delete service type? </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-deleteConfirm" datatype="html">
+        <source> Are you sure you want to delete the service type &quot;<x id="INTERPOLATION" equiv-text="{{ st.name }}"/>&quot; (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}"/>)? </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-confirmDelete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-title" datatype="html">
+        <source>Plans &amp; Subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderPlan" datatype="html">
+        <source>Order</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-customerProfile" datatype="html">
+        <source>Customer profile</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-customerProfileHint" datatype="html">
+        <source> Required for invoicing. Please complete your profile with first name, last name, email, address, city and country. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-profileComplete" datatype="html">
+        <source>Complete</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-profileIncomplete" datatype="html">
+        <source>Incomplete</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-editProfile" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-pencil&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-loading" datatype="html">
+        <source>Loading subscriptions...</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chatIoTable" datatype="html">
+        <source>Subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-number" datatype="html">
+        <source>Number</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-plan" datatype="html">
+        <source>Plan</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-status" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-period" datatype="html">
+        <source>Period</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-nextBilling" datatype="html">
+        <source>Next billing</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-actions" datatype="html">
+        <source>Actions</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-resume" datatype="html">
+        <source> Resume </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-noSubscriptions" datatype="html">
+        <source> No subscriptions yet. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-showingOf" datatype="html">
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ paginatedSubscriptions().length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ subscriptions().length }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-prev" datatype="html">
+        <source>Previous</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-next" datatype="html">
+        <source>Next</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-loadingBackorders" datatype="html">
+        <source>Loading backorders...</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-backorders" datatype="html">
+        <source>Backorders</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-retry" datatype="html">
+        <source> Retry </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-noBackorders" datatype="html">
+        <source> No pending backorders. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-selectPlan" datatype="html">
+        <source>Plan</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-choosePlan" datatype="html">
+        <source>Choose a plan</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-price" datatype="html">
+        <source>Price</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
+        <source>Runtime</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-minCommitment" datatype="html">
+        <source>Min. commitment</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-days" datatype="html">
+        <source>days</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-noticeDays" datatype="html">
+        <source>Notice period</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cloudInitConfig" datatype="html">
+        <source>Instance configuration</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-service" datatype="html">
+        <source>Service</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-serviceController" datatype="html">
+        <source> Controller </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-serviceManager" datatype="html">
+        <source>Manager</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-serviceHelp" datatype="html">
+        <source> Controller runs the full stack; Manager runs the agent manager only. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-authMethod" datatype="html">
+        <source>Authentication method</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-authUsers" datatype="html">
+        <source>Users</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-authApiKey" datatype="html">
+        <source>API Key</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-authKeycloak" datatype="html">
+        <source>Keycloak</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-authMethodHelp" datatype="html">
+        <source> How users authenticate to the agent instance. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-disableSignup" datatype="html">
+        <source> Disable signup </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-disableSignupHelp" datatype="html">
+        <source> Prevents new user registration on this instance. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-staticApiKey" datatype="html">
+        <source> Static API Key </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-staticApiKeyHelp" datatype="html">
+        <source> API key for authenticating requests. Required when using api-key authentication. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-keycloakSection" datatype="html">
+        <source> Keycloak </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpSection" datatype="html">
+        <source> SMTP (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cursorApiKey" datatype="html">
+        <source> Cursor API key (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cursorApiKeyHelp" datatype="html">
+        <source> Used by the manager to communicate with Cursor for agent containers. Leave empty if not using Cursor agents. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitSection" datatype="html">
+        <source> Git (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitHelp" datatype="html">
+        <source> Git configuration for the agent manager (repository URL, credentials, commit author). Leave empty if not using Git-backed agents. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-provisioningSection" datatype="html">
+        <source> Provisioning (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-provisioningHelp" datatype="html">
+        <source> If you want this instance to provision additional servers via Hetzner or DigitalOcean, provide the API tokens. Leave empty otherwise. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-hetznerApiToken" datatype="html">
+        <source> Hetzner API token </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-digitaloceanApiToken" datatype="html">
+        <source> DigitalOcean API token </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoBackorder" datatype="html">
+        <source>Backorder if unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-acceptLegalPrefix" datatype="html">
+        <source>I have read and accept the</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-termsLink" datatype="html">
+        <source>Terms and Conditions</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-privacyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-completeProfileToOrder" datatype="html">
+        <source>Complete your billing profile to place an order.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-completeBillingDetails" datatype="html">
+        <source>Complete billing details</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-close" datatype="html">
+        <source> Close </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-submitOrder" datatype="html">
+        <source> Order </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
+        <source> Cancel subscription? </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelSubscriptionConfirm" datatype="html">
+        <source> Are you sure you want to cancel this subscription? It will remain active until the end of the current period. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-confirmCancel" datatype="html">
+        <source> Confirm cancel </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
+        <source> Resume subscription? </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-resumeSubscriptionConfirm" datatype="html">
+        <source> Resume this subscription so it continues after the current period. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-confirmResume" datatype="html">
+        <source> Resume </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelBackorderTitle" datatype="html">
+        <source> Cancel backorder? </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelBackorderConfirm" datatype="html">
+        <source>Are you sure you want to cancel this backorder?</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-editProfileTitle" datatype="html">
+        <source> Edit customer profile </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-editProfileHint" datatype="html">
+        <source> First name, last name, email, address line 1, city and country are required for invoicing. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-firstName" datatype="html">
+        <source>First name</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-lastName" datatype="html">
+        <source>Last name</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-company" datatype="html">
+        <source>Company</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-email" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-addressLine1" datatype="html">
+        <source>Address line 1</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-addressLine2" datatype="html">
+        <source>Address line 2</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-postalCode" datatype="html">
+        <source>Postal code</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-city" datatype="html">
+        <source>City</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-state" datatype="html">
+        <source>State / Region</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-country" datatype="html">
+        <source>Country</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-chooseCountry" datatype="html">
+        <source>Choose country</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-phone" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-saveProfile" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-title" datatype="html">
+        <source>Confirm Your Email</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-description" datatype="html">
+        <source> Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or type it in the fields below. </source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
+        <source>Email Confirmation</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-authNotAvailable" datatype="html">
+        <source>Email confirmation is not available for this authentication method.</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-confirmingA11y" datatype="html">
+        <source>Confirming...</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-confirming" datatype="html">
+        <source>Confirming your email address...</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-emailPlaceholder" datatype="html">
+        <source>Enter your email address</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-codeLabel" datatype="html">
+        <source>Confirmation Code</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-codeRequired" datatype="html">
+        <source>Confirmation code is required.</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-codePattern" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-submit" datatype="html">
+        <source>Confirm Email</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-appName" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-appDescription" datatype="html">
+        <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard. </source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureDistributedAgent" datatype="html">
+        <source>Distributed Agent Management</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureDistributedAgentDesc" datatype="html">
+        <source>Connect to and manage multiple remote agent-manager services from a single console</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureRealtimeChat" datatype="html">
+        <source>Real-time AI Chat</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureRealtimeChatDesc" datatype="html">
+        <source>WebSocket-based bidirectional communication with AI agents and instant responses</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureCodeEditor" datatype="html">
+        <source>Integrated Code Editor</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureCodeEditorDesc" datatype="html">
+        <source>Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureContainer" datatype="html">
+        <source>Container Integration</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-featureContainerDesc" datatype="html">
+        <source>Docker-based agent execution with live log streaming and file system operations</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-title" datatype="html">
+        <source>Login</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-controllerApiHost" datatype="html">
+        <source>Controller API Host</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-controllerApiKey" datatype="html">
+        <source>Controller API Key</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-apiKeyPlaceholder" datatype="html">
+        <source>Enter your API key</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-apiKeyRequired" datatype="html">
+        <source>API key is required.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-emailPlaceholder" datatype="html">
+        <source>Enter your email</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-passwordLabel" datatype="html">
+        <source>Password</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-passwordPlaceholder" datatype="html">
+        <source>Enter your password</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-passwordRequired" datatype="html">
+        <source>Password is required.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-createAccount" datatype="html">
+        <source>Create an account</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-forgotPassword" datatype="html">
+        <source>Forgot password?</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-loggingIn" datatype="html">
+        <source>Logging in...</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-submit" datatype="html">
+        <source>Login</source>
+        </trans-unit>
+      <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
+        <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-title" datatype="html">
+        <source>Create an Account</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-description" datatype="html">
+        <source> Join Agenstra to manage your AI agent infrastructure. After registration, you will receive an email to confirm your account before you can log in. </source>
+        </trans-unit>
+      <trans-unit id="featureRegister-formTitle" datatype="html">
+        <source>Register</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-authNotAvailable" datatype="html">
+        <source>User registration is not available for this authentication method.</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-emailPlaceholder" datatype="html">
+        <source>Enter your email</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-passwordLabel" datatype="html">
+        <source>Password</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-passwordPlaceholder" datatype="html">
+        <source>Enter your password (min. 8 characters)</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-passwordRequired" datatype="html">
+        <source>Password is required.</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-passwordMinLength" datatype="html">
+        <source>Password must be at least 8 characters.</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-confirmPasswordLabel" datatype="html">
+        <source>Confirm Password</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-confirmPasswordPlaceholder" datatype="html">
+        <source>Confirm your password</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-confirmPasswordRequired" datatype="html">
+        <source> Password confirmation is required. </source>
+        </trans-unit>
+      <trans-unit id="featureRegister-passwordsMismatch" datatype="html">
+        <source> Passwords do not match. </source>
+        </trans-unit>
+      <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
+        <source>By registering, you acknowledge our</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-termsLink" datatype="html">
+        <source>Terms and Conditions</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-privacyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-registering" datatype="html">
+        <source>Registering...</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-submit" datatype="html">
+        <source>Register</source>
+        </trans-unit>
+      <trans-unit id="featureRegister-alreadyHaveAccount" datatype="html">
+        <source>Already have an account? Log in</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
+        <source>Check Your Email</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-description" datatype="html">
+        <source> If an account exists for the email you entered, you will receive a password reset code. Enter the code below and choose a new password. </source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-formTitle" datatype="html">
+        <source> Reset Password </source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-authNotAvailable" datatype="html">
+        <source>Password reset is not available for this authentication method.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-requestResetInfo" datatype="html">
+        <source>Request a password reset to receive a code via email.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-requestResetLink" datatype="html">
+        <source>Request password reset</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-resettingA11y" datatype="html">
+        <source>Resetting...</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-resetting" datatype="html">
+        <source> Resetting your password... </source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-emailPlaceholder" datatype="html">
+        <source>Enter your email address</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-codeLabel" datatype="html">
+        <source>Reset Code</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-codeRequired" datatype="html">
+        <source>Reset code is required.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-codePattern" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-newPasswordLabel" datatype="html">
+        <source>New Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-newPasswordPlaceholder" datatype="html">
+        <source>Enter new password (min. 8 characters)</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-newPasswordRequired" datatype="html">
+        <source>New password is required.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-passwordMinLength" datatype="html">
+        <source>Password must be at least 8 characters.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordLabel" datatype="html">
+        <source>Confirm New Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordPlaceholder" datatype="html">
+        <source>Confirm new password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-confirmRequired" datatype="html">
+        <source> Password confirmation is required. </source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-passwordsMismatch" datatype="html">
+        <source> Passwords do not match. </source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-resettingButton" datatype="html">
+        <source>Resetting...</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-submit" datatype="html">
+        <source>Reset Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-title" datatype="html">
+        <source>Reset Your Password</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-description" datatype="html">
+        <source> Enter your email address and we will send you a link to reset your password. If an account exists for that email, you will receive instructions shortly. </source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-formTitle" datatype="html">
+        <source> Request Password Reset </source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-authNotAvailable" datatype="html">
+        <source>Password reset is not available for this authentication method.</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-emailPlaceholder" datatype="html">
+        <source>Enter your email</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-sending" datatype="html">
+        <source>Sending...</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-submit" datatype="html">
+        <source>Send Reset Link</source>
+        </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-title" datatype="html">
+        <source>Set New Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-description" datatype="html">
+        <source> Enter the reset code you received via email and choose a new password. The code is typically sent when you request a password reset. </source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-formTitle" datatype="html">
+        <source>Reset Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-authNotAvailable" datatype="html">
+        <source>Password reset is not available for this authentication method.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-emailPlaceholder" datatype="html">
+        <source>Enter your email address</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-codeLabel" datatype="html">
+        <source>Reset Code</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-codeRequired" datatype="html">
+        <source>Reset code is required.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-codePattern" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-newPasswordLabel" datatype="html">
+        <source>New Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-newPasswordPlaceholder" datatype="html">
+        <source>Enter new password (min. 8 characters)</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-newPasswordRequired" datatype="html">
+        <source>New password is required.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-passwordMinLength" datatype="html">
+        <source>Password must be at least 8 characters.</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-confirmNewPasswordLabel" datatype="html">
+        <source>Confirm New Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-confirmNewPasswordPlaceholder" datatype="html">
+        <source>Confirm new password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-confirmRequired" datatype="html">
+        <source> Password confirmation is required. </source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-passwordsMismatch" datatype="html">
+        <source> Passwords do not match. </source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-resetting" datatype="html">
+        <source>Resetting...</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-submit" datatype="html">
+        <source>Reset Password</source>
+        </trans-unit>
+      <trans-unit id="featureResetPassword-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-title" datatype="html">
+        <source>User Management</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-addUserTitle" datatype="html">
+        <source>Add user</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-addUser" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
+        <source>Search users</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-loadingUsers" datatype="html">
+        <source>Loading users...</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
+        <source>No other users found</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-confirmed" datatype="html">
+        <source>Confirmed</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-pending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-editUserButtonTitle" datatype="html">
+        <source>Edit user</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-deleteUserButtonTitle" datatype="html">
+        <source>Delete user</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-createUserTitle" datatype="html">
+        <source>Create User</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-closeAriaLabel" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-emailLabel" datatype="html">
+        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
+        <source>user@example.com</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-passwordLabel" datatype="html">
+        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
+        <source>Min. 8 characters</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-roleLabel" datatype="html">
+        <source>Role</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-roleUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-roleAdmin" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-editUserModalTitle" datatype="html">
+        <source>Edit User</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-newPasswordLabel" datatype="html">
+        <source>New Password</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-passwordKeepCurrentPlaceholder" datatype="html">
+        <source>Leave empty to keep current</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-passwordKeepCurrentHint" datatype="html">
+        <source>Leave empty to keep the current password</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-update" datatype="html">
+        <source>Update</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-deleteUserModalTitle" datatype="html">
+        <source> Delete User </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>
