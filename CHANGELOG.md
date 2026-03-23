@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.38.4](https://github.com/forepath/agenstra/compare/v1.38.3...v1.38.4) (2026-03-23)
+
+
+### Bug Fixes
+
+* terms of service translation ([#254](https://github.com/forepath/agenstra/issues/254)) ([37c54c3](https://github.com/forepath/agenstra/commit/37c54c30098ffad033129dd224f48e266c5f2395))
+
 ## [1.38.3](https://github.com/forepath/agenstra/compare/v1.38.2...v1.38.3) (2026-03-23)
 
 
