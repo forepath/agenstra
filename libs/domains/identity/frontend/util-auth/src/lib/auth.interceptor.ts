@@ -5,7 +5,9 @@ import { from, switchMap } from 'rxjs';
 import { IDENTITY_AUTH_ENVIRONMENT } from './auth-environment';
 
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+
+/** localStorage key for users-mode JWT; exported for session-invalidation handling. */
+export const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
 /**
  * HTTP interceptor that conditionally applies API key, Keycloak, or users JWT authentication

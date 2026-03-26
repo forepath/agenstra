@@ -54,6 +54,8 @@ export class IdentityUserManagerComponent implements OnInit {
   readonly creatingUser$ = this.authFacade.creatingUser$;
   readonly updatingUser$ = this.authFacade.updatingUser$;
   readonly deletingUser$ = this.authFacade.deletingUser$;
+  readonly lockingUser$ = this.authFacade.lockingUser$;
+  readonly unlockingUser$ = this.authFacade.unlockingUser$;
 
   readonly users = toSignal(this.users$, { initialValue: [] as UserResponseDto[] });
   readonly currentUser = toSignal(this.authFacade.user$, { initialValue: null });
@@ -139,6 +141,14 @@ export class IdentityUserManagerComponent implements OnInit {
   onDeleteUser(user: UserResponseDto): void {
     this.userToDelete = user;
     this.showModal(this.deleteUserModal);
+  }
+
+  onLockUser(user: UserResponseDto): void {
+    this.authFacade.lockUser(user.id);
+  }
+
+  onUnlockUser(user: UserResponseDto): void {
+    this.authFacade.unlockUser(user.id);
   }
 
   confirmDeleteUser(): void {

@@ -52,6 +52,22 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  @Post(':id/lock')
+  async lock(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: Request & { user?: { id?: string } },
+  ) {
+    return this.usersService.lockUser(id, req?.user?.id);
+  }
+
+  @Post(':id/unlock')
+  async unlock(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: Request & { user?: { id?: string } },
+  ) {
+    return this.usersService.unlockUser(id, req?.user?.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(

@@ -17,6 +17,9 @@ import {
   deleteUser,
   deleteUserFailure,
   deleteUserSuccess,
+  lockUser,
+  lockUserFailure,
+  lockUserSuccess,
   loadUsers,
   loadUsersBatch,
   loadUsersFailure,
@@ -36,6 +39,9 @@ import {
   resetPassword,
   resetPasswordFailure,
   resetPasswordSuccess,
+  unlockUser,
+  unlockUserFailure,
+  unlockUserSuccess,
   updateUser,
   updateUserFailure,
   updateUserSuccess,
@@ -65,6 +71,8 @@ export const initialAuthenticationState: AuthenticationState = {
   creatingUser: false,
   updatingUser: false,
   deletingUser: false,
+  lockingUser: false,
+  unlockingUser: false,
 };
 
 export const authenticationReducer = createReducer(
@@ -287,6 +295,40 @@ export const authenticationReducer = createReducer(
   on(deleteUserFailure, (state, { error }) => ({
     ...state,
     deletingUser: false,
+    usersError: error,
+  })),
+  // Admin: Lock User
+  on(lockUser, (state) => ({
+    ...state,
+    lockingUser: true,
+    usersError: null,
+  })),
+  on(lockUserSuccess, (state, { user }) => ({
+    ...state,
+    users: state.users.map((u) => (u.id === user.id ? user : u)),
+    lockingUser: false,
+    usersError: null,
+  })),
+  on(lockUserFailure, (state, { error }) => ({
+    ...state,
+    lockingUser: false,
+    usersError: error,
+  })),
+  // Admin: Unlock User
+  on(unlockUser, (state) => ({
+    ...state,
+    unlockingUser: true,
+    usersError: null,
+  })),
+  on(unlockUserSuccess, (state, { user }) => ({
+    ...state,
+    users: state.users.map((u) => (u.id === user.id ? user : u)),
+    unlockingUser: false,
+    usersError: null,
+  })),
+  on(unlockUserFailure, (state, { error }) => ({
+    ...state,
+    unlockingUser: false,
     usersError: error,
   })),
 );

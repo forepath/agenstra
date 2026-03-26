@@ -2,6 +2,7 @@
 export {
   // Interceptor
   getAuthInterceptor,
+  getUsersSessionInvalidationInterceptor,
   // Service
   AuthService,
   // Facade

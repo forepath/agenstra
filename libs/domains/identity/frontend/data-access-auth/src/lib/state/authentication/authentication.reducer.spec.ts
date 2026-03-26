@@ -8,12 +8,18 @@ import {
   loadUsersBatch,
   loadUsersFailure,
   loadUsersSuccess,
+  lockUser,
+  lockUserFailure,
+  lockUserSuccess,
   login,
   loginFailure,
   loginSuccess,
   logout,
   logoutFailure,
   logoutSuccess,
+  unlockUser,
+  unlockUserFailure,
+  unlockUserSuccess,
 } from './authentication.actions';
 import { authenticationReducer, initialAuthenticationState } from './authentication.reducer';
 import type { AuthenticationState } from './authentication.types';
@@ -364,6 +370,119 @@ describe('authenticationReducer', () => {
 
       expect(newState.usersError).toBe('Load failed');
       expect(newState.usersLoading).toBe(false);
+    });
+  });
+
+  describe('lockUser', () => {
+    it('should set lockingUser to true and clear usersError', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        usersError: 'Previous error',
+      };
+
+      const newState = authenticationReducer(state, lockUser({ id: 'u1' }));
+
+      expect(newState.lockingUser).toBe(true);
+      expect(newState.usersError).toBeNull();
+    });
+  });
+
+  describe('lockUserSuccess', () => {
+    it('should update the user and set lockingUser to false', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        lockingUser: true,
+        users: [{ id: 'u1', email: 'a@b.com', role: 'user', lockedAt: null, createdAt: '', updatedAt: '' }],
+      };
+      const updatedUser = {
+        id: 'u1',
+        email: 'a@b.com',
+        role: 'user' as const,
+        lockedAt: '2026-01-01T00:00:00Z',
+        createdAt: '',
+        updatedAt: '',
+      };
+
+      const newState = authenticationReducer(state, lockUserSuccess({ user: updatedUser }));
+
+      expect(newState.users).toEqual([updatedUser]);
+      expect(newState.lockingUser).toBe(false);
+      expect(newState.usersError).toBeNull();
+    });
+  });
+
+  describe('lockUserFailure', () => {
+    it('should set usersError and set lockingUser to false', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        lockingUser: true,
+      };
+
+      const newState = authenticationReducer(state, lockUserFailure({ error: 'Lock failed' }));
+
+      expect(newState.lockingUser).toBe(false);
+      expect(newState.usersError).toBe('Lock failed');
+    });
+  });
+
+  describe('unlockUser', () => {
+    it('should set unlockingUser to true and clear usersError', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        usersError: 'Previous error',
+      };
+
+      const newState = authenticationReducer(state, unlockUser({ id: 'u1' }));
+
+      expect(newState.unlockingUser).toBe(true);
+      expect(newState.usersError).toBeNull();
+    });
+  });
+
+  describe('unlockUserSuccess', () => {
+    it('should update the user and set unlockingUser to false', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        unlockingUser: true,
+        users: [
+          {
+            id: 'u1',
+            email: 'a@b.com',
+            role: 'user',
+            lockedAt: '2026-01-01T00:00:00Z',
+            createdAt: '',
+            updatedAt: '',
+          },
+        ],
+      };
+      const updatedUser = {
+        id: 'u1',
+        email: 'a@b.com',
+        role: 'user' as const,
+        lockedAt: null,
+        createdAt: '',
+        updatedAt: '',
+      };
+
+      const newState = authenticationReducer(state, unlockUserSuccess({ user: updatedUser }));
+
+      expect(newState.users).toEqual([updatedUser]);
+      expect(newState.unlockingUser).toBe(false);
+      expect(newState.usersError).toBeNull();
+    });
+  });
+
+  describe('unlockUserFailure', () => {
+    it('should set usersError and set unlockingUser to false', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        unlockingUser: true,
+      };
+
+      const newState = authenticationReducer(state, unlockUserFailure({ error: 'Unlock failed' }));
+
+      expect(newState.unlockingUser).toBe(false);
+      expect(newState.usersError).toBe('Unlock failed');
     });
   });
 });

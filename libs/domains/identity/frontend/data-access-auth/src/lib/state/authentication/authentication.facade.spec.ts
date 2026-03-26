@@ -1,7 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { checkAuthentication, loadUsers, login, logout, register } from './authentication.actions';
+import {
+  checkAuthentication,
+  loadUsers,
+  lockUser,
+  login,
+  logout,
+  register,
+  unlockUser,
+} from './authentication.actions';
 import { AuthenticationFacade } from './authentication.facade';
 
 describe('AuthenticationFacade', () => {
@@ -161,6 +169,18 @@ describe('AuthenticationFacade', () => {
       facade.loadUsers();
 
       expect(store.dispatch).toHaveBeenCalledWith(loadUsers({ limit: undefined, offset: undefined }));
+    });
+
+    it('should dispatch lockUser action', () => {
+      facade.lockUser('user-1');
+
+      expect(store.dispatch).toHaveBeenCalledWith(lockUser({ id: 'user-1' }));
+    });
+
+    it('should dispatch unlockUser action', () => {
+      facade.unlockUser('user-1');
+
+      expect(store.dispatch).toHaveBeenCalledWith(unlockUser({ id: 'user-1' }));
     });
   });
 });

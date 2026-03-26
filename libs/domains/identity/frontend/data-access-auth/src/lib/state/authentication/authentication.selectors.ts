@@ -46,6 +46,10 @@ export const selectUpdatingUser = createSelector(selectAuthenticationState, (sta
 
 export const selectDeletingUser = createSelector(selectAuthenticationState, (state) => state.deletingUser);
 
+export const selectLockingUser = createSelector(selectAuthenticationState, (state) => state.lockingUser);
+
+export const selectUnlockingUser = createSelector(selectAuthenticationState, (state) => state.unlockingUser);
+
 export const selectIsAdmin = createSelector(selectUser, (user) => user?.role === 'admin');
 
 /**

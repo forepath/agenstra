@@ -38,6 +38,10 @@ export class AuthService {
       throw new UnauthorizedException('Email not confirmed. Please confirm your email before logging in.');
     }
 
+    if (user.lockedAt) {
+      throw new UnauthorizedException('This account is locked. Please contact an administrator.');
+    }
+
     if (!user.passwordHash) {
       throw new UnauthorizedException('This account uses external authentication (Keycloak).');
     }

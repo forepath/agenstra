@@ -131,3 +131,15 @@ export const deleteUser = createAction('[Admin] Delete User', props<{ id: string
 export const deleteUserSuccess = createAction('[Admin] Delete User Success', props<{ id: string }>());
 
 export const deleteUserFailure = createAction('[Admin] Delete User Failure', props<{ error: string }>());
+
+export const lockUser = createAction('[Admin] Lock User', props<{ id: string }>());
+
+export const lockUserSuccess = createAction('[Admin] Lock User Success', props<{ user: UserResponseDto }>());
+
+export const lockUserFailure = createAction('[Admin] Lock User Failure', props<{ error: string }>());
+
+export const unlockUser = createAction('[Admin] Unlock User', props<{ id: string }>());
+
+export const unlockUserSuccess = createAction('[Admin] Unlock User Success', props<{ user: UserResponseDto }>());
+
+export const unlockUserFailure = createAction('[Admin] Unlock User Failure', props<{ error: string }>());

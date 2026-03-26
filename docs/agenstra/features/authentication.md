@@ -99,8 +99,9 @@ DISABLE_SIGNUP=false  # Set to true to disable self-registration
 1. User enters email and password
 2. System validates credentials
 3. System checks if email is confirmed
-4. If valid, JWT token is issued
-5. Token is stored in localStorage and included in subsequent requests
+4. System checks if the account is locked (`locked_at` must be null)
+5. If valid, JWT token is issued
+6. Token is stored in localStorage and included in subsequent requests
 
 ### Password Reset
 
@@ -153,6 +154,7 @@ The frontend configuration should match the backend `DISABLE_SIGNUP` setting to 
 
 - Full access to all features
 - User management (create, read, update, delete users)
+- Can lock and unlock user accounts
 - Can create users via `POST /api/users`
 - First user in the system automatically gets admin role
 
@@ -184,6 +186,15 @@ Admins can manage users via the user management interface or API:
 - Admin can delete users
 - Deletion removes all user data
 
+### Lock / Unlock User
+
+- Admin can lock users via `POST /api/users/:id/lock`
+- Admin can unlock users via `POST /api/users/:id/unlock`
+- Locked users cannot log in while `locked_at` has a timestamp value
+- Existing JWTs stop working on the next API call once a user is locked (or deleted): the server reloads the user row and rejects locked or missing accounts
+- In **keycloak** mode, the same `users` row is consulted after a valid Keycloak token is accepted: HTTP requests fail with 401 if the synced user is locked, and WebSocket auth denies connections when the Keycloak-linked row is locked
+- Admins cannot lock or unlock themselves
+
 ## Security Features
 
 ### Password Security
@@ -197,6 +208,8 @@ Admins can manage users via the user management interface or API:
 - JWT tokens expire after 7 days
 - Tokens are stored securely in localStorage
 - Tokens include user ID, email, and role
+- Each authenticated request in **users** mode verifies the user still exists and is not locked (`locked_at` null); in **keycloak** mode, the Keycloak sync guard applies the same lock check against the local user row
+- The SPA registers an HTTP interceptor (`getUsersSessionInvalidationInterceptor`) that, in **users** or **keycloak** mode, dispatches logout on 401 with session-ending messages (locked account, invalid/expired token, etc.). In users mode it also clears the stored JWT; in keycloak mode existing logout effects end the Keycloak session and return the UI to the login flow
 
 ### Email Confirmation
 
@@ -228,6 +241,8 @@ Admins can manage users via the user management interface or API:
 - `GET /api/users/:id` - Get user
 - `POST /api/users/:id` - Update user
 - `DELETE /api/users/:id` - Delete user
+- `POST /api/users/:id/lock` - Lock user account
+- `POST /api/users/:id/unlock` - Unlock user account
 
 ## Authentication Flow Diagram
 
@@ -261,11 +276,9 @@ flowchart TB
         UF3 --> UF4["First user = admin, rest = user"]
         UF4 --> UF5["Admin CRUD for users"]
         UF5 --> UF6["Admin create/email change: confirmation email sent"]
+        UF5 --> UF7["Admin lock/unlock user accounts"]
+        UF2 --> UF8["Login denied when account is locked (locked_at not null)"]
     end
-
-    style API_KEY fill:#e6f0ff
-    style KEYCLOAK fill:#e6ffe6
-    style USERS fill:#fff0e6
 ```
 
 ## Registration Sequence Diagram

@@ -16,6 +16,9 @@ import {
   loadUsersBatch,
   loadUsersFailure,
   loadUsersSuccess,
+  lockUser,
+  lockUserFailure,
+  lockUserSuccess,
   login,
   loginFailure,
   loginSuccess,
@@ -25,10 +28,14 @@ import {
   registerSuccess,
   requestPasswordResetSuccess,
   resetPasswordSuccess,
+  unlockUser,
+  unlockUserFailure,
+  unlockUserSuccess,
 } from './authentication.actions';
 import {
   checkAuthentication$,
   confirmEmailSuccessRedirect$,
+  lockUser$,
   loadUsers$,
   loadUsersBatch$,
   login$,
@@ -38,6 +45,7 @@ import {
   registerSuccessRedirect$,
   requestPasswordResetSuccessRedirect$,
   resetPasswordSuccessRedirect$,
+  unlockUser$,
 } from './authentication.effects';
 import type { UserResponseDto } from './authentication.types';
 
@@ -778,6 +786,7 @@ describe('AuthenticationEffects', () => {
       email: 'test@example.com',
       role: 'user',
       emailConfirmedAt: '2024-01-01T00:00:00Z',
+      lockedAt: null,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
     };
@@ -855,6 +864,7 @@ describe('AuthenticationEffects', () => {
       email: 'test@example.com',
       role: 'user',
       emailConfirmedAt: '2024-01-01T00:00:00Z',
+      lockedAt: null,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
     };
@@ -926,6 +936,92 @@ describe('AuthenticationEffects', () => {
       mockAuthService.listUsers.mockReturnValue(throwError(() => error));
 
       loadUsersBatch$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('lockUser$', () => {
+    const mockAuthService = {
+      lockUser: jest.fn(),
+    } as any;
+
+    it('should return lockUserSuccess on success', (done) => {
+      const user: UserResponseDto = {
+        id: 'user-1',
+        email: 'locked@example.com',
+        role: 'user',
+        emailConfirmedAt: '2024-01-01T00:00:00Z',
+        lockedAt: '2026-01-01T00:00:00Z',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      };
+      const action = lockUser({ id: 'user-1' });
+      const outcome = lockUserSuccess({ user });
+
+      actions$ = of(action);
+      mockAuthService.lockUser.mockReturnValue(of(user));
+
+      lockUser$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.lockUser).toHaveBeenCalledWith('user-1');
+        done();
+      });
+    });
+
+    it('should return lockUserFailure on error', (done) => {
+      const action = lockUser({ id: 'user-1' });
+      const error = new Error('Lock failed');
+      const outcome = lockUserFailure({ error: 'Lock failed' });
+
+      actions$ = of(action);
+      mockAuthService.lockUser.mockReturnValue(throwError(() => error));
+
+      lockUser$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('unlockUser$', () => {
+    const mockAuthService = {
+      unlockUser: jest.fn(),
+    } as any;
+
+    it('should return unlockUserSuccess on success', (done) => {
+      const user: UserResponseDto = {
+        id: 'user-1',
+        email: 'active@example.com',
+        role: 'user',
+        emailConfirmedAt: '2024-01-01T00:00:00Z',
+        lockedAt: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      };
+      const action = unlockUser({ id: 'user-1' });
+      const outcome = unlockUserSuccess({ user });
+
+      actions$ = of(action);
+      mockAuthService.unlockUser.mockReturnValue(of(user));
+
+      unlockUser$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.unlockUser).toHaveBeenCalledWith('user-1');
+        done();
+      });
+    });
+
+    it('should return unlockUserFailure on error', (done) => {
+      const action = unlockUser({ id: 'user-1' });
+      const error = new Error('Unlock failed');
+      const outcome = unlockUserFailure({ error: 'Unlock failed' });
+
+      actions$ = of(action);
+      mockAuthService.unlockUser.mockReturnValue(throwError(() => error));
+
+      unlockUser$(actions$, mockAuthService).subscribe((result) => {
         expect(result).toEqual(outcome);
         done();
       });

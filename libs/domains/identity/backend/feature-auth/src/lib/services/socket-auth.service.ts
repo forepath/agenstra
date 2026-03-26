@@ -54,7 +54,7 @@ export class SocketAuthService {
     }
 
     if (authMethod === 'users' && this.jwtService) {
-      return this.validateUsersToken(token);
+      return await this.validateUsersToken(token);
     }
 
     return null;
@@ -139,6 +139,9 @@ export class SocketAuthService {
       let userId = payload.sub;
       const syncedUser = await this.usersRepository.findByKeycloakSub(payload.sub);
       if (syncedUser) {
+        if (syncedUser.lockedAt) {
+          return null;
+        }
         userId = syncedUser.id;
       }
 
@@ -159,6 +162,10 @@ export class SocketAuthService {
   private async validateUsersToken(token: string): Promise<SocketUserInfo | null> {
     try {
       const payload = await this.jwtService!.verifyAsync<{ sub: string; email?: string; roles?: string[] }>(token);
+      const entity = await this.usersRepository.findById(payload.sub);
+      if (!entity || entity.lockedAt) {
+        return null;
+      }
       const roles = payload.roles ?? ['user'];
       const isAdmin = roles.includes('admin');
 
