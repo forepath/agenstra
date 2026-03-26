@@ -77,6 +77,9 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   readonly subscriptionsLoading$ = this.subscriptionsFacade.getSubscriptionsLoading$();
   readonly subscriptionsError$ = this.subscriptionsFacade.getSubscriptionsError$();
   readonly subscriptionsCreating$ = this.subscriptionsFacade.getSubscriptionsCreating$();
+  readonly subscriptionsCreating = toSignal(this.subscriptionsFacade.getSubscriptionsCreating$(), {
+    initialValue: false,
+  });
 
   readonly subscriptionsPage = signal(0);
   readonly paginatedSubscriptions = computed(() => {

@@ -98,5 +98,55 @@ describe('ProviderServerTypesService', () => {
 
       process.env.HETZNER_API_TOKEN = env;
     });
+
+    it('should fetch and map DigitalOcean sizes when token is set', async () => {
+      const env = process.env.DIGITALOCEAN_API_TOKEN;
+      process.env.DIGITALOCEAN_API_TOKEN = 'do-test-token';
+      mockedAxios.get.mockResolvedValue({
+        data: {
+          sizes: [
+            {
+              slug: 's-1vcpu-1gb',
+              memory: 1024,
+              vcpus: 1,
+              disk: 25,
+              price_monthly: 6,
+              price_hourly: 0.009,
+              available: true,
+              deprecated: false,
+              description: 'Basic',
+            },
+          ],
+        },
+      });
+
+      const result = await service.getServerTypes('digital-ocean');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://api.digitalocean.com/v2/sizes',
+        expect.objectContaining({ headers: { Authorization: 'Bearer do-test-token' } }),
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        id: 's-1vcpu-1gb',
+        name: 'S-1VCPU-1GB',
+        cores: 1,
+        memory: 1,
+        disk: 25,
+        priceMonthly: 6,
+        priceHourly: 0.009,
+      });
+      process.env.DIGITALOCEAN_API_TOKEN = env;
+    });
+
+    it('should throw when DIGITALOCEAN_API_TOKEN is not set', async () => {
+      const env = process.env.DIGITALOCEAN_API_TOKEN;
+      delete process.env.DIGITALOCEAN_API_TOKEN;
+
+      await expect(service.getServerTypes('digital-ocean')).rejects.toThrow(BadRequestException);
+      await expect(service.getServerTypes('digital-ocean')).rejects.toThrow('DIGITALOCEAN_API_TOKEN');
+
+      process.env.DIGITALOCEAN_API_TOKEN = env;
+    });
   });
 });

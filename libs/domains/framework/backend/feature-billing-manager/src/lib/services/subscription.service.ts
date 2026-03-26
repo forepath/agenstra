@@ -75,9 +75,10 @@ export class SubscriptionService {
       effectiveConfig.authenticationMethod = 'api-key';
     }
 
-    const region = (effectiveConfig.region as string | undefined) ?? 'fsn1';
-    const serverType = (effectiveConfig.serverType as string | undefined) ?? 'cx11';
     const provider = serviceType.provider;
+    const region = (effectiveConfig.region as string | undefined) ?? (provider === 'digital-ocean' ? 'fra1' : 'fsn1');
+    const serverType =
+      (effectiveConfig.serverType as string | undefined) ?? (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11');
     const availability = await this.availabilityService.checkAvailability(provider, region, serverType);
 
     if (!availability.isAvailable) {
@@ -115,7 +116,7 @@ export class SubscriptionService {
       configSnapshot: effectiveConfig,
     });
 
-    if (serviceType.provider === 'hetzner') {
+    if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
       let hostname: string | null = null;
       try {
         hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
@@ -142,12 +143,17 @@ export class SubscriptionService {
           await this.subscriptionItemsRepository.updateProviderReference(subscriptionItem.id, provisioned.serverId);
           await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'active');
           const serverInfo = await this.provisioningService.getServerInfo(serviceType.provider, provisioned.serverId);
-          if (serverInfo?.publicIp) {
+          const publicIp = await this.provisioningService.ensurePublicIpForDns(
+            serviceType.provider,
+            provisioned.serverId,
+            serverInfo,
+          );
+          if (publicIp) {
             try {
-              await this.cloudflareDnsService.createARecord(hostname, serverInfo.publicIp);
+              await this.cloudflareDnsService.createARecord(hostname, publicIp);
             } catch (dnsError) {
               this.logger.warn(
-                `DNS record creation failed for ${hostname}, server provisioned with IP ${serverInfo.publicIp}: ${(dnsError as Error).message}`,
+                `DNS record creation failed for ${hostname}, server provisioned with IP ${publicIp}: ${(dnsError as Error).message}`,
               );
             }
           }

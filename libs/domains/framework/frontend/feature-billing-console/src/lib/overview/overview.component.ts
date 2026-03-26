@@ -4,7 +4,11 @@ import { RouterLink } from '@angular/router';
 import {
   BackordersFacade,
   CustomerProfileFacade,
+  getBillingServerLocationLabel,
   InvoicesFacade,
+  isBillingServerOff,
+  isBillingServerOnline,
+  isBillingServerStartable,
   SubscriptionServerInfoFacade,
   SubscriptionsFacade,
 } from '@forepath/framework/frontend/data-access-billing-console';
@@ -45,6 +49,11 @@ export class OverviewComponent implements OnInit {
   readonly customerProfileLoading$ = this.customerProfileFacade.getCustomerProfileLoading$();
   readonly isCustomerProfileComplete$ = this.customerProfileFacade.isCustomerProfileComplete$();
 
+  readonly isServerOnline = isBillingServerOnline;
+  readonly isServerOff = isBillingServerOff;
+  readonly isServerStartable = isBillingServerStartable;
+  readonly serverLocationLabel = getBillingServerLocationLabel;
+
   ngOnInit(): void {
     this.subscriptionsFacade.loadSubscriptions();
     this.backordersFacade.loadBackorders();
@@ -58,14 +67,11 @@ export class OverviewComponent implements OnInit {
       .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
   }
 
-  getProviderName(provider: {} | undefined): string | undefined {
-    if (!provider) {
-      return undefined;
-    }
-
+  getProviderName(provider: unknown): string | undefined {
     switch (provider) {
       case 'hetzner':
         return 'Hetzner Cloud';
+      case 'digital-ocean':
       case 'digitalocean':
         return 'DigitalOcean';
       default:

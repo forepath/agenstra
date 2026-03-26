@@ -172,7 +172,7 @@ paths:
     get:
       summary: Get server types for a provider
       operationId: getProviderServerTypes
-      description: Returns server types with specs and pricing for the given provider (e.g. hetzner). Used by the billing console for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
+      description: Returns server types with specs and pricing for the given provider (e.g. hetzner, digital-ocean). Used by the billing console for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
       parameters:
         - name: providerId
           in: path
@@ -1712,7 +1712,7 @@ components:
       properties:
         id:
           type: string
-          description: Provider identifier (e.g. hetzner). Used as the value for service type provider field.
+          description: Provider identifier (e.g. hetzner, digital-ocean). Used as the value for service type provider field.
         displayName:
           type: string
           description: Human-readable display name (e.g. Hetzner Cloud).
@@ -1751,7 +1751,7 @@ components:
           description: Optional description
         provider:
           type: string
-          description: Provider identifier (e.g. hetzner)
+          description: Provider identifier (e.g. hetzner, digital-ocean)
         configSchema:
           type: object
           description: JSON schema for provider configuration

@@ -1,5 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import type { ServerInfoResponse } from '../../types/billing.types';
+import { billingOptimisticOnlineStatus } from '../../utils/server-info-provider.utils';
 import {
   loadOverviewServerInfo,
   loadOverviewServerInfoFailure,
@@ -86,7 +87,13 @@ export const subscriptionServerInfoReducer = createReducer(
     const nextActionInProgress = setActionInProgress(state, subscriptionId, null);
     const existing = state.serverInfoBySubscriptionId[subscriptionId];
     const serverInfoBySubscriptionId = existing
-      ? { ...state.serverInfoBySubscriptionId, [subscriptionId]: { ...existing, status: 'running' } }
+      ? {
+          ...state.serverInfoBySubscriptionId,
+          [subscriptionId]: {
+            ...existing,
+            status: billingOptimisticOnlineStatus(existing.metadata),
+          },
+        }
       : state.serverInfoBySubscriptionId;
     return { ...state, actionInProgress: nextActionInProgress, serverInfoBySubscriptionId };
   }),

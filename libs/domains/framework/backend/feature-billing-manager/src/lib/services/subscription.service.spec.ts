@@ -80,6 +80,7 @@ describe('SubscriptionService', () => {
   const provisioningService = {
     provision: jest.fn(),
     getServerInfo: jest.fn().mockResolvedValue({ publicIp: '1.2.3.4' }),
+    ensurePublicIpForDns: jest.fn(),
   } as any;
   const hostnameReservationService = {
     reserveHostname: jest.fn().mockResolvedValue('awesome-armadillo-abc12'),
@@ -143,6 +144,15 @@ describe('SubscriptionService', () => {
     (buildBillingCloudInitUserData as jest.Mock).mockReturnValue('#!/bin/bash\necho hello');
     hostnameReservationService.reserveHostname.mockResolvedValue('awesome-armadillo-abc12');
     provisioningService.getServerInfo.mockResolvedValue({ publicIp: '1.2.3.4' });
+    provisioningService.ensurePublicIpForDns.mockImplementation(
+      async (_provider: string, _serverId: string, initial?: { publicIp?: string } | null) => {
+        if (initial?.publicIp) {
+          return initial.publicIp;
+        }
+        const info = await provisioningService.getServerInfo(_provider, _serverId);
+        return info?.publicIp || undefined;
+      },
+    );
   });
 
   it('creates subscription with schedule', async () => {
@@ -313,6 +323,85 @@ describe('SubscriptionService', () => {
       'hetzner',
       expect.objectContaining({ userData: '#!/bin/bash\necho manager' }),
     );
+  });
+
+  it('provisions when provider is digital-ocean', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'digital-ocean',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'do-srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', {
+      region: 'fra1',
+      serverType: 's-1vcpu-1gb',
+    });
+
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('digital-ocean', 'fra1', 's-1vcpu-1gb');
+    expect(provisioningService.provision).toHaveBeenCalledWith(
+      'digital-ocean',
+      expect.objectContaining({
+        name: 'awesome-armadillo-abc12',
+        serverType: 's-1vcpu-1gb',
+        location: 'fra1',
+      }),
+    );
+    expect(itemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'do-srv-1');
+    expect(provisioningService.ensurePublicIpForDns).toHaveBeenCalled();
+    expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '1.2.3.4');
+  });
+
+  it('creates Cloudflare DNS for digital-ocean when public IP appears after polling', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'digital-ocean',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'do-srv-1' });
+    provisioningService.getServerInfo.mockResolvedValue({ publicIp: '' });
+    provisioningService.ensurePublicIpForDns.mockResolvedValue('10.0.0.99');
+
+    await service.createSubscription('user-1', 'plan-1', {
+      region: 'fra1',
+      serverType: 's-1vcpu-1gb',
+    });
+
+    expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '10.0.0.99');
   });
 
   it('throws BadRequestException when customer profile is null', async () => {

@@ -872,21 +872,32 @@
           }
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            [disabled]="subscriptionsCreating()"
+            i18n="@@featureSubscriptions-close"
+          >
             Close
           </button>
           <button
             type="submit"
-            class="btn btn-primary"
+            class="btn btn-primary d-inline-flex align-items-center gap-2"
             [disabled]="
               !orderPlanId.trim() ||
               !orderAcceptLegal ||
-              (subscriptionsCreating$ | async) === true ||
+              subscriptionsCreating() ||
               (isCustomerProfileComplete$ | async) !== true
             "
-            i18n="@@featureSubscriptions-submitOrder"
           >
-            Order
+            @if (subscriptionsCreating()) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span class="visually-hidden" i18n="@@featureSubscriptions-orderInProgress"
+                >Provisioning in progress, please wait</span
+              >
+            }
+            <span i18n="@@featureSubscriptions-submitOrder">Order</span>
           </button>
         </div>
       </form>

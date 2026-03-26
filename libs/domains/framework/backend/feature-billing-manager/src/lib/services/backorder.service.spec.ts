@@ -82,6 +82,7 @@ describe('BackorderService', () => {
     const provisioningService = {
       provision: jest.fn().mockResolvedValue({ serverId: 'srv-1' }),
       getServerInfo: jest.fn().mockResolvedValue({ publicIp: '1.2.3.4' }),
+      ensurePublicIpForDns: jest.fn().mockResolvedValue('1.2.3.4'),
     } as any;
     const service = new BackorderService(
       backordersRepository,
