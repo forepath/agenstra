@@ -1,3 +1,4 @@
+export * from './lib/interceptors/users-session-invalidated.interceptor';
 export * from './lib/services/auth.service';
 export * from './lib/state/authentication/authentication.actions';
 export * from './lib/state/authentication/authentication.effects';

@@ -34,6 +34,9 @@ export class UserEntity {
   @Column({ type: 'timestamp', name: 'email_confirmed_at', nullable: true })
   emailConfirmedAt?: Date;
 
+  @Column({ type: 'timestamp', name: 'locked_at', nullable: true })
+  lockedAt?: Date | null;
+
   @Column({ type: 'varchar', length: 255, name: 'email_confirmation_token', nullable: true })
   emailConfirmationToken?: string;
 

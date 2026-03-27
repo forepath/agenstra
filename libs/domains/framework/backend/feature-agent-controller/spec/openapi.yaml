@@ -32,7 +32,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
-          description: Invalid credentials or email not confirmed
+          description: Invalid credentials, email not confirmed, or account locked
   /auth/register:
     post:
       summary: Register new user (users auth only)
@@ -226,6 +226,56 @@ paths:
       responses:
         '204':
           description: User deleted
+        '404':
+          description: User not found
+  /users/{id}/lock:
+    post:
+      summary: Lock user account (admin only)
+      operationId: lockUser
+      description: >
+        Locks the target user account immediately. Locked users cannot authenticate
+        in users-auth mode. Admins cannot lock themselves.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+        '400':
+          description: Self-lock is not allowed
+        '404':
+          description: User not found
+  /users/{id}/unlock:
+    post:
+      summary: Unlock user account (admin only)
+      operationId: unlockUser
+      description: >
+        Unlocks the target user account by clearing lock timestamp.
+        Admins cannot unlock themselves.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User unlocked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+        '400':
+          description: Self-unlock is not allowed
         '404':
           description: User not found
   /clients:
@@ -2801,6 +2851,11 @@ components:
           $ref: '#/components/schemas/UserRole'
         emailConfirmedAt:
           type: string
+          format: date-time
+        lockedAt:
+          type:
+            - string
+            - 'null'
           format: date-time
         createdAt:
           type: string

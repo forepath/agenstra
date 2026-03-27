@@ -23,6 +23,9 @@ import {
   deleteUser,
   deleteUserFailure,
   deleteUserSuccess,
+  lockUser,
+  lockUserFailure,
+  lockUserSuccess,
   loadUsers,
   loadUsersBatch,
   loadUsersFailure,
@@ -42,6 +45,9 @@ import {
   resetPassword,
   resetPasswordFailure,
   resetPasswordSuccess,
+  unlockUser,
+  unlockUserFailure,
+  unlockUserSuccess,
   updateUser,
   updateUserFailure,
   updateUserSuccess,
@@ -516,6 +522,36 @@ export const deleteUser$ = createEffect(
         authService.deleteUser(id).pipe(
           map(() => deleteUserSuccess({ id })),
           catchError((error) => of(deleteUserFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const lockUser$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(lockUser),
+      switchMap(({ id }) =>
+        authService.lockUser(id).pipe(
+          map((user) => lockUserSuccess({ user })),
+          catchError((error) => of(lockUserFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const unlockUser$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(unlockUser),
+      switchMap(({ id }) =>
+        authService.unlockUser(id).pipe(
+          map((user) => unlockUserSuccess({ user })),
+          catchError((error) => of(unlockUserFailure({ error: normalizeError(error) }))),
         ),
       ),
     );

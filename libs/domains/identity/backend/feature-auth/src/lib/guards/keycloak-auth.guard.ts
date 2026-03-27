@@ -1,5 +1,5 @@
-import { getAuthenticationMethod, IS_PUBLIC_KEY, UserRole } from '@forepath/identity/backend';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { getAuthenticationMethod, IS_PUBLIC_KEY, UserEntity, UserRole } from '@forepath/identity/backend';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UsersRepository } from '../repositories/users.repository';
 
@@ -17,6 +17,7 @@ interface KeycloakTokenPayload {
  * Guard that syncs Keycloak-authenticated users to the users table.
  * First user gets admin role, subsequent users get user role.
  * Runs after Keycloak AuthGuard; ensures request.user has our format { id, email, roles }.
+ * Rejects with 401 if the resolved local user row has `locked_at` set (same message as users JWT guard).
  */
 @Injectable()
 export class KeycloakAuthGuard implements CanActivate {
@@ -57,9 +58,16 @@ export class KeycloakAuthGuard implements CanActivate {
     return true;
   }
 
+  private assertUserNotLocked(user: UserEntity): void {
+    if (user.lockedAt) {
+      throw new UnauthorizedException('This account is locked. Please contact an administrator.');
+    }
+  }
+
   private async syncUser(keycloakSub: string, email: string): Promise<{ id: string; email: string; role: UserRole }> {
     let user = await this.usersRepository.findByKeycloakSub(keycloakSub);
     if (user) {
+      this.assertUserNotLocked(user);
       return { id: user.id, email: user.email, role: user.role };
     }
 
@@ -68,6 +76,7 @@ export class KeycloakAuthGuard implements CanActivate {
 
     user = await this.usersRepository.findByEmail(email.toLowerCase());
     if (user) {
+      this.assertUserNotLocked(user);
       await this.usersRepository.update(user.id, { keycloakSub });
       return { id: user.id, email: user.email, role: user.role };
     }

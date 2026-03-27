@@ -27,6 +27,7 @@ export interface UserResponseDto {
   email: string;
   role: UserRole;
   emailConfirmedAt?: string | null;
+  lockedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,4 +69,6 @@ export interface AuthenticationState {
   creatingUser: boolean;
   updatingUser: boolean;
   deletingUser: boolean;
+  lockingUser: boolean;
+  unlockingUser: boolean;
 }

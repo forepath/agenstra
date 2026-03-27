@@ -10,6 +10,7 @@ import {
   deleteUser$,
   loadUsers$,
   loadUsersBatch$,
+  lockUser$,
   login$,
   loginSuccessRedirect$,
   logout$,
@@ -20,6 +21,7 @@ import {
   requestPasswordResetSuccessRedirect$,
   resetPassword$,
   resetPasswordSuccessRedirect$,
+  unlockUser$,
   updateUser$,
 } from '@forepath/identity/frontend';
 import { provideEffects } from '@ngrx/effects';
@@ -151,5 +153,7 @@ export const identityAuthProviders = [
     createUser$,
     updateUser$,
     deleteUser$,
+    lockUser$,
+    unlockUser$,
   }),
 ];

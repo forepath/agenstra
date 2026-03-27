@@ -9,12 +9,14 @@ import {
   confirmEmail,
   createUser,
   deleteUser,
+  lockUser,
   loadUsers,
   login,
   logout,
   register,
   requestPasswordReset,
   resetPassword,
+  unlockUser,
   updateUser,
 } from './authentication.actions';
 import {
@@ -29,10 +31,12 @@ import {
   selectIsAdmin,
   selectIsAuthenticated,
   selectIsNotAuthenticated,
+  selectLockingUser,
   selectRegistering,
   selectRequestingPasswordReset,
   selectResettingPassword,
   selectSuccessMessage,
+  selectUnlockingUser,
   selectUpdatingUser,
   selectUser,
   selectUsers,
@@ -71,6 +75,8 @@ export class AuthenticationFacade {
   readonly creatingUser$: Observable<boolean> = this.store.select(selectCreatingUser);
   readonly updatingUser$: Observable<boolean> = this.store.select(selectUpdatingUser);
   readonly deletingUser$: Observable<boolean> = this.store.select(selectDeletingUser);
+  readonly lockingUser$: Observable<boolean> = this.store.select(selectLockingUser);
+  readonly unlockingUser$: Observable<boolean> = this.store.select(selectUnlockingUser);
 
   login(apiKey?: string, email?: string, password?: string): void {
     this.store.dispatch(login({ apiKey, email, password }));
@@ -124,6 +130,14 @@ export class AuthenticationFacade {
 
   deleteUser(id: string): void {
     this.store.dispatch(deleteUser({ id }));
+  }
+
+  lockUser(id: string): void {
+    this.store.dispatch(lockUser({ id }));
+  }
+
+  unlockUser(id: string): void {
+    this.store.dispatch(unlockUser({ id }));
   }
 
   clearError(): void {

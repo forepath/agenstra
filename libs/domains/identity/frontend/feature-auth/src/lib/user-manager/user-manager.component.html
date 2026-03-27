@@ -59,6 +59,17 @@
                 <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                   <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
                     <span class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2">{{ user.role }}</span>
+                    @if (user.lockedAt) {
+                      <span class="text-danger me-2"
+                        ><i class="bi bi-lock-fill me-1"></i
+                        ><ng-container i18n="@@featureUserManager-locked">Locked</ng-container></span
+                      >
+                    } @else {
+                      <span class="text-success me-2"
+                        ><i class="bi bi-unlock-fill me-1"></i
+                        ><ng-container i18n="@@featureUserManager-unlocked">Active</ng-container></span
+                      >
+                    }
                     @if (user.emailConfirmedAt) {
                       <span class="text-success"
                         ><i class="bi bi-check-circle me-1"></i
@@ -75,6 +86,29 @@
                 </div>
               </div>
               <div class="btn-group btn-group-sm">
+                @if (user.lockedAt) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    (click)="onUnlockUser(user)"
+                    [disabled]="(unlockingUser$ | async) === true || (lockingUser$ | async) === true"
+                    i18n-title="@@featureUserManager-unlockUserButtonTitle"
+                    title="Unlock user"
+                  >
+                    <i class="bi bi-unlock"></i>
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="btn btn-outline-warning"
+                    (click)="onLockUser(user)"
+                    [disabled]="(lockingUser$ | async) === true || (unlockingUser$ | async) === true"
+                    i18n-title="@@featureUserManager-lockUserButtonTitle"
+                    title="Lock user"
+                  >
+                    <i class="bi bi-lock"></i>
+                  </button>
+                }
                 <button
                   type="button"
                   class="btn btn-outline-primary"

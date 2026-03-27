@@ -1,4 +1,11 @@
-import { ConflictException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import {
   createConfirmationCode,
@@ -31,6 +38,7 @@ export class UsersService {
       email: user.email,
       role: user.role,
       emailConfirmedAt: user.emailConfirmedAt?.toISOString(),
+      lockedAt: user.lockedAt?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     };
@@ -135,6 +143,34 @@ export class UsersService {
       /* fire and forget */
     });
     await this.usersRepository.remove(id);
+  }
+
+  async lockUser(targetUserId: string, actingUserId?: string): Promise<UserResponseDto> {
+    if (actingUserId && actingUserId === targetUserId) {
+      throw new BadRequestException('You cannot lock your own account');
+    }
+
+    const user = await this.usersRepository.findById(targetUserId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updated = await this.usersRepository.update(targetUserId, { lockedAt: new Date() });
+    return this.mapToResponseDto(updated);
+  }
+
+  async unlockUser(targetUserId: string, actingUserId?: string): Promise<UserResponseDto> {
+    if (actingUserId && actingUserId === targetUserId) {
+      throw new BadRequestException('You cannot unlock your own account');
+    }
+
+    const user = await this.usersRepository.findById(targetUserId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updated = await this.usersRepository.update(targetUserId, { lockedAt: null });
+    return this.mapToResponseDto(updated);
   }
 
   async validatePassword(plainPassword: string, hash: string): Promise<boolean> {

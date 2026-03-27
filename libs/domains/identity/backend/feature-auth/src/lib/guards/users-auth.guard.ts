@@ -3,6 +3,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { UsersRepository } from '../repositories/users.repository';
 
 export interface UsersJwtPayload {
   sub: string;
@@ -15,6 +16,7 @@ export class UsersAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -46,13 +48,23 @@ export class UsersAuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync<UsersJwtPayload>(token);
+      const user = await this.usersRepository.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('Session is no longer valid.');
+      }
+      if (user.lockedAt) {
+        throw new UnauthorizedException('This account is locked. Please contact an administrator.');
+      }
       request['user'] = {
         id: payload.sub,
         email: payload.email,
         roles: payload.roles ?? ['user'],
       };
       return true;
-    } catch {
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException('Invalid or expired token');
     }
   }

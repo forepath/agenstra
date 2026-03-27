@@ -97,4 +97,12 @@ export class AuthService {
   deleteUser(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/users/${id}`);
   }
+
+  lockUser(id: string): Observable<UserResponseDto> {
+    return this.http.post<UserResponseDto>(`${this.apiUrl}/users/${id}/lock`, {});
+  }
+
+  unlockUser(id: string): Observable<UserResponseDto> {
+    return this.http.post<UserResponseDto>(`${this.apiUrl}/users/${id}/unlock`, {});
+  }
 }
