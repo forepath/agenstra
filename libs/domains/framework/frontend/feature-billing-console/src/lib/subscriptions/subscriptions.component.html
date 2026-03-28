@@ -90,7 +90,7 @@
                       }
                     </td>
                     <td>
-                      <span class="badge bg-secondary">{{ sub.status }}</span>
+                      <span class="badge bg-secondary">{{ subscriptionStatusLabel(sub.status) }}</span>
                     </td>
                     <td>
                       @if (sub.currentPeriodStart && sub.currentPeriodEnd) {
@@ -195,7 +195,7 @@
                   <tr>
                     <td>{{ bo.planId }}</td>
                     <td>
-                      <span class="badge bg-warning text-dark">{{ bo.status }}</span>
+                      <span class="badge bg-warning text-dark">{{ backorderStatusLabel(bo.status) }}</span>
                     </td>
                     <td>
                       <button

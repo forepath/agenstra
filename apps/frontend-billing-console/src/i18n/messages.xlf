@@ -2,6 +2,45 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureBilling-subscriptionStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingBackorder" datatype="html">
+        <source>Pending backorder</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingCancel" datatype="html">
+        <source>Pending cancellation</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
+        <source>Canceled</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusPending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusRetrying" datatype="html">
+        <source>Retrying</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusFulfilled" datatype="html">
+        <source>Fulfilled</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusCancelled" datatype="html">
+        <source>Cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        </trans-unit>
       <trans-unit id="featureContainer-loadingFile" datatype="html">
         <source>Loading file...</source>
         </trans-unit>

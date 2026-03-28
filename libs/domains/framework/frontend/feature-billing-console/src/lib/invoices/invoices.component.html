@@ -183,9 +183,11 @@
         @for (sub of subscriptions$ | async; track sub.id) {
           <option [value]="sub.id">
             @if (servicePlans$ | async; as plans) {
-              {{ sub.number || '—' }} – {{ planNameByPlanId(sub.planId, plans) }} ({{ sub.status }})
+              {{ sub.number || '—' }} – {{ planNameByPlanId(sub.planId, plans) }} ({{
+                subscriptionStatusLabel(sub.status)
+              }})
             } @else {
-              {{ sub.number || '—' }} – {{ sub.planId }} ({{ sub.status }})
+              {{ sub.number || '—' }} – {{ sub.planId }} ({{ subscriptionStatusLabel(sub.status) }})
             }
           </option>
         }
