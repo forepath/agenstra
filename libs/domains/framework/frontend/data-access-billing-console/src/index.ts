@@ -1,6 +1,9 @@
 // Types
 export * from './lib/types/billing.types';
 
+// Utils
+export * from './lib/utils/server-info-provider.utils';
+
 // Constants
 export * from './lib/constants/supported-countries';
 

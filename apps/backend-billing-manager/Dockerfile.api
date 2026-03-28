@@ -36,6 +36,7 @@ ENV KEYCLOAK_TOKEN_VALIDATION=online
 
 # Environment variables for the provisioning providers
 ENV HETZNER_API_TOKEN=
+ENV DIGITALOCEAN_API_TOKEN=
 
 # Environment variables for Invoice Ninja
 ENV INVOICE_NINJA_BASE_URL=

@@ -31,6 +31,7 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 - INVOICE_NINJA_API_TOKEN
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE
 - HETZNER_API_TOKEN
+- DIGITALOCEAN_API_TOKEN
 - OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL (optional; default 86400000 ms = daily)
 - SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL (optional; default 86400000 ms = 24 hours; SSH update scheduler)
 - CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID (for DNS A record creation on provisioned servers)
@@ -55,7 +56,7 @@ Usage records can be posted to `POST /usage/record` and will be included in invo
 
 ## Provider details
 
-`GET /service-types/providers` returns all registered provisioning providers with id, display name, and optional config schema. This is used by the billing console to show a provider dropdown when creating service types and to render provider default config fields when creating/editing service plans. Providers are registered at startup (e.g. Hetzner) via `ProviderRegistryService`; add new providers in `BillingModule.onModuleInit()` or by injecting and calling `ProviderRegistryService.register()`.
+`GET /service-types/providers` returns all registered provisioning providers with id, display name, and optional config schema. This is used by the billing console to show a provider dropdown when creating service types and to render provider default config fields when creating/editing service plans. Providers are registered at startup (e.g. Hetzner, DigitalOcean) via `ProviderRegistryService`; add new providers in `BillingModule.onModuleInit()` or by injecting and calling `ProviderRegistryService.register()`.
 
 **Config schema shape:** The optional `configSchema` is a JSON-schema-like object with a `properties` map. Each property may include:
 
@@ -65,18 +66,22 @@ Usage records can be posted to `POST /usage/record` and will be included in invo
 
 **Base price from field:** The schema may include a top-level `basePriceFromField` (e.g. `'serverType'`). When set, the billing console fetches options from `GET /service-types/providers/:providerId/server-types` for that field and uses the selected option’s `priceMonthly` as the plan base price when the user selects a server type.
 
-**Server types endpoint:** `GET /service-types/providers/:providerId/server-types` returns server types with specs and pricing for the given provider (e.g. `hetzner`). Used by the billing console to show a server type dropdown (name, cores, memory, disk, price) and to auto-set the plan base price when `configSchema.basePriceFromField` is `'serverType'`.
+**Server types endpoint:** `GET /service-types/providers/:providerId/server-types` returns server types with specs and pricing for the given provider (e.g. `hetzner`, `digital-ocean`). Used by the billing console to show a server type dropdown (name, cores, memory, disk, price) and to auto-set the plan base price when `configSchema.basePriceFromField` is `'serverType'`.
 
 ## Provisioning Config
 
 Subscription creation (`POST /subscriptions`) first checks that the customer billing profile is complete (see Customer
 Profile above); otherwise the request is rejected with 400. It then accepts provider-specific configuration that is
 validated against the service type schema.
-For Hetzner provisioning, the following config keys are used:
+For provisioning, the following provider-specific config keys are used:
 
-- location (string, required by default schema; enum pre-populated in UI)
-- serverType (string, required; options and price from GET .../server-types; selection can auto-set plan base price)
-- firewallId (number, optional)
+- `hetzner`:
+  - `region` (string, required by default schema; enum pre-populated in UI)
+  - `serverType` (string, required; options and price from GET .../server-types; selection can auto-set plan base price)
+  - `firewallId` (number, optional)
+- `digital-ocean`:
+  - `region` (string, required by default schema; enum pre-populated in UI)
+  - `serverType` (string, required; options and price from GET .../server-types; selection can auto-set plan base price)
 
 Optional instance configuration (requestedConfig) can include authentication (users, api-key, keycloak), SMTP, and optional provisioning tokens so the instance can provision additional servers itself:
 

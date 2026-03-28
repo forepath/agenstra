@@ -4,13 +4,11 @@ import {
   loadOverviewServerInfoSuccess,
   refreshSubscriptionServerInfoSuccess,
   restartServer,
-  restartServerFailure,
   restartServerSuccess,
   startServer,
   startServerFailure,
   startServerSuccess,
   stopServer,
-  stopServerFailure,
   stopServerSuccess,
 } from './subscription-server-info.actions';
 import {
@@ -118,6 +116,26 @@ describe('subscriptionServerInfoReducer', () => {
       );
       expect(newState.actionInProgress['sub-1']).toBeUndefined();
       expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('running');
+    });
+
+    it('should set server info status to active for DigitalOcean on start success', () => {
+      const state: SubscriptionServerInfoState = {
+        ...initialSubscriptionServerInfoState,
+        actionInProgress: { 'sub-1': 'start' },
+        serverInfoBySubscriptionId: {
+          'sub-1': {
+            name: 'droplet',
+            publicIp: '1.2.3.4',
+            status: 'off',
+            metadata: { provider: 'digital-ocean' },
+          },
+        },
+      };
+      const newState = subscriptionServerInfoReducer(
+        state,
+        startServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
+      );
+      expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('active');
     });
 
     it('should only clear actionInProgress when subscription has no server info', () => {

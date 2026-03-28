@@ -74,9 +74,20 @@ export class BackorderService {
     const plan = await this.servicePlansRepository.findByIdOrThrow(backorder.planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
 
-    const region = (backorder.requestedConfigSnapshot?.region as string | undefined) ?? 'fsn1';
-    const serverType = (backorder.requestedConfigSnapshot?.serverType as string | undefined) ?? 'cx11';
-    const availability = await this.availabilityService.checkAvailability(serviceType.provider, region, serverType);
+    const effectiveConfig: Record<string, unknown> = {
+      ...(plan.providerConfigDefaults ?? {}),
+      ...(backorder.requestedConfigSnapshot ?? {}),
+    };
+    const provider = serviceType.provider;
+    if (!effectiveConfig.region) {
+      effectiveConfig.region = provider === 'digital-ocean' ? 'fra1' : 'fsn1';
+    }
+    if (!effectiveConfig.serverType) {
+      effectiveConfig.serverType = provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11';
+    }
+    const region = effectiveConfig.region as string;
+    const serverType = effectiveConfig.serverType as string;
+    const availability = await this.availabilityService.checkAvailability(provider, region, serverType);
 
     if (!availability.isAvailable) {
       return await this.backordersRepository.update(backorderId, {
@@ -104,17 +115,13 @@ export class BackorderService {
     const baseItem = await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: plan.serviceTypeId,
-      configSnapshot: backorder.requestedConfigSnapshot ?? {},
+      configSnapshot: { ...effectiveConfig },
     });
 
-    if (serviceType.provider === 'hetzner') {
+    if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
       let hostname: string | null = null;
       try {
         hostname = await this.hostnameReservationService.reserveHostname(baseItem.id);
-        const effectiveConfig: Record<string, unknown> = {
-          ...(plan.providerConfigDefaults ?? {}),
-          ...(backorder.requestedConfigSnapshot ?? {}),
-        };
         const service = (effectiveConfig.service as string) ?? 'controller';
         if (service === 'manager' && (effectiveConfig.authenticationMethod as string) === 'users') {
           effectiveConfig.authenticationMethod = 'api-key';
@@ -131,8 +138,8 @@ export class BackorderService {
             : buildBillingCloudInitUserData(buildCloudInitConfigFromRequest(effectiveConfig, hostname, baseDomain));
         const provisioningConfig = {
           name: hostname,
-          serverType: (effectiveConfig.serverType as string) ?? 'cx11',
-          location: (effectiveConfig.region as string) ?? 'fsn1',
+          serverType: effectiveConfig.serverType as string,
+          location: effectiveConfig.region as string,
           firewallId: effectiveConfig.firewallId as number | undefined,
           userData,
         };
@@ -141,12 +148,17 @@ export class BackorderService {
           await this.subscriptionItemsRepository.updateProviderReference(baseItem.id, provisioned.serverId);
           await this.subscriptionItemsRepository.updateProvisioningStatus(baseItem.id, 'active');
           const serverInfo = await this.provisioningService.getServerInfo(serviceType.provider, provisioned.serverId);
-          if (serverInfo?.publicIp) {
+          const publicIp = await this.provisioningService.ensurePublicIpForDns(
+            serviceType.provider,
+            provisioned.serverId,
+            serverInfo,
+          );
+          if (publicIp) {
             try {
-              await this.cloudflareDnsService.createARecord(hostname, serverInfo.publicIp);
+              await this.cloudflareDnsService.createARecord(hostname, publicIp);
             } catch (dnsError) {
               this.logger.warn(
-                `DNS record creation failed for ${hostname}, server provisioned with IP ${serverInfo.publicIp}: ${(dnsError as Error).message}`,
+                `DNS record creation failed for ${hostname}, server provisioned with IP ${publicIp}: ${(dnsError as Error).message}`,
               );
             }
           }

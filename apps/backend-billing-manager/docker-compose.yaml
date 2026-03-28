@@ -35,6 +35,7 @@ services:
       DB_DATABASE: postgres
       # Environment variables for the provisioning providers
       HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
+      DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
       # Authentication method configuration
       AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
       # Environment variables for disabling signup
