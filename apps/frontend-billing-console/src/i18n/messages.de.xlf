@@ -253,7 +253,7 @@
       <trans-unit id="featureServicePlans-price" datatype="html">
         <source>Price</source>
         <target>Preis</target></trans-unit>
-      <trans-unit id="featureServicePlans-orderingHighlights" datatype="html">
+      <trans-unit id="featureServicePlans-orderingHighlightsColumn" datatype="html">
         <source>Highlights</source>
         <target>Highlights</target></trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
@@ -286,6 +286,9 @@
       <trans-unit id="featureServicePlans-description" datatype="html">
         <source>Description</source>
         <target>Beschreibung</target></trans-unit>
+      <trans-unit id="featureServicePlans-orderingHighlights" datatype="html">
+        <source>Ordering highlights</source>
+        <target>Bestell-Highlights</target></trans-unit>
       <trans-unit id="featureServicePlans-addHighlight" datatype="html">
         <source> Add line </source>
         <target>Zeile hinzufügen</target></trans-unit>
@@ -451,7 +454,7 @@
       <trans-unit id="featureSubscriptions-title" datatype="html">
         <source>Plans &amp; Subscriptions</source>
         <target>Pläne &amp; Abonnements</target></trans-unit>
-      <trans-unit id="featureSubscriptions-orderPlan" datatype="html">
+      <trans-unit id="featureSubscriptions-orderPlanButton" datatype="html">
         <source>Order</source>
         <target>Bestellen</target></trans-unit>
       <trans-unit id="featureSubscriptions-customerProfile" datatype="html">
@@ -523,6 +526,9 @@
       <trans-unit id="featureSubscriptions-noBackorders" datatype="html">
         <source> No pending backorders. </source>
         <target>Keine ausstehenden Rückstände.</target></trans-unit>
+      <trans-unit id="featureSubscriptions-orderPlanTitle" datatype="html">
+        <source>Order plan</source>
+        <target>Plan bestellen</target></trans-unit>
       <trans-unit id="featureSubscriptions-selectPlan" datatype="html">
         <source>Plan</source>
         <target>Plan</target></trans-unit>
@@ -637,8 +643,11 @@
       <trans-unit id="featureSubscriptions-close" datatype="html">
         <source> Close </source>
         <target>Schließen</target></trans-unit>
+      <trans-unit id="featureSubscriptions-orderInProgress" datatype="html">
+        <source>Provisioning in progress, please wait</source>
+        <target>Bereitstellung läuft, bitte warten</target></trans-unit>
       <trans-unit id="featureSubscriptions-submitOrder" datatype="html">
-        <source> Order </source>
+        <source>Order</source>
         <target>Bestellen</target></trans-unit>
       <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
         <source> Cancel subscription? </source>
@@ -709,6 +718,21 @@
       <trans-unit id="featureSubscriptions-saveProfile" datatype="html">
         <source> Save </source>
         <target>Speichern</target></trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        <target>Diese Website verwendet Cookies, um Ihnen die bestmögliche Erfahrung zu bieten.</target></trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        <target>Verstanden!</target></trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        <target>Akzeptieren</target></trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        <target>Ablehnen</target></trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
+        <target>Mehr erfahren</target></trans-unit>
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
         <target>Bestätigen Sie Ihre E-Mail</target>
@@ -1244,6 +1268,22 @@
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
         <source>No other users found</source>
         <target>Keine weiteren Benutzer gefunden</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-locked" datatype="html">
+        <source>Locked</source>
+        <target>Gesperrt</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlocked" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
+        <source>Unlock user</source>
+        <target>Benutzer entsperren</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-lockUserButtonTitle" datatype="html">
+        <source>Lock user</source>
+        <target>Benutzer sperren</target>
         </trans-unit>
       <trans-unit id="featureUserManager-confirmed" datatype="html">
         <source>Confirmed</source>

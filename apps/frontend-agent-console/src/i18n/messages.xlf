@@ -1663,11 +1663,23 @@
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
         <source>No other users found</source>
         </trans-unit>
+      <trans-unit id="featureUserManager-locked" datatype="html">
+        <source>Locked</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlocked" datatype="html">
+        <source>Active</source>
+        </trans-unit>
       <trans-unit id="featureUserManager-confirmed" datatype="html">
         <source>Confirmed</source>
         </trans-unit>
       <trans-unit id="featureUserManager-pending" datatype="html">
         <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
+        <source>Unlock user</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-lockUserButtonTitle" datatype="html">
+        <source>Lock user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-editUserButtonTitle" datatype="html">
         <source>Edit user</source>

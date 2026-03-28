@@ -60,6 +60,7 @@
       <div class="col-12">
         <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
           <img src="assets/images/logos/hetzner.svg" alt="Hetzner" class="img-fluid logo-partner logo-partner--small" />
+          <img src="assets/images/logos/digitalocean.svg" alt="DigitalOcean" class="img-fluid logo-partner" />
         </div>
       </div>
     </div>
@@ -306,28 +307,31 @@
       Security, latency, and your requirements drive the roadmap.
     </p>
     <div class="row justify-content-center">
-      <div class="col-12 col-lg-10 col-xl-9">
-        <div class="card border-0 shadow-sm rounded-3">
-          <div class="card-body p-4 p-lg-5">
-            <img
-              [src]="'assets/images/logos/' + infrastructureProvider.id + '.svg'"
-              [alt]="infrastructureProvider.name"
-              class="img-fluid provider-logo mb-4"
-            />
-            <p class="lead text-muted mb-5">{{ infrastructureProvider.tagline }}</p>
-            <div class="bg-body-tertiary rounded-2 p-4">
-              <dl class="row mb-0 small">
-                <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelDc">Datacenters</dt>
-                <dd class="col-sm-8 mb-3">{{ infrastructureProvider.datacenters }}</dd>
-                <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelNet">Network</dt>
-                <dd class="col-sm-8 mb-3">{{ infrastructureProvider.network }}</dd>
-                <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelHw">Hardware</dt>
-                <dd class="col-sm-8">{{ infrastructureProvider.hardware }}</dd>
-              </dl>
+      @for (infrastructureProvider of infrastructureProviders; track infrastructureProvider.id) {
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-3 h-100">
+            <div class="card-body p-4 p-lg-5">
+              <img
+                [src]="'assets/images/logos/' + infrastructureProvider.id + '.svg'"
+                [alt]="infrastructureProvider.name"
+                class="img-fluid provider-logo mb-4"
+                [class.logo-partner--small]="infrastructureProvider.id === 'hetzner'"
+              />
+              <p class="lead text-muted mb-5">{{ infrastructureProvider.tagline }}</p>
+              <div class="bg-body-tertiary rounded-2 p-4">
+                <dl class="row mb-0 small">
+                  <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelDc">Datacenters</dt>
+                  <dd class="col-sm-8 mb-3">{{ infrastructureProvider.datacenters }}</dd>
+                  <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelNet">Network</dt>
+                  <dd class="col-sm-8 mb-3">{{ infrastructureProvider.network }}</dd>
+                  <dt class="col-sm-4 text-muted" i18n="@@featurePortalCloud-infraLabelHw">Hardware</dt>
+                  <dd class="col-sm-8">{{ infrastructureProvider.hardware }}</dd>
+                </dl>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      }
     </div>
   </div>
 </section>
