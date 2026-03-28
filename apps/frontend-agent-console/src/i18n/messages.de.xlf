@@ -74,10 +74,6 @@
         <source>Filter flags</source>
         <target>Filter-Markierungen</target>
         </trans-unit>
-      <trans-unit id="featureAudit-noChartData" datatype="html">
-        <source>No time series or filter breakdown data available</source>
-        <target>Keine Zeitreihen- oder Filterdaten verfügbar</target>
-        </trans-unit>
       <trans-unit id="featureAudit-noData" datatype="html">
         <source>No data yet. Apply filters and load statistics.</source>
         <target>Noch keine Daten. Filter anwenden und Statistiken laden.</target>
@@ -473,10 +469,6 @@
       <trans-unit id="featureChat-typeMessagePlaceholder" datatype="html">
         <source>Type a message...</source>
         <target>Nachricht eingeben...</target>
-        </trans-unit>
-      <trans-unit id="featureChat-send" datatype="html">
-        <source>Send</source>
-        <target>Senden</target>
         </trans-unit>
       <trans-unit id="featureChat-model" datatype="html">
         <source>Model</source>
@@ -2089,18 +2081,6 @@
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
         </trans-unit>
-      <trans-unit id="featureUserManager-brandAlt" datatype="html">
-        <source>Agenstra</source>
-        <target>Agenstra</target>
-        </trans-unit>
-      <trans-unit id="featureUserManager-appName" datatype="html">
-        <source>Agenstra</source>
-        <target>Agenstra</target>
-        </trans-unit>
-      <trans-unit id="featureUserManager-adminConsole" datatype="html">
-        <source>Admin Console</source>
-        <target>Admin-Konsole</target>
-        </trans-unit>
       <trans-unit id="featureUserManager-title" datatype="html">
         <source>User Management</source>
         <target>Benutzerverwaltung</target>
@@ -2124,6 +2104,22 @@
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
         <source>No other users found</source>
         <target>Keine weiteren Benutzer gefunden</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-locked" datatype="html">
+        <source>Locked</source>
+        <target>Gesperrt</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlocked" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
+        <source>Unlock user</source>
+        <target>Benutzer entsperren</target>
+        </trans-unit>
+      <trans-unit id="featureUserManager-lockUserButtonTitle" datatype="html">
+        <source>Lock user</source>
+        <target>Benutzer sperren</target>
         </trans-unit>
       <trans-unit id="featureUserManager-confirmed" datatype="html">
         <source>Confirmed</source>

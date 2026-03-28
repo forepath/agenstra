@@ -430,6 +430,26 @@
         <source>NVMe storage and current-generation AMD and Intel CPUs so workloads stay responsive under load.</source>
         <target>NVMe-Speicher und aktuelle AMD- und Intel-CPUs, damit Workloads unter Last reaktionsfähig bleiben.</target>
         </trans-unit>
+      <trans-unit id="featurePortalCloud-infraDigitalOceanName" datatype="html">
+        <source>DigitalOcean</source>
+        <target>DigitalOcean</target>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraDigitalOceanTagline" datatype="html">
+        <source>Simple, developer-focused cloud with regions across North America, Europe, and Asia.</source>
+        <target>Einfache, entwicklerorientierte Cloud mit Regionen in Nordamerika, Europa und Asien.</target>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraDigitalOceanDc" datatype="html">
+        <source>New York, San Francisco, and Toronto; London, Amsterdam, and Frankfurt; Singapore and Bangalore.</source>
+        <target>New York, San Francisco und Toronto; London, Amsterdam und Frankfurt; Singapur und Bangalore.</target>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraDigitalOceanNet" datatype="html">
+        <source>VPC private networking between Droplets in the same region, optional floating IPv4 addresses, and IPv6 where the region supports it.</source>
+        <target>VPC-privates Netzwerk zwischen Droplets in derselben Region, optionale Floating-IPv4-Adressen und IPv6, wo die Region es unterstützt.</target>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-infraDigitalOceanHw" datatype="html">
+        <source>SSD-backed Droplets from shared vCPU sizes for typical workloads to dedicated vCPU plans when you need steady CPU performance.</source>
+        <target>SSD-basierte Droplets von geteilten vCPU-Größen für typische Workloads bis zu dedizierten vCPU-Plänen, wenn Sie gleichmäßige CPU-Leistung benötigen.</target>
+        </trans-unit>
       <trans-unit id="featurePortalCloud-metaTitle" datatype="html">
         <source>Agenstra Cloud - Fully Managed Control Plane For Your AI Agents</source>
         <target>Agenstra Cloud - vollständig verwaltete Control Plane für Ihre KI-Agenten</target>

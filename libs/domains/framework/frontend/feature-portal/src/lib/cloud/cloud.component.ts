@@ -66,14 +66,24 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
   readonly plansScrollAtStart = signal(true);
   readonly plansScrollAtEnd = signal(false);
 
-  readonly infrastructureProvider: CloudInfrastructureProvider = {
-    id: 'hetzner',
-    name: $localize`:@@featurePortalCloud-infraHetznerName:Hetzner Cloud`,
-    tagline: $localize`:@@featurePortalCloud-infraHetznerTagline:European data centers with modern networking and dependable hardware.`,
-    datacenters: $localize`:@@featurePortalCloud-infraHetznerDc:Nuremberg and Falkenstein (Germany), Helsinki (Finland), Ashburn (US), and Singapore.`,
-    network: $localize`:@@featurePortalCloud-infraHetznerNet:Redundant uplinks, IPv4 and IPv6, and private networking between your resources where it fits your architecture.`,
-    hardware: $localize`:@@featurePortalCloud-infraHetznerHw:NVMe storage and current-generation AMD and Intel CPUs so workloads stay responsive under load.`,
-  };
+  readonly infrastructureProviders: CloudInfrastructureProvider[] = [
+    {
+      id: 'hetzner',
+      name: $localize`:@@featurePortalCloud-infraHetznerName:Hetzner Cloud`,
+      tagline: $localize`:@@featurePortalCloud-infraHetznerTagline:European data centers with modern networking and dependable hardware.`,
+      datacenters: $localize`:@@featurePortalCloud-infraHetznerDc:Nuremberg and Falkenstein (Germany), Helsinki (Finland), Ashburn (US), and Singapore.`,
+      network: $localize`:@@featurePortalCloud-infraHetznerNet:Redundant uplinks, IPv4 and IPv6, and private networking between your resources where it fits your architecture.`,
+      hardware: $localize`:@@featurePortalCloud-infraHetznerHw:NVMe storage and current-generation AMD and Intel CPUs so workloads stay responsive under load.`,
+    },
+    {
+      id: 'digitalocean',
+      name: $localize`:@@featurePortalCloud-infraDigitalOceanName:DigitalOcean`,
+      tagline: $localize`:@@featurePortalCloud-infraDigitalOceanTagline:Simple, developer-focused cloud with regions across North America, Europe, and Asia.`,
+      datacenters: $localize`:@@featurePortalCloud-infraDigitalOceanDc:New York, San Francisco, and Toronto; London, Amsterdam, and Frankfurt; Singapore and Bangalore.`,
+      network: $localize`:@@featurePortalCloud-infraDigitalOceanNet:VPC private networking between Droplets in the same region, optional floating IPv4 addresses, and IPv6 where the region supports it.`,
+      hardware: $localize`:@@featurePortalCloud-infraDigitalOceanHw:SSD-backed Droplets from shared vCPU sizes for typical workloads to dedicated vCPU plans when you need steady CPU performance.`,
+    },
+  ];
 
   readonly planSkeletonPlaceholders = [1, 2, 3] as const;
 

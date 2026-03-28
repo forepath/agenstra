@@ -245,7 +245,7 @@
       <trans-unit id="featureServicePlans-price" datatype="html">
         <source>Price</source>
         </trans-unit>
-      <trans-unit id="featureServicePlans-orderingHighlights" datatype="html">
+      <trans-unit id="featureServicePlans-orderingHighlightsColumn" datatype="html">
         <source>Highlights</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
@@ -277,6 +277,9 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-description" datatype="html">
         <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-orderingHighlights" datatype="html">
+        <source>Ordering highlights</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-addHighlight" datatype="html">
         <source> Add line </source>
@@ -443,7 +446,7 @@
       <trans-unit id="featureSubscriptions-title" datatype="html">
         <source>Plans &amp; Subscriptions</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-orderPlan" datatype="html">
+      <trans-unit id="featureSubscriptions-orderPlanButton" datatype="html">
         <source>Order</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-customerProfile" datatype="html">
@@ -514,6 +517,9 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-noBackorders" datatype="html">
         <source> No pending backorders. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderPlanTitle" datatype="html">
+        <source>Order plan</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-selectPlan" datatype="html">
         <source>Plan</source>
@@ -629,8 +635,11 @@
       <trans-unit id="featureSubscriptions-close" datatype="html">
         <source> Close </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-orderInProgress" datatype="html">
+        <source>Provisioning in progress, please wait</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-submitOrder" datatype="html">
-        <source> Order </source>
+        <source>Order</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
         <source> Cancel subscription? </source>
@@ -700,6 +709,21 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-saveProfile" datatype="html">
         <source> Save </source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
         </trans-unit>
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
@@ -1103,11 +1127,23 @@
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
         <source>No other users found</source>
         </trans-unit>
+      <trans-unit id="featureUserManager-locked" datatype="html">
+        <source>Locked</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlocked" datatype="html">
+        <source>Active</source>
+        </trans-unit>
       <trans-unit id="featureUserManager-confirmed" datatype="html">
         <source>Confirmed</source>
         </trans-unit>
       <trans-unit id="featureUserManager-pending" datatype="html">
         <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
+        <source>Unlock user</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-lockUserButtonTitle" datatype="html">
+        <source>Lock user</source>
         </trans-unit>
       <trans-unit id="featureUserManager-editUserButtonTitle" datatype="html">
         <source>Edit user</source>
