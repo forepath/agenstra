@@ -1,4 +1,5 @@
 import {
+  chatEnhancementStarted,
   clearChatHistory,
   connectSocket,
   connectSocketFailure,
@@ -285,6 +286,42 @@ describe('socketsReducer', () => {
       expect(newState.error).toBe('Forward failed');
       expect(newState.forwarding).toBe(false);
     });
+
+    it('should clear chat enhancement pending when enhance forward fails', () => {
+      const state: SocketsState = {
+        ...initialSocketsState,
+        forwarding: true,
+        forwardingEvent: ForwardableEvent.ENHANCE_CHAT,
+        chatEnhancementPendingCorrelationId: 'corr-1',
+      };
+
+      const newState = socketsReducer(state, forwardEventFailure({ error: 'Network error' }));
+
+      expect(newState.chatEnhancementPendingCorrelationId).toBeNull();
+      expect(newState.chatEnhancementLastResult).toEqual({
+        correlationId: 'corr-1',
+        success: false,
+        errorMessage: 'Network error',
+      });
+    });
+  });
+
+  describe('chatEnhancementStarted', () => {
+    it('should set pending correlation and clear last result', () => {
+      const state: SocketsState = {
+        ...initialSocketsState,
+        chatEnhancementLastResult: {
+          correlationId: 'old',
+          success: true,
+          enhancedText: 'x',
+        },
+      };
+
+      const newState = socketsReducer(state, chatEnhancementStarted({ correlationId: 'corr-2' }));
+
+      expect(newState.chatEnhancementPendingCorrelationId).toBe('corr-2');
+      expect(newState.chatEnhancementLastResult).toBeNull();
+    });
   });
 
   describe('socketError', () => {
@@ -296,6 +333,19 @@ describe('socketsReducer', () => {
       const newState = socketsReducer(state, socketError({ message: 'Socket error' }));
 
       expect(newState.error).toBe('Socket error');
+    });
+
+    it('should fail pending enhancement when socket errors', () => {
+      const state: SocketsState = {
+        ...initialSocketsState,
+        chatEnhancementPendingCorrelationId: 'corr-9',
+      };
+
+      const newState = socketsReducer(state, socketError({ message: 'boom' }));
+
+      expect(newState.chatEnhancementPendingCorrelationId).toBeNull();
+      expect(newState.chatEnhancementLastResult?.success).toBe(false);
+      expect(newState.chatEnhancementLastResult?.errorMessage).toBe('boom');
     });
   });
 
@@ -315,6 +365,42 @@ describe('socketsReducer', () => {
       );
 
       expect(newState.forwardedEvents).toEqual([{ event: 'chatMessage', payload: mockForwardedPayload, timestamp }]);
+
+      jest.spyOn(Date, 'now').mockRestore();
+    });
+
+    it('should handle chatEnhanceResult without appending to forwardedEvents', () => {
+      const timestamp = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(timestamp);
+
+      const enhancePayload: ForwardedEventPayload = {
+        success: true,
+        data: {
+          correlationId: 'c1',
+          success: true,
+          enhancedText: 'Improved prompt',
+        },
+        timestamp: '2024-01-01T00:00:00Z',
+      };
+
+      const state: SocketsState = {
+        ...initialSocketsState,
+        forwardedEvents: [{ event: 'chatMessage', payload: mockForwardedPayload, timestamp: 1 }],
+        chatEnhancementPendingCorrelationId: 'c1',
+      };
+
+      const newState = socketsReducer(
+        state,
+        forwardedEventReceived({ event: 'chatEnhanceResult', payload: enhancePayload }),
+      );
+
+      expect(newState.forwardedEvents.length).toBe(1);
+      expect(newState.chatEnhancementPendingCorrelationId).toBeNull();
+      expect(newState.chatEnhancementLastResult).toEqual({
+        correlationId: 'c1',
+        success: true,
+        enhancedText: 'Improved prompt',
+      });
 
       jest.spyOn(Date, 'now').mockRestore();
     });

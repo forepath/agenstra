@@ -2,9 +2,18 @@ import { DestroyRef, inject, Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { distinctUntilChanged, Observable, take } from 'rxjs';
-import { connectSocket, disconnectSocket, forwardEvent, setChatModel, setClient } from './sockets.actions';
+import {
+  chatEnhancementStarted,
+  connectSocket,
+  disconnectSocket,
+  forwardEvent,
+  setChatModel,
+  setClient,
+} from './sockets.actions';
 import { getSocketInstance } from './sockets.effects';
 import {
+  selectChatEnhancementLastResult,
+  selectChatEnhancementPending,
   selectChatForwarding,
   selectChatModel,
   selectForwardedEvents,
@@ -55,6 +64,8 @@ export class SocketsFacade {
   readonly settingClientId$: Observable<string | null> = this.store.select(selectSettingClientId);
   readonly forwarding$: Observable<boolean> = this.store.select(selectSocketForwarding);
   readonly chatForwarding$: Observable<boolean> = this.store.select(selectChatForwarding);
+  readonly chatEnhancementPending$: Observable<boolean> = this.store.select(selectChatEnhancementPending);
+  readonly chatEnhancementLastResult$ = this.store.select(selectChatEnhancementLastResult);
   readonly chatModel$: Observable<string | null> = this.store.select(selectChatModel);
   readonly error$: Observable<string | null> = this.store.select(selectSocketError);
   readonly forwardedEvents$: Observable<Array<{ event: string; payload: ForwardedEventPayload; timestamp: number }>> =
@@ -159,6 +170,25 @@ export class SocketsFacade {
     const payload =
       effectiveModel !== undefined && effectiveModel !== null ? { message, model: effectiveModel } : { message };
     this.forwardEvent(ForwardableEvent.CHAT, payload, agentId);
+  }
+
+  /**
+   * Request prompt enhancement (unicast chatEnhanceResult; not added to main chat transcript).
+   */
+  forwardEnhanceChat(message: string, agentId: string, correlationId: string, model?: string | null): void {
+    const socket = getSocketInstance();
+    if (!socket || !socket.connected) {
+      console.warn('Socket not connected. Cannot forward enhance chat.');
+      return;
+    }
+    const effectiveModel = model ?? this.currentChatModel ?? undefined;
+    const payload =
+      effectiveModel !== undefined && effectiveModel !== null && effectiveModel !== ''
+        ? { message, correlationId, model: effectiveModel }
+        : { message, correlationId };
+    this.store.dispatch(chatEnhancementStarted({ correlationId }));
+    this.store.dispatch(forwardEvent({ event: ForwardableEvent.ENHANCE_CHAT, payload, agentId }));
+    socket.emit('forward', { event: ForwardableEvent.ENHANCE_CHAT, payload, agentId });
   }
 
   /**

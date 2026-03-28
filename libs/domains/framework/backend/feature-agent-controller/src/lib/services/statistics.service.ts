@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ClientUserRole, UserRole } from '@forepath/identity/backend';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
-import { ChatDirection } from '../entities/statistics-chat-io.entity';
+import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
@@ -30,6 +30,7 @@ export class StatisticsService {
     wordCount: number,
     charCount: number,
     userId?: string,
+    interactionKind: StatisticsInteractionKind = StatisticsInteractionKind.CHAT,
   ): Promise<void> {
     try {
       const { statisticsClientId, statisticsAgentId, statisticsUserId } = await this.ensureShadowEntries(
@@ -42,6 +43,7 @@ export class StatisticsService {
         statisticsClientId,
         statisticsUserId,
         direction: ChatDirection.INPUT,
+        interactionKind,
         wordCount,
         charCount,
         occurredAt: new Date(),
@@ -60,6 +62,7 @@ export class StatisticsService {
     wordCount: number,
     charCount: number,
     userId?: string,
+    interactionKind: StatisticsInteractionKind = StatisticsInteractionKind.CHAT,
   ): Promise<void> {
     try {
       const { statisticsClientId, statisticsAgentId, statisticsUserId } = await this.ensureShadowEntries(
@@ -72,6 +75,7 @@ export class StatisticsService {
         statisticsClientId,
         statisticsUserId,
         direction: ChatDirection.OUTPUT,
+        interactionKind,
         wordCount,
         charCount,
         occurredAt: new Date(),

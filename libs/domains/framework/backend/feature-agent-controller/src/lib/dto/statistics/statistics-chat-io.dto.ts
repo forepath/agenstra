@@ -1,4 +1,4 @@
-import { ChatDirection } from '../../entities/statistics-chat-io.entity';
+import { ChatDirection, StatisticsInteractionKind } from '../../entities/statistics-chat-io.entity';
 
 /**
  * DTO for a single chat I/O record.
@@ -11,6 +11,7 @@ export class StatisticsChatIoDto {
   agentName?: string;
   originalUserId?: string;
   direction!: ChatDirection;
+  interactionKind!: StatisticsInteractionKind;
   wordCount!: number;
   charCount!: number;
   occurredAt!: Date;

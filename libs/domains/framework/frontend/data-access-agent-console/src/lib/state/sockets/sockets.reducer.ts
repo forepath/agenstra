@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+import { ForwardableEvent } from './sockets.types';
 import {
+  chatEnhancementStarted,
   clearChatHistory,
   connectSocket,
   connectSocketFailure,
@@ -84,6 +86,13 @@ export interface SocketsState {
   // Maximum number of entries to keep (to prevent memory issues)
   maxForwardedEvents: number;
   maxMessageFilterResults: number;
+  chatEnhancementPendingCorrelationId: string | null;
+  chatEnhancementLastResult: {
+    correlationId: string;
+    success: boolean;
+    enhancedText?: string;
+    errorMessage?: string;
+  } | null;
 }
 
 export const initialSocketsState: SocketsState = {
@@ -105,6 +114,8 @@ export const initialSocketsState: SocketsState = {
   remoteConnections: {},
   maxForwardedEvents: 1000,
   maxMessageFilterResults: 1000,
+  chatEnhancementPendingCorrelationId: null,
+  chatEnhancementLastResult: null,
 };
 
 export const socketsReducer = createReducer(
@@ -183,6 +194,8 @@ export const socketsReducer = createReducer(
     settingClient: false,
     settingClientId: null,
     remoteConnections: {},
+    chatEnhancementPendingCorrelationId: null,
+    chatEnhancementLastResult: null,
   })),
   // Set Client
   on(setClient, (state, { clientId }) => ({
@@ -239,6 +252,11 @@ export const socketsReducer = createReducer(
     ...state,
     chatModel: model,
   })),
+  on(chatEnhancementStarted, (state, { correlationId }) => ({
+    ...state,
+    chatEnhancementPendingCorrelationId: correlationId,
+    chatEnhancementLastResult: null,
+  })),
   // Forward Event
   on(forwardEvent, (state, { event }) => ({
     ...state,
@@ -259,16 +277,40 @@ export const socketsReducer = createReducer(
     }
     return state;
   }),
-  on(forwardEventFailure, (state, { error }) => ({
-    ...state,
-    forwarding: false,
-    forwardingEvent: null,
-    error,
-  })),
+  on(forwardEventFailure, (state, { error }) => {
+    const wasEnhance =
+      state.forwardingEvent === ForwardableEvent.ENHANCE_CHAT && state.chatEnhancementPendingCorrelationId;
+    return {
+      ...state,
+      forwarding: false,
+      forwardingEvent: null,
+      error,
+      ...(wasEnhance
+        ? {
+            chatEnhancementPendingCorrelationId: null,
+            chatEnhancementLastResult: {
+              correlationId: state.chatEnhancementPendingCorrelationId as string,
+              success: false,
+              errorMessage: error,
+            },
+          }
+        : {}),
+    };
+  }),
   // Socket Error
   on(socketError, (state, { message }) => ({
     ...state,
     error: message,
+    ...(state.chatEnhancementPendingCorrelationId
+      ? {
+          chatEnhancementPendingCorrelationId: null,
+          chatEnhancementLastResult: {
+            correlationId: state.chatEnhancementPendingCorrelationId,
+            success: false,
+            errorMessage: message,
+          },
+        }
+      : {}),
   })),
   // Forwarded Event Received
   on(forwardedEventReceived, (state, { event, payload }) => {
@@ -276,6 +318,34 @@ export const socketsReducer = createReducer(
     if (event === 'containerStats') {
       return state;
     }
+
+    let chatEnhancementPendingCorrelationId = state.chatEnhancementPendingCorrelationId;
+    let chatEnhancementLastResult = state.chatEnhancementLastResult;
+    if (
+      event === 'chatEnhanceResult' &&
+      'data' in payload &&
+      payload.success &&
+      state.chatEnhancementPendingCorrelationId
+    ) {
+      const data = payload.data as import('./sockets.types').ChatEnhanceResultPayload;
+      if (data.correlationId === state.chatEnhancementPendingCorrelationId) {
+        chatEnhancementPendingCorrelationId = null;
+        if (data.success === true) {
+          chatEnhancementLastResult = {
+            correlationId: data.correlationId,
+            success: true,
+            enhancedText: data.enhancedText,
+          };
+        } else {
+          chatEnhancementLastResult = {
+            correlationId: data.correlationId,
+            success: false,
+            errorMessage: data.error?.message ?? 'Enhancement failed',
+          };
+        }
+      }
+    }
+
     // Extract agentId from loginSuccess payload to track selected agent
     let selectedAgentId = state.selectedAgentId;
     if (event === 'loginSuccess' && 'data' in payload && payload.success) {
@@ -312,7 +382,10 @@ export const socketsReducer = createReducer(
           : updatedFilterResults;
     }
 
-    const updatedForwardedEvents = [...state.forwardedEvents, { event, payload, timestamp: Date.now() }];
+    const skipForwardedAppend = event === 'chatEnhanceResult';
+    const updatedForwardedEvents = skipForwardedAppend
+      ? state.forwardedEvents
+      : [...state.forwardedEvents, { event, payload, timestamp: Date.now() }];
     const trimmedForwardedEvents =
       updatedForwardedEvents.length > state.maxForwardedEvents
         ? updatedForwardedEvents.slice(-state.maxForwardedEvents)
@@ -323,6 +396,8 @@ export const socketsReducer = createReducer(
       forwardedEvents: trimmedForwardedEvents,
       messageFilterResults,
       selectedAgentId,
+      chatEnhancementPendingCorrelationId,
+      chatEnhancementLastResult,
     };
   }),
   // Set Agent
@@ -335,6 +410,8 @@ export const socketsReducer = createReducer(
     ...state,
     forwardedEvents: [],
     messageFilterResults: [],
+    chatEnhancementPendingCorrelationId: null,
+    chatEnhancementLastResult: null,
   })),
   // Remote Connection Disconnection (per clientId)
   on(remoteDisconnected, (state, { clientId }) => {

@@ -909,6 +909,18 @@
 
         <!-- Chat input -->
         <div class="p-3 border-top bg-body-tertiary chat-input-container">
+          @if (enhanceErrorMessage(); as enhErr) {
+            <div class="alert alert-warning alert-dismissible py-2 px-3 small mb-2" role="alert">
+              {{ enhErr }}
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Dismiss"
+                i18n-aria-label="@@featureChat-dismissEnhanceError"
+                (click)="clearEnhanceError()"
+              ></button>
+            </div>
+          }
           <div class="chat-commands-select">
             <select
               id="chatCommandsSelect"
@@ -921,6 +933,7 @@
                   !(socketConnected$ | async) ||
                   (socketReconnecting$ | async) ||
                   (remoteReconnecting$ | async) ||
+                  (chatEnhancementPending$ | async) ||
                   !(selectedAgent$ | async) ||
                   (commandsLoading$ | async) ||
                   (commands$ | async)?.length === 0
@@ -954,12 +967,37 @@
                   (socketReconnecting$ | async) ||
                   (remoteReconnecting$ | async) ||
                   (forwarding$ | async) ||
+                  (chatEnhancementPending$ | async) ||
                   !(selectedAgent$ | async)
                 "
               ></textarea>
             </div>
           </div>
-          <div class="chat-send-button-container">
+          <div class="chat-send-button-container d-flex gap-1 align-items-center justify-content-end flex-wrap">
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              type="button"
+              title="Enhance prompt with AI"
+              i18n-title="@@featureChat-enhancePromptTitle"
+              i18n-aria-label="@@featureChat-enhancePromptAria"
+              aria-label="Enhance prompt with AI"
+              [disabled]="
+                !(socketConnected$ | async) ||
+                (socketReconnecting$ | async) ||
+                (remoteReconnecting$ | async) ||
+                (forwarding$ | async) ||
+                (chatEnhancementPending$ | async) ||
+                !(selectedAgent$ | async) ||
+                !chatMessage().trim()
+              "
+              (click)="onEnhanceMessage()"
+            >
+              @if (chatEnhancementPending$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else {
+                <i class="bi bi-magic" aria-hidden="true"></i>
+              }
+            </button>
             <button
               class="btn btn-primary btn-sm chat-send-button"
               type="button"
@@ -968,6 +1006,7 @@
                 (socketReconnecting$ | async) ||
                 (remoteReconnecting$ | async) ||
                 (forwarding$ | async) ||
+                (chatEnhancementPending$ | async) ||
                 !(selectedAgent$ | async) ||
                 !chatMessage().trim()
               "
@@ -992,6 +1031,7 @@
                 !(socketConnected$ | async) ||
                 (socketReconnecting$ | async) ||
                 (remoteReconnecting$ | async) ||
+                (chatEnhancementPending$ | async) ||
                 !(selectedAgent$ | async)
               "
             >

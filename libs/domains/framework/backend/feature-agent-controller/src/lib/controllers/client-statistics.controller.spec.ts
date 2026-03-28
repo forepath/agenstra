@@ -100,6 +100,7 @@ describe('ClientStatisticsController', () => {
         undefined,
         undefined,
         undefined,
+        undefined,
         {} as never,
       );
 
@@ -187,6 +188,7 @@ describe('ClientStatisticsController', () => {
 
       await controller.getChatIo(
         'client-uuid',
+        undefined,
         undefined,
         undefined,
         undefined,

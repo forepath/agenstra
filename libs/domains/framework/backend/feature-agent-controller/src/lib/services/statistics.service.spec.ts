@@ -1,5 +1,6 @@
 import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
+import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
@@ -80,8 +81,26 @@ describe('StatisticsService', () => {
           statisticsAgentId: 'stats-agent-uuid',
           statisticsUserId: 'stats-user-uuid',
           direction: 'input',
+          interactionKind: StatisticsInteractionKind.CHAT,
           wordCount: 10,
           charCount: 50,
+        }),
+      );
+    });
+
+    it('should record prompt enhancement interaction kind when provided', async () => {
+      await service.recordChatInput(
+        'client-uuid',
+        'agent-uuid',
+        2,
+        10,
+        'user-uuid',
+        StatisticsInteractionKind.PROMPT_ENHANCEMENT,
+      );
+
+      expect(statisticsRepository.createStatisticsChatIo).toHaveBeenCalledWith(
+        expect.objectContaining({
+          interactionKind: StatisticsInteractionKind.PROMPT_ENHANCEMENT,
         }),
       );
     });
@@ -112,6 +131,7 @@ describe('StatisticsService', () => {
       expect(statisticsRepository.createStatisticsChatIo).toHaveBeenCalledWith(
         expect.objectContaining({
           direction: 'output',
+          interactionKind: StatisticsInteractionKind.CHAT,
           wordCount: 20,
           charCount: 100,
         }),

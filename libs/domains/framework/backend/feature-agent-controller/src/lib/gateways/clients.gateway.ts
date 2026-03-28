@@ -21,6 +21,7 @@ import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
+import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from '../services/clients.service';
 import { StatisticsService } from '../services/statistics.service';
@@ -255,7 +256,25 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
         const userId = userInfo?.userId;
 
-        if (event === 'chatMessage' && currentClientId && lastAgentId && args.length > 0) {
+        if (event === 'chatEnhanceResult' && currentClientId && lastAgentId && args.length > 0) {
+          const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
+          const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+          if (payload?.success === true && typeof payload.enhancedText === 'string') {
+            const text = payload.enhancedText;
+            const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+            const charCount = text.length;
+            this.statisticsService
+              .recordChatOutput(
+                currentClientId,
+                lastAgentId,
+                wordCount,
+                charCount,
+                userId,
+                StatisticsInteractionKind.PROMPT_ENHANCEMENT,
+              )
+              .catch(() => {});
+          }
+        } else if (event === 'chatMessage' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
           if (payload?.from === 'agent') {
@@ -859,6 +878,22 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           .catch(() => {});
         this.lastAgentIdBySocket.set(socket.id, agentId);
         this.lastChatMessageBySocket.set(socket.id, message);
+      } else if (event === 'enhanceChat' && agentId) {
+        const message = (payload as { message?: string })?.message ?? '';
+        const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
+        const charCount = message.length;
+        const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
+        this.statisticsService
+          .recordChatInput(
+            clientId,
+            agentId,
+            wordCount,
+            charCount,
+            userInfo?.userId,
+            StatisticsInteractionKind.PROMPT_ENHANCEMENT,
+          )
+          .catch(() => {});
+        this.lastAgentIdBySocket.set(socket.id, agentId);
       } else if (agentId) {
         this.lastAgentIdBySocket.set(socket.id, agentId);
       }

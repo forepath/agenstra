@@ -8,6 +8,11 @@ export enum ChatDirection {
   OUTPUT = 'output',
 }
 
+export enum StatisticsInteractionKind {
+  CHAT = 'chat',
+  PROMPT_ENHANCEMENT = 'prompt_enhancement',
+}
+
 /**
  * Records chat I/O (words and characters) per agent at a given time.
  */
@@ -41,6 +46,14 @@ export class StatisticsChatIoEntity {
 
   @Column({ type: 'enum', enum: ChatDirection, name: 'direction' })
   direction!: ChatDirection;
+
+  @Column({
+    type: 'enum',
+    enum: StatisticsInteractionKind,
+    name: 'interaction_kind',
+    default: StatisticsInteractionKind.CHAT,
+  })
+  interactionKind!: StatisticsInteractionKind;
 
   @Column({ type: 'int', name: 'word_count' })
   wordCount!: number;

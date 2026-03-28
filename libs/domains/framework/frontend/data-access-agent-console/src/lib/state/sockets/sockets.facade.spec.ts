@@ -1,7 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { connectSocket, disconnectSocket, forwardEvent, setChatModel, setClient } from './sockets.actions';
+import {
+  chatEnhancementStarted,
+  connectSocket,
+  disconnectSocket,
+  forwardEvent,
+  setChatModel,
+  setClient,
+} from './sockets.actions';
 import { getSocketInstance } from './sockets.effects';
 import { SocketsFacade } from './sockets.facade';
 import { ChatActor, ForwardableEvent, type ForwardedEventPayload } from './sockets.types';
@@ -321,6 +328,27 @@ describe('SocketsFacade', () => {
       expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
         event: ForwardableEvent.CHAT,
         payload: { message, model: 'stored-model' },
+        agentId,
+      });
+    });
+
+    it('should forward enhance chat with correlation id and dispatch chatEnhancementStarted', () => {
+      const message = 'draft';
+      const agentId = 'agent-1';
+      const correlationId = 'cid-1';
+      facade.forwardEnhanceChat(message, agentId, correlationId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(chatEnhancementStarted({ correlationId }));
+      expect(store.dispatch).toHaveBeenCalledWith(
+        forwardEvent({
+          event: ForwardableEvent.ENHANCE_CHAT,
+          payload: { message, correlationId },
+          agentId,
+        }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
+        event: ForwardableEvent.ENHANCE_CHAT,
+        payload: { message, correlationId },
         agentId,
       });
     });
