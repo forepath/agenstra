@@ -90,7 +90,7 @@
     "prettier": "3.6.2",
     "rpmbuild": "0.0.23",
     "serve": "14.2.5",
-    "storybook": "9.1.9",
+    "storybook": "9.1.19",
     "ts-jest": "29.3.4",
     "ts-node": "10.9.1",
     "tslib": "2.8.1",
