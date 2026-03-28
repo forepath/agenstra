@@ -31,6 +31,8 @@ import { getNames, registerLocale } from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import { filter, pairwise, take, withLatestFrom } from 'rxjs';
 
+import { getBackorderStatusLabel, getSubscriptionStatusLabel } from '../billing-status-labels';
+
 registerLocale(enLocale as unknown as Parameters<typeof registerLocale>[0]);
 
 const PAGE_SIZE = 10;
@@ -206,6 +208,14 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   planNameByPlanId(plans: ServicePlanResponse[], planId: string): string {
     const plan = plans?.find((p) => p.id === planId);
     return plan?.name ?? planId;
+  }
+
+  subscriptionStatusLabel(status: string | null | undefined): string {
+    return getSubscriptionStatusLabel(status);
+  }
+
+  backorderStatusLabel(status: string | null | undefined): string {
+    return getBackorderStatusLabel(status);
   }
 
   /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */

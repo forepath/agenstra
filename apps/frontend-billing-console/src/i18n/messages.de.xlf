@@ -2,6 +2,58 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template" target-language="de">
     <body>
+      <trans-unit id="featureBilling-subscriptionStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        <target>Unbekannt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingBackorder" datatype="html">
+        <source>Pending backorder</source>
+        <target>Ausstehender Rückstand</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingCancel" datatype="html">
+        <source>Pending cancellation</source>
+        <target>Kündigung ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
+        <source>Canceled</source>
+        <target>Gekündigt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
+        <target>Unbekannt (<x id="PH" equiv-text="status" />)</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        <target>Unbekannt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusPending" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusRetrying" datatype="html">
+        <source>Retrying</source>
+        <target>Wird wiederholt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusFulfilled" datatype="html">
+        <source>Fulfilled</source>
+        <target>Erfüllt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusCancelled" datatype="html">
+        <source>Cancelled</source>
+        <target>Storniert</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-backorderStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
+        <target>Unbekannt (<x id="PH" equiv-text="status" />)</target>
+      </trans-unit>
       <trans-unit id="featureContainer-loadingFile" datatype="html">
         <source>Loading file...</source>
         <target>Datei wird geladen...</target>

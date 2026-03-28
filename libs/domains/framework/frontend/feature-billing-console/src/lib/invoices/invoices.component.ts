@@ -11,6 +11,7 @@ import {
   type ServicePlanResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
 import { BehaviorSubject, combineLatest, filter, map, of, pairwise, switchMap } from 'rxjs';
+import { getSubscriptionStatusLabel } from '../billing-status-labels';
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 
 const PAGE_SIZE = 10;
@@ -78,6 +79,10 @@ export class InvoicesComponent implements OnInit {
     if (!plans) return planId;
     const plan = plans.find((p) => p.id === planId);
     return plan?.name ?? planId;
+  }
+
+  subscriptionStatusLabel(status: string | null | undefined): string {
+    return getSubscriptionStatusLabel(status);
   }
 
   ngOnInit(): void {
