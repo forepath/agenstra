@@ -272,7 +272,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 userId,
                 StatisticsInteractionKind.PROMPT_ENHANCEMENT,
               )
-              .catch(() => {});
+              .catch(() => undefined);
           }
         } else if (event === 'chatMessage' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
@@ -284,7 +284,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const charCount = text.length;
             this.statisticsService
               .recordChatOutput(currentClientId, lastAgentId, wordCount, charCount, userId)
-              .catch(() => {});
+              .catch(() => undefined);
           }
         } else if (event === 'messageFilterResult' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
@@ -316,7 +316,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 userId,
                 matchedFilter?.reason,
               )
-              .catch(() => {});
+              .catch(() => undefined);
           } else if (payload?.status === 'filtered') {
             const flagDirection =
               payload.direction === 'outgoing' ? FilterFlagDirection.OUTGOING : FilterFlagDirection.INCOMING;
@@ -348,7 +348,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 userId,
                 matchedFilter?.reason,
               )
-              .catch(() => {});
+              .catch(() => undefined);
           }
         }
 
@@ -875,7 +875,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
         this.statisticsService
           .recordChatInput(clientId, agentId, wordCount, charCount, userInfo?.userId)
-          .catch(() => {});
+          .catch(() => undefined);
         this.lastAgentIdBySocket.set(socket.id, agentId);
         this.lastChatMessageBySocket.set(socket.id, message);
       } else if (event === 'enhanceChat' && agentId) {
@@ -892,7 +892,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             userInfo?.userId,
             StatisticsInteractionKind.PROMPT_ENHANCEMENT,
           )
-          .catch(() => {});
+          .catch(() => undefined);
         this.lastAgentIdBySocket.set(socket.id, agentId);
       } else if (agentId) {
         this.lastAgentIdBySocket.set(socket.id, agentId);

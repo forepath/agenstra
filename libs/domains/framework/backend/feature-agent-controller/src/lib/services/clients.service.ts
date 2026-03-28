@@ -146,7 +146,7 @@ export class ClientsService {
     const response = await this.mapToResponseDto(client);
     this.statisticsService
       .recordEntityCreated(StatisticsEntityType.CLIENT, client.id, {}, userId ?? undefined)
-      .catch(() => {});
+      .catch(() => undefined);
     return {
       ...response,
       apiKey,
@@ -360,7 +360,7 @@ export class ClientsService {
     const updatedClient = await this.clientsRepository.update(id, updateData);
     this.statisticsService
       .recordEntityUpdated(StatisticsEntityType.CLIENT, id, {}, userId ?? undefined)
-      .catch(() => {});
+      .catch(() => undefined);
     const dto = await this.mapToResponseDto(updatedClient);
     // Fetch config from agent-manager, but don't fail if request fails
     try {
@@ -399,7 +399,9 @@ export class ClientsService {
       }
     }
 
-    this.statisticsService.recordEntityDeleted(StatisticsEntityType.CLIENT, id, userId ?? undefined).catch(() => {});
+    this.statisticsService
+      .recordEntityDeleted(StatisticsEntityType.CLIENT, id, userId ?? undefined)
+      .catch(() => undefined);
     await this.clientsRepository.delete(id);
   }
 

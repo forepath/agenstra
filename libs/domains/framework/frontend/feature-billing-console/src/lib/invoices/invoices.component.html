@@ -127,7 +127,13 @@
                       </td>
                       <td>{{ inv.createdAt | date: 'short' }}</td>
                       <td>{{ inv.dueDate ? (inv.dueDate | date: 'short') : '—' }}</td>
-                      <td>{{ inv.balance != null ? (inv.balance | number: '1.2-2') + ' €' : '—' }}</td>
+                      <td>
+                        {{
+                          inv.balance !== null && inv.balance !== undefined
+                            ? (inv.balance | number: '1.2-2') + ' €'
+                            : '—'
+                        }}
+                      </td>
                       <td>
                         @if ((refreshingInvoiceRefId$ | async) === inv.id) {
                           <span class="d-inline-flex align-items-center gap-1" aria-busy="true">
@@ -219,7 +225,13 @@
                       </td>
                       <td>{{ inv.createdAt | date: 'short' }}</td>
                       <td>{{ inv.dueDate ? (inv.dueDate | date: 'short') : '—' }}</td>
-                      <td>{{ inv.balance != null ? (inv.balance | number: '1.2-2') + ' €' : '—' }}</td>
+                      <td>
+                        {{
+                          inv.balance !== null && inv.balance !== undefined
+                            ? (inv.balance | number: '1.2-2') + ' €'
+                            : '—'
+                        }}
+                      </td>
                       <td>
                         @if ((refreshingInvoiceRefId$ | async) === inv.id) {
                           <span class="d-inline-flex align-items-center gap-1" aria-busy="true">

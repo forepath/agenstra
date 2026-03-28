@@ -547,7 +547,7 @@
                           <span class="visually-hidden" i18n="@@featureChat-stopEnvironment">Stop environment</span>
                         </button>
                       }
-                      @if (status.running != null) {
+                      @if (status.running !== null && status.running !== undefined) {
                         <button
                           type="button"
                           class="btn btn-sm btn-outline-warning"
@@ -1132,7 +1132,7 @@
                           <span class="visually-hidden" i18n="@@featureChat-stopEnvironment">Stop environment</span>
                         </button>
                       }
-                      @if (status.running != null) {
+                      @if (status.running !== null && status.running !== undefined) {
                         <button
                           type="button"
                           class="btn btn-sm btn-outline-warning"

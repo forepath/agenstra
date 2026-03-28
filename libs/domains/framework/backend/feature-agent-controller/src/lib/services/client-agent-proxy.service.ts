@@ -223,7 +223,7 @@ export class ClientAgentProxyService {
           },
           userId,
         )
-        .catch(() => {});
+        .catch(() => undefined);
     }
     return result;
   }
@@ -259,7 +259,7 @@ export class ClientAgentProxyService {
         },
         userId,
       )
-      .catch(() => {});
+      .catch(() => undefined);
     return result;
   }
 
@@ -269,7 +269,7 @@ export class ClientAgentProxyService {
    * @param agentId - The UUID of the agent to delete
    */
   async deleteClientAgent(clientId: string, agentId: string, userId?: string): Promise<void> {
-    this.statisticsService.recordEntityDeleted(StatisticsEntityType.AGENT, agentId, userId).catch(() => {});
+    this.statisticsService.recordEntityDeleted(StatisticsEntityType.AGENT, agentId, userId).catch(() => undefined);
     await this.makeRequest<void>(clientId, {
       method: 'DELETE',
       url: `/${agentId}`,
