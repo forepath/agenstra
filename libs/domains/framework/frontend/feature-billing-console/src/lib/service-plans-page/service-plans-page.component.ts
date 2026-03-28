@@ -444,10 +444,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   onSubmitCreate(): void {
     if (!this.createForm.serviceTypeId?.trim() || !this.createForm.name?.trim()) return;
-    const providerConfigDefaults = this.coerceProviderConfigDefaults(
-      this.createForm.providerConfigDefaults,
-      this.createForm.serviceTypeId,
-    );
+    const providerConfigDefaults = this.coerceProviderConfigDefaults(this.createForm.providerConfigDefaults);
     const orderingHighlights = this.sanitizeOrderingHighlights(this.createForm.orderingHighlights);
     this.plansFacade.createServicePlan({
       serviceTypeId: this.createForm.serviceTypeId.trim(),
@@ -471,11 +468,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   onSubmitEdit(): void {
     if (!this.editForm.id) return;
-    const serviceTypeId = this.editingPlan?.serviceTypeId ?? '';
-    const providerConfigDefaults = this.coerceProviderConfigDefaults(
-      this.editForm.providerConfigDefaults,
-      serviceTypeId,
-    );
+    const providerConfigDefaults = this.coerceProviderConfigDefaults(this.editForm.providerConfigDefaults);
     const orderingHighlights = this.sanitizeOrderingHighlights(this.editForm.orderingHighlights);
     this.plansFacade.updateServicePlan(this.editForm.id, {
       name: this.editForm.name,
@@ -502,10 +495,7 @@ export class ServicePlansPageComponent implements OnInit {
   }
 
   /** Coerce providerConfigDefaults values to number where schema says number. */
-  private coerceProviderConfigDefaults(
-    defaults: Record<string, unknown> | undefined,
-    serviceTypeId: string,
-  ): Record<string, unknown> {
+  private coerceProviderConfigDefaults(defaults: Record<string, unknown> | undefined): Record<string, unknown> {
     if (!defaults || typeof defaults !== 'object') return {};
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(defaults)) {

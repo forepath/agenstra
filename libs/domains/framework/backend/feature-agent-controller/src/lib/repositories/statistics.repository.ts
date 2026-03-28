@@ -5,7 +5,11 @@ import { AuthenticationType, ClientUserRole } from '@forepath/identity/backend';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { FilterDropDirection, StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection, StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
-import { ChatDirection, StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
+import {
+  ChatDirection,
+  StatisticsChatIoEntity,
+  StatisticsInteractionKind,
+} from '../entities/statistics-chat-io.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsClientUserEntity } from '../entities/statistics-client-user.entity';
 import {
@@ -166,11 +170,15 @@ export class StatisticsRepository {
     statisticsClientId: string;
     statisticsUserId?: string;
     direction: ChatDirection;
+    interactionKind?: StatisticsInteractionKind;
     wordCount: number;
     charCount: number;
     occurredAt: Date;
   }): Promise<StatisticsChatIoEntity> {
-    const entity = this.statisticsChatIo.create(data);
+    const entity = this.statisticsChatIo.create({
+      ...data,
+      interactionKind: data.interactionKind ?? StatisticsInteractionKind.CHAT,
+    });
     return await this.statisticsChatIo.save(entity);
   }
 
@@ -244,11 +252,12 @@ export class StatisticsRepository {
     from?: string;
     to?: string;
     direction?: ChatDirection;
+    interactionKind?: StatisticsInteractionKind;
     search?: string;
     limit: number;
     offset: number;
   }): Promise<{ rows: StatisticsChatIoEntity[]; total: number }> {
-    const { statisticsClientIds, agentId, from, to, direction, search, limit, offset } = params;
+    const { statisticsClientIds, agentId, from, to, direction, interactionKind, search, limit, offset } = params;
     if (statisticsClientIds.length === 0) return { rows: [], total: 0 };
 
     const sanitized = sanitizeSearch(search);
@@ -265,9 +274,10 @@ export class StatisticsRepository {
       if (from) qb = qb.andWhere('cio.occurred_at >= :from', { from });
       if (to) qb = qb.andWhere('cio.occurred_at <= :to', { to });
       if (direction) qb = qb.andWhere('cio.direction = :direction', { direction });
+      if (interactionKind) qb = qb.andWhere('cio.interaction_kind = :interactionKind', { interactionKind });
       if (searchPattern) {
         qb = qb.andWhere(
-          '(cio.id::text ILIKE :search OR cio.direction::text ILIKE :search OR cio.word_count::text ILIKE :search OR cio.char_count::text ILIKE :search)',
+          '(cio.id::text ILIKE :search OR cio.direction::text ILIKE :search OR cio.interaction_kind::text ILIKE :search OR cio.word_count::text ILIKE :search OR cio.char_count::text ILIKE :search)',
           { search: searchPattern },
         );
       }
@@ -301,6 +311,7 @@ export class StatisticsRepository {
     from?: string;
     to?: string;
     direction?: ChatDirection;
+    interactionKind?: StatisticsInteractionKind;
     groupBy?: 'day' | 'hour';
   }): Promise<{
     totalMessages: number;
@@ -309,7 +320,7 @@ export class StatisticsRepository {
     avgWordsPerMessage: number;
     series?: { period: string; count: number; wordCount: number; charCount: number }[];
   }> {
-    const { statisticsClientIds, agentId, from, to, direction, groupBy } = params;
+    const { statisticsClientIds, agentId, from, to, direction, interactionKind, groupBy } = params;
     if (statisticsClientIds.length === 0) {
       return {
         totalMessages: 0,
@@ -333,6 +344,7 @@ export class StatisticsRepository {
     if (from) qb = qb.andWhere('cio.occurred_at >= :from', { from });
     if (to) qb = qb.andWhere('cio.occurred_at <= :to', { to });
     if (direction) qb = qb.andWhere('cio.direction = :direction', { direction });
+    if (interactionKind) qb = qb.andWhere('cio.interaction_kind = :interactionKind', { interactionKind });
 
     const raw = await qb
       .select([
@@ -372,6 +384,7 @@ export class StatisticsRepository {
       if (from) seriesQb.andWhere('cio.occurred_at >= :from', { from });
       if (to) seriesQb.andWhere('cio.occurred_at <= :to', { to });
       if (direction) seriesQb.andWhere('cio.direction = :direction', { direction });
+      if (interactionKind) seriesQb.andWhere('cio.interaction_kind = :interactionKind', { interactionKind });
 
       const seriesRows = await seriesQb.getRawMany<{
         period: string | Date;

@@ -100,6 +100,18 @@ describe('CursorAgentProvider', () => {
       );
     });
 
+    it('should append resumeSessionSuffix to resume id when provided', async () => {
+      dockerService.sendCommandToContainer.mockResolvedValue('{}');
+
+      await provider.sendMessage(agentId, containerId, message, { resumeSessionSuffix: '-prompt-enhance' });
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        containerId,
+        `cursor-agent --print --approve-mcps --force --output-format json --resume ${agentId}-${containerId}-prompt-enhance`,
+        message,
+      );
+    });
+
     it('should handle errors from docker service', async () => {
       const error = new Error('Container not found');
       dockerService.sendCommandToContainer.mockRejectedValue(error);

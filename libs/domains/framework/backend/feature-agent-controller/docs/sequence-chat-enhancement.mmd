@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant UI as Agent console (UI)
+    participant CG as ClientsGateway
+    participant Stats as StatisticsService
+    participant Remote as Remote agent-manager socket
+    participant AG as AgentsGateway
+    participant Prov as Agent provider
+
+    Note over UI,Prov: Prompt enhancement — isolated from main chat transcript
+
+    UI->>CG: forward { event: enhanceChat, agentId, payload }
+    CG->>Stats: recordChatInput (draft, interaction_kind: prompt_enhancement)
+    CG->>Remote: enhanceChat payload
+    Remote->>AG: enhanceChat
+    AG->>Prov: sendMessage (continue false, resumeSessionSuffix for Cursor)
+    Prov-->>AG: model text
+    AG-->>Remote: chatEnhanceResult (unicast to initiating socket only)
+    Remote-->>CG: chatEnhanceResult
+    CG->>Stats: recordChatOutput (enhanced text or failure)
+    CG-->>UI: forward chatEnhanceResult to client
+
+    Note over UI: Updates textarea only - no chat bubbles / no agent_messages

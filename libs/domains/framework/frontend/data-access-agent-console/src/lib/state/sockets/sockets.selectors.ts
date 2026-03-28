@@ -28,6 +28,16 @@ export const selectChatForwarding = createSelector(
   (state) => state.forwarding && state.forwardingEvent === 'chat',
 );
 
+export const selectChatEnhancementPending = createSelector(
+  selectSocketsState,
+  (state) => state.chatEnhancementPendingCorrelationId !== null,
+);
+
+export const selectChatEnhancementLastResult = createSelector(
+  selectSocketsState,
+  (state) => state.chatEnhancementLastResult,
+);
+
 // Error selector
 export const selectSocketError = createSelector(selectSocketsState, (state) => state.error);
 

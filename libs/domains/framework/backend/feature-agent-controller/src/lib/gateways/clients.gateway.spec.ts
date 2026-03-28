@@ -5,6 +5,7 @@ import {
   ClientUsersRepository,
   SocketAuthService,
 } from '@forepath/identity/backend';
+import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from '../services/clients.service';
 import { StatisticsService } from '../services/statistics.service';
@@ -323,6 +324,48 @@ describe('ClientsGateway', () => {
       2, // word count for "Hello world"
       11, // char count
       undefined, // userId (api-key auth)
+    );
+  });
+
+  it('should record prompt enhancement input when forwarding enhanceChat with agentId', async () => {
+    const socket = createMockSocket();
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+      agentWsPort: 8099,
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+    mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
+      id: 'cred-1',
+      clientId: 'client-uuid',
+      agentId: 'agent-uuid',
+      password: 'password123',
+    } as any);
+
+    const forwardPromise = gateway.handleForward(
+      {
+        event: 'enhanceChat',
+        payload: { message: 'draft', correlationId: 'corr-1' },
+        agentId: 'agent-uuid',
+      },
+      socket,
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    remote.triggerEvent('loginSuccess');
+    await forwardPromise;
+
+    expect(remote.emit).toHaveBeenCalledWith('enhanceChat', { message: 'draft', correlationId: 'corr-1' });
+    expect(statisticsService.recordChatInput).toHaveBeenCalledWith(
+      'client-uuid',
+      'agent-uuid',
+      1,
+      5,
+      undefined,
+      StatisticsInteractionKind.PROMPT_ENHANCEMENT,
     );
   });
 

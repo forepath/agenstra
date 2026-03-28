@@ -10,7 +10,7 @@ import {
   StatisticsFilterFlagDto,
   StatisticsSummaryDto,
 } from '../dto/statistics';
-import { ChatDirection } from '../entities/statistics-chat-io.entity';
+import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 
@@ -32,6 +32,16 @@ function normalizeToEndOfDay(value: string | undefined): string | undefined {
     return `${value}T23:59:59.999Z`;
   }
   return value;
+}
+
+function parseStatisticsInteractionKind(value: string | undefined): StatisticsInteractionKind | undefined {
+  if (!value) return undefined;
+  if (value === StatisticsInteractionKind.CHAT || value === StatisticsInteractionKind.PROMPT_ENHANCEMENT) {
+    return value;
+  }
+  throw new BadRequestException(
+    `interactionKind must be "${StatisticsInteractionKind.CHAT}" or "${StatisticsInteractionKind.PROMPT_ENHANCEMENT}"`,
+  );
 }
 
 @Injectable()
@@ -138,6 +148,7 @@ export class StatisticsQueryService {
       from?: string;
       to?: string;
       direction?: ChatDirection;
+      interactionKind?: string;
       search?: string;
       limit?: number;
       offset?: number;
@@ -145,6 +156,7 @@ export class StatisticsQueryService {
   ): Promise<StatisticsChatIoListDto> {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
+    const interactionKind = parseStatisticsInteractionKind(params.interactionKind);
     const ids = await this.resolveStatisticsClientIds([clientId]);
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
@@ -156,6 +168,7 @@ export class StatisticsQueryService {
       from,
       to,
       direction: params.direction,
+      interactionKind,
       search: params.search,
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
@@ -169,6 +182,7 @@ export class StatisticsQueryService {
       agentName: r.statisticsAgent?.name,
       originalUserId: r.statisticsUser?.originalUserId,
       direction: r.direction,
+      interactionKind: r.interactionKind,
       wordCount: r.wordCount,
       charCount: r.charCount,
       occurredAt: r.occurredAt,
@@ -189,6 +203,7 @@ export class StatisticsQueryService {
       from?: string;
       to?: string;
       direction?: ChatDirection;
+      interactionKind?: string;
       search?: string;
       limit?: number;
       offset?: number;
@@ -196,6 +211,7 @@ export class StatisticsQueryService {
   ): Promise<StatisticsChatIoListDto> {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
+    const interactionKind = parseStatisticsInteractionKind(params.interactionKind);
     const ids = await this.resolveStatisticsClientIds(accessibleClientIds);
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
@@ -207,6 +223,7 @@ export class StatisticsQueryService {
       from,
       to,
       direction: params.direction,
+      interactionKind,
       search: params.search,
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
@@ -220,6 +237,7 @@ export class StatisticsQueryService {
       agentName: r.statisticsAgent?.name,
       originalUserId: r.statisticsUser?.originalUserId,
       direction: r.direction,
+      interactionKind: r.interactionKind,
       wordCount: r.wordCount,
       charCount: r.charCount,
       occurredAt: r.occurredAt,

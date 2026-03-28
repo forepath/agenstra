@@ -318,6 +318,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     ),
   );
   readonly forwarding$: Observable<boolean> = this.socketsFacade.chatForwarding$;
+  readonly chatEnhancementPending$: Observable<boolean> = this.socketsFacade.chatEnhancementPending$;
   readonly socketError$: Observable<string | null> = this.socketsFacade.error$;
 
   // Remote connection reconnection state (per clientId)
@@ -340,6 +341,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   // Local state
   chatMessage = signal<string>('');
+  /** Shown when prompt enhancement fails (success clears it). */
+  readonly enhanceErrorMessage = signal<string | null>(null);
   selectedChatModel = signal<string | null>('auto');
   selectedCommand = signal<string | null>(null);
   selectedAgentId = signal<string | null>(null);
@@ -741,6 +744,23 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   ngOnInit(): void {
     // Default chat model to auto mode on load
     this.socketsFacade.setChatModel(null);
+
+    this.socketsFacade.chatEnhancementLastResult$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        filter((r) => r !== null),
+      )
+      .subscribe((r) => {
+        if (!r) {
+          return;
+        }
+        if (r.success && r.enhancedText !== undefined) {
+          this.chatMessage.set(r.enhancedText);
+          this.enhanceErrorMessage.set(null);
+        } else {
+          this.enhanceErrorMessage.set(r.errorMessage ?? 'Enhancement failed');
+        }
+      });
 
     // Load clients on init
     this.clientsFacade.loadClients();
@@ -1476,6 +1496,30 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.selectedCommand.set(null);
     // Trigger scroll after sending message
     this.shouldScrollToBottom = true;
+  }
+
+  clearEnhanceError(): void {
+    this.enhanceErrorMessage.set(null);
+  }
+
+  onEnhanceMessage(): void {
+    let message = this.chatMessage().trim();
+    const selectedCmd = this.selectedCommand();
+    if (selectedCmd) {
+      message = message ? `${selectedCmd}\n${message}` : selectedCmd;
+    }
+    if (!message) {
+      return;
+    }
+    const agentId = this.selectedAgentId();
+    if (!agentId) {
+      return;
+    }
+    this.enhanceErrorMessage.set(null);
+    const correlationId = crypto.randomUUID();
+    const model = this.selectedChatModel();
+    const normalizedModel = model === 'auto' || model === null || model === '' ? null : model;
+    this.socketsFacade.forwardEnhanceChat(message, agentId, correlationId, normalizedModel);
   }
 
   onChatInputKeydown(event: KeyboardEvent): void {

@@ -101,6 +101,7 @@ describe('StatisticsController', () => {
         undefined,
         undefined,
         undefined,
+        undefined,
         {} as never,
       );
 
@@ -172,6 +173,7 @@ describe('StatisticsController', () => {
       });
 
       await controller.getChatIo(
+        undefined,
         undefined,
         undefined,
         undefined,

@@ -2270,6 +2270,12 @@ paths:
             type: string
             enum: [input, output]
         - in: query
+          name: interactionKind
+          schema:
+            type: string
+            enum: [chat, prompt_enhancement]
+          description: Filter by interaction type (normal chat vs prompt enhancement metrics)
+        - in: query
           name: limit
           schema:
             type: integer
@@ -2283,7 +2289,7 @@ paths:
           name: search
           schema:
             type: string
-          description: Case-insensitive search across id, direction, wordCount, charCount
+          description: Case-insensitive search across id, direction, interactionKind, wordCount, charCount
       responses:
         '200':
           description: Paginated chat I/O records
@@ -2528,6 +2534,12 @@ paths:
             type: string
             enum: [input, output]
         - in: query
+          name: interactionKind
+          schema:
+            type: string
+            enum: [chat, prompt_enhancement]
+          description: Filter by interaction type (normal chat vs prompt enhancement metrics)
+        - in: query
           name: limit
           schema:
             type: integer
@@ -2541,7 +2553,7 @@ paths:
           name: search
           schema:
             type: string
-          description: Case-insensitive search across id, direction, wordCount, charCount
+          description: Case-insensitive search across id, direction, interactionKind, wordCount, charCount
       responses:
         '200':
           description: Paginated chat I/O records
@@ -3587,7 +3599,16 @@ components:
                 type: integer
     StatisticsChatIoDto:
       type: object
-      required: [id, clientId, direction, wordCount, charCount, occurredAt]
+      required:
+        [
+          id,
+          clientId,
+          direction,
+          interactionKind,
+          wordCount,
+          charCount,
+          occurredAt,
+        ]
       properties:
         id:
           type: string
@@ -3611,6 +3632,10 @@ components:
         direction:
           type: string
           enum: [input, output]
+        interactionKind:
+          type: string
+          enum: [chat, prompt_enhancement]
+          description: Normal chat vs prompt enhancement (magic wand) metrics
         wordCount:
           type: integer
         charCount:

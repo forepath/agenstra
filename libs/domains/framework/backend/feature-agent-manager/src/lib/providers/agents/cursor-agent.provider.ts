@@ -76,8 +76,9 @@ export class CursorAgentProvider implements AgentProvider {
     message: string,
     options?: AgentProviderOptions,
   ): Promise<string> {
+    const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
     // Build command: cursor-agent with prompt mode and JSON output
-    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${agentId}-${containerId}`;
+    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
     if (options?.model) {
       command += ` --model ${options.model}`;
     }
@@ -95,8 +96,9 @@ export class CursorAgentProvider implements AgentProvider {
    * @param options - Optional configuration (e.g., model name)
    */
   async sendInitialization(agentId: string, containerId: string, options?: AgentProviderOptions): Promise<void> {
+    const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
     // Build command: cursor-agent with prompt mode and JSON output
-    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${agentId}-${containerId}`;
+    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
     if (options?.model) {
       command += ` --model ${options.model}`;
     }

@@ -30,6 +30,12 @@ export const setClientFailure = createAction('[Sockets] Set Client Failure', pro
 
 export const setChatModel = createAction('[Sockets] Set Chat Model', props<{ model: string | null }>());
 
+/** User requested prompt enhancement; cleared when result arrives or forward/socket fails. */
+export const chatEnhancementStarted = createAction(
+  '[Sockets] Chat Enhancement Started',
+  props<{ correlationId: string }>(),
+);
+
 // Forward Actions
 export const forwardEvent = createAction(
   '[Sockets] Forward Event',

@@ -75,6 +75,7 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[HTTP Environment Variables Sequence Diagram](./docs/sequence-http-environment.mmd)** - Detailed sequence diagram for proxied environment variable operations
 - **[HTTP VCS Sequence Diagram](./docs/sequence-http-vcs.mmd)** - Detailed sequence diagram for proxied VCS (Git) operations
 - **[WebSocket Forwarding Diagram](./docs/sequence-ws-forward.mmd)** - Sequence diagram for WebSocket connection, client context setup, event forwarding, and auto-login
+- **[Chat prompt enhancement](./docs/sequence-chat-enhancement.mmd)** - Sequence for `enhanceChat` / `chatEnhanceResult` (magic-wand flow; statistics only, no `agent_messages`)
 - **[Lifecycle Diagram](./docs/lifecycle.mmd)** - End-to-end sequence diagram showing the complete lifecycle from client creation through proxied agent operations to WebSocket event forwarding
 
 These diagrams provide comprehensive visual documentation of:
@@ -483,11 +484,13 @@ See the [AsyncAPI specification](./spec/asyncapi.yaml) for complete event docume
 
 The agent-controller collects persistent statistics for analytics and future REST API exposure:
 
-- **Chat I/O** - Word and character counts for user input and agent output
+- **Chat I/O** - Word and character counts for user input and agent output (includes **prompt enhancement** via `forward` event `enhanceChat`; rows use `interaction_kind` to distinguish normal chat from enhancement)
 - **Filter drops** - Messages dropped by content filters (profanity, PII, etc.) with filter type and direction
 - **Entity lifecycle** - Creation, update, and deletion of clients, agents, users, client-user relationships, and provisioning references
 
 Data is stored in shadow tables (`statistics_*`) with no secrets. See [Statistics Model](./docs/statistics-architecture.mmd) for the full design, collection points, and REST API. The [HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd) shows the request flow for statistics endpoints.
+
+**Prompt enhancement (magic wand)** does not create rows in `agent_messages` or show up as normal chat bubbles; the controller records draft and enhanced text metrics in `statistics_chat_io` with `interaction_kind = prompt_enhancement`. Filter parity with normal chat applies on the agent-manager side.
 
 ### WebSocket Authentication
 

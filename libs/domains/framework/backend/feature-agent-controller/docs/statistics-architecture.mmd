@@ -39,3 +39,6 @@ flowchart TB
     style ChatFilter fill:#d6ffd6
     style ChatFilterFlags fill:#d6ffd6
     style EntityEvents fill:#d6ffd6
+
+%% Chat prompt enhancement (magic wand): rows in statistics_chat_io may use interaction_kind = prompt_enhancement
+%% (vs default chat). The UI forwards enhanceChat over the clients WebSocket; metrics record draft + enhanced text only—no agent_messages.

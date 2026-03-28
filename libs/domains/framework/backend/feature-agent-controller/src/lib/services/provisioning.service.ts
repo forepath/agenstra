@@ -401,7 +401,7 @@ DOCKER_COMPOSE_EOF
         },
         userId,
       )
-      .catch(() => {});
+      .catch(() => undefined);
 
     this.logger.log(`Created provisioning reference ${reference.id} for client ${client.id}`);
 
@@ -431,7 +431,7 @@ DOCKER_COMPOSE_EOF
 
     this.statisticsService
       .recordEntityDeleted(StatisticsEntityType.PROVISIONING_REFERENCE, reference.id, userId)
-      .catch(() => {});
+      .catch(() => undefined);
 
     // Get the provider
     if (!this.provisioningProviderFactory.hasProvider(reference.providerType)) {

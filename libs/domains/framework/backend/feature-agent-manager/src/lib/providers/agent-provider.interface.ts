@@ -123,4 +123,10 @@ export interface AgentProviderOptions {
    * @default false
    */
   continue?: boolean;
+
+  /**
+   * Appended to the Cursor-agent --resume session id for isolated one-off runs (e.g. prompt enhancement).
+   * Ignored by providers that do not use resume-based sessions.
+   */
+  resumeSessionSuffix?: string;
 }

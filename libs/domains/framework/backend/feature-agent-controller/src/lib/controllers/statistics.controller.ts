@@ -51,7 +51,7 @@ export class StatisticsController {
 
   /**
    * Get chat I/O records (aggregate or filtered by client).
-   * Query params: clientId?, agentId?, from, to, direction, limit, offset
+   * Query params: clientId?, agentId?, from, to, direction, interactionKind, limit, offset
    */
   @Get('chat-io')
   async getChatIo(
@@ -60,6 +60,7 @@ export class StatisticsController {
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('direction') direction?: ChatDirection,
+    @Query('interactionKind') interactionKind?: string,
     @Query('search') search?: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
@@ -71,6 +72,7 @@ export class StatisticsController {
       from,
       to,
       direction,
+      interactionKind,
       search,
       limit,
       offset,

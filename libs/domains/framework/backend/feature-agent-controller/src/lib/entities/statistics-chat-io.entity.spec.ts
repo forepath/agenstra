@@ -1,4 +1,4 @@
-import { ChatDirection, StatisticsChatIoEntity } from './statistics-chat-io.entity';
+import { ChatDirection, StatisticsChatIoEntity, StatisticsInteractionKind } from './statistics-chat-io.entity';
 
 describe('StatisticsChatIoEntity', () => {
   it('should create an instance', () => {
@@ -11,6 +11,7 @@ describe('StatisticsChatIoEntity', () => {
     entity.id = 'chat-io-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
     entity.direction = ChatDirection.INPUT;
+    entity.interactionKind = StatisticsInteractionKind.CHAT;
     entity.wordCount = 10;
     entity.charCount = 50;
     entity.occurredAt = new Date();
@@ -18,6 +19,7 @@ describe('StatisticsChatIoEntity', () => {
     expect(entity.id).toBe('chat-io-uuid');
     expect(entity.statisticsClientId).toBe('stats-client-uuid');
     expect(entity.direction).toBe(ChatDirection.INPUT);
+    expect(entity.interactionKind).toBe(StatisticsInteractionKind.CHAT);
     expect(entity.wordCount).toBe(10);
     expect(entity.charCount).toBe(50);
     expect(entity.occurredAt).toBeInstanceOf(Date);
