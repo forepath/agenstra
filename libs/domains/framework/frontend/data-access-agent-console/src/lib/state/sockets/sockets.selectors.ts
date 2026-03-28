@@ -38,6 +38,13 @@ export const selectChatEnhancementLastResult = createSelector(
   (state) => state.chatEnhancementLastResult,
 );
 
+export const selectTicketBodyGenerationPending = createSelector(
+  selectSocketsState,
+  (state) => state.ticketBodyPendingCorrelationId !== null,
+);
+
+export const selectTicketBodyLastResult = createSelector(selectSocketsState, (state) => state.ticketBodyLastResult);
+
 // Error selector
 export const selectSocketError = createSelector(selectSocketsState, (state) => state.error);
 

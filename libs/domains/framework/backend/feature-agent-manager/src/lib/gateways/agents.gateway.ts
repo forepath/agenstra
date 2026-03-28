@@ -26,6 +26,10 @@ import {
   buildPromptEnhancementMessage,
   PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX,
 } from '../utils/chat-enhancement-prompt.utils';
+import {
+  buildTicketBodyFromTitleMessage,
+  PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX,
+} from '../utils/ticket-body-prompt.utils';
 
 interface LoginPayload {
   agentId: string;
@@ -40,6 +44,12 @@ interface ChatPayload {
 interface EnhanceChatPayload {
   model?: string;
   message: string;
+  correlationId: string;
+}
+
+interface GenerateTicketBodyPayload {
+  model?: string;
+  title: string;
   correlationId: string;
 }
 
@@ -1042,6 +1052,203 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           error: {
             message: err.message || 'Enhancement failed',
             code: 'ENHANCE_ERROR',
+          },
+        }),
+      );
+    }
+  }
+
+  /**
+   * Generate ticket body text from title in an isolated session (unicast ticketBodyResult).
+   */
+  @SubscribeMessage('generateTicketBody')
+  async handleGenerateTicketBody(@MessageBody() data: GenerateTicketBodyPayload, @ConnectedSocket() socket: Socket) {
+    const agentUuid = this.authenticatedClients.get(socket.id);
+    if (!agentUuid) {
+      socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+      return;
+    }
+
+    const correlationId = typeof data?.correlationId === 'string' ? data.correlationId.trim() : '';
+    const title = data?.title?.trim();
+    if (!correlationId || !title) {
+      socket.emit(
+        'ticketBodyResult',
+        createSuccessResponse<ChatEnhanceFailureData>({
+          correlationId: correlationId || 'unknown',
+          success: false,
+          error: { message: 'correlationId and title are required', code: 'INVALID_PAYLOAD' },
+        }),
+      );
+      return;
+    }
+
+    const incomingFilterResult = await this.applyFilters(title, FilterDirection.INCOMING, {
+      agentId: agentUuid,
+      actor: 'user',
+    });
+
+    if (incomingFilterResult.status === 'dropped') {
+      socket.emit(
+        'ticketBodyResult',
+        createSuccessResponse<ChatEnhanceFailureData>({
+          correlationId,
+          success: false,
+          error: {
+            message: incomingFilterResult.matchedFilter?.reason || 'Title was dropped by filter',
+            code: 'FILTER_DROPPED',
+          },
+        }),
+      );
+      return;
+    }
+
+    const titleToUse = incomingFilterResult.modifiedMessage ?? title;
+    const composed = buildTicketBodyFromTitleMessage(titleToUse);
+
+    const timeoutMs = parseInt(process.env.CHAT_ENHANCE_TIMEOUT_MS || '120000', 10);
+    const runWithTimeout = <T>(promise: Promise<T>): Promise<T> =>
+      new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Ticket body generation timed out')), timeoutMs);
+        promise
+          .then((value) => {
+            clearTimeout(timer);
+            resolve(value);
+          })
+          .catch((err) => {
+            clearTimeout(timer);
+            reject(err);
+          });
+      });
+
+    try {
+      const agent = await this.agentsService.findOne(agentUuid);
+      const entity = await this.agentsRepository.findById(agentUuid);
+      const containerId = entity?.containerId;
+      if (!containerId) {
+        socket.emit(
+          'ticketBodyResult',
+          createSuccessResponse<ChatEnhanceFailureData>({
+            correlationId,
+            success: false,
+            error: { message: 'Agent container not available', code: 'NO_CONTAINER' },
+          }),
+        );
+        return;
+      }
+
+      const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+
+      const rawResponse = await runWithTimeout(
+        provider.sendMessage(agent.id, containerId, composed, {
+          model: data.model,
+          continue: false,
+          resumeSessionSuffix: PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX,
+        }),
+      );
+
+      const lines = provider.toParseableStrings(rawResponse);
+      let extractedText: string | undefined;
+
+      for (const toParse of lines) {
+        try {
+          const parsed = provider.toUnifiedResponse(toParse);
+          if (!parsed) {
+            continue;
+          }
+          const outgoingFilter = await this.applyFilters(JSON.stringify(parsed), FilterDirection.OUTGOING, {
+            agentId: agentUuid,
+            actor: 'agent',
+          });
+          if (outgoingFilter.status === 'dropped') {
+            socket.emit(
+              'ticketBodyResult',
+              createSuccessResponse<ChatEnhanceFailureData>({
+                correlationId,
+                success: false,
+                error: {
+                  message: outgoingFilter.matchedFilter?.reason || 'Output was dropped by filter',
+                  code: 'FILTER_DROPPED',
+                },
+              }),
+            );
+            return;
+          }
+          let useObj: AgentResponseObject | string = parsed;
+          if (outgoingFilter.modifiedMessage !== undefined) {
+            try {
+              useObj = JSON.parse(outgoingFilter.modifiedMessage) as AgentResponseObject;
+            } catch {
+              useObj = outgoingFilter.modifiedMessage;
+            }
+          }
+          const text =
+            typeof useObj === 'object' && useObj !== null && typeof useObj.result === 'string'
+              ? useObj.result.trim()
+              : typeof useObj === 'string'
+                ? useObj.trim()
+                : '';
+          if (text) {
+            extractedText = text;
+            break;
+          }
+        } catch {
+          const outgoingFilter = await this.applyFilters(toParse, FilterDirection.OUTGOING, {
+            agentId: agentUuid,
+            actor: 'agent',
+          });
+          if (outgoingFilter.status === 'dropped') {
+            socket.emit(
+              'ticketBodyResult',
+              createSuccessResponse<ChatEnhanceFailureData>({
+                correlationId,
+                success: false,
+                error: {
+                  message: outgoingFilter.matchedFilter?.reason || 'Output was dropped by filter',
+                  code: 'FILTER_DROPPED',
+                },
+              }),
+            );
+            return;
+          }
+          const str = (outgoingFilter.modifiedMessage ?? toParse).trim();
+          if (str) {
+            extractedText = str;
+            break;
+          }
+        }
+      }
+
+      if (!extractedText) {
+        socket.emit(
+          'ticketBodyResult',
+          createSuccessResponse<ChatEnhanceFailureData>({
+            correlationId,
+            success: false,
+            error: { message: 'Could not parse ticket body from agent', code: 'PARSE_ERROR' },
+          }),
+        );
+        return;
+      }
+
+      socket.emit(
+        'ticketBodyResult',
+        createSuccessResponse<ChatEnhanceSuccessData>({
+          correlationId,
+          success: true,
+          enhancedText: extractedText,
+        }),
+      );
+    } catch (error) {
+      const err = error as { message?: string };
+      socket.emit(
+        'ticketBodyResult',
+        createSuccessResponse<ChatEnhanceFailureData>({
+          correlationId,
+          success: false,
+          error: {
+            message: err.message || 'Ticket body generation failed',
+            code: 'TICKET_BODY_ERROR',
           },
         }),
       );

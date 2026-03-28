@@ -47,6 +47,20 @@ channels:
       chatEnhanceResultEvent:
         $ref: '#/components/messages/ChatEnhanceResult'
     description: Unicast success envelope; data.success true with enhancedText, or data.success false with error (still success true on outer envelope)
+  agents/generateTicketBody:
+    address: agents/generateTicketBody
+    messages:
+      generateTicketBodyCommand:
+        $ref: '#/components/messages/GenerateTicketBody'
+    description: >
+      Client requests ticket body text from a title in an isolated session (requires prior login).
+      Does not persist to agent chat history. Result is emitted only to the requesting socket as ticketBodyResult (same payload shape as chatEnhanceResult).
+  agents/ticketBodyResult:
+    address: agents/ticketBodyResult
+    messages:
+      ticketBodyResultEvent:
+        $ref: '#/components/messages/TicketBodyResult'
+    description: Unicast result for generateTicketBody; same envelope as ChatEnhanceResult (enhancedText holds generated body).
   agents/chatMessage:
     address: agents/chatMessage
     messages:
@@ -168,6 +182,18 @@ operations:
       $ref: '#/channels/agents~1chatEnhanceResult'
     messages:
       - $ref: '#/channels/agents~1chatEnhanceResult/messages/chatEnhanceResultEvent'
+  clientSendsGenerateTicketBody:
+    action: send
+    channel:
+      $ref: '#/channels/agents~1generateTicketBody'
+    messages:
+      - $ref: '#/channels/agents~1generateTicketBody/messages/generateTicketBodyCommand'
+  serverEmitsTicketBodyResult:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1ticketBodyResult'
+    messages:
+      - $ref: '#/channels/agents~1ticketBodyResult/messages/ticketBodyResultEvent'
   serverBroadcastsChatMessage:
     action: receive
     channel:
@@ -382,6 +408,68 @@ components:
                     enum: [true]
                   enhancedText:
                     type: string
+              - type: object
+                required: [correlationId, success, error]
+                properties:
+                  correlationId:
+                    type: string
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: object
+                    required: [message]
+                    properties:
+                      message:
+                        type: string
+                      code:
+                        type: string
+                      details:
+                        type: string
+          timestamp:
+            type: string
+            description: ISO timestamp
+    GenerateTicketBody:
+      name: GenerateTicketBody
+      title: Generate ticket body from title
+      contentType: application/json
+      payload:
+        type: object
+        required: [title, correlationId]
+        properties:
+          title:
+            type: string
+            description: Ticket title to expand into body text
+          correlationId:
+            type: string
+            description: Client-generated id echoed in ticketBodyResult
+          model:
+            type: string
+            description: Optional model override for this request
+    TicketBodyResult:
+      name: TicketBodyResult
+      title: Ticket body generation result (unicast)
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            oneOf:
+              - type: object
+                required: [correlationId, success, enhancedText]
+                properties:
+                  correlationId:
+                    type: string
+                  success:
+                    type: boolean
+                    enum: [true]
+                  enhancedText:
+                    type: string
+                    description: Generated ticket body (markdown)
               - type: object
                 required: [correlationId, success, error]
                 properties:

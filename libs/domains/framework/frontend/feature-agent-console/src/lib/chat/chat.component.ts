@@ -64,6 +64,7 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs';
+import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
@@ -1420,6 +1421,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.lastUserMessageTimestamp.set(null);
         // Disconnect current socket, then connect and auto-login agent
         this.disconnectAndReconnectForAgent(clientId, agentId);
+        const draft = readAndClearAgentConsoleChatDraft();
+        if (draft) {
+          this.chatMessage.set(draft);
+          this.enhanceErrorMessage.set(null);
+        }
       }
     }
   }
