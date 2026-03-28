@@ -9,6 +9,10 @@ import {
   StatisticsEntityEventEntity,
   StatisticsProvisioningReferenceEntity,
   StatisticsUserEntity,
+  TicketActivityEntity,
+  TicketBodyGenerationSessionEntity,
+  TicketCommentEntity,
+  TicketEntity,
 } from '@forepath/framework/backend';
 import { ClientAgentCredentialEntity, ClientEntity, ClientUserEntity, UserEntity } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
@@ -43,6 +47,10 @@ export const typeormConfig: DataSourceOptions = {
     StatisticsChatFilterDropEntity,
     StatisticsChatFilterFlagEntity,
     StatisticsEntityEventEntity,
+    TicketEntity,
+    TicketCommentEntity,
+    TicketActivityEntity,
+    TicketBodyGenerationSessionEntity,
   ],
   migrations: [
     'src/migrations/*.js',

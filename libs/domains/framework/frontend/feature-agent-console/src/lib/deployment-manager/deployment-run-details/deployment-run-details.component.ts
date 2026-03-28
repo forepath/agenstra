@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DeploymentsFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import { of, switchMap } from 'rxjs';
@@ -13,6 +13,9 @@ import { of, switchMap } from 'rxjs';
 })
 export class DeploymentRunDetailsComponent {
   private readonly deploymentsFacade = inject(DeploymentsFacade);
+
+  @ViewChild('cancelRunConfirmModal', { static: false })
+  private cancelRunConfirmModal!: ElementRef<HTMLDivElement>;
 
   // Inputs
   clientId = input.required<string>();
@@ -187,17 +190,46 @@ export class DeploymentRunDetailsComponent {
     // Logs will be cleared when new logs are loaded
   }
 
-  onCancelRun(): void {
-    if (!confirm('Are you sure you want to cancel this run?')) {
-      return;
-    }
+  onOpenCancelRunConfirm(): void {
+    setTimeout(() => this.showCancelRunConfirmModal(), 0);
+  }
 
+  onCancelCancelRunConfirm(): void {
+    this.hideCancelRunConfirmModal();
+  }
+
+  confirmCancelRun(): void {
+    this.hideCancelRunConfirmModal();
     const runId = this.runId();
     const clientId = this.clientId();
     const agentId = this.agentId();
     if (runId && clientId && agentId) {
       this.deploymentsFacade.cancelRun(clientId, agentId, runId);
     }
+  }
+
+  private showCancelRunConfirmModal(): void {
+    const el = this.cancelRunConfirmModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Modal = (window as any).bootstrap?.Modal;
+    if (!Modal) {
+      return;
+    }
+    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+    inst.show();
+  }
+
+  private hideCancelRunConfirmModal(): void {
+    const el = this.cancelRunConfirmModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const modal = (window as any).bootstrap?.Modal?.getInstance(el);
+    modal?.hide();
   }
 
   getStatusBadgeClass(status: string): string {

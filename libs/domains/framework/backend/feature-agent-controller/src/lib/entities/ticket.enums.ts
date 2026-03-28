@@ -1,0 +1,34 @@
+export enum TicketPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical',
+}
+
+export enum TicketStatus {
+  DRAFT = 'draft',
+  TODO = 'todo',
+  PROTOTYPE = 'prototype',
+  DONE = 'done',
+}
+
+export enum TicketActorType {
+  HUMAN = 'human',
+  AI = 'ai',
+  SYSTEM = 'system',
+}
+
+/** Stored as varchar(64) in DB; values are stable API contract. */
+export enum TicketActionType {
+  CREATED = 'CREATED',
+  FIELD_UPDATED = 'FIELD_UPDATED',
+  STATUS_CHANGED = 'STATUS_CHANGED',
+  PRIORITY_CHANGED = 'PRIORITY_CHANGED',
+  WORKSPACE_MOVED = 'WORKSPACE_MOVED',
+  PARENT_CHANGED = 'PARENT_CHANGED',
+  DELETED = 'DELETED',
+  COMMENT_ADDED = 'COMMENT_ADDED',
+  CONTENT_APPLIED_FROM_AI = 'CONTENT_APPLIED_FROM_AI',
+  BODY_GENERATION_STARTED = 'BODY_GENERATION_STARTED',
+  PROTOTYPE_PROMPT_GENERATED = 'PROTOTYPE_PROMPT_GENERATED',
+}

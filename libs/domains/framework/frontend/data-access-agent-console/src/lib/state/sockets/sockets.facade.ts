@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import { distinctUntilChanged, Observable, take } from 'rxjs';
 import {
   chatEnhancementStarted,
+  ticketBodyGenerationStarted,
   connectSocket,
   disconnectSocket,
   forwardEvent,
@@ -14,6 +15,8 @@ import { getSocketInstance } from './sockets.effects';
 import {
   selectChatEnhancementLastResult,
   selectChatEnhancementPending,
+  selectTicketBodyGenerationPending,
+  selectTicketBodyLastResult,
   selectChatForwarding,
   selectChatModel,
   selectForwardedEvents,
@@ -66,6 +69,8 @@ export class SocketsFacade {
   readonly chatForwarding$: Observable<boolean> = this.store.select(selectChatForwarding);
   readonly chatEnhancementPending$: Observable<boolean> = this.store.select(selectChatEnhancementPending);
   readonly chatEnhancementLastResult$ = this.store.select(selectChatEnhancementLastResult);
+  readonly ticketBodyGenerationPending$: Observable<boolean> = this.store.select(selectTicketBodyGenerationPending);
+  readonly ticketBodyLastResult$ = this.store.select(selectTicketBodyLastResult);
   readonly chatModel$: Observable<string | null> = this.store.select(selectChatModel);
   readonly error$: Observable<string | null> = this.store.select(selectSocketError);
   readonly forwardedEvents$: Observable<Array<{ event: string; payload: ForwardedEventPayload; timestamp: number }>> =
@@ -189,6 +194,34 @@ export class SocketsFacade {
     this.store.dispatch(chatEnhancementStarted({ correlationId }));
     this.store.dispatch(forwardEvent({ event: ForwardableEvent.ENHANCE_CHAT, payload, agentId }));
     socket.emit('forward', { event: ForwardableEvent.ENHANCE_CHAT, payload, agentId });
+  }
+
+  /**
+   * Generate ticket body from title (unicast ticketBodyResult; not added to main chat transcript).
+   */
+  forwardGenerateTicketBody(
+    title: string,
+    agentId: string,
+    correlationId: string,
+    model?: string | null,
+    hierarchyContext?: string | null,
+  ): void {
+    const socket = getSocketInstance();
+    if (!socket || !socket.connected) {
+      console.warn('Socket not connected. Cannot forward generate ticket body.');
+      return;
+    }
+    const effectiveModel = model ?? this.currentChatModel ?? undefined;
+    const trimmedContext = hierarchyContext?.trim();
+    const base =
+      effectiveModel !== undefined && effectiveModel !== null && effectiveModel !== ''
+        ? { title, correlationId, model: effectiveModel }
+        : { title, correlationId };
+    const payload =
+      trimmedContext !== undefined && trimmedContext !== '' ? { ...base, hierarchyContext: trimmedContext } : base;
+    this.store.dispatch(ticketBodyGenerationStarted({ correlationId }));
+    this.store.dispatch(forwardEvent({ event: ForwardableEvent.GENERATE_TICKET_BODY, payload, agentId }));
+    socket.emit('forward', { event: ForwardableEvent.GENERATE_TICKET_BODY, payload, agentId });
   }
 
   /**
