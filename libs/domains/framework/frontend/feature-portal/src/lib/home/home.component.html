@@ -123,7 +123,7 @@
       and provides a centralized layer for configuration, governance, and interaction.
     </p>
     <p class="text-center mb-4 fw-medium text-dark" i18n="@@featurePortalHome-solutionWith">With Agenstra you can:</p>
-    <div class="row row-cols-1 row-cols-lg-2 g-4 mt-4">
+    <div class="row row-cols-1 row-cols-lg-3 justify-content-center g-4 mt-4">
       <div class="col">
         <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
           <div class="d-flex align-items-center mb-3">
@@ -176,6 +176,33 @@
           </p>
         </div>
       </div>
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
+          <div class="d-flex align-items-center mb-3">
+            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
+              <i class="bi bi-kanban text-primary icon-solution" aria-hidden="true"></i>
+            </span>
+            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem5Title">Plan and track</h3>
+          </div>
+          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem5Desc">
+            Run tickets and priorities per workspace so agent work stays tied to outcomes, not lost in side channels
+          </p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
+          <div class="d-flex align-items-center mb-3">
+            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
+              <i class="bi bi-lightning-charge text-primary icon-solution" aria-hidden="true"></i>
+            </span>
+            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem6Title">Run code</h3>
+          </div>
+          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem6Desc">
+            Execute commands and code in connected workspaces and review output in context, so runs live next to the
+            agents and repositories your team already uses
+          </p>
+        </div>
+      </div>
     </div>
     <p class="text-center text-muted mt-4" i18n="@@featurePortalHome-solutionClosing">
       Instead of treating every agent as a one off experiment, you get an infrastructure layer that makes them part of
@@ -198,19 +225,19 @@
         </h3>
         <ul class="list-unstyled ps-0 mb-0">
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability1Item1"
               >Connect multiple agent managers and runtimes from different vendors or frameworks</span
             >
           </li>
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability1Item2"
               >Tag and organize agents by team, environment, or use case</span
             >
           </li>
           <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability1Item3"
               >Apply global policies that govern how agents access tools, data, and external systems</span
             >
@@ -226,19 +253,19 @@
         </h3>
         <ul class="list-unstyled ps-0 mb-0">
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability2Item1"
               >Store prompts, configuration, and context centrally instead of in ad hoc files</span
             >
           </li>
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability2Item2"
               >Define reusable rulesets, filters, and transformers that shape requests before they reach agents</span
             >
           </li>
           <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability2Item3"
               >Run prompts through automated checks to detect risky content and missing context</span
             >
@@ -254,21 +281,52 @@
         </h3>
         <ul class="list-unstyled ps-0 mb-0">
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability3Item1"
               >Trace every agent request from input through tools to final output</span
             >
           </li>
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability3Item2"
               >Inspect intermediate steps and tool calls for debugging and quality review</span
             >
           </li>
           <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability3Item3"
               >Generate audit logs that show what decisions an agent made and why</span
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="mb-5">
+      <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
+        <h3 class="h4 fw-semibold mb-4">
+          <i class="bi bi-kanban me-2 text-primary" aria-hidden="true"></i>
+          <span i18n="@@featurePortalHome-capability5Title">Project management</span>
+        </h3>
+        <ul class="list-unstyled ps-0 mb-0">
+          <li class="mb-3 d-flex align-items-start">
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
+            <span class="lh-lg" i18n="@@featurePortalHome-capability5Item1"
+              >Track work per workspace with tickets, priorities, and status so agent initiatives stay visible next to
+              execution</span
+            >
+          </li>
+          <li class="mb-3 d-flex align-items-start">
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
+            <span class="lh-lg" i18n="@@featurePortalHome-capability5Item2"
+              >Break larger goals into subtasks and keep context linked when work moves between agents, tools, or
+              people</span
+            >
+          </li>
+          <li class="mb-0 d-flex align-items-start">
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
+            <span class="lh-lg" i18n="@@featurePortalHome-capability5Item3"
+              >Give leads one place to see what is queued, in progress, and ready for review instead of losing intent in
+              chat threads</span
             >
           </li>
         </ul>
@@ -282,19 +340,19 @@
         </h3>
         <ul class="list-unstyled ps-0 mb-0">
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability4Item1"
               >Keep secrets and credentials out of prompts by using managed integrations</span
             >
           </li>
           <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability4Item2"
               >Limit which tools and data each agent can access based on role and environment</span
             >
           </li>
           <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-2 fs-6" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
             <span class="lh-lg" i18n="@@featurePortalHome-capability4Item3"
               >Support hybrid and distributed setups where agents run close to the systems they automate</span
             >
