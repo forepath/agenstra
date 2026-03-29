@@ -175,6 +175,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     map((agents) => agents.filter((a) => a.agentType !== 'openclaw')),
   );
 
+  selectedLane = signal<BoardLaneStatus>('draft');
   selectedAgentForAi = signal<string | null>(null);
   newCommentText = signal('');
   prototypeError = signal<string | null>(null);

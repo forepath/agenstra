@@ -38,6 +38,20 @@
     }
   </div>
 
+  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
+    @for (status of lanes; track status) {
+      <button
+        type="button"
+        class="btn btn-sm btn-options"
+        [class.btn-outline-secondary]="selectedLane() !== status"
+        [class.btn-primary]="selectedLane() === status"
+        (click)="selectedLane.set(status)"
+      >
+        {{ laneLabel(status) }}
+      </button>
+    }
+  </div>
+
   @if (effectiveClientId() === null) {
     @if (clientsLoading$ | async) {
       <div class="alert alert-info d-flex align-items-center gap-2" role="status">
@@ -57,9 +71,9 @@
             >
           </div>
         } @else {
-          <div class="alert alert-info" role="status">
-            <span i18n="@@featureTicketsBoard-selectSpacePrefix">Select a space from</span>
-            <a routerLink="/clients" i18n="@@featureTicketsBoard-selectSpaceLink">Spaces</a>
+          <div class="alert alert-primary" role="status">
+            <span i18n="@@featureTicketsBoard-selectSpacePrefix">Select a space from</span>&nbsp;
+            <a routerLink="/clients" i18n="@@featureTicketsBoard-selectSpaceLink">Spaces</a>&nbsp;
             <span i18n="@@featureTicketsBoard-selectSpaceSuffix">to load tickets.</span>
             <div class="mt-2">
               <button type="button" class="btn btn-outline-primary btn-sm" (click)="openWorkspaceSwitchModal()">
@@ -87,9 +101,9 @@
       <section class="section__row flex-grow-1">
         @for (status of lanes; track status) {
           @let laneRows = filteredLaneRows(status, byStatus[status]);
-          <div class="section__column d-flex flex-column border-end">
+          <div class="section__column d-md-flex flex-column border-end" [class.d-none]="selectedLane() !== status">
             <div class="tickets-board__lane card h-100 border-0">
-              <div class="card-header py-2 small fw-semibold">{{ laneLabel(status) }}</div>
+              <div class="card-header py-2 small fw-semibold d-none d-md-block">{{ laneLabel(status) }}</div>
               <form class="tickets-board__lane-search">
                 <label
                   [attr.for]="'tickets-lane-search-' + status"
