@@ -246,6 +246,10 @@
   @include tickets-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
 }
 
+.info-badge.tickets-board__chip--status-in-progress {
+  @include tickets-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
+}
+
 .info-badge.tickets-board__chip--status-prototype {
   @include tickets-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
 }

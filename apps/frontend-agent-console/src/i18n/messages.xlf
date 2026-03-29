@@ -657,6 +657,9 @@
       <trans-unit id="featureTicketsBoard-laneTodo" datatype="html">
         <source>To do</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneInProgress" datatype="html">
+        <source>In progress</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-lanePrototype" datatype="html">
         <source>Prototype</source>
         </trans-unit>

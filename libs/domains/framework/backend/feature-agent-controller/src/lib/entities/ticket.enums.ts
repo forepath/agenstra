@@ -8,6 +8,7 @@ export enum TicketPriority {
 export enum TicketStatus {
   DRAFT = 'draft',
   TODO = 'todo',
+  IN_PROGRESS = 'in_progress',
   PROTOTYPE = 'prototype',
   DONE = 'done',
   CLOSED = 'closed',

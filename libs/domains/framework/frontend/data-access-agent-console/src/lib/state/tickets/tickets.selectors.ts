@@ -1,5 +1,10 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { BOARD_LANE_STATUSES, isTerminalTicketStatus, type BoardLaneStatus } from './tickets.constants';
+import {
+  BOARD_LANE_STATUSES,
+  isBoardLaneStatus,
+  isTerminalTicketStatus,
+  type BoardLaneStatus,
+} from './tickets.constants';
 import type { TicketsState } from './tickets.reducer';
 import type { TicketResponseDto } from './tickets.types';
 
@@ -35,13 +40,14 @@ export const selectRootTicketsByStatus = createSelector(selectTicketsList, (list
   const byStatus: Record<BoardLaneStatus, typeof list> = {
     draft: [],
     todo: [],
+    in_progress: [],
     prototype: [],
   };
   for (const t of roots) {
     if (isTerminalTicketStatus(t.status)) {
       continue;
     }
-    if (t.status === 'draft' || t.status === 'todo' || t.status === 'prototype') {
+    if (isBoardLaneStatus(t.status)) {
       byStatus[t.status].push(t);
     }
   }
@@ -75,6 +81,7 @@ export const selectTicketsBoardRowsByStatus = createSelector(selectTicketsList, 
   const byStatus: Record<BoardLaneStatus, TicketBoardRow[]> = {
     draft: [],
     todo: [],
+    in_progress: [],
     prototype: [],
   };
   for (const lane of BOARD_LANE_STATUSES) {

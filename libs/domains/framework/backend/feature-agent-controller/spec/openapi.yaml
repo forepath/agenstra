@@ -293,7 +293,7 @@ paths:
           name: status
           schema:
             type: string
-            enum: [draft, todo, prototype, done, closed]
+            enum: [draft, todo, in_progress, prototype, done, closed]
         - in: query
           name: parentId
           schema:
@@ -4058,7 +4058,7 @@ components:
       enum: [low, medium, high, critical]
     TicketStatus:
       type: string
-      enum: [draft, todo, prototype, done, closed]
+      enum: [draft, todo, in_progress, prototype, done, closed]
     TicketActorType:
       type: string
       enum: [human, ai, system]

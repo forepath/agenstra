@@ -1,5 +1,5 @@
 export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
-export type TicketStatus = 'draft' | 'todo' | 'prototype' | 'done' | 'closed';
+export type TicketStatus = 'draft' | 'todo' | 'in_progress' | 'prototype' | 'done' | 'closed';
 export type TicketActorType = 'human' | 'ai' | 'system';
 
 export interface TicketResponseDto {

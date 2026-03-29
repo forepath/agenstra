@@ -848,6 +848,10 @@
         <source>To do</source>
         <target>Offen</target>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneInProgress" datatype="html">
+        <source>In progress</source>
+        <target>In Bearbeitung</target>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-lanePrototype" datatype="html">
         <source>Prototype</source>
         <target>Prototyp</target>

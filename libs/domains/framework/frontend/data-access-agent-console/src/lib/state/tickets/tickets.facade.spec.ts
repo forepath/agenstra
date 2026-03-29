@@ -31,6 +31,7 @@ describe('TicketsFacade', () => {
   const mockBoardRows = {
     draft: [{ ticket: mockTicket, depth: 0 }],
     todo: [] as { ticket: TicketResponseDto; depth: number }[],
+    in_progress: [] as { ticket: TicketResponseDto; depth: number }[],
     prototype: [] as { ticket: TicketResponseDto; depth: number }[],
   };
 

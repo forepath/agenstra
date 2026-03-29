@@ -51,7 +51,7 @@ import {
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
 import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
 
-const ALL_TICKET_STATUSES: TicketStatus[] = ['draft', 'todo', 'prototype', 'done', 'closed'];
+const ALL_TICKET_STATUSES: TicketStatus[] = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'];
 
 function isEditableDomTarget(target: EventTarget | null): boolean {
   if (!target || !(target instanceof HTMLElement)) {
@@ -192,6 +192,7 @@ export class TicketsBoardComponent implements OnInit {
   readonly laneSearchQueries = signal({
     draft: '',
     todo: '',
+    in_progress: '',
     prototype: '',
   } satisfies Record<BoardLaneStatus, string>);
 
@@ -302,6 +303,8 @@ export class TicketsBoardComponent implements OnInit {
         return $localize`:@@featureTicketsBoard-laneDraft:Draft`;
       case 'todo':
         return $localize`:@@featureTicketsBoard-laneTodo:To do`;
+      case 'in_progress':
+        return $localize`:@@featureTicketsBoard-laneInProgress:In progress`;
       case 'prototype':
         return $localize`:@@featureTicketsBoard-lanePrototype:Prototype`;
       case 'done':
@@ -413,6 +416,8 @@ export class TicketsBoardComponent implements OnInit {
         return 'tickets-board__chip--status-draft';
       case 'todo':
         return 'tickets-board__chip--status-todo';
+      case 'in_progress':
+        return 'tickets-board__chip--status-in-progress';
       case 'prototype':
         return 'tickets-board__chip--status-prototype';
       case 'done':

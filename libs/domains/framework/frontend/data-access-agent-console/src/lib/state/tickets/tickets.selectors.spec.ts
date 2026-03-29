@@ -164,6 +164,7 @@ describe('tickets selectors', () => {
       const rows = selectTicketsBoardRowsByStatus(root(createState({ list })));
       expect(rows.todo.map((r) => r.ticket.id)).toEqual(['active']);
       expect(rows.draft).toEqual([]);
+      expect(rows.in_progress).toEqual([]);
       expect(rows.prototype).toEqual([]);
     });
   });
@@ -196,6 +197,7 @@ describe('tickets selectors', () => {
       const grouped = selectRootTicketsByStatus(root(createState({ list })));
       expect(grouped.draft.map((t) => t.id)).toEqual(['a', 'b']);
       expect(grouped.todo.map((t) => t.id)).toEqual(['c']);
+      expect(grouped.in_progress).toEqual([]);
       expect(grouped.prototype).toEqual([]);
     });
 
@@ -208,6 +210,7 @@ describe('tickets selectors', () => {
       const grouped = selectRootTicketsByStatus(root(createState({ list })));
       expect(grouped.todo.map((t) => t.id)).toEqual(['t1']);
       expect(grouped.draft).toEqual([]);
+      expect(grouped.in_progress).toEqual([]);
       expect(grouped.prototype).toEqual([]);
     });
 
@@ -216,6 +219,7 @@ describe('tickets selectors', () => {
       expect(grouped).toEqual({
         draft: [],
         todo: [],
+        in_progress: [],
         prototype: [],
       });
     });

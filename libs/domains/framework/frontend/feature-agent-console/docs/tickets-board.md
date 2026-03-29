@@ -2,7 +2,7 @@
 
 ## Swimlanes vs terminal statuses
 
-The board shows three columns: **Draft**, **To do**, and **Prototype**. Root tickets in status **done** or **closed** are not shown in any column (and direct subtasks nested under those roots are hidden with them). Users set **Done** or **Closed** from the ticket detail status control.
+The board shows four columns: **Draft**, **To do**, **In progress**, and **Prototype**. Root tickets in status **done** or **closed** are not shown in any column (and direct subtasks nested under those roots are hidden with them). Users set **Done** or **Closed** from the ticket detail status control.
 
 ## Global search
 
