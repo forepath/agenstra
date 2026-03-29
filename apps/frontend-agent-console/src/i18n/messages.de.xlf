@@ -87,8 +87,8 @@
         <target>Chat-I/O</target>
         </trans-unit>
       <trans-unit id="featureAudit-searchPlaceholder" datatype="html">
-        <source>Search (current page)</source>
-        <target>Suchen (aktuelle Seite)</target>
+        <source>Search</source>
+        <target>Suchen</target>
         </trans-unit>
       <trans-unit id="featureAudit-filterDropsTable" datatype="html">
         <source>Filter Drops</source>
@@ -413,6 +413,18 @@
       <trans-unit id="featureChat-workspaceConnectionFailed" datatype="html">
         <source>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></source>
         <target>Verbindung zum Arbeitsbereich fehlgeschlagen: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></target>
+        </trans-unit>
+      <trans-unit id="featureChat-dismissEnhanceError" datatype="html">
+        <source>Dismiss</source>
+        <target>Schließen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-enhancePromptTitle" datatype="html">
+        <source>Enhance prompt with AI</source>
+        <target>Prompt mit KI verbessern</target>
+        </trans-unit>
+      <trans-unit id="featureChat-enhancePromptAria" datatype="html">
+        <source>Enhance prompt with AI</source>
+        <target>Prompt mit KI verbessern</target>
         </trans-unit>
       <trans-unit id="featureChat-gatewayHeader" datatype="html">
         <source>Gateway</source>
@@ -912,10 +924,6 @@
         <source>Describe the ticket. Changes save when you leave this field.</source>
         <target>Beschreiben Sie das Ticket. Änderungen werden gespeichert, wenn Sie das Feld verlassen.</target>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-noDescription" datatype="html">
-        <source>No description yet.</source>
-        <target>Noch keine Beschreibung.</target>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-agentLabel" datatype="html">
         <source>Agent for chat / AI</source>
         <target>Agent für Chat / KI</target>
@@ -931,10 +939,6 @@
       <trans-unit id="featureTicketsBoard-generateBodyTitle" datatype="html">
         <source>Generate description with AI (uses selected agent)</source>
         <target>Beschreibung per KI erzeugen (nutzt gewählten Agenten)</target>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-generateBody" datatype="html">
-        <source>Generate description</source>
-        <target>Beschreibung erzeugen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-commentsHeading" datatype="html">
         <source>Comments</source>
@@ -1033,8 +1037,8 @@
         <target>Anfrage fehlgeschlagen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-newTicket" datatype="html">
-        <source>New ticket</source>
-        <target>Neues Ticket</target>
+        <source>Add</source>
+        <target>Hinzufügen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
         <source>Drop tickets here</source>
@@ -1123,10 +1127,6 @@
       <trans-unit id="featureTicketsBoard-deleteTitle" datatype="html">
         <source>Permanently delete this ticket</source>
         <target>Dieses Ticket endgültig löschen</target>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-deleteConfirm" datatype="html">
-        <source>Delete this ticket? This cannot be undone.</source>
-        <target>Dieses Ticket löschen? Dies kann nicht rückgängig gemacht werden.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-deleteConfirmModalTitle" datatype="html">
         <source>Delete ticket</source>
