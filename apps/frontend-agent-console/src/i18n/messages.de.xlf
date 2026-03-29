@@ -821,8 +821,20 @@
         <target>Workspaces werden geladen…</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
-        <source>No workspaces available</source>
-        <target>Keine Workspaces verfügbar</target>
+        <source>You don't have any workspaces yet.</source>
+        <target>Sie haben noch keine Workspaces.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
+        <source>Create one from Spaces, or open Spaces if a workspace was shared with you.</source>
+        <target>Legen Sie einen unter Bereiche an, oder öffnen Sie Bereiche, falls ein Workspace für Sie freigegeben wurde.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
+        <source>Go to Spaces</source>
+        <target>Zu Bereichen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
+        <source>Choose workspace…</source>
+        <target>Workspace wählen…</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherNoMatch" datatype="html">
         <source>No matching workspaces</source>

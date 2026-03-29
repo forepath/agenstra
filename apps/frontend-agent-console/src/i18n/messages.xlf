@@ -1499,7 +1499,16 @@
         <source>Loading workspaces…</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
-        <source> No workspaces available </source>
+        <source>You don't have any workspaces yet.</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
+        <source>Create one from Spaces, or open Spaces if a workspace was shared with you.</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
+        <source>Go to Spaces</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
+        <source>Choose workspace…</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherNoMatch" datatype="html">
         <source> No matching workspaces </source>

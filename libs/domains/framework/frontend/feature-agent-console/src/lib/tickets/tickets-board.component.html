@@ -39,11 +39,37 @@
   </div>
 
   @if (effectiveClientId() === null) {
-    <div class="alert alert-info" role="status">
-      <span i18n="@@featureTicketsBoard-selectSpacePrefix">Select a space from</span>
-      <a routerLink="/clients" i18n="@@featureTicketsBoard-selectSpaceLink">Spaces</a>
-      <span i18n="@@featureTicketsBoard-selectSpaceSuffix">to load tickets.</span>
-    </div>
+    @if (clientsLoading$ | async) {
+      <div class="alert alert-info d-flex align-items-center gap-2" role="status">
+        <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+        <span i18n="@@featureTicketsBoard-workspaceSwitcherLoading">Loading workspaces…</span>
+      </div>
+    } @else {
+      @if (clients$ | async; as bannerClients) {
+        @if (bannerClients.length === 0) {
+          <div class="alert alert-warning" role="status">
+            <p class="mb-2" i18n="@@featureTicketsBoard-workspaceSwitcherEmpty">You don't have any workspaces yet.</p>
+            <p class="small text-muted mb-3 mb-md-2" i18n="@@featureTicketsBoard-workspaceSwitcherEmptyHint">
+              Create one from Spaces, or open Spaces if a workspace was shared with you.
+            </p>
+            <a routerLink="/clients" class="btn btn-primary btn-sm" i18n="@@featureTicketsBoard-goToSpaces"
+              >Go to Spaces</a
+            >
+          </div>
+        } @else {
+          <div class="alert alert-info" role="status">
+            <span i18n="@@featureTicketsBoard-selectSpacePrefix">Select a space from</span>
+            <a routerLink="/clients" i18n="@@featureTicketsBoard-selectSpaceLink">Spaces</a>
+            <span i18n="@@featureTicketsBoard-selectSpaceSuffix">to load tickets.</span>
+            <div class="mt-2">
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="openWorkspaceSwitchModal()">
+                <span i18n="@@featureTicketsBoard-chooseWorkspaceButton">Choose workspace…</span>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    }
   } @else {
     @if (listError$ | async; as err) {
       <div class="alert alert-danger" role="alert">{{ err }}</div>
@@ -777,24 +803,6 @@
         ></button>
       </div>
       <div class="modal-body">
-        <label
-          class="visually-hidden"
-          for="workspaceSwitchSearch"
-          i18n="@@featureTicketsBoard-workspaceSwitcherSearchLabel"
-          >Search workspaces</label
-        >
-        <div class="input-group search-input-container border rounded mb-3">
-          <i class="bi bi-search" aria-hidden="true"></i>
-          <input
-            id="workspaceSwitchSearch"
-            type="search"
-            class="form-control border-0 search-input"
-            [ngModel]="workspaceSwitchSearch()"
-            (ngModelChange)="workspaceSwitchSearch.set($event)"
-            i18n-placeholder="@@featureTicketsBoard-workspaceSwitcherSearchPlaceholder"
-            placeholder="Search workspaces"
-          />
-        </div>
         @if (clientsLoading$ | async) {
           <div class="d-flex justify-content-center py-4">
             <div class="spinner-border text-primary" role="status">
@@ -806,10 +814,38 @@
         } @else {
           @if (clients$ | async; as clientList) {
             @if (clientList.length === 0) {
-              <p class="text-muted small mb-0 text-center py-3" i18n="@@featureTicketsBoard-workspaceSwitcherEmpty">
-                No workspaces available
+              <p class="text-muted small mb-2 text-center" i18n="@@featureTicketsBoard-workspaceSwitcherEmpty">
+                You don't have any workspaces yet.
               </p>
+              <p class="text-muted small mb-3 text-center" i18n="@@featureTicketsBoard-workspaceSwitcherEmptyHint">
+                Create one from Spaces, or open Spaces if a workspace was shared with you.
+              </p>
+              <a
+                routerLink="/clients"
+                class="btn btn-primary btn-sm d-block w-100"
+                i18n="@@featureTicketsBoard-goToSpaces"
+                (click)="onCloseWorkspaceSwitchModal()"
+                >Go to Spaces</a
+              >
             } @else {
+              <label
+                class="visually-hidden"
+                for="workspaceSwitchSearch"
+                i18n="@@featureTicketsBoard-workspaceSwitcherSearchLabel"
+                >Search workspaces</label
+              >
+              <div class="input-group search-input-container border rounded mb-3">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input
+                  id="workspaceSwitchSearch"
+                  type="search"
+                  class="form-control border-0 search-input"
+                  [ngModel]="workspaceSwitchSearch()"
+                  (ngModelChange)="workspaceSwitchSearch.set($event)"
+                  i18n-placeholder="@@featureTicketsBoard-workspaceSwitcherSearchPlaceholder"
+                  placeholder="Search workspaces"
+                />
+              </div>
               @let filteredClients = filteredClientsForWorkspaceSwitch(clientList);
               @if (filteredClients.length === 0) {
                 <p class="text-muted small mb-0 text-center py-3" i18n="@@featureTicketsBoard-workspaceSwitcherNoMatch">
