@@ -1,0 +1,20 @@
+flowchart TB
+  subgraph ngRx [NgRx tickets list]
+    List[All tickets for workspace clientId]
+  end
+  subgraph lanes [Swimlanes draft todo in_progress prototype]
+    Board[selectTicketsBoardRowsByStatus]
+  end
+  subgraph terminal [Terminal statuses]
+    Done[done]
+    Closed[closed]
+  end
+  subgraph search [Global search modal]
+    Modal[filterTicketsForGlobalSearch]
+  end
+  List --> Board
+  List --> Modal
+  Board -->|excludes roots| Done
+  Board -->|excludes roots| Closed
+  Modal -->|includes| Done
+  Modal -->|includes| Closed

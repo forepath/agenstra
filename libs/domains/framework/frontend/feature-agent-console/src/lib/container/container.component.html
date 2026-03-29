@@ -143,6 +143,17 @@
         <span class="small" i18n="@@featureContainer-spaces">Spaces</span>
       </a>
       <a
+        [routerLink]="ticketsSidebarLink()"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-ticketsTitle"
+        title="Tickets"
+      >
+        <i class="bi bi-kanban me-1"></i>
+        <span class="small" i18n="@@featureContainer-tickets">Tickets</span>
+      </a>
+      <a
         routerLink="/audit"
         routerLinkActive="active"
         class="sidebar__item"

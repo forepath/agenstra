@@ -21,7 +21,12 @@ import { ClientsDeploymentsController } from '../controllers/clients-deployments
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
+import { TicketsController } from '../controllers/tickets.controller';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
+import { TicketActivityEntity } from '../entities/ticket-activity.entity';
+import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
+import { TicketCommentEntity } from '../entities/ticket-comment.entity';
+import { TicketEntity } from '../entities/ticket.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { DigitalOceanProvider } from '../providers/digital-ocean.provider';
 import { HetznerProvider } from '../providers/hetzner.provider';
@@ -34,6 +39,7 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { TicketsService } from '../services/tickets.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { StatisticsAgentSyncService } from '../services/statistics-agent-sync.service';
 import { StatisticsModule } from './statistics.module';
@@ -52,6 +58,10 @@ const authMethod = getAuthenticationMethod();
       ProvisioningReferenceEntity,
       ClientUserEntity,
       UserEntity,
+      TicketEntity,
+      TicketCommentEntity,
+      TicketActivityEntity,
+      TicketBodyGenerationSessionEntity,
     ]),
     StatisticsModule,
     // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
@@ -63,9 +73,11 @@ const authMethod = getAuthenticationMethod();
     ClientsDeploymentsController,
     ClientStatisticsController,
     StatisticsController,
+    TicketsController,
   ],
   providers: [
     ClientsService,
+    TicketsService,
     ClientsRepository,
     ClientUsersRepository,
     ClientUsersService,

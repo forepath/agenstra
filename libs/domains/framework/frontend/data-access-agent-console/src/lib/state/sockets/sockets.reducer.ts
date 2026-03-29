@@ -2,6 +2,7 @@ import { createReducer, on } from '@ngrx/store';
 import { ForwardableEvent } from './sockets.types';
 import {
   chatEnhancementStarted,
+  ticketBodyGenerationStarted,
   clearChatHistory,
   connectSocket,
   connectSocketFailure,
@@ -93,6 +94,13 @@ export interface SocketsState {
     enhancedText?: string;
     errorMessage?: string;
   } | null;
+  ticketBodyPendingCorrelationId: string | null;
+  ticketBodyLastResult: {
+    correlationId: string;
+    success: boolean;
+    enhancedText?: string;
+    errorMessage?: string;
+  } | null;
 }
 
 export const initialSocketsState: SocketsState = {
@@ -116,6 +124,8 @@ export const initialSocketsState: SocketsState = {
   maxMessageFilterResults: 1000,
   chatEnhancementPendingCorrelationId: null,
   chatEnhancementLastResult: null,
+  ticketBodyPendingCorrelationId: null,
+  ticketBodyLastResult: null,
 };
 
 export const socketsReducer = createReducer(
@@ -196,6 +206,8 @@ export const socketsReducer = createReducer(
     remoteConnections: {},
     chatEnhancementPendingCorrelationId: null,
     chatEnhancementLastResult: null,
+    ticketBodyPendingCorrelationId: null,
+    ticketBodyLastResult: null,
   })),
   // Set Client
   on(setClient, (state, { clientId }) => ({
@@ -257,6 +269,11 @@ export const socketsReducer = createReducer(
     chatEnhancementPendingCorrelationId: correlationId,
     chatEnhancementLastResult: null,
   })),
+  on(ticketBodyGenerationStarted, (state, { correlationId }) => ({
+    ...state,
+    ticketBodyPendingCorrelationId: correlationId,
+    ticketBodyLastResult: null,
+  })),
   // Forward Event
   on(forwardEvent, (state, { event }) => ({
     ...state,
@@ -280,6 +297,8 @@ export const socketsReducer = createReducer(
   on(forwardEventFailure, (state, { error }) => {
     const wasEnhance =
       state.forwardingEvent === ForwardableEvent.ENHANCE_CHAT && state.chatEnhancementPendingCorrelationId;
+    const wasTicketBody =
+      state.forwardingEvent === ForwardableEvent.GENERATE_TICKET_BODY && state.ticketBodyPendingCorrelationId;
     return {
       ...state,
       forwarding: false,
@@ -290,6 +309,16 @@ export const socketsReducer = createReducer(
             chatEnhancementPendingCorrelationId: null,
             chatEnhancementLastResult: {
               correlationId: state.chatEnhancementPendingCorrelationId as string,
+              success: false,
+              errorMessage: error,
+            },
+          }
+        : {}),
+      ...(wasTicketBody
+        ? {
+            ticketBodyPendingCorrelationId: null,
+            ticketBodyLastResult: {
+              correlationId: state.ticketBodyPendingCorrelationId as string,
               success: false,
               errorMessage: error,
             },
@@ -306,6 +335,16 @@ export const socketsReducer = createReducer(
           chatEnhancementPendingCorrelationId: null,
           chatEnhancementLastResult: {
             correlationId: state.chatEnhancementPendingCorrelationId,
+            success: false,
+            errorMessage: message,
+          },
+        }
+      : {}),
+    ...(state.ticketBodyPendingCorrelationId
+      ? {
+          ticketBodyPendingCorrelationId: null,
+          ticketBodyLastResult: {
+            correlationId: state.ticketBodyPendingCorrelationId,
             success: false,
             errorMessage: message,
           },
@@ -341,6 +380,28 @@ export const socketsReducer = createReducer(
             correlationId: data.correlationId,
             success: false,
             errorMessage: data.error?.message ?? 'Enhancement failed',
+          };
+        }
+      }
+    }
+
+    let ticketBodyPendingCorrelationId = state.ticketBodyPendingCorrelationId;
+    let ticketBodyLastResult = state.ticketBodyLastResult;
+    if (event === 'ticketBodyResult' && 'data' in payload && payload.success && state.ticketBodyPendingCorrelationId) {
+      const data = payload.data as import('./sockets.types').TicketBodyResultPayload;
+      if (data.correlationId === state.ticketBodyPendingCorrelationId) {
+        ticketBodyPendingCorrelationId = null;
+        if (data.success === true) {
+          ticketBodyLastResult = {
+            correlationId: data.correlationId,
+            success: true,
+            enhancedText: data.enhancedText,
+          };
+        } else {
+          ticketBodyLastResult = {
+            correlationId: data.correlationId,
+            success: false,
+            errorMessage: data.error?.message ?? 'Ticket body generation failed',
           };
         }
       }
@@ -382,7 +443,7 @@ export const socketsReducer = createReducer(
           : updatedFilterResults;
     }
 
-    const skipForwardedAppend = event === 'chatEnhanceResult';
+    const skipForwardedAppend = event === 'chatEnhanceResult' || event === 'ticketBodyResult';
     const updatedForwardedEvents = skipForwardedAppend
       ? state.forwardedEvents
       : [...state.forwardedEvents, { event, payload, timestamp: Date.now() }];
@@ -398,6 +459,8 @@ export const socketsReducer = createReducer(
       selectedAgentId,
       chatEnhancementPendingCorrelationId,
       chatEnhancementLastResult,
+      ticketBodyPendingCorrelationId,
+      ticketBodyLastResult,
     };
   }),
   // Set Agent
@@ -412,6 +475,8 @@ export const socketsReducer = createReducer(
     messageFilterResults: [],
     chatEnhancementPendingCorrelationId: null,
     chatEnhancementLastResult: null,
+    ticketBodyPendingCorrelationId: null,
+    ticketBodyLastResult: null,
   })),
   // Remote Connection Disconnection (per clientId)
   on(remoteDisconnected, (state, { clientId }) => {

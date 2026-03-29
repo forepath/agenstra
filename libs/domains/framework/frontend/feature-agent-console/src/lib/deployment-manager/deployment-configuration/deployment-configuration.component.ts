@@ -36,6 +36,9 @@ export class DeploymentConfigurationComponent {
   @ViewChild('configurationModal', { static: false })
   private configurationModal!: ElementRef<HTMLDivElement>;
 
+  @ViewChild('deleteConfigurationConfirmModal', { static: false })
+  private deleteConfigurationConfirmModal!: ElementRef<HTMLDivElement>;
+
   // Inputs
   clientId = input.required<string>();
   agentId = input.required<string>();
@@ -300,17 +303,21 @@ export class DeploymentConfigurationComponent {
     });
   }
 
-  onDeleteConfiguration(): void {
-    if (!confirm('Are you sure you want to delete the deployment configuration?')) {
-      return;
-    }
+  onOpenDeleteConfigurationConfirm(): void {
+    setTimeout(() => this.showDeleteConfigurationConfirmModal(), 0);
+  }
 
+  onCancelDeleteConfigurationConfirm(): void {
+    this.hideDeleteConfigurationConfirmModal();
+  }
+
+  confirmDeleteConfiguration(): void {
+    this.hideDeleteConfigurationConfirmModal();
     const clientId = this.clientId();
     const agentId = this.agentId();
     if (clientId && agentId) {
       this.deploymentsFacade.deleteConfiguration(clientId, agentId);
       this.configurationDeleted.emit();
-      // Reset form
       this.providerType.set('github');
       this.repositoryId.set('');
       this.defaultBranch.set('');
@@ -457,6 +464,30 @@ export class DeploymentConfigurationComponent {
         modal.hide();
       }
     }
+  }
+
+  private showDeleteConfigurationConfirmModal(): void {
+    const el = this.deleteConfigurationConfirmModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Modal = (window as any).bootstrap?.Modal;
+    if (!Modal) {
+      return;
+    }
+    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+    inst.show();
+  }
+
+  private hideDeleteConfigurationConfirmModal(): void {
+    const el = this.deleteConfigurationConfirmModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const modal = (window as any).bootstrap?.Modal?.getInstance(el);
+    modal?.hide();
   }
 
   getModalTitle(): string {

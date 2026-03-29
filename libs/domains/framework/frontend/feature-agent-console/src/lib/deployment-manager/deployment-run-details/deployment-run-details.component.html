@@ -42,7 +42,7 @@
           <button
             type="button"
             class="btn btn-sm btn-danger"
-            (click)="onCancelRun()"
+            (click)="onOpenCancelRunConfirm()"
             [disabled]="cancellingRun$ | async"
           >
             @if (cancellingRun$ | async) {
@@ -174,4 +174,68 @@
       {{ error() }}
     </div>
   }
+
+  <!-- Cancel run confirmation -->
+  <div
+    class="modal fade"
+    id="cancelRunConfirmModal"
+    tabindex="-1"
+    aria-labelledby="cancelRunConfirmModalLabel"
+    aria-hidden="true"
+    #cancelRunConfirmModal
+    data-bs-backdrop="static"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2
+            class="modal-title h5"
+            id="cancelRunConfirmModalLabel"
+            i18n="@@featureDeploymentRunDetails-cancelConfirmTitle"
+          >
+            Cancel run
+          </h2>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            i18n-aria-label="@@featureDeploymentRunDetails-cancelConfirmCloseAria"
+            [disabled]="cancellingRun$ | async"
+            (click)="onCancelCancelRunConfirm()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <p i18n="@@featureDeploymentRunDetails-cancelConfirmBody">
+            Are you sure you want to cancel this run? In-progress jobs may be stopped.
+          </p>
+          <p class="text-danger mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+            <span i18n="@@featureDeploymentRunDetails-cancelConfirmWarning">This cannot be undone.</span>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            [disabled]="cancellingRun$ | async"
+            (click)="onCancelCancelRunConfirm()"
+            i18n="@@featureDeploymentRunDetails-cancelConfirmDismiss"
+          >
+            Keep running
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            (click)="confirmCancelRun()"
+            [disabled]="cancellingRun$ | async"
+          >
+            @if (cancellingRun$ | async) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            }
+            <span i18n="@@featureDeploymentRunDetails-cancelConfirmSubmit">Cancel run</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

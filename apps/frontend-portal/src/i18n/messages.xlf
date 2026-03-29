@@ -671,6 +671,18 @@
       <trans-unit id="featurePortalHome-solutionItem4Desc" datatype="html">
         <source> Work with agents through an integrated web IDE for fast iteration and debugging </source>
         </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem5Title" datatype="html">
+        <source>Plan and track</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem5Desc" datatype="html">
+        <source>Run tickets and priorities per workspace so agent work stays tied to outcomes, not lost in side channels</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem6Title" datatype="html">
+        <source>Run code</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem6Desc" datatype="html">
+        <source>Execute commands and code in connected workspaces and review output in context, so runs live next to the agents and repositories your team already uses</source>
+        </trans-unit>
       <trans-unit id="featurePortalHome-solutionClosing" datatype="html">
         <source> Instead of treating every agent as a one off experiment, you get an infrastructure layer that makes them part of your engineering system. </source>
         </trans-unit>
@@ -712,6 +724,18 @@
         </trans-unit>
       <trans-unit id="featurePortalHome-capability3Item3" datatype="html">
         <source>Generate audit logs that show what decisions an agent made and why</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Title" datatype="html">
+        <source>Project management</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item1" datatype="html">
+        <source>Track work per workspace with tickets, priorities, and status so agent initiatives stay visible next to execution</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item2" datatype="html">
+        <source>Break larger goals into subtasks and keep context linked when work moves between agents, tools, or people</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item3" datatype="html">
+        <source>Give leads one place to see what is queued, in progress, and ready for review instead of losing intent in chat threads</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability4Title" datatype="html">
         <source>Secure connectivity</source>

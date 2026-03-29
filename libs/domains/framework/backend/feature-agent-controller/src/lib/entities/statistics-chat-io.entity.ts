@@ -11,6 +11,7 @@ export enum ChatDirection {
 export enum StatisticsInteractionKind {
   CHAT = 'chat',
   PROMPT_ENHANCEMENT = 'prompt_enhancement',
+  TICKET_BODY_GENERATION = 'ticket_body_generation',
 }
 
 /**

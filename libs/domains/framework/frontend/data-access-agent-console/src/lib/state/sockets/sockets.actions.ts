@@ -36,6 +36,12 @@ export const chatEnhancementStarted = createAction(
   props<{ correlationId: string }>(),
 );
 
+/** User requested AI ticket body from title; cleared when ticketBodyResult arrives or forward/socket fails. */
+export const ticketBodyGenerationStarted = createAction(
+  '[Sockets] Ticket Body Generation Started',
+  props<{ correlationId: string }>(),
+);
+
 // Forward Actions
 export const forwardEvent = createAction(
   '[Sockets] Forward Event',

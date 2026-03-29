@@ -894,6 +894,22 @@
         <source> Work with agents through an integrated web IDE for fast iteration and debugging </source>
         <target> Arbeiten Sie mit Agenten über eine integrierte Web-IDE für schnelle Iteration und Debugging </target>
         </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem5Title" datatype="html">
+        <source>Plan and track</source>
+        <target>Planen und verfolgen</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem5Desc" datatype="html">
+        <source>Run tickets and priorities per workspace so agent work stays tied to outcomes, not lost in side channels</source>
+        <target>Führen Sie Tickets und Prioritäten pro Workspace, damit Agenten-Arbeit an Ergebnisse gebunden bleibt und nicht in Nebenkanälen verloren geht</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem6Title" datatype="html">
+        <source>Run code</source>
+        <target>Code ausführen</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionItem6Desc" datatype="html">
+        <source>Execute commands and code in connected workspaces and review output in context, so runs live next to the agents and repositories your team already uses</source>
+        <target>Führen Sie Befehle und Code in verbundenen Workspaces aus und prüfen Sie die Ausgaben im Kontext – so liegen Läufe dort, wo ohnehin Ihre Agenten und Repositories arbeiten</target>
+        </trans-unit>
       <trans-unit id="featurePortalHome-solutionClosing" datatype="html">
         <source> Instead of treating every agent as a one off experiment, you get an infrastructure layer that makes them part of your engineering system. </source>
         <target> Anstatt jeden Agenten als einmaliges Experiment zu behandeln, erhalten Sie eine Infrastrukturebene, die sie zu einem Teil Ihres Engineering-Systems macht. </target>
@@ -949,6 +965,22 @@
       <trans-unit id="featurePortalHome-capability3Item3" datatype="html">
         <source>Generate audit logs that show what decisions an agent made and why</source>
         <target>Generieren Sie Audit-Logs, die zeigen, welche Entscheidungen ein Agent getroffen hat und warum</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Title" datatype="html">
+        <source>Project management</source>
+        <target>Projektmanagement</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item1" datatype="html">
+        <source>Track work per workspace with tickets, priorities, and status so agent initiatives stay visible next to execution</source>
+        <target>Verfolgen Sie Arbeit pro Workspace mit Tickets, Prioritäten und Status, damit Agenten-Initiativen neben der Ausführung sichtbar bleiben</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item2" datatype="html">
+        <source>Break larger goals into subtasks and keep context linked when work moves between agents, tools, or people</source>
+        <target>Zerlegen Sie größere Ziele in Unteraufgaben und halten Sie den Kontext verknüpft, wenn Arbeit zwischen Agenten, Tools oder Personen wechselt</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item3" datatype="html">
+        <source>Give leads one place to see what is queued, in progress, and ready for review instead of losing intent in chat threads</source>
+        <target>Geben Sie Leads einen Ort, an dem sie sehen, was warteschlangiert, in Bearbeitung und zur Review bereit ist – statt Absicht in Chat-Verläufen zu verlieren</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability4Title" datatype="html">
         <source>Secure connectivity</source>

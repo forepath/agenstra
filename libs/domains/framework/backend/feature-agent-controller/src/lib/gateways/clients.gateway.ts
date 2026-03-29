@@ -274,6 +274,24 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               )
               .catch(() => undefined);
           }
+        } else if (event === 'ticketBodyResult' && currentClientId && lastAgentId && args.length > 0) {
+          const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
+          const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+          if (payload?.success === true && typeof payload.enhancedText === 'string') {
+            const text = payload.enhancedText;
+            const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+            const charCount = text.length;
+            this.statisticsService
+              .recordChatOutput(
+                currentClientId,
+                lastAgentId,
+                wordCount,
+                charCount,
+                userId,
+                StatisticsInteractionKind.TICKET_BODY_GENERATION,
+              )
+              .catch(() => undefined);
+          }
         } else if (event === 'chatMessage' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
@@ -891,6 +909,22 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             charCount,
             userInfo?.userId,
             StatisticsInteractionKind.PROMPT_ENHANCEMENT,
+          )
+          .catch(() => undefined);
+        this.lastAgentIdBySocket.set(socket.id, agentId);
+      } else if (event === 'generateTicketBody' && agentId) {
+        const title = (payload as { title?: string })?.title ?? '';
+        const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
+        const charCount = title.length;
+        const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
+        this.statisticsService
+          .recordChatInput(
+            clientId,
+            agentId,
+            wordCount,
+            charCount,
+            userInfo?.userId,
+            StatisticsInteractionKind.TICKET_BODY_GENERATION,
           )
           .catch(() => undefined);
         this.lastAgentIdBySocket.set(socket.id, agentId);

@@ -87,8 +87,8 @@
         <target>Chat-I/O</target>
         </trans-unit>
       <trans-unit id="featureAudit-searchPlaceholder" datatype="html">
-        <source>Search (current page)</source>
-        <target>Suchen (aktuelle Seite)</target>
+        <source>Search</source>
+        <target>Suchen</target>
         </trans-unit>
       <trans-unit id="featureAudit-filterDropsTable" datatype="html">
         <source>Filter Drops</source>
@@ -413,6 +413,18 @@
       <trans-unit id="featureChat-workspaceConnectionFailed" datatype="html">
         <source>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></source>
         <target>Verbindung zum Arbeitsbereich fehlgeschlagen: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></target>
+        </trans-unit>
+      <trans-unit id="featureChat-dismissEnhanceError" datatype="html">
+        <source>Dismiss</source>
+        <target>Schließen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-enhancePromptTitle" datatype="html">
+        <source>Enhance prompt with AI</source>
+        <target>Prompt mit KI verbessern</target>
+        </trans-unit>
+      <trans-unit id="featureChat-enhancePromptAria" datatype="html">
+        <source>Enhance prompt with AI</source>
+        <target>Prompt mit KI verbessern</target>
         </trans-unit>
       <trans-unit id="featureChat-gatewayHeader" datatype="html">
         <source>Gateway</source>
@@ -744,6 +756,410 @@
         <source>Spaces</source>
         <target>Bereiche</target>
         </trans-unit>
+      <trans-unit id="featureContainer-ticketsTitle" datatype="html">
+        <source>Tickets</source>
+        <target>Tickets</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-tickets" datatype="html">
+        <source>Tickets</source>
+        <target>Tickets</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-title" datatype="html">
+        <source>Tickets</source>
+        <target>Tickets</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchOpenTitle" datatype="html">
+        <source>Search tickets (Ctrl+F)</source>
+        <target>Tickets durchsuchen (Strg+F)</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchOpenAria" datatype="html">
+        <source>Search tickets</source>
+        <target>Tickets durchsuchen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
+        <source>Search tickets</source>
+        <target>Tickets durchsuchen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchInputLabel" datatype="html">
+        <source>Search tickets</source>
+        <target>Tickets durchsuchen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchPlaceholder" datatype="html">
+        <source>Search by title, description, or id</source>
+        <target>Suche nach Titel, Beschreibung oder ID</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchHint" datatype="html">
+        <source>Type to search all tickets in this workspace, including done and closed.</source>
+        <target>Tippen, um alle Tickets in diesem Workspace zu durchsuchen, einschließlich erledigter und geschlossener.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchNoResults" datatype="html">
+        <source>No matching tickets</source>
+        <target>Keine passenden Tickets</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchClose" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceBadgeSwitchTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherSearchLabel" datatype="html">
+        <source>Search workspaces</source>
+        <target>Workspaces durchsuchen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherSearchPlaceholder" datatype="html">
+        <source>Search workspaces</source>
+        <target>Workspaces durchsuchen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherLoading" datatype="html">
+        <source>Loading workspaces…</source>
+        <target>Workspaces werden geladen…</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
+        <source>You don't have any workspaces yet.</source>
+        <target>Sie haben noch keine Workspaces.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
+        <source>Create one from Spaces, or open Spaces if a workspace was shared with you.</source>
+        <target>Legen Sie einen unter Bereiche an, oder öffnen Sie Bereiche, falls ein Workspace für Sie freigegeben wurde.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
+        <source>Go to Spaces</source>
+        <target>Zu Bereichen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
+        <source>Choose workspace…</source>
+        <target>Workspace wählen…</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherNoMatch" datatype="html">
+        <source>No matching workspaces</source>
+        <target>Keine passenden Workspaces</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherCurrent" datatype="html">
+        <source>Current</source>
+        <target>Aktuell</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherClose" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-selectSpacePrefix" datatype="html">
+        <source>Select a space from</source>
+        <target>Um Tickets zu laden, wählen Sie einen Bereich unter</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-selectSpaceLink" datatype="html">
+        <source>Spaces</source>
+        <target>Bereiche</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-selectSpaceSuffix" datatype="html">
+        <source>to load tickets.</source>
+        <target>.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-loading" datatype="html">
+        <source>Loading tickets…</source>
+        <target>Tickets werden geladen…</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneDraft" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneTodo" datatype="html">
+        <source>To do</source>
+        <target>Offen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneInProgress" datatype="html">
+        <source>In progress</source>
+        <target>In Bearbeitung</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-lanePrototype" datatype="html">
+        <source>Prototype</source>
+        <target>Prototyp</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneDone" datatype="html">
+        <source>Done</source>
+        <target>Erledigt</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneClosed" datatype="html">
+        <source>Closed</source>
+        <target>Geschlossen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-priorityLow" datatype="html">
+        <source>Low</source>
+        <target>Niedrig</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-priorityMedium" datatype="html">
+        <source>Medium</source>
+        <target>Mittel</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-priorityHigh" datatype="html">
+        <source>High</source>
+        <target>Hoch</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-priorityCritical" datatype="html">
+        <source>Critical</source>
+        <target>Kritisch</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-modalLoadingTitle" datatype="html">
+        <source>Ticket</source>
+        <target>Ticket</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-modalCloseAria" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-detailLoading" datatype="html">
+        <source>Loading ticket…</source>
+        <target>Ticket wird geladen…</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-fieldStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-fieldPriority" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-descriptionHeading" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-descriptionLabel" datatype="html">
+        <source>Ticket description</source>
+        <target>Ticketbeschreibung</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-descriptionPlaceholder" datatype="html">
+        <source>Describe the ticket. Changes save when you leave this field.</source>
+        <target>Beschreiben Sie das Ticket. Änderungen werden gespeichert, wenn Sie das Feld verlassen.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-agentLabel" datatype="html">
+        <source>Agent for chat / AI</source>
+        <target>Agent für Chat / KI</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-agentPlaceholder" datatype="html">
+        <source>Select agent…</source>
+        <target>Agent wählen…</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-prototypeButton" datatype="html">
+        <source>Open prototype in chat</source>
+        <target>Prototyp im Chat öffnen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-generateBodyTitle" datatype="html">
+        <source>Generate description with AI (uses selected agent)</source>
+        <target>Beschreibung per KI erzeugen (nutzt gewählten Agenten)</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-commentsHeading" datatype="html">
+        <source>Comments</source>
+        <target>Kommentare</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-commentPlaceholder" datatype="html">
+        <source>Add a comment…</source>
+        <target>Kommentar hinzufügen…</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-commentAuthorDash" datatype="html">
+        <source>—</source>
+        <target>—</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-commentAuthorUnknownTitle" datatype="html">
+        <source>Author email not available</source>
+        <target>E-Mail des Autors nicht verfügbar</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-addComment" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityHeading" datatype="html">
+        <source>Activity</source>
+        <target>Aktivität</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionDeleted" datatype="html">
+        <source>Deleted</source>
+        <target>Gelöscht</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionCommentAdded" datatype="html">
+        <source>Comment added</source>
+        <target>Kommentar hinzugefügt</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionStatusChanged" datatype="html">
+        <source>Status changed</source>
+        <target>Status geändert</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionPriorityChanged" datatype="html">
+        <source>Priority changed</source>
+        <target>Priorität geändert</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionWorkspaceMoved" datatype="html">
+        <source>Workspace changed</source>
+        <target>Workspace gewechselt</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionParentChanged" datatype="html">
+        <source>Parent changed</source>
+        <target>Übergeordnetes Ticket geändert</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionFieldUpdated" datatype="html">
+        <source>Details updated</source>
+        <target>Details aktualisiert</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionContentAppliedFromAi" datatype="html">
+        <source>Description applied (AI)</source>
+        <target>Beschreibung übernommen (KI)</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionBodyGenerationStarted" datatype="html">
+        <source>AI description generation started</source>
+        <target>KI-Beschreibungsgenerierung gestartet</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionPrototypePromptGenerated" datatype="html">
+        <source>Prototype prompt generated</source>
+        <target>Prototyp-Prompt erzeugt</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionUnknown" datatype="html">
+        <source>Unknown activity</source>
+        <target>Unbekannte Aktivität</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-close" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-bodyGenMissingContext" datatype="html">
+        <source>Could not apply generated text (missing session).</source>
+        <target>Generierter Text konnte nicht übernommen werden (Sitzung fehlt).</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-bodyGenFailed" datatype="html">
+        <source>Generation failed</source>
+        <target>Generierung fehlgeschlagen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-prototypeNeedAgent" datatype="html">
+        <source>Select an environment and agent for chat.</source>
+        <target>Wählen Sie eine Umgebung und einen Agenten für den Chat.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-bodyGenNeedAgent" datatype="html">
+        <source>Select an agent and ensure a ticket is open.</source>
+        <target>Wählen Sie einen Agenten und öffnen Sie ein Ticket.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-requestFailed" datatype="html">
+        <source>Request failed</source>
+        <target>Anfrage fehlgeschlagen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-newTicket" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
+        <source>Drop tickets here</source>
+        <target>Tickets hier ablegen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-searchLaneLabel" datatype="html">
+        <source>Search tickets</source>
+        <target>Tickets durchsuchen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-searchLanePlaceholder" datatype="html">
+        <source>Search tickets</source>
+        <target>Tickets durchsuchen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-noMatchingTickets" datatype="html">
+        <source>No matching tickets</source>
+        <target>Keine passenden Tickets</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createModalTitle" datatype="html">
+        <source>New ticket</source>
+        <target>Neues Ticket</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createSubtaskModalTitle" datatype="html">
+        <source>New subtask</source>
+        <target>Neue Unteraufgabe</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-addSubtask" datatype="html">
+        <source>Add subtask</source>
+        <target>Unteraufgabe hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtasksHeading" datatype="html">
+        <source>Subtasks</source>
+        <target>Unteraufgaben</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-openSubtaskTitle" datatype="html">
+        <source>Open subtask</source>
+        <target>Unteraufgabe öffnen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-breadcrumbNavAria" datatype="html">
+        <source>Ticket hierarchy</source>
+        <target>Ticket-Hierarchie</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTitleLabel" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTitlePlaceholder" datatype="html">
+        <source>Short summary</source>
+        <target>Kurze Zusammenfassung</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createContentLabel" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createContentPlaceholder" datatype="html">
+        <source>Optional details</source>
+        <target>Optionale Details</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createStatusLabel" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createPriorityLabel" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createCancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createSubmit" datatype="html">
+        <source>Create</source>
+        <target>Anlegen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createNeedClient" datatype="html">
+        <source>Select a space before creating a ticket.</source>
+        <target>Wählen Sie einen Space, bevor Sie ein Ticket anlegen.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createNeedTitle" datatype="html">
+        <source>Title is required.</source>
+        <target>Titel ist erforderlich.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-deleteTitle" datatype="html">
+        <source>Permanently delete this ticket</source>
+        <target>Dieses Ticket endgültig löschen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-deleteConfirmModalTitle" datatype="html">
+        <source>Delete ticket</source>
+        <target>Ticket löschen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-deleteConfirmModalLead" datatype="html">
+        <source>Are you sure you want to delete this ticket?</source>
+        <target>Möchten Sie dieses Ticket wirklich löschen?</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-deleteConfirmCannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-deleteConfirmCancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-deleteConfirmSubmit" datatype="html">
+        <source>Delete ticket</source>
+        <target>Ticket löschen</target>
+        </trans-unit>
       <trans-unit id="featureContainer-auditTitle" datatype="html">
         <source>Audit</source>
         <target>Audit</target>
@@ -782,6 +1198,26 @@
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfigTitle" datatype="html">
         <source>Delete Configuration</source>
+        <target>Konfiguration löschen</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-deleteConfirmModalTitle" datatype="html">
+        <source>Delete deployment configuration</source>
+        <target>Deployment-Konfiguration löschen</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-deleteConfirmModalBody" datatype="html">
+        <source>Are you sure you want to delete this deployment configuration?</source>
+        <target>Möchten Sie diese Deployment-Konfiguration wirklich löschen?</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-deleteConfirmCannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-deleteConfirmCancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-deleteConfirmSubmit" datatype="html">
+        <source>Delete configuration</source>
         <target>Konfiguration löschen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-providerLabel" datatype="html">
@@ -1003,6 +1439,30 @@
       <trans-unit id="featureDeploymentRunDetails-cancelRunButton" datatype="html">
         <source>Cancel Run</source>
         <target>Lauf abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-cancelConfirmTitle" datatype="html">
+        <source>Cancel run</source>
+        <target>Lauf abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-cancelConfirmBody" datatype="html">
+        <source>Are you sure you want to cancel this run? In-progress jobs may be stopped.</source>
+        <target>Möchten Sie diesen Lauf wirklich abbrechen? Laufende Jobs können gestoppt werden.</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-cancelConfirmWarning" datatype="html">
+        <source>This cannot be undone.</source>
+        <target>Dies kann nicht rückgängig gemacht werden.</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-cancelConfirmDismiss" datatype="html">
+        <source>Keep running</source>
+        <target>Lauf fortsetzen</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-cancelConfirmSubmit" datatype="html">
+        <source>Cancel run</source>
+        <target>Lauf abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-cancelConfirmCloseAria" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-jobsHeader" datatype="html">
         <source>Jobs</source>

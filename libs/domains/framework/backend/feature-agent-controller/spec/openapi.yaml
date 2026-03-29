@@ -278,6 +278,225 @@ paths:
           description: Self-unlock is not allowed
         '404':
           description: User not found
+  /tickets:
+    get:
+      summary: List project tickets
+      description: Returns tickets for workspaces the user can access; global admins see all.
+      operationId: listTickets
+      parameters:
+        - in: query
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, todo, in_progress, prototype, done, closed]
+        - in: query
+          name: parentId
+          schema:
+            type: string
+          description: Use literal `null` for root tickets only
+      responses:
+        '200':
+          description: Ticket list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketResponseDto'
+        '403':
+          description: Forbidden
+    post:
+      summary: Create ticket
+      operationId: createTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponseDto'
+  /tickets/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get ticket
+      operationId: getTicket
+      parameters:
+        - in: query
+          name: includeDescendants
+          schema:
+            type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponseDto'
+        '404':
+          description: Not found
+    patch:
+      summary: Update ticket
+      operationId: updateTicket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTicketDto'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponseDto'
+    delete:
+      summary: Delete ticket
+      operationId: deleteTicket
+      responses:
+        '204':
+          description: Deleted
+        '409':
+          description: Has subtasks
+  /tickets/{id}/prototype-prompt:
+    get:
+      summary: Build prototype prompt for ticket tree
+      operationId: getTicketPrototypePrompt
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrototypePromptResponseDto'
+  /tickets/{id}/comments:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: List ticket comments
+      operationId: listTicketComments
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketCommentResponseDto'
+    post:
+      summary: Add ticket comment
+      operationId: addTicketComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketCommentDto'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketCommentResponseDto'
+  /tickets/{id}/activity:
+    get:
+      summary: List ticket activity
+      operationId: listTicketActivity
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketActivityResponseDto'
+  /tickets/{id}/body-generation-sessions:
+    post:
+      summary: Start AI body generation session
+      operationId: startTicketBodyGenerationSession
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartBodyGenerationSessionDto'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartBodyGenerationSessionResponseDto'
+  /tickets/{id}/apply-generated-body:
+    post:
+      summary: Apply AI-generated ticket body
+      operationId: applyTicketGeneratedBody
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyGeneratedBodyDto'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponseDto'
   /clients:
     get:
       summary: List clients
@@ -3834,3 +4053,177 @@ components:
           type: integer
         offset:
           type: integer
+    TicketPriority:
+      type: string
+      enum: [low, medium, high, critical]
+    TicketStatus:
+      type: string
+      enum: [draft, todo, in_progress, prototype, done, closed]
+    TicketActorType:
+      type: string
+      enum: [human, ai, system]
+    TicketResponseDto:
+      type: object
+      required: [id, clientId, title, priority, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+        content:
+          type: string
+          nullable: true
+        priority:
+          $ref: '#/components/schemas/TicketPriority'
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+        createdByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        createdByEmail:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketResponseDto'
+    CreateTicketDto:
+      type: object
+      required: [title]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          $ref: '#/components/schemas/TicketPriority'
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+    UpdateTicketDto:
+      type: object
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          $ref: '#/components/schemas/TicketPriority'
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+    TicketCommentResponseDto:
+      type: object
+      required: [id, ticketId, body, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticketId:
+          type: string
+          format: uuid
+        authorUserId:
+          type: string
+          format: uuid
+          nullable: true
+        authorEmail:
+          type: string
+          nullable: true
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateTicketCommentDto:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+    TicketActivityResponseDto:
+      type: object
+      required: [id, ticketId, occurredAt, actorType, actionType, payload]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticketId:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        actorType:
+          $ref: '#/components/schemas/TicketActorType'
+        actorUserId:
+          type: string
+          format: uuid
+          nullable: true
+        actorEmail:
+          type: string
+          nullable: true
+        actionType:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+    PrototypePromptResponseDto:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+    StartBodyGenerationSessionDto:
+      type: object
+      properties:
+        agentId:
+          type: string
+          format: uuid
+    StartBodyGenerationSessionResponseDto:
+      type: object
+      required: [generationId, expiresAt, activity]
+      properties:
+        generationId:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+        activity:
+          $ref: '#/components/schemas/TicketActivityResponseDto'
+    ApplyGeneratedBodyDto:
+      type: object
+      required: [generationId, content]
+      properties:
+        generationId:
+          type: string
+          format: uuid
+        content:
+          type: string
