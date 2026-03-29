@@ -24,6 +24,10 @@ import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsProvisioningReferenceEntity } from '../entities/statistics-provisioning-reference.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
+import { TicketActivityEntity } from '../entities/ticket-activity.entity';
+import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
+import { TicketCommentEntity } from '../entities/ticket-comment.entity';
+import { TicketEntity } from '../entities/ticket.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
@@ -41,7 +45,29 @@ describe('ClientsModule', () => {
     save: jest.fn(),
     remove: jest.fn(),
     count: jest.fn(),
+    delete: jest.fn(),
     findByKeycloakSub: jest.fn().mockResolvedValue(null),
+  };
+
+  const mockTicketRepository = {
+    ...mockRepository,
+    manager: {
+      transaction: jest.fn(async (fn: (em: unknown) => Promise<unknown>) => {
+        const em = {
+          getRepository: jest.fn(() => ({
+            save: jest.fn((x: unknown) => Promise.resolve(x)),
+            create: jest.fn((x: unknown) => x),
+            delete: jest.fn().mockResolvedValue(undefined),
+          })),
+        };
+        return fn(em);
+      }),
+    },
+    createQueryBuilder: jest.fn().mockReturnValue({
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+    }),
   };
 
   const mockKeycloakInstance = {
@@ -88,6 +114,14 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(StatisticsChatFilterFlagEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(StatisticsEntityEventEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(TicketEntity))
+      .useValue(mockTicketRepository)
+      .overrideProvider(getRepositoryToken(TicketCommentEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(TicketActivityEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(TicketBodyGenerationSessionEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
       .useValue(mockRepository);

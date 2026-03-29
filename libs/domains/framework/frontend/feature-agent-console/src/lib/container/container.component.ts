@@ -3,7 +3,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
-import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
+import { AuthenticationFacade, ClientsFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { combineLatest, filter, map, startWith } from 'rxjs';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
@@ -18,6 +18,7 @@ import { ThemeService } from '../theme.service';
 })
 export class AgentConsoleContainerComponent implements OnInit {
   private readonly authenticationFacade = inject(AuthenticationFacade);
+  private readonly clientsFacade = inject(ClientsFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -38,7 +39,10 @@ export class AgentConsoleContainerComponent implements OnInit {
       .pipe(
         map(
           (url) =>
-            (url.includes('/clients') || url.includes('/users') || url.includes('/audit')) &&
+            (url.includes('/clients') ||
+              url.includes('/users') ||
+              url.includes('/audit') ||
+              url.includes('/tickets')) &&
             !url.includes('/editor') &&
             !url.includes('/deployments'),
         ),
@@ -47,7 +51,8 @@ export class AgentConsoleContainerComponent implements OnInit {
       initialValue:
         (this.router.url.includes('/clients') ||
           this.router.url.includes('/users') ||
-          this.router.url.includes('/audit')) &&
+          this.router.url.includes('/audit') ||
+          this.router.url.includes('/tickets')) &&
         !this.router.url.includes('/editor') &&
         !this.router.url.includes('/deployments'),
     },
@@ -57,6 +62,9 @@ export class AgentConsoleContainerComponent implements OnInit {
    * Observable indicating whether the user is authenticated
    */
   readonly isAuthenticated$ = this.authenticationFacade.isAuthenticated$;
+
+  /** Selected space (client); tickets need a client context in the UI. */
+  readonly activeClientId$ = this.clientsFacade.activeClientId$;
 
   /**
    * True when the user can access the user manager (admin with users/keycloak auth).

@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import {
   chatEnhancementStarted,
+  ticketBodyGenerationStarted,
   connectSocket,
   disconnectSocket,
   forwardEvent,
@@ -349,6 +350,27 @@ describe('SocketsFacade', () => {
       expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
         event: ForwardableEvent.ENHANCE_CHAT,
         payload: { message, correlationId },
+        agentId,
+      });
+    });
+
+    it('should forward generateTicketBody with correlation id and dispatch ticketBodyGenerationStarted', () => {
+      const title = 'Ship feature';
+      const agentId = 'agent-1';
+      const correlationId = 'tb-cid';
+      facade.forwardGenerateTicketBody(title, agentId, correlationId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(ticketBodyGenerationStarted({ correlationId }));
+      expect(store.dispatch).toHaveBeenCalledWith(
+        forwardEvent({
+          event: ForwardableEvent.GENERATE_TICKET_BODY,
+          payload: { title, correlationId },
+          agentId,
+        }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
+        event: ForwardableEvent.GENERATE_TICKET_BODY,
+        payload: { title, correlationId },
         agentId,
       });
     });

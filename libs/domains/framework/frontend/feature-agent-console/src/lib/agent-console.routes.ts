@@ -96,9 +96,17 @@ import {
   StatisticsFacade,
   statisticsReducer,
   switchBranch$,
+  addTicketComment$,
+  createTicket$,
+  deleteTicket$,
+  loadTickets$,
+  openTicketDetail$,
+  TicketsFacade,
+  ticketsReducer,
   triggerWorkflow$,
   unstageFiles$,
   updateClient$,
+  updateTicket$,
   updateClientAgent$,
   updateDeploymentConfiguration$,
   updateEnvironmentVariable$,
@@ -113,6 +121,8 @@ import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 import { AuditComponent } from './audit/audit.component';
 import { AgentConsoleChatComponent } from './chat/chat.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
+import { ticketsRequireActiveClientGuard } from './guards/tickets-require-active-client.guard';
+import { TicketsBoardComponent } from './tickets/tickets-board.component';
 
 export const agentConsoleRoutes: Route[] = [
   {
@@ -131,6 +141,18 @@ export const agentConsoleRoutes: Route[] = [
         canActivate: [authGuard],
         component: AuditComponent,
         title: 'Audit | Agenstra',
+      },
+      {
+        path: 'tickets/:clientId',
+        canActivate: [authGuard, ticketsRequireActiveClientGuard],
+        component: TicketsBoardComponent,
+        title: 'Tickets | Agenstra',
+      },
+      {
+        path: 'tickets',
+        canActivate: [authGuard, ticketsRequireActiveClientGuard],
+        component: TicketsBoardComponent,
+        title: 'Tickets | Agenstra',
       },
       {
         path: 'clients',
@@ -182,6 +204,7 @@ export const agentConsoleRoutes: Route[] = [
       StatsFacade,
       StatisticsFacade,
       DeploymentsFacade,
+      TicketsFacade,
       // Feature states - registered at feature level for lazy loading
       provideState('clients', clientsReducer),
       provideState('agents', agentsReducer),
@@ -192,6 +215,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('stats', statsReducer),
       provideState('statistics', statisticsReducer),
       provideState('deployments', deploymentsReducer),
+      provideState('tickets', ticketsReducer),
       // Effects - only active when this feature route is loaded
       provideEffects({
         loadClients$,
@@ -281,6 +305,12 @@ export const agentConsoleRoutes: Route[] = [
         cancelRun$,
         loadRunJobs$,
         loadJobLogs$,
+        loadTickets$,
+        openTicketDetail$,
+        createTicket$,
+        updateTicket$,
+        deleteTicket$,
+        addTicketComment$,
       }),
       provideMonacoEditor(),
     ],

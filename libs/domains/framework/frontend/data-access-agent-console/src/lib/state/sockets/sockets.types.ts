@@ -21,6 +21,7 @@ export enum ForwardableEvent {
   LOGIN = 'login',
   CHAT = 'chat',
   ENHANCE_CHAT = 'enhanceChat',
+  GENERATE_TICKET_BODY = 'generateTicketBody',
   LOGOUT = 'logout',
   FILE_UPDATE = 'fileUpdate',
   CREATE_TERMINAL = 'createTerminal',
@@ -44,6 +45,7 @@ export interface ForwardPayload {
 export type ForwardableEventPayload =
   | ChatPayload
   | EnhanceChatPayload
+  | GenerateTicketBodyPayload
   | LoginPayload
   | LogoutPayload
   | FileUpdatePayload
@@ -69,6 +71,15 @@ export interface EnhanceChatPayload {
 }
 
 /**
+ * Ticket body generation (agents.gateway.ts generateTicketBody). Unicast ticketBodyResult; same shape as enhance.
+ */
+export interface GenerateTicketBodyPayload {
+  title: string;
+  model?: string;
+  correlationId: string;
+}
+
+/**
  * Result of prompt enhancement (unicast from agents gateway).
  */
 export interface ChatEnhanceResultData {
@@ -88,6 +99,9 @@ export interface ChatEnhanceFailureData {
 }
 
 export type ChatEnhanceResultPayload = ChatEnhanceResultData | ChatEnhanceFailureData;
+
+/** Same payload shape as chat enhancement; event name is ticketBodyResult. */
+export type TicketBodyResultPayload = ChatEnhanceResultPayload;
 
 /**
  * Login event payload (from agents.gateway.ts LoginPayload)
@@ -346,6 +360,7 @@ export type ForwardedEventPayload =
   | ErrorResponse // loginError
   | SuccessResponse<ChatMessageData> // chatMessage
   | SuccessResponse<ChatEnhanceResultPayload> // chatEnhanceResult
+  | SuccessResponse<TicketBodyResultPayload> // ticketBodyResult
   | SuccessResponse<MessageFilterResultData> // messageFilterResult
   | SuccessResponse<LogoutSuccessData> // logoutSuccess
   | SuccessResponse<FileUpdateNotificationData> // fileUpdateNotification

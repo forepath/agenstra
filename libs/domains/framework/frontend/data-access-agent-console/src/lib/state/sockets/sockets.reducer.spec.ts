@@ -1,5 +1,6 @@
 import {
   chatEnhancementStarted,
+  ticketBodyGenerationStarted,
   clearChatHistory,
   connectSocket,
   connectSocketFailure,
@@ -304,6 +305,42 @@ describe('socketsReducer', () => {
         errorMessage: 'Network error',
       });
     });
+
+    it('should clear ticket body pending when generateTicketBody forward fails', () => {
+      const state: SocketsState = {
+        ...initialSocketsState,
+        forwarding: true,
+        forwardingEvent: ForwardableEvent.GENERATE_TICKET_BODY,
+        ticketBodyPendingCorrelationId: 'tb-1',
+      };
+
+      const newState = socketsReducer(state, forwardEventFailure({ error: 'Network error' }));
+
+      expect(newState.ticketBodyPendingCorrelationId).toBeNull();
+      expect(newState.ticketBodyLastResult).toEqual({
+        correlationId: 'tb-1',
+        success: false,
+        errorMessage: 'Network error',
+      });
+    });
+  });
+
+  describe('ticketBodyGenerationStarted', () => {
+    it('should set pending correlation and clear last result', () => {
+      const state: SocketsState = {
+        ...initialSocketsState,
+        ticketBodyLastResult: {
+          correlationId: 'old',
+          success: true,
+          enhancedText: 'x',
+        },
+      };
+
+      const newState = socketsReducer(state, ticketBodyGenerationStarted({ correlationId: 'tb-2' }));
+
+      expect(newState.ticketBodyPendingCorrelationId).toBe('tb-2');
+      expect(newState.ticketBodyLastResult).toBeNull();
+    });
   });
 
   describe('chatEnhancementStarted', () => {
@@ -346,6 +383,19 @@ describe('socketsReducer', () => {
       expect(newState.chatEnhancementPendingCorrelationId).toBeNull();
       expect(newState.chatEnhancementLastResult?.success).toBe(false);
       expect(newState.chatEnhancementLastResult?.errorMessage).toBe('boom');
+    });
+
+    it('should fail pending ticket body generation when socket errors', () => {
+      const state: SocketsState = {
+        ...initialSocketsState,
+        ticketBodyPendingCorrelationId: 'tb-9',
+      };
+
+      const newState = socketsReducer(state, socketError({ message: 'boom' }));
+
+      expect(newState.ticketBodyPendingCorrelationId).toBeNull();
+      expect(newState.ticketBodyLastResult?.success).toBe(false);
+      expect(newState.ticketBodyLastResult?.errorMessage).toBe('boom');
     });
   });
 
@@ -400,6 +450,42 @@ describe('socketsReducer', () => {
         correlationId: 'c1',
         success: true,
         enhancedText: 'Improved prompt',
+      });
+
+      jest.spyOn(Date, 'now').mockRestore();
+    });
+
+    it('should handle ticketBodyResult without appending to forwardedEvents', () => {
+      const timestamp = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(timestamp);
+
+      const bodyPayload: ForwardedEventPayload = {
+        success: true,
+        data: {
+          correlationId: 't1',
+          success: true,
+          enhancedText: '## Acceptance\n- Done',
+        },
+        timestamp: '2024-01-01T00:00:00Z',
+      };
+
+      const state: SocketsState = {
+        ...initialSocketsState,
+        forwardedEvents: [{ event: 'chatMessage', payload: mockForwardedPayload, timestamp: 1 }],
+        ticketBodyPendingCorrelationId: 't1',
+      };
+
+      const newState = socketsReducer(
+        state,
+        forwardedEventReceived({ event: 'ticketBodyResult', payload: bodyPayload }),
+      );
+
+      expect(newState.forwardedEvents.length).toBe(1);
+      expect(newState.ticketBodyPendingCorrelationId).toBeNull();
+      expect(newState.ticketBodyLastResult).toEqual({
+        correlationId: 't1',
+        success: true,
+        enhancedText: '## Acceptance\n- Done',
       });
 
       jest.spyOn(Date, 'now').mockRestore();

@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant User
+    participant Board as Tickets board
+    participant API as Agent controller REST
+    participant Storage as sessionStorage
+    participant Router
+    participant Chat as Chat component
+
+    User->>Board: Open ticket, Prototype in chat
+    Board->>API: GET /tickets/:id/prototype-prompt
+    API-->>Board: { prompt }
+    Board->>Storage: set agentConsole.chatDraft.v1
+    Board->>Router: navigate /clients/:clientId/agents/:agentId
+    Router->>Chat: activate route
+    Chat->>Chat: onAgentSelect → reconnect socket
+    Chat->>Storage: readAndClear draft
+    Storage-->>Chat: message
+    Chat->>Chat: chatMessage.set(message)
+
+sequenceDiagram
+    participant User
+    participant Board as Tickets board
+    participant API as Agent controller REST
+    participant Socket as Clients WS / forward
+    participant Manager as Agent manager
+    participant Store as NgRx sockets
+
+    User->>Board: Generate description
+    Board->>API: POST body-generation-sessions
+    API-->>Board: generationId
+    Board->>Socket: connect + setClient + forward generateTicketBody
+    Socket->>Manager: generateTicketBody
+    Manager-->>Socket: ticketBodyResult
+    Socket-->>Store: ticketBodyLastResult
+    Store-->>Board: match correlationId
+    Board->>API: POST apply-generated-body
+    API-->>Board: updated ticket
+    Board->>Board: reload list + detail
