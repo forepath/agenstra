@@ -18,10 +18,23 @@
       }
     </div>
     @if (effectiveClientId() !== null) {
-      <button type="button" class="btn btn-sm btn-primary" (click)="showCreateTicketModal()">
-        <i class="bi bi-plus-circle me-1"></i>
-        <span i18n="@@featureTicketsBoard-newTicket">Add</span>
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          (click)="openGlobalSearchModal()"
+          i18n-title="@@featureTicketsBoard-globalSearchOpenTitle"
+          title="Search tickets (Ctrl+F)"
+          i18n-aria-label="@@featureTicketsBoard-globalSearchOpenAria"
+          aria-label="Search tickets"
+        >
+          <i class="bi bi-search" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" (click)="showCreateTicketModal()">
+          <i class="bi bi-plus-circle me-1"></i>
+          <span i18n="@@featureTicketsBoard-newTicket">Add</span>
+        </button>
+      </div>
     }
   </div>
 
@@ -650,6 +663,90 @@
           i18n="@@featureTicketsBoard-createSubmit"
         >
           Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Global ticket search (Bootstrap modal) -->
+<div
+  class="modal fade"
+  id="globalSearchModal"
+  tabindex="-1"
+  aria-labelledby="globalSearchModalLabel"
+  aria-hidden="true"
+  #globalSearchModal
+>
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="globalSearchModalLabel" i18n="@@featureTicketsBoard-globalSearchTitle">
+          Search tickets
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
+          (click)="onCloseGlobalSearchModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <label class="visually-hidden" for="globalSearchInput" i18n="@@featureTicketsBoard-globalSearchInputLabel"
+          >Search tickets</label
+        >
+        <div class="input-group search-input-container border rounded mb-3">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input
+            #globalSearchInput
+            id="globalSearchInput"
+            type="search"
+            class="form-control border-0 search-input"
+            [ngModel]="globalSearchQuery()"
+            (ngModelChange)="globalSearchQuery.set($event)"
+            i18n-placeholder="@@featureTicketsBoard-globalSearchPlaceholder"
+            placeholder="Search by title, description, or id"
+          />
+        </div>
+        @if (globalSearchQuery().trim() === '') {
+          <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-globalSearchHint">
+            Type to search all tickets in this workspace, including done and closed.
+          </p>
+        } @else if (globalSearchHits().length === 0) {
+          <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-globalSearchNoResults">No matching tickets</p>
+        } @else {
+          <div class="list-group list-group-flush border rounded tickets-board__global-search-results">
+            @for (hit of globalSearchHits(); track hit.ticket.id) {
+              <button
+                type="button"
+                class="list-group-item list-group-item-action d-flex flex-column align-items-start gap-1 text-start"
+                (click)="onGlobalSearchResultClick(hit)"
+              >
+                <div class="d-flex flex-wrap align-items-center gap-2 w-100 min-width-0">
+                  <span class="fw-medium text-break">{{ hit.ticket.title }}</span>
+                  <small
+                    class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded flex-shrink-0"
+                    [ngClass]="ticketStatusBadgeClass(hit.ticket.status)"
+                    >{{ laneLabel(hit.ticket.status) }}</small
+                  >
+                </div>
+                @if (globalSearchPathDisplay(hit)) {
+                  <small class="text-muted text-truncate w-100">{{ globalSearchPathDisplay(hit) }}</small>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="onCloseGlobalSearchModal()"
+          i18n="@@featureTicketsBoard-globalSearchClose"
+        >
+          Close
         </button>
       </div>
     </div>

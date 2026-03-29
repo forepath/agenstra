@@ -127,7 +127,6 @@ describe('tickets selectors', () => {
         { id: 'root', depth: 0 },
         { id: 'child', depth: 1 },
       ]);
-      expect(rows.done).toEqual([]);
     });
 
     it('should not show grandchildren in swimlanes', () => {
@@ -154,6 +153,18 @@ describe('tickets selectors', () => {
       });
       const rows = selectTicketsBoardRowsByStatus(root(createState({ list: [a, b] })));
       expect(rows.draft.map((r) => r.ticket.id)).toEqual(['b', 'a']);
+    });
+
+    it('should omit done and closed roots and their direct subtasks from swimlanes', () => {
+      const doneRoot = baseTicket({ id: 'done-root', status: 'done', parentId: null });
+      const closedRoot = baseTicket({ id: 'closed-root', status: 'closed', parentId: null });
+      const childOfDone = baseTicket({ id: 'c1', parentId: 'done-root', title: 'Under done' });
+      const activeRoot = baseTicket({ id: 'active', status: 'todo', parentId: null });
+      const list = [doneRoot, closedRoot, childOfDone, activeRoot];
+      const rows = selectTicketsBoardRowsByStatus(root(createState({ list })));
+      expect(rows.todo.map((r) => r.ticket.id)).toEqual(['active']);
+      expect(rows.draft).toEqual([]);
+      expect(rows.prototype).toEqual([]);
     });
   });
 
@@ -186,7 +197,18 @@ describe('tickets selectors', () => {
       expect(grouped.draft.map((t) => t.id)).toEqual(['a', 'b']);
       expect(grouped.todo.map((t) => t.id)).toEqual(['c']);
       expect(grouped.prototype).toEqual([]);
-      expect(grouped.done).toEqual([]);
+    });
+
+    it('should exclude done and closed roots from swimlane buckets', () => {
+      const list = [
+        baseTicket({ id: 'd1', status: 'done', parentId: null }),
+        baseTicket({ id: 'c1', status: 'closed', parentId: null }),
+        baseTicket({ id: 't1', status: 'todo', parentId: null }),
+      ];
+      const grouped = selectRootTicketsByStatus(root(createState({ list })));
+      expect(grouped.todo.map((t) => t.id)).toEqual(['t1']);
+      expect(grouped.draft).toEqual([]);
+      expect(grouped.prototype).toEqual([]);
     });
 
     it('should return empty arrays per lane when list is empty', () => {
@@ -195,7 +217,6 @@ describe('tickets selectors', () => {
         draft: [],
         todo: [],
         prototype: [],
-        done: [],
       });
     });
   });

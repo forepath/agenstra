@@ -157,6 +157,8 @@ export * from './lib/state/tickets/tickets.actions';
 export * from './lib/state/tickets/tickets.effects';
 export * from './lib/state/tickets/tickets.facade';
 export * from './lib/state/tickets/tickets.reducer';
+export * from './lib/state/tickets/tickets.constants';
+export * from './lib/state/tickets/ticket-global-search.utils';
 export * from './lib/state/tickets/tickets.selectors';
 export * from './lib/state/tickets/tickets.types';
 export * from './lib/state/stats/stats.actions';

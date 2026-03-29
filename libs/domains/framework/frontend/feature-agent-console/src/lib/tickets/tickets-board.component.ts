@@ -1,19 +1,34 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
+  BOARD_LANE_STATUSES,
   ClientsFacade,
   deleteTicketSuccess,
+  filterTicketsForGlobalSearch,
   SocketsFacade,
   TicketsFacade,
   TicketsService,
   type AgentResponseDto,
+  type BoardLaneStatus,
   type ClientResponseDto,
   type TicketBoardRow,
+  type TicketGlobalSearchHit,
   type TicketPriority,
   type TicketResponseDto,
   type TicketStatus,
@@ -36,7 +51,18 @@ import {
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
 import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
 
-const LANES: TicketStatus[] = ['draft', 'todo', 'prototype', 'done'];
+const ALL_TICKET_STATUSES: TicketStatus[] = ['draft', 'todo', 'prototype', 'done', 'closed'];
+
+function isEditableDomTarget(target: EventTarget | null): boolean {
+  if (!target || !(target instanceof HTMLElement)) {
+    return false;
+  }
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    return true;
+  }
+  return target.isContentEditable;
+}
 
 interface TicketDetailSubtaskRow {
   ticket: TicketResponseDto;
@@ -73,8 +99,14 @@ export class TicketsBoardComponent implements OnInit {
   @ViewChild('workspaceSwitchModal', { static: false })
   private workspaceSwitchModal?: ElementRef<HTMLDivElement>;
 
-  readonly lanes = LANES;
-  readonly statusOptions: TicketStatus[] = [...LANES];
+  @ViewChild('globalSearchModal', { static: false })
+  private globalSearchModal?: ElementRef<HTMLDivElement>;
+
+  @ViewChild('globalSearchInput', { static: false })
+  private globalSearchInput?: ElementRef<HTMLInputElement>;
+
+  readonly lanes = BOARD_LANE_STATUSES;
+  readonly statusOptions: TicketStatus[] = [...ALL_TICKET_STATUSES];
   readonly priorityOptions: TicketPriority[] = ['low', 'medium', 'high', 'critical'];
   readonly ticketsBoardRowsByStatus$ = this.ticketsFacade.ticketsBoardRowsByStatus$;
   readonly detailBreadcrumb$ = this.ticketsFacade.detailBreadcrumb$;
@@ -120,6 +152,12 @@ export class TicketsBoardComponent implements OnInit {
 
   readonly detail = toSignal(this.ticketsFacade.detail$, { initialValue: null });
   readonly detailBreadcrumb = toSignal(this.ticketsFacade.detailBreadcrumb$, { initialValue: [] });
+  readonly ticketsList = toSignal(this.ticketsFacade.tickets$, { initialValue: [] });
+
+  globalSearchQuery = signal('');
+  readonly globalSearchHits = computed(() =>
+    filterTicketsForGlobalSearch(this.ticketsList(), this.globalSearchQuery(), this.effectiveClientId()),
+  );
 
   /** Direct subtasks only (same depth rule as swimlanes; deeper work stays on the subtask’s own detail). */
   readonly detailSubtaskRows = computed((): TicketDetailSubtaskRow[] => {
@@ -146,17 +184,16 @@ export class TicketsBoardComponent implements OnInit {
 
   /** HTML5 DnD (same pattern as file-tree). */
   draggedTicket = signal<TicketResponseDto | null>(null);
-  dragOverLane = signal<TicketStatus | null>(null);
+  dragOverLane = signal<BoardLaneStatus | null>(null);
   /** Skip opening detail right after a drag ended (browser may emit click). */
   private suppressCardClickUntil = 0;
 
   /** Per-swimlane list filter (same substring behavior as the workspace list on /clients). */
-  readonly laneSearchQueries = signal<Record<TicketStatus, string>>({
+  readonly laneSearchQueries = signal({
     draft: '',
     todo: '',
     prototype: '',
-    done: '',
-  });
+  } satisfies Record<BoardLaneStatus, string>);
 
   createTicketTitle = signal('');
   createTicketContent = signal('');
@@ -245,11 +282,11 @@ export class TicketsBoardComponent implements OnInit {
       });
   }
 
-  setLaneSearchQuery(lane: TicketStatus, value: string): void {
+  setLaneSearchQuery(lane: BoardLaneStatus, value: string): void {
     this.laneSearchQueries.update((queries) => ({ ...queries, [lane]: value }));
   }
 
-  filteredLaneRows(lane: TicketStatus, rows: TicketBoardRow[] | undefined): TicketBoardRow[] {
+  filteredLaneRows(lane: BoardLaneStatus, rows: TicketBoardRow[] | undefined): TicketBoardRow[] {
     const list = rows ?? [];
     const query = (this.laneSearchQueries()[lane] ?? '').trim();
     if (!query) {
@@ -269,6 +306,8 @@ export class TicketsBoardComponent implements OnInit {
         return $localize`:@@featureTicketsBoard-lanePrototype:Prototype`;
       case 'done':
         return $localize`:@@featureTicketsBoard-laneDone:Done`;
+      case 'closed':
+        return $localize`:@@featureTicketsBoard-laneClosed:Closed`;
       default:
         return status;
     }
@@ -378,9 +417,63 @@ export class TicketsBoardComponent implements OnInit {
         return 'tickets-board__chip--status-prototype';
       case 'done':
         return 'tickets-board__chip--status-done';
+      case 'closed':
+        return 'tickets-board__chip--status-closed';
       default:
         return 'tickets-board__chip--neutral';
     }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydownForGlobalSearch(event: KeyboardEvent): void {
+    if (!event.ctrlKey || (event.key !== 'f' && event.key !== 'F')) {
+      return;
+    }
+    if (this.effectiveClientId() === null) {
+      return;
+    }
+    const target = event.target;
+    const modalEl = this.globalSearchModal?.nativeElement;
+    if (isEditableDomTarget(target)) {
+      if (modalEl && target instanceof Node && modalEl.contains(target)) {
+        event.preventDefault();
+        this.globalSearchInput?.nativeElement?.focus();
+      }
+      return;
+    }
+    event.preventDefault();
+    this.openGlobalSearchModal();
+  }
+
+  openGlobalSearchModal(): void {
+    this.globalSearchQuery.set('');
+    setTimeout(() => {
+      const shell = this.globalSearchModal?.nativeElement;
+      if (shell?.classList.contains('show')) {
+        this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
+        return;
+      }
+      this.showGlobalSearchModalEl();
+    }, 0);
+  }
+
+  onCloseGlobalSearchModal(): void {
+    this.hideGlobalSearchModalEl();
+    this.globalSearchQuery.set('');
+  }
+
+  onGlobalSearchResultClick(hit: TicketGlobalSearchHit): void {
+    this.hideGlobalSearchModalEl();
+    this.globalSearchQuery.set('');
+    this.openTicketDetailFlow(hit.ticket.id);
+  }
+
+  globalSearchPathDisplay(hit: TicketGlobalSearchHit): string {
+    const titles = hit.pathTitles;
+    if (titles.length <= 1) {
+      return '';
+    }
+    return titles.slice(0, -1).join(' › ');
   }
 
   onTicketCardClick(ticket: TicketResponseDto): void {
@@ -484,6 +577,7 @@ export class TicketsBoardComponent implements OnInit {
     this.hideModal();
     this.hideCreateModalEl();
     this.hideDeleteTicketConfirmModal();
+    this.hideGlobalSearchModalEl();
     this.ticketPendingDelete.set(null);
     this.ticketsFacade.closeDetail();
     this.clientsFacade.setActiveClient(client.id);
@@ -546,7 +640,7 @@ export class TicketsBoardComponent implements OnInit {
     this.ticketsFacade.update(d.id, { content: draft });
   }
 
-  isLaneDragHighlight(status: TicketStatus): boolean {
+  isLaneDragHighlight(status: BoardLaneStatus): boolean {
     const dragged = this.draggedTicket();
     return this.dragOverLane() === status && dragged !== null && dragged.status !== status;
   }
@@ -587,7 +681,7 @@ export class TicketsBoardComponent implements OnInit {
     this.suppressCardClickUntil = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 200;
   }
 
-  onLaneDragOver(event: DragEvent, laneStatus: TicketStatus): void {
+  onLaneDragOver(event: DragEvent, laneStatus: BoardLaneStatus): void {
     event.preventDefault();
     event.stopPropagation();
     const dragged = this.draggedTicket();
@@ -600,7 +694,7 @@ export class TicketsBoardComponent implements OnInit {
     this.dragOverLane.set(laneStatus);
   }
 
-  onLaneDragEnter(event: DragEvent, laneStatus: TicketStatus): void {
+  onLaneDragEnter(event: DragEvent, laneStatus: BoardLaneStatus): void {
     event.preventDefault();
     event.stopPropagation();
     const dragged = this.draggedTicket();
@@ -610,7 +704,7 @@ export class TicketsBoardComponent implements OnInit {
     this.dragOverLane.set(laneStatus);
   }
 
-  onLaneDragLeave(event: DragEvent, laneStatus: TicketStatus): void {
+  onLaneDragLeave(event: DragEvent, laneStatus: BoardLaneStatus): void {
     event.preventDefault();
     event.stopPropagation();
     const related = event.relatedTarget as HTMLElement | null;
@@ -622,12 +716,16 @@ export class TicketsBoardComponent implements OnInit {
     }
   }
 
-  onLaneDrop(event: DragEvent, laneStatus: TicketStatus): void {
+  onLaneDrop(event: DragEvent, laneStatus: BoardLaneStatus): void {
     event.preventDefault();
     event.stopPropagation();
     const dragged = this.draggedTicket();
     this.dragOverLane.set(null);
     if (!dragged) {
+      return;
+    }
+    if (!(BOARD_LANE_STATUSES as readonly string[]).includes(laneStatus)) {
+      this.draggedTicket.set(null);
       return;
     }
     if (dragged.status === laneStatus) {
@@ -918,6 +1016,39 @@ export class TicketsBoardComponent implements OnInit {
 
   private hideWorkspaceSwitchModal(): void {
     const el = this.workspaceSwitchModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const win = window as unknown as {
+      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
+    };
+    win.bootstrap?.Modal?.getInstance(el)?.hide();
+  }
+
+  private showGlobalSearchModalEl(): void {
+    const el = this.globalSearchModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const win = window as unknown as {
+      bootstrap?: {
+        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
+      };
+    };
+    const Modal = win.bootstrap?.Modal;
+    if (!Modal) {
+      return;
+    }
+    const focusSearchInput = (): void => {
+      this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
+    };
+    el.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
+    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+    inst.show();
+  }
+
+  private hideGlobalSearchModalEl(): void {
+    const el = this.globalSearchModal?.nativeElement;
     if (!el) {
       return;
     }

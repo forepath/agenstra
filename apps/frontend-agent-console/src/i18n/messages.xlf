@@ -588,6 +588,30 @@
       <trans-unit id="featureTicketsBoard-title" datatype="html">
         <source>Tickets</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchOpenTitle" datatype="html">
+        <source>Search tickets (Ctrl+F)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchOpenAria" datatype="html">
+        <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
+        <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchInputLabel" datatype="html">
+        <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchPlaceholder" datatype="html">
+        <source>Search by title, description, or id</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchHint" datatype="html">
+        <source>Type to search all tickets in this workspace, including done and closed.</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchNoResults" datatype="html">
+        <source>No matching tickets</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-globalSearchClose" datatype="html">
+        <source>Close</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceBadgeSwitchTitle" datatype="html">
         <source>Switch workspace</source>
         </trans-unit>
@@ -638,6 +662,9 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-laneDone" datatype="html">
         <source>Done</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneClosed" datatype="html">
+        <source>Closed</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-priorityLow" datatype="html">
         <source>Low</source>

@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { BOARD_LANE_STATUSES, isTerminalTicketStatus, type BoardLaneStatus } from './tickets.constants';
 import type { TicketsState } from './tickets.reducer';
-import type { TicketResponseDto, TicketStatus } from './tickets.types';
+import type { TicketResponseDto } from './tickets.types';
 
 export const selectTicketsState = createFeatureSelector<TicketsState>('tickets');
 
@@ -28,22 +29,24 @@ export const selectTicketsSaving = createSelector(selectTicketsState, (s) => s.s
 
 export const selectTicketsError = createSelector(selectTicketsState, (s) => s.error);
 
-/** Root tickets only (no parent), grouped by status for swimlanes. */
+/** Root tickets only (no parent), grouped by swimlane status. Excludes terminal done/closed roots. */
 export const selectRootTicketsByStatus = createSelector(selectTicketsList, (list) => {
   const roots = list.filter((t) => !t.parentId);
-  const byStatus: Record<TicketStatus, typeof list> = {
+  const byStatus: Record<BoardLaneStatus, typeof list> = {
     draft: [],
     todo: [],
     prototype: [],
-    done: [],
   };
   for (const t of roots) {
-    byStatus[t.status].push(t);
+    if (isTerminalTicketStatus(t.status)) {
+      continue;
+    }
+    if (t.status === 'draft' || t.status === 'todo' || t.status === 'prototype') {
+      byStatus[t.status].push(t);
+    }
   }
   return byStatus;
 });
-
-const LANES: TicketStatus[] = ['draft', 'todo', 'prototype', 'done'];
 
 function buildChildrenByParent(list: TicketResponseDto[]): Map<string | null, TicketResponseDto[]> {
   const byParent = new Map<string | null, TicketResponseDto[]>();
@@ -69,13 +72,12 @@ function buildChildrenByParent(list: TicketResponseDto[]): Map<string | null, Ti
  */
 export const selectTicketsBoardRowsByStatus = createSelector(selectTicketsList, (list) => {
   const byParent = buildChildrenByParent(list);
-  const byStatus: Record<TicketStatus, TicketBoardRow[]> = {
+  const byStatus: Record<BoardLaneStatus, TicketBoardRow[]> = {
     draft: [],
     todo: [],
     prototype: [],
-    done: [],
   };
-  for (const lane of LANES) {
+  for (const lane of BOARD_LANE_STATUSES) {
     const roots = (byParent.get(null) ?? []).filter((t) => t.status === lane);
     const out = byStatus[lane];
     for (const r of roots) {

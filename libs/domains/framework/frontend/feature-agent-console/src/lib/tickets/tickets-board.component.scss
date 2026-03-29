@@ -254,6 +254,10 @@
   @include tickets-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
 }
 
+.info-badge.tickets-board__chip--status-closed {
+  @include tickets-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
+}
+
 .info-badge.tickets-board__chip--activity-created {
   @include tickets-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
 }
@@ -304,6 +308,11 @@
 
 .tickets-board__workspace-switch-list {
   max-height: min(24rem, 55vh);
+  overflow-y: auto;
+}
+
+.tickets-board__global-search-results {
+  max-height: min(20rem, 50vh);
   overflow-y: auto;
 }
 

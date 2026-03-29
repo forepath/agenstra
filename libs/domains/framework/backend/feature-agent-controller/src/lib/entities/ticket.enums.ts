@@ -10,6 +10,7 @@ export enum TicketStatus {
   TODO = 'todo',
   PROTOTYPE = 'prototype',
   DONE = 'done',
+  CLOSED = 'closed',
 }
 
 export enum TicketActorType {

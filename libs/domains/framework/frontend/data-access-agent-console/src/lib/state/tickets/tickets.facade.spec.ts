@@ -32,7 +32,6 @@ describe('TicketsFacade', () => {
     draft: [{ ticket: mockTicket, depth: 0 }],
     todo: [] as { ticket: TicketResponseDto; depth: number }[],
     prototype: [] as { ticket: TicketResponseDto; depth: number }[],
-    done: [] as { ticket: TicketResponseDto; depth: number }[],
   };
 
   const createFacadeWithMock = <T>(mockSelectReturn: T): TicketsFacade => {
