@@ -82,26 +82,22 @@ describe('ticketsRequireActiveClientGuard', () => {
     });
   });
 
-  it('redirects to clients when no param and no workspace', async () => {
-    const mockUrlTree = { toString: () => '/clients' } as UrlTree;
-    mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+  it('allows activation when no param and no workspace (board opens workspace picker)', async () => {
     const route = { paramMap: convertToParamMap({}) } as ActivatedRouteSnapshot;
 
     const result = await runGuard(route);
 
-    expect(result).toBe(mockUrlTree);
-    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['clients'], { relativeTo: mockParentRoute });
+    expect(result).toBe(true);
+    expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('redirects to clients when no param and activeClientId is empty string', async () => {
+  it('allows activation when no param and activeClientId is empty string', async () => {
     clientsFacadeStub.activeClientId$ = of('');
-    const mockUrlTree = {} as UrlTree;
-    mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
     const route = { paramMap: convertToParamMap({}) } as ActivatedRouteSnapshot;
 
     const result = await runGuard(route);
 
-    expect(result).toBe(mockUrlTree);
-    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['clients'], { relativeTo: mockParentRoute });
+    expect(result).toBe(true);
+    expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
   });
 });

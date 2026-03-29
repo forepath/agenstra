@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
+  AfterViewInit,
   Component,
   computed,
   DestroyRef,
@@ -76,7 +77,7 @@ interface TicketDetailSubtaskRow {
   templateUrl: './tickets-board.component.html',
   styleUrls: ['./tickets-board.component.scss'],
 })
-export class TicketsBoardComponent implements OnInit {
+export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
@@ -280,6 +281,18 @@ export class TicketsBoardComponent implements OnInit {
             this.bodyGenError.set(this.httpErrorMessage(err));
           },
         });
+      });
+  }
+
+  ngAfterViewInit(): void {
+    this.effectiveClientId$
+      .pipe(
+        distinctUntilChanged(),
+        filter((id) => !id),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        setTimeout(() => this.openWorkspaceSwitchModal(), 0);
       });
   }
 

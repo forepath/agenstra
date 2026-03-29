@@ -66,6 +66,12 @@ export class AgentConsoleContainerComponent implements OnInit {
   /** Selected space (client); tickets need a client context in the UI. */
   readonly activeClientId$ = this.clientsFacade.activeClientId$;
 
+  /** Sidebar Tickets link: `/tickets` until a workspace is chosen, then `/tickets/:clientId`. */
+  readonly ticketsSidebarLink = toSignal(
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/tickets', id] : ['/tickets']))),
+    { initialValue: ['/tickets'] },
+  );
+
   /**
    * True when the user can access the user manager (admin with users/keycloak auth).
    */
