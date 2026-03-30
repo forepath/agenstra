@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.40.0](https://github.com/forepath/agenstra/compare/v1.39.0...v1.40.0) (2026-03-30)
+
+
+### Features
+
+* chat prompt enhancement ([#262](https://github.com/forepath/agenstra/issues/262)) ([6a12fbb](https://github.com/forepath/agenstra/commit/6a12fbbdd5b0ad765ea57f81fe5aef26950ea116))
+* digital ocean cloud instance provisioning ([#260](https://github.com/forepath/agenstra/issues/260)) ([e4e6450](https://github.com/forepath/agenstra/commit/e4e64505a8695dabd39f7398dd2c9bab7ac0029c))
+* digital ocean cloud teaser ([#261](https://github.com/forepath/agenstra/issues/261)) ([a0a5ce6](https://github.com/forepath/agenstra/commit/a0a5ce68cdc1be368edb4bb6f89a64cd16d12824))
+* ticket management ([#264](https://github.com/forepath/agenstra/issues/264)) ([2f284fc](https://github.com/forepath/agenstra/commit/2f284fcb153e62e65ff9707587eef15ce178e15a))
+* user locking support ([#259](https://github.com/forepath/agenstra/issues/259)) ([47bcf8f](https://github.com/forepath/agenstra/commit/47bcf8fc50ce674633d1f433c1c914e55cbd6de1))
+
+
+### Chores
+
+* subscription status tags ([#263](https://github.com/forepath/agenstra/issues/263)) ([4a7afb0](https://github.com/forepath/agenstra/commit/4a7afb047167d37e7b8e3ffd751cb5f538a6f001))
+
 ## [1.39.0](https://github.com/forepath/agenstra/compare/v1.38.7...v1.39.0) (2026-03-23)
 
 
