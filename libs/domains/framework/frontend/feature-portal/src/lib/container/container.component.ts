@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 
@@ -18,6 +18,19 @@ export class PortalContainerComponent {
    * Mobile menu visibility
    */
   readonly mobileMenuOpen = signal<boolean>(false);
+
+  /**
+   * True when the user has scrolled the page
+   */
+  readonly isScrolled = signal<boolean>(false);
+
+  /**
+   * Check if the user has scrolled the page
+   */
+  @HostListener('window:scroll')
+  onScroll(): void {
+    this.isScrolled.set(window.scrollY > 0);
+  }
 
   /**
    * Toggle mobile menu
