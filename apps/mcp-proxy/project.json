@@ -93,6 +93,10 @@
           "target": "build"
         }
       ]
+    },
+    "sbom": {
+      "executor": "@agenstra/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
     }
   }
 }

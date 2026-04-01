@@ -148,6 +148,10 @@
         }
       },
       "defaultConfiguration": "test"
+    },
+    "sbom": {
+      "executor": "@agenstra/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
     }
   }
 }

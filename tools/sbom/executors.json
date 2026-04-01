@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "executors": {
+    "sbom": {
+      "implementation": "./dist/executors/sbom/impl.js",
+      "schema": "./dist/executors/sbom/schema.json",
+      "description": "Generate a CycloneDX SBOM for the project."
+    }
+  }
+}

@@ -90,6 +90,11 @@ jobs:
       - name: Run build
         run: npx nx affected --target=build --parallel=3 || echo "No affected projects for build"
 
+      - name: Run SBOM generation
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: npx nx affected --target=sbom --parallel=3 || echo "No affected projects for sbom generation"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()

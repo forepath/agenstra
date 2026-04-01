@@ -109,6 +109,10 @@
         }
       },
       "defaultConfiguration": "development"
+    },
+    "sbom": {
+      "executor": "@agenstra/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
     }
   },
   "tags": []

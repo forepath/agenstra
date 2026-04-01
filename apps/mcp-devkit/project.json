@@ -87,6 +87,10 @@
         "jestConfig": "apps/mcp-devkit/jest.config.ts",
         "passWithNoTests": true
       }
+    },
+    "sbom": {
+      "executor": "@agenstra/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
     }
   }
 }

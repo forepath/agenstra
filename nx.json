@@ -78,6 +78,15 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "@agenstra/sbom:sbom": {
+      "cache": true,
+      "inputs": [
+        "production",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/dist/sboms/{projectName}.cdx.json"]
     }
   },
   "generators": {
