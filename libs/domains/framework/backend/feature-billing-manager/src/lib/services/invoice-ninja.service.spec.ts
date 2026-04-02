@@ -149,7 +149,7 @@ describe('InvoiceNinjaService', () => {
     expect(customerProfilesService.updateInvoiceNinjaClientId).toHaveBeenCalledWith('user-1', 'created-client-id');
   });
 
-  it('treats InvoiceNinja 400 \"No query results for model\" as missing client and recreates it', async () => {
+  it('treats InvoiceNinja 400 "No query results for model" as missing client and recreates it', async () => {
     customerProfilesService.getByUserId.mockResolvedValue({
       id: 'profile-1',
       userId: 'user-1',

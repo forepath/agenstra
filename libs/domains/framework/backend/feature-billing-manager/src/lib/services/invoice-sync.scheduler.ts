@@ -33,6 +33,7 @@ export class InvoiceSyncScheduler implements OnModuleInit, OnModuleDestroy {
     let offset = 0;
     let totalProcessed = 0;
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const refs = await this.invoiceRefsRepository.findBatchForSync(this.batchSize, offset);
       if (refs.length === 0) {
