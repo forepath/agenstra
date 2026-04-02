@@ -35,9 +35,9 @@ import {
 import {
   checkAuthentication$,
   confirmEmailSuccessRedirect$,
-  lockUser$,
   loadUsers$,
   loadUsersBatch$,
+  lockUser$,
   login$,
   loginSuccessRedirect$,
   logout$,

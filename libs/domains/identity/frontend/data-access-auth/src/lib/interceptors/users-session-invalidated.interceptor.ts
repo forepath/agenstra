@@ -1,8 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IDENTITY_AUTH_ENVIRONMENT } from '../../../../util-auth/src/lib/auth-environment';
-import { USERS_JWT_STORAGE_KEY } from '../../../../util-auth/src/lib/auth.interceptor';
+import { IDENTITY_AUTH_ENVIRONMENT, USERS_JWT_STORAGE_KEY } from '@forepath/identity/frontend';
 import { Store } from '@ngrx/store';
 import { catchError, throwError } from 'rxjs';
 import { logout } from '../state/authentication/authentication.actions';

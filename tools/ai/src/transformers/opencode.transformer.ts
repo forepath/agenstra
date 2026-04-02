@@ -7,7 +7,7 @@ const OPENCODE_DIR = '.opencode';
  * Escape for YAML frontmatter (quote if contains colon or newline).
  */
 function yamlValue(s: string): string {
-  if (/[:#\n\[\]{}]/.test(s)) return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+  if (/[:#\n[\]{}]/.test(s)) return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
   return s;
 }
 
