@@ -54,6 +54,12 @@ jobs:
         if: steps.semantic-release.outputs.new_release_published == 'true'
         run: npx nx run-many --target=scripts-binary --parallel=3 || echo "No projects for scripts binary build"
 
+      - name: Run SBOM generation
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        env:
+          VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
+        run: npx nx run-many --target=sbom --parallel=3 || echo "No projects for sbom generation"
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: steps.semantic-release.outputs.new_release_published == 'true'
@@ -491,7 +497,7 @@ jobs:
           aws s3 cp release/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/desktop/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
 
   publish-agentctx:
-    name: Publish agentctx to R2
+    name: Publish agentctx to Cloudflare R2
     runs-on: ubuntu-latest
     needs:
       - publish
@@ -514,3 +520,136 @@ jobs:
         run: |
           aws s3 cp dist/tools/ai/bin/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/agentctx/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
           aws s3 cp dist/tools/ai/bin/ s3://${{ secrets.AWS_BUCKET }}/agentctx/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+
+  publish-sboms:
+    name: Publish SBOMs to DependencyTrack
+    runs-on: ubuntu-latest
+    needs: publish
+    if: needs.publish.outputs.new_release_published == 'true'
+    environment: production
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Upload agent-console SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '91161848-3734-4339-a504-bf08853348b1'
+          projectname: 'agent-console'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/frontend-agent-console.cdx.json'
+
+      - name: Upload agent-controller SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: 'fab6501b-b798-4e62-91b9-4bb1c5c175c1'
+          projectname: 'agent-controller'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/backend-agent-controller.cdx.json'
+
+      - name: Upload agent-manager SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '7d399337-2c6e-408e-8f1f-5f0344af1d08'
+          projectname: 'agent-manager'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/backend-agent-manager.cdx.json'
+
+      - name: Upload billing-console SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '6c94f662-28c5-4317-93aa-415bdbccc3ce'
+          projectname: 'billing-console'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/frontend-billing-console.cdx.json'
+
+      - name: Upload billing-manager SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '9cc09622-15b6-4dbf-a639-42288ffaa6a4'
+          projectname: 'billing-manager'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/backend-billing-manager.cdx.json'
+
+      - name: Upload desktop SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '3dd3b1cd-c07f-4355-baaf-e391de4293d2'
+          projectname: 'desktop'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/native-agent-console.cdx.json'
+
+      - name: Upload docs SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '231546ff-a89a-487f-a6b0-6a1361d17a59'
+          projectname: 'docs'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/frontend-docs.cdx.json'
+
+      - name: Upload mcp-devkit SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '9cb8e25b-6172-4abc-a3c2-06dd1e778143'
+          projectname: 'mcp-devkit'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/mcp-devkit.cdx.json'
+
+      - name: Upload mcp-proxy SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '729eb40a-7c42-4f6e-9b8a-de47c68b38ca'
+          projectname: 'mcp-proxy'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/mcp-proxy.cdx.json'
+
+      - name: Upload portal SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: 'bb6467b6-ebe9-4f90-91f9-2a785f95441e'
+          projectname: 'portal'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/frontend-portal.cdx.json'

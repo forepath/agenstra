@@ -207,6 +207,10 @@
         "cwd": "apps/frontend-docs",
         "command": "docker compose up -d --force-recreate --remove-orphans"
       }
+    },
+    "sbom": {
+      "executor": "@agenstra/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
     }
   },
   "i18n": {

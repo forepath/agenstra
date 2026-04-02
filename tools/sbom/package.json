@@ -1,0 +1,17 @@
+{
+  "name": "@agenstra/sbom",
+  "version": "0.0.2",
+  "private": true,
+  "type": "commonjs",
+  "executors": "./executors.json",
+  "dependencies": {
+    "@nx/devkit": "22.3.3",
+    "@nx/js": "22.3.3"
+  },
+  "devDependencies": {
+    "@nx/jest": "22.3.3",
+    "jest": "29.7.0",
+    "ts-jest": "29.3.4",
+    "typescript": "5.8.2"
+  }
+}

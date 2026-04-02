@@ -209,6 +209,10 @@
         "cwd": "apps/frontend-agent-console",
         "command": "docker compose up -d --force-recreate --remove-orphans"
       }
+    },
+    "sbom": {
+      "executor": "@agenstra/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
     }
   },
   "i18n": {
