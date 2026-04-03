@@ -21,14 +21,13 @@
         "$source": "argv",
         "index": 1
       },
-      "enum": ["frontend", "backend", "shared"],
+      "enum": ["frontend", "backend", "keycloak", "shared"],
       "x-prompt": {
         "message": "What scope would you like to assign to the library?",
         "type": "list",
         "items": [
           { "value": "frontend", "label": "Frontend" },
           { "value": "backend", "label": "Backend" },
-          { "value": "native", "label": "Device Native" },
           { "value": "keycloak", "label": "Keycloak" },
           { "value": "shared", "label": "Shared" }
         ]

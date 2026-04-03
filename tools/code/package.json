@@ -11,8 +11,7 @@
     "@nx/nest": "22.3.3",
     "@nx/angular": "22.3.3",
     "@nx/node": "22.3.3",
-    "@nx/js": "22.3.3",
-    "@nxext/ionic-angular": "21.0.0"
+    "@nx/js": "22.3.3"
   },
   "generators": "./generators.json"
 }

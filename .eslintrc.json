@@ -68,10 +68,6 @@
                 "onlyDependOnLibsWithTags": ["scope:backend", "domain:shared"]
               },
               {
-                "sourceTag": "scope:native",
-                "onlyDependOnLibsWithTags": ["scope:native", "domain:shared"]
-              },
-              {
                 "sourceTag": "scope:keycloak",
                 "onlyDependOnLibsWithTags": ["scope:keycloak", "domain:shared"]
               },

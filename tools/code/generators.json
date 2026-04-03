@@ -25,11 +25,6 @@
       "schema": "./src/generators/lib/schema.json",
       "description": "lib generator"
     },
-    "native": {
-      "factory": "./src/generators/native/native",
-      "schema": "./src/generators/native/schema.json",
-      "description": "native generator"
-    },
     "mcp": {
       "factory": "./src/generators/mcp/mcp",
       "schema": "./src/generators/mcp/schema.json",

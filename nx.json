@@ -27,7 +27,6 @@
         "targetName": "e2e"
       }
     },
-    "@nxext/capacitor/plugin",
     {
       "plugin": "@nx/docker",
       "options": {
