@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.41.2](https://github.com/forepath/agenstra/compare/v1.41.1...v1.41.2) (2026-04-03)
+
+
+### Bug Fixes
+
+* sbom generation path mismatch ([#271](https://github.com/forepath/agenstra/issues/271)) ([14f7143](https://github.com/forepath/agenstra/commit/14f7143dbc8c1c9912876469a73529a90f34e40e))
+
 ## [1.41.1](https://github.com/forepath/agenstra/compare/v1.41.0...v1.41.1) (2026-04-03)
 
 
