@@ -92,7 +92,7 @@ jobs:
 
       - name: Run SBOM generation
         env:
-          VERSION: ${{ github.ref_name }}
+          VERSION: 0.0.0-SNAPSHOT
         run: npx nx affected --target=sbom --parallel=3 || echo "No affected projects for sbom generation"
 
       - name: Upload build artifacts

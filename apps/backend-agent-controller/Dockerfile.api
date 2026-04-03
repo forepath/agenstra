@@ -105,7 +105,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
 COPY package*.json ./
 
 # Install npm dependencies
-RUN . $NVM_DIR/nvm.sh && npm ci && npm cache clean --force
+RUN . $NVM_DIR/nvm.sh && npm i && npm cache clean --force
 
 # Copy application code (this layer changes most frequently)
 COPY . /app
