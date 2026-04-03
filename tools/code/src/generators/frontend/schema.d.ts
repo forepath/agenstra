@@ -2,7 +2,7 @@ export interface FrontendGeneratorSchema {
   name: string;
   prefix?: string;
   ssr: boolean;
-  ui: 'clarity' | 'bootstrap' | 'none';
+  ui: 'bootstrap' | 'none';
   protected: boolean;
   localization: boolean;
 }
