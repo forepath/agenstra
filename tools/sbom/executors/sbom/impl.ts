@@ -132,8 +132,14 @@ export default async function sbomExecutor(
   }
 
   const cyclonedxCli = resolveCyclonedxNpmCliPath(workspaceRoot);
+  // CycloneDX's NpmRunner uses npm_execpath to run `node -- …/npm-cli.js`. That path can fail on some
+  // CI images while plain `npm` on PATH works. Unset npm_execpath so the tool falls back to `npm …`.
+  const cyclonedxEnv = { ...process.env };
+  delete cyclonedxEnv.npm_execpath;
+
   const npmResult = spawnSync(process.execPath, [cyclonedxCli, ...cyclonedxNpmArgs], {
     cwd: workDir,
+    env: cyclonedxEnv,
     stdio: 'inherit',
     maxBuffer: 10 * 1024 * 1024,
   });
