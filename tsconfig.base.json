@@ -70,7 +70,6 @@
       "@forepath/shared/backend": ["libs/domains/shared/backend/index.ts"],
       "@forepath/shared/frontend": ["libs/domains/shared/frontend/index.ts"],
       "@forepath/shared/keycloak": ["libs/domains/shared/keycloak/index.ts"],
-      "@forepath/shared/native": ["libs/domains/shared/native/index.ts"],
       "@forepath/shared/shared": ["libs/domains/shared/shared/index.ts"]
     }
   },

@@ -1,6 +1,6 @@
 # @agenstra/code
 
-Nx generators for scaffolding applications and libraries in the monorepo. Generators follow the workspace's scope and domain conventions (frontend, backend, native, keycloak-theme, shared) and produce projects that align with the framework guidelines.
+Nx generators for scaffolding applications and libraries in the monorepo. Generators follow the workspace's scope and domain conventions (frontend, backend, keycloak-theme, shared) and produce projects that align with the framework guidelines.
 
 ## Generators
 
@@ -47,7 +47,7 @@ nx generate @agenstra/code:keycloak-theme my-theme
 
 ### domain
 
-Creates a new domain with placeholder index files for backend, frontend, keycloak, native, and shared.
+Creates a new domain with placeholder index files for backend, frontend, keycloak, and shared.
 
 - **name** (required) – Domain name
 - **prefix** (default: `@domain`) – Import/package prefix
@@ -61,27 +61,13 @@ nx generate @agenstra/code:domain payments --prefix=@domain
 Creates a new domain library (feature, data-access, ui, or util) under a given domain and scope.
 
 - **domain** (required) – Domain name
-- **scope** (required) – `frontend`, `backend`, `native`, `keycloak`, or `shared`
+- **scope** (required) – `frontend`, `backend`, `keycloak`, or `shared`
 - **type** (required) – `data-access`, `feature`, `ui`, or `util`
 - **name** (required) – Library name
 - **generator** (required) – Base Nx generator: `js`, `node`, or `angular`
 
 ```bash
 nx generate @agenstra/code:lib --domain=payments --scope=frontend --type=feature --name=checkout --generator=angular
-```
-
-### native
-
-Creates a new Ionic + Angular device-native application (iOS/Android).
-
-- **name** (required) – Application name
-- **prefix** (default: `app`) – Component prefix
-- **protected** (default: `true`) – Enable authenticated routes
-- **capacitor** (default: `true`) – Add Capacitor for native runtimes
-
-```bash
-nx generate @agenstra/code:native mobile-app
-nx generate @agenstra/code:native mobile-app --no-capacitor
 ```
 
 ### mcp

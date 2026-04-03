@@ -19,7 +19,6 @@ export async function domainGenerator(tree: Tree, options: DomainGeneratorSchema
     json.compilerOptions.paths[`${prefix}${options.name}/backend`] = [`${domainRoot}/backend/index.ts`];
     json.compilerOptions.paths[`${prefix}${options.name}/frontend`] = [`${domainRoot}/frontend/index.ts`];
     json.compilerOptions.paths[`${prefix}${options.name}/keycloak`] = [`${domainRoot}/keycloak/index.ts`];
-    json.compilerOptions.paths[`${prefix}${options.name}/native`] = [`${domainRoot}/native/index.ts`];
     json.compilerOptions.paths[`${prefix}${options.name}/shared`] = [`${domainRoot}/shared/index.ts`];
 
     return json;
