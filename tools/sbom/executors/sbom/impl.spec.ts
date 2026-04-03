@@ -40,6 +40,10 @@ jest.mock('fs', () => ({
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sbomExecutor = require('./impl').default;
 
+function workspaceCyclonedxCliPath(): string {
+  return path.join('/workspace', 'node_modules', '@cyclonedx', 'cyclonedx-npm', 'bin', 'cyclonedx-npm-cli.js');
+}
+
 describe('sbomExecutor', () => {
   const mockContext = {
     projectName: 'test',
@@ -57,7 +61,13 @@ describe('sbomExecutor', () => {
     for (const key of Object.keys(fileStore)) {
       delete fileStore[key];
     }
-    mockExistsSync.mockImplementation((p: string) => Object.prototype.hasOwnProperty.call(fileStore, String(p)));
+    mockExistsSync.mockImplementation((p: string) => {
+      const s = String(p);
+      if (s === workspaceCyclonedxCliPath()) {
+        return true;
+      }
+      return Object.prototype.hasOwnProperty.call(fileStore, s);
+    });
     mockMkdirSync.mockImplementation(() => {});
     mockWriteFileSync.mockImplementation((p: string, content: string) => {
       fileStore[p] = content;
@@ -111,9 +121,9 @@ describe('sbomExecutor', () => {
       'utf-8',
     );
     expect(spawnSync).toHaveBeenCalledWith(
-      'npx',
+      process.execPath,
       expect.arrayContaining([
-        '@cyclonedx/cyclonedx-npm',
+        workspaceCyclonedxCliPath(),
         'package.json',
         '--output-file',
         expect.stringContaining('test.cdx.json'),
@@ -125,16 +135,20 @@ describe('sbomExecutor', () => {
         '1.6',
         '--package-lock-only',
       ]),
-      expect.any(Object),
+      expect.objectContaining({ cwd: expect.any(String) }),
     );
   });
 
   it('should use project package.json when it exists', async () => {
     mockExistsSync.mockImplementation((p: string) => {
-      if (Object.prototype.hasOwnProperty.call(fileStore, String(p))) {
+      const s = String(p);
+      if (s === workspaceCyclonedxCliPath()) {
         return true;
       }
-      return String(p).endsWith('package.json') && p.includes('apps/');
+      if (Object.prototype.hasOwnProperty.call(fileStore, s)) {
+        return true;
+      }
+      return s.endsWith('package.json') && s.includes('apps/');
     });
     const { spawnSync } = require('child_process');
     const { createPackageJson } = require('@nx/js');
@@ -144,8 +158,8 @@ describe('sbomExecutor', () => {
     expect(result.success).toBe(true);
     expect(createPackageJson).not.toHaveBeenCalled();
     expect(spawnSync).toHaveBeenCalledWith(
-      'npx',
-      expect.any(Array),
+      process.execPath,
+      expect.arrayContaining([workspaceCyclonedxCliPath(), 'package.json']),
       expect.objectContaining({
         cwd: path.join('/workspace', 'dist', 'apps', 'test'),
       }),
@@ -199,6 +213,7 @@ describe('sbomExecutor', () => {
       mockContext,
     );
     const spawnArgs = spawnSync.mock.calls[0][1] as string[];
+    expect(spawnArgs[0]).toBe(workspaceCyclonedxCliPath());
     const outputFileIdx = spawnArgs.indexOf('--output-file');
     expect(outputFileIdx).toBeGreaterThanOrEqual(0);
     expect(spawnArgs[outputFileIdx + 1]).toContain('custom');
@@ -233,10 +248,14 @@ describe('sbomExecutor', () => {
       packages: { '': { name: 'app', version: '0.0.1' } },
     });
     mockExistsSync.mockImplementation((p: string) => {
-      if (Object.prototype.hasOwnProperty.call(fileStore, String(p))) {
+      const s = String(p);
+      if (s === workspaceCyclonedxCliPath()) {
         return true;
       }
-      return String(p).endsWith('package.json') && p.includes('apps/');
+      if (Object.prototype.hasOwnProperty.call(fileStore, s)) {
+        return true;
+      }
+      return s.endsWith('package.json') && s.includes('apps/');
     });
 
     const result = await sbomExecutor({ validate: false, appVersion: '9.0.0' }, mockContext);

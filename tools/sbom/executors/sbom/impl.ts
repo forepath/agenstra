@@ -40,6 +40,16 @@ function applyAppVersionToNpmManifests(workDir: string, appVersion: string): voi
   fs.writeFileSync(packageLockPath, JSON.stringify(lock, null, 2), 'utf-8');
 }
 
+function resolveCyclonedxNpmCliPath(root: string): string {
+  const cliPath = path.join(root, 'node_modules', '@cyclonedx', 'cyclonedx-npm', 'bin', 'cyclonedx-npm-cli.js');
+  if (!fs.existsSync(cliPath)) {
+    throw new Error(
+      `cyclonedx-npm CLI not found at ${cliPath}. Run install at the workspace root so @cyclonedx/cyclonedx-npm is present.`,
+    );
+  }
+  return cliPath;
+}
+
 export default async function sbomExecutor(
   options: SbomExecutorOptions,
   context: ExecutorContext,
@@ -121,11 +131,11 @@ export default async function sbomExecutor(
     cyclonedxNpmArgs.push('--omit', o);
   }
 
-  const npmResult = spawnSync('npx', ['@cyclonedx/cyclonedx-npm', ...cyclonedxNpmArgs], {
+  const cyclonedxCli = resolveCyclonedxNpmCliPath(workspaceRoot);
+  const npmResult = spawnSync(process.execPath, [cyclonedxCli, ...cyclonedxNpmArgs], {
     cwd: workDir,
     stdio: 'inherit',
     maxBuffer: 10 * 1024 * 1024,
-    shell: true,
   });
   if (npmResult.status !== 0) {
     logger.error('cyclonedx-npm failed.');
