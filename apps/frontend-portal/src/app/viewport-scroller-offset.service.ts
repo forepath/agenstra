@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser, ViewportScroller } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 
 /**
  * Custom ViewportScroller that adds a fixed offset to account for fixed navigation bars.
@@ -7,15 +7,11 @@ import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
  */
 @Injectable()
 export class ViewportScrollerOffset extends ViewportScroller {
+  private readonly document = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
+
   private readonly offset = 80; // Offset in pixels for fixed navbar
   private offsetPosition: [number, number] = [0, this.offset];
-
-  constructor(
-    @Inject(DOCUMENT) private document: Document,
-    @Inject(PLATFORM_ID) private platformId: object,
-  ) {
-    super();
-  }
 
   setOffset(offset: [number, number] | (() => [number, number])): void {
     if (typeof offset === 'function') {

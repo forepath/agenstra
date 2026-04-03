@@ -409,139 +409,149 @@
                           How users authenticate to the agent instance.
                         </span>
                       </div>
-                      <div [ngSwitch]="authMethod()">
-                        @if (orderRequestedConfig.service === 'controller') {
-                          <div *ngSwitchCase="'users'" class="form-check mb-3">
-                            <input
-                              type="checkbox"
-                              class="form-check-input"
-                              id="orderDisableSignup"
-                              name="disableSignup"
-                              [(ngModel)]="orderRequestedConfig.disableSignup"
-                              [disabled]="(subscriptionsCreating$ | async) === true"
-                              aria-describedby="orderDisableSignupHelp"
-                            />
-                            <label
-                              class="form-check-label"
-                              for="orderDisableSignup"
-                              i18n="@@featureSubscriptions-disableSignup"
-                            >
-                              Disable signup
-                            </label>
-                            <span
-                              id="orderDisableSignupHelp"
-                              class="form-text text-body-secondary d-block"
-                              i18n="@@featureSubscriptions-disableSignupHelp"
-                            >
-                              Prevents new user registration on this instance.
-                            </span>
-                          </div>
-                        }
-                        <div *ngSwitchCase="'api-key'" class="mb-3">
-                          <label for="orderStaticApiKey" class="form-label" i18n="@@featureSubscriptions-staticApiKey">
-                            Static API Key
-                          </label>
-                          <input
-                            type="password"
-                            id="orderStaticApiKey"
-                            name="staticApiKey"
-                            class="form-control"
-                            [(ngModel)]="orderRequestedConfig.staticApiKey"
-                            [disabled]="(subscriptionsCreating$ | async) === true"
-                            aria-describedby="orderStaticApiKeyHelp"
-                            aria-label="Static API Key"
-                          />
-                          <span
-                            id="orderStaticApiKeyHelp"
-                            class="form-text text-body-secondary"
-                            i18n="@@featureSubscriptions-staticApiKeyHelp"
-                          >
-                            API key for authenticating requests. Required when using api-key authentication.
-                          </span>
-                        </div>
-                        <ng-container *ngSwitchCase="'keycloak'">
-                          <fieldset class="mb-3">
-                            <legend class="form-label fs-6" i18n="@@featureSubscriptions-keycloakSection">
-                              Keycloak
-                            </legend>
-                            <div class="mb-2">
-                              <label for="orderKeycloakServerUrl" class="form-label visually-hidden"
-                                >Keycloak server URL</label
-                              >
-                              <input
-                                type="url"
-                                id="orderKeycloakServerUrl"
-                                name="keycloakServerUrl"
-                                class="form-control"
-                                [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
-                                placeholder="https://keycloak.example.com"
-                                [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Keycloak server URL"
-                              />
-                            </div>
-                            <div class="mb-2">
-                              <label for="orderKeycloakAuthServerUrl" class="form-label visually-hidden"
-                                >Keycloak auth server URL</label
-                              >
-                              <input
-                                type="url"
-                                id="orderKeycloakAuthServerUrl"
-                                name="keycloakAuthServerUrl"
-                                class="form-control"
-                                [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
-                                placeholder="https://keycloak.example.com/auth"
-                                [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Keycloak auth server URL"
-                              />
-                            </div>
-                            <div class="row g-2 mb-2">
-                              <div class="col-md-6">
-                                <label for="orderKeycloakRealm" class="form-label visually-hidden"
-                                  >Keycloak realm</label
-                                >
+                      <div>
+                        @switch (authMethod()) {
+                          @case ('users') {
+                            @if (orderRequestedConfig.service === 'controller') {
+                              <div class="form-check mb-3">
                                 <input
-                                  type="text"
-                                  id="orderKeycloakRealm"
-                                  name="keycloakRealm"
-                                  class="form-control"
-                                  [(ngModel)]="orderRequestedConfig.keycloak.realm"
-                                  placeholder="realm"
+                                  type="checkbox"
+                                  class="form-check-input"
+                                  id="orderDisableSignup"
+                                  name="disableSignup"
+                                  [(ngModel)]="orderRequestedConfig.disableSignup"
                                   [disabled]="(subscriptionsCreating$ | async) === true"
-                                  aria-label="Keycloak realm"
+                                  aria-describedby="orderDisableSignupHelp"
                                 />
-                              </div>
-                              <div class="col-md-6">
-                                <label for="orderKeycloakClientId" class="form-label visually-hidden"
-                                  >Keycloak client ID</label
+                                <label
+                                  class="form-check-label"
+                                  for="orderDisableSignup"
+                                  i18n="@@featureSubscriptions-disableSignup"
                                 >
-                                <input
-                                  type="text"
-                                  id="orderKeycloakClientId"
-                                  name="keycloakClientId"
-                                  class="form-control"
-                                  [(ngModel)]="orderRequestedConfig.keycloak.clientId"
-                                  placeholder="client-id"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                  aria-label="Keycloak client ID"
-                                />
+                                  Disable signup
+                                </label>
+                                <span
+                                  id="orderDisableSignupHelp"
+                                  class="form-text text-body-secondary d-block"
+                                  i18n="@@featureSubscriptions-disableSignupHelp"
+                                >
+                                  Prevents new user registration on this instance.
+                                </span>
                               </div>
-                            </div>
-                            <div>
-                              <label for="orderKeycloakClientSecret" class="form-label visually-hidden"
-                                >Keycloak client secret</label
+                            }
+                          }
+                          @case ('api-key') {
+                            <div class="mb-3">
+                              <label
+                                for="orderStaticApiKey"
+                                class="form-label"
+                                i18n="@@featureSubscriptions-staticApiKey"
                               >
+                                Static API Key
+                              </label>
                               <input
                                 type="password"
-                                id="orderKeycloakClientSecret"
-                                name="keycloakClientSecret"
+                                id="orderStaticApiKey"
+                                name="staticApiKey"
                                 class="form-control"
-                                [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
+                                [(ngModel)]="orderRequestedConfig.staticApiKey"
                                 [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Keycloak client secret"
+                                aria-describedby="orderStaticApiKeyHelp"
+                                aria-label="Static API Key"
                               />
+                              <span
+                                id="orderStaticApiKeyHelp"
+                                class="form-text text-body-secondary"
+                                i18n="@@featureSubscriptions-staticApiKeyHelp"
+                              >
+                                API key for authenticating requests. Required when using api-key authentication.
+                              </span>
                             </div>
-                          </fieldset>
-                        </ng-container>
+                          }
+                          @case ('keycloak') {
+                            <fieldset class="mb-3">
+                              <legend class="form-label fs-6" i18n="@@featureSubscriptions-keycloakSection">
+                                Keycloak
+                              </legend>
+                              <div class="mb-2">
+                                <label for="orderKeycloakServerUrl" class="form-label visually-hidden"
+                                  >Keycloak server URL</label
+                                >
+                                <input
+                                  type="url"
+                                  id="orderKeycloakServerUrl"
+                                  name="keycloakServerUrl"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
+                                  placeholder="https://keycloak.example.com"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Keycloak server URL"
+                                />
+                              </div>
+                              <div class="mb-2">
+                                <label for="orderKeycloakAuthServerUrl" class="form-label visually-hidden"
+                                  >Keycloak auth server URL</label
+                                >
+                                <input
+                                  type="url"
+                                  id="orderKeycloakAuthServerUrl"
+                                  name="keycloakAuthServerUrl"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
+                                  placeholder="https://keycloak.example.com/auth"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Keycloak auth server URL"
+                                />
+                              </div>
+                              <div class="row g-2 mb-2">
+                                <div class="col-md-6">
+                                  <label for="orderKeycloakRealm" class="form-label visually-hidden"
+                                    >Keycloak realm</label
+                                  >
+                                  <input
+                                    type="text"
+                                    id="orderKeycloakRealm"
+                                    name="keycloakRealm"
+                                    class="form-control"
+                                    [(ngModel)]="orderRequestedConfig.keycloak.realm"
+                                    placeholder="realm"
+                                    [disabled]="(subscriptionsCreating$ | async) === true"
+                                    aria-label="Keycloak realm"
+                                  />
+                                </div>
+                                <div class="col-md-6">
+                                  <label for="orderKeycloakClientId" class="form-label visually-hidden"
+                                    >Keycloak client ID</label
+                                  >
+                                  <input
+                                    type="text"
+                                    id="orderKeycloakClientId"
+                                    name="keycloakClientId"
+                                    class="form-control"
+                                    [(ngModel)]="orderRequestedConfig.keycloak.clientId"
+                                    placeholder="client-id"
+                                    [disabled]="(subscriptionsCreating$ | async) === true"
+                                    aria-label="Keycloak client ID"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label for="orderKeycloakClientSecret" class="form-label visually-hidden"
+                                  >Keycloak client secret</label
+                                >
+                                <input
+                                  type="password"
+                                  id="orderKeycloakClientSecret"
+                                  name="keycloakClientSecret"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Keycloak client secret"
+                                />
+                              </div>
+                            </fieldset>
+                          }
+                        }
                       </div>
                       <fieldset class="mb-0">
                         <legend class="form-label fs-6" i18n="@@featureSubscriptions-smtpSection">

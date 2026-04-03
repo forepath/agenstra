@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { SearchIndex, SearchIndexEntry } from '@forepath/framework/frontend/util-docs-parser';
-import { catchError, map, Observable, of, shareReplay } from 'rxjs';
+import { catchError, Observable, of, shareReplay } from 'rxjs';
 
 export interface SearchResult {
   entry: SearchIndexEntry;
@@ -16,6 +16,8 @@ export interface SearchResult {
   providedIn: 'root',
 })
 export class DocsSearchService {
+  private readonly http = inject(HttpClient);
+
   private searchIndexCache: Observable<SearchIndex | null> | null = null;
 
   /**
@@ -27,8 +29,6 @@ export class DocsSearchService {
    * Current search results
    */
   readonly searchResults = signal<SearchResult[]>([]);
-
-  constructor(private readonly http: HttpClient) {}
 
   /**
    * Load search index
