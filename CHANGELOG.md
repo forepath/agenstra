@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.41.1](https://github.com/forepath/agenstra/compare/v1.41.0...v1.41.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* sbom generation cli tool reference from node_modules ([983a8ae](https://github.com/forepath/agenstra/commit/983a8ae75444406d412365b3bfc4563c9573e312))
+
 ## [1.41.0](https://github.com/forepath/agenstra/compare/v1.40.0...v1.41.0) (2026-04-03)
 
 
