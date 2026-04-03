@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.41.0](https://github.com/forepath/agenstra/compare/v1.40.0...v1.41.0) (2026-04-03)
+
+
+### Features
+
+* landingpage navbar shadow on scroll ([#265](https://github.com/forepath/agenstra/issues/265)) ([16f9603](https://github.com/forepath/agenstra/commit/16f96031d8b2ffbaed599bb5f24b1becc10bd1c3))
+
+
+### Bug Fixes
+
+* remove further unused dependencies and fix linting ([#268](https://github.com/forepath/agenstra/issues/268)) ([f18edfa](https://github.com/forepath/agenstra/commit/f18edfaca74a2f902931548e1ef55f78b8c5b12b))
+* remove unused dependencies ([#267](https://github.com/forepath/agenstra/issues/267)) ([5c53d2b](https://github.com/forepath/agenstra/commit/5c53d2b924b1f306a5a2a083841b45a087d542f2))
+
+
+### Chores
+
+* remove clearity ui support ([#269](https://github.com/forepath/agenstra/issues/269)) ([ec436fd](https://github.com/forepath/agenstra/commit/ec436fde77afb2cb1a0635348e42b2636f435245))
+* remove ionic support ([#270](https://github.com/forepath/agenstra/issues/270)) ([c604fd3](https://github.com/forepath/agenstra/commit/c604fd308aa5391a2c7e839b6217dead7e407e9f))
+* sbom export ([#266](https://github.com/forepath/agenstra/issues/266)) ([86e7620](https://github.com/forepath/agenstra/commit/86e762056d00221867fd357e58ae76d957219c26))
+
 ## [1.40.0](https://github.com/forepath/agenstra/compare/v1.39.0...v1.40.0) (2026-03-30)
 
 
