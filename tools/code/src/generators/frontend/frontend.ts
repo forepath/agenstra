@@ -40,118 +40,111 @@ export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSc
   const appSrcPath = `${appRoot}/src`;
 
   if (options.ssr) {
-    if (options.ui === 'clarity') {
-      console.warn(
-        '\x1b[33m%s\x1b[0m',
-        'WARN: SSR capabilities are skipped because the chosen UI framework is incompatible with Angular SSR.',
-      );
-    } else {
+    generateFiles(tree, path.join(__dirname, 'files', 'ssr'), appSrcPath, options, {
+      overwriteStrategy: OverwriteStrategy.Overwrite,
+    });
+
+    await setupDockerGeneratorFn(tree, {
+      project: appName,
+      outputPath: `dist/${appRoot}/server`,
+      buildTarget: 'build',
+    });
+
+    const dockerfilePath = `${appRoot}/Dockerfile`;
+
+    if (tree.exists(dockerfilePath)) {
+      const dockerfileContent = tree.read(dockerfilePath, 'utf-8');
+      const updatedContent = dockerfileContent
+        .replace('COPY dist .', 'COPY . /app')
+        .replace('ENV PORT=3000', 'ENV PORT=4000')
+        .replace('CMD [ "node", "main.js" ]', 'CMD [ "node", "server.mjs" ]');
+
+      tree.write(dockerfilePath, updatedContent);
+    }
+
+    updateJson(tree, `${appRoot}/project.json`, (json) => {
+      if (json.targets?.['docker:build']) {
+        delete json.targets['docker:build'];
+      }
+
+      if (!json.targets?.['docker']) {
+        json.targets['docker'] = {
+          dependsOn: ['build', 'prune'],
+          executor: 'nx:run-commands',
+          options: {
+            cwd: `dist/${appRoot}/server`,
+            command: `docker build . -f ../../../../${appRoot}/Dockerfile --tag apps-${appName}`,
+          },
+        };
+      }
+
+      return json;
+    });
+
+    if (tree.exists(dockerfilePath)) {
+      let dockerfileContent = tree.read(dockerfilePath, 'utf-8');
+
+      dockerfileContent = dockerfileContent
+        .split('\n')
+        .filter(
+          (line) =>
+            !line.trim().startsWith('# You can remove this install step if you build with `--bundle` option.') &&
+            !line.trim().startsWith('# The bundled output will include external dependencies.') &&
+            !line.trim().startsWith('RUN npm --omit=dev -f install'),
+        )
+        .join('\n');
+
+      tree.write(dockerfilePath, dockerfileContent);
+    }
+
+    if (options.localization) {
       generateFiles(tree, path.join(__dirname, 'files', 'ssr'), appSrcPath, options, {
         overwriteStrategy: OverwriteStrategy.Overwrite,
       });
 
-      await setupDockerGeneratorFn(tree, {
-        project: appName,
-        outputPath: `dist/${appRoot}/server`,
-        buildTarget: 'build',
-      });
-
-      const dockerfilePath = `${appRoot}/Dockerfile`;
-
-      if (tree.exists(dockerfilePath)) {
-        const dockerfileContent = tree.read(dockerfilePath, 'utf-8');
-        const updatedContent = dockerfileContent
-          .replace('COPY dist .', 'COPY . /app')
-          .replace('ENV PORT=3000', 'ENV PORT=4000')
-          .replace('CMD [ "node", "main.js" ]', 'CMD [ "node", "server.mjs" ]');
-
-        tree.write(dockerfilePath, updatedContent);
-      }
-
       updateJson(tree, `${appRoot}/project.json`, (json) => {
-        if (json.targets?.['docker:build']) {
-          delete json.targets['docker:build'];
-        }
-
-        if (!json.targets?.['docker']) {
-          json.targets['docker'] = {
-            dependsOn: ['build', 'prune'],
+        if (!json.targets?.['build-delegating-server']) {
+          json.targets['build-delegating-server'] = {
             executor: 'nx:run-commands',
+            outputs: [`{workspaceRoot}/dist/${appRoot}-delegating-server`],
             options: {
-              cwd: `dist/${appRoot}/server`,
-              command: `docker build . -f ../../../../${appRoot}/Dockerfile --tag apps-${appName}`,
+              command: `mkdir -p dist/${appRoot}-delegating-server/server && npx tsc ${appRoot}/src/delegating-server.ts --outDir dist/${appRoot}-delegating-server/server --target es2022 --module esnext --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --removeComments true`,
+              cwd: '.',
             },
           };
+        }
+
+        if (!json.targets?.['postbuild']) {
+          json.targets['postbuild'] = {
+            executor: 'nx:run-commands',
+            options: {
+              command: `cp dist/${appRoot}-delegating-server/server/delegating-server.js dist/${appRoot}/server/server.mjs && cp -r dist/${appRoot}/browser dist/${appRoot}/server/browser`,
+            },
+            dependsOn: ['build', 'build-delegating-server'],
+          };
+        }
+
+        if (json.targets?.docker?.dependsOn) {
+          json.targets.docker.dependsOn = ['build', 'build-delegating-server', 'postbuild', 'prune'];
         }
 
         return json;
       });
 
-      if (tree.exists(dockerfilePath)) {
-        let dockerfileContent = tree.read(dockerfilePath, 'utf-8');
+      const tsconfigAppPath = `${appRoot}/tsconfig.app.json`;
 
-        dockerfileContent = dockerfileContent
-          .split('\n')
-          .filter(
-            (line) =>
-              !line.trim().startsWith('# You can remove this install step if you build with `--bundle` option.') &&
-              !line.trim().startsWith('# The bundled output will include external dependencies.') &&
-              !line.trim().startsWith('RUN npm --omit=dev -f install'),
-          )
-          .join('\n');
+      if (tree.exists(tsconfigAppPath)) {
+        updateJson(tree, tsconfigAppPath, (tsconfig) => {
+          if (!tsconfig.include) {
+            tsconfig.include = [];
+          }
 
-        tree.write(dockerfilePath, dockerfileContent);
-      }
+          if (!tsconfig.include.includes('src/delegating-server.ts')) {
+            tsconfig.include.push('src/delegating-server.ts');
+          }
 
-      if (options.localization) {
-        generateFiles(tree, path.join(__dirname, 'files', 'ssr'), appSrcPath, options, {
-          overwriteStrategy: OverwriteStrategy.Overwrite,
+          return tsconfig;
         });
-
-        updateJson(tree, `${appRoot}/project.json`, (json) => {
-          if (!json.targets?.['build-delegating-server']) {
-            json.targets['build-delegating-server'] = {
-              executor: 'nx:run-commands',
-              outputs: [`{workspaceRoot}/dist/${appRoot}-delegating-server`],
-              options: {
-                command: `mkdir -p dist/${appRoot}-delegating-server/server && npx tsc ${appRoot}/src/delegating-server.ts --outDir dist/${appRoot}-delegating-server/server --target es2022 --module esnext --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --removeComments true`,
-                cwd: '.',
-              },
-            };
-          }
-
-          if (!json.targets?.['postbuild']) {
-            json.targets['postbuild'] = {
-              executor: 'nx:run-commands',
-              options: {
-                command: `cp dist/${appRoot}-delegating-server/server/delegating-server.js dist/${appRoot}/server/server.mjs && cp -r dist/${appRoot}/browser dist/${appRoot}/server/browser`,
-              },
-              dependsOn: ['build', 'build-delegating-server'],
-            };
-          }
-
-          if (json.targets?.docker?.dependsOn) {
-            json.targets.docker.dependsOn = ['build', 'build-delegating-server', 'postbuild', 'prune'];
-          }
-
-          return json;
-        });
-
-        const tsconfigAppPath = `${appRoot}/tsconfig.app.json`;
-
-        if (tree.exists(tsconfigAppPath)) {
-          updateJson(tree, tsconfigAppPath, (tsconfig) => {
-            if (!tsconfig.include) {
-              tsconfig.include = [];
-            }
-
-            if (!tsconfig.include.includes('src/delegating-server.ts')) {
-              tsconfig.include.push('src/delegating-server.ts');
-            }
-
-            return tsconfig;
-          });
-        }
       }
     }
   }

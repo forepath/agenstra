@@ -31,13 +31,12 @@
         "$source": "argv",
         "index": 2
       },
-      "default": "clarity",
-      "enum": ["clarity", "bootstrap", "none"],
+      "default": "bootstrap",
+      "enum": ["bootstrap", "none"],
       "x-prompt": {
         "message": "What ui would you like to use?",
         "type": "list",
         "items": [
-          { "value": "clarity", "label": "Clarity (VMWare)" },
           { "value": "bootstrap", "label": "Bootstrap (Twitter)" },
           { "value": "none", "label": "None" }
         ]

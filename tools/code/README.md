@@ -24,14 +24,14 @@ Creates a new Angular frontend application.
 
 - **name** (required) – Application name
 - **prefix** (default: `app`) – Component/selector prefix
-- **ui** (default: `clarity`) – UI stack: `clarity`, `bootstrap`, or `none`
+- **ui** (default: `bootstrap`) – UI stack: `bootstrap` or `none`
 - **protected** (default: `true`) – Enable authenticated routes
 - **localization** (default: `true`) – Enable i18n
 - **ssr** (default: `true`) – Enable server-side rendering
 
 ```bash
-nx generate @agenstra/code:frontend portal --prefix=app --ui=clarity
-nx generate @agenstra/code:frontend portal --ui=bootstrap --no-ssr
+nx generate @agenstra/code:frontend portal --prefix=app --ui=bootstrap
+nx generate @agenstra/code:frontend portal --ui=none --no-ssr
 ```
 
 ### keycloak-theme
