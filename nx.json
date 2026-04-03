@@ -103,5 +103,6 @@
       "style": "scss",
       "unitTestRunner": "jest"
     }
-  }
+  },
+  "analytics": false
 }
