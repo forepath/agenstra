@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.41.3](https://github.com/forepath/agenstra/compare/v1.41.2...v1.41.3) (2026-04-04)
+
+
+### Chores
+
+* angular update ([#272](https://github.com/forepath/agenstra/issues/272)) ([18a213b](https://github.com/forepath/agenstra/commit/18a213b61dbc62b0ee24cd771527e09e018c2cbf))
+
 ## [1.41.2](https://github.com/forepath/agenstra/compare/v1.41.1...v1.41.2) (2026-04-03)
 
 
