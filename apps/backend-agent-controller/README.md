@@ -37,7 +37,7 @@ The application integrates the `@forepath/framework-backend-feature-agent-contro
 
 ### Prerequisites
 
-- Node.js 22.12.0 or higher
+- Node.js 24.14.1 or higher
 - PostgreSQL database
 - Keycloak server (for HTTP authentication, optional if using API key authentication)
 - Docker (for server provisioning)

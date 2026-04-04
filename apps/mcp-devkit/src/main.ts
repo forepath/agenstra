@@ -196,7 +196,7 @@ server.tool(
 server.tool(
   'devkit_validate_generator',
   'Validate options for a custom Nx generator and preview command',
-  { name: z.string(), options: z.record(z.any()).default({}) },
+  { name: z.string(), options: z.record(z.string(), z.any()).default({}) },
   async (args) => {
     const workspaceRoot = process.cwd();
     const devkitRoot = path.resolve(workspaceRoot, 'tools', 'devkit');

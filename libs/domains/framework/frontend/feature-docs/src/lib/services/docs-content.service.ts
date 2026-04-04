@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DocMetadata, MarkdownParserService } from '@forepath/framework/frontend/util-docs-parser';
 import { catchError, from, Observable, of, shareReplay, switchMap, timeout } from 'rxjs';
@@ -11,14 +11,12 @@ import { catchError, from, Observable, of, shareReplay, switchMap, timeout } fro
   providedIn: 'root',
 })
 export class DocsContentService {
+  private readonly http = inject(HttpClient);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly markdownParser = inject(MarkdownParserService);
+
   private readonly cache = new Map<string, DocMetadata>();
   private readonly loadingCache = new Map<string, Observable<DocMetadata | null>>();
-
-  constructor(
-    private readonly http: HttpClient,
-    private readonly sanitizer: DomSanitizer,
-    private readonly markdownParser: MarkdownParserService,
-  ) {}
 
   /**
    * Load documentation content by file path

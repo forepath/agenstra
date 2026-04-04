@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { NavigationNode } from '@forepath/framework/frontend/util-docs-parser';
 import { catchError, map, Observable, of, shareReplay } from 'rxjs';
 
@@ -10,14 +10,14 @@ import { catchError, map, Observable, of, shareReplay } from 'rxjs';
   providedIn: 'root',
 })
 export class DocsNavigationService {
+  private readonly http = inject(HttpClient);
+
   private navigationCache: Observable<NavigationNode[]> | null = null;
 
   /**
    * Current active page path
    */
   readonly activePath = signal<string | null>(null);
-
-  constructor(private readonly http: HttpClient) {}
 
   /**
    * Load navigation tree
