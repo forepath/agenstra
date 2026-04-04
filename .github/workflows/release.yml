@@ -58,7 +58,7 @@ jobs:
         if: steps.semantic-release.outputs.new_release_published == 'true'
         env:
           VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
-        run: npx nx run-many --target=sbom --parallel=3 || echo "No projects for sbom generation"
+        run: npx nx run-many --target=sbom --parallel=1 || echo "No projects for sbom generation"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
