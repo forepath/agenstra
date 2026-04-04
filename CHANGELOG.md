@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.41.4](https://github.com/forepath/agenstra/compare/v1.41.3...v1.41.4) (2026-04-04)
+
+
+### Bug Fixes
+
+* disable sbom generation concurrency ([#273](https://github.com/forepath/agenstra/issues/273)) ([22fbac0](https://github.com/forepath/agenstra/commit/22fbac0c8e0d5de9026a1f8f3604c26d631780f5))
+
 ## [1.41.3](https://github.com/forepath/agenstra/compare/v1.41.2...v1.41.3) (2026-04-04)
 
 
