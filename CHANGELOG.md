@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.42.0](https://github.com/forepath/agenstra/compare/v1.41.4...v1.42.0) (2026-04-06)
+
+
+### Features
+
+* dynamic location selection ([#274](https://github.com/forepath/agenstra/issues/274)) ([5a0a119](https://github.com/forepath/agenstra/commit/5a0a1192572d27984a73259bea1095a5937c1b83))
+
 ## [1.41.4](https://github.com/forepath/agenstra/compare/v1.41.3...v1.41.4) (2026-04-04)
 
 
