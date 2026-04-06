@@ -1,6 +1,7 @@
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DataSource } from 'typeorm';
 import { AppModule } from './app/app.module';
 import { typeormConfig } from './typeorm.config';
@@ -9,6 +10,8 @@ async function bootstrap() {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
 
   const app = await NestFactory.create(AppModule);
+
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;

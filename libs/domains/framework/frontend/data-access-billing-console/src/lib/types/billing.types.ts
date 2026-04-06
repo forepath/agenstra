@@ -226,6 +226,25 @@ export interface ServerInfoResponse {
   hostnameFqdn?: string | null;
 }
 
+/** Payload of billing WebSocket `dashboardStatusUpdate` (aligned with REST server-info fields). */
+export interface BillingDashboardStatusItem {
+  subscriptionId: string;
+  itemId: string;
+  service: 'controller' | 'manager';
+  name: string;
+  publicIp: string;
+  privateIp?: string;
+  status: string;
+  metadata?: Record<string, unknown>;
+  hostname?: string;
+  hostnameFqdn?: string;
+}
+
+export interface BillingDashboardStatusUpdatePayload {
+  generatedAt: string;
+  items: BillingDashboardStatusItem[];
+}
+
 // Backorders
 export interface BackorderResponse {
   id: string;

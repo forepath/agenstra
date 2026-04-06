@@ -11,6 +11,8 @@ FROM docker.io/debian:trixie-slim
 # Environment variables for the backend api
 ENV HOST=0.0.0.0
 ENV PORT=3200
+ENV WEBSOCKET_PORT=8082
+ENV WEBSOCKET_NAMESPACE=billing
 ENV NODE_ENV=development
 
 # Environment variables for the database

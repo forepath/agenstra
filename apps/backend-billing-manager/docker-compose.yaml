@@ -26,6 +26,7 @@ services:
       # Backend API configuration
       HOST: 0.0.0.0
       PORT: 3200
+      WEBSOCKET_PORT: 8082
       NODE_ENV: development
       # Database configuration
       DB_HOST: postgres
@@ -87,6 +88,7 @@ services:
       DNS_BASE_DOMAIN: ${DNS_BASE_DOMAIN:-spirde.com}
     ports:
       - '3200:3200'
+      - '8082:8082'
     depends_on:
       postgres:
         condition: service_healthy

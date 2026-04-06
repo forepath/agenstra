@@ -20,6 +20,12 @@ WebSocket connections to the controller require authentication. Pass the `Author
 
 Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client (global admin, client creator, or client_users entry) can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
 
+### Billing manager (dashboard status)
+
+The billing console can open a second Socket.IO connection to the **billing-manager** status gateway (default namespace `/billing`, separate TCP port from REST). Handshake auth matches HTTP (`Bearer` JWT for users or Keycloak). **Static API key** auth does not receive a user-scoped billing stream; `subscribeDashboardStatus` is rejected with an `error` event, consistent with REST returning "User not authenticated" for API-key-only requests.
+
+The server selects subscriptions **only** from the authenticated user’s data on every poll tick and emits `dashboardStatusUpdate` **only** to that socket (no rooms). See `libs/domains/framework/backend/feature-billing-manager/spec/asyncapi.yaml`.
+
 ## Connection Flow
 
 ### Frontend to Controller

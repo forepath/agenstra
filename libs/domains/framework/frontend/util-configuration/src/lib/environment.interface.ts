@@ -22,6 +22,7 @@ export interface Environment {
   billing: {
     restApiUrl: string;
     frontendUrl: string;
+    websocketUrl?: string;
   };
   authentication: AuthenticationConfig;
   chatModelOptions: { [provider: string]: Record<string, string> };

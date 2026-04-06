@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import {
   BackordersFacade,
+  BillingDashboardSocketFacade,
   CustomerProfileFacade,
   getBillingServerLocationLabel,
   InvoicesFacade,
@@ -12,7 +14,9 @@ import {
   SubscriptionServerInfoFacade,
   SubscriptionsFacade,
 } from '@forepath/framework/frontend/data-access-billing-console';
-import { filter, take } from 'rxjs';
+import type { Environment } from '@forepath/framework/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+import { combineLatest, filter, map, take } from 'rxjs';
 
 @Component({
   selector: 'framework-billing-overview',
@@ -24,6 +28,9 @@ import { filter, take } from 'rxjs';
 export class OverviewComponent implements OnInit {
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   readonly serverInfoFacade = inject(SubscriptionServerInfoFacade);
+  private readonly billingDashboardSocketFacade = inject(BillingDashboardSocketFacade);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly invoicesFacade = inject(InvoicesFacade);
@@ -36,7 +43,15 @@ export class OverviewComponent implements OnInit {
   readonly activeSubscriptions$ = this.subscriptionsFacade.getActiveSubscriptions$();
 
   readonly subscriptionsWithServerInfo$ = this.serverInfoFacade.getSubscriptionsWithServerInfo$();
-  readonly overviewServerInfoLoading$ = this.serverInfoFacade.getOverviewServerInfoLoading$();
+  readonly overviewServerInfoLoading$ = combineLatest([
+    this.serverInfoFacade.getOverviewServerInfoLoading$(),
+    this.billingDashboardSocketFacade.getStreamPending$(),
+  ]).pipe(
+    map(([restLoading, socketPending]) =>
+      this.environment.billing.websocketUrl?.trim() ? socketPending : restLoading,
+    ),
+    takeUntilDestroyed(this.destroyRef),
+  );
   readonly overviewServerInfoError$ = this.serverInfoFacade.getOverviewServerInfoError$();
   readonly serverActionInProgressMap$ = this.serverInfoFacade.getServerActionInProgressMap$();
 
@@ -59,12 +74,19 @@ export class OverviewComponent implements OnInit {
     this.backordersFacade.loadBackorders();
     this.customerProfileFacade.loadCustomerProfile();
     this.invoicesFacade.loadInvoicesSummary();
-    this.subscriptionsLoading$
-      .pipe(
-        filter((loading) => !loading),
-        take(1),
-      )
-      .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
+
+    const useBillingSocket = !!this.environment.billing.websocketUrl?.trim();
+    if (useBillingSocket) {
+      this.billingDashboardSocketFacade.connect();
+      this.destroyRef.onDestroy(() => this.billingDashboardSocketFacade.disconnect());
+    } else {
+      this.subscriptionsLoading$
+        .pipe(
+          filter((loading) => !loading),
+          take(1),
+        )
+        .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
+    }
   }
 
   getProviderName(provider: unknown): string | undefined {

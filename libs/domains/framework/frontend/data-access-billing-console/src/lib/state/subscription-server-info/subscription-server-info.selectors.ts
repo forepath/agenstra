@@ -35,6 +35,11 @@ export const selectOverviewServerInfoLoading = createSelector(
 
 export const selectOverviewServerInfoError = createSelector(selectSubscriptionServerInfoState, (state) => state.error);
 
+export const selectBillingStatusHistory = createSelector(
+  selectSubscriptionServerInfoState,
+  (state) => state.billingStatusHistory,
+);
+
 export const selectServerActionInProgress = createSelector(
   selectSubscriptionServerInfoState,
   (state) => state.actionInProgress,
