@@ -19,17 +19,20 @@ import {
   CustomerProfileFacade,
   INVOICE_NINJA_SUPPORTED_ALPHA2_CODES,
   ServicePlansFacade,
+  ServiceTypesFacade,
   SubscriptionsFacade,
   type BackorderResponse,
   type CreateSubscriptionDto,
   type CustomerProfileDto,
+  type ProviderDetail,
   type ServicePlanResponse,
+  type ServiceTypeResponse,
   type SubscriptionResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
 import { getNames, registerLocale } from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import { filter, pairwise, take, withLatestFrom } from 'rxjs';
+import { combineLatest, filter, pairwise, take, withLatestFrom } from 'rxjs';
 
 import { getBackorderStatusLabel, getSubscriptionStatusLabel } from '../billing-status-labels';
 
@@ -67,6 +70,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
+  private readonly serviceTypesFacade = inject(ServiceTypesFacade);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
@@ -129,6 +133,10 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   orderPlanId = '';
   orderAutoBackorder = false;
   orderAcceptLegal = false;
+  /** Canonical schema key for geography when customer may choose (region or location). */
+  orderGeographyFieldKey: 'region' | 'location' | null = null;
+  orderLocationOptions: string[] = [];
+  orderProvisioningLocation = '';
   /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
   authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
 
@@ -264,6 +272,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.subscriptionsFacade.loadSubscriptions();
     this.servicePlansFacade.loadServicePlans();
+    this.serviceTypesFacade.loadServiceTypes();
+    this.serviceTypesFacade.loadProviderDetails();
     this.backordersFacade.loadBackorders();
     this.customerProfileFacade.loadCustomerProfile();
   }
@@ -334,12 +344,78 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           const matchingPlan = plans.find((plan) => plan.id === effectivePreferredPlanId);
           if (matchingPlan) {
             this.orderPlanId = matchingPlan.id;
+            this.syncOrderProvisioningLocationState();
             return;
           }
         }
         this.orderPlanId = plans[0].id;
+        this.syncOrderProvisioningLocationState();
       });
     this.showModal(this.orderPlanModal);
+  }
+
+  onOrderPlanIdChange(): void {
+    this.syncOrderProvisioningLocationState();
+  }
+
+  private getProviderSchemaFullForOrder(
+    serviceTypes: ServiceTypeResponse[] | null,
+    providerDetails: ProviderDetail[] | null,
+    serviceTypeId: string,
+  ): Record<string, unknown> | null {
+    if (!serviceTypeId?.trim() || !serviceTypes?.length || !providerDetails?.length) return null;
+    const serviceType = serviceTypes.find((st) => st.id === serviceTypeId);
+    if (!serviceType?.provider) return null;
+    const detail = providerDetails.find((p) => p.id === serviceType.provider);
+    return (detail?.configSchema as Record<string, unknown>) ?? null;
+  }
+
+  /**
+   * Resolves geography field + enum options when the plan allows customer location selection.
+   */
+  private resolveOrderGeography(
+    plan: ServicePlanResponse,
+    serviceTypes: ServiceTypeResponse[],
+    providerDetails: ProviderDetail[],
+  ): { field: 'region' | 'location'; options: string[] } | null {
+    if (!plan.allowCustomerLocationSelection) return null;
+    const full = this.getProviderSchemaFullForOrder(serviceTypes, providerDetails, plan.serviceTypeId);
+    const props = full?.['properties'] as Record<string, { type?: string; enum?: unknown[] }> | undefined;
+    if (!props) return null;
+    const pick = (key: 'region' | 'location'): { field: 'region' | 'location'; options: string[] } | null => {
+      const p = props[key];
+      if (!p || String(p.type) !== 'string' || !Array.isArray(p.enum)) return null;
+      const options = p.enum.filter((x): x is string => typeof x === 'string');
+      return options.length > 0 ? { field: key, options } : null;
+    };
+    return pick('region') ?? pick('location');
+  }
+
+  private syncOrderProvisioningLocationState(): void {
+    this.orderGeographyFieldKey = null;
+    this.orderLocationOptions = [];
+    this.orderProvisioningLocation = '';
+    if (!this.orderPlanId?.trim()) return;
+    combineLatest([
+      this.servicePlans$,
+      this.serviceTypesFacade.getServiceTypes$(),
+      this.serviceTypesFacade.getProviderDetails$(),
+    ])
+      .pipe(take(1))
+      .subscribe(([plans, serviceTypes, providerDetails]) => {
+        const plan = plans.find((p) => p.id === this.orderPlanId);
+        if (!plan) return;
+        const resolved = this.resolveOrderGeography(plan, serviceTypes ?? [], providerDetails ?? []);
+        if (!resolved) return;
+        this.orderGeographyFieldKey = resolved.field;
+        this.orderLocationOptions = resolved.options;
+        const defaults = plan.providerConfigDefaults ?? {};
+        const fromPlan = defaults[resolved.field];
+        const fromPlanStr = typeof fromPlan === 'string' ? fromPlan : '';
+        this.orderProvisioningLocation = resolved.options.includes(fromPlanStr)
+          ? fromPlanStr
+          : (resolved.options[0] ?? '');
+      });
   }
 
   onSubmitOrderPlan(): void {
@@ -366,6 +442,9 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       if (cfg.digitaloceanApiToken?.trim()) {
         requestedConfig['digitaloceanApiToken'] = cfg.digitaloceanApiToken.trim();
       }
+    }
+    if (this.orderGeographyFieldKey && this.orderProvisioningLocation?.trim()) {
+      requestedConfig[this.orderGeographyFieldKey] = this.orderProvisioningLocation.trim();
     }
     if (cfg.service === 'manager') {
       const hasGit =
@@ -491,6 +570,9 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   resetOrderRequestedConfig(): void {
+    this.orderGeographyFieldKey = null;
+    this.orderLocationOptions = [];
+    this.orderProvisioningLocation = '';
     this.authMethod.set('users');
     this.orderRequestedConfig = {
       service: 'controller',

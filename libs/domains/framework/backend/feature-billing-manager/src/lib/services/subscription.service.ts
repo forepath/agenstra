@@ -14,6 +14,11 @@ import {
   buildAgentManagerCloudInitUserData,
 } from '../utils/cloud-init/agent-manager.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
+import {
+  mirrorGeographyInConfig,
+  resolveProvisioningRegion,
+  stripGeographyFromRequestedConfig,
+} from '../utils/provider-location.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
@@ -59,11 +64,22 @@ export class SubscriptionService {
     const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
 
+    const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;
+    const sanitizedRequested = allowCustomerLocationSelection
+      ? { ...(requestedConfig ?? {}) }
+      : stripGeographyFromRequestedConfig(requestedConfig);
+
     const baseConfig = plan.providerConfigDefaults ?? {};
     const effectiveConfig: Record<string, unknown> = {
       ...(baseConfig || {}),
-      ...(requestedConfig ?? {}),
+      ...sanitizedRequested,
     };
+
+    const provider = serviceType.provider;
+    if (provider === 'hetzner' || provider === 'digital-ocean') {
+      const regionResolved = resolveProvisioningRegion(effectiveConfig, provider);
+      mirrorGeographyInConfig(effectiveConfig, regionResolved);
+    }
 
     const validationErrors = validateConfigSchema(serviceType.configSchema, effectiveConfig);
     if (validationErrors.length > 0) {
@@ -75,8 +91,7 @@ export class SubscriptionService {
       effectiveConfig.authenticationMethod = 'api-key';
     }
 
-    const provider = serviceType.provider;
-    const region = (effectiveConfig.region as string | undefined) ?? (provider === 'digital-ocean' ? 'fra1' : 'fsn1');
+    const region = resolveProvisioningRegion(effectiveConfig, provider);
     const serverType =
       (effectiveConfig.serverType as string | undefined) ?? (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11');
     const availability = await this.availabilityService.checkAvailability(provider, region, serverType);
@@ -87,7 +102,7 @@ export class SubscriptionService {
           userId,
           serviceTypeId: plan.serviceTypeId,
           planId,
-          requestedConfigSnapshot: requestedConfig ?? {},
+          requestedConfigSnapshot: sanitizedRequested,
           providerErrors: { reason: availability.reason },
           preferredAlternatives: availability.alternatives ?? {},
         });

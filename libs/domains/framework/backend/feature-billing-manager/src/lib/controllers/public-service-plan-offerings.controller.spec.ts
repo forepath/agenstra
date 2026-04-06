@@ -62,6 +62,7 @@ describe('PublicServicePlanOfferingsController', () => {
       billingIntervalValue: 1,
       totalPrice: 12,
       orderingHighlights: [{ icon: 'check', text: 'Included' }],
+      allowCustomerLocationSelection: false,
     });
   });
 

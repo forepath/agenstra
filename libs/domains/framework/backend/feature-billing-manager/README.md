@@ -4,7 +4,7 @@ Backend billing module providing subscription management, backorders, availabili
 
 ## Contents
 
-- Service types and plans (admin endpoints).
+- Service types and plans (admin endpoints), including optional per-plan customer geography selection when the provider schema supports it.
 - Subscription ordering, cancel, resume for authenticated users.
 - Backorder management for provider capacity failures.
 - Availability snapshots and pricing previews.
@@ -68,6 +68,8 @@ Usage records can be posted to `POST /usage/record` and will be included in invo
 
 **Server types endpoint:** `GET /service-types/providers/:providerId/server-types` returns server types with specs and pricing for the given provider (e.g. `hetzner`, `digital-ocean`). Used by the billing console to show a server type dropdown (name, cores, memory, disk, price) and to auto-set the plan base price when `configSchema.basePriceFromField` is `'serverType'`.
 
+**Customer location selection:** On each service plan, `allowCustomerLocationSelection` (default `false`) controls whether `POST /subscriptions` accepts `region` or `location` in `requestedConfig` to override `providerConfigDefaults`. The admin UI only shows this option when the service type’s merged schema defines `region` or `location` as a string with a non-empty `enum` (same rule as `providerConfigSchemaSupportsLocationSelection` in code). Setting the flag to `true` for other schemas returns 400. When the flag is `false`, geography keys are removed from `requestedConfig` before merging so clients cannot override the plan default. For Hetzner vs DigitalOcean, `region` and `location` are treated as aliases for provisioning geography; after merge, both keys are mirrored to the resolved value for availability and provisioning.
+
 ## Provisioning Config
 
 Subscription creation (`POST /subscriptions`) first checks that the customer billing profile is complete (see Customer
@@ -76,7 +78,7 @@ validated against the service type schema.
 For provisioning, the following provider-specific config keys are used:
 
 - `hetzner`:
-  - `region` (string, required by default schema; enum pre-populated in UI)
+  - `location` or `region` (string; registered default schema uses `location` with enum; values are aliases server-side)
   - `serverType` (string, required; options and price from GET .../server-types; selection can auto-set plan base price)
   - `firewallId` (number, optional)
 - `digital-ocean`:
@@ -136,3 +138,4 @@ the latest images and recreates containers so updates are applied. Failures are 
 - docs/auth-flow.mmd
 - docs/sequence-invoice-ninja-sync.mmd
 - docs/config-validation-flow.mmd
+- docs/customer-location-selection.md (plan flag, customer override rules, backorder retry)

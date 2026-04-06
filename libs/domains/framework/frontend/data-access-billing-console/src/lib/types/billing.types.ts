@@ -80,6 +80,7 @@ export interface ServicePlanResponse {
   marginFixed?: string | null;
   providerConfigDefaults: Record<string, unknown>;
   orderingHighlights: ServicePlanOrderingHighlight[];
+  allowCustomerLocationSelection: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -100,6 +101,7 @@ export interface CreateServicePlanDto {
   marginFixed?: string;
   providerConfigDefaults?: Record<string, unknown>;
   orderingHighlights?: ServicePlanOrderingHighlight[];
+  allowCustomerLocationSelection?: boolean;
   isActive?: boolean;
 }
 
@@ -117,6 +119,7 @@ export interface UpdateServicePlanDto {
   marginFixed?: string;
   providerConfigDefaults?: Record<string, unknown>;
   orderingHighlights?: ServicePlanOrderingHighlight[];
+  allowCustomerLocationSelection?: boolean;
   isActive?: boolean;
 }
 

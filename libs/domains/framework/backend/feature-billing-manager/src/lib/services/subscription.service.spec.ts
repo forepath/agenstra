@@ -404,6 +404,92 @@ describe('SubscriptionService', () => {
     expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '10.0.0.99');
   });
 
+  it('strips customer region override when allowCustomerLocationSelection is false', async () => {
+    (validateConfigSchema as jest.Mock).mockReturnValue([]);
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      allowCustomerLocationSelection: false,
+      providerConfigDefaults: {
+        region: 'fsn1',
+        serverType: 'cx23',
+        service: 'controller',
+        authenticationMethod: 'api-key',
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: {},
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', {
+      region: 'nbg1',
+      serverType: 'cx23',
+      service: 'controller',
+      authenticationMethod: 'api-key',
+    });
+
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23');
+  });
+
+  it('applies customer region override when allowCustomerLocationSelection is true', async () => {
+    (validateConfigSchema as jest.Mock).mockReturnValue([]);
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      allowCustomerLocationSelection: true,
+      providerConfigDefaults: {
+        region: 'fsn1',
+        serverType: 'cx23',
+        service: 'controller',
+        authenticationMethod: 'api-key',
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: {},
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', {
+      region: 'nbg1',
+      serverType: 'cx23',
+      service: 'controller',
+      authenticationMethod: 'api-key',
+    });
+
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'nbg1', 'cx23');
+  });
+
   it('throws BadRequestException when customer profile is null', async () => {
     (customerProfilesService.getByUserId as jest.Mock).mockResolvedValue(null);
     (customerProfilesService.isProfileComplete as jest.Mock).mockReturnValue(false);

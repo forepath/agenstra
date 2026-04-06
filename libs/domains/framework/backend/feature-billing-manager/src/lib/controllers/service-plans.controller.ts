@@ -1,4 +1,6 @@
+import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,16 +13,22 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { KeycloakRoles, UsersRoles, UserRole } from '@forepath/identity/backend';
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
 import { ServicePlanResponseDto } from '../dto/service-plan-response.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { ProviderRegistryService } from '../services/provider-registry.service';
+import { effectiveSchemaSupportsLocationSelection } from '../utils/provider-location.utils';
 
 @Controller('service-plans')
 export class ServicePlansController {
-  constructor(private readonly servicePlansRepository: ServicePlansRepository) {}
+  constructor(
+    private readonly servicePlansRepository: ServicePlansRepository,
+    private readonly serviceTypesRepository: ServiceTypesRepository,
+    private readonly providerRegistry: ProviderRegistryService,
+  ) {}
 
   @Get()
   async list(
@@ -45,6 +53,7 @@ export class ServicePlansController {
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
   async create(@Body() dto: CreateServicePlanDto): Promise<ServicePlanResponseDto> {
+    await this.assertAllowLocationAllowed(dto.serviceTypeId, dto.allowCustomerLocationSelection === true);
     const row = await this.servicePlansRepository.create({
       serviceTypeId: dto.serviceTypeId,
       name: dto.name,
@@ -60,6 +69,7 @@ export class ServicePlansController {
       marginFixed: dto.marginFixed,
       providerConfigDefaults: dto.providerConfigDefaults ?? {},
       orderingHighlights: dto.orderingHighlights ?? [],
+      allowCustomerLocationSelection: dto.allowCustomerLocationSelection ?? false,
       isActive: dto.isActive ?? true,
     });
     return this.mapToResponse(row);
@@ -72,6 +82,10 @@ export class ServicePlansController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateServicePlanDto,
   ): Promise<ServicePlanResponseDto> {
+    const existing = await this.servicePlansRepository.findByIdOrThrow(id);
+    if (dto.allowCustomerLocationSelection === true) {
+      await this.assertAllowLocationAllowed(existing.serviceTypeId, true);
+    }
     const row = await this.servicePlansRepository.update(id, {
       name: dto.name,
       description: dto.description,
@@ -86,6 +100,9 @@ export class ServicePlansController {
       marginFixed: dto.marginFixed,
       providerConfigDefaults: dto.providerConfigDefaults,
       ...(dto.orderingHighlights !== undefined ? { orderingHighlights: dto.orderingHighlights } : {}),
+      ...(dto.allowCustomerLocationSelection !== undefined
+        ? { allowCustomerLocationSelection: dto.allowCustomerLocationSelection }
+        : {}),
       isActive: dto.isActive,
     });
     return this.mapToResponse(row);
@@ -116,9 +133,21 @@ export class ServicePlansController {
       marginFixed: row.marginFixed,
       providerConfigDefaults: row.providerConfigDefaults ?? {},
       orderingHighlights: row.orderingHighlights ?? [],
+      allowCustomerLocationSelection: row.allowCustomerLocationSelection === true,
       isActive: row.isActive,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
+  }
+
+  private async assertAllowLocationAllowed(serviceTypeId: string, allow: boolean): Promise<void> {
+    if (!allow) return;
+    const serviceType = await this.serviceTypesRepository.findByIdOrThrow(serviceTypeId);
+    const providerDetail = this.providerRegistry.getProviders().find((p) => p.id === serviceType.provider);
+    if (!effectiveSchemaSupportsLocationSelection(serviceType.configSchema, providerDetail?.configSchema)) {
+      throw new BadRequestException(
+        'allowCustomerLocationSelection requires region or location with a string enum on the service type config schema or on the provider registered for this service type',
+      );
+    }
   }
 }

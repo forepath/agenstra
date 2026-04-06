@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { BackorderEntity, BackorderStatus } from '../entities/backorder.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
@@ -14,6 +14,12 @@ import {
   buildAgentManagerCloudInitConfigFromRequest,
   buildAgentManagerCloudInitUserData,
 } from '../utils/cloud-init/agent-manager.utils';
+import { validateConfigSchema } from '../utils/config-validation.utils';
+import {
+  mirrorGeographyInConfig,
+  resolveProvisioningRegion,
+  stripGeographyFromRequestedConfig,
+} from '../utils/provider-location.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 import { AvailabilityService } from './availability.service';
 import { BillingScheduleService } from './billing-schedule.service';
@@ -74,18 +80,30 @@ export class BackorderService {
     const plan = await this.servicePlansRepository.findByIdOrThrow(backorder.planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
 
+    const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;
+    const sanitizedSnapshot = allowCustomerLocationSelection
+      ? { ...(backorder.requestedConfigSnapshot ?? {}) }
+      : stripGeographyFromRequestedConfig(backorder.requestedConfigSnapshot);
+
     const effectiveConfig: Record<string, unknown> = {
       ...(plan.providerConfigDefaults ?? {}),
-      ...(backorder.requestedConfigSnapshot ?? {}),
+      ...sanitizedSnapshot,
     };
     const provider = serviceType.provider;
-    if (!effectiveConfig.region) {
-      effectiveConfig.region = provider === 'digital-ocean' ? 'fra1' : 'fsn1';
+    if (provider === 'hetzner' || provider === 'digital-ocean') {
+      const regionResolved = resolveProvisioningRegion(effectiveConfig, provider);
+      mirrorGeographyInConfig(effectiveConfig, regionResolved);
     }
     if (!effectiveConfig.serverType) {
       effectiveConfig.serverType = provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11';
     }
-    const region = effectiveConfig.region as string;
+
+    const validationErrors = validateConfigSchema(serviceType.configSchema, effectiveConfig);
+    if (validationErrors.length > 0) {
+      throw new BadRequestException(validationErrors.join('; '));
+    }
+
+    const region = resolveProvisioningRegion(effectiveConfig, provider);
     const serverType = effectiveConfig.serverType as string;
     const availability = await this.availabilityService.checkAvailability(provider, region, serverType);
 
@@ -139,7 +157,7 @@ export class BackorderService {
         const provisioningConfig = {
           name: hostname,
           serverType: effectiveConfig.serverType as string,
-          location: effectiveConfig.region as string,
+          location: region,
           firewallId: effectiveConfig.firewallId as number | undefined,
           userData,
         };

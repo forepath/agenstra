@@ -64,6 +64,7 @@ export class PublicServicePlanOfferingsController {
       billingIntervalValue: row.billingIntervalValue,
       totalPrice,
       orderingHighlights: row.orderingHighlights ?? [],
+      allowCustomerLocationSelection: row.allowCustomerLocationSelection === true,
     };
   }
 }

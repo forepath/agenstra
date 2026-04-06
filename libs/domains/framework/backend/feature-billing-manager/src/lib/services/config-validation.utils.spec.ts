@@ -24,4 +24,24 @@ describe('validateConfigSchema', () => {
     );
     expect(errors.length).toBe(0);
   });
+
+  it('returns error when string value is not in enum', () => {
+    const errors = validateConfigSchema(
+      {
+        properties: { region: { type: 'string', enum: ['fsn1', 'nbg1'] } },
+      },
+      { region: 'invalid' },
+    );
+    expect(errors.some((e) => e.includes('region'))).toBe(true);
+  });
+
+  it('returns no errors when string value matches enum', () => {
+    const errors = validateConfigSchema(
+      {
+        properties: { region: { type: 'string', enum: ['fsn1', 'nbg1'] } },
+      },
+      { region: 'nbg1' },
+    );
+    expect(errors.length).toBe(0);
+  });
 });

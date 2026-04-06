@@ -15,6 +15,7 @@ sequenceDiagram
     alt Profile missing or incomplete
         BillingAPI-->>User: 400 Customer billing profile must be complete
     else Profile complete
+        note over BillingAPI: Merge plan.providerConfigDefaults + requestedConfig; strip region/location from requestedConfig if plan.allowCustomerLocationSelection is false; mirror region/location for Hetzner/DO; validateConfigSchema (incl. enum)
         BillingAPI->>AvailabilityService: checkAvailability(provider, region, serverType)
         AvailabilityService->>HetznerAPI: GET /server_types + /limits
         HetznerAPI-->>AvailabilityService: availability + limits

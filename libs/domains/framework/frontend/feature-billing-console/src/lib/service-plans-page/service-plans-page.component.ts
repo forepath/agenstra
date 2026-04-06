@@ -108,6 +108,27 @@ export class ServicePlansPageComponent implements OnInit {
   }
 
   /** Resolve full provider config schema for a service type (for basePriceFromField etc.). */
+  /**
+   * True when the merged provider schema has region or location as string with a non-empty string enum (checkout UX).
+   */
+  supportsCustomerLocationSelection(
+    serviceTypes: ServiceTypeResponse[] | null,
+    providerDetails: ProviderDetail[] | null,
+    serviceTypeId: string,
+  ): boolean {
+    const full = this.getProviderSchemaFull(serviceTypes, providerDetails, serviceTypeId);
+    const props = full?.['properties'] as ConfigSchemaProperties | undefined;
+    if (!props) return false;
+    const ok = (key: 'region' | 'location'): boolean => {
+      const p = props[key];
+      if (!p || typeof p !== 'object') return false;
+      if (String(p.type) !== 'string') return false;
+      const e = p.enum;
+      return Array.isArray(e) && e.length > 0 && e.every((x) => typeof x === 'string');
+    };
+    return ok('region') || ok('location');
+  }
+
   getProviderSchemaFull(
     serviceTypes: ServiceTypeResponse[] | null,
     providerDetails: ProviderDetail[] | null,
@@ -192,6 +213,9 @@ export class ServicePlansPageComponent implements OnInit {
       }
     } else {
       this.currentServerTypes = [];
+    }
+    if (!this.supportsCustomerLocationSelection(serviceTypes, providerDetails, this.createForm.serviceTypeId)) {
+      this.createForm.allowCustomerLocationSelection = false;
     }
   }
 
@@ -333,6 +357,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginFixed: undefined,
       providerConfigDefaults: {},
       orderingHighlights: [],
+      allowCustomerLocationSelection: false,
       isActive: true,
     };
   }
@@ -353,6 +378,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginFixed: undefined,
       providerConfigDefaults: {},
       orderingHighlights: [],
+      allowCustomerLocationSelection: false,
       isActive: true,
     };
   }
@@ -427,6 +453,7 @@ export class ServicePlansPageComponent implements OnInit {
       orderingHighlights: plan.orderingHighlights?.length
         ? plan.orderingHighlights.map((h) => ({ icon: h.icon, text: h.text }))
         : [],
+      allowCustomerLocationSelection: plan.allowCustomerLocationSelection === true,
       isActive: plan.isActive,
     };
     this.typesAndProviders$.pipe(take(1)).subscribe((data) => {
@@ -462,6 +489,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginFixed: this.createForm.marginFixed?.trim() || undefined,
       providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
       orderingHighlights: orderingHighlights.length > 0 ? orderingHighlights : undefined,
+      allowCustomerLocationSelection: this.createForm.allowCustomerLocationSelection === true,
       isActive: this.createForm.isActive ?? true,
     });
   }
@@ -484,6 +512,7 @@ export class ServicePlansPageComponent implements OnInit {
       marginFixed: this.editForm.marginFixed?.trim() || undefined,
       providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
       orderingHighlights,
+      allowCustomerLocationSelection: this.editForm.allowCustomerLocationSelection,
       isActive: this.editForm.isActive,
     });
   }
