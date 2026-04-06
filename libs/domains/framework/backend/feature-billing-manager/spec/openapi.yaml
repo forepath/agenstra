@@ -1807,6 +1807,7 @@ components:
         - billingIntervalValue
         - totalPrice
         - orderingHighlights
+        - allowCustomerLocationSelection
       properties:
         id:
           type: string
@@ -1835,6 +1836,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ServicePlanOrderingHighlight'
+        allowCustomerLocationSelection:
+          type: boolean
+          description: When true, authenticated checkout may send region or location in subscription requestedConfig (schema must define a string enum for that field on the service type).
     CreateServicePlanDto:
       type: object
       required: [serviceTypeId, name, billingIntervalType, billingIntervalValue]
@@ -1882,6 +1886,9 @@ components:
           description: Ordered icon/text lines shown with the plan in addition to description.
         isActive:
           type: boolean
+        allowCustomerLocationSelection:
+          type: boolean
+          description: Requires service type schema with region or location string enum. Ignored when false or omitted.
     UpdateServicePlanDto:
       type: object
       properties:
@@ -1903,6 +1910,7 @@ components:
           items:
             $ref: '#/components/schemas/ServicePlanOrderingHighlight'
         isActive: { type: boolean }
+        allowCustomerLocationSelection: { type: boolean }
     ServicePlanResponse:
       type: object
       properties:
@@ -1925,6 +1933,9 @@ components:
           items:
             $ref: '#/components/schemas/ServicePlanOrderingHighlight'
           description: Ordered icon/text lines for display alongside description.
+        allowCustomerLocationSelection:
+          type: boolean
+          description: When true, POST /subscriptions may include region or location in requestedConfig to override plan defaults (values must match service type schema enum).
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
@@ -1952,6 +1963,7 @@ components:
       description: |
         Optional cloud-init and provisioning config merged with plan defaults.
         May also include provider-specific fields (e.g. serverType, location, firewallId for Hetzner).
+        Region or location overrides are accepted only when the plan has allowCustomerLocationSelection and the service type schema defines that field with an enum; otherwise they are ignored server-side.
         The FQDN (hostname.DNS_BASE_DOMAIN) is used for SSL certificates and CORS; DNS_BASE_DOMAIN
         defaults to spirde.com when not set.
         For service manager, disableSignup and provisioning tokens are ignored; authenticationMethod must be api-key or keycloak (not users).
@@ -1961,6 +1973,12 @@ components:
           type: string
           enum: [controller, manager]
           description: Product service - controller (full stack) or manager (agent manager only). Required when using Hetzner schema.
+        region:
+          type: string
+          description: DigitalOcean-style region; use the key matching the service type schema (region or location).
+        location:
+          type: string
+          description: Hetzner-style location; use the key matching the service type schema (region or location).
         authenticationMethod:
           type: string
           description: Authentication method (users, api-key, keycloak). Default users.

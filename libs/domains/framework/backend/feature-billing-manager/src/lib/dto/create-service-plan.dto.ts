@@ -85,4 +85,8 @@ export class CreateServicePlanDto {
   @IsOptional()
   @IsBoolean({ message: 'isActive must be a boolean' })
   isActive?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'allowCustomerLocationSelection must be a boolean' })
+  allowCustomerLocationSelection?: boolean;
 }

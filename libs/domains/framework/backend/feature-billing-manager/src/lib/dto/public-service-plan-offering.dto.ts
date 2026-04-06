@@ -12,4 +12,6 @@ export class PublicServicePlanOfferingDto {
   /** Customer-facing total (base + margin); margin breakdown is not exposed. */
   totalPrice!: number;
   orderingHighlights!: ServicePlanOrderingHighlight[];
+  /** When true, checkout UIs may offer region/location selection for this plan. */
+  allowCustomerLocationSelection!: boolean;
 }

@@ -1,6 +1,11 @@
+export interface ConfigSchemaProperty {
+  type?: 'string' | 'number' | 'boolean' | 'object' | string;
+  enum?: unknown[];
+}
+
 export interface ConfigSchema {
   required?: string[];
-  properties?: Record<string, { type?: 'string' | 'number' | 'boolean' | 'object' }>;
+  properties?: Record<string, ConfigSchemaProperty>;
 }
 
 export function validateConfigSchema(schema: ConfigSchema | undefined, config: Record<string, unknown>): string[] {
@@ -33,6 +38,16 @@ export function validateConfigSchema(schema: ConfigSchema | undefined, config: R
 
     if (type !== property.type) {
       errors.push(`Invalid type for config field ${key}: expected ${property.type}`);
+      continue;
+    }
+
+    const enumList = property.enum;
+    if (Array.isArray(enumList) && enumList.length > 0) {
+      const value = config[key];
+      const allowed = new Set(enumList);
+      if (!allowed.has(value)) {
+        errors.push(`Invalid value for config field ${key}: must be one of allowed options`);
+      }
     }
   }
 

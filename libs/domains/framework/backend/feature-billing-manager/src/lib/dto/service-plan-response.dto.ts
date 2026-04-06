@@ -16,6 +16,8 @@ export class ServicePlanResponseDto {
   marginFixed?: string;
   providerConfigDefaults!: Record<string, unknown>;
   orderingHighlights!: ServicePlanOrderingHighlight[];
+  /** When true, customers may override region/location in POST /subscriptions requestedConfig if the schema allows. */
+  allowCustomerLocationSelection!: boolean;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

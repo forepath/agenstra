@@ -1,5 +1,9 @@
 flowchart TB
-    Input["Requested Config"] --> Schema["Service Type Config Schema"]
-    Schema --> Validator["validateConfigSchema"]
+    Input["requestedConfig from client"] --> Sanitize["Strip region/location if plan disallows customer selection"]
+    PlanDefaults["plan.providerConfigDefaults"] --> Merge["Merged effectiveConfig"]
+    Sanitize --> Merge
+    Merge --> Mirror["Mirror region/location for Hetzner or digital-ocean"]
+    Mirror --> Schema["Service type configSchema"]
+    Schema --> Validator["validateConfigSchema types + enum"]
     Validator -->|Valid| Proceed["Provisioning + Subscription"]
     Validator -->|Invalid| Error["400 Validation Error"]

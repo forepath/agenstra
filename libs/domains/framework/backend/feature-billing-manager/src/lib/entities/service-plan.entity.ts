@@ -75,6 +75,9 @@ export class ServicePlanEntity {
   @Column({ type: 'boolean', name: 'is_active', default: true })
   isActive!: boolean;
 
+  @Column({ type: 'boolean', name: 'allow_customer_location_selection', default: false })
+  allowCustomerLocationSelection!: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
