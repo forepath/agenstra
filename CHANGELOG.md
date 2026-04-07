@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.43.0](https://github.com/forepath/agenstra/compare/v1.42.0...v1.43.0) (2026-04-07)
+
+
+### Features
+
+* deployment status gateway ([#275](https://github.com/forepath/agenstra/issues/275)) ([73095ed](https://github.com/forepath/agenstra/commit/73095ed3fa01f4be6c374f7060e4b60746a45a77))
+
 ## [1.42.0](https://github.com/forepath/agenstra/compare/v1.41.4...v1.42.0) (2026-04-06)
 
 
