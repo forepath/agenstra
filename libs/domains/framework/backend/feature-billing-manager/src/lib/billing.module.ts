@@ -1,4 +1,10 @@
-import { getAuthenticationMethod, KeycloakService, UserEntity } from '@forepath/identity/backend';
+import {
+  getAuthenticationMethod,
+  KeycloakService,
+  SocketAuthService,
+  UserEntity,
+  UsersRepository,
+} from '@forepath/identity/backend';
 import { EmailService } from '@forepath/shared/backend';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -66,6 +72,7 @@ import { SubscriptionRenewalReminderScheduler } from './services/subscription-re
 import { OpenPositionInvoiceScheduler } from './services/open-position-invoice.scheduler';
 import { SubscriptionItemUpdateScheduler } from './services/subscription-item-update.scheduler';
 import { SshExecutorService } from './services/ssh-executor.service';
+import { BillingStatusGateway } from './gateways/billing-status.gateway';
 
 const authMethod = getAuthenticationMethod();
 
@@ -304,6 +311,9 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     CustomerProfilesRepository,
     SubscriptionItemUpdateScheduler,
     SshExecutorService,
+    UsersRepository,
+    SocketAuthService,
+    BillingStatusGateway,
   ],
   exports: [
     AvailabilityService,

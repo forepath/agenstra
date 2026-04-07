@@ -39,6 +39,13 @@ export * from './lib/state/subscriptions/subscriptions.facade';
 export * from './lib/state/subscriptions/subscriptions.reducer';
 export * from './lib/state/subscriptions/subscriptions.selectors';
 
+// Billing dashboard WebSocket
+export * from './lib/state/billing-dashboard-socket/billing-dashboard-socket.actions';
+export * from './lib/state/billing-dashboard-socket/billing-dashboard-socket.effects';
+export * from './lib/state/billing-dashboard-socket/billing-dashboard-socket.facade';
+export * from './lib/state/billing-dashboard-socket/billing-dashboard-socket.reducer';
+export * from './lib/state/billing-dashboard-socket/billing-dashboard-socket.selectors';
+
 // Subscription Server Info State
 export * from './lib/state/subscription-server-info/subscription-server-info.actions';
 export * from './lib/state/subscription-server-info/subscription-server-info.effects';

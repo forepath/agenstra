@@ -9,6 +9,7 @@ export const environment: Environment = {
   billing: {
     restApiUrl: 'http://host.docker.internal:3200/api',
     frontendUrl: 'http://host.docker.internal:4500',
+    websocketUrl: 'http://host.docker.internal:8082/billing',
   },
   authentication: {
     /*

@@ -1,4 +1,5 @@
 import {
+  billingDashboardStatusPush,
   loadOverviewServerInfo,
   loadOverviewServerInfoFailure,
   loadOverviewServerInfoSuccess,
@@ -89,6 +90,69 @@ describe('subscriptionServerInfoReducer', () => {
       );
       expect(newState.serverInfoBySubscriptionId['sub-1']).toEqual(updated);
     });
+
+    it('should clear actionInProgress when clearActionInProgress is not false', () => {
+      const state: SubscriptionServerInfoState = {
+        ...initialSubscriptionServerInfoState,
+        actionInProgress: { 'sub-1': 'start' },
+      };
+      const newState = subscriptionServerInfoReducer(
+        state,
+        refreshSubscriptionServerInfoSuccess({
+          subscriptionId: 'sub-1',
+          serverInfo: mockServerInfo,
+          clearActionInProgress: true,
+        }),
+      );
+      expect(newState.actionInProgress['sub-1']).toBeUndefined();
+    });
+
+    it('should not clear actionInProgress when clearActionInProgress is false', () => {
+      const state: SubscriptionServerInfoState = {
+        ...initialSubscriptionServerInfoState,
+        actionInProgress: { 'sub-1': 'start' },
+      };
+      const newState = subscriptionServerInfoReducer(
+        state,
+        refreshSubscriptionServerInfoSuccess({
+          subscriptionId: 'sub-1',
+          serverInfo: mockServerInfo,
+          clearActionInProgress: false,
+        }),
+      );
+      expect(newState.actionInProgress['sub-1']).toBe('start');
+    });
+  });
+
+  describe('billingDashboardStatusPush', () => {
+    it('should clear actionInProgress for subscriptions included in the push', () => {
+      const state: SubscriptionServerInfoState = {
+        ...initialSubscriptionServerInfoState,
+        actionInProgress: { 'sub-1': 'restart', 'sub-2': 'stop' },
+        serverInfoBySubscriptionId: {
+          'sub-1': mockServerInfo,
+          'sub-2': { ...mockServerInfo, publicIp: '5.5.5.5' },
+        },
+      };
+      const newState = subscriptionServerInfoReducer(
+        state,
+        billingDashboardStatusPush({
+          generatedAt: '2025-01-01T00:00:00.000Z',
+          items: [
+            {
+              subscriptionId: 'sub-1',
+              itemId: 'item-1',
+              service: 'controller',
+              name: 's1',
+              publicIp: '1.1.1.1',
+              status: 'running',
+            },
+          ],
+        }),
+      );
+      expect(newState.actionInProgress['sub-1']).toBeUndefined();
+      expect(newState.actionInProgress['sub-2']).toBe('stop');
+    });
   });
 
   describe('startServer', () => {
@@ -102,7 +166,7 @@ describe('subscriptionServerInfoReducer', () => {
   });
 
   describe('startServerSuccess', () => {
-    it('should clear actionInProgress and set server info status to running', () => {
+    it('should keep actionInProgress until a status push and set server info status to running', () => {
       const state: SubscriptionServerInfoState = {
         ...initialSubscriptionServerInfoState,
         actionInProgress: { 'sub-1': 'start' },
@@ -114,7 +178,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         startServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
-      expect(newState.actionInProgress['sub-1']).toBeUndefined();
+      expect(newState.actionInProgress['sub-1']).toBe('start');
       expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('running');
     });
 
@@ -138,7 +202,7 @@ describe('subscriptionServerInfoReducer', () => {
       expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('active');
     });
 
-    it('should only clear actionInProgress when subscription has no server info', () => {
+    it('should leave actionInProgress when subscription has no server info', () => {
       const state: SubscriptionServerInfoState = {
         ...initialSubscriptionServerInfoState,
         actionInProgress: { 'sub-1': 'start' },
@@ -147,7 +211,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         startServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
-      expect(newState.actionInProgress['sub-1']).toBeUndefined();
+      expect(newState.actionInProgress['sub-1']).toBe('start');
       expect(newState.serverInfoBySubscriptionId).toEqual({});
     });
   });
@@ -177,7 +241,7 @@ describe('subscriptionServerInfoReducer', () => {
   });
 
   describe('stopServerSuccess', () => {
-    it('should clear actionInProgress and set server info status to off', () => {
+    it('should keep actionInProgress until a status push and set server info status to off', () => {
       const state: SubscriptionServerInfoState = {
         ...initialSubscriptionServerInfoState,
         actionInProgress: { 'sub-1': 'stop' },
@@ -189,11 +253,11 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         stopServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
-      expect(newState.actionInProgress['sub-1']).toBeUndefined();
+      expect(newState.actionInProgress['sub-1']).toBe('stop');
       expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('off');
     });
 
-    it('should only clear actionInProgress when subscription has no server info', () => {
+    it('should leave actionInProgress when subscription has no server info', () => {
       const state: SubscriptionServerInfoState = {
         ...initialSubscriptionServerInfoState,
         actionInProgress: { 'sub-1': 'stop' },
@@ -202,7 +266,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         stopServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
-      expect(newState.actionInProgress['sub-1']).toBeUndefined();
+      expect(newState.actionInProgress['sub-1']).toBe('stop');
       expect(newState.serverInfoBySubscriptionId).toEqual({});
     });
   });
@@ -218,7 +282,7 @@ describe('subscriptionServerInfoReducer', () => {
   });
 
   describe('restartServerSuccess', () => {
-    it('should clear actionInProgress for subscription', () => {
+    it('should not clear actionInProgress (cleared on next billing status push)', () => {
       const state: SubscriptionServerInfoState = {
         ...initialSubscriptionServerInfoState,
         actionInProgress: { 'sub-1': 'restart' },
@@ -227,7 +291,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         restartServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
-      expect(newState.actionInProgress['sub-1']).toBeUndefined();
+      expect(newState.actionInProgress['sub-1']).toBe('restart');
     });
   });
 });

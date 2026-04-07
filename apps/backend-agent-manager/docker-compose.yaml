@@ -22,20 +22,21 @@ services:
     container_name: agent-manager-api
     environment:
       # Backend API configuration
-      HOST: 0.0.0.0
-      PORT: 3000
-      WEBSOCKET_PORT: 8080
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-3000}
+      WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8080}
       WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-agents}
-      NODE_ENV: development
+      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+      NODE_ENV: ${NODE_ENV:-development}
       # Cursor agent configuration
       CURSOR_API_KEY: ${CURSOR_API_KEY:-}
       AGENT_DEFAULT_IMAGE: ${AGENT_DEFAULT_IMAGE:-ghcr.io/forepath/agenstra-manager-worker:latest}
       # Database configuration
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_DATABASE: postgres
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_DATABASE: ${DB_DATABASE:-postgres}
       # Static API key authentication configuration
       STATIC_API_KEY: ${STATIC_API_KEY:-}
       # GIT repository configuration
@@ -60,8 +61,8 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
       KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
     ports:
-      - '3000:3000'
-      - '8080:8080'
+      - '${PORT:-3000}:${PORT:-3000}'
+      - '${WEBSOCKET_PORT:-8080}:${WEBSOCKET_PORT:-8080}'
     volumes:
       # Mount Docker socket for Docker-in-Docker functionality
       - /var/run/docker.sock:/var/run/docker.sock

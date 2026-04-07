@@ -4,6 +4,7 @@ Backend billing module providing subscription management, backorders, availabili
 
 ## Contents
 
+- WebSocket dashboard status stream: see [`spec/asyncapi.yaml`](spec/asyncapi.yaml) (namespace `billing`, permission-locked; mirrors REST subscription ownership).
 - Service types and plans (admin endpoints), including optional per-plan customer geography selection when the provider schema supports it.
 - Subscription ordering, cancel, resume for authenticated users.
 - Backorder management for provider capacity failures.
@@ -36,6 +37,10 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 - SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL (optional; default 86400000 ms = 24 hours; SSH update scheduler)
 - CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID (for DNS A record creation on provisioned servers)
 - DNS_BASE_DOMAIN (optional; default `spirde.com`) – base domain for FQDN in SSL certificates and CORS
+- `WEBSOCKET_PORT` (optional; default `8082`) – Socket.IO port for the billing status gateway (HTTP REST stays on `PORT`, default 3200)
+- `WEBSOCKET_NAMESPACE` (optional; default `billing`) – Socket.IO namespace path segment
+- `STATUS_POLL_INTERVAL` (optional; default `15000`) – default dashboard status poll interval in **milliseconds**; optional `subscribeDashboardStatus` body field `pollIntervalMs` is clamped between 10s and 120s
+- `WEBSOCKET_CORS_ORIGIN` (optional; default `*`) – Socket.IO CORS `origin` (same pattern as agent controller / agent manager)
 
 ## Users Authentication
 
