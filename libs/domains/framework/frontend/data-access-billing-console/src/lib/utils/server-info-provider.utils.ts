@@ -45,6 +45,15 @@ export function isBillingServerOff(serverInfo: Pick<ServerInfoResponse, 'status'
 }
 
 /**
+ * True when the status badge shows the hourglass — neither clearly online nor off (e.g. transitioning).
+ */
+export function isBillingServerStatusTransitional(
+  serverInfo: Pick<ServerInfoResponse, 'status' | 'metadata'>,
+): boolean {
+  return !isBillingServerOnline(serverInfo) && !isBillingServerOff(serverInfo);
+}
+
+/**
  * Whether the UI may offer "start" (power on). Archive droplets are not startable from this flow.
  */
 export function isBillingServerStartable(serverInfo: Pick<ServerInfoResponse, 'status' | 'metadata'>): boolean {

@@ -5,6 +5,7 @@ import {
   isBillingServerOff,
   isBillingServerOnline,
   isBillingServerStartable,
+  isBillingServerStatusTransitional,
   resolveServerInfoProvider,
 } from './server-info-provider.utils';
 
@@ -62,6 +63,24 @@ describe('server-info-provider.utils', () => {
       expect(isBillingServerStartable(info({ status: 'archive', metadata: { provider: 'digital-ocean' } }))).toBe(
         false,
       );
+    });
+  });
+
+  describe('isBillingServerStatusTransitional', () => {
+    it('should be true when neither online nor off for the provider', () => {
+      expect(isBillingServerStatusTransitional(info({ status: 'new', metadata: { provider: 'digital-ocean' } }))).toBe(
+        true,
+      );
+      expect(isBillingServerStatusTransitional(info({ status: 'starting', metadata: { provider: 'hetzner' } }))).toBe(
+        true,
+      );
+    });
+
+    it('should be false when online or off', () => {
+      expect(
+        isBillingServerStatusTransitional(info({ status: 'active', metadata: { provider: 'digital-ocean' } })),
+      ).toBe(false);
+      expect(isBillingServerStatusTransitional(info({ status: 'off', metadata: { provider: 'hetzner' } }))).toBe(false);
     });
   });
 

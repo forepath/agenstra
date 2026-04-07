@@ -9,7 +9,6 @@ import {
   refreshSubscriptionServerInfoSuccess,
   restartServer,
   restartServerFailure,
-  restartServerSuccess,
   startServer,
   startServerFailure,
   startServerSuccess,
@@ -92,6 +91,7 @@ export const subscriptionServerInfoReducer = createReducer(
     const serverInfoBySubscriptionId = { ...state.serverInfoBySubscriptionId };
     const activeItemIdBySubscriptionId = { ...state.activeItemIdBySubscriptionId };
     const serviceBySubscriptionId = { ...state.serviceBySubscriptionId };
+    const actionInProgress = { ...state.actionInProgress };
     const history = [...state.billingStatusHistory];
     for (const item of items) {
       serverInfoBySubscriptionId[item.subscriptionId] = {
@@ -105,6 +105,7 @@ export const subscriptionServerInfoReducer = createReducer(
       };
       activeItemIdBySubscriptionId[item.subscriptionId] = item.itemId;
       serviceBySubscriptionId[item.subscriptionId] = item.service;
+      delete actionInProgress[item.subscriptionId];
       history.push({
         generatedAt,
         subscriptionId: item.subscriptionId,
@@ -118,21 +119,27 @@ export const subscriptionServerInfoReducer = createReducer(
       serverInfoBySubscriptionId,
       activeItemIdBySubscriptionId,
       serviceBySubscriptionId,
+      actionInProgress,
       billingStatusHistory,
       loading: false,
       error: null,
     };
   }),
-  on(refreshSubscriptionServerInfoSuccess, (state, { subscriptionId, serverInfo }) => ({
-    ...state,
-    serverInfoBySubscriptionId: { ...state.serverInfoBySubscriptionId, [subscriptionId]: serverInfo },
-  })),
+  on(refreshSubscriptionServerInfoSuccess, (state, { subscriptionId, serverInfo, clearActionInProgress }) => {
+    const next: SubscriptionServerInfoState = {
+      ...state,
+      serverInfoBySubscriptionId: { ...state.serverInfoBySubscriptionId, [subscriptionId]: serverInfo },
+    };
+    if (clearActionInProgress !== false) {
+      next.actionInProgress = setActionInProgress(state, subscriptionId, null);
+    }
+    return next;
+  }),
   on(startServer, (state, { subscriptionId }) => ({
     ...state,
     actionInProgress: setActionInProgress(state, subscriptionId, 'start'),
   })),
   on(startServerSuccess, (state, { subscriptionId }) => {
-    const nextActionInProgress = setActionInProgress(state, subscriptionId, null);
     const existing = state.serverInfoBySubscriptionId[subscriptionId];
     const serverInfoBySubscriptionId = existing
       ? {
@@ -143,7 +150,7 @@ export const subscriptionServerInfoReducer = createReducer(
           },
         }
       : state.serverInfoBySubscriptionId;
-    return { ...state, actionInProgress: nextActionInProgress, serverInfoBySubscriptionId };
+    return { ...state, serverInfoBySubscriptionId };
   }),
   on(startServerFailure, (state, { subscriptionId }) => ({
     ...state,
@@ -154,12 +161,11 @@ export const subscriptionServerInfoReducer = createReducer(
     actionInProgress: setActionInProgress(state, subscriptionId, 'stop'),
   })),
   on(stopServerSuccess, (state, { subscriptionId }) => {
-    const nextActionInProgress = setActionInProgress(state, subscriptionId, null);
     const existing = state.serverInfoBySubscriptionId[subscriptionId];
     const serverInfoBySubscriptionId = existing
       ? { ...state.serverInfoBySubscriptionId, [subscriptionId]: { ...existing, status: 'off' } }
       : state.serverInfoBySubscriptionId;
-    return { ...state, actionInProgress: nextActionInProgress, serverInfoBySubscriptionId };
+    return { ...state, serverInfoBySubscriptionId };
   }),
   on(stopServerFailure, (state, { subscriptionId }) => ({
     ...state,
@@ -168,10 +174,6 @@ export const subscriptionServerInfoReducer = createReducer(
   on(restartServer, (state, { subscriptionId }) => ({
     ...state,
     actionInProgress: setActionInProgress(state, subscriptionId, 'restart'),
-  })),
-  on(restartServerSuccess, (state, { subscriptionId }) => ({
-    ...state,
-    actionInProgress: setActionInProgress(state, subscriptionId, null),
   })),
   on(restartServerFailure, (state, { subscriptionId }) => ({
     ...state,

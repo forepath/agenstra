@@ -59,7 +59,12 @@ export const restartServerFailure = createAction(
 
 export const refreshSubscriptionServerInfoSuccess = createAction(
   '[Subscription Server Info] Refresh Subscription Server Info Success',
-  props<{ subscriptionId: string; serverInfo: ServerInfoResponse }>(),
+  props<{
+    subscriptionId: string;
+    serverInfo: ServerInfoResponse;
+    /** When false, keep server action loading until a WebSocket status push. Default: clear pending action (REST-only). */
+    clearActionInProgress?: boolean;
+  }>(),
 );
 
 export const billingDashboardStatusPush = createAction(

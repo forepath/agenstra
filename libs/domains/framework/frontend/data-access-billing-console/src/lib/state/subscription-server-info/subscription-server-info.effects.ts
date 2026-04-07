@@ -1,6 +1,8 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
+import type { Environment } from '@forepath/framework/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable, catchError, forkJoin, from, map, mergeMap, of, switchMap, take } from 'rxjs';
 import { SubscriptionItemsService } from '../../services/subscription-items.service';
 import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
@@ -113,23 +115,27 @@ function serverControlEffect(
   failureAction: typeof startServerFailure | typeof stopServerFailure | typeof restartServerFailure,
   apiCall: (subscriptionId: string, itemId: string) => Observable<unknown>,
   subscriptionItemsService: SubscriptionItemsService,
+  environment: Environment,
 ) {
+  const clearActionInProgressOnRefresh = !environment.billing.websocketUrl?.trim();
   return (actions$: Actions) =>
     actions$.pipe(
       ofType(actionType),
       switchMap(({ subscriptionId, itemId }) =>
         apiCall(subscriptionId, itemId).pipe(
           switchMap(() =>
-            subscriptionItemsService
-              .getServerInfo(subscriptionId, itemId)
-              .pipe(
-                mergeMap((serverInfo) =>
-                  from([
-                    successAction({ subscriptionId, itemId }),
-                    refreshSubscriptionServerInfoSuccess({ subscriptionId, serverInfo }),
-                  ]),
-                ),
+            subscriptionItemsService.getServerInfo(subscriptionId, itemId).pipe(
+              mergeMap((serverInfo) =>
+                from([
+                  successAction({ subscriptionId, itemId }),
+                  refreshSubscriptionServerInfoSuccess({
+                    subscriptionId,
+                    serverInfo,
+                    clearActionInProgress: clearActionInProgressOnRefresh,
+                  }),
+                ]),
               ),
+            ),
           ),
           catchError((error) => of(failureAction({ subscriptionId, error: normalizeError(error) }))),
         ),
@@ -140,6 +146,7 @@ function serverControlEffect(
 export function startServerEffect(
   actions$: Actions,
   subscriptionItemsService: SubscriptionItemsService,
+  environment: Environment,
 ): Observable<Action> {
   return serverControlEffect(
     startServer,
@@ -147,12 +154,14 @@ export function startServerEffect(
     startServerFailure,
     (subId, itemId) => subscriptionItemsService.startServer(subId, itemId),
     subscriptionItemsService,
+    environment,
   )(actions$);
 }
 
 export function stopServerEffect(
   actions$: Actions,
   subscriptionItemsService: SubscriptionItemsService,
+  environment: Environment,
 ): Observable<Action> {
   return serverControlEffect(
     stopServer,
@@ -160,12 +169,14 @@ export function stopServerEffect(
     stopServerFailure,
     (subId, itemId) => subscriptionItemsService.stopServer(subId, itemId),
     subscriptionItemsService,
+    environment,
   )(actions$);
 }
 
 export function restartServerEffect(
   actions$: Actions,
   subscriptionItemsService: SubscriptionItemsService,
+  environment: Environment,
 ): Observable<Action> {
   return serverControlEffect(
     restartServer,
@@ -173,21 +184,31 @@ export function restartServerEffect(
     restartServerFailure,
     (subId, itemId) => subscriptionItemsService.restartServer(subId, itemId),
     subscriptionItemsService,
+    environment,
   )(actions$);
 }
 
 export const startServer$ = createEffect(
-  (actions$ = inject(Actions), subscriptionItemsService = inject(SubscriptionItemsService)) =>
-    startServerEffect(actions$, subscriptionItemsService),
+  (
+    actions$ = inject(Actions),
+    subscriptionItemsService = inject(SubscriptionItemsService),
+    environment = inject<Environment>(ENVIRONMENT),
+  ) => startServerEffect(actions$, subscriptionItemsService, environment),
   { functional: true },
 );
 export const stopServer$ = createEffect(
-  (actions$ = inject(Actions), subscriptionItemsService = inject(SubscriptionItemsService)) =>
-    stopServerEffect(actions$, subscriptionItemsService),
+  (
+    actions$ = inject(Actions),
+    subscriptionItemsService = inject(SubscriptionItemsService),
+    environment = inject<Environment>(ENVIRONMENT),
+  ) => stopServerEffect(actions$, subscriptionItemsService, environment),
   { functional: true },
 );
 export const restartServer$ = createEffect(
-  (actions$ = inject(Actions), subscriptionItemsService = inject(SubscriptionItemsService)) =>
-    restartServerEffect(actions$, subscriptionItemsService),
+  (
+    actions$ = inject(Actions),
+    subscriptionItemsService = inject(SubscriptionItemsService),
+    environment = inject<Environment>(ENVIRONMENT),
+  ) => restartServerEffect(actions$, subscriptionItemsService, environment),
   { functional: true },
 );

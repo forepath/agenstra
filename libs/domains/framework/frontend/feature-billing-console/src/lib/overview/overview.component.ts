@@ -11,6 +11,7 @@ import {
   isBillingServerOff,
   isBillingServerOnline,
   isBillingServerStartable,
+  isBillingServerStatusTransitional,
   SubscriptionServerInfoFacade,
   SubscriptionsFacade,
 } from '@forepath/framework/frontend/data-access-billing-console';
@@ -67,6 +68,7 @@ export class OverviewComponent implements OnInit {
   readonly isServerOnline = isBillingServerOnline;
   readonly isServerOff = isBillingServerOff;
   readonly isServerStartable = isBillingServerStartable;
+  readonly isServerStatusTransitional = isBillingServerStatusTransitional;
   readonly serverLocationLabel = getBillingServerLocationLabel;
 
   ngOnInit(): void {

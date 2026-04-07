@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
+import type { Environment } from '@forepath/framework/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { of, throwError } from 'rxjs';
 import { SubscriptionItemsService } from '../../services/subscription-items.service';
 import {
@@ -24,6 +26,10 @@ import {
   stopServerEffect,
 } from './subscription-server-info.effects';
 import type { ServerInfoResponse, SubscriptionItemResponse, SubscriptionResponse } from '../../types/billing.types';
+
+function mockBillingEnvironment(websocketUrl?: string): Environment {
+  return { billing: { restApiUrl: '', frontendUrl: '', websocketUrl } } as Environment;
+}
 
 describe('Subscription Server Info Effects', () => {
   let actions$: Actions;
@@ -69,6 +75,7 @@ describe('Subscription Server Info Effects', () => {
       providers: [
         provideMockActions(() => actions$),
         { provide: SubscriptionItemsService, useValue: subscriptionItemsService },
+        { provide: ENVIRONMENT, useValue: mockBillingEnvironment() },
       ],
     });
 
@@ -176,12 +183,16 @@ describe('Subscription Server Info Effects', () => {
       actions$ = of(startServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
       const results: unknown[] = [];
-      startServerEffect(actions$, subscriptionItemsService).subscribe({
+      startServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe({
         next: (r) => results.push(r),
         complete: () => {
           expect(results).toContainEqual(startServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }));
           expect(results).toContainEqual(
-            refreshSubscriptionServerInfoSuccess({ subscriptionId: 'sub-1', serverInfo: mockServerInfo }),
+            refreshSubscriptionServerInfoSuccess({
+              subscriptionId: 'sub-1',
+              serverInfo: mockServerInfo,
+              clearActionInProgress: true,
+            }),
           );
           expect(subscriptionItemsService.startServer).toHaveBeenCalledWith('sub-1', 'item-1');
           expect(subscriptionItemsService.getServerInfo).toHaveBeenCalledWith('sub-1', 'item-1');
@@ -194,9 +205,34 @@ describe('Subscription Server Info Effects', () => {
       subscriptionItemsService.startServer.mockReturnValue(throwError(() => new Error('Start failed')));
       actions$ = of(startServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
-      startServerEffect(actions$, subscriptionItemsService).subscribe((result) => {
+      startServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe((result) => {
         expect(result).toEqual(startServerFailure({ subscriptionId: 'sub-1', error: 'Start failed' }));
         done();
+      });
+    });
+
+    it('should dispatch refresh with clearActionInProgress false when billing websocket URL is set', (done) => {
+      subscriptionItemsService.startServer.mockReturnValue(of({ success: true }));
+      subscriptionItemsService.getServerInfo.mockReturnValue(of(mockServerInfo));
+      actions$ = of(startServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
+
+      const results: unknown[] = [];
+      startServerEffect(
+        actions$,
+        subscriptionItemsService,
+        mockBillingEnvironment('wss://billing.example/ws'),
+      ).subscribe({
+        next: (r) => results.push(r),
+        complete: () => {
+          expect(results).toContainEqual(
+            refreshSubscriptionServerInfoSuccess({
+              subscriptionId: 'sub-1',
+              serverInfo: mockServerInfo,
+              clearActionInProgress: false,
+            }),
+          );
+          done();
+        },
       });
     });
   });
@@ -208,12 +244,16 @@ describe('Subscription Server Info Effects', () => {
       actions$ = of(stopServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
       const results: unknown[] = [];
-      stopServerEffect(actions$, subscriptionItemsService).subscribe({
+      stopServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe({
         next: (r) => results.push(r),
         complete: () => {
           expect(results).toContainEqual(stopServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }));
           expect(results).toContainEqual(
-            refreshSubscriptionServerInfoSuccess({ subscriptionId: 'sub-1', serverInfo: mockServerInfo }),
+            refreshSubscriptionServerInfoSuccess({
+              subscriptionId: 'sub-1',
+              serverInfo: mockServerInfo,
+              clearActionInProgress: true,
+            }),
           );
           done();
         },
@@ -224,7 +264,7 @@ describe('Subscription Server Info Effects', () => {
       subscriptionItemsService.stopServer.mockReturnValue(throwError(() => new Error('Stop failed')));
       actions$ = of(stopServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
-      stopServerEffect(actions$, subscriptionItemsService).subscribe((result) => {
+      stopServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe((result) => {
         expect(result).toEqual(stopServerFailure({ subscriptionId: 'sub-1', error: 'Stop failed' }));
         done();
       });
@@ -238,12 +278,16 @@ describe('Subscription Server Info Effects', () => {
       actions$ = of(restartServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
       const results: unknown[] = [];
-      restartServerEffect(actions$, subscriptionItemsService).subscribe({
+      restartServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe({
         next: (r) => results.push(r),
         complete: () => {
           expect(results).toContainEqual(restartServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }));
           expect(results).toContainEqual(
-            refreshSubscriptionServerInfoSuccess({ subscriptionId: 'sub-1', serverInfo: mockServerInfo }),
+            refreshSubscriptionServerInfoSuccess({
+              subscriptionId: 'sub-1',
+              serverInfo: mockServerInfo,
+              clearActionInProgress: true,
+            }),
           );
           done();
         },
@@ -254,7 +298,7 @@ describe('Subscription Server Info Effects', () => {
       subscriptionItemsService.restartServer.mockReturnValue(throwError(() => new Error('Restart failed')));
       actions$ = of(restartServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
-      restartServerEffect(actions$, subscriptionItemsService).subscribe((result) => {
+      restartServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe((result) => {
         expect(result).toEqual(restartServerFailure({ subscriptionId: 'sub-1', error: 'Restart failed' }));
         done();
       });
