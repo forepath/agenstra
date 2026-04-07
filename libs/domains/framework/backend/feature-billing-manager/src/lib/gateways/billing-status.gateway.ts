@@ -20,9 +20,9 @@ const MIN_POLL_MS = 10_000;
 const MAX_POLL_MS = 120_000;
 
 function defaultPollIntervalMs(): number {
-  const raw = parseInt(process.env.STATUS_POLL_INTERVAL_MS || '30000', 10);
+  const raw = parseInt(process.env.STATUS_POLL_INTERVAL || '15000', 10);
   if (Number.isNaN(raw)) {
-    return 30_000;
+    return 15_000;
   }
   return Math.min(MAX_POLL_MS, Math.max(MIN_POLL_MS, raw));
 }
@@ -59,9 +59,16 @@ interface SubscribeDashboardStatusPayload {
 
 type BillingSocket = Socket & { data: { userInfo?: SocketUserInfo } };
 
+/**
+ * WebSocket gateway for billing status updates.
+ * Handles WebSocket connections, authentication, and billing status updates.
+ * Authenticates sessions exclusively against the database-backed billing management system.
+ */
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8082', 10), {
   namespace: process.env.WEBSOCKET_NAMESPACE || 'billing',
-  cors: { origin: '*' },
+  cors: {
+    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+  },
 })
 export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

@@ -2,8 +2,8 @@
 # Build the docker image with `npx nx run backend-billing-manager:api-container-image`.
 # Tip: Modify "api-container-image" options in project.json to change docker build args.
 #
-# Run the container with `nx docker:run backend-billing-manager -p 3200:3200`.
-# Exposes API on port 3200.
+# Run the container with `nx docker:run backend-billing-manager -p 3200:3200 -p 8082:8082`.
+# Exposes API on port 3200 and WebSocket on port 8082.
 # Uses debian:trixie-slim for smaller image size (~80MB reduction vs full trixie).
 #
 FROM docker.io/debian:trixie-slim
@@ -76,8 +76,9 @@ ENV RATE_LIMIT_LIMIT=100
 # Set working directory
 WORKDIR /app
 
-# Expose ports for the backend API
+# Expose ports for the backend API and WebSocket
 EXPOSE ${PORT}
+EXPOSE ${WEBSOCKET_PORT}
 
 # Install all system dependencies in a single layer for better caching
 # Note: trixie-slim may not include all packages, so we explicitly install them

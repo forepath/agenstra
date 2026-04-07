@@ -4,12 +4,12 @@ services:
     container_name: billing-console-server
     environment:
       # Frontend server configuration
-      HOST: 0.0.0.0
-      PORT: 4500
-      NODE_ENV: production
-      DEFAULT_LOCALE: en
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-4500}
+      NODE_ENV: ${NODE_ENV:-production}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
     ports:
-      - '4500:4500'
+      - '${PORT:-4500}:${PORT:-4500}'
     networks:
       - billing-console-network
     restart: unless-stopped

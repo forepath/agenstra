@@ -14,8 +14,8 @@ info:
     connection that subscribed. Subscription IDs are chosen only from the authenticated user's subscriptions on each
     poll tick; client-supplied subscription lists are not trusted for authorization.
 
-    Poll interval requested by the client is clamped server-side (10s–120s). Default interval comes from
-    `STATUS_POLL_INTERVAL_MS` (default 30000).
+    Poll interval requested by the client (`pollIntervalMs` on subscribe) is clamped server-side (10s–120s). If omitted,
+    the server uses the `STATUS_POLL_INTERVAL` environment variable in milliseconds (default 15000).
 servers:
   local:
     host: localhost:8082
@@ -86,7 +86,9 @@ components:
         properties:
           pollIntervalMs:
             type: integer
-            description: Desired interval in milliseconds (server clamps to 10000–120000).
+            description: >
+              Desired interval in milliseconds. Server clamps to 10000–120000. If omitted, uses `STATUS_POLL_INTERVAL`
+              (default 15000 ms).
     UnsubscribeDashboardStatus:
       name: UnsubscribeDashboardStatus
       title: Unsubscribe from dashboard status stream

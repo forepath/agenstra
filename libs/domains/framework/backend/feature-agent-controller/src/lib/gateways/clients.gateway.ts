@@ -38,9 +38,16 @@ interface ForwardPayload {
   agentId?: string;
 }
 
+/**
+ * WebSocket gateway for client context management.
+ * Handles WebSocket connections, authentication, and client context setup.
+ * Authenticates sessions exclusively against the database-backed client management system.
+ */
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8081'), {
   namespace: process.env.WEBSOCKET_NAMESPACE || 'clients',
-  cors: { origin: '*' },
+  cors: {
+    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+  },
 })
 export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

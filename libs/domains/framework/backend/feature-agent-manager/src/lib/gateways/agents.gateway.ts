@@ -192,7 +192,7 @@ const createErrorResponse = (message: string, code?: string, details?: string): 
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8080'), {
   namespace: process.env.WEBSOCKET_NAMESPACE || 'agents',
   cors: {
-    origin: '*', // adjust for production
+    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
   },
   connectionStateRecovery: {
     maxDisconnectionDuration: parseInt(process.env.SOCKET_MAX_DISCONNECTION_DURATION || '120000'), // 2 minutes default

@@ -39,7 +39,8 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 - DNS_BASE_DOMAIN (optional; default `spirde.com`) – base domain for FQDN in SSL certificates and CORS
 - `WEBSOCKET_PORT` (optional; default `8082`) – Socket.IO port for the billing status gateway (HTTP REST stays on `PORT`, default 3200)
 - `WEBSOCKET_NAMESPACE` (optional; default `billing`) – Socket.IO namespace path segment
-- `STATUS_POLL_INTERVAL_MS` (optional; default `30000`) – default poll interval; per-socket requests are clamped between 10s and 120s
+- `STATUS_POLL_INTERVAL` (optional; default `15000`) – default dashboard status poll interval in **milliseconds**; optional `subscribeDashboardStatus` body field `pollIntervalMs` is clamped between 10s and 120s
+- `WEBSOCKET_CORS_ORIGIN` (optional; default `*`) – Socket.IO CORS `origin` (same pattern as agent controller / agent manager)
 
 ## Users Authentication
 

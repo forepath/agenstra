@@ -24,16 +24,18 @@ services:
     container_name: billing-manager-api
     environment:
       # Backend API configuration
-      HOST: 0.0.0.0
-      PORT: 3200
-      WEBSOCKET_PORT: 8082
-      NODE_ENV: development
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-3200}
+      WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8082}
+      WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-billing}
+      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+      NODE_ENV: ${NODE_ENV:-development}
       # Database configuration
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_DATABASE: postgres
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_DATABASE: ${DB_DATABASE:-postgres}
       # Environment variables for the provisioning providers
       HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
       DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
@@ -82,13 +84,14 @@ services:
       BACKORDER_RETRY_INTERVAL: ${BACKORDER_RETRY_INTERVAL:-60000}
       BACKORDER_RETRY_BATCH_SIZE: ${BACKORDER_RETRY_BATCH_SIZE:-100}
       SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL: ${SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL:-86400000}
+      STATUS_POLL_INTERVAL: ${STATUS_POLL_INTERVAL:-15000}
       # DNS settings
       CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
       CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:-}
       DNS_BASE_DOMAIN: ${DNS_BASE_DOMAIN:-spirde.com}
     ports:
-      - '3200:3200'
-      - '8082:8082'
+      - '${PORT:-3200}:${PORT:-3200}'
+      - '${WEBSOCKET_PORT:-8082}:${WEBSOCKET_PORT:-8082}'
     depends_on:
       postgres:
         condition: service_healthy
@@ -102,8 +105,8 @@ services:
     image: mailhog/mailhog:latest
     container_name: billing-manager-mailhog
     ports:
-      - '1026:1025'
-      - '8026:8025'
+      - '${SMTP_PORT:-1026}:${SMTP_PORT:-1025}'
+      - '${MAILHOG_PORT:-8026}:${MAILHOG_PORT:-8025}'
     networks:
       - billing-network
     restart: unless-stopped

@@ -22,17 +22,18 @@ services:
     container_name: agent-controller-api
     environment:
       # Backend API configuration
-      HOST: 0.0.0.0
-      PORT: 3100
-      WEBSOCKET_PORT: 8081
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-3100}
+      WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8081}
       WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-clients}
-      NODE_ENV: development
+      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+      NODE_ENV: ${NODE_ENV:-development}
       # Database configuration
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_DATABASE: postgres
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_DATABASE: ${DB_DATABASE:-postgres}
       # Environment variables for the provisioning providers
       HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
       DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
@@ -68,8 +69,8 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
     ports:
-      - '3100:3100'
-      - '8081:8081'
+      - '${PORT:-3100}:${PORT:-3100}'
+      - '${WEBSOCKET_PORT:-8081}:${WEBSOCKET_PORT:-8081}'
     depends_on:
       postgres:
         condition: service_healthy
@@ -83,8 +84,8 @@ services:
     image: mailhog/mailhog:latest
     container_name: agent-controller-mailhog
     ports:
-      - '1025:1025'
-      - '8025:8025'
+      - '${SMTP_PORT:-1025}:${SMTP_PORT:-1025}'
+      - '${MAILHOG_PORT:-8025}:${MAILHOG_PORT:-8025}'
     networks:
       - agent-controller-network
     restart: unless-stopped
