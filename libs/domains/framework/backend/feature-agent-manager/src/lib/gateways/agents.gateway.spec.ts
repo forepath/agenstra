@@ -6,6 +6,7 @@ import { AgentProvider } from '../providers/agent-provider.interface';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
@@ -70,9 +71,19 @@ describe('AgentsGateway', () => {
     countMessages: jest.fn(),
   };
 
+  const mockAgentMessageEventsService = {
+    persistEvent: jest.fn(),
+  };
+
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
     getType: jest.fn().mockReturnValue('cursor'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
+    getCapabilities: jest.fn().mockReturnValue({
+      supportsChat: true,
+      supportsStreaming: false,
+      supportsToolEvents: false,
+      supportsQuestions: false,
+    }),
     getDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-worker:latest'),
     getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-vnc:latest'),
     getSshConnectionDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-ssh:latest'),
@@ -117,6 +128,10 @@ describe('AgentsGateway', () => {
         {
           provide: AgentMessagesService,
           useValue: mockAgentMessagesService,
+        },
+        {
+          provide: AgentMessageEventsService,
+          useValue: mockAgentMessageEventsService,
         },
         {
           provide: AgentProviderFactory,

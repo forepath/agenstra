@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant UI as UI_Client
+    participant Controller as AgentController_WS
+    participant Manager as AgentManager_WS
+    participant Provider as AgentProvider
+    participant Docker as DockerService
+
+    Note over UI,Docker: Structured chat events per correlationId
+
+    UI->>Controller: forward {event:"chat", payload:{message, responseMode:"stream", correlationId}}
+    Controller->>Manager: chat {message, responseMode:"stream", correlationId}
+
+    Manager->>Manager: emit chatMessage (user)
+    Manager-->>UI: chatMessage {from:"user", text, timestamp}
+
+    Manager->>Manager: emit chatEvent (userMessage)
+    Manager-->>UI: chatEvent {correlationId, sequence:0, kind:"userMessage", payload:{text}}
+
+    Manager->>Manager: emit chatEvent (thinking)
+    Manager-->>UI: chatEvent {kind:"thinking", payload:{}}
+
+    Manager->>Provider: sendMessageStream(...)
+    Provider->>Docker: execCommandStream(...)
+
+    loop while agent is responding
+        Docker-->>Provider: stdout chunk(s)
+        Provider-->>Manager: streamed chunk(s)
+        Manager->>Manager: parse -> AgentEventEnvelope
+        alt delta
+            Manager-->>UI: chatEvent {kind:"assistantDelta", payload:{delta}}
+        else tool call
+            Manager-->>UI: chatEvent {kind:"toolCall", payload:{toolCallId,name,args,status}}
+            Manager-->>UI: chatEvent {kind:"toolResult", payload:{toolCallId,name,result,isError}}
+        else question
+            Manager-->>UI: chatEvent {kind:"question", payload:{questionId,prompt,options}}
+        else final message frame
+            Manager-->>UI: chatEvent {kind:"assistantMessage", payload:{text}}
+        end
+    end
+
+    Manager->>Manager: aggregate final assistant transcript
+    Manager-->>UI: chatMessage {from:"agent", response:{type:"result", result:text}, timestamp}
+

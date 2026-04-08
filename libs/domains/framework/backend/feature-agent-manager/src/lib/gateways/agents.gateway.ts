@@ -9,8 +9,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { v4 as uuidv4 } from 'uuid';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentResponseObject } from '../providers/agent-provider.interface';
+import { AgentEventEnvelope, AgentResponseMode } from '../providers/agent-events.types';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import {
   AppliedFilterInfo,
@@ -19,9 +21,14 @@ import {
   FilterDirection,
 } from '../providers/chat-filter.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
+import {
+  dropRedundantTrailingStreamResultParts,
+  materializeDeltaPartsIntoInterleavedResults,
+} from '../utils/materialize-streaming-deltas-for-transcript';
 import {
   buildPromptEnhancementMessage,
   PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX,
@@ -39,6 +46,8 @@ interface LoginPayload {
 interface ChatPayload {
   model?: string;
   message: string;
+  correlationId?: string;
+  responseMode?: AgentResponseMode;
 }
 
 interface EnhanceChatPayload {
@@ -184,6 +193,20 @@ const createErrorResponse = (message: string, code?: string, details?: string): 
   timestamp: new Date().toISOString(),
 });
 
+function toAgentEventEnvelopeBase(
+  agentId: string,
+  correlationId: string,
+  sequence: number,
+): Omit<AgentEventEnvelope, 'kind' | 'payload'> {
+  return {
+    eventId: uuidv4(),
+    agentId,
+    correlationId,
+    sequence,
+    timestamp: new Date().toISOString(),
+  };
+}
+
 /**
  * WebSocket gateway for agent chat functionality.
  * Handles WebSocket connections, authentication, and chat message broadcasting.
@@ -226,6 +249,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
     private readonly agentMessagesService: AgentMessagesService,
+    private readonly agentMessageEventsService: AgentMessageEventsService,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly chatFilterFactory: ChatFilterFactory,
   ) {}
@@ -334,6 +358,267 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (successCount > 0) {
       this.logger.debug(`Broadcasted ${event} to ${successCount} client(s) for agent ${agentUuid}`);
     }
+  }
+
+  private broadcastChatEvent(agentUuid: string, event: AgentEventEnvelope): void {
+    this.broadcastToAgent(agentUuid, 'chatEvent', createSuccessResponse<AgentEventEnvelope>(event));
+    void this.agentMessageEventsService.persistEvent(agentUuid, event);
+  }
+
+  /**
+   * Cursor stream-json emits a final `{ type: "result", ... }` line when the model finishes, but the
+   * Docker exec stream may stay open until the process exits. We persist as soon as we see that frame
+   * so `agent_messages` is written even when stdout/stderr have not ended yet.
+   */
+  private isStreamingTerminalUnifiedResponse(obj: AgentResponseObject): boolean {
+    return typeof obj === 'object' && obj !== null && String((obj as { type?: unknown }).type) === 'result';
+  }
+
+  private buildFinalStreamingResponse(
+    streamedUnified: AgentResponseObject[],
+    aggregatedText: string,
+  ): AgentResponseObject | null {
+    const finalText = aggregatedText.trim();
+    const structuredStreamTypes = new Set([
+      'tool',
+      'tool_call',
+      'toolCall',
+      'tool_result',
+      'toolResult',
+      'question',
+      'thinking',
+      // Final NDJSON `result` frame must count as structured so delta+result turns become agenstra_turn
+      // instead of collapsing to a lone `result` blob that drops tool history.
+      'result',
+    ]);
+    const hasStructuredStreamParts = streamedUnified.some((p) => structuredStreamTypes.has(String(p.type)));
+
+    if (streamedUnified.length > 0 && (hasStructuredStreamParts || !finalText)) {
+      const streamEmittedResult = streamedUnified.some((p) => String(p.type) === 'result');
+      const parts = dropRedundantTrailingStreamResultParts(
+        materializeDeltaPartsIntoInterleavedResults(streamedUnified),
+      );
+      // Keep prior rule: never duplicate the final NDJSON `result` with a synthetic `aggregatedText` blob.
+      // After materializing deltas, skip synthetic append when any `result` part exists (from stream or flushes).
+      if (finalText && !streamEmittedResult && !parts.some((p) => String(p.type) === 'result')) {
+        parts.push({ type: 'result', subtype: 'success', result: finalText });
+      }
+      const hasCanonicalAnswer = parts.some((p) => String(p.type) === 'result');
+      if (hasCanonicalAnswer) {
+        return {
+          type: 'agenstra_turn',
+          subtype: 'success',
+          parts: parts.filter((p) => String(p.type) !== 'delta'),
+        };
+      }
+      return { type: 'agenstra_turn', subtype: 'success', parts };
+    }
+    if (finalText) {
+      return { type: 'result', subtype: 'success', result: finalText };
+    }
+    return null;
+  }
+
+  private async persistFilteredAgentChatResponse(
+    agentUuid: string,
+    agentResponseTimestamp: string,
+    finalResponse: AgentResponseObject,
+  ): Promise<void> {
+    const outgoingFilterResult = await this.applyFilters(JSON.stringify(finalResponse), FilterDirection.OUTGOING, {
+      agentId: agentUuid,
+      actor: 'agent',
+    });
+    this.broadcastToAgent(
+      agentUuid,
+      'messageFilterResult',
+      createSuccessResponse<MessageFilterResultData>({
+        direction: 'outgoing',
+        ...outgoingFilterResult,
+      }),
+    );
+
+    if (outgoingFilterResult.status !== 'dropped') {
+      let responseToUse: AgentResponseObject | string = finalResponse;
+      if (outgoingFilterResult.modifiedMessage !== undefined) {
+        try {
+          responseToUse = JSON.parse(outgoingFilterResult.modifiedMessage);
+        } catch {
+          responseToUse = outgoingFilterResult.modifiedMessage;
+        }
+      }
+
+      try {
+        await this.agentMessagesService.createAgentMessage(
+          agentUuid,
+          responseToUse,
+          outgoingFilterResult.status === 'filtered',
+        );
+      } catch (persistError) {
+        const err = persistError as { message?: string };
+        this.logger.warn(`Failed to persist agent message: ${err.message}`);
+      }
+
+      this.broadcastToAgent(
+        agentUuid,
+        'chatMessage',
+        createSuccessResponse<ChatMessageData>({
+          from: ChatActor.AGENT,
+          response: responseToUse,
+          timestamp: agentResponseTimestamp,
+        }),
+      );
+    }
+  }
+
+  /** Cursor stream-json `thinking` lines: derive a short phase string for `chatEvent` payloads. */
+  private extractThinkingPhaseForChatEvent(response: AgentResponseObject): string | undefined {
+    const o = response as Record<string, unknown>;
+    const pick = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+    let text = pick(o['text']) || pick(o['thinking']) || pick(o['phase']) || pick(o['summary']) || pick(o['message']);
+    if (!text) {
+      const msg = o['message'];
+      if (msg && typeof msg === 'object') {
+        const content = (msg as { content?: unknown }).content;
+        if (Array.isArray(content)) {
+          text = content
+            .map((part) => {
+              if (!part || typeof part !== 'object') {
+                return '';
+              }
+              const p = part as { type?: unknown; text?: unknown };
+              return p.type === 'text' && typeof p.text === 'string' ? p.text : '';
+            })
+            .join('')
+            .trim();
+        }
+      }
+    }
+    if (!text) {
+      return undefined;
+    }
+    const collapsed = text.replace(/\s+/g, ' ').trim();
+    return collapsed.length <= 120 ? collapsed : `${collapsed.slice(0, 119)}…`;
+  }
+
+  private agentResponseToChatEvents(
+    agentUuid: string,
+    correlationId: string,
+    sequence: number,
+    response: AgentResponseObject | string,
+  ): AgentEventEnvelope[] {
+    const base = toAgentEventEnvelopeBase(agentUuid, correlationId, sequence);
+
+    if (typeof response === 'string') {
+      return [
+        {
+          ...base,
+          kind: 'assistantMessage',
+          payload: { text: response },
+        },
+      ];
+    }
+
+    // Heuristic mapping for current providers:
+    // - Default: treat `result` as final assistant text.
+    // - If provider emits delta-like structures, map to assistantDelta.
+    // - Tool calls/questions are mapped opportunistically when common keys are present.
+    if (response.type === 'delta' && typeof response.delta === 'string') {
+      return [
+        {
+          ...base,
+          kind: 'assistantDelta',
+          payload: { delta: response.delta },
+        },
+      ];
+    }
+
+    if (response.type === 'thinking') {
+      const phase = this.extractThinkingPhaseForChatEvent(response);
+      return [
+        {
+          ...base,
+          kind: 'thinking',
+          payload: phase ? { phase } : {},
+        },
+      ];
+    }
+
+    if (
+      (response.type === 'tool' || response.type === 'tool_call') &&
+      typeof response.name === 'string' &&
+      typeof response.toolCallId === 'string'
+    ) {
+      return [
+        {
+          ...base,
+          kind: 'toolCall',
+          payload: {
+            toolCallId: response.toolCallId,
+            name: response.name,
+            args: response.args,
+            status: (response.status as 'started' | 'inProgress' | 'succeeded' | 'failed') ?? 'inProgress',
+          },
+        },
+      ];
+    }
+
+    if (response.type === 'tool_result' && typeof response.toolCallId === 'string') {
+      const name = typeof response.name === 'string' ? response.name : 'tool';
+      return [
+        {
+          ...base,
+          kind: 'toolResult',
+          payload: {
+            toolCallId: response.toolCallId,
+            name,
+            result: response.result,
+            isError: Boolean(response.isError),
+          },
+        },
+      ];
+    }
+
+    if (
+      response.type === 'question' &&
+      typeof response.questionId === 'string' &&
+      typeof response.prompt === 'string'
+    ) {
+      const options = Array.isArray(response.options)
+        ? response.options
+            .filter((o) => o && typeof o === 'object')
+            .map((o) => o as { id?: unknown; label?: unknown })
+            .filter((o) => typeof o.id === 'string' && typeof o.label === 'string')
+            .map((o) => ({ id: o.id as string, label: o.label as string }))
+        : [];
+
+      return [
+        {
+          ...base,
+          kind: 'question',
+          payload: {
+            questionId: response.questionId,
+            prompt: response.prompt,
+            options,
+            allowMultiple: typeof response.allowMultiple === 'boolean' ? response.allowMultiple : undefined,
+          },
+        },
+      ];
+    }
+
+    const text =
+      typeof response.result === 'string'
+        ? response.result
+        : response.result !== undefined && response.result !== null
+          ? String(response.result)
+          : '';
+
+    return [
+      {
+        ...base,
+        kind: 'assistantMessage',
+        payload: { text },
+      },
+    ];
   }
 
   /**
@@ -529,6 +814,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
+    const correlationId =
+      typeof data.correlationId === 'string' && data.correlationId.trim() ? data.correlationId.trim() : uuidv4();
+    const responseMode: AgentResponseMode = data.responseMode === 'stream' ? 'stream' : 'single';
+    let sequence = 0;
+
     // Create timestamp immediately for consistent message ordering
     const chatTimestamp = new Date().toISOString();
 
@@ -578,6 +868,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }),
       );
 
+      this.broadcastChatEvent(agentUuid, {
+        ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
+        kind: 'userMessage',
+        payload: { text: fakeUserMessage },
+      });
+
       return;
     }
 
@@ -595,6 +891,18 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         timestamp: chatTimestamp,
       }),
     );
+
+    this.broadcastChatEvent(agentUuid, {
+      ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
+      kind: 'userMessage',
+      payload: { text: messageToUse },
+    });
+
+    this.broadcastChatEvent(agentUuid, {
+      ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
+      kind: 'thinking',
+      payload: {},
+    });
 
     try {
       // Get agent details for display
@@ -654,199 +962,276 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Get the appropriate provider based on agent type
         try {
           const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
-          const agentResponse = await provider.sendMessage(agent.id, containerId, messageToUse, {
-            model: data.model,
-          });
-          // Emit agent's response if there is any
-          if (agentResponse && agentResponse.trim()) {
-            const agentResponseTimestamp = new Date().toISOString();
-            const lines = provider.toParseableStrings(agentResponse);
+          const supportsStreaming =
+            responseMode === 'stream' && provider.getCapabilities().supportsStreaming && provider.sendMessageStream;
 
-            for (const toParse of lines) {
-              try {
-                // Parse JSON response from agent
-                const parsedResponse = provider.toUnifiedResponse(toParse);
-                if (!parsedResponse) {
-                  continue;
-                }
+          const agentResponseTimestamp = new Date().toISOString();
 
-                // Convert parsed response to string for filtering
-                const agentResponseString = JSON.stringify(parsedResponse);
+          if (supportsStreaming) {
+            let buffered = '';
+            let aggregatedText = '';
+            const streamedUnified: AgentResponseObject[] = [];
+            let streamingTurnPersisted = false;
 
-                // Apply outgoing filters before processing (single hook point for outgoing messages)
-                const outgoingFilterResult = await this.applyFilters(agentResponseString, FilterDirection.OUTGOING, {
-                  agentId: agentUuid,
-                  actor: 'agent',
-                });
+            const consumeStreamingRawLine = async (rawLine: string): Promise<void> => {
+              const parseables = provider.toParseableStrings(rawLine);
+              for (const toParse of parseables) {
+                try {
+                  const parsed = provider.toUnifiedResponse(toParse);
+                  if (!parsed) continue;
 
-                // Broadcast filter result for outgoing filters
-                this.broadcastToAgent(
-                  agentUuid,
-                  'messageFilterResult',
-                  createSuccessResponse<MessageFilterResultData>({
-                    direction: 'outgoing',
-                    ...outgoingFilterResult,
-                  }),
-                );
-
-                // If filter says to drop, replace with fake agent response and persist it
-                if (outgoingFilterResult.status === 'dropped') {
-                  this.logger.debug(
-                    `Dropped outgoing message for agent ${agentUuid} due to filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
-                  );
-
-                  // Create fake agent response indicating message was dropped
-                  const fakeAgentResponse = {
-                    type: 'error',
-                    is_error: true,
-                    result: 'MESSAGE_DROPPED',
-                    message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
-                  };
-
-                  // Persist the fake agent response as if it was a valid agent response
-                  try {
-                    await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
-                  } catch (persistError) {
-                    const err = persistError as { message?: string };
-                    this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                  streamedUnified.push(parsed);
+                  const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, parsed);
+                  for (const ev of events) {
+                    if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
+                    if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
+                    this.broadcastChatEvent(agentUuid, ev);
                   }
 
-                  // Broadcast the fake agent response
+                  if (!streamingTurnPersisted && this.isStreamingTerminalUnifiedResponse(parsed)) {
+                    const built = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+                    if (built) {
+                      await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, built);
+                      streamingTurnPersisted = true;
+                    }
+                  }
+                } catch (parseError) {
+                  const parseErr = parseError as { message?: string };
+                  this.logger.warn(`Failed to parse streaming agent line: ${parseErr.message}`);
+                  const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, toParse);
+                  for (const ev of events) {
+                    if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
+                    if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
+                    this.broadcastChatEvent(agentUuid, ev);
+                  }
+                }
+              }
+            };
+
+            for await (const chunk of provider.sendMessageStream(agent.id, containerId, messageToUse, {
+              model: data.model,
+            })) {
+              buffered += chunk;
+              const parts = buffered.split('\n');
+              buffered = parts.pop() ?? '';
+
+              for (const rawLine of parts) {
+                await consumeStreamingRawLine(rawLine);
+              }
+            }
+
+            // NDJSON producers often omit a trailing newline on the last frame; without this flush,
+            // the final line never runs through consumeStreamingRawLine and nothing is persisted.
+            if (buffered.trim().length > 0) {
+              await consumeStreamingRawLine(buffered);
+              buffered = '';
+            }
+
+            if (!streamingTurnPersisted) {
+              const finalResponse = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+              if (finalResponse) {
+                await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, finalResponse);
+              } else {
+                const finalTextLen = aggregatedText.trim().length;
+                this.logger.warn(
+                  `Streaming completed with no persistable agent response for agent ${agentUuid} ` +
+                    `(correlationId=${correlationId}, streamedUnified=${streamedUnified.length}, finalTextLen=${finalTextLen})`,
+                );
+              }
+            }
+          } else {
+            const agentResponse = await provider.sendMessage(agent.id, containerId, messageToUse, {
+              model: data.model,
+            });
+
+            if (agentResponse && agentResponse.trim()) {
+              const lines = provider.toParseableStrings(agentResponse);
+
+              for (const toParse of lines) {
+                try {
+                  const parsedResponse = provider.toUnifiedResponse(toParse);
+                  if (!parsedResponse) {
+                    continue;
+                  }
+
+                  const agentResponseString = JSON.stringify(parsedResponse);
+                  const outgoingFilterResult = await this.applyFilters(agentResponseString, FilterDirection.OUTGOING, {
+                    agentId: agentUuid,
+                    actor: 'agent',
+                  });
+
+                  this.broadcastToAgent(
+                    agentUuid,
+                    'messageFilterResult',
+                    createSuccessResponse<MessageFilterResultData>({
+                      direction: 'outgoing',
+                      ...outgoingFilterResult,
+                    }),
+                  );
+
+                  if (outgoingFilterResult.status === 'dropped') {
+                    this.logger.debug(
+                      `Dropped outgoing message for agent ${agentUuid} due to filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
+                    );
+
+                    const fakeAgentResponse = {
+                      type: 'error',
+                      is_error: true,
+                      result: 'MESSAGE_DROPPED',
+                      message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
+                    };
+
+                    try {
+                      await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
+                    } catch (persistError) {
+                      const err = persistError as { message?: string };
+                      this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                    }
+
+                    this.broadcastToAgent(
+                      agentUuid,
+                      'chatMessage',
+                      createSuccessResponse<ChatMessageData>({
+                        from: ChatActor.AGENT,
+                        response: fakeAgentResponse,
+                        timestamp: agentResponseTimestamp,
+                      }),
+                    );
+
+                    const events = this.agentResponseToChatEvents(
+                      agentUuid,
+                      correlationId,
+                      sequence++,
+                      fakeAgentResponse,
+                    );
+                    for (const ev of events) {
+                      this.broadcastChatEvent(agentUuid, ev);
+                    }
+
+                    return;
+                  }
+
+                  let responseToUse: AgentResponseObject | string = parsedResponse;
+                  if (outgoingFilterResult.modifiedMessage !== undefined) {
+                    try {
+                      responseToUse = JSON.parse(outgoingFilterResult.modifiedMessage);
+                    } catch {
+                      responseToUse = outgoingFilterResult.modifiedMessage;
+                    }
+                  }
+
+                  try {
+                    await this.agentMessagesService.createAgentMessage(
+                      agentUuid,
+                      responseToUse,
+                      outgoingFilterResult.status === 'filtered',
+                    );
+                  } catch (persistError) {
+                    const err = persistError as { message?: string };
+                    this.logger.warn(`Failed to persist agent message: ${err.message}`);
+                  }
+
                   this.broadcastToAgent(
                     agentUuid,
                     'chatMessage',
                     createSuccessResponse<ChatMessageData>({
                       from: ChatActor.AGENT,
-                      response: fakeAgentResponse,
+                      response: responseToUse,
                       timestamp: agentResponseTimestamp,
                     }),
                   );
 
-                  return;
-                }
-
-                // Use modified response if filter provided one, otherwise use original
-                let responseToUse: AgentResponseObject | string = parsedResponse;
-                if (outgoingFilterResult.modifiedMessage !== undefined) {
-                  try {
-                    // Try to parse the modified message as JSON
-                    responseToUse = JSON.parse(outgoingFilterResult.modifiedMessage);
-                  } catch {
-                    // If parsing fails, use as string
-                    responseToUse = outgoingFilterResult.modifiedMessage;
+                  const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, responseToUse);
+                  for (const ev of events) {
+                    this.broadcastChatEvent(agentUuid, ev);
                   }
-                }
+                } catch (parseError) {
+                  const parseErr = parseError as { message?: string };
+                  this.logger.warn(`Failed to parse agent response as JSON: ${parseErr.message}`);
 
-                // Persist agent message (with filtered flag if filter matched)
-                // Use modified response if available
-                try {
-                  await this.agentMessagesService.createAgentMessage(
+                  const outgoingFilterResult = await this.applyFilters(toParse, FilterDirection.OUTGOING, {
+                    agentId: agentUuid,
+                    actor: 'agent',
+                  });
+
+                  this.broadcastToAgent(
                     agentUuid,
-                    responseToUse,
-                    outgoingFilterResult.status === 'filtered',
-                  );
-                } catch (persistError) {
-                  const err = persistError as { message?: string };
-                  this.logger.warn(`Failed to persist agent message: ${err.message}`);
-                  // Continue with message broadcasting even if persistence fails
-                }
-
-                // Broadcast agent response only to clients authenticated to this agent
-                // Use modified response if available
-                this.broadcastToAgent(
-                  agentUuid,
-                  'chatMessage',
-                  createSuccessResponse<ChatMessageData>({
-                    from: ChatActor.AGENT,
-                    response: responseToUse,
-                    timestamp: agentResponseTimestamp,
-                  }),
-                );
-              } catch (parseError) {
-                // If JSON parsing fails, log error but still emit the cleaned response in response field
-                const parseErr = parseError as { message?: string };
-                this.logger.warn(`Failed to parse agent response as JSON: ${parseErr.message}`);
-
-                // Apply outgoing filters before processing (single hook point for outgoing messages)
-                const outgoingFilterResult = await this.applyFilters(toParse, FilterDirection.OUTGOING, {
-                  agentId: agentUuid,
-                  actor: 'agent',
-                });
-
-                // Broadcast filter result for outgoing filters
-                this.broadcastToAgent(
-                  agentUuid,
-                  'messageFilterResult',
-                  createSuccessResponse<MessageFilterResultData>({
-                    direction: 'outgoing',
-                    ...outgoingFilterResult,
-                  }),
-                );
-
-                // If filter says to drop, replace with fake agent response and persist it
-                if (outgoingFilterResult.status === 'dropped') {
-                  this.logger.debug(
-                    `Dropped outgoing message for agent ${agentUuid} due to filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
+                    'messageFilterResult',
+                    createSuccessResponse<MessageFilterResultData>({
+                      direction: 'outgoing',
+                      ...outgoingFilterResult,
+                    }),
                   );
 
-                  // Create fake agent response indicating message was dropped
-                  const fakeAgentResponse = {
-                    type: 'error',
-                    is_error: true,
-                    result: 'MESSAGE_DROPPED',
-                    message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
-                  };
+                  if (outgoingFilterResult.status === 'dropped') {
+                    const fakeAgentResponse = {
+                      type: 'error',
+                      is_error: true,
+                      result: 'MESSAGE_DROPPED',
+                      message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
+                    };
 
-                  // Persist the fake agent response as if it was a valid agent response
+                    try {
+                      await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
+                    } catch (persistError) {
+                      const err = persistError as { message?: string };
+                      this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                    }
+                    this.broadcastToAgent(
+                      agentUuid,
+                      'chatMessage',
+                      createSuccessResponse<ChatMessageData>({
+                        from: ChatActor.AGENT,
+                        response: fakeAgentResponse,
+                        timestamp: agentResponseTimestamp,
+                      }),
+                    );
+
+                    const events = this.agentResponseToChatEvents(
+                      agentUuid,
+                      correlationId,
+                      sequence++,
+                      fakeAgentResponse,
+                    );
+                    for (const ev of events) {
+                      this.broadcastChatEvent(agentUuid, ev);
+                    }
+
+                    return;
+                  }
+
+                  const stringResponseToUse = outgoingFilterResult.modifiedMessage ?? toParse;
                   try {
-                    await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
+                    await this.agentMessagesService.createAgentMessage(
+                      agentUuid,
+                      stringResponseToUse,
+                      outgoingFilterResult.status === 'filtered',
+                    );
                   } catch (persistError) {
                     const err = persistError as { message?: string };
-                    this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                    this.logger.warn(`Failed to persist agent message: ${err.message}`);
                   }
 
-                  // Broadcast the fake agent response
                   this.broadcastToAgent(
                     agentUuid,
                     'chatMessage',
                     createSuccessResponse<ChatMessageData>({
                       from: ChatActor.AGENT,
-                      response: fakeAgentResponse,
+                      response: stringResponseToUse,
                       timestamp: agentResponseTimestamp,
                     }),
                   );
 
-                  return;
-                }
-
-                // Use modified message if filter provided one, otherwise use cleaned string
-                const stringResponseToUse = outgoingFilterResult.modifiedMessage ?? toParse;
-
-                // Persist agent message (cleaned string or modified)
-                // This ensures we can attempt to parse it again when restoring chat history
-                try {
-                  await this.agentMessagesService.createAgentMessage(
+                  const events = this.agentResponseToChatEvents(
                     agentUuid,
+                    correlationId,
+                    sequence++,
                     stringResponseToUse,
-                    outgoingFilterResult.status === 'filtered',
                   );
-                } catch (persistError) {
-                  const err = persistError as { message?: string };
-                  this.logger.warn(`Failed to persist agent message: ${err.message}`);
-                  // Continue with message broadcasting even if persistence fails
+                  for (const ev of events) {
+                    this.broadcastChatEvent(agentUuid, ev);
+                  }
                 }
-
-                // Broadcast agent response only to clients authenticated to this agent
-                // Use modified message if available
-                this.broadcastToAgent(
-                  agentUuid,
-                  'chatMessage',
-                  createSuccessResponse<ChatMessageData>({
-                    from: ChatActor.AGENT,
-                    response: stringResponseToUse,
-                    timestamp: agentResponseTimestamp,
-                  }),
-                );
               }
             }
           }

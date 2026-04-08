@@ -2,6 +2,7 @@ import {
   AgentEntity,
   AgentEnvironmentVariableEntity,
   AgentMessageEntity,
+  AgentMessageEventEntity,
   DeploymentConfigurationEntity,
   DeploymentRunEntity,
 } from '@forepath/framework/backend';
@@ -26,6 +27,7 @@ export const typeormConfig: DataSourceOptions = {
     AgentEntity,
     AgentEnvironmentVariableEntity,
     AgentMessageEntity,
+    AgentMessageEventEntity,
     DeploymentConfigurationEntity,
     DeploymentRunEntity,
   ],

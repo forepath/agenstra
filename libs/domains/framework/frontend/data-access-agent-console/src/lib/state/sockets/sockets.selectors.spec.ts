@@ -1,6 +1,7 @@
 import { initialSocketsState, type SocketsState } from './sockets.reducer';
 import {
   selectChatModel,
+  selectChatResponseMode,
   selectForwardedEvents,
   selectForwardedEventsByEvent,
   selectIsRemoteReconnecting,
@@ -130,6 +131,20 @@ describe('Sockets Selectors', () => {
       const result = selectChatModel(rootState as any);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('selectChatResponseMode', () => {
+    it('should select chatResponseMode', () => {
+      const state = createState({ chatResponseMode: 'single' });
+      const rootState = { sockets: state };
+      expect(selectChatResponseMode(rootState as any)).toBe('single');
+    });
+
+    it('should default to stream from initial state', () => {
+      const state = createState();
+      const rootState = { sockets: state };
+      expect(selectChatResponseMode(rootState as any)).toBe('stream');
     });
   });
 

@@ -31,6 +31,17 @@ describe('OpenClawAgentProvider', () => {
     });
   });
 
+  describe('getCapabilities', () => {
+    it('should report no chat capabilities', () => {
+      expect(provider.getCapabilities()).toEqual({
+        supportsChat: false,
+        supportsStreaming: false,
+        supportsToolEvents: false,
+        supportsQuestions: false,
+      });
+    });
+  });
+
   describe('getBasePath', () => {
     it('should return "/openclaw"', () => {
       expect(provider.getBasePath()).toBe('/openclaw');

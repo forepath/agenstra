@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { ForwardableEvent } from './sockets.types';
+import { ForwardableEvent, type AgentResponseMode } from './sockets.types';
 import {
   chatEnhancementStarted,
   ticketBodyGenerationStarted,
@@ -20,6 +20,7 @@ import {
   remoteReconnecting,
   setAgent,
   setChatModel,
+  setChatResponseMode,
   setClient,
   setClientFailure,
   setClientSuccess,
@@ -47,6 +48,8 @@ export interface SocketsState {
   reconnectAttempts: number;
   selectedClientId: string | null;
   chatModel: string | null;
+  /** How agent-manager runs the turn: incremental `chatEvent` vs one-shot `chatMessage`. */
+  chatResponseMode: AgentResponseMode;
   forwarding: boolean;
   forwardingEvent: string | null; // Track which event is currently being forwarded
   error: string | null;
@@ -111,6 +114,7 @@ export const initialSocketsState: SocketsState = {
   reconnectAttempts: 0,
   selectedClientId: null,
   chatModel: null,
+  chatResponseMode: 'stream',
   forwarding: false,
   forwardingEvent: null,
   error: null,
@@ -263,6 +267,10 @@ export const socketsReducer = createReducer(
   on(setChatModel, (state, { model }) => ({
     ...state,
     chatModel: model,
+  })),
+  on(setChatResponseMode, (state, { mode }) => ({
+    ...state,
+    chatResponseMode: mode,
   })),
   on(chatEnhancementStarted, (state, { correlationId }) => ({
     ...state,

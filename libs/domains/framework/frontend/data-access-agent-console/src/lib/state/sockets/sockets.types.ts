@@ -59,7 +59,34 @@ export type ForwardableEventPayload =
 export interface ChatPayload {
   message: string;
   model?: string;
+  correlationId?: string;
+  responseMode?: AgentResponseMode;
 }
+
+export type AgentResponseMode = 'single' | 'stream';
+
+export type AgentEventKind =
+  | 'userMessage'
+  | 'thinking'
+  | 'assistantDelta'
+  | 'assistantMessage'
+  | 'toolCall'
+  | 'toolResult'
+  | 'question'
+  | 'status'
+  | 'error';
+
+export interface AgentEventEnvelopeBase {
+  eventId: string;
+  agentId: string;
+  correlationId: string;
+  sequence: number;
+  timestamp: string;
+  kind: AgentEventKind;
+  payload: unknown;
+}
+
+export type AgentEventEnvelope = AgentEventEnvelopeBase;
 
 /**
  * Prompt enhancement request (agents.gateway.ts enhanceChat). Unicast chatEnhanceResult; not shown in main chat.
@@ -370,4 +397,5 @@ export type ForwardedEventPayload =
   | SuccessResponse<TerminalOutputData> // terminalOutput
   | SuccessResponse<TerminalClosedData> // terminalClosed
   | SuccessResponse<ContainerStatsPayload> // containerStats
+  | SuccessResponse<AgentEventEnvelope> // chatEvent
   | ErrorResponse; // error

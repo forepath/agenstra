@@ -8,6 +8,7 @@ describe('OpenCodeAgentProvider', () => {
 
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
+    execCommandStream: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -41,6 +42,17 @@ describe('OpenCodeAgentProvider', () => {
   describe('getDisplayName', () => {
     it('should return "OpenCode"', () => {
       expect(provider.getDisplayName()).toBe('OpenCode');
+    });
+  });
+
+  describe('getCapabilities', () => {
+    it('should report chat and streaming capabilities', () => {
+      expect(provider.getCapabilities()).toEqual({
+        supportsChat: true,
+        supportsStreaming: true,
+        supportsToolEvents: true,
+        supportsQuestions: true,
+      });
     });
   });
 
@@ -211,6 +223,69 @@ describe('OpenCodeAgentProvider', () => {
     });
   });
 
+  describe('sendMessageStream', () => {
+    const agentId = 'test-agent-id';
+    const containerId = 'test-container-id';
+    const message = 'Hello, agent!';
+
+    it('should yield stdout chunks from execCommandStream', async () => {
+      async function* mockStream(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
+        yield { stream: 'stdout', chunk: '{"type":"text",' };
+        yield { stream: 'stdout', chunk: '"part":{"type":"text","text":"Hi"}}\n' };
+      }
+      dockerService.execCommandStream.mockImplementation(mockStream);
+
+      const chunks: string[] = [];
+      for await (const chunk of provider.sendMessageStream(agentId, containerId, message)) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks.join('')).toBe('{"type":"text","part":{"type":"text","text":"Hi"}}\n');
+      expect(dockerService.execCommandStream).toHaveBeenCalledWith(
+        containerId,
+        'opencode run --format json --continue',
+        message,
+      );
+    });
+
+    it('should retry without continue when output contains Session not found', async () => {
+      let call = 0;
+      async function* firstSessionMissing(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
+        yield { stream: 'stdout', chunk: 'Session not found\n' };
+      }
+      async function* secondOk(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
+        yield { stream: 'stdout', chunk: '{"ok":true}\n' };
+      }
+      dockerService.execCommandStream.mockImplementation(async function* () {
+        call += 1;
+        if (call === 1) {
+          yield* firstSessionMissing();
+        } else {
+          yield* secondOk();
+        }
+      });
+
+      const chunks: string[] = [];
+      for await (const chunk of provider.sendMessageStream(agentId, containerId, message)) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toEqual(['Session not found\n', '{"ok":true}\n']);
+      expect(dockerService.execCommandStream).toHaveBeenNthCalledWith(
+        1,
+        containerId,
+        'opencode run --format json --continue',
+        message,
+      );
+      expect(dockerService.execCommandStream).toHaveBeenNthCalledWith(
+        2,
+        containerId,
+        'opencode run --format json',
+        message,
+      );
+    });
+  });
+
   describe('sendInitialization', () => {
     const agentId = 'test-agent-id';
     const containerId = 'test-container-id';
@@ -235,10 +310,14 @@ describe('OpenCodeAgentProvider', () => {
 
   describe('toParseableStrings', () => {
     it('should extract JSON object with type text from response', () => {
-      const response = 'Some text before {"type":"text","text":"Hello"} and text after';
+      const json = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: 'Hello' },
+      });
+      const response = `Some text before ${json} and text after`;
       const result = provider.toParseableStrings(response);
 
-      expect(result).toEqual(['{"type":"text","text":"Hello"}']);
+      expect(result).toEqual([json]);
     });
 
     it('should return empty array when no type text object found', () => {
@@ -249,45 +328,80 @@ describe('OpenCodeAgentProvider', () => {
     });
 
     it('should return empty array when type text object has empty text', () => {
-      const response = 'Some text {"type":"text","text":""} more text';
+      const json = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: '' },
+      });
+      const response = `Some text ${json} more text`;
       const result = provider.toParseableStrings(response);
 
       expect(result).toEqual([]);
     });
 
     it('should extract JSON object and clean braces', () => {
-      const response = 'Prefix {"type":"text","text":"Hello"} suffix';
+      const json = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: 'Hello' },
+      });
+      const response = `Prefix ${json} suffix`;
       const result = provider.toParseableStrings(response);
 
-      expect(result).toEqual(['{"type":"text","text":"Hello"}']);
+      expect(result).toEqual([json]);
     });
 
     it('should handle response with text before and after JSON', () => {
-      const response = 'Log: {"type":"text","text":"Message"} done';
+      const json = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: 'Message' },
+      });
+      const response = `Log: ${json} done`;
       const result = provider.toParseableStrings(response);
 
-      expect(result).toEqual(['{"type":"text","text":"Message"}']);
+      expect(result).toEqual([json]);
     });
 
     it('should handle multiline response with type text', () => {
-      const response = 'Line 1\n{"type":"text","text":"Hello"}\nLine 3';
+      const json = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: 'Hello' },
+      });
+      const response = `Line 1\n${json}\nLine 3`;
       const result = provider.toParseableStrings(response);
 
-      expect(result).toEqual(['{"type":"text","text":"Hello"}']);
+      expect(result).toEqual([json]);
     });
 
-    it('should handle nested JSON objects', () => {
-      const response = 'Prefix {"type":"text","text":"Hello","data":{"nested":"value"}} suffix';
+    it('should expand tool_use lines into synthetic tool_call plus original tool_use for tool_result', () => {
+      const json = JSON.stringify({
+        type: 'tool_use',
+        part: { type: 'tool', callID: 'c1', tool: 'bash', state: { status: 'completed' } },
+      });
+      const response = `log ${json}`;
       const result = provider.toParseableStrings(response);
 
-      expect(result).toEqual(['{"type":"text","text":"Hello","data":{"nested":"value"}}']);
+      expect(result).toHaveLength(2);
+      const call = JSON.parse(result[0] ?? '{}') as {
+        type?: string;
+        toolCallId?: string;
+        name?: string;
+        status?: string;
+      };
+      expect(call.type).toBe('tool_call');
+      expect(call.toolCallId).toBe('c1');
+      expect(call.name).toBe('bash');
+      expect(call.status).toBe('succeeded');
+      expect(result[1]).toBe(json);
     });
 
     it('should trim whitespace from extracted JSON', () => {
-      const response = '   {"type":"text","text":"Hello"}   ';
+      const json = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: 'Hello' },
+      });
+      const response = `   ${json}   `;
       const result = provider.toParseableStrings(response);
 
-      expect(result).toEqual(['{"type":"text","text":"Hello"}']);
+      expect(result).toEqual([json]);
     });
 
     it('should handle empty string', () => {
@@ -304,19 +418,19 @@ describe('OpenCodeAgentProvider', () => {
       expect(result).toEqual([]);
     });
 
-    it('should extract first matching type text object when multiple exist', () => {
-      const response = 'Text {"type":"text","text":"First"} more {"type":"text","text":"Second"} end';
+    it('should extract multiple JSONL lines', () => {
+      const first = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: 'First' },
+      });
+      const second = JSON.stringify({
+        type: 'text',
+        part: { type: 'text', text: 'Second' },
+      });
+      const response = `${first}\n${second}`;
       const result = provider.toParseableStrings(response);
 
-      // The implementation extracts from first { to last } on the line containing type:text
-      expect(result).toEqual(['{"type":"text","text":"First"} more {"type":"text","text":"Second"}']);
-    });
-
-    it('should handle complex JSON with arrays and nested objects', () => {
-      const response = 'Log: {"type":"text","text":"Hello","items":[{"id":1},{"id":2}]} done';
-      const result = provider.toParseableStrings(response);
-
-      expect(result).toEqual(['{"type":"text","text":"Hello","items":[{"id":1},{"id":2}]}']);
+      expect(result).toEqual([first, second]);
     });
   });
 
@@ -546,13 +660,102 @@ describe('OpenCodeAgentProvider', () => {
         subtype: 'success',
         result: longText,
       });
-      expect(result.result.length).toBe(10000);
+      expect(typeof result?.result === 'string' ? result.result.length : 0).toBe(10000);
     });
 
     it('should throw error for invalid JSON', () => {
       const response = '{"type":"text","part":{"text":"Hello"'; // Missing closing brace
 
       expect(() => provider.toUnifiedResponse(response)).toThrow();
+    });
+
+    it('should map synthetic tool_call JSON to unified tool_call', () => {
+      const response = JSON.stringify({
+        type: 'tool_call',
+        toolCallId: 'call-1',
+        name: 'bash',
+        args: { command: 'echo hi' },
+        status: 'succeeded',
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result).toEqual({
+        type: 'tool_call',
+        toolCallId: 'call-1',
+        name: 'bash',
+        args: { command: 'echo hi' },
+        status: 'succeeded',
+      });
+    });
+
+    it('should map tool_use line to tool_result', () => {
+      const response = JSON.stringify({
+        type: 'tool_use',
+        timestamp: 1,
+        sessionID: 'ses_x',
+        part: {
+          id: 'p1',
+          type: 'tool',
+          callID: 'call-1',
+          tool: 'bash',
+          state: {
+            status: 'completed',
+            input: { command: 'echo hi' },
+            output: 'hi\n',
+            title: 'Run',
+            metadata: { exit: 0 },
+            time: { start: 1, end: 2 },
+          },
+        },
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result).toEqual({
+        type: 'tool_result',
+        toolCallId: 'call-1',
+        name: 'bash',
+        result: {
+          output: 'hi\n',
+          input: { command: 'echo hi' },
+          title: 'Run',
+          metadata: { exit: 0 },
+        },
+        isError: false,
+      });
+    });
+
+    it('should set isError when bash exit is non-zero', () => {
+      const response = JSON.stringify({
+        type: 'tool_use',
+        part: {
+          type: 'tool',
+          callID: 'call-1',
+          tool: 'bash',
+          state: {
+            status: 'completed',
+            metadata: { exit: 1 },
+          },
+        },
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result?.isError).toBe(true);
+    });
+
+    it('should map error event', () => {
+      const response = JSON.stringify({
+        type: 'error',
+        timestamp: 1,
+        sessionID: 'ses_x',
+        error: { name: 'APIError', data: { message: 'Rate limited' } },
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result).toEqual({
+        type: 'error',
+        is_error: true,
+        result: 'Rate limited',
+      });
     });
   });
 });

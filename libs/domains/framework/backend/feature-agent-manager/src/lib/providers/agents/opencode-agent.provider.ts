@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DockerService } from '../../services/docker.service';
-import { AgentProvider, AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
+import {
+  AgentProvider,
+  AgentProviderCapabilities,
+  AgentProviderOptions,
+  AgentResponseObject,
+} from '../agent-provider.interface';
 
 /**
  * OpenCode agent provider implementation.
@@ -26,6 +31,15 @@ export class OpenCodeAgentProvider implements AgentProvider {
    */
   getDisplayName(): string {
     return 'OpenCode';
+  }
+
+  getCapabilities(): AgentProviderCapabilities {
+    return {
+      supportsChat: true,
+      supportsStreaming: true,
+      supportsToolEvents: true,
+      supportsQuestions: true,
+    };
   }
 
   /**
@@ -69,13 +83,7 @@ export class OpenCodeAgentProvider implements AgentProvider {
    * @param options - Optional configuration (e.g., model name)
    * @returns The agent's response as a string
    */
-  async sendMessage(
-    agentId: string,
-    containerId: string,
-    message: string,
-    options?: AgentProviderOptions,
-  ): Promise<string> {
-    // Build command: opencode agent with prompt mode and JSON output
+  private buildRunCommand(options?: AgentProviderOptions): string {
     let command = `opencode run --format json`;
     if (options?.continue === undefined || options?.continue === true) {
       command += ` --continue`;
@@ -83,11 +91,23 @@ export class OpenCodeAgentProvider implements AgentProvider {
     if (options?.model && options.model !== 'auto') {
       command += ` --model ${options.model}`;
     }
+    return command;
+  }
 
-    // Send the message to STDIN of the command and get the response
+  private wantsSessionContinue(options?: AgentProviderOptions): boolean {
+    return options?.continue === undefined || options?.continue === true;
+  }
+
+  async sendMessage(
+    agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): Promise<string> {
+    const command = this.buildRunCommand(options);
     const response = await this.dockerService.sendCommandToContainer(containerId, command, message);
 
-    if (response.includes('Session not found')) {
+    if (response.includes('Session not found') && this.wantsSessionContinue(options)) {
       return this.sendMessage(agentId, containerId, message, {
         ...options,
         continue: false,
@@ -95,6 +115,33 @@ export class OpenCodeAgentProvider implements AgentProvider {
     }
 
     return response;
+  }
+
+  async *sendMessageStream(
+    _agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<string> {
+    const streamOnce = (opts?: AgentProviderOptions): AsyncIterable<{ stream: 'stdout' | 'stderr'; chunk: string }> =>
+      this.dockerService.execCommandStream(containerId, this.buildRunCommand(opts), message);
+
+    const chunks: string[] = [];
+    for await (const { stream, chunk } of streamOnce(options)) {
+      if (stream === 'stdout') {
+        chunks.push(chunk);
+        yield chunk;
+      }
+    }
+
+    const combined = chunks.join('');
+    if (combined.includes('Session not found') && this.wantsSessionContinue(options)) {
+      for await (const { stream, chunk } of streamOnce({ ...options, continue: false })) {
+        if (stream === 'stdout') {
+          yield chunk;
+        }
+      }
+    }
   }
 
   /**
@@ -116,36 +163,87 @@ export class OpenCodeAgentProvider implements AgentProvider {
    * @returns Array of parseable strings with only valid UTF-8 characters
    */
   toParseableStrings(response: string): string[] {
-    // Extract the response object from the response
     const lines = response.split('\n');
     if (lines.length === 0) {
       return [];
     }
 
-    // Filter out lines that do not contain a "type":"text" object
-    const responseObjects = lines.filter((line) => line.includes('"type":"text"') && !line.includes('"text":""'));
-    if (!responseObjects.length) {
-      return [];
-    }
-
-    return responseObjects.map((line) => {
-      // Clean the response: remove everything before first { and after last }
+    const result: string[] = [];
+    for (const line of lines) {
       let toParse = line.trim();
-
-      // Remove everything before the first { in the string
       const firstBrace = toParse.indexOf('{');
       if (firstBrace !== -1) {
         toParse = toParse.slice(firstBrace);
       }
-
-      // Remove everything after the last } in the string
       const lastBrace = toParse.lastIndexOf('}');
       if (lastBrace !== -1) {
         toParse = toParse.slice(0, lastBrace + 1);
       }
 
-      return toParse;
-    });
+      if (!toParse.includes('{')) {
+        continue;
+      }
+
+      try {
+        const parsed = JSON.parse(toParse) as {
+          type?: string;
+          part?: {
+            type?: string;
+            text?: string;
+            callID?: string;
+            tool?: string;
+            state?: { status?: string; input?: unknown };
+          };
+        };
+        if (!parsed.type) {
+          continue;
+        }
+        if (parsed.type === 'text') {
+          if (parsed.part?.type === 'text' && typeof parsed.part.text === 'string' && parsed.part.text !== '') {
+            result.push(toParse);
+          }
+        } else if (parsed.type === 'tool_use') {
+          const part = parsed.part;
+          if (
+            part?.type === 'tool' &&
+            typeof part.callID === 'string' &&
+            typeof part.tool === 'string' &&
+            part.callID.length > 0 &&
+            part.tool.length > 0
+          ) {
+            const toolCallFrame = {
+              type: 'tool_call',
+              toolCallId: part.callID,
+              name: part.tool,
+              args: part.state?.input,
+              status: OpenCodeAgentProvider.mapOpenCodeToolLifecycleStatus(part.state?.status),
+            };
+            result.push(JSON.stringify(toolCallFrame));
+          }
+          result.push(toParse);
+        } else if (parsed.type === 'error') {
+          result.push(toParse);
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return result;
+  }
+
+  private static mapOpenCodeToolLifecycleStatus(status: unknown): 'started' | 'inProgress' | 'succeeded' | 'failed' {
+    const s = typeof status === 'string' ? status.toLowerCase() : '';
+    if (s === 'completed' || s === 'success' || s === 'succeeded') {
+      return 'succeeded';
+    }
+    if (s === 'failed' || s === 'error') {
+      return 'failed';
+    }
+    if (s === 'started' || s === 'running' || s === 'pending') {
+      return 'inProgress';
+    }
+    return 'inProgress';
   }
 
   /**
@@ -153,28 +251,102 @@ export class OpenCodeAgentProvider implements AgentProvider {
    * @param response - The response from the agent
    * @returns The unified response object
    */
-  toUnifiedResponse(response: string): AgentResponseObject {
+  toUnifiedResponse(response: string): AgentResponseObject | undefined {
     const responseObject = JSON.parse(response) as {
       type: string;
-      timestamp: number;
-      sessionID: string;
-      part: {
-        id: string;
-        sessionID: string;
-        messageID: string;
-        type: 'text';
-        text: string;
-        time: {
+      timestamp?: number;
+      sessionID?: string;
+      part?: {
+        id?: string;
+        sessionID?: string;
+        messageID?: string;
+        type?: string;
+        text?: string;
+        callID?: string;
+        tool?: string;
+        state?: {
+          status?: string;
+          input?: unknown;
+          output?: unknown;
+          title?: string;
+          metadata?: Record<string, unknown>;
+        };
+        time?: {
           start: number;
           end: number;
         };
       };
+      error?: {
+        name?: string;
+        data?: { message?: string };
+      };
     };
 
-    return {
-      type: 'result',
-      subtype: 'success',
-      result: responseObject.part.text,
-    };
+    if (responseObject.type === 'text' && responseObject.part?.type === 'text') {
+      return {
+        type: 'result',
+        subtype: 'success',
+        result: responseObject.part.text ?? '',
+      };
+    }
+
+    if (responseObject.type === 'tool_call') {
+      const o = responseObject as unknown as {
+        toolCallId?: unknown;
+        name?: unknown;
+        args?: unknown;
+        status?: unknown;
+      };
+      if (typeof o.toolCallId !== 'string' || typeof o.name !== 'string') {
+        return undefined;
+      }
+      const st = o.status;
+      const status =
+        st === 'started' || st === 'inProgress' || st === 'succeeded' || st === 'failed' ? st : 'inProgress';
+      return {
+        type: 'tool_call',
+        toolCallId: o.toolCallId,
+        name: o.name,
+        ...(o.args !== undefined ? { args: o.args } : {}),
+        status,
+      };
+    }
+
+    if (responseObject.type === 'tool_use' && responseObject.part?.type === 'tool') {
+      const part = responseObject.part;
+      if (typeof part.callID !== 'string' || typeof part.tool !== 'string') {
+        return undefined;
+      }
+      const exit = part.state?.metadata?.exit;
+      const isError = typeof exit === 'number' && exit !== 0;
+      return {
+        type: 'tool_result',
+        toolCallId: part.callID,
+        name: part.tool,
+        result: {
+          output: part.state?.output,
+          input: part.state?.input,
+          title: part.state?.title,
+          metadata: part.state?.metadata,
+        },
+        isError,
+      };
+    }
+
+    if (responseObject.type === 'error') {
+      const message =
+        typeof responseObject.error?.data?.message === 'string'
+          ? responseObject.error.data.message
+          : typeof responseObject.error?.name === 'string'
+            ? responseObject.error.name
+            : 'OpenCode error';
+      return {
+        type: 'error',
+        is_error: true,
+        result: message,
+      };
+    }
+
+    return undefined;
   }
 }

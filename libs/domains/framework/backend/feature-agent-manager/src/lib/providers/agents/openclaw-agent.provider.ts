@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AgentProvider, AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
+import {
+  AgentProvider,
+  AgentProviderCapabilities,
+  AgentProviderOptions,
+  AgentResponseObject,
+} from '../agent-provider.interface';
 
 /**
  * OpenClaw agent provider implementation.
@@ -23,6 +28,15 @@ export class OpenClawAgentProvider implements AgentProvider {
    */
   getDisplayName(): string {
     return 'OpenClaw';
+  }
+
+  getCapabilities(): AgentProviderCapabilities {
+    return {
+      supportsChat: false,
+      supportsStreaming: false,
+      supportsToolEvents: false,
+      supportsQuestions: false,
+    };
   }
 
   /**

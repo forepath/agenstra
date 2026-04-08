@@ -8,6 +8,7 @@ import {
   disconnectSocket,
   forwardEvent,
   setChatModel,
+  setChatResponseMode,
   setClient,
 } from './sockets.actions';
 import { getSocketInstance } from './sockets.effects';
@@ -292,11 +293,15 @@ describe('SocketsFacade', () => {
       facade.forwardChat(message, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(
-        forwardEvent({ event: ForwardableEvent.CHAT, payload: { message }, agentId }),
+        forwardEvent({
+          event: ForwardableEvent.CHAT,
+          payload: { message, responseMode: 'stream' },
+          agentId,
+        }),
       );
       expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
         event: ForwardableEvent.CHAT,
-        payload: { message },
+        payload: { message, responseMode: 'stream' },
         agentId,
       });
     });
@@ -308,11 +313,15 @@ describe('SocketsFacade', () => {
       facade.forwardChat(message, agentId, model);
 
       expect(store.dispatch).toHaveBeenCalledWith(
-        forwardEvent({ event: ForwardableEvent.CHAT, payload: { message, model }, agentId }),
+        forwardEvent({
+          event: ForwardableEvent.CHAT,
+          payload: { message, model, responseMode: 'stream' },
+          agentId,
+        }),
       );
       expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
         event: ForwardableEvent.CHAT,
-        payload: { message, model },
+        payload: { message, model, responseMode: 'stream' },
         agentId,
       });
     });
@@ -324,13 +333,42 @@ describe('SocketsFacade', () => {
       facade.forwardChat(message, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(
-        forwardEvent({ event: ForwardableEvent.CHAT, payload: { message, model: 'stored-model' }, agentId }),
+        forwardEvent({
+          event: ForwardableEvent.CHAT,
+          payload: { message, model: 'stored-model', responseMode: 'stream' },
+          agentId,
+        }),
       );
       expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
         event: ForwardableEvent.CHAT,
-        payload: { message, model: 'stored-model' },
+        payload: { message, model: 'stored-model', responseMode: 'stream' },
         agentId,
       });
+    });
+
+    it('should forward chat with responseMode single when current mode is single', () => {
+      (facade as any).currentChatResponseMode = 'single';
+      const message = 'Hello world';
+      const agentId = 'agent-1';
+      facade.forwardChat(message, agentId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        forwardEvent({
+          event: ForwardableEvent.CHAT,
+          payload: { message, responseMode: 'single' },
+          agentId,
+        }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
+        event: ForwardableEvent.CHAT,
+        payload: { message, responseMode: 'single' },
+        agentId,
+      });
+    });
+
+    it('should dispatch setChatResponseMode', () => {
+      facade.setChatResponseMode('single');
+      expect(store.dispatch).toHaveBeenCalledWith(setChatResponseMode({ mode: 'single' }));
     });
 
     it('should forward enhance chat with correlation id and dispatch chatEnhancementStarted', () => {

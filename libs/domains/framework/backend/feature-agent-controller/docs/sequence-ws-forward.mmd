@@ -60,7 +60,7 @@ sequenceDiagram
 
     rect rgb(250, 255, 240)
         Note over WSClient,RemoteWS: Forward Event (with Auto-Login)
-        Note over WSClient: Examples: "chat" (with payload {message, model?}), "fileUpdate", "logout", etc.
+        Note over WSClient: Examples: "chat" (payload {message, model?, correlationId?, responseMode?}), "fileUpdate", "logout", etc.
         WSClient->>Gateway: forward<br/>{event: "chat" | "fileUpdate" | ..., payload: {...}, agentId?}
         Gateway->>Gateway: clientId = selectedClientBySocket.get(socket.id)
         alt No client selected
@@ -126,11 +126,11 @@ sequenceDiagram
                         Note over Gateway: Forwards event to remote agent-manager WebSocket
                     end
                     Gateway-->>WSClient: forwardAck<br/>{received: true, event}
-                    Note over RemoteWS: Remote processes event and emits responses<br/>After login, chat history is automatically<br/>restored via chatMessage events<br/>For fileUpdate, broadcasts fileUpdateNotification to all clients
+                    Note over RemoteWS: Remote processes event and emits responses<br/>After login, chat history is automatically<br/>restored via chatMessage events. When streaming/tool/question events are enabled, remote also emits chatEvent frames.<br/>For fileUpdate, broadcasts fileUpdateNotification to all clients
                     RemoteWS->>Gateway: onAny(event, ...args)
                     Gateway->>Gateway: socket.emit(event, ...args)
                     Gateway-->>WSClient: event<br/>{...args}
-                    Note over WSClient: Receives forwarded responses from remote<br/>(e.g., loginSuccess, chatMessage, fileUpdateNotification events)
+                    Note over WSClient: Receives forwarded responses from remote<br/>(e.g., loginSuccess, chatMessage, chatEvent, fileUpdateNotification events)
                 end
             end
         end

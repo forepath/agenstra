@@ -8,7 +8,6 @@ import {
   inject,
   OnDestroy,
   OnInit,
-  SecurityContext,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -28,6 +27,7 @@ import {
   StatsFacade,
   type AddClientUserDto,
   type AgentResponseDto,
+  type AgentResponseObject,
   type ChatMessageData,
   type ClientAuthenticationType,
   type ClientResponseDto,
@@ -47,11 +47,13 @@ import {
   type WriteFileDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
   catchError,
   combineLatest,
   combineLatestWith,
   delay,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -64,11 +66,14 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs';
-import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
-import { StandaloneLoadingService } from '@forepath/shared/frontend';
+import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
+import { mapForwardedChatEventsToDisplayRows } from './agent-chat-event-display';
+import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
+import { formatAgentResponseForChatMarkdown, formatUnknownAsMarkdown } from './agent-chat-response-markdown';
+import { buildChatDisplayThread, type ChatDisplayThreadItem } from './chat-thread-display';
 
 // Type declaration for marked library
 interface Marked {
@@ -163,6 +168,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   // Cache for marked instance to avoid repeated async imports
   private markedInstance: Marked | null = null;
   private markedLoadPromise: Promise<Marked> | null = null;
+
+  /** Stable SafeHtml per markdown source so change detection does not rewrite innerHTML every tick. */
+  private readonly markdownHtmlCache = new Map<string, SafeHtml>();
+  private readonly commandBadgeHtmlCache = new Map<string, SafeHtml>();
+  private static readonly MAX_HTML_CACHE_ENTRIES = 200;
+
+  private trimHtmlCache(cache: Map<string, SafeHtml>): void {
+    if (cache.size <= AgentConsoleChatComponent.MAX_HTML_CACHE_ENTRIES) {
+      return;
+    }
+    const overflow = cache.size - AgentConsoleChatComponent.MAX_HTML_CACHE_ENTRIES;
+    const keys = [...cache.keys()].slice(0, overflow);
+    for (const key of keys) {
+      cache.delete(key);
+    }
+  }
 
   // Cache for deployment status observables (key: `${clientId}:${agentId}`)
   private readonly deploymentStatusCache = new Map<
@@ -296,12 +317,31 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly socketReconnectAttempts$: Observable<number> = this.socketsFacade.reconnectAttempts$;
   readonly selectedClientId$: Observable<string | null> = this.socketsFacade.selectedClientId$;
   readonly chatMessages$ = this.socketsFacade.getForwardedEventsByEvent$('chatMessage');
+  readonly chatEvents$ = this.socketsFacade.getForwardedEventsByEvent$('chatEvent');
   readonly messageFilterResults$ = this.socketsFacade.messageFilterResults$;
+
+  readonly recentChatEventRows$ = this.chatEvents$.pipe(
+    map((events) => mapForwardedChatEventsToDisplayRows(events.slice(-50))),
+  );
 
   // Combine chat messages with filter results for efficient template access
   readonly chatMessagesWithFilters$: Observable<ChatMessageWithFilter[]> = combineLatest([
     this.chatMessages$,
-    this.messageFilterResults$,
+    this.messageFilterResults$.pipe(
+      distinctUntilChanged((prev, curr) => {
+        if (prev.length !== curr.length) {
+          return false;
+        }
+        return prev.every(
+          (row, i) =>
+            row.timestamp === curr[i]?.timestamp &&
+            row.receivedAt === curr[i]?.receivedAt &&
+            row.status === curr[i]?.status &&
+            row.direction === curr[i]?.direction &&
+            row.message === curr[i]?.message,
+        );
+      }),
+    ),
   ]).pipe(
     map(([messages, filterResults]) =>
       messages.map((msg) => {
@@ -317,8 +357,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         } as ChatMessageWithFilter;
       }),
     ),
+    distinctUntilChanged((prev, curr) => this.chatMessagesWithFilterViewEqual(prev, curr)),
   );
+
+  /** User rows plus one bubble per agent turn (matches streaming layout for multi-part / full-response). */
+  readonly displayChatThread$ = this.chatMessagesWithFilters$.pipe(map((messages) => buildChatDisplayThread(messages)));
+
   readonly forwarding$: Observable<boolean> = this.socketsFacade.chatForwarding$;
+  readonly chatResponseMode$ = this.socketsFacade.chatResponseMode$;
   readonly chatEnhancementPending$: Observable<boolean> = this.socketsFacade.chatEnhancementPending$;
   readonly socketError$: Observable<string | null> = this.socketsFacade.error$;
 
@@ -452,67 +498,75 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     shareReplay(1),
   );
 
+  /**
+   * Set on send until the echoed user `chatMessage` exists in the store; drives waiting/streaming UI.
+   */
+  private lastUserMessageTimestamp = signal<number | null>(null);
+  private readonly lastUserMessageTimestamp$ = toObservable(this.lastUserMessageTimestamp);
+
   // Computed signal to determine if we're waiting for an agent response
   // Works across windows by checking chat messages rather than just forwarding state
-  readonly waitingForResponse$ = combineLatest([this.chatMessages$, this.socketError$]).pipe(
-    map(([messages, error]) => {
-      // If there's an error, we're not waiting
+  readonly waitingForResponse$ = combineLatest([
+    this.chatMessages$,
+    this.socketError$,
+    this.lastUserMessageTimestamp$,
+  ]).pipe(
+    map(([messages, error, sentFallbackTs]) => {
       if (error) {
         this.lastUserMessageTimestamp.set(null);
         return false;
       }
 
-      // Filter to only chat messages (user and agent messages)
-      const chatMessages = messages.filter(
-        (msg) => this.isUserMessage(msg.payload) || this.isAgentMessage(msg.payload),
-      );
-
-      // Determine the timestamp of the last user message
-      // Use the most recent user message from the array, or fall back to lastUserMessageTimestamp signal
-      // if we've sent a message but it hasn't appeared in the array yet
-      const userMessages = chatMessages.filter((msg) => this.isUserMessage(msg.payload));
-      let lastUserMessageTimestamp: number | null = null;
-
-      if (userMessages.length > 0) {
-        const lastUserMessage = userMessages.reduce((latest, msg) => (msg.timestamp > latest.timestamp ? msg : latest));
-        lastUserMessageTimestamp = lastUserMessage.timestamp;
-      } else {
-        // Check if we've sent a message but it's not yet in the messages array
-        const sentMessageTimestamp = this.lastUserMessageTimestamp();
-        if (sentMessageTimestamp) {
-          lastUserMessageTimestamp = sentMessageTimestamp;
-        }
-      }
-
-      // If we have no user message timestamp, we're not waiting
-      if (!lastUserMessageTimestamp) {
+      const { lastUserTs, hasAgentMessageAfter } = this.deriveLastUserAndAgentComplete(messages, sentFallbackTs);
+      if (!lastUserTs) {
         return false;
       }
-
-      // Check if there's an agent message after the last user message
-      const hasAgentResponse = chatMessages.some(
-        (msg) => this.isAgentMessage(msg.payload) && msg.timestamp > lastUserMessageTimestamp,
-      );
-
-      // If we have an agent response, we're no longer waiting
-      if (hasAgentResponse) {
-        // Clear the timestamp if it was set
+      if (hasAgentMessageAfter) {
         this.lastUserMessageTimestamp.set(null);
         return false;
       }
 
-      // We're waiting if there's a user message without a corresponding agent response
-      // This works across windows since all windows receive the same chat messages
       return true;
     }),
   );
+
+  /** Live fold of `chatEvent` frames for the in-flight turn (hidden once final agent `chatMessage` arrives). */
+  readonly streamingAssistantState$ = combineLatest([
+    this.chatMessages$,
+    this.chatEvents$,
+    this.lastUserMessageTimestamp$,
+  ]).pipe(
+    map(([messages, events, sentFallbackTs]) => {
+      const { lastUserTs, hasAgentMessageAfter } = this.deriveLastUserAndAgentComplete(messages, sentFallbackTs);
+      if (!lastUserTs || hasAgentMessageAfter) {
+        return null;
+      }
+      const streamBaseline = this.deriveStreamingChatEventBaselineMs(messages, sentFallbackTs);
+      if (streamBaseline == null) {
+        return null;
+      }
+      return accumulateStreamingTurnFromEvents(events, streamBaseline);
+    }),
+  );
+
+  /** Bottom-of-thread: spinner only until first stream frame, then live markdown + tool/status rows. */
+  readonly chatPendingUi$ = combineLatest([this.waitingForResponse$, this.streamingAssistantState$]).pipe(
+    map(([waiting, stream]) => {
+      const hasStream = stream !== null && stream.segments.length > 0;
+      return {
+        showThinking: waiting && !hasStream,
+        showStreaming: waiting && hasStream,
+        stream,
+      };
+    }),
+  );
+
   private activeClientId: string | null = null;
   private shouldScrollToBottom = false;
   private previousMessageCount = 0;
   private readonly destroyRef = inject(DestroyRef);
   private syncAnimationFrameId: number | null = null;
   private syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private lastUserMessageTimestamp = signal<number | null>(null);
   private lastAgentMessageTimestamp = 0;
 
   // Delete state
@@ -1125,14 +1179,48 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
     });
 
-    // Subscribe to waiting state changes to trigger scroll when loading indicator appears
-    this.waitingForResponse$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((waiting) => {
-      if (waiting) {
-        // When we start waiting for a response, scroll to show the loading indicator
-        this.shouldScrollToBottom = true;
-        this.cdr.detectChanges();
-      }
-    });
+    this.chatPendingUi$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        distinctUntilChanged((a, b) => {
+          if (a.showThinking !== b.showThinking || a.showStreaming !== b.showStreaming) {
+            return false;
+          }
+          const sa = a.stream?.segments;
+          const sb = b.stream?.segments;
+          if (sa === sb) {
+            return true;
+          }
+          if (!sa || !sb || sa.length !== sb.length) {
+            return false;
+          }
+          for (let i = 0; i < sa.length; i++) {
+            const xa = sa[i];
+            const xb = sb[i];
+            if (xa.kind !== xb.kind) {
+              return false;
+            }
+            if (xa.kind === 'row' && xb.kind === 'row') {
+              if (xa.row.trackId !== xb.row.trackId) {
+                return false;
+              }
+            } else if (xa.kind === 'markdown' && xb.kind === 'markdown') {
+              if (xa.trackId !== xb.trackId || xa.markdown !== xb.markdown) {
+                return false;
+              }
+            } else {
+              return false;
+            }
+          }
+          return true;
+        }),
+      )
+      .subscribe((pending) => {
+        if (pending.showThinking || pending.showStreaming) {
+          this.shouldScrollToBottom = true;
+          this.cdr.detectChanges();
+        }
+      });
 
     // Preload marked library in the background
     this.loadMarked().catch(() => {
@@ -1539,6 +1627,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const normalizedValue = value === '' ? null : value;
     this.selectedChatModel.set(normalizedValue);
     this.socketsFacade.setChatModel(normalizedValue);
+  }
+
+  onChatResponseModeChange(value: string): void {
+    if (value === 'stream' || value === 'single') {
+      this.socketsFacade.setChatResponseMode(value);
+    }
   }
 
   onCommandChange(value: string): void {
@@ -3284,6 +3378,55 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return `SSHPASS='${password}' sshpass -e ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${username ?? 'ssh'}@${hostname}`;
   }
 
+  /**
+   * Earliest client timestamp that bounds the current turn's `chatEvent` stream: min(send time, echoed user row).
+   * Avoids dropping deltas that arrive before the echoed `chatMessage` user row (which has a later timestamp).
+   */
+  private deriveStreamingChatEventBaselineMs(
+    messages: Array<{ payload: ForwardedEventPayload; timestamp: number }>,
+    sentFallbackTs: number | null,
+  ): number | null {
+    const userMessages = messages.filter((msg) => this.isUserMessage(msg.payload));
+    let latestUserInArray: number | null = null;
+    if (userMessages.length > 0) {
+      const lastUser = userMessages.reduce((latest, msg) => (msg.timestamp > latest.timestamp ? msg : latest));
+      latestUserInArray = lastUser.timestamp;
+    }
+    const candidates: number[] = [];
+    if (sentFallbackTs != null) {
+      candidates.push(sentFallbackTs);
+    }
+    if (latestUserInArray != null) {
+      candidates.push(latestUserInArray);
+    }
+    if (candidates.length === 0) {
+      return null;
+    }
+    return Math.min(...candidates);
+  }
+
+  private deriveLastUserAndAgentComplete(
+    messages: Array<{ payload: ForwardedEventPayload; timestamp: number }>,
+    sentFallbackTs: number | null,
+  ): { lastUserTs: number | null; hasAgentMessageAfter: boolean } {
+    const chatMessages = messages.filter((msg) => this.isUserMessage(msg.payload) || this.isAgentMessage(msg.payload));
+    let lastUserTs: number | null = null;
+    const userMessages = chatMessages.filter((msg) => this.isUserMessage(msg.payload));
+    if (userMessages.length > 0) {
+      const lastUserMessage = userMessages.reduce((latest, msg) => (msg.timestamp > latest.timestamp ? msg : latest));
+      lastUserTs = lastUserMessage.timestamp;
+    } else if (sentFallbackTs) {
+      lastUserTs = sentFallbackTs;
+    }
+    if (!lastUserTs) {
+      return { lastUserTs: null, hasAgentMessageAfter: false };
+    }
+    const hasAgentMessageAfter = chatMessages.some(
+      (msg) => this.isAgentMessage(msg.payload) && msg.timestamp > lastUserTs!,
+    );
+    return { lastUserTs, hasAgentMessageAfter };
+  }
+
   isUserMessage(payload: ForwardedEventPayload): boolean {
     if ('success' in payload && payload.success && 'data' in payload) {
       const data = payload.data as ChatMessageData;
@@ -3324,18 +3467,110 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   getResult(messageData: ChatMessageData): string | null {
     if ('response' in messageData) {
-      const response = messageData.response;
-      // If response is an object with a result property, return it
-      if (typeof response === 'object' && response !== null && 'result' in response) {
-        const result = response.result;
-        return typeof result === 'string' ? result : String(result);
-      }
-      // If response is a string, return it as-is
-      if (typeof response === 'string') {
-        return response;
-      }
+      return formatAgentResponseForChatMarkdown(messageData.response);
     }
     return null;
+  }
+
+  isToolResultAgentMessage(messageData: ChatMessageData): boolean {
+    if (!('response' in messageData)) {
+      return false;
+    }
+    const r = messageData.response;
+    if (typeof r !== 'object' || r === null) {
+      return false;
+    }
+    const t = (r as AgentResponseObject)['type'];
+    return t === 'tool_result' || t === 'toolResult';
+  }
+
+  getToolResultAccordionSummary(messageData: ChatMessageData): {
+    name: string;
+    status: 'failed' | 'success';
+  } {
+    if (!('response' in messageData)) {
+      return {
+        name: 'tool',
+        status: 'success',
+      };
+    }
+    const r = messageData.response;
+    if (typeof r !== 'object' || r === null) {
+      return {
+        name: 'tool',
+        status: 'success',
+      };
+    }
+    const agentResponse = r as AgentResponseObject;
+    const name = typeof agentResponse['name'] === 'string' ? agentResponse['name'] : 'tool';
+    const isError = Boolean(agentResponse['isError']);
+
+    return {
+      name,
+      status: isError ? 'failed' : 'success',
+    };
+  }
+
+  getToolResultBodyMarkdown(messageData: ChatMessageData): string {
+    if (!('response' in messageData)) {
+      return '_—_';
+    }
+    const r = messageData.response;
+    if (typeof r !== 'object' || r === null) {
+      return '_—_';
+    }
+    return formatUnknownAsMarkdown((r as AgentResponseObject)['result']);
+  }
+
+  /**
+   * Stable keys for @for — do not include $index or rows remount on unrelated list rebuilds.
+   */
+  trackChatDisplayItem(item: ChatDisplayThreadItem): string {
+    if (item.kind === 'user') {
+      return `u-${item.msg.timestamp}`;
+    }
+    const firstTs = item.msgs[0]?.timestamp ?? item.view.displayTimestamp;
+    const lastTs = item.msgs[item.msgs.length - 1]?.timestamp ?? firstTs;
+    return `a-${firstTs}-${lastTs}-${item.msgs.length}-${item.view.hasFiltered ? 'f' : 'n'}-${item.view.hasDropped ? 'd' : 'n'}`;
+  }
+
+  private chatFilterResultEqual(
+    a: ChatMessageWithFilter['filterResult'],
+    b: ChatMessageWithFilter['filterResult'],
+  ): boolean {
+    if (a === b) {
+      return true;
+    }
+    if (a == null || b == null) {
+      return a == null && b == null;
+    }
+    return (
+      a.direction === b.direction &&
+      a.status === b.status &&
+      a.matchedFilter?.type === b.matchedFilter?.type &&
+      a.matchedFilter?.displayName === b.matchedFilter?.displayName
+    );
+  }
+
+  private chatMessagesWithFilterViewEqual(a: ChatMessageWithFilter[], b: ChatMessageWithFilter[]): boolean {
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      const x = a[i];
+      const y = b[i];
+      if (x.timestamp !== y.timestamp || x.event !== y.event || x.payload !== y.payload) {
+        return false;
+      }
+      if (!this.chatFilterResultEqual(x.filterResult, y.filterResult)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  toolResultCollapseId(msgTimestamp: number, msgIndex: number): string {
+    return `tool-result-${msgTimestamp}-${msgIndex}`;
   }
 
   /**
@@ -3444,40 +3679,47 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * Parse markdown to HTML and sanitize it
    */
   parseMarkdown(messageData: ChatMessageData): SafeHtml | null {
-    const result = this.getResult(messageData);
+    return this.parseMarkdownFromString(this.getResult(messageData));
+  }
+
+  /**
+   * Parse a markdown string to HTML and sanitize it (shared by full messages and tool-result accordion bodies).
+   */
+  parseMarkdownFromString(result: string | null): SafeHtml | null {
     if (!result) {
       return null;
     }
 
-    // If marked is already loaded, use it synchronously
     if (this.markedInstance) {
+      const cached = this.markdownHtmlCache.get(result);
+      if (cached !== undefined) {
+        return cached;
+      }
       try {
         const html = this.markedInstance.parse(result, {
-          breaks: true, // Convert line breaks to <br>
-          gfm: true, // GitHub Flavored Markdown
+          breaks: true,
+          gfm: true,
         });
-        // Sanitize the HTML to prevent XSS attacks
-        const sanitized = this.sanitizer.sanitize(SecurityContext.HTML, html);
-        return this.sanitizer.bypassSecurityTrustHtml(sanitized || '');
+        const safe = this.sanitizer.bypassSecurityTrustHtml(html || '');
+        this.markdownHtmlCache.set(result, safe);
+        this.trimHtmlCache(this.markdownHtmlCache);
+        return safe;
       } catch (error) {
         console.warn('Error parsing markdown:', error);
         const escaped = result.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return this.sanitizer.bypassSecurityTrustHtml(escaped);
+        const safe = this.sanitizer.bypassSecurityTrustHtml(escaped);
+        this.markdownHtmlCache.set(result, safe);
+        this.trimHtmlCache(this.markdownHtmlCache);
+        return safe;
       }
     }
 
-    // If marked is not loaded yet, try to load it and parse
-    // This will happen on first call
     this.loadMarked()
       .then(() => {
-        // Trigger change detection to update the view with parsed markdown
         this.cdr.detectChanges();
       })
-      .catch(() => {
-        // Marked not available, will fall through to escaped text
-      });
+      .catch(() => undefined);
 
-    // Return escaped text as fallback while marked is loading
     const escaped = result.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return this.sanitizer.bypassSecurityTrustHtml(escaped);
   }
@@ -3499,6 +3741,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return null;
     }
 
+    const cached = this.commandBadgeHtmlCache.get(text);
+    if (cached !== undefined) {
+      return cached;
+    }
+
     // Check if message starts with a slash command
     const commandMatch = text.match(/^(\/[^\s\n]+)(.*)$/s);
     if (commandMatch) {
@@ -3516,7 +3763,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
       // Create HTML with badge (white background with primary text for user messages)
       const html = `<span class="badge bg-white text-primary me-2">${command}</span>${escapedRest}`;
-      return this.sanitizer.bypassSecurityTrustHtml(html);
+      const safe = this.sanitizer.bypassSecurityTrustHtml(html);
+      this.commandBadgeHtmlCache.set(text, safe);
+      this.trimHtmlCache(this.commandBadgeHtmlCache);
+      return safe;
     }
 
     // No command, return escaped text
@@ -3527,7 +3777,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;')
       .replace(/\n/g, '<br>');
-    return this.sanitizer.bypassSecurityTrustHtml(escaped);
+    const safe = this.sanitizer.bypassSecurityTrustHtml(escaped);
+    this.commandBadgeHtmlCache.set(text, safe);
+    this.trimHtmlCache(this.commandBadgeHtmlCache);
+    return safe;
   }
 
   /**

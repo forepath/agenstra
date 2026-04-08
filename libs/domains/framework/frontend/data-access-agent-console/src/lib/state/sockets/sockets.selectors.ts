@@ -19,6 +19,8 @@ export const selectSettingClientId = createSelector(selectSocketsState, (state) 
 
 export const selectChatModel = createSelector(selectSocketsState, (state) => state.chatModel);
 
+export const selectChatResponseMode = createSelector(selectSocketsState, (state) => state.chatResponseMode);
+
 // Forwarding state selectors
 export const selectSocketForwarding = createSelector(selectSocketsState, (state) => state.forwarding);
 
