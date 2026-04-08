@@ -2,6 +2,7 @@ export type AgentResponseMode = 'single' | 'stream';
 
 export type AgentEventKind =
   | 'userMessage'
+  | 'thinking'
   | 'assistantDelta'
   | 'assistantMessage'
   | 'toolCall'
@@ -39,6 +40,12 @@ export interface AgentEventEnvelopeBase {
 
 export interface AgentUserMessagePayload {
   text: string;
+}
+
+/** Emitted after the user message is accepted so clients can show a thinking state before deltas/tools. */
+export interface AgentThinkingPayload {
+  /** Optional lifecycle hint for richer UIs (e.g. queued, running). */
+  phase?: string;
 }
 
 export interface AgentAssistantDeltaPayload {
@@ -89,6 +96,7 @@ export interface AgentErrorPayload {
 
 export type AgentEventEnvelope =
   | (AgentEventEnvelopeBase & { kind: 'userMessage'; payload: AgentUserMessagePayload })
+  | (AgentEventEnvelopeBase & { kind: 'thinking'; payload: AgentThinkingPayload })
   | (AgentEventEnvelopeBase & { kind: 'assistantDelta'; payload: AgentAssistantDeltaPayload })
   | (AgentEventEnvelopeBase & { kind: 'assistantMessage'; payload: AgentAssistantMessagePayload })
   | (AgentEventEnvelopeBase & { kind: 'toolCall'; payload: AgentToolCallPayload })

@@ -4,7 +4,8 @@ export interface AgentResponseObject {
   is_error?: boolean;
   duration_ms?: number;
   duration_api_ms?: number;
-  result?: string;
+  /** Assistant text (string) or structured payload (e.g. tool_result). */
+  result?: unknown;
   session_id?: string;
   request_id?: string;
   [key: string]: unknown; // Allow additional properties

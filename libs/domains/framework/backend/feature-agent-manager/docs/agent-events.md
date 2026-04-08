@@ -20,6 +20,7 @@ Fields:
 - **`timestamp`**: ISO timestamp for the event.
 - **`kind`**: one of:
   - `userMessage`
+  - `thinking` (placeholder after the user message until deltas/tools arrive)
   - `assistantDelta`
   - `assistantMessage`
   - `toolCall`
@@ -35,7 +36,7 @@ Transcript messages are persisted to `agent_messages` as before.
 
 Structured events are optionally persisted to **`agent_message_events`**:
 
-- Stored: `userMessage`, `assistantMessage`, `toolCall`, `toolResult`, `question`, `status`, `error`
+- Stored: `userMessage`, `thinking`, `assistantMessage`, `toolCall`, `toolResult`, `question`, `status`, `error`
 - Skipped by default: `assistantDelta` (high volume)
 
 ## Provider support

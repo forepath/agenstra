@@ -25,6 +25,7 @@ export * from './lib/dto/update-environment-variable.dto';
 export * from './lib/dto/write-file.dto';
 export * from './lib/entities/agent-environment-variable.entity';
 export * from './lib/entities/agent-message.entity';
+export * from './lib/entities/agent-message-event.entity';
 export * from './lib/entities/agent.entity';
 export * from './lib/entities/deployment-configuration.entity';
 export * from './lib/entities/deployment-run.entity';

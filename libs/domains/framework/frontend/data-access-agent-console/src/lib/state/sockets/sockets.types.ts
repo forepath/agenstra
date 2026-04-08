@@ -67,6 +67,7 @@ export type AgentResponseMode = 'single' | 'stream';
 
 export type AgentEventKind =
   | 'userMessage'
+  | 'thinking'
   | 'assistantDelta'
   | 'assistantMessage'
   | 'toolCall'

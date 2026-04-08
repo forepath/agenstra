@@ -16,6 +16,9 @@ sequenceDiagram
     Manager->>Manager: emit chatEvent (userMessage)
     Manager-->>UI: chatEvent {correlationId, sequence:0, kind:"userMessage", payload:{text}}
 
+    Manager->>Manager: emit chatEvent (thinking)
+    Manager-->>UI: chatEvent {kind:"thinking", payload:{}}
+
     Manager->>Provider: sendMessageStream(...)
     Provider->>Docker: execCommandStream(...)
 

@@ -731,73 +731,23 @@
           }
         </div>
 
-        <!-- Structured agent events (streaming/tool calls/questions) -->
-        @if (recentChatEvents$ | async; as events) {
-          @if (events.length > 0) {
-            <div class="px-3 pt-3">
-              <div class="accordion accordion-flush" id="agentEventsAccordion">
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="agentEventsHeading">
-                    <button
-                      class="accordion-button collapsed bg-body-tertiary"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#agentEventsCollapse"
-                      aria-expanded="false"
-                      aria-controls="agentEventsCollapse"
-                    >
-                      <span class="fw-semibold" i18n="@@featureChat-agentEvents">Agent events</span>
-                      <span class="badge bg-secondary ms-2">{{ events.length }}</span>
-                    </button>
-                  </h2>
-                  <div
-                    id="agentEventsCollapse"
-                    class="accordion-collapse collapse"
-                    aria-labelledby="agentEventsHeading"
-                    data-bs-parent="#agentEventsAccordion"
-                  >
-                    <div class="accordion-body bg-body">
-                      <div class="small text-muted mb-2" i18n="@@featureChat-agentEventsHint">
-                        Streaming deltas, tool calls/results, and questions are delivered as structured events.
-                      </div>
-                      <div class="d-flex flex-column gap-2">
-                        @for (ev of events; track ev.timestamp) {
-                          <div class="border rounded p-2 bg-body-tertiary">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-primary">{{ ev.event }}</span>
-                                <span class="text-muted">{{ formatTimestamp(ev.timestamp) }}</span>
-                              </div>
-                            </div>
-                            <pre class="mb-0 mt-2 small"><code>{{ formatJson(ev.payload) }}</code></pre>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        }
-
         <!-- Chat messages -->
         <div #chatMessagesContainer class="chat-messages-container flex-grow-1 overflow-auto p-3 bg-body-secondary">
-          @if (chatMessagesWithFilters$ | async; as messages) {
-            @if (messages.length === 0) {
+          @if (displayChatThread$ | async; as thread) {
+            @if (thread.length === 0) {
               <div class="text-center text-muted py-5">
                 <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
                 <p class="mb-0" i18n="@@featureChat-noMessages">No messages yet. Start a conversation!</p>
               </div>
             } @else {
               <div class="d-flex flex-column gap-2">
-                @for (msg of messages; track msg.timestamp) {
-                  @if (isUserMessage(msg.payload)) {
-                    @if (getChatMessageData(msg.payload); as messageData) {
+                @for (item of thread; track trackChatDisplayItem(item)) {
+                  @if (item.kind === 'user') {
+                    @if (getChatMessageData(item.msg.payload); as messageData) {
                       <div class="d-flex justify-content-end">
                         @if (
-                          msg.filterResult &&
-                          (msg.filterResult.status === 'filtered' || msg.filterResult.status === 'dropped')
+                          item.msg.filterResult &&
+                          (item.msg.filterResult.status === 'filtered' || item.msg.filterResult.status === 'dropped')
                         ) {
                           <div class="card bg-primary text-white chat-message-card border-warning border-2">
                             <div class="card-body chat-message-body">
@@ -808,7 +758,7 @@
                                 <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
                                 <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
                               </div>
-                              <small class="chat-message-timestamp">{{ formatTimestamp(msg.timestamp) }}</small>
+                              <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
                             </div>
                           </div>
                         } @else {
@@ -817,91 +767,126 @@
                               @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
                                 <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
                               }
-                              <small class="chat-message-timestamp">{{ formatTimestamp(msg.timestamp) }}</small>
+                              <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
                             </div>
                           </div>
                         }
                       </div>
                     }
-                  } @else if (isAgentMessage(msg.payload)) {
-                    @if (getChatMessageData(msg.payload); as messageData) {
-                      @if (isMessageDropped(messageData)) {
-                        <div class="d-flex justify-content-start">
-                          <div class="card bg-danger text-white chat-message-card border-danger border-2">
-                            <div class="card-body chat-message-body">
-                              <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-exclamation-circle fs-5"></i>
-                                <strong i18n="@@featureChat-messageDropped">Message Dropped</strong>
-                              </div>
-                              <p class="card-text chat-message-text mb-0">
-                                <span i18n="@@featureChat-messageDroppedDesc"
-                                  >This message was filtered and dropped by the system.</span
-                                >
-                              </p>
-                              <small class="chat-message-timestamp text-white-50">{{
-                                formatTimestamp(msg.timestamp)
-                              }}</small>
+                  } @else if (item.kind === 'agentTurn') {
+                    @if (item.view.hasDropped) {
+                      <div class="d-flex justify-content-start">
+                        <div class="card bg-danger text-white chat-message-card border-danger border-2">
+                          <div class="card-body chat-message-body">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                              <i class="bi bi-exclamation-circle fs-5"></i>
+                              <strong i18n="@@featureChat-messageDropped">Message Dropped</strong>
                             </div>
+                            <p class="card-text chat-message-text mb-0">
+                              <span i18n="@@featureChat-messageDroppedDesc"
+                                >This message was filtered and dropped by the system.</span
+                              >
+                            </p>
+                            <small class="chat-message-timestamp text-white-50">{{
+                              formatTimestamp(item.view.displayTimestamp)
+                            }}</small>
                           </div>
                         </div>
-                      } @else {
-                        <div class="d-flex justify-content-start">
-                          @if (msg.filterResult && msg.filterResult.status === 'filtered') {
-                            <div class="card bg-body chat-message-card border-warning border-2">
-                              <div class="card-body chat-message-body">
-                                @if (parseMarkdown(messageData); as htmlContent) {
-                                  <div
-                                    class="card-text chat-message-text markdown-content"
-                                    [innerHTML]="htmlContent"
-                                  ></div>
-                                }
-                                <div class="d-flex align-items-center gap-2 mt-2">
-                                  <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
-                                  <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                      </div>
+                    } @else {
+                      <div class="d-flex justify-content-start">
+                        <div
+                          class="card bg-body chat-message-card"
+                          [class.border-warning]="item.view.hasFiltered"
+                          [class.border-2]="item.view.hasFiltered"
+                        >
+                          <div class="card-body chat-message-body">
+                            @if (item.view.hasFiltered) {
+                              <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
+                                <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                              </div>
+                            }
+                            @for (seg of item.view.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
+                              @if (seg.kind === 'row') {
+                                <div class="small mb-2 d-flex align-items-start gap-2">
+                                  <span class="badge rounded-pill" [ngClass]="seg.row.badgeClass">{{
+                                    seg.row.kindLabel
+                                  }}</span>
+                                  <div class="flex-grow-1 min-w-0">
+                                    <div class="fw-semibold">{{ seg.row.summaryTitle }}</div>
+                                    <div class="text-body-secondary text-break">{{ seg.row.summaryBody }}</div>
+                                  </div>
                                 </div>
-                                <small class="chat-message-timestamp text-muted">{{
-                                  formatTimestamp(msg.timestamp)
-                                }}</small>
-                              </div>
-                            </div>
-                          } @else {
-                            <div class="card bg-body chat-message-card">
-                              <div class="card-body chat-message-body">
-                                @if (parseMarkdown(messageData); as htmlContent) {
+                              } @else if (seg.kind === 'markdown') {
+                                @if (parseMarkdownFromString(seg.markdown); as turnMarkdownHtml) {
                                   <div
-                                    class="card-text chat-message-text markdown-content"
-                                    [innerHTML]="htmlContent"
+                                    class="card-text chat-message-text markdown-content mt-1"
+                                    [innerHTML]="turnMarkdownHtml"
                                   ></div>
                                 }
-                                <small class="chat-message-timestamp text-muted">{{
-                                  formatTimestamp(msg.timestamp)
-                                }}</small>
-                              </div>
-                            </div>
-                          }
+                              }
+                            }
+                            <small class="chat-message-timestamp text-muted">{{
+                              formatTimestamp(item.view.displayTimestamp)
+                            }}</small>
+                          </div>
                         </div>
-                      }
+                      </div>
                     }
                   }
                 }
-                <!-- Loading indicator when waiting for agent response -->
-                @if (waitingForResponse$ | async) {
-                  <div class="d-flex justify-content-start">
-                    <div class="card bg-body chat-message-card">
-                      <div class="card-body chat-message-body">
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="spinner-border spinner-border-sm text-primary" role="status">
-                            <span class="visually-hidden" i18n="@@featureChat-waitingForResponse"
-                              >Waiting for response...</span
-                            >
-                          </div>
-                          <small class="chat-message-text text-muted mb-0" i18n="@@featureChat-agentThinking"
-                            >Agent is thinking...</small
-                          >
+                <!-- Live stream preview (chatEvent) until final chatMessage arrives -->
+                @if (chatPendingUi$ | async; as pending) {
+                  @if (pending.showStreaming && pending.stream) {
+                    <div class="d-flex justify-content-start">
+                      <div class="card bg-body chat-message-card border border-info border-opacity-25">
+                        <div class="card-body chat-message-body">
+                          @for (
+                            seg of pending.stream.segments;
+                            track seg.kind === 'row' ? seg.row.trackId : seg.trackId
+                          ) {
+                            @if (seg.kind === 'row') {
+                              <div class="small mb-2 d-flex align-items-start gap-2">
+                                <span class="badge rounded-pill" [ngClass]="seg.row.badgeClass">{{
+                                  seg.row.kindLabel
+                                }}</span>
+                                <div class="flex-grow-1 min-w-0">
+                                  <div class="fw-semibold">{{ seg.row.summaryTitle }}</div>
+                                  <div class="text-body-secondary text-break">{{ seg.row.summaryBody }}</div>
+                                </div>
+                              </div>
+                            } @else if (seg.kind === 'markdown') {
+                              @if (parseMarkdownFromString(seg.markdown); as streamHtml) {
+                                <div
+                                  class="card-text chat-message-text markdown-content mt-1"
+                                  [innerHTML]="streamHtml"
+                                ></div>
+                              }
+                            }
+                          }
                         </div>
                       </div>
                     </div>
-                  </div>
+                  }
+                  @if (pending.showThinking) {
+                    <div class="d-flex justify-content-start">
+                      <div class="card bg-body chat-message-card">
+                        <div class="card-body chat-message-body">
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                              <span class="visually-hidden" i18n="@@featureChat-waitingForResponse"
+                                >Waiting for response...</span
+                              >
+                            </div>
+                            <small class="chat-message-text text-muted mb-0" i18n="@@featureChat-agentThinking"
+                              >Agent is thinking...</small
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
                 }
               </div>
             }
@@ -1069,29 +1054,55 @@
               }
             </button>
           </div>
-          <div class="input-group input-group-sm mt-2">
-            <span class="input-group-text small text-muted" i18n="@@featureChat-model">Model</span>
-            <select
-              id="chatModelSelect"
-              class="form-select form-select-sm small text-body"
-              name="chatModelSelect"
-              [ngModel]="selectedChatModel() ?? ''"
-              (ngModelChange)="onChatModelChange($event)"
-              [disabled]="
-                !(socketConnected$ | async) ||
-                (socketReconnecting$ | async) ||
-                (remoteReconnecting$ | async) ||
-                (chatEnhancementPending$ | async) ||
-                !(selectedAgent$ | async)
-              "
-            >
-              <option value="auto" i18n="@@featureChat-modelAuto">Auto</option>
-              @if (selectedAgent$ | async; as agent) {
-                @for (model of getChatModelOptions(agent.agentType); track model.value) {
-                  <option [value]="model.value">{{ model.label }}</option>
-                }
-              }
-            </select>
+          <div class="row row-gap-2">
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mt-2">
+                <span class="input-group-text small text-muted" i18n="@@featureChat-model">Model</span>
+                <select
+                  id="chatModelSelect"
+                  class="form-select form-select-sm small text-body"
+                  name="chatModelSelect"
+                  [ngModel]="selectedChatModel() ?? ''"
+                  (ngModelChange)="onChatModelChange($event)"
+                  [disabled]="
+                    !(socketConnected$ | async) ||
+                    (socketReconnecting$ | async) ||
+                    (remoteReconnecting$ | async) ||
+                    (chatEnhancementPending$ | async) ||
+                    !(selectedAgent$ | async)
+                  "
+                >
+                  <option value="auto" i18n="@@featureChat-modelAuto">Auto</option>
+                  @if (selectedAgent$ | async; as agent) {
+                    @for (model of getChatModelOptions(agent.agentType); track model.value) {
+                      <option [value]="model.value">{{ model.label }}</option>
+                    }
+                  }
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mt-2">
+                <span class="input-group-text small text-muted" i18n="@@featureChat-responseMode">Response</span>
+                <select
+                  id="chatResponseModeSelect"
+                  class="form-select form-select-sm small text-body"
+                  name="chatResponseModeSelect"
+                  [ngModel]="(chatResponseMode$ | async) ?? 'stream'"
+                  (ngModelChange)="onChatResponseModeChange($event)"
+                  [disabled]="
+                    !(socketConnected$ | async) ||
+                    (socketReconnecting$ | async) ||
+                    (remoteReconnecting$ | async) ||
+                    (chatEnhancementPending$ | async) ||
+                    !(selectedAgent$ | async)
+                  "
+                >
+                  <option value="stream" i18n="@@featureChat-responseModeStream">Streaming</option>
+                  <option value="single" i18n="@@featureChat-responseModeFull">Full response</option>
+                </select>
+              </div>
+            </div>
           </div>
           @if (!(socketConnected$ | async)) {
             <small class="text-muted d-block mt-2">

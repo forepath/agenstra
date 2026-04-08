@@ -8,6 +8,7 @@ describe('CursorAgentProvider', () => {
 
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
+    execCommandStream: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -128,6 +129,50 @@ describe('CursorAgentProvider', () => {
       dockerService.sendCommandToContainer.mockRejectedValue(error);
 
       await expect(provider.sendMessage(agentId, containerId, message)).rejects.toThrow('Container not found');
+    });
+  });
+
+  describe('sendMessageStream', () => {
+    const agentId = 'test-agent-id';
+    const containerId = 'test-container-id';
+    const message = 'Hello, agent!';
+
+    it('should use stream-json and stream-partial-output with execCommandStream', async () => {
+      async function* mockStream(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
+        yield { stream: 'stdout', chunk: '{"type":"assistant"' };
+        yield { stream: 'stdout', chunk: '}\n' };
+      }
+      dockerService.execCommandStream.mockImplementation(mockStream);
+
+      const chunks: string[] = [];
+      for await (const chunk of provider.sendMessageStream(agentId, containerId, message)) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks.join('')).toBe('{"type":"assistant"}\n');
+      expect(dockerService.execCommandStream).toHaveBeenCalledWith(
+        containerId,
+        `cursor-agent --print --approve-mcps --force --output-format stream-json --stream-partial-output --resume ${agentId}-${containerId}`,
+        message,
+      );
+    });
+
+    it('should forward model flag when provided', async () => {
+      async function* emptyStream(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
+        // empty
+      }
+      dockerService.execCommandStream.mockImplementation(emptyStream);
+      const model = 'gpt-4';
+
+      for await (const _ of provider.sendMessageStream(agentId, containerId, message, { model })) {
+        // consume
+      }
+
+      expect(dockerService.execCommandStream).toHaveBeenCalledWith(
+        containerId,
+        `cursor-agent --print --approve-mcps --force --output-format stream-json --stream-partial-output --resume ${agentId}-${containerId} --model ${model}`,
+        message,
+      );
     });
   });
 
@@ -446,6 +491,69 @@ describe('CursorAgentProvider', () => {
         count: 42,
         rate: 3.14,
       });
+    });
+
+    it('should map stream-json assistant line to delta', () => {
+      const response = JSON.stringify({
+        type: 'assistant',
+        message: {
+          role: 'assistant',
+          content: [{ type: 'text', text: 'Hello' }],
+        },
+        session_id: 's1',
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result).toEqual({ type: 'delta', delta: 'Hello' });
+    });
+
+    it('should return undefined for stream-json user line', () => {
+      const response = JSON.stringify({
+        type: 'user',
+        message: { role: 'user', content: [{ type: 'text', text: 'Hi' }] },
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should map tool_call started to tool_call', () => {
+      const response = JSON.stringify({
+        type: 'tool_call',
+        subtype: 'started',
+        tool_call: {
+          readToolCall: {
+            args: { path: '/src/a.ts' },
+          },
+        },
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result?.type).toBe('tool_call');
+      expect(result?.toolCallId).toMatch(/^cursor-read-/);
+      expect(result?.name).toBe('read');
+      expect(result?.status).toBe('started');
+    });
+
+    it('should map tool_call completed to tool_result', () => {
+      const response = JSON.stringify({
+        type: 'tool_call',
+        subtype: 'completed',
+        tool_call: {
+          readToolCall: {
+            args: { path: '/src/a.ts' },
+            result: {
+              success: { totalLines: 10, contentSize: 100 },
+            },
+          },
+        },
+      });
+      const result = provider.toUnifiedResponse(response);
+
+      expect(result?.type).toBe('tool_result');
+      expect(result?.toolCallId).toMatch(/^cursor-read-/);
+      expect(result?.name).toBe('read');
+      expect(result?.isError).toBe(false);
     });
   });
 });

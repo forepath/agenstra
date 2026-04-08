@@ -109,7 +109,7 @@ export class CursorAgentProvider implements AgentProvider {
     options?: AgentProviderOptions,
   ): AsyncIterable<string> {
     const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
-    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
+    let command = `cursor-agent --print --approve-mcps --force --output-format stream-json --stream-partial-output --resume ${resumeId}`;
     if (options?.model) {
       command += ` --model ${options.model}`;
     }
@@ -211,6 +211,181 @@ MESSAGE HANDLING:
    * @returns The unified response object
    */
   toUnifiedResponse(response: string): AgentResponseObject | undefined {
-    return JSON.parse(response) as AgentResponseObject;
+    const parsed = JSON.parse(response) as Record<string, unknown>;
+    const topLevelType = typeof parsed.type === 'string' ? parsed.type : undefined;
+    const normalized = this.normalizeCursorCliOutput(parsed);
+    if (normalized !== undefined) {
+      return normalized;
+    }
+    if (
+      topLevelType === 'user' ||
+      topLevelType === 'system' ||
+      topLevelType === 'assistant' ||
+      topLevelType === 'tool_call'
+    ) {
+      return undefined;
+    }
+    return parsed as AgentResponseObject;
+  }
+
+  /**
+   * Maps Cursor CLI stream-json (NDJSON) lines to unified agent events.
+   * Legacy `--output-format json` result objects pass through unchanged.
+   */
+  private normalizeCursorCliOutput(parsed: Record<string, unknown>): AgentResponseObject | undefined {
+    const type = parsed.type;
+    if (typeof type !== 'string') {
+      return undefined;
+    }
+
+    if (type === 'user' || type === 'system') {
+      return undefined;
+    }
+
+    if (type === 'assistant') {
+      const delta = this.extractCursorStreamAssistantDelta(parsed);
+      if (!delta) {
+        return undefined;
+      }
+      return { type: 'delta', delta };
+    }
+
+    if (type === 'tool_call') {
+      return this.mapCursorStreamToolCall(parsed);
+    }
+
+    return undefined;
+  }
+
+  private extractCursorStreamAssistantDelta(parsed: Record<string, unknown>): string {
+    const message = parsed.message;
+    if (!message || typeof message !== 'object') {
+      return '';
+    }
+    const content = (message as { content?: unknown }).content;
+    if (!Array.isArray(content)) {
+      return '';
+    }
+    return content
+      .map((part) => {
+        if (!part || typeof part !== 'object') {
+          return '';
+        }
+        const p = part as { type?: unknown; text?: unknown };
+        return p.type === 'text' && typeof p.text === 'string' ? p.text : '';
+      })
+      .join('');
+  }
+
+  private mapCursorStreamToolCall(parsed: Record<string, unknown>): AgentResponseObject | undefined {
+    const subtype = parsed.subtype;
+    const toolCallRoot = parsed.tool_call;
+    if (!toolCallRoot || typeof toolCallRoot !== 'object') {
+      return undefined;
+    }
+    const info = this.getCursorStreamToolCallIdentity(toolCallRoot as Record<string, unknown>);
+    if (!info) {
+      return undefined;
+    }
+
+    if (subtype === 'started') {
+      return {
+        type: 'tool_call',
+        toolCallId: info.toolCallId,
+        name: info.name,
+        args: info.args,
+        status: 'started',
+      };
+    }
+
+    if (subtype === 'completed') {
+      const { result, isError } = this.summarizeCursorStreamToolCompletion(toolCallRoot as Record<string, unknown>);
+      return {
+        type: 'tool_result',
+        toolCallId: info.toolCallId,
+        name: info.name,
+        result,
+        isError,
+      };
+    }
+
+    return undefined;
+  }
+
+  private getCursorStreamToolCallIdentity(toolCallBlock: Record<string, unknown>): {
+    toolCallId: string;
+    name: string;
+    args: unknown;
+  } | null {
+    for (const [key, value] of Object.entries(toolCallBlock)) {
+      if (!key.endsWith('ToolCall') || !value || typeof value !== 'object') {
+        continue;
+      }
+      const entry = value as Record<string, unknown>;
+      const name = key.replace(/ToolCall$/, '');
+      const args = entry.args;
+      let fingerprint = name;
+      if (args && typeof args === 'object') {
+        const a = args as Record<string, unknown>;
+        if (typeof a.pattern === 'string' && typeof a.path === 'string') {
+          fingerprint = `${name}:${a.pattern}@${a.path}`;
+        } else if (typeof a.path === 'string') {
+          fingerprint = `${name}:${a.path}`;
+        } else if (typeof a.command === 'string') {
+          fingerprint = `${name}:${a.command}`;
+        } else if (typeof a.globPattern === 'string' && typeof a.targetDirectory === 'string') {
+          fingerprint = `${name}:${a.globPattern}@${a.targetDirectory}`;
+        } else {
+          try {
+            fingerprint = `${name}:${JSON.stringify(a)}`;
+          } catch {
+            fingerprint = name;
+          }
+        }
+      }
+      return {
+        toolCallId: `cursor-${name}-${this.fingerprintHash(fingerprint)}`,
+        name,
+        args,
+      };
+    }
+    return null;
+  }
+
+  private fingerprintHash(value: string): string {
+    let hash = 0;
+    for (let index = 0; index < value.length; index++) {
+      hash = (Math.imul(31, hash) + value.charCodeAt(index)) | 0;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  private summarizeCursorStreamToolCompletion(toolCallBlock: Record<string, unknown>): {
+    result: unknown;
+    isError: boolean;
+  } {
+    for (const [key, value] of Object.entries(toolCallBlock)) {
+      if (!key.endsWith('ToolCall') || !value || typeof value !== 'object') {
+        continue;
+      }
+      const entry = value as Record<string, unknown>;
+      const toolResult = entry.result;
+      if (!toolResult || typeof toolResult !== 'object') {
+        return { result: entry, isError: false };
+      }
+      const outcome = toolResult as Record<string, unknown>;
+      if (outcome.success !== undefined) {
+        return { result: outcome.success, isError: false };
+      }
+      if (outcome.rejected !== undefined) {
+        return { result: outcome.rejected, isError: true };
+      }
+      const exitCode = (outcome as { exitCode?: unknown }).exitCode;
+      if (typeof exitCode === 'number') {
+        return { result: outcome, isError: exitCode !== 0 };
+      }
+      return { result: outcome, isError: false };
+    }
+    return { result: toolCallBlock, isError: false };
   }
 }

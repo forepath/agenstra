@@ -9,6 +9,7 @@ import {
   disconnectSocket,
   forwardEvent,
   setChatModel,
+  setChatResponseMode,
   setClient,
 } from './sockets.actions';
 import { getSocketInstance } from './sockets.effects';
@@ -19,6 +20,7 @@ import {
   selectTicketBodyLastResult,
   selectChatForwarding,
   selectChatModel,
+  selectChatResponseMode,
   selectForwardedEvents,
   selectForwardedEventsByEvent,
   selectIsRemoteReconnecting,
@@ -40,7 +42,12 @@ import {
   selectSocketReconnecting,
   selectSocketsState,
 } from './sockets.selectors';
-import { ForwardableEvent, type ForwardableEventPayload, type ForwardedEventPayload } from './sockets.types';
+import {
+  ForwardableEvent,
+  type AgentResponseMode,
+  type ForwardableEventPayload,
+  type ForwardedEventPayload,
+} from './sockets.types';
 
 /**
  * Facade for sockets state management.
@@ -54,6 +61,7 @@ export class SocketsFacade {
   private readonly store = inject(Store);
   private readonly destroyRef = inject(DestroyRef);
   private currentChatModel: string | null = null;
+  private currentChatResponseMode: AgentResponseMode = 'stream';
 
   // State observables
   readonly connected$: Observable<boolean> = this.store.select(selectSocketConnected);
@@ -72,6 +80,7 @@ export class SocketsFacade {
   readonly ticketBodyGenerationPending$: Observable<boolean> = this.store.select(selectTicketBodyGenerationPending);
   readonly ticketBodyLastResult$ = this.store.select(selectTicketBodyLastResult);
   readonly chatModel$: Observable<string | null> = this.store.select(selectChatModel);
+  readonly chatResponseMode$: Observable<AgentResponseMode> = this.store.select(selectChatResponseMode);
   readonly error$: Observable<string | null> = this.store.select(selectSocketError);
   readonly forwardedEvents$: Observable<Array<{ event: string; payload: ForwardedEventPayload; timestamp: number }>> =
     this.store.select(selectForwardedEvents);
@@ -101,6 +110,9 @@ export class SocketsFacade {
   constructor() {
     this.chatModel$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((model) => {
       this.currentChatModel = model;
+    });
+    this.chatResponseMode$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((mode) => {
+      this.currentChatResponseMode = mode === 'single' ? 'single' : 'stream';
     });
   }
 
@@ -172,8 +184,11 @@ export class SocketsFacade {
    */
   forwardChat(message: string, agentId: string, model?: string | null): void {
     const effectiveModel = model ?? this.currentChatModel ?? undefined;
+    const responseMode = this.currentChatResponseMode;
     const payload =
-      effectiveModel !== undefined && effectiveModel !== null ? { message, model: effectiveModel } : { message };
+      effectiveModel !== undefined && effectiveModel !== null
+        ? { message, model: effectiveModel, responseMode }
+        : { message, responseMode };
     this.forwardEvent(ForwardableEvent.CHAT, payload, agentId);
   }
 
@@ -230,6 +245,10 @@ export class SocketsFacade {
    */
   setChatModel(model: string | null): void {
     this.store.dispatch(setChatModel({ model }));
+  }
+
+  setChatResponseMode(mode: AgentResponseMode): void {
+    this.store.dispatch(setChatResponseMode({ mode }));
   }
 
   /**
@@ -296,14 +315,13 @@ export class SocketsFacade {
     eventName: string,
   ): Observable<Array<{ event: string; payload: ForwardedEventPayload; timestamp: number }>> {
     return this.store.select(selectForwardedEventsByEvent(eventName)).pipe(
-      // Use distinctUntilChanged with deep comparison to prevent unnecessary emissions
-      // when the filtered array content hasn't actually changed
+      // New filtered arrays are allocated on many unrelated store updates (e.g. chatEvent).
+      // Same logical list means same element references — skip emissions to avoid DOM churn downstream.
       distinctUntilChanged((prev, curr) => {
         if (prev.length !== curr.length) {
           return false;
         }
-        // Compare by timestamp to detect actual changes
-        return prev.every((p, i) => p.timestamp === curr[i]?.timestamp);
+        return prev.every((p, i) => p === curr[i]);
       }),
     );
   }

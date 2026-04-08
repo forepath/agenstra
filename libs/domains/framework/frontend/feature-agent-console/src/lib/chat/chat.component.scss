@@ -479,3 +479,35 @@ span {
     height: 2.25rem;
   }
 }
+
+.agent-event-json-pre {
+  max-height: 18rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tool-result-accordion {
+  .accordion-button {
+    font-weight: 500;
+    line-height: 1.35;
+    font-size: 0.875rem;
+
+    i {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      background-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+    }
+
+    &:after {
+      display: none;
+    }
+  }
+
+  .accordion-body {
+    max-height: 22rem;
+    overflow: auto;
+  }
+}

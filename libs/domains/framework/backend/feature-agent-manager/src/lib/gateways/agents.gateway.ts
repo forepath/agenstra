@@ -26,6 +26,10 @@ import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import {
+  dropRedundantTrailingStreamResultParts,
+  materializeDeltaPartsIntoInterleavedResults,
+} from '../utils/materialize-streaming-deltas-for-transcript';
+import {
   buildPromptEnhancementMessage,
   PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX,
 } from '../utils/chat-enhancement-prompt.utils';
@@ -361,6 +365,141 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     void this.agentMessageEventsService.persistEvent(agentUuid, event);
   }
 
+  /**
+   * Cursor stream-json emits a final `{ type: "result", ... }` line when the model finishes, but the
+   * Docker exec stream may stay open until the process exits. We persist as soon as we see that frame
+   * so `agent_messages` is written even when stdout/stderr have not ended yet.
+   */
+  private isStreamingTerminalUnifiedResponse(obj: AgentResponseObject): boolean {
+    return typeof obj === 'object' && obj !== null && String((obj as { type?: unknown }).type) === 'result';
+  }
+
+  private buildFinalStreamingResponse(
+    streamedUnified: AgentResponseObject[],
+    aggregatedText: string,
+  ): AgentResponseObject | null {
+    const finalText = aggregatedText.trim();
+    const structuredStreamTypes = new Set([
+      'tool',
+      'tool_call',
+      'toolCall',
+      'tool_result',
+      'toolResult',
+      'question',
+      'thinking',
+      // Final NDJSON `result` frame must count as structured so delta+result turns become agenstra_turn
+      // instead of collapsing to a lone `result` blob that drops tool history.
+      'result',
+    ]);
+    const hasStructuredStreamParts = streamedUnified.some((p) => structuredStreamTypes.has(String(p.type)));
+
+    if (streamedUnified.length > 0 && (hasStructuredStreamParts || !finalText)) {
+      const streamEmittedResult = streamedUnified.some((p) => String(p.type) === 'result');
+      const parts = dropRedundantTrailingStreamResultParts(
+        materializeDeltaPartsIntoInterleavedResults(streamedUnified),
+      );
+      // Keep prior rule: never duplicate the final NDJSON `result` with a synthetic `aggregatedText` blob.
+      // After materializing deltas, skip synthetic append when any `result` part exists (from stream or flushes).
+      if (finalText && !streamEmittedResult && !parts.some((p) => String(p.type) === 'result')) {
+        parts.push({ type: 'result', subtype: 'success', result: finalText });
+      }
+      const hasCanonicalAnswer = parts.some((p) => String(p.type) === 'result');
+      if (hasCanonicalAnswer) {
+        return {
+          type: 'agenstra_turn',
+          subtype: 'success',
+          parts: parts.filter((p) => String(p.type) !== 'delta'),
+        };
+      }
+      return { type: 'agenstra_turn', subtype: 'success', parts };
+    }
+    if (finalText) {
+      return { type: 'result', subtype: 'success', result: finalText };
+    }
+    return null;
+  }
+
+  private async persistFilteredAgentChatResponse(
+    agentUuid: string,
+    agentResponseTimestamp: string,
+    finalResponse: AgentResponseObject,
+  ): Promise<void> {
+    const outgoingFilterResult = await this.applyFilters(JSON.stringify(finalResponse), FilterDirection.OUTGOING, {
+      agentId: agentUuid,
+      actor: 'agent',
+    });
+    this.broadcastToAgent(
+      agentUuid,
+      'messageFilterResult',
+      createSuccessResponse<MessageFilterResultData>({
+        direction: 'outgoing',
+        ...outgoingFilterResult,
+      }),
+    );
+
+    if (outgoingFilterResult.status !== 'dropped') {
+      let responseToUse: AgentResponseObject | string = finalResponse;
+      if (outgoingFilterResult.modifiedMessage !== undefined) {
+        try {
+          responseToUse = JSON.parse(outgoingFilterResult.modifiedMessage);
+        } catch {
+          responseToUse = outgoingFilterResult.modifiedMessage;
+        }
+      }
+
+      try {
+        await this.agentMessagesService.createAgentMessage(
+          agentUuid,
+          responseToUse,
+          outgoingFilterResult.status === 'filtered',
+        );
+      } catch (persistError) {
+        const err = persistError as { message?: string };
+        this.logger.warn(`Failed to persist agent message: ${err.message}`);
+      }
+
+      this.broadcastToAgent(
+        agentUuid,
+        'chatMessage',
+        createSuccessResponse<ChatMessageData>({
+          from: ChatActor.AGENT,
+          response: responseToUse,
+          timestamp: agentResponseTimestamp,
+        }),
+      );
+    }
+  }
+
+  /** Cursor stream-json `thinking` lines: derive a short phase string for `chatEvent` payloads. */
+  private extractThinkingPhaseForChatEvent(response: AgentResponseObject): string | undefined {
+    const o = response as Record<string, unknown>;
+    const pick = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+    let text = pick(o['text']) || pick(o['thinking']) || pick(o['phase']) || pick(o['summary']) || pick(o['message']);
+    if (!text) {
+      const msg = o['message'];
+      if (msg && typeof msg === 'object') {
+        const content = (msg as { content?: unknown }).content;
+        if (Array.isArray(content)) {
+          text = content
+            .map((part) => {
+              if (!part || typeof part !== 'object') {
+                return '';
+              }
+              const p = part as { type?: unknown; text?: unknown };
+              return p.type === 'text' && typeof p.text === 'string' ? p.text : '';
+            })
+            .join('')
+            .trim();
+        }
+      }
+    }
+    if (!text) {
+      return undefined;
+    }
+    const collapsed = text.replace(/\s+/g, ' ').trim();
+    return collapsed.length <= 120 ? collapsed : `${collapsed.slice(0, 119)}…`;
+  }
+
   private agentResponseToChatEvents(
     agentUuid: string,
     correlationId: string,
@@ -393,6 +532,17 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       ];
     }
 
+    if (response.type === 'thinking') {
+      const phase = this.extractThinkingPhaseForChatEvent(response);
+      return [
+        {
+          ...base,
+          kind: 'thinking',
+          payload: phase ? { phase } : {},
+        },
+      ];
+    }
+
     if (
       (response.type === 'tool' || response.type === 'tool_call') &&
       typeof response.name === 'string' &&
@@ -407,6 +557,22 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             name: response.name,
             args: response.args,
             status: (response.status as 'started' | 'inProgress' | 'succeeded' | 'failed') ?? 'inProgress',
+          },
+        },
+      ];
+    }
+
+    if (response.type === 'tool_result' && typeof response.toolCallId === 'string') {
+      const name = typeof response.name === 'string' ? response.name : 'tool';
+      return [
+        {
+          ...base,
+          kind: 'toolResult',
+          payload: {
+            toolCallId: response.toolCallId,
+            name,
+            result: response.result,
+            isError: Boolean(response.isError),
           },
         },
       ];
@@ -732,6 +898,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       payload: { text: messageToUse },
     });
 
+    this.broadcastChatEvent(agentUuid, {
+      ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
+      kind: 'thinking',
+      payload: {},
+    });
+
     try {
       // Get agent details for display
       const agent = await this.agentsService.findOne(agentUuid);
@@ -798,6 +970,43 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           if (supportsStreaming) {
             let buffered = '';
             let aggregatedText = '';
+            const streamedUnified: AgentResponseObject[] = [];
+            let streamingTurnPersisted = false;
+
+            const consumeStreamingRawLine = async (rawLine: string): Promise<void> => {
+              const parseables = provider.toParseableStrings(rawLine);
+              for (const toParse of parseables) {
+                try {
+                  const parsed = provider.toUnifiedResponse(toParse);
+                  if (!parsed) continue;
+
+                  streamedUnified.push(parsed);
+                  const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, parsed);
+                  for (const ev of events) {
+                    if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
+                    if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
+                    this.broadcastChatEvent(agentUuid, ev);
+                  }
+
+                  if (!streamingTurnPersisted && this.isStreamingTerminalUnifiedResponse(parsed)) {
+                    const built = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+                    if (built) {
+                      await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, built);
+                      streamingTurnPersisted = true;
+                    }
+                  }
+                } catch (parseError) {
+                  const parseErr = parseError as { message?: string };
+                  this.logger.warn(`Failed to parse streaming agent line: ${parseErr.message}`);
+                  const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, toParse);
+                  for (const ev of events) {
+                    if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
+                    if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
+                    this.broadcastChatEvent(agentUuid, ev);
+                  }
+                }
+              }
+            };
 
             for await (const chunk of provider.sendMessageStream(agent.id, containerId, messageToUse, {
               model: data.model,
@@ -807,81 +1016,26 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               buffered = parts.pop() ?? '';
 
               for (const rawLine of parts) {
-                const parseables = provider.toParseableStrings(rawLine);
-                for (const toParse of parseables) {
-                  try {
-                    const parsed = provider.toUnifiedResponse(toParse);
-                    if (!parsed) continue;
-
-                    const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, parsed);
-                    for (const ev of events) {
-                      if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
-                      if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
-                      this.broadcastChatEvent(agentUuid, ev);
-                    }
-                  } catch (parseError) {
-                    const parseErr = parseError as { message?: string };
-                    this.logger.warn(`Failed to parse streaming agent line: ${parseErr.message}`);
-                    const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, toParse);
-                    for (const ev of events) {
-                      if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
-                      this.broadcastChatEvent(agentUuid, ev);
-                    }
-                  }
-                }
+                await consumeStreamingRawLine(rawLine);
               }
             }
 
-            const finalText = aggregatedText.trim();
-            if (finalText) {
-              const finalResponse: AgentResponseObject = { type: 'result', subtype: 'success', result: finalText };
+            // NDJSON producers often omit a trailing newline on the last frame; without this flush,
+            // the final line never runs through consumeStreamingRawLine and nothing is persisted.
+            if (buffered.trim().length > 0) {
+              await consumeStreamingRawLine(buffered);
+              buffered = '';
+            }
 
-              const outgoingFilterResult = await this.applyFilters(
-                JSON.stringify(finalResponse),
-                FilterDirection.OUTGOING,
-                {
-                  agentId: agentUuid,
-                  actor: 'agent',
-                },
-              );
-              this.broadcastToAgent(
-                agentUuid,
-                'messageFilterResult',
-                createSuccessResponse<MessageFilterResultData>({
-                  direction: 'outgoing',
-                  ...outgoingFilterResult,
-                }),
-              );
-
-              if (outgoingFilterResult.status !== 'dropped') {
-                let responseToUse: AgentResponseObject | string = finalResponse;
-                if (outgoingFilterResult.modifiedMessage !== undefined) {
-                  try {
-                    responseToUse = JSON.parse(outgoingFilterResult.modifiedMessage);
-                  } catch {
-                    responseToUse = outgoingFilterResult.modifiedMessage;
-                  }
-                }
-
-                try {
-                  await this.agentMessagesService.createAgentMessage(
-                    agentUuid,
-                    responseToUse,
-                    outgoingFilterResult.status === 'filtered',
-                  );
-                } catch (persistError) {
-                  const err = persistError as { message?: string };
-                  this.logger.warn(`Failed to persist agent message: ${err.message}`);
-                }
-
-                this.broadcastToAgent(
-                  agentUuid,
-                  'chatMessage',
-                  createSuccessResponse<ChatMessageData>({
-                    from: ChatActor.AGENT,
-                    response: responseToUse,
-                    timestamp: agentResponseTimestamp,
-                  }),
+            if (!streamingTurnPersisted) {
+              const finalResponse = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+              if (finalResponse) {
+                await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, finalResponse);
+              } else {
+                const finalTextLen = aggregatedText.trim().length;
+                this.logger.warn(
+                  `Streaming completed with no persistable agent response for agent ${agentUuid} ` +
+                    `(correlationId=${correlationId}, streamedUnified=${streamedUnified.length}, finalTextLen=${finalTextLen})`,
                 );
               }
             }

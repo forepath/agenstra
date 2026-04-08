@@ -636,6 +636,7 @@ components:
                 enum:
                   [
                     userMessage,
+                    thinking,
                     assistantDelta,
                     assistantMessage,
                     toolCall,

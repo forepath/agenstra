@@ -18,6 +18,7 @@ import {
   remoteReconnecting,
   setAgent,
   setChatModel,
+  setChatResponseMode,
   setClient,
   setClientFailure,
   setClientSuccess,
@@ -240,6 +241,14 @@ describe('socketsReducer', () => {
       const newState = socketsReducer(state, setChatModel({ model: 'gpt-4o' }));
 
       expect(newState.chatModel).toBe('gpt-4o');
+    });
+  });
+
+  describe('setChatResponseMode', () => {
+    it('should update chatResponseMode', () => {
+      const state = { ...initialSocketsState, chatResponseMode: 'stream' as const };
+      const newState = socketsReducer(state, setChatResponseMode({ mode: 'single' }));
+      expect(newState.chatResponseMode).toBe('single');
     });
   });
 
