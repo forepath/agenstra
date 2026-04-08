@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
+import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
@@ -54,6 +55,8 @@ describe('AgentsModule', () => {
       .overrideProvider(getRepositoryToken(AgentMessageEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgentEnvironmentVariableEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(AgentMessageEventEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(DeploymentConfigurationEntity))
       .useValue(mockRepository)

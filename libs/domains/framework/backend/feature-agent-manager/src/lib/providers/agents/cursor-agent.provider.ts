@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DockerService } from '../../services/docker.service';
-import { AgentProvider, AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
+import {
+  AgentProvider,
+  AgentProviderCapabilities,
+  AgentProviderOptions,
+  AgentResponseObject,
+} from '../agent-provider.interface';
 
 /**
  * Cursor-agent provider implementation.
@@ -27,6 +32,15 @@ export class CursorAgentProvider implements AgentProvider {
    */
   getDisplayName(): string {
     return 'Cursor';
+  }
+
+  getCapabilities(): AgentProviderCapabilities {
+    return {
+      supportsChat: true,
+      supportsStreaming: true,
+      supportsToolEvents: true,
+      supportsQuestions: true,
+    };
   }
 
   /**
@@ -86,6 +100,25 @@ export class CursorAgentProvider implements AgentProvider {
     // Send the message to STDIN of the command and get the response
     const response = await this.dockerService.sendCommandToContainer(containerId, command, message);
     return response;
+  }
+
+  async *sendMessageStream(
+    agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<string> {
+    const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
+    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
+    if (options?.model) {
+      command += ` --model ${options.model}`;
+    }
+
+    for await (const { stream, chunk } of this.dockerService.execCommandStream(containerId, command, message)) {
+      if (stream === 'stdout') {
+        yield chunk;
+      }
+    }
   }
 
   /**

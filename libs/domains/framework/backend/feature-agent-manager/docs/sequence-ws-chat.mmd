@@ -86,7 +86,7 @@ sequenceDiagram
 
     rect rgb(250, 255, 240)
         Note over WSClient,Docker: Chat Message Flow
-        WSClient->>Gateway: chat<br/>{message: "Hello", model?: "custom-model"}
+        WSClient->>Gateway: chat<br/>{message: "Hello", model?: "custom-model", correlationId?: "c1", responseMode?: "stream"}
         Gateway->>Gateway: uuid = authenticatedClients.get(socket.id)
         alt Not authenticated
             Gateway-->>WSClient: error<br/>{success: false, error: {message, code}, timestamp}
@@ -219,6 +219,8 @@ sequenceDiagram
 
                             Gateway->>Gateway: server.emit('chatMessage')
                             Gateway-->>WSClient: chatMessage<br/>{success: true, data: {from: "agent", response: {...}, timestamp}, timestamp}
+                            Note over Gateway: Additionally emits chatEvent frames when streaming/tool/question events are available
+                            Gateway-->>WSClient: chatEvent<br/>{success: true, data: {eventId, correlationId, sequence, kind, payload, ...}, timestamp}
                         end
                     else JSON invalid
                         Note over Gateway,FilterFactory: Apply Outgoing Filters
@@ -255,6 +257,8 @@ sequenceDiagram
 
                             Gateway->>Gateway: server.emit('chatMessage')
                             Gateway-->>WSClient: chatMessage<br/>{success: true, data: {from: "agent", response: toParse, timestamp}, timestamp}
+                            Note over Gateway: Additionally emits chatEvent frames when streaming/tool/question events are available
+                            Gateway-->>WSClient: chatEvent<br/>{success: true, data: {eventId, correlationId, sequence, kind, payload, ...}, timestamp}
                         end
                     end
                 end

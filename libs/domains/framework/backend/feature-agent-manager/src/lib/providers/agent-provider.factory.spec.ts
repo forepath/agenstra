@@ -18,6 +18,12 @@ describe('AgentProviderFactory', () => {
     mockProvider1 = {
       getType: jest.fn().mockReturnValue('provider1'),
       getDisplayName: jest.fn().mockReturnValue('Provider 1'),
+      getCapabilities: jest.fn().mockReturnValue({
+        supportsChat: true,
+        supportsStreaming: false,
+        supportsToolEvents: false,
+        supportsQuestions: false,
+      }),
       getDockerImage: jest.fn().mockReturnValue('image1:latest'),
       getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('image1-virtual-workspace:latest'),
       getSshConnectionDockerImage: jest.fn().mockReturnValue('image1-ssh-connection:latest'),
@@ -30,6 +36,12 @@ describe('AgentProviderFactory', () => {
     mockProvider2 = {
       getType: jest.fn().mockReturnValue('provider2'),
       getDisplayName: jest.fn().mockReturnValue('Provider 2'),
+      getCapabilities: jest.fn().mockReturnValue({
+        supportsChat: true,
+        supportsStreaming: false,
+        supportsToolEvents: false,
+        supportsQuestions: false,
+      }),
       getDockerImage: jest.fn().mockReturnValue('image2:latest'),
       getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('image2-virtual-workspace:latest'),
       getSshConnectionDockerImage: jest.fn().mockReturnValue('image2-ssh-connection:latest'),

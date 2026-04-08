@@ -42,6 +42,17 @@ describe('CursorAgentProvider', () => {
     });
   });
 
+  describe('getCapabilities', () => {
+    it('should report chat and streaming capabilities', () => {
+      expect(provider.getCapabilities()).toEqual({
+        supportsChat: true,
+        supportsStreaming: true,
+        supportsToolEvents: true,
+        supportsQuestions: true,
+      });
+    });
+  });
+
   describe('getBasePath', () => {
     it('should return "/app"', () => {
       expect(provider.getBasePath()).toBe('/app');

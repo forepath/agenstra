@@ -972,6 +972,127 @@ export class DockerService {
   }
 
   /**
+   * Execute a command in a container and stream demuxed stdout/stderr chunks as they arrive.
+   *
+   * Intended for provider-level streaming (e.g. JSONL agent outputs). This uses dockerode's
+   * `demuxStream` to avoid multiplexing artifacts.
+   */
+  async *execCommandStream(
+    containerId: string,
+    command: string,
+    input?: string | string[],
+  ): AsyncIterable<{ stream: 'stdout' | 'stderr'; chunk: string }> {
+    this.logger.debug(`Streaming command from container ${containerId}: ${command}`);
+
+    const container = this.docker.getContainer(containerId);
+
+    // Check if container exists
+    try {
+      await container.inspect();
+    } catch (error: unknown) {
+      const dockerError = error as { statusCode?: number };
+      if (dockerError.statusCode === 404) {
+        throw new NotFoundException(`Container with ID '${containerId}' not found`);
+      }
+      throw error;
+    }
+
+    const commandParts = this.parseShellCommand(command.trim());
+    const executable = commandParts[0];
+    const args = commandParts.slice(1);
+
+    const execInstance = await container.exec({
+      Cmd: [executable, ...args],
+      AttachStdin: true,
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+    });
+
+    const stream = (await execInstance.start({
+      hijack: true,
+      stdin: true,
+    })) as NodeJS.ReadWriteStream;
+
+    const stdoutStream = new PassThrough();
+    const stderrStream = new PassThrough();
+    container.modem.demuxStream(stream, stdoutStream, stderrStream);
+
+    type QueueItem = { stream: 'stdout' | 'stderr'; chunk: string };
+    const queue: QueueItem[] = [];
+    let done = false;
+    let error: unknown | null = null;
+
+    const notify = (() => {
+      let resolve: (() => void) | null = null;
+      const wait = () =>
+        new Promise<void>((r) => {
+          resolve = r;
+        });
+      const signal = () => {
+        resolve?.();
+        resolve = null;
+      };
+      return { wait, signal };
+    })();
+
+    const onData = (which: 'stdout' | 'stderr') => (chunk: Buffer) => {
+      queue.push({ stream: which, chunk: chunk.toString('utf-8') });
+      notify.signal();
+    };
+
+    const onError = (err: unknown) => {
+      error = err;
+      done = true;
+      notify.signal();
+    };
+
+    const tryFinish = () => {
+      if (stdoutStream.readableEnded && stderrStream.readableEnded) {
+        done = true;
+        notify.signal();
+      }
+    };
+
+    stdoutStream.on('data', onData('stdout'));
+    stderrStream.on('data', onData('stderr'));
+    stdoutStream.on('error', onError);
+    stderrStream.on('error', onError);
+    stdoutStream.on('end', tryFinish);
+    stderrStream.on('end', tryFinish);
+    stream.on('error', onError);
+
+    if (input !== undefined) {
+      let inputArray: string[];
+      if (Array.isArray(input)) {
+        inputArray = input.flatMap((line) => line.replace(/\\n/g, '\n').split(/\r?\n/));
+      } else {
+        inputArray = input.replace(/\\n/g, '\n').split(/\r?\n/);
+      }
+      for (const inputLine of inputArray) {
+        const lineToSend = inputLine.endsWith('\n') ? inputLine : `${inputLine}\n`;
+        stream.write(lineToSend);
+      }
+    }
+    stream.end();
+
+    while (!done || queue.length > 0) {
+      if (error) {
+        throw error;
+      }
+      const item = queue.shift();
+      if (item) {
+        yield item;
+        continue;
+      }
+      if (done) {
+        break;
+      }
+      await notify.wait();
+    }
+  }
+
+  /**
    * Read file content from container using demuxStream for proper stream handling.
    * This method uses Docker's built-in demuxStream to properly separate stdout/stderr,
    * which eliminates null byte artifacts that can occur with manual parsing.

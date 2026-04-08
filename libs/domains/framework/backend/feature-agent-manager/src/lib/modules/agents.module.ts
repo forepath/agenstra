@@ -7,6 +7,7 @@ import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { ConfigController } from '../controllers/config.controller';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
+import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
@@ -25,12 +26,14 @@ import { PipelineProviderFactory } from '../providers/pipeline-provider.factory'
 import { GitHubProvider } from '../providers/pipelines/github.provider';
 import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
+import { AgentMessageEventsRepository } from '../repositories/agent-message-events.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
+import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsVcsService } from '../services/agents-vcs.service';
 import { AgentsService } from '../services/agents.service';
@@ -48,6 +51,7 @@ import { PasswordService } from '@forepath/identity/backend';
     TypeOrmModule.forFeature([
       AgentEntity,
       AgentMessageEntity,
+      AgentMessageEventEntity,
       AgentEnvironmentVariableEntity,
       DeploymentConfigurationEntity,
       DeploymentRunEntity,
@@ -65,6 +69,7 @@ import { PasswordService } from '@forepath/identity/backend';
     AgentsGateway,
     AgentsService,
     AgentMessagesService,
+    AgentMessageEventsService,
     AgentEnvironmentVariablesService,
     AgentFileSystemService,
     AgentsVcsService,
@@ -73,6 +78,7 @@ import { PasswordService } from '@forepath/identity/backend';
     DeploymentsService,
     AgentsRepository,
     AgentMessagesRepository,
+    AgentMessageEventsRepository,
     AgentEnvironmentVariablesRepository,
     DeploymentConfigurationsRepository,
     DeploymentRunsRepository,

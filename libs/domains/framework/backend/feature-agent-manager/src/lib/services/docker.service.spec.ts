@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DockerService } from './docker.service';
 import Docker = require('dockerode');
+import { PassThrough } from 'stream';
 
 // Mock dockerode
 jest.mock('dockerode');
@@ -592,6 +593,69 @@ describe('DockerService', () => {
       await service.updateContainer(containerId, { env: { FOO: 'bar' } });
 
       expect(mockDocker.getContainer).toHaveBeenCalledWith(containerId);
+    });
+  });
+
+  describe('execCommandStream', () => {
+    it('should stream demuxed stdout and stderr chunks', async () => {
+      const containerId = 'test-container-id';
+      mockContainer.inspect.mockResolvedValue({ Id: containerId });
+
+      const hijacked = new PassThrough() as unknown as NodeJS.ReadWriteStream;
+      mockExec.start = jest.fn().mockResolvedValue(hijacked);
+      mockContainer.exec = jest.fn().mockResolvedValue(mockExec);
+
+      let capturedStdout: PassThrough | null = null;
+      let capturedStderr: PassThrough | null = null;
+      mockContainer.modem.demuxStream = jest.fn((_stream: unknown, stdout: PassThrough, stderr: PassThrough) => {
+        capturedStdout = stdout;
+        capturedStderr = stderr;
+      });
+
+      const received: Array<{ stream: 'stdout' | 'stderr'; chunk: string }> = [];
+      const iter = service.execCommandStream(containerId, 'echo hello', 'input');
+
+      const consume = (async () => {
+        for await (const item of iter) {
+          received.push(item);
+        }
+      })();
+
+      // Wait until demuxStream captured streams
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+      expect(capturedStdout).not.toBeNull();
+      expect(capturedStderr).not.toBeNull();
+
+      capturedStdout?.write(Buffer.from('out-1'));
+      capturedStderr?.write(Buffer.from('err-1'));
+      capturedStdout?.end();
+      capturedStderr?.end();
+
+      await consume;
+
+      expect(received).toEqual(
+        expect.arrayContaining([
+          { stream: 'stdout', chunk: 'out-1' },
+          { stream: 'stderr', chunk: 'err-1' },
+        ]),
+      );
+      expect(mockContainer.exec).toHaveBeenCalled();
+      expect(mockContainer.modem.demuxStream).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when container does not exist', async () => {
+      mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
+
+      const iter = service.execCommandStream('missing', 'echo hello');
+      await expect(
+        (async () => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          for await (const _item of iter) {
+            // no-op
+          }
+        })(),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DockerService } from '../../services/docker.service';
-import { AgentProvider, AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
+import {
+  AgentProvider,
+  AgentProviderCapabilities,
+  AgentProviderOptions,
+  AgentResponseObject,
+} from '../agent-provider.interface';
 
 /**
  * OpenCode agent provider implementation.
@@ -26,6 +31,15 @@ export class OpenCodeAgentProvider implements AgentProvider {
    */
   getDisplayName(): string {
     return 'OpenCode';
+  }
+
+  getCapabilities(): AgentProviderCapabilities {
+    return {
+      supportsChat: true,
+      supportsStreaming: true,
+      supportsToolEvents: true,
+      supportsQuestions: true,
+    };
   }
 
   /**
@@ -95,6 +109,20 @@ export class OpenCodeAgentProvider implements AgentProvider {
     }
 
     return response;
+  }
+
+  async *sendMessageStream(
+    agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<string> {
+    // OpenCode currently needs session-not-found retry logic; reuse the single-response implementation for correctness.
+    // This still enables streaming at the gateway layer for providers that emit multiple JSONL frames in one response.
+    const response = await this.sendMessage(agentId, containerId, message, options);
+    if (response) {
+      yield response;
+    }
   }
 
   /**

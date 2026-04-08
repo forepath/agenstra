@@ -10,8 +10,27 @@ export interface AgentResponseObject {
   [key: string]: unknown; // Allow additional properties
 }
 
-export interface AgentFeatures {
-  chat: boolean;
+export interface AgentProviderCapabilities {
+  /**
+   * Provider supports the chat flow (`chat` websocket event).
+   * Providers like `openclaw` intentionally do not support chat and should keep it disabled.
+   */
+  supportsChat: boolean;
+
+  /**
+   * Provider can produce incremental output (streaming) for a single chat request.
+   */
+  supportsStreaming: boolean;
+
+  /**
+   * Provider can surface tool call lifecycle events (start/progress/result).
+   */
+  supportsToolEvents: boolean;
+
+  /**
+   * Provider can surface explicit questions back to the user (choice prompts).
+   */
+  supportsQuestions: boolean;
 }
 
 /**
@@ -33,6 +52,11 @@ export interface AgentProvider {
    * @returns The display name string (e.g., 'Cursor', 'OpenAI', 'Anthropic Claude')
    */
   getDisplayName(): string;
+
+  /**
+   * Get capabilities supported by this provider. Used for feature gating in backend and UI.
+   */
+  getCapabilities(): AgentProviderCapabilities;
 
   /**
    * Get the Docker image (including tag) to use for containers created for this provider.
@@ -82,6 +106,19 @@ export interface AgentProvider {
    * @returns The agent's response as a string
    */
   sendMessage(agentId: string, containerId: string, message: string, options?: AgentProviderOptions): Promise<string>;
+
+  /**
+   * Optional streaming variant of sendMessage.
+   * When implemented, yields incremental response chunks (typically stdout lines) as they become available.
+   *
+   * The gateway is responsible for turning these chunks into structured chat events and a final transcript message.
+   */
+  sendMessageStream?(
+    agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<string>;
 
   /**
    * Send an initialization message to the agent.

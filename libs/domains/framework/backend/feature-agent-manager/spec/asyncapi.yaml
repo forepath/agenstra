@@ -67,6 +67,14 @@ channels:
       chatBroadcast:
         $ref: '#/components/messages/ChatMessage'
     description: Server broadcasts chat messages to all connected clients. Also used for chat history restoration after successful login (messages are emitted in chronological order to the authenticated client only).
+  agents/chatEvent:
+    address: agents/chatEvent
+    messages:
+      chatEventBroadcast:
+        $ref: '#/components/messages/ChatEvent'
+    description: >
+      Server broadcasts structured chat events (streaming deltas, tool calls/results, questions, and final assistant messages)
+      to all connected clients authenticated to the same agent. This is additive and does not replace chatMessage.
   agents/messageFilterResult:
     address: agents/messageFilterResult
     messages:
@@ -200,6 +208,12 @@ operations:
       $ref: '#/channels/agents~1chatMessage'
     messages:
       - $ref: '#/channels/agents~1chatMessage/messages/chatBroadcast'
+  serverBroadcastsChatEvent:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1chatEvent'
+    messages:
+      - $ref: '#/channels/agents~1chatEvent/messages/chatEventBroadcast'
   serverBroadcastsMessageFilterResult:
     action: receive
     channel:
@@ -368,6 +382,13 @@ components:
           model:
             type: string
             description: Optional model identifier (e.g., gpt-4o) forwarded to the agent container to override the default model for this chat request
+          correlationId:
+            type: string
+            description: Optional client-supplied correlation id for streaming/tool events; if omitted the server will generate one.
+          responseMode:
+            type: string
+            enum: [single, stream]
+            description: Optional response mode preference. When stream, the server may emit chatEvent deltas before the final chatMessage.
     EnhanceChat:
       name: EnhanceChat
       title: Prompt enhancement command
@@ -566,6 +587,66 @@ components:
                   timestamp:
                     type: string
                     description: ISO timestamp
+          timestamp:
+            type: string
+            description: ISO timestamp
+    ChatEvent:
+      name: ChatEvent
+      title: Structured chat event broadcast
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required:
+              [
+                eventId,
+                agentId,
+                correlationId,
+                sequence,
+                kind,
+                payload,
+                timestamp,
+              ]
+            properties:
+              eventId:
+                type: string
+                description: Unique event id (uuid)
+              agentId:
+                type: string
+                description: Agent UUID
+              correlationId:
+                type: string
+                description: Correlates events that belong to a single user request
+              sequence:
+                type: integer
+                minimum: 0
+                description: Monotonic sequence number scoped to correlationId
+              timestamp:
+                type: string
+                format: date-time
+                description: Event timestamp (ISO)
+              kind:
+                type: string
+                enum:
+                  [
+                    userMessage,
+                    assistantDelta,
+                    assistantMessage,
+                    toolCall,
+                    toolResult,
+                    question,
+                    status,
+                    error,
+                  ]
+              payload:
+                type: object
+                description: Kind-specific payload (see documentation)
           timestamp:
             type: string
             description: ISO timestamp

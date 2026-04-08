@@ -296,7 +296,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly socketReconnectAttempts$: Observable<number> = this.socketsFacade.reconnectAttempts$;
   readonly selectedClientId$: Observable<string | null> = this.socketsFacade.selectedClientId$;
   readonly chatMessages$ = this.socketsFacade.getForwardedEventsByEvent$('chatMessage');
+  readonly chatEvents$ = this.socketsFacade.getForwardedEventsByEvent$('chatEvent');
   readonly messageFilterResults$ = this.socketsFacade.messageFilterResults$;
+
+  readonly recentChatEvents$ = this.chatEvents$.pipe(map((events) => events.slice(-50)));
 
   // Combine chat messages with filter results for efficient template access
   readonly chatMessagesWithFilters$: Observable<ChatMessageWithFilter[]> = combineLatest([
@@ -3336,6 +3339,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
     }
     return null;
+  }
+
+  formatJson(value: unknown): string {
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
   }
 
   /**

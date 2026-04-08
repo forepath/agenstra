@@ -9,6 +9,12 @@ describe('ConfigService', () => {
   const mockProvider = {
     getType: jest.fn().mockReturnValue('cursor'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
+    getCapabilities: jest.fn().mockReturnValue({
+      supportsChat: true,
+      supportsStreaming: false,
+      supportsToolEvents: false,
+      supportsQuestions: false,
+    }),
     getDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-worker:latest'),
     getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-vnc:latest'),
     getSshConnectionDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-ssh:latest'),
@@ -79,6 +85,12 @@ describe('ConfigService', () => {
       const mockOpenAIProvider = {
         getType: jest.fn().mockReturnValue('openai'),
         getDisplayName: jest.fn().mockReturnValue('OpenAI'),
+        getCapabilities: jest.fn().mockReturnValue({
+          supportsChat: true,
+          supportsStreaming: false,
+          supportsToolEvents: false,
+          supportsQuestions: false,
+        }),
         getDockerImage: jest.fn().mockReturnValue('openai-image:latest'),
         getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('openai-virtual-workspace-image:latest'),
         getSshConnectionDockerImage: jest.fn().mockReturnValue('openai-ssh-connection-image:latest'),
@@ -90,6 +102,12 @@ describe('ConfigService', () => {
       const mockAnthropicProvider = {
         getType: jest.fn().mockReturnValue('anthropic'),
         getDisplayName: jest.fn().mockReturnValue('Anthropic Claude'),
+        getCapabilities: jest.fn().mockReturnValue({
+          supportsChat: true,
+          supportsStreaming: false,
+          supportsToolEvents: false,
+          supportsQuestions: false,
+        }),
         getDockerImage: jest.fn().mockReturnValue('anthropic-image:latest'),
         getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('anthropic-virtual-workspace-image:latest'),
         getSshConnectionDockerImage: jest.fn().mockReturnValue('anthropic-ssh-connection-image:latest'),

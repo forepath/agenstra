@@ -731,6 +731,56 @@
           }
         </div>
 
+        <!-- Structured agent events (streaming/tool calls/questions) -->
+        @if (recentChatEvents$ | async; as events) {
+          @if (events.length > 0) {
+            <div class="px-3 pt-3">
+              <div class="accordion accordion-flush" id="agentEventsAccordion">
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="agentEventsHeading">
+                    <button
+                      class="accordion-button collapsed bg-body-tertiary"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#agentEventsCollapse"
+                      aria-expanded="false"
+                      aria-controls="agentEventsCollapse"
+                    >
+                      <span class="fw-semibold" i18n="@@featureChat-agentEvents">Agent events</span>
+                      <span class="badge bg-secondary ms-2">{{ events.length }}</span>
+                    </button>
+                  </h2>
+                  <div
+                    id="agentEventsCollapse"
+                    class="accordion-collapse collapse"
+                    aria-labelledby="agentEventsHeading"
+                    data-bs-parent="#agentEventsAccordion"
+                  >
+                    <div class="accordion-body bg-body">
+                      <div class="small text-muted mb-2" i18n="@@featureChat-agentEventsHint">
+                        Streaming deltas, tool calls/results, and questions are delivered as structured events.
+                      </div>
+                      <div class="d-flex flex-column gap-2">
+                        @for (ev of events; track ev.timestamp) {
+                          <div class="border rounded p-2 bg-body-tertiary">
+                            <div class="d-flex align-items-center justify-content-between">
+                              <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-primary">{{ ev.event }}</span>
+                                <span class="text-muted">{{ formatTimestamp(ev.timestamp) }}</span>
+                              </div>
+                            </div>
+                            <pre class="mb-0 mt-2 small"><code>{{ formatJson(ev.payload) }}</code></pre>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        }
+
         <!-- Chat messages -->
         <div #chatMessagesContainer class="chat-messages-container flex-grow-1 overflow-auto p-3 bg-body-secondary">
           @if (chatMessagesWithFilters$ | async; as messages) {
