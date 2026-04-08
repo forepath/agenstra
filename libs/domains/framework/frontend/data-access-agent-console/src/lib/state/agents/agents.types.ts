@@ -45,6 +45,9 @@ export interface ListClientAgentsParams {
   offset?: number;
 }
 
+/** Model id → display name, as returned by GET .../agents/:agentId/models (proxied agent-manager). */
+export type AgentModelsMap = Record<string, string>;
+
 export enum ContainerType {
   GENERIC = 'generic',
   DOCKER = 'docker',

@@ -172,6 +172,33 @@ paths:
                 $ref: '#/components/schemas/AgentResponseDto'
         '404':
           description: Agent not found
+  /agents/{id}/models:
+    get:
+      summary: List models for an agent
+      operationId: listAgentModels
+      description: |
+        Returns models reported by the agent's provider (e.g. by running the provider's list-models
+        command in the agent container when a container exists). The response is an empty object if
+        the container is missing, stopped, or the command fails. Requires the same authentication as
+        other agent manager HTTP endpoints (Bearer / Keycloak or configured static API key).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Map of model id to display name (may be empty)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentModelsResponseDto'
+        '400':
+          description: Agent provider does not support listing models
+        '404':
+          description: Agent not found
   /config:
     get:
       summary: Get configuration parameters
@@ -1260,6 +1287,11 @@ components:
               type: string
               format: uri
               description: Optional base URL for self-hosted instances (e.g., GitHub Enterprise Server)
+    AgentModelsResponseDto:
+      type: object
+      additionalProperties:
+        type: string
+      description: Model catalog for an agent; keys are model identifiers, values are display names
     AgentResponseDto:
       type: object
       required: [id, name, agentType, createdAt, updatedAt]

@@ -11,6 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { AgentModelsResponseDto } from '../dto/agent-models-response.dto';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
@@ -37,6 +38,17 @@ export class AgentsController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<AgentResponseDto[]> {
     return await this.agentsService.findAll(limit ?? 10, offset ?? 0);
+  }
+
+  /**
+   * List models available for an agent (provider-specific).
+   * Runs inside the agent container when present; otherwise returns an empty map.
+   * @param id - The UUID of the agent
+   * @returns Map of model id to display name
+   */
+  @Get(':id/models')
+  async listAgentModels(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AgentModelsResponseDto> {
+    return await this.agentsService.listModels(id);
   }
 
   /**

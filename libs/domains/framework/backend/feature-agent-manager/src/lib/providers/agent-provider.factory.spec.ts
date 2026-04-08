@@ -31,6 +31,8 @@ describe('AgentProviderFactory', () => {
       sendInitialization: jest.fn(),
       toParseableStrings: jest.fn(),
       toUnifiedResponse: jest.fn(),
+      getModelsListCommand: jest.fn(),
+      toModelsList: jest.fn(),
     };
 
     mockProvider2 = {
@@ -49,6 +51,8 @@ describe('AgentProviderFactory', () => {
       sendInitialization: jest.fn(),
       toParseableStrings: jest.fn(),
       toUnifiedResponse: jest.fn(),
+      getModelsListCommand: jest.fn(),
+      toModelsList: jest.fn(),
     };
   });
 

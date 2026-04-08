@@ -23,6 +23,7 @@ flowchart TB
         PROXY_USE --> PROXY1["📝 Create Agent (Proxied)<br/>POST /api/clients/:id/agents<br/>Returns: Agent + Password<br/>Saves credentials for WS"]
         PROXY_USE --> PROXY2["📋 List Agents (Proxied)<br/>GET /api/clients/:id/agents?limit&offset<br/>Returns: Paginated Agent List"]
         PROXY_USE --> PROXY3["🔍 Get Agent (Proxied)<br/>GET /api/clients/:id/agents/:agentId<br/>Returns: Agent Details"]
+        PROXY_USE --> PROXY3B["🤖 List Models (Proxied)<br/>GET /api/clients/:id/agents/:agentId/models<br/>Returns: Model id → name map"]
         PROXY_USE --> PROXY4["✏️ Update Agent (Proxied)<br/>POST /api/clients/:id/agents/:agentId<br/>Returns: Updated Agent"]
         PROXY_USE --> PROXY5["🗑️ Delete Agent (Proxied)<br/>DELETE /api/clients/:id/agents/:agentId<br/>Returns: 204 No Content"]
     end
@@ -92,6 +93,7 @@ flowchart TB
     style PROXY1 fill:#f0f7ff,stroke:#4a90e2
     style PROXY2 fill:#f0f7ff,stroke:#4a90e2
     style PROXY3 fill:#f0f7ff,stroke:#4a90e2
+    style PROXY3B fill:#f0f7ff,stroke:#4a90e2
     style PROXY4 fill:#f0f7ff,stroke:#4a90e2
     style PROXY5 fill:#f0f7ff,stroke:#4a90e2
     style FILES1 fill:#f0fff0,stroke:#4a9e2

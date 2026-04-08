@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AgentModelsResponseDto } from '../dto/agent-models-response.dto';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
@@ -35,6 +36,7 @@ describe('AgentsController', () => {
     start: jest.fn(),
     stop: jest.fn(),
     restart: jest.fn(),
+    listModels: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -86,6 +88,27 @@ describe('AgentsController', () => {
 
       expect(result).toEqual(mockAgentResponse);
       expect(service.findOne).toHaveBeenCalledWith('test-uuid');
+    });
+  });
+
+  describe('listAgentModels', () => {
+    it('should return models map from service', async () => {
+      const models: AgentModelsResponseDto = { 'model-a': 'Model A', 'model-b': 'Model B' };
+      service.listModels.mockResolvedValue(models);
+
+      const result = await controller.listAgentModels('test-uuid');
+
+      expect(result).toEqual(models);
+      expect(service.listModels).toHaveBeenCalledWith('test-uuid');
+    });
+
+    it('should return empty object when service returns no models', async () => {
+      service.listModels.mockResolvedValue({});
+
+      const result = await controller.listAgentModels('test-uuid');
+
+      expect(result).toEqual({});
+      expect(service.listModels).toHaveBeenCalledWith('test-uuid');
     });
   });
 

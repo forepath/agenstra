@@ -1,3 +1,4 @@
+import { PasswordService } from '@forepath/identity/backend';
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import * as sshpk from 'sshpk';
@@ -8,10 +9,10 @@ import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
+import { AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
-import { PasswordService } from '@forepath/identity/backend';
 
 /**
  * Service for agent business logic operations.
@@ -917,6 +918,35 @@ export class AgentsService implements OnApplicationBootstrap {
       this.logger.error(`Error during container restart process: ${err.message}`, err.stack);
       // Don't throw - we don't want to prevent service startup if container restart fails
     }
+  }
+
+  /**
+   * List models for an agent.
+   * @param id - The UUID of the agent
+   * @returns The list of models
+   */
+  async listModels(id: string): Promise<AgentProviderModels> {
+    const agent = await this.agentsRepository.findByIdOrThrow(id);
+    const provider = this.agentProviderFactory.getProvider(agent.agentType);
+    if (!provider.getModelsListCommand || !provider.toModelsList) {
+      throw new BadRequestException('Provider does not support listing models');
+    }
+    if (agent.containerId) {
+      try {
+        const result = await this.dockerService.sendCommandToContainer(
+          agent.containerId,
+          provider.getModelsListCommand(),
+        );
+
+        return provider.toModelsList(result) || {};
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+        this.logger.error(`Failed to list models for agent ${agent.name}: ${err.message}`, err.stack);
+        // Don't throw - we don't want to prevent the user from listing models if the container is not running
+      }
+    }
+
+    return {};
   }
 
   /**

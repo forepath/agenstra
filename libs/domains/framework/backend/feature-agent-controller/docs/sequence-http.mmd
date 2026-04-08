@@ -161,6 +161,17 @@ sequenceDiagram
         API-->>Client: 200 OK<br/>{agent}
     end
 
+    rect rgb(245, 250, 255)
+        Note over Client,Remote: List Agent Models (Proxied, same client access as get agent)
+        Client->>API: GET /api/clients/{id}/agents/{agentId}/models
+        API->>Proxy: listClientAgentModels(clientId, agentId)
+        Proxy->>Proxy: getAuthHeader(clientId)
+        Proxy->>Remote: GET {endpoint}/api/agents/{agentId}/models<br/>Authorization: Bearer {token/apiKey}
+        Remote-->>Proxy: 200 OK<br/>{models map or {}}
+        Proxy-->>API: AgentModelsResponseDto
+        API-->>Client: 200 OK<br/>{models}
+    end
+
     rect rgb(255, 255, 240)
         Note over Client,Remote: Update Agent (Proxied)
         Client->>API: POST /api/clients/{id}/agents/{agentId}<br/>{name?, description?}

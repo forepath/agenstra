@@ -6,6 +6,7 @@ import {
   createClientAgent,
   deleteClientAgent,
   loadClientAgent,
+  loadClientAgentModels,
   loadClientAgents,
   restartClientAgent,
   startClientAgent,
@@ -14,6 +15,7 @@ import {
 } from './agents.actions';
 import { AgentsFacade } from './agents.facade';
 import type {
+  AgentModelsMap,
   AgentResponseDto,
   ContainerType,
   CreateAgentDto,
@@ -216,6 +218,38 @@ describe('AgentsFacade', () => {
     });
   });
 
+  describe('Client agent models', () => {
+    const agentId = 'agent-1';
+    const models: AgentModelsMap = { m1: 'Model 1' };
+
+    it('should return models observable', (done) => {
+      store.select.mockReturnValue(of(models));
+
+      facade.getClientAgentModels$(clientId, agentId).subscribe((result) => {
+        expect(result).toEqual(models);
+        done();
+      });
+    });
+
+    it('should return models loading observable', (done) => {
+      store.select.mockReturnValue(of(true));
+
+      facade.getClientAgentModelsLoading$(clientId, agentId).subscribe((result) => {
+        expect(result).toBe(true);
+        done();
+      });
+    });
+
+    it('should return models error observable', (done) => {
+      store.select.mockReturnValue(of('boom'));
+
+      facade.getClientAgentModelsError$(clientId, agentId).subscribe((result) => {
+        expect(result).toBe('boom');
+        done();
+      });
+    });
+  });
+
   describe('Action Methods', () => {
     it('should dispatch loadClientAgents action', () => {
       const params: ListClientAgentsParams = { limit: 10, offset: 0 };
@@ -235,6 +269,13 @@ describe('AgentsFacade', () => {
       facade.loadClientAgent(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(loadClientAgent({ clientId, agentId }));
+    });
+
+    it('should dispatch loadClientAgentModels action', () => {
+      const agentId = 'agent-1';
+      facade.loadClientAgentModels(clientId, agentId);
+
+      expect(store.dispatch).toHaveBeenCalledWith(loadClientAgentModels({ clientId, agentId }));
     });
 
     it('should dispatch createClientAgent action', () => {

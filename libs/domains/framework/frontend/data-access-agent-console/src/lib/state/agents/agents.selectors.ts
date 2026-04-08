@@ -30,6 +30,12 @@ export const selectAgentsCommands = createSelector(selectAgentsState, (state) =>
 
 export const selectAgentsLoadingCommands = createSelector(selectAgentsState, (state) => state.loadingCommands);
 
+export const selectAgentsAgentModels = createSelector(selectAgentsState, (state) => state.agentModels);
+
+export const selectAgentsLoadingAgentModels = createSelector(selectAgentsState, (state) => state.loadingAgentModels);
+
+export const selectAgentsAgentModelsErrors = createSelector(selectAgentsState, (state) => state.agentModelsErrors);
+
 // Client-scoped selectors (factory functions that return selectors for a specific clientId)
 export const selectClientAgents = (clientId: string) =>
   createSelector(selectAgentsEntities, (entities) => entities[clientId] ?? []);
@@ -100,4 +106,23 @@ export const selectClientAgentLoadingCommands = (clientId: string, agentId: stri
   createSelector(selectAgentsLoadingCommands, (loadingCommands) => {
     const key = `${clientId}:${agentId}`;
     return loadingCommands[key] ?? false;
+  });
+
+/** Cached model list for one agent (`null` if never loaded or cleared after delete). */
+export const selectClientAgentModels = (clientId: string, agentId: string) =>
+  createSelector(selectAgentsAgentModels, (modelsByKey) => {
+    const key = `${clientId}:${agentId}`;
+    return modelsByKey[key] ?? null;
+  });
+
+export const selectClientAgentModelsLoading = (clientId: string, agentId: string) =>
+  createSelector(selectAgentsLoadingAgentModels, (loadingByKey) => {
+    const key = `${clientId}:${agentId}`;
+    return loadingByKey[key] ?? false;
+  });
+
+export const selectClientAgentModelsError = (clientId: string, agentId: string) =>
+  createSelector(selectAgentsAgentModelsErrors, (errorsByKey) => {
+    const key = `${clientId}:${agentId}`;
+    return errorsByKey[key] ?? null;
   });

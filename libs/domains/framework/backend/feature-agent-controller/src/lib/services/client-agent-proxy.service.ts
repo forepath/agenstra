@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import {
+  AgentModelsResponseDto,
   AgentResponseDto,
   ConfigResponseDto,
   CreateAgentDto,
@@ -187,6 +188,19 @@ export class ClientAgentProxyService {
     return await this.makeRequest<AgentResponseDto>(clientId, {
       method: 'GET',
       url: `/${agentId}`,
+    });
+  }
+
+  /**
+   * List models available for an agent (proxied to agent-manager).
+   * @param clientId - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @returns Map of model id to display name
+   */
+  async listClientAgentModels(clientId: string, agentId: string): Promise<AgentModelsResponseDto> {
+    return await this.makeRequest<AgentModelsResponseDto>(clientId, {
+      method: 'GET',
+      url: `/${agentId}/models`,
     });
   }
 

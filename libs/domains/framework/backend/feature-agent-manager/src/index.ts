@@ -1,3 +1,4 @@
+export * from './lib/dto/agent-models-response.dto';
 export * from './lib/dto/agent-response.dto';
 export * from './lib/dto/commit.dto';
 export * from './lib/dto/config-response.dto';

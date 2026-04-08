@@ -51,6 +51,14 @@ sequenceDiagram
         HTTP-->>User: 201 Created { id, name, password, ... }
     end
 
+    rect rgb(220, 235, 255)
+        Note over User,Docker: Optional - List models (HTTP, same auth as agent CRUD)
+        User->>HTTP: GET /api/agents/{id}/models
+        HTTP->>Service: listModels(id)
+        Service-->>HTTP: models map or {}
+        HTTP-->>User: 200 OK
+    end
+
     rect rgb(200, 220, 255)
         Note over User,Docker: Step 2 - Connect (WebSocket)
         User->>WS: WebSocket Connect (namespace: /agents)

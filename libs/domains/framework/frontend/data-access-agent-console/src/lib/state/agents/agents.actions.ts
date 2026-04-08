@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import type {
+  AgentModelsMap,
   AgentResponseDto,
   CreateAgentDto,
   CreateAgentResponseDto,
@@ -42,6 +43,22 @@ export const loadClientAgentSuccess = createAction(
 export const loadClientAgentFailure = createAction(
   '[Agents] Load Client Agent Failure',
   props<{ clientId: string; error: string }>(),
+);
+
+// List models for a client agent (proxied)
+export const loadClientAgentModels = createAction(
+  '[Agents] Load Client Agent Models',
+  props<{ clientId: string; agentId: string }>(),
+);
+
+export const loadClientAgentModelsSuccess = createAction(
+  '[Agents] Load Client Agent Models Success',
+  props<{ clientId: string; agentId: string; models: AgentModelsMap }>(),
+);
+
+export const loadClientAgentModelsFailure = createAction(
+  '[Agents] Load Client Agent Models Failure',
+  props<{ clientId: string; agentId: string; error: string }>(),
 );
 
 // Create Client Agent Actions

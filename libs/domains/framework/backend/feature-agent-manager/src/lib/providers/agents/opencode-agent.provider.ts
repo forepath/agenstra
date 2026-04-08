@@ -3,6 +3,7 @@ import { DockerService } from '../../services/docker.service';
 import {
   AgentProvider,
   AgentProviderCapabilities,
+  AgentProviderModels,
   AgentProviderOptions,
   AgentResponseObject,
 } from '../agent-provider.interface';
@@ -14,6 +15,7 @@ import {
 @Injectable()
 export class OpenCodeAgentProvider implements AgentProvider {
   private static readonly TYPE = 'opencode';
+  private static readonly LIST_MODELS_COMMAND = 'opencode models';
 
   constructor(private readonly dockerService: DockerService) {}
 
@@ -73,6 +75,36 @@ export class OpenCodeAgentProvider implements AgentProvider {
    */
   getSshConnectionDockerImage(): string {
     return process.env.OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE || 'ghcr.io/forepath/agenstra-manager-ssh:latest';
+  }
+
+  /**
+   * Get the command to list models.
+   * @returns The command to list models
+   */
+  getModelsListCommand(): string {
+    return OpenCodeAgentProvider.LIST_MODELS_COMMAND;
+  }
+
+  /**
+   * Parse the result of the models list command.
+   * Each non-empty line is a model id; id and display name are the same string.
+   * @param result - The result of the models list command
+   * @returns The list of models
+   */
+  toModelsList(result: string): AgentProviderModels {
+    const models: AgentProviderModels = {};
+    if (!result?.trim()) {
+      return models;
+    }
+
+    for (const line of result.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (trimmed) {
+        models[trimmed] = trimmed;
+      }
+    }
+
+    return models;
   }
 
   /**
@@ -348,5 +380,9 @@ export class OpenCodeAgentProvider implements AgentProvider {
     }
 
     return undefined;
+  }
+
+  buildModelsCommand(): string {
+    return `opencode models`;
   }
 }

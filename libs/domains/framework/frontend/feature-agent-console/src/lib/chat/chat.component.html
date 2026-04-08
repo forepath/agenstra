@@ -1069,14 +1069,13 @@
                     (socketReconnecting$ | async) ||
                     (remoteReconnecting$ | async) ||
                     (chatEnhancementPending$ | async) ||
-                    !(selectedAgent$ | async)
+                    !(selectedAgent$ | async) ||
+                    !!(chatModelSelectDisabled$ | async)
                   "
                 >
                   <option value="auto" i18n="@@featureChat-modelAuto">Auto</option>
-                  @if (selectedAgent$ | async; as agent) {
-                    @for (model of getChatModelOptions(agent.agentType); track model.value) {
-                      <option [value]="model.value">{{ model.label }}</option>
-                    }
+                  @for (model of (chatModelSelectOptions$ | async) ?? []; track model.value) {
+                    <option [value]="model.value">{{ model.label }}</option>
                   }
                 </select>
               </div>

@@ -17,6 +17,9 @@ import {
   loadClientAgentCommands,
   loadClientAgentCommandsSuccess,
   loadClientAgentFailure,
+  loadClientAgentModels,
+  loadClientAgentModelsFailure,
+  loadClientAgentModelsSuccess,
   loadClientAgents,
   loadClientAgentsBatch,
   loadClientAgentsFailure,
@@ -123,6 +126,21 @@ export const loadClientAgent$ = createEffect(
         agentsService.getClientAgent(clientId, agentId).pipe(
           map((agent) => loadClientAgentSuccess({ clientId, agent })),
           catchError((error) => of(loadClientAgentFailure({ clientId, error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const loadClientAgentModels$ = createEffect(
+  (actions$ = inject(Actions), agentsService = inject(AgentsService)) => {
+    return actions$.pipe(
+      ofType(loadClientAgentModels),
+      switchMap(({ clientId, agentId }) =>
+        agentsService.listClientAgentModels(clientId, agentId).pipe(
+          map((models) => loadClientAgentModelsSuccess({ clientId, agentId, models })),
+          catchError((error) => of(loadClientAgentModelsFailure({ clientId, agentId, error: normalizeError(error) }))),
         ),
       ),
     );

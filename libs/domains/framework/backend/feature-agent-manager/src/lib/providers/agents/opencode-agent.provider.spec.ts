@@ -80,6 +80,50 @@ describe('OpenCodeAgentProvider', () => {
     });
   });
 
+  describe('getModelsListCommand', () => {
+    it('should return "opencode models"', () => {
+      expect(provider.getModelsListCommand()).toBe('opencode models');
+    });
+  });
+
+  describe('toModelsList', () => {
+    it('should map each non-empty line to id and name equal to that line', () => {
+      const raw = `openrouter/z-ai/glm-5
+openrouter/z-ai/glm-5-turbo
+openrouter/z-ai/glm-5.1`;
+
+      expect(provider.toModelsList(raw)).toEqual({
+        'openrouter/z-ai/glm-5': 'openrouter/z-ai/glm-5',
+        'openrouter/z-ai/glm-5-turbo': 'openrouter/z-ai/glm-5-turbo',
+        'openrouter/z-ai/glm-5.1': 'openrouter/z-ai/glm-5.1',
+      });
+    });
+
+    it('should drop empty lines and trim whitespace', () => {
+      const raw = `  model-a  
+
+model-b
+`;
+
+      expect(provider.toModelsList(raw)).toEqual({
+        'model-a': 'model-a',
+        'model-b': 'model-b',
+      });
+    });
+
+    it('should handle CRLF line endings', () => {
+      expect(provider.toModelsList('one\r\ntwo')).toEqual({
+        one: 'one',
+        two: 'two',
+      });
+    });
+
+    it('should return empty object for empty or whitespace-only input', () => {
+      expect(provider.toModelsList('')).toEqual({});
+      expect(provider.toModelsList('   \n  \t  ')).toEqual({});
+    });
+  });
+
   describe('getVirtualWorkspaceDockerImage', () => {
     it('should return default image when OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE is not set', () => {
       delete process.env.OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE;

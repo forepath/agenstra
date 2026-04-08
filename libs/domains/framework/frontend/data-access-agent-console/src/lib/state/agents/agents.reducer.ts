@@ -12,6 +12,9 @@ import {
   loadClientAgentCommandsFailure,
   loadClientAgentCommandsSuccess,
   loadClientAgentFailure,
+  loadClientAgentModels,
+  loadClientAgentModelsFailure,
+  loadClientAgentModelsSuccess,
   loadClientAgents,
   loadClientAgentsBatch,
   loadClientAgentsFailure,
@@ -30,7 +33,7 @@ import {
   updateClientAgentFailure,
   updateClientAgentSuccess,
 } from './agents.actions';
-import type { AgentResponseDto } from './agents.types';
+import type { AgentModelsMap, AgentResponseDto } from './agents.types';
 
 export interface AgentsState {
   // Agents grouped by clientId
@@ -51,6 +54,10 @@ export interface AgentsState {
   restarting: Record<string, boolean>;
   // Errors per client
   errors: Record<string, string | null>;
+  /** Models per `clientId:agentId` (from list models endpoint). */
+  agentModels: Record<string, AgentModelsMap>;
+  loadingAgentModels: Record<string, boolean>;
+  agentModelsErrors: Record<string, string | null>;
 }
 
 export const initialAgentsState: AgentsState = {
@@ -67,6 +74,9 @@ export const initialAgentsState: AgentsState = {
   stopping: {},
   restarting: {},
   errors: {},
+  agentModels: {},
+  loadingAgentModels: {},
+  agentModelsErrors: {},
 };
 
 function getClientAgentKey(clientId: string, agentId: string): string {
@@ -227,6 +237,31 @@ export const agentsReducer = createReducer(
       error,
     })),
   ),
+  on(loadClientAgentModels, (state, { clientId, agentId }) => {
+    const key = getClientAgentKey(clientId, agentId);
+    return {
+      ...state,
+      loadingAgentModels: { ...state.loadingAgentModels, [key]: true },
+      agentModelsErrors: { ...state.agentModelsErrors, [key]: null },
+    };
+  }),
+  on(loadClientAgentModelsSuccess, (state, { clientId, agentId, models }) => {
+    const key = getClientAgentKey(clientId, agentId);
+    return {
+      ...state,
+      agentModels: { ...state.agentModels, [key]: models },
+      loadingAgentModels: { ...state.loadingAgentModels, [key]: false },
+      agentModelsErrors: { ...state.agentModelsErrors, [key]: null },
+    };
+  }),
+  on(loadClientAgentModelsFailure, (state, { clientId, agentId, error }) => {
+    const key = getClientAgentKey(clientId, agentId);
+    return {
+      ...state,
+      loadingAgentModels: { ...state.loadingAgentModels, [key]: false },
+      agentModelsErrors: { ...state.agentModelsErrors, [key]: error },
+    };
+  }),
   // Create Client Agent
   on(createClientAgent, (state, { clientId }) =>
     updateClientState(state, clientId, (clientState) => ({
@@ -281,14 +316,19 @@ export const agentsReducer = createReducer(
       error: null,
     })),
   ),
-  on(deleteClientAgentSuccess, (state, { clientId, agentId }) =>
-    updateClientState(state, clientId, (clientState) => ({
+  on(deleteClientAgentSuccess, (state, { clientId, agentId }) => {
+    const next = updateClientState(state, clientId, (clientState) => ({
       agents: clientState.agents.filter((a) => a.id !== agentId),
       selectedAgent: clientState.selectedAgent?.id === agentId ? null : clientState.selectedAgent,
       deleting: false,
       error: null,
-    })),
-  ),
+    }));
+    const key = getClientAgentKey(clientId, agentId);
+    const { [key]: _removedModels, ...agentModels } = next.agentModels;
+    const { [key]: _removedLoading, ...loadingAgentModels } = next.loadingAgentModels;
+    const { [key]: _removedErrors, ...agentModelsErrors } = next.agentModelsErrors;
+    return { ...next, agentModels, loadingAgentModels, agentModelsErrors };
+  }),
   on(deleteClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({
       deleting: false,
