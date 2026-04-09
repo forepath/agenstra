@@ -67,6 +67,7 @@ export * from './lib/dto/client-response.dto';
 export * from './lib/dto/create-client-response.dto';
 export * from './lib/dto/create-client.dto';
 export * from './lib/dto/update-client.dto';
+export * from './lib/entities/client-agent-openai-api-key.entity';
 export * from './lib/entities/provisioning-reference.entity';
 export * from './lib/entities/ticket-activity.entity';
 export * from './lib/entities/ticket-body-generation-session.entity';

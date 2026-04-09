@@ -2,7 +2,6 @@ import {
   AgentModelsResponseDto,
   AgentResponseDto,
   CreateAgentDto,
-  CreateAgentResponseDto,
   CreateEnvironmentVariableDto,
   CreateFileDto,
   EnvironmentVariableResponseDto,
@@ -50,9 +49,11 @@ import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { RotateOpenAiApiKeyResponseDto } from '../dto/rotate-openai-api-key-response.dto';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
-import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
+import { ClientAgentOpenAiApiKeysService } from '../services/client-agent-openai-api-keys.service';
+import { ClientAgentProxyService, CreateClientAgentResultDto } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { ProvisioningService } from '../services/provisioning.service';
 
@@ -72,6 +73,7 @@ export class ClientsController {
     private readonly clientUsersService: ClientUsersService,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
+    private readonly clientAgentOpenAiApiKeysService: ClientAgentOpenAiApiKeysService,
   ) {}
 
   /**
@@ -240,10 +242,25 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() createAgentDto: CreateAgentDto,
     @Req() req?: RequestWithUser,
-  ): Promise<CreateAgentResponseDto> {
+  ): Promise<CreateClientAgentResultDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
     return await this.clientAgentProxyService.createClientAgent(id, createAgentDto, userInfo.userId);
+  }
+
+  /**
+   * Rotate the OpenAI-compatible API key for an agent (plaintext returned once).
+   */
+  @Post(':id/agents/:agentId/openai-api-key/rotate')
+  @HttpCode(HttpStatus.OK)
+  async rotateOpenAiApiKey(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<RotateOpenAiApiKeyResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const openAiApiKey = await this.clientAgentOpenAiApiKeysService.rotateKey(id, agentId);
+    return { openAiApiKey };
   }
 
   /**

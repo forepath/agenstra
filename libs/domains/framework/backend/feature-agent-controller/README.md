@@ -35,10 +35,12 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
 - **Entities**:
   - `ClientEntity` - Domain model representing a client (remote agent-manager service)
   - `ClientAgentCredentialEntity` - Stores credentials for agents created via proxied requests
+  - `ClientAgentOpenAiApiKeyEntity` - Per-agent OpenAI-compatible API keys (encrypted at rest, SHA-256 hash for lookup)
   - `ClientUserEntity` - Many-to-many relationship between users and clients with per-client roles
 - **Repositories**:
   - `ClientsRepository` - Data access layer for client operations
   - `ClientAgentCredentialsRepository` - Data access layer for agent credentials
+  - `ClientAgentOpenAiApiKeysRepository` - Data access layer for per-agent OpenAI API keys
   - `ClientUsersRepository` - Data access layer for client-user relationships
 - **Services**:
   - `ClientsService` - Business logic orchestration for clients with permission checks
@@ -47,13 +49,16 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
   - `ClientAgentFileSystemProxyService` - Proxies file system operations to remote agent-manager services
   - `ClientAgentEnvironmentVariablesProxyService` - Proxies environment variable operations to remote agent-manager services
   - `ClientAgentCredentialsService` - Manages stored agent credentials
+  - `ClientAgentOpenAiApiKeysService` - Issues and rotates per-agent OpenAI keys; resolves key → agent
+  - `OpenAiAgentWsProxyService` - Bridges OpenAI HTTP requests to remote agent-manager `chat` / `chatEvent` over Socket.IO
   - `KeycloakTokenService` - Handles Keycloak OAuth2 Client Credentials flow with token caching
 - **DTOs**: Data transfer objects for API boundaries
   - `CreateClientDto` - Input validation for creating clients
   - `UpdateClientDto` - Input validation for updating clients
   - `ClientResponseDto` - Safe API responses (excludes sensitive data, includes proxied config with agent types from remote agent-manager)
   - `CreateClientResponseDto` - Response when creating client (includes API key if applicable)
-- **Controllers**: `ClientsController` - HTTP endpoints for client and proxied agent management (protected by Keycloak)
+- **Controllers**: `ClientsController` - HTTP endpoints for client and proxied agent management (protected by Keycloak); `OpenAiV1Controller` - OpenAI-shaped routes under `/openai` (per-agent key auth, `@Public()`)
+- **Guards**: `OpenAiApiKeyGuard` - Validates `Authorization: Bearer <agenstra_oai_...>` (or `ApiKey`) and attaches agent context
 - **Gateways**: `ClientsGateway` - WebSocket gateway for forwarding events to remote agent-manager WebSocket endpoints
 - **Modules**: `ClientsModule` - NestJS module wiring all dependencies
 
@@ -77,6 +82,7 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[WebSocket Forwarding Diagram](./docs/sequence-ws-forward.mmd)** - Sequence diagram for WebSocket connection, client context setup, event forwarding, and auto-login
 - **[Chat prompt enhancement](./docs/sequence-chat-enhancement.mmd)** - Sequence for `enhanceChat` / `chatEnhanceResult` (magic-wand flow; statistics only, no `agent_messages`)
 - **[Lifecycle Diagram](./docs/lifecycle.mmd)** - End-to-end sequence diagram showing the complete lifecycle from client creation through proxied agent operations to WebSocket event forwarding
+- **[OpenAI HTTP bridge](./docs/openai-sequence.mmd)** - Sequence for `/api/openai/v1/*` → DB key lookup → agent-manager `/agents` `chat` / SSE streaming
 
 These diagrams provide comprehensive visual documentation of:
 
@@ -182,7 +188,7 @@ When listing clients (`GET /api/clients`), only clients the user has access to a
 
 ## API Endpoints
 
-All HTTP endpoints require authentication (except `/api/health` and public auth endpoints). The authentication method depends on `AUTHENTICATION_METHOD`; see [Authentication](#authentication) above.
+All HTTP endpoints require authentication (except `/api/health`, public auth endpoints, and **`/api/openai/*`**, which use **per-agent OpenAI keys** only). The authentication method depends on `AUTHENTICATION_METHOD`; see [Authentication](#authentication) above.
 
 **Note**: All endpoints that access a specific client (`/api/clients/:id/*`) now check permissions. Users without access will receive a `403 Forbidden` response.
 
@@ -201,9 +207,23 @@ Base URL: `/api`
 - `GET /api/clients/:id/agents` - List all agents for a client (supports `limit` and `offset` query parameters)
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
 - `GET /api/clients/:id/agents/:agentId/models` - List models for an agent (proxied; same client access rules as get agent)
-- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials)
+- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials, and a one-time **OpenAI API key** for `/api/openai`)
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent (also deletes stored credentials)
+- `POST /api/clients/:id/agents/:agentId/openai-api-key/rotate` - Rotate the per-agent OpenAI key (returns new plaintext once; requires normal platform auth)
+
+### OpenAI-compatible HTTP (`/api/openai`)
+
+For external tools and SDKs that expect an OpenAI-style API. These routes are **`@Public()`** with respect to platform JWT/static API key: you must send **`Authorization: Bearer <per-agent key>`** (or `ApiKey <key>`). The key selects **one agent** (and its client); the request `model` field is the model id for that agent.
+
+- `GET /api/openai/v1/models` - List models (proxied from agent-manager for that agent)
+- `POST /api/openai/v1/chat/completions` - Chat completions; `stream: true` returns **SSE** (`text/event-stream`)
+- `POST /api/openai/v1/completions` - Legacy completions (string/array prompt)
+- `POST /api/openai/v1/responses` - Minimal Responses API subset (text-oriented)
+
+**Encryption:** Per-agent keys are stored encrypted (AES-256-GCM). Set **`ENCRYPTION_KEY`** in the agent-controller environment (required in production); see the app `README` and `main.ts` bootstrap checks.
+
+**Not implemented** on this surface: embeddings, audio, images, realtime WebSocket, files, batches, fine-tuning, and full Responses tool/multimodal parity.
 
 **Note**: Agent creation requests are proxied to the remote agent-manager service. SSH repository configuration (including `GIT_PRIVATE_KEY`) must be configured on the agent-manager instance via environment variables, not through the API request. See the [agent-manager documentation](../feature-agent-manager/README.md) for details on SSH repository setup.
 

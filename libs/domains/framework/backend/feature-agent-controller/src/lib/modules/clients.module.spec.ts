@@ -14,6 +14,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-connect';
 import { ClientsController } from '../controllers/clients.controller';
+import { ClientAgentOpenAiApiKeyEntity } from '../entities/client-agent-openai-api-key.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
@@ -90,6 +91,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(ClientEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ClientAgentCredentialEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(ClientAgentOpenAiApiKeyEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ProvisioningReferenceEntity))
       .useValue(mockRepository)

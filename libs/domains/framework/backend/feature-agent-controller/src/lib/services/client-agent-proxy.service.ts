@@ -12,8 +12,11 @@ import { AuthenticationType, ClientAgentCredentialsService } from '@forepath/ide
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { ClientAgentOpenAiApiKeysService } from './client-agent-openai-api-keys.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
+
+export type CreateClientAgentResultDto = CreateAgentResponseDto & { openAiApiKey?: string };
 
 /**
  * Service for proxying agent management requests to client endpoints.
@@ -28,6 +31,7 @@ export class ClientAgentProxyService {
     private readonly clientsService: ClientsService,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientAgentCredentialsService: ClientAgentCredentialsService,
+    private readonly clientAgentOpenAiApiKeysService: ClientAgentOpenAiApiKeysService,
     private readonly statisticsService: StatisticsService,
   ) {}
 
@@ -214,7 +218,7 @@ export class ClientAgentProxyService {
     clientId: string,
     createAgentDto: CreateAgentDto,
     userId?: string,
-  ): Promise<CreateAgentResponseDto> {
+  ): Promise<CreateClientAgentResultDto> {
     const result = await this.makeRequest<CreateAgentResponseDto>(clientId, {
       method: 'POST',
       data: createAgentDto,
@@ -223,7 +227,12 @@ export class ClientAgentProxyService {
     if (result?.id && result?.password) {
       await this.clientAgentCredentialsService.saveCredentials(clientId, result.id, result.password);
     }
+    let openAiApiKey: string | undefined;
     if (result?.id) {
+      const issued = await this.clientAgentOpenAiApiKeysService.issueKeyForNewAgent(clientId, result.id);
+      if (issued) {
+        openAiApiKey = issued;
+      }
       this.statisticsService
         .recordEntityCreated(
           StatisticsEntityType.AGENT,
@@ -239,7 +248,7 @@ export class ClientAgentProxyService {
         )
         .catch(() => undefined);
     }
-    return result;
+    return openAiApiKey ? { ...result, openAiApiKey } : result;
   }
 
   /**
@@ -290,6 +299,7 @@ export class ClientAgentProxyService {
     });
     // Cleanup stored credentials for this client/agent pair
     await this.clientAgentCredentialsService.deleteCredentials(clientId, agentId);
+    await this.clientAgentOpenAiApiKeysService.deleteForAgent(clientId, agentId);
   }
 
   /**

@@ -7,6 +7,12 @@ info:
     All connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
+
+    **OpenAI-compatible HTTP (not this AsyncAPI):** Agent Controller also exposes `/api/openai/v1/*`
+    for external tools. Those routes use a **per-agent** bearer secret (`agenstra_oai_...`), not platform JWT.
+    Streaming there is **HTTP Server-Sent Events (SSE)**, not WebSocket. Internally, the controller bridges
+    to the remote agent-manager `/agents` namespace (`chat` / `chatEvent` assistant deltas and final messages);
+    see the Agent Controller OpenAPI spec and `docs/openai-sequence.mmd`.
     The `setClient` operation enforces per-client authorization: only users with access to
     the requested client (global admin, client creator, or client_users entry) can set that
     client context. Unauthorized setClient attempts emit an `error` event with message

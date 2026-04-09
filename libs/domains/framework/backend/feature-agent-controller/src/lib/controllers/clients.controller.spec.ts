@@ -35,6 +35,7 @@ import { ProvisioningProvider } from '../providers/provisioning-provider.interfa
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
+import { ClientAgentOpenAiApiKeysService } from '../services/client-agent-openai-api-keys.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { ProvisioningService } from '../services/provisioning.service';
@@ -51,6 +52,7 @@ describe('ClientsController', () => {
   let clientUsersService: jest.Mocked<ClientUsersService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
+  let clientAgentOpenAiApiKeysService: jest.Mocked<ClientAgentOpenAiApiKeysService>;
 
   const mockClientResponse: ClientResponseDto = {
     id: 'test-uuid',
@@ -154,6 +156,10 @@ describe('ClientsController', () => {
     findUserClientAccess: jest.fn(),
   };
 
+  const mockClientAgentOpenAiApiKeysService = {
+    rotateKey: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ClientsController],
@@ -194,6 +200,10 @@ describe('ClientsController', () => {
           provide: ClientUsersRepository,
           useValue: mockClientUsersRepository,
         },
+        {
+          provide: ClientAgentOpenAiApiKeysService,
+          useValue: mockClientAgentOpenAiApiKeysService,
+        },
       ],
     }).compile();
 
@@ -207,6 +217,7 @@ describe('ClientsController', () => {
     clientUsersService = module.get(ClientUsersService);
     clientsRepository = module.get(ClientsRepository);
     clientUsersRepository = module.get(ClientUsersRepository);
+    clientAgentOpenAiApiKeysService = module.get(ClientAgentOpenAiApiKeysService);
   });
 
   afterEach(() => {
@@ -381,6 +392,20 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(models);
       expect(proxyService.listClientAgentModels).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+    });
+  });
+
+  describe('rotateOpenAiApiKey', () => {
+    it('should rotate key and return plaintext once', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      clientAgentOpenAiApiKeysService.rotateKey.mockResolvedValue('new-openai-key');
+
+      const result = await controller.rotateOpenAiApiKey('client-uuid', 'agent-uuid', mockReq);
+
+      expect(result).toEqual({ openAiApiKey: 'new-openai-key' });
+      expect(clientAgentOpenAiApiKeysService.rotateKey).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
 

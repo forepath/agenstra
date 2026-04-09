@@ -1,4 +1,5 @@
 import {
+  ClientAgentOpenAiApiKeyEntity,
   ProvisioningReferenceEntity,
   StatisticsAgentEntity,
   StatisticsChatFilterDropEntity,
@@ -35,6 +36,7 @@ export const typeormConfig: DataSourceOptions = {
   entities: [
     ClientEntity,
     ClientAgentCredentialEntity,
+    ClientAgentOpenAiApiKeyEntity,
     ClientUserEntity,
     ProvisioningReferenceEntity,
     UserEntity,
