@@ -104,6 +104,22 @@ describe('AgentsService', () => {
     });
   });
 
+  describe('listClientAgentModels', () => {
+    it('should GET model map for a client agent', (done) => {
+      const agentId = 'agent-1';
+      const mockModels = { 'model-a': 'Model A', 'model-b': 'Model B' };
+
+      service.listClientAgentModels(clientId, agentId).subscribe((models) => {
+        expect(models).toEqual(mockModels);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/models`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockModels);
+    });
+  });
+
   describe('createClientAgent', () => {
     it('should create a new agent for a client', (done) => {
       const createDto: CreateAgentDto = {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   AgentProvider,
   AgentProviderCapabilities,
+  AgentProviderModels,
   AgentProviderOptions,
   AgentResponseObject,
 } from '../agent-provider.interface';
@@ -97,6 +98,23 @@ export class OpenClawAgentProvider implements AgentProvider {
    */
   getSshConnectionDockerImage(): string {
     return process.env.OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE || 'ghcr.io/forepath/agenstra-manager-ssh:latest';
+  }
+
+  /**
+   * Get the command to list models.
+   * @returns The command to list models
+   */
+  getModelsListCommand(): string {
+    throw new Error('Not implemented');
+  }
+
+  /**
+   * Parse the result of the models list command.
+   * @param result - The result of the models list command
+   * @returns The list of models
+   */
+  toModelsList(_result: string): AgentProviderModels {
+    throw new Error('Not implemented');
   }
 
   /**

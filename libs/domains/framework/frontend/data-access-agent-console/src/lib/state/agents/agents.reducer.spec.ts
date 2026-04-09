@@ -11,6 +11,9 @@ import {
   loadClientAgentCommandsFailure,
   loadClientAgentCommandsSuccess,
   loadClientAgentFailure,
+  loadClientAgentModels,
+  loadClientAgentModelsFailure,
+  loadClientAgentModelsSuccess,
   loadClientAgents,
   loadClientAgentsBatch,
   loadClientAgentsFailure,
@@ -184,6 +187,59 @@ describe('agentsReducer', () => {
     });
   });
 
+  describe('loadClientAgentModels', () => {
+    const agentId = 'agent-1';
+    const key = `${clientId}:${agentId}`;
+
+    it('should set loading and clear prior error for that client:agent key', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        agentModelsErrors: { [key]: 'old' },
+      };
+
+      const newState = agentsReducer(state, loadClientAgentModels({ clientId, agentId }));
+
+      expect(newState.loadingAgentModels[key]).toBe(true);
+      expect(newState.agentModelsErrors[key]).toBeNull();
+    });
+  });
+
+  describe('loadClientAgentModelsSuccess', () => {
+    const agentId = 'agent-1';
+    const key = `${clientId}:${agentId}`;
+    const models = { m1: 'One' };
+
+    it('should store models and clear loading', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        loadingAgentModels: { [key]: true },
+      };
+
+      const newState = agentsReducer(state, loadClientAgentModelsSuccess({ clientId, agentId, models }));
+
+      expect(newState.agentModels[key]).toEqual(models);
+      expect(newState.loadingAgentModels[key]).toBe(false);
+      expect(newState.agentModelsErrors[key]).toBeNull();
+    });
+  });
+
+  describe('loadClientAgentModelsFailure', () => {
+    const agentId = 'agent-1';
+    const key = `${clientId}:${agentId}`;
+
+    it('should set error and clear loading', () => {
+      const state: AgentsState = {
+        ...initialAgentsState,
+        loadingAgentModels: { [key]: true },
+      };
+
+      const newState = agentsReducer(state, loadClientAgentModelsFailure({ clientId, agentId, error: 'failed' }));
+
+      expect(newState.agentModelsErrors[key]).toBe('failed');
+      expect(newState.loadingAgentModels[key]).toBe(false);
+    });
+  });
+
   describe('createClientAgent', () => {
     it('should set creating to true for the client and clear error', () => {
       const state: AgentsState = {
@@ -343,6 +399,25 @@ describe('agentsReducer', () => {
       const newState = agentsReducer(state, deleteClientAgentSuccess({ clientId, agentId: 'agent-1' }));
 
       expect(newState.selectedAgents[clientId]).toBeNull();
+    });
+
+    it('should remove cached models for the deleted agent', () => {
+      const agentId = 'agent-1';
+      const key = `${clientId}:${agentId}`;
+      const state: AgentsState = {
+        ...initialAgentsState,
+        entities: { [clientId]: [mockAgent] },
+        deleting: { [clientId]: true },
+        agentModels: { [key]: { m: 'M' } },
+        loadingAgentModels: { [key]: false },
+        agentModelsErrors: { [key]: null },
+      };
+
+      const newState = agentsReducer(state, deleteClientAgentSuccess({ clientId, agentId }));
+
+      expect(newState.agentModels[key]).toBeUndefined();
+      expect(newState.loadingAgentModels[key]).toBeUndefined();
+      expect(newState.agentModelsErrors[key]).toBeUndefined();
     });
   });
 

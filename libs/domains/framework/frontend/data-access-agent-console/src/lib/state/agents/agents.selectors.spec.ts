@@ -1,5 +1,7 @@
 import { initialAgentsState, type AgentsState } from './agents.reducer';
 import {
+  selectAgentsAgentModels,
+  selectAgentsAgentModelsErrors,
   selectAgentsCommands,
   selectAgentsCreating,
   selectAgentsDeleting,
@@ -7,6 +9,7 @@ import {
   selectAgentsErrors,
   selectAgentsLoading,
   selectAgentsLoadingAgent,
+  selectAgentsLoadingAgentModels,
   selectAgentsLoadingCommands,
   selectAgentsState,
   selectAgentsUpdating,
@@ -14,6 +17,9 @@ import {
   selectClientAgentCommands,
   selectClientAgentLoading,
   selectClientAgentLoadingCommands,
+  selectClientAgentModels,
+  selectClientAgentModelsError,
+  selectClientAgentModelsLoading,
   selectClientAgents,
   selectClientAgentsCount,
   selectClientAgentsCreating,
@@ -509,6 +515,51 @@ describe('Agents Selectors', () => {
       const rootState = { agents: state };
 
       expect(selectAgentsLoadingCommands(rootState as any)).toEqual({ 'client-1:agent-1': true });
+    });
+  });
+
+  describe('agent models selectors', () => {
+    const agentId = 'agent-1';
+    const key = `${clientId}:${agentId}`;
+
+    it('should select agentModels map via base selector', () => {
+      const state = createState({
+        agentModels: { [key]: { m: 'M' } },
+      });
+      const rootState = { agents: state };
+
+      expect(selectAgentsAgentModels(rootState as any)).toEqual({ [key]: { m: 'M' } });
+      expect(selectAgentsLoadingAgentModels(rootState as any)).toEqual({});
+      expect(selectAgentsAgentModelsErrors(rootState as any)).toEqual({});
+    });
+
+    it('should return models for client and agent', () => {
+      const state = createState({
+        agentModels: { [key]: { a: 'A' } },
+      });
+      const rootState = { agents: state };
+      const result = selectClientAgentModels(clientId, agentId)(rootState as any);
+
+      expect(result).toEqual({ a: 'A' });
+    });
+
+    it('should return null when models not loaded for key', () => {
+      const state = createState({ agentModels: {} });
+      const rootState = { agents: state };
+      const result = selectClientAgentModels(clientId, agentId)(rootState as any);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return loading and error for client and agent', () => {
+      const state = createState({
+        loadingAgentModels: { [key]: true },
+        agentModelsErrors: { [key]: 'err' },
+      });
+      const rootState = { agents: state };
+
+      expect(selectClientAgentModelsLoading(clientId, agentId)(rootState as any)).toBe(true);
+      expect(selectClientAgentModelsError(clientId, agentId)(rootState as any)).toBe('err');
     });
   });
 });

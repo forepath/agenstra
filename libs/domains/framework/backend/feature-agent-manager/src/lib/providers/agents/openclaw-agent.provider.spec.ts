@@ -125,6 +125,12 @@ describe('OpenClawAgentProvider', () => {
     });
   });
 
+  describe('getModelsListCommand', () => {
+    it('should throw not implemented error', () => {
+      expect(() => provider.getModelsListCommand()).toThrow('Not implemented');
+    });
+  });
+
   describe('sendMessage', () => {
     it('should throw not implemented error', async () => {
       await expect(provider.sendMessage('agent-id', 'container-id', 'message')).rejects.toThrow('Not implemented');

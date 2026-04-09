@@ -200,6 +200,7 @@ Base URL: `/api`
 
 - `GET /api/clients/:id/agents` - List all agents for a client (supports `limit` and `offset` query parameters)
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
+- `GET /api/clients/:id/agents/:agentId/models` - List models for an agent (proxied; same client access rules as get agent)
 - `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials)
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent (also deletes stored credentials)

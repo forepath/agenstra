@@ -1,11 +1,11 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as sshpk from 'sshpk';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { AgentProvider } from '../providers/agent-provider.interface';
+import { AgentProvider, AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentsService } from './agents.service';
 import { DeploymentsService } from './deployments.service';
@@ -76,6 +76,8 @@ describe('AgentsService', () => {
     sendInitialization: jest.fn(),
     toParseableStrings: jest.fn(),
     toUnifiedResponse: jest.fn(),
+    getModelsListCommand: jest.fn().mockReturnValue('cursor-agent --list-models'),
+    toModelsList: jest.fn().mockReturnValue({}),
   };
 
   const mockAgentProviderFactory = {
@@ -1372,6 +1374,74 @@ describe('AgentsService', () => {
       expect(result.id).toBe(mockAgent.id);
       expect(result).not.toHaveProperty('hashedPassword');
       expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
+    });
+  });
+
+  describe('listModels', () => {
+    const modelsPayload: AgentProviderModels = { 'model-1': 'First Model', 'model-2': 'Second Model' };
+
+    it('should return parsed models when container command succeeds', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockAgentProvider.getModelsListCommand.mockReturnValue('cursor-agent --list-models');
+      mockAgentProvider.toModelsList.mockReturnValue(modelsPayload);
+      dockerService.sendCommandToContainer.mockResolvedValue('raw-output');
+
+      const result = await service.listModels('test-uuid');
+
+      expect(result).toEqual(modelsPayload);
+      expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
+      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith(mockAgent.agentType);
+      expect(mockAgentProvider.getModelsListCommand).toHaveBeenCalled();
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        mockAgent.containerId,
+        'cursor-agent --list-models',
+      );
+      expect(mockAgentProvider.toModelsList).toHaveBeenCalledWith('raw-output');
+    });
+
+    it('should return empty object when toModelsList returns undefined', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockAgentProvider.toModelsList.mockReturnValue(undefined);
+      dockerService.sendCommandToContainer.mockResolvedValue('raw-output');
+
+      const result = await service.listModels('test-uuid');
+
+      expect(result).toEqual({});
+    });
+
+    it('should return empty object without calling docker when agent has no containerId', async () => {
+      const agentWithoutContainer = { ...mockAgent, containerId: undefined };
+      mockRepository.findByIdOrThrow.mockResolvedValue(agentWithoutContainer);
+
+      const result = await service.listModels('test-uuid');
+
+      expect(result).toEqual({});
+      expect(dockerService.sendCommandToContainer).not.toHaveBeenCalled();
+    });
+
+    it('should throw when provider does not support listing models', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      const unsupported = {
+        ...mockAgentProvider,
+        getModelsListCommand: undefined,
+        toModelsList: undefined,
+      } as unknown as AgentProvider;
+      agentProviderFactory.getProvider.mockReturnValueOnce(unsupported);
+
+      await expect(service.listModels('test-uuid')).rejects.toThrow(BadRequestException);
+      expect(dockerService.sendCommandToContainer).not.toHaveBeenCalled();
+    });
+
+    it('should return empty object and log when docker command fails', async () => {
+      const logError = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      dockerService.sendCommandToContainer.mockRejectedValue(new Error('container not running'));
+
+      const result = await service.listModels('test-uuid');
+
+      expect(result).toEqual({});
+      expect(logError).toHaveBeenCalled();
+      logError.mockRestore();
     });
   });
 

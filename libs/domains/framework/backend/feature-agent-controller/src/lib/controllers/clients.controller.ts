@@ -1,4 +1,5 @@
 import {
+  AgentModelsResponseDto,
   AgentResponseDto,
   CreateAgentDto,
   CreateAgentResponseDto,
@@ -115,35 +116,6 @@ export class ClientsController {
   }
 
   /**
-   * Get a single agent for a specific client by agent ID.
-   * Only accessible if the user has access to the client.
-   * @param id - The UUID of the client
-   * @param agentId - The UUID of the agent
-   * @param req - The request object
-   * @returns The agent response DTO
-   */
-  @Get(':id/agents/:agentId')
-  async getClientAgent(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
-    @Req() req?: RequestWithUser,
-  ): Promise<AgentResponseDto> {
-    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
-    const access = await checkClientAccess(
-      this.clientsRepository,
-      this.clientUsersRepository,
-      id,
-      userInfo.userId,
-      userInfo.userRole,
-      userInfo.isApiKeyAuth,
-    );
-    if (!access.hasAccess) {
-      throw new ForbiddenException('You do not have access to this client');
-    }
-    return await this.clientAgentProxyService.getClientAgent(id, agentId);
-  }
-
-  /**
    * Get all agents for a specific client with pagination.
    * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
@@ -172,6 +144,65 @@ export class ClientsController {
       throw new ForbiddenException('You do not have access to this client');
     }
     return await this.clientAgentProxyService.getClientAgents(id, limit ?? 10, offset ?? 0);
+  }
+
+  /**
+   * List models available for an agent (proxied to the client's agent-manager).
+   * Only accessible if the user has access to the client (same rules as get agent).
+   * Registered before GET :id/agents/:agentId so paths ending in `/models` resolve to this handler.
+   * @param id - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @param req - The request object
+   * @returns Map of model id to display name
+   */
+  @Get(':id/agents/:agentId/models')
+  async listClientAgentModels(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AgentModelsResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+    return await this.clientAgentProxyService.listClientAgentModels(id, agentId);
+  }
+
+  /**
+   * Get a single agent for a specific client by agent ID.
+   * Only accessible if the user has access to the client.
+   * @param id - The UUID of the client
+   * @param agentId - The UUID of the agent
+   * @param req - The request object
+   * @returns The agent response DTO
+   */
+  @Get(':id/agents/:agentId')
+  async getClientAgent(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AgentResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+    return await this.clientAgentProxyService.getClientAgent(id, agentId);
   }
 
   /**

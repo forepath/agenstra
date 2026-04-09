@@ -1,4 +1,5 @@
 import {
+  AgentModelsResponseDto,
   AgentResponseDto,
   ContainerType,
   CreateAgentDto,
@@ -248,6 +249,30 @@ describe('ClientAgentProxyService', () => {
       });
 
       await expect(service.getClientAgent('client-uuid', 'agent-uuid')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('listClientAgentModels', () => {
+    it('should return models map from remote agent-manager', async () => {
+      const models: AgentModelsResponseDto = { 'm-1': 'Model One', 'm-2': 'Model Two' };
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: models,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      const result = await service.listClientAgentModels('client-uuid', 'agent-uuid');
+
+      expect(result).toEqual(models);
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+          url: 'https://example.com/api/api/agents/agent-uuid/models',
+        }),
+      );
     });
   });
 

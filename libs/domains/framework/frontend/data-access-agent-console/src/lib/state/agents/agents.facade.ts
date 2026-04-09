@@ -6,6 +6,7 @@ import {
   createClientAgent,
   deleteClientAgent,
   loadClientAgent,
+  loadClientAgentModels,
   loadClientAgents,
   restartClientAgent,
   startClientAgent,
@@ -17,6 +18,9 @@ import {
   selectClientAgentCommands,
   selectClientAgentLoading,
   selectClientAgentLoadingCommands,
+  selectClientAgentModels,
+  selectClientAgentModelsError,
+  selectClientAgentModelsLoading,
   selectClientAgents,
   selectClientAgentsCount,
   selectClientAgentsCreating,
@@ -31,7 +35,13 @@ import {
   selectHasClientAgents,
   selectSelectedClientAgent,
 } from './agents.selectors';
-import type { AgentResponseDto, CreateAgentDto, ListClientAgentsParams, UpdateAgentDto } from './agents.types';
+import type {
+  AgentModelsMap,
+  AgentResponseDto,
+  CreateAgentDto,
+  ListClientAgentsParams,
+  UpdateAgentDto,
+} from './agents.types';
 
 /**
  * Facade for agents state management.
@@ -197,6 +207,28 @@ export class AgentsFacade {
    */
   loadClientAgent(clientId: string, agentId: string): void {
     this.store.dispatch(loadClientAgent({ clientId, agentId }));
+  }
+
+  /**
+   * Load the provider model list for a client agent (dispatches to effects → HTTP).
+   */
+  loadClientAgentModels(clientId: string, agentId: string): void {
+    this.store.dispatch(loadClientAgentModels({ clientId, agentId }));
+  }
+
+  /**
+   * Cached model id → label map for an agent, or null if not loaded.
+   */
+  getClientAgentModels$(clientId: string, agentId: string): Observable<AgentModelsMap | null> {
+    return this.store.select(selectClientAgentModels(clientId, agentId));
+  }
+
+  getClientAgentModelsLoading$(clientId: string, agentId: string): Observable<boolean> {
+    return this.store.select(selectClientAgentModelsLoading(clientId, agentId));
+  }
+
+  getClientAgentModelsError$(clientId: string, agentId: string): Observable<string | null> {
+    return this.store.select(selectClientAgentModelsError(clientId, agentId));
   }
 
   /**

@@ -139,6 +139,7 @@ Base URL: `/api/agents`
 
 - `GET /api/agents` - List all agents (supports `limit` and `offset` query parameters)
 - `GET /api/agents/:id` - Get a single agent by UUID
+- `GET /api/agents/:id/models` - List models available for the agent (provider-specific; same HTTP auth as other agent APIs)
 - `POST /api/agents` - Create a new agent (returns auto-generated password)
 - `POST /api/agents/:id` - Update an existing agent
 - `DELETE /api/agents/:id` - Delete an agent

@@ -78,6 +78,55 @@ describe('CursorAgentProvider', () => {
     });
   });
 
+  describe('getModelsListCommand', () => {
+    it('should return "cursor-agent --list-models"', () => {
+      expect(provider.getModelsListCommand()).toBe('cursor-agent --list-models');
+    });
+  });
+
+  describe('toModelsList', () => {
+    it('should parse model lines with ANSI noise and id - name pairs', () => {
+      const raw = `\u001b[2K\u001b[GLoading models…
+\u001b[2K\u001b[1A\u001b[2K\u001b[GAvailable models
+
+auto - Auto
+composer-2-fast - Composer 2 Fast  (current, default)
+composer-2 - Composer 2
+composer-1.5 - Composer 1.5
+`;
+
+      expect(provider.toModelsList(raw)).toEqual({
+        auto: 'Auto',
+        'composer-2-fast': 'Composer 2 Fast  (current, default)',
+        'composer-2': 'Composer 2',
+        'composer-1.5': 'Composer 1.5',
+      });
+    });
+
+    it('should split only on first " - " so names may contain hyphens', () => {
+      expect(provider.toModelsList('my-id - Display - with - extra')).toEqual({
+        'my-id': 'Display - with - extra',
+      });
+    });
+
+    it('should skip lines without " - " and return empty object when nothing matches', () => {
+      expect(
+        provider.toModelsList(`Available models
+no separator here
+`),
+      ).toEqual({});
+    });
+
+    it('should return empty object for empty or whitespace-only input', () => {
+      expect(provider.toModelsList('')).toEqual({});
+      expect(provider.toModelsList('   \n  \t  ')).toEqual({});
+    });
+
+    it('should ignore lines with empty id after split', () => {
+      expect(provider.toModelsList(' - only name')).toEqual({});
+    });
+  });
+
   describe('sendMessage', () => {
     const agentId = 'test-agent-id';
     const containerId = 'test-container-id';

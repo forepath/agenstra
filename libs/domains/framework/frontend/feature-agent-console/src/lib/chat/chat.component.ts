@@ -26,6 +26,7 @@ import {
   SocketsFacade,
   StatsFacade,
   type AddClientUserDto,
+  type AgentModelsMap,
   type AgentResponseDto,
   type AgentResponseObject,
   type ChatMessageData,
@@ -309,6 +310,41 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }),
   );
 
+  /** Model dropdown: API list when loaded, otherwise static env fallback for the agent type. */
+  readonly chatModelSelectOptions$: Observable<{ value: string; label: string }[]> = combineLatest([
+    this.activeClientId$,
+    this.selectedAgent$,
+  ]).pipe(
+    switchMap(([clientId, agent]) => {
+      if (!clientId || !agent) {
+        return of([]);
+      }
+      return this.agentsFacade
+        .getClientAgentModels$(clientId, agent.id)
+        .pipe(map((models) => this.resolveChatModelOptions(agent.agentType, models)));
+    }),
+  );
+
+  /**
+   * Disable the model dropdown until the models request finishes (store has a map or an error).
+   * New inner subscriptions start disabled until the first store emission (startWith).
+   */
+  readonly chatModelSelectDisabled$ = combineLatest([this.activeClientId$, this.selectedAgent$]).pipe(
+    switchMap(([clientId, agent]) => {
+      if (!clientId || !agent) {
+        return of(false);
+      }
+      return combineLatest([
+        this.agentsFacade.getClientAgentModelsLoading$(clientId, agent.id),
+        this.agentsFacade.getClientAgentModels$(clientId, agent.id),
+        this.agentsFacade.getClientAgentModelsError$(clientId, agent.id),
+      ]).pipe(
+        map(([loading, models, err]) => loading || (models === null && err === null)),
+        startWith(true),
+      );
+    }),
+  );
+
   // Socket observables
   readonly socketConnected$: Observable<boolean> = this.socketsFacade.connected$;
   readonly socketConnecting$: Observable<boolean> = this.socketsFacade.connecting$;
@@ -412,11 +448,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   // Convert signals to observables (must be in field initializer for injection context)
   private readonly standaloneMode$ = toObservable(this.standaloneMode);
-
-  readonly chatModelOptions = Object.entries(this.environment.chatModelOptions ?? {}).map(([value, label]) => ({
-    value,
-    label,
-  }));
 
   // Expose ContainerType enum for template use
   readonly ContainerType = ContainerType;
@@ -819,6 +850,36 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Load clients on init
     this.clientsFacade.loadClients();
+
+    // Load provider model catalog when client + selected agent are set (includes deep-link and reducer-driven selection).
+    combineLatest([this.activeClientId$, this.selectedAgent$])
+      .pipe(
+        filter(([clientId, agent]) => !!clientId && !!agent),
+        distinctUntilChanged((prev, curr) => prev[0] === curr[0] && prev[1]?.id === curr[1]?.id),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(([clientId, agent]) => {
+        this.agentsFacade.loadClientAgentModels(clientId!, agent!.id);
+      });
+
+    // If the API model list does not include the current selection, fall back to Auto.
+    combineLatest([this.activeClientId$, this.selectedAgent$])
+      .pipe(
+        switchMap(([clientId, agent]) => {
+          if (!clientId || !agent) {
+            return of(null);
+          }
+          return this.agentsFacade.getClientAgentModels$(clientId, agent.id);
+        }),
+        filter((models): models is AgentModelsMap => models !== null),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((models) => {
+        const current = this.selectedChatModel();
+        if (current && current !== 'auto' && !(current in models)) {
+          this.onChatModelChange('auto');
+        }
+      });
 
     // Load provisioning providers on init (needed for displaying provider names)
     this.clientsFacade.loadProvisioningProviders();
@@ -3948,15 +4009,23 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   /**
-   * Get the chat model options for a provider
-   * @param provider - The provider type
-   * @returns The chat model options
+   * Static model list from environment config (fallback until GET …/models returns or if unset).
    */
   getChatModelOptions(provider: string): { value: string; label: string }[] {
-    const options = this.environment.chatModelOptions[provider] ?? {};
+    const options = this.environment.chatModelOptions?.[provider] ?? {};
     return Object.entries(options).map(([value, label]) => ({
       value,
       label,
     }));
+  }
+
+  private resolveChatModelOptions(
+    agentType: string,
+    models: AgentModelsMap | null,
+  ): { value: string; label: string }[] {
+    if (models !== null) {
+      return Object.entries(models).map(([value, label]) => ({ value, label }));
+    }
+    return this.getChatModelOptions(agentType);
   }
 }

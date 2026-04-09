@@ -3,6 +3,7 @@ import { DockerService } from '../../services/docker.service';
 import {
   AgentProvider,
   AgentProviderCapabilities,
+  AgentProviderModels,
   AgentProviderOptions,
   AgentResponseObject,
 } from '../agent-provider.interface';
@@ -15,6 +16,7 @@ import {
 export class CursorAgentProvider implements AgentProvider {
   private readonly logger = new Logger(CursorAgentProvider.name);
   private static readonly TYPE = 'cursor';
+  private static readonly LIST_MODELS_COMMAND = 'cursor-agent --list-models';
 
   constructor(private readonly dockerService: DockerService) {}
 
@@ -74,6 +76,56 @@ export class CursorAgentProvider implements AgentProvider {
    */
   getSshConnectionDockerImage(): string {
     return process.env.CURSOR_AGENT_SSH_CONNECTION_DOCKER_IMAGE || 'ghcr.io/forepath/agenstra-manager-ssh:latest';
+  }
+
+  /**
+   * Get the command to list models.
+   * @returns The command to list models
+   */
+  getModelsListCommand(): string {
+    return CursorAgentProvider.LIST_MODELS_COMMAND;
+  }
+
+  private static readonly MODEL_LINE_SEPARATOR = ' - ';
+
+  /**
+   * Strip ANSI CSI escape sequences (e.g. cursor movement / clear line) from CLI output.
+   */
+  private static stripAnsiSequences(text: string): string {
+    return text.replace(/\u001b\[[0-9;]*[A-Za-z]/g, '');
+  }
+
+  /**
+   * Parse the result of the models list command.
+   * @param result - The result of the models list command
+   * @returns The list of models
+   */
+  toModelsList(result: string): AgentProviderModels {
+    const models: AgentProviderModels = {};
+    if (!result?.trim()) {
+      return models;
+    }
+
+    const cleaned = CursorAgentProvider.stripAnsiSequences(result);
+    const sep = CursorAgentProvider.MODEL_LINE_SEPARATOR;
+
+    for (const line of cleaned.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        continue;
+      }
+      const sepIndex = trimmed.indexOf(sep);
+      if (sepIndex === -1) {
+        continue;
+      }
+      const id = trimmed.slice(0, sepIndex).trim();
+      const name = trimmed.slice(sepIndex + sep.length).trim();
+      if (id) {
+        models[id] = name;
+      }
+    }
+
+    return models;
   }
 
   /**

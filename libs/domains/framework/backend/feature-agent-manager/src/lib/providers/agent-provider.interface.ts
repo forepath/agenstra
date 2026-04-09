@@ -35,6 +35,18 @@ export interface AgentProviderCapabilities {
 }
 
 /**
+ * Agent provider models interface.
+ */
+export interface AgentProviderModels {
+  /**
+   * The models object
+   * @param key - The model identifier
+   * @param value - The model name
+   */
+  [key: string]: string;
+}
+
+/**
  * Agent provider interface for implementing different agent solutions.
  * This interface allows the system to support multiple agent implementations
  * (e.g., cursor-agent, OpenAI, Anthropic, etc.) through a unified API.
@@ -99,6 +111,12 @@ export interface AgentProvider {
   getEnvironmentVariables?(): Record<string, string>;
 
   /**
+   * Get the command to list models.
+   * @returns The command to list models
+   */
+  getModelsListCommand(): string | undefined;
+
+  /**
    * Send a message to the agent and get a response.
    * @param agentId - The UUID of the agent
    * @param containerId - The Docker container ID where the agent is running
@@ -138,6 +156,13 @@ export interface AgentProvider {
    * @returns The parseable strings
    */
   toParseableStrings(response: string): string[];
+
+  /**
+   * Parse the result of the models list command.
+   * @param result - The result of the models list command
+   * @returns The list of models
+   */
+  toModelsList(result: string): AgentProviderModels | undefined;
 
   /**
    * Convert the response from the agent to a unified response object.

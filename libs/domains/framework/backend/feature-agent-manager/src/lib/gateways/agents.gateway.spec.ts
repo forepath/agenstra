@@ -91,6 +91,8 @@ describe('AgentsGateway', () => {
     sendInitialization: jest.fn(),
     toParseableStrings: jest.fn(),
     toUnifiedResponse: jest.fn(),
+    getModelsListCommand: jest.fn().mockReturnValue('cursor-agent --list-models'),
+    toModelsList: jest.fn().mockReturnValue({}),
   };
 
   const mockAgentProviderFactory = {

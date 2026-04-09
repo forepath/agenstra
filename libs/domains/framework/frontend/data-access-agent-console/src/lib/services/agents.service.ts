@@ -4,6 +4,7 @@ import type { Environment } from '@forepath/framework/frontend/util-configuratio
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
 import type {
+  AgentModelsMap,
   AgentResponseDto,
   CreateAgentDto,
   CreateAgentResponseDto,
@@ -47,6 +48,13 @@ export class AgentsService {
    */
   getClientAgent(clientId: string, agentId: string): Observable<AgentResponseDto> {
     return this.http.get<AgentResponseDto>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}`);
+  }
+
+  /**
+   * List models available for an agent (proxied to agent-controller → agent-manager).
+   */
+  listClientAgentModels(clientId: string, agentId: string): Observable<AgentModelsMap> {
+    return this.http.get<AgentModelsMap>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/models`);
   }
 
   /**

@@ -97,6 +97,7 @@ describe('ClientsController', () => {
 
   const mockProxyService = {
     getClientAgents: jest.fn(),
+    listClientAgentModels: jest.fn(),
     getClientAgent: jest.fn(),
     createClientAgent: jest.fn(),
     updateClientAgent: jest.fn(),
@@ -365,6 +366,21 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(mockAgentResponse);
       expect(proxyService.getClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+    });
+  });
+
+  describe('listClientAgentModels', () => {
+    it('should return models map from proxy service', async () => {
+      const models = { 'model-a': 'Model A' };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      proxyService.listClientAgentModels.mockResolvedValue(models);
+
+      const result = await controller.listClientAgentModels('client-uuid', 'agent-uuid', mockReq);
+
+      expect(result).toEqual(models);
+      expect(proxyService.listClientAgentModels).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
 

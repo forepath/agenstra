@@ -17,6 +17,9 @@ import {
   loadClientAgentCommands,
   loadClientAgentCommandsSuccess,
   loadClientAgentFailure,
+  loadClientAgentModels,
+  loadClientAgentModelsFailure,
+  loadClientAgentModelsSuccess,
   loadClientAgents,
   loadClientAgentsBatch,
   loadClientAgentsFailure,
@@ -39,6 +42,7 @@ import {
   createClientAgent$,
   deleteClientAgent$,
   loadClientAgent$,
+  loadClientAgentModels$,
   loadClientAgentCommandsFromFiles$,
   loadClientAgentCommandsLoading$,
   loadClientAgents$,
@@ -81,6 +85,7 @@ describe('AgentsEffects', () => {
     agentsService = {
       listClientAgents: jest.fn(),
       getClientAgent: jest.fn(),
+      listClientAgentModels: jest.fn(),
       createClientAgent: jest.fn(),
       updateClientAgent: jest.fn(),
       deleteClientAgent: jest.fn(),
@@ -290,6 +295,39 @@ describe('AgentsEffects', () => {
       agentsService.getClientAgent.mockReturnValue(throwError(() => error));
 
       loadClientAgent$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('loadClientAgentModels$', () => {
+    const agentId = 'agent-1';
+    const models = { a: 'A' };
+
+    it('should return loadClientAgentModelsSuccess on success', (done) => {
+      const action = loadClientAgentModels({ clientId, agentId });
+      const outcome = loadClientAgentModelsSuccess({ clientId, agentId, models });
+
+      actions$ = of(action);
+      agentsService.listClientAgentModels.mockReturnValue(of(models));
+
+      loadClientAgentModels$(actions$, agentsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(agentsService.listClientAgentModels).toHaveBeenCalledWith(clientId, agentId);
+        done();
+      });
+    });
+
+    it('should return loadClientAgentModelsFailure on error', (done) => {
+      const action = loadClientAgentModels({ clientId, agentId });
+      const error = new Error('Load failed');
+      const outcome = loadClientAgentModelsFailure({ clientId, agentId, error: 'Load failed' });
+
+      actions$ = of(action);
+      agentsService.listClientAgentModels.mockReturnValue(throwError(() => error));
+
+      loadClientAgentModels$(actions$, agentsService).subscribe((result) => {
         expect(result).toEqual(outcome);
         done();
       });

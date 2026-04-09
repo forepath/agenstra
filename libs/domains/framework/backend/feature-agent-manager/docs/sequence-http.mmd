@@ -72,6 +72,29 @@ sequenceDiagram
         API-->>Client: 200 OK<br/>{agent}
     end
 
+    rect rgb(240, 248, 255)
+        Note over Client,Docker: List Agent Models (same auth as other agent HTTP APIs)
+        Client->>API: GET /api/agents/{id}/models
+        API->>Service: listModels(id)
+        Service->>Repo: findByIdOrThrow(id)
+        Repo->>DB: SELECT agent WHERE id
+        DB-->>Repo: agent entity
+        Repo-->>Service: agent entity
+        alt Provider supports list + container present
+            Service->>Docker: sendCommandToContainer(containerId, list-models command)
+            Docker-->>Service: raw CLI output
+            Service->>Service: provider.toModelsList(output)
+            Service-->>API: models map (id to display name)
+            API-->>Client: 200 OK<br/>{models map}
+        else No container or command fails
+            Service-->>API: {}
+            API-->>Client: 200 OK<br/>{}
+        else Provider unsupported
+            Service-->>API: BadRequestException
+            API-->>Client: 400 Bad Request
+        end
+    end
+
     rect rgb(255, 255, 230)
         Note over Client,DB: Update Agent
         Client->>API: POST /api/agents/{id}<br/>{name?, description?}

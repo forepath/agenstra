@@ -7,6 +7,7 @@ flowchart TB
         HTTP_USE --> HTTP3["🔍 Get Agent<br/>GET /api/agents/:id<br/>Returns: Agent Details"]
         HTTP_USE --> HTTP4["✏️ Update Agent<br/>POST /api/agents/:id<br/>Returns: Updated Agent"]
         HTTP_USE --> HTTP5["🗑️ Delete Agent<br/>DELETE /api/agents/:id<br/>Returns: 204 No Content"]
+        HTTP_USE --> HTTP6["🤖 List Models<br/>GET /api/agents/:id/models<br/>Returns: Model id → name map"]
     end
 
     subgraph FILES["📁 HTTP REST API - File System (/api/agents/:id/files)"]
@@ -61,6 +62,7 @@ flowchart TB
     style HTTP3 fill:#f0f7ff,stroke:#4a90e2
     style HTTP4 fill:#f0f7ff,stroke:#4a90e2
     style HTTP5 fill:#f0f7ff,stroke:#4a90e2
+    style HTTP6 fill:#f0f7ff,stroke:#4a90e2
     style FILES1 fill:#f0fff0,stroke:#4a9e2
     style FILES2 fill:#f0fff0,stroke:#4a9e2
     style FILES3 fill:#f0fff0,stroke:#4a9e2
