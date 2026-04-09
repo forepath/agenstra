@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant ExtTool as ExternalTool(OpenAI_SDK)
+    participant AgentCtrl as AgentController(/api/openai)
+    participant DB as AgentControllerDB
+    participant ClientAM as ClientAgentManager(SocketIO_/agents)
+
+    ExtTool->>AgentCtrl: POST /v1/chat/completions (Bearer agent_openai_key)
+    AgentCtrl->>DB: Lookup api_key_hash -> (clientId, agentId)
+    AgentCtrl->>ClientAM: Connect + Authorization (client API key / JWT)
+    AgentCtrl->>ClientAM: login(agentId, password_from_DB)
+    AgentCtrl->>ClientAM: chat(message, model, responseMode)
+    ClientAM-->>AgentCtrl: chatEvent assistantDelta (stream)
+    AgentCtrl-->>ExtTool: SSE chunks (delta)
+    ClientAM-->>AgentCtrl: chatEvent assistantMessage (final)
+    AgentCtrl-->>ExtTool: final SSE + [DONE]

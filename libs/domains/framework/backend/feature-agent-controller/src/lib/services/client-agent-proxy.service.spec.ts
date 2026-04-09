@@ -11,6 +11,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthenticationType, ClientAgentCredentialsService, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { ClientAgentOpenAiApiKeysService } from './client-agent-openai-api-keys.service';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -24,6 +25,7 @@ describe('ClientAgentProxyService', () => {
   let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let credentialsService: jest.Mocked<ClientAgentCredentialsService>;
+  let openAiKeysService: jest.Mocked<ClientAgentOpenAiApiKeysService>;
 
   const mockClientEntity: ClientEntity = {
     id: 'client-uuid',
@@ -77,6 +79,11 @@ describe('ClientAgentProxyService', () => {
     deleteCredentials: jest.fn(),
   };
 
+  const mockOpenAiKeysService = {
+    issueKeyForNewAgent: jest.fn().mockResolvedValue('agenstra_oai_testkey'),
+    deleteForAgent: jest.fn().mockResolvedValue(undefined),
+  };
+
   const mockStatisticsService = {
     recordEntityCreated: jest.fn().mockResolvedValue(undefined),
     recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
@@ -100,6 +107,10 @@ describe('ClientAgentProxyService', () => {
           useValue: mockCredentialsService,
         },
         {
+          provide: ClientAgentOpenAiApiKeysService,
+          useValue: mockOpenAiKeysService,
+        },
+        {
           provide: StatisticsService,
           useValue: mockStatisticsService,
         },
@@ -110,6 +121,7 @@ describe('ClientAgentProxyService', () => {
     clientsService = module.get(ClientsService);
     clientsRepository = module.get(ClientsRepository);
     credentialsService = module.get(ClientAgentCredentialsService);
+    openAiKeysService = module.get(ClientAgentOpenAiApiKeysService);
 
     // Reset mocks
     jest.clearAllMocks();
@@ -294,7 +306,11 @@ describe('ClientAgentProxyService', () => {
 
       const result = await service.createClientAgent('client-uuid', createDto);
 
-      expect(result).toEqual(mockCreateAgentResponse);
+      expect(result).toEqual({
+        ...mockCreateAgentResponse,
+        openAiApiKey: 'agenstra_oai_testkey',
+      });
+      expect(openAiKeysService.issueKeyForNewAgent).toHaveBeenCalledWith('client-uuid', mockCreateAgentResponse.id);
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'POST',
@@ -362,6 +378,7 @@ describe('ClientAgentProxyService', () => {
         deleteCredentials: jest.Mock;
       };
       expect(credentialsService.deleteCredentials).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(openAiKeysService.deleteForAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
 

@@ -34,7 +34,7 @@ The application integrates the `@forepath/framework-backend-feature-agent-contro
 
 ## API Endpoints
 
-All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentication (or API key authentication if `STATIC_API_KEY` is set).
+Most HTTP endpoints are prefixed with `/api` and protected by Keycloak authentication (or API key authentication if `STATIC_API_KEY` is set). **Exception:** **`/api/openai/*`** uses **per-agent OpenAI-compatible keys** (`agenstra_oai_...`) only—platform JWT/static API key is not used there.
 
 ### Client Management
 
@@ -56,9 +56,21 @@ In api-key mode, users do not play a role; these endpoints are not applicable.
 
 - `GET /api/clients/:id/agents` - List all agents for a client
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
-- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials)
+- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials, and a one-time **OpenAI API key** for `/api/openai`)
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent (also deletes stored credentials)
+- `POST /api/clients/:id/agents/:agentId/openai-api-key/rotate` - Rotate the per-agent OpenAI key (plaintext returned once)
+
+### OpenAI-compatible API (external tools)
+
+Routes under **`/api/openai/v1/*`** mirror a small OpenAI HTTP surface so external clients can call agents without the platform auth model.
+
+- **Auth:** `Authorization: Bearer <per-agent key>` (or `ApiKey <key>`). The key uniquely identifies the agent; the JSON **`model`** field is the model id for that agent.
+- **Endpoints:** `GET /v1/models`, `POST /v1/chat/completions`, `POST /v1/completions`, `POST /v1/responses`. When `stream: true`, responses use **SSE** (`text/event-stream`).
+- **Storage:** Keys are encrypted at rest; **`ENCRYPTION_KEY`** must be set for agent-controller (enforced in production).
+- **Not implemented:** embeddings, audio, images, realtime WS, files, batches, fine-tuning, full Responses tool/multimodal parity.
+
+See the Agent Controller OpenAPI spec and `libs/domains/framework/backend/feature-agent-controller/docs/openai-sequence.mmd`.
 
 ### Proxied File Operations
 

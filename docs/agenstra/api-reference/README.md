@@ -17,6 +17,7 @@ The Agent Controller HTTP API provides:
 
 - Client management (CRUD operations)
 - Proxied agent operations (create, update, delete agents)
+- **OpenAI-compatible inference** under `/openai/v1/*` (per-agent API keys; SSE streaming where supported)
 - Proxied file operations (read, write, create, delete files)
 - Proxied version control operations (git status, branches, commit, push, pull, rebase)
 - Server provisioning (Hetzner Cloud, DigitalOcean)

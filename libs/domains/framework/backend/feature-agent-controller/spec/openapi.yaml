@@ -2,7 +2,10 @@ openapi: 3.1.0
 info:
   title: Agent Controller API
   version: 1.0.0
-  description: HTTP API for managing clients and proxied agent operations
+  description: |
+    HTTP API for managing clients and proxied agent operations.
+    OpenAI-compatible inference is exposed under `/openai/v1/*` using per-agent API keys
+    (see operation security); platform JWT/static API key auth does not apply to those routes.
   contact:
     name: ForePath
     email: hi@forepath.io
@@ -772,13 +775,48 @@ paths:
               $ref: '#/components/schemas/CreateAgentDto'
       responses:
         '201':
-          description: Created agent with generated password
+          description: Created agent with generated password and OpenAI-compatible API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateAgentResponseDto'
+                $ref: '#/components/schemas/CreateClientAgentResponseDto'
         '403':
           description: User does not have access to this client
+  /clients/{id}/agents/{agentId}/openai-api-key/rotate:
+    post:
+      summary: Rotate per-agent OpenAI API key
+      operationId: rotateOpenAiApiKey
+      security:
+        - bearerAuth: []
+      description: |
+        Issues a new OpenAI-compatible API key for `/api/openai`. The plaintext key is returned once;
+        store it securely. Old keys stop working immediately.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Client UUID
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Agent UUID
+      responses:
+        '200':
+          description: New key (plaintext, single response)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RotateOpenAiApiKeyResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Agent or key record not found
   /clients/{id}/agents/{agentId}:
     get:
       summary: Get agent by id for a client
@@ -2982,12 +3020,118 @@ paths:
                 $ref: '#/components/schemas/StatisticsEntityEventListDto'
         '403':
           description: Access denied to requested client
+  /openai/v1/models:
+    get:
+      summary: List models (OpenAI-compatible)
+      operationId: openAiListModels
+      description: |
+        Lists models available to the agent associated with the API key. Keys are provider model ids.
+        **Not implemented elsewhere under `/openai`:** embeddings, audio, images, realtime, files, batches, fine-tuning.
+      security:
+        - openAiAgentApiKey: []
+      responses:
+        '200':
+          description: OpenAI-style model list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiModelsListResponse'
+        '401':
+          description: Missing or invalid per-agent OpenAI API key
+  /openai/v1/chat/completions:
+    post:
+      summary: Chat completions (OpenAI-compatible)
+      operationId: openAiChatCompletions
+      description: |
+        Maps to the agent-manager WebSocket `chat` flow. `messages` must use string `content` only.
+        When `stream` is true, the response is `text/event-stream` (SSE) with `chat.completion.chunk` JSON lines.
+      security:
+        - openAiAgentApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiChatCompletionsRequest'
+      responses:
+        '200':
+          description: Non-stream JSON or SSE stream
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiChatCompletionResponse'
+            text/event-stream:
+              schema:
+                type: string
+                description: 'SSE data lines; stream ends with a terminal line like data plus [DONE] (OpenAI-style).'
+        '401':
+          description: Missing or invalid per-agent OpenAI API key
+        '400':
+          description: Invalid body or agent error
+  /openai/v1/completions:
+    post:
+      summary: Text completions (OpenAI-compatible)
+      operationId: openAiCompletions
+      description: Legacy completions; `prompt` is string or array of strings (concatenated).
+      security:
+        - openAiAgentApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiCompletionsRequest'
+      responses:
+        '200':
+          description: Non-stream JSON or SSE stream
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiTextCompletionResponse'
+            text/event-stream:
+              schema:
+                type: string
+        '401':
+          description: Missing or invalid per-agent OpenAI API key
+  /openai/v1/responses:
+    post:
+      summary: Responses API (minimal subset)
+      operationId: openAiResponses
+      description: |
+        Minimal compatibility with OpenAI Responses. `input` is string or structured list (best-effort text extraction).
+        Full tool-calling and multimodal parity are not implemented.
+      security:
+        - openAiAgentApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiResponsesRequest'
+      responses:
+        '200':
+          description: Non-stream JSON or SSE stream
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiResponseObject'
+            text/event-stream:
+              schema:
+                type: string
+        '401':
+          description: Missing or invalid per-agent OpenAI API key
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    openAiAgentApiKey:
+      type: http
+      scheme: bearer
+      description: |
+        Per-agent OpenAI-compatible secret (`agenstra_oai_...`) issued on agent creation or via rotate endpoint.
+        Use `Authorization: Bearer <key>`. This is not the platform JWT or client static API key.
   schemas:
     AuthenticationType:
       type: string
@@ -3326,6 +3470,99 @@ components:
           properties:
             password:
               type: string
+    CreateClientAgentResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/CreateAgentResponseDto'
+        - type: object
+          properties:
+            openAiApiKey:
+              type: string
+              description: Per-agent key for `/api/openai/*`; returned once when the agent is created.
+    RotateOpenAiApiKeyResponseDto:
+      type: object
+      required: [openAiApiKey]
+      properties:
+        openAiApiKey:
+          type: string
+    OpenAiChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+        content:
+          type: string
+    OpenAiChatCompletionsRequest:
+      type: object
+      required: [model, messages]
+      properties:
+        model:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAiChatMessage'
+        stream:
+          type: boolean
+    OpenAiCompletionsRequest:
+      type: object
+      required: [model, prompt]
+      properties:
+        model:
+          type: string
+        prompt:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        stream:
+          type: boolean
+    OpenAiResponsesRequest:
+      type: object
+      required: [model, input]
+      properties:
+        model:
+          type: string
+        input:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+          description: String or list (best-effort text extraction server-side)
+        stream:
+          type: boolean
+    OpenAiModelsListResponse:
+      type: object
+      properties:
+        object:
+          type: string
+          enum: [list]
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              object:
+                type: string
+                enum: [model]
+              created:
+                type: integer
+              owned_by:
+                type: string
+    OpenAiChatCompletionResponse:
+      type: object
+      description: Subset of OpenAI chat.completion object
+    OpenAiTextCompletionResponse:
+      type: object
+      description: Subset of OpenAI text_completion object
+    OpenAiResponseObject:
+      type: object
+      description: Minimal OpenAI response object
     AgentTypeInfo:
       type: object
       required: [type, displayName]

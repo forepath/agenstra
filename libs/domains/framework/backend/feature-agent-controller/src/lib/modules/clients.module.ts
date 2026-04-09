@@ -16,12 +16,15 @@ import {
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
+import { OpenAiApiKeyGuard } from '../auth/openai-api-key.guard';
 import { ClientStatisticsController } from '../controllers/client-statistics.controller';
 import { ClientsDeploymentsController } from '../controllers/clients-deployments.controller';
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
+import { OpenAiV1Controller } from '../controllers/openai/openai-v1.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketsController } from '../controllers/tickets.controller';
+import { ClientAgentOpenAiApiKeyEntity } from '../entities/client-agent-openai-api-key.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
@@ -31,12 +34,15 @@ import { ClientsGateway } from '../gateways/clients.gateway';
 import { DigitalOceanProvider } from '../providers/digital-ocean.provider';
 import { HetznerProvider } from '../providers/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
+import { ClientAgentOpenAiApiKeysRepository } from '../repositories/client-agent-openai-api-keys.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
+import { ClientAgentOpenAiApiKeysService } from '../services/client-agent-openai-api-keys.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
+import { OpenAiAgentWsProxyService } from '../services/openai/openai-agent-ws-proxy.service';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { TicketsService } from '../services/tickets.service';
@@ -55,6 +61,7 @@ const authMethod = getAuthenticationMethod();
     TypeOrmModule.forFeature([
       ClientEntity,
       ClientAgentCredentialEntity,
+      ClientAgentOpenAiApiKeyEntity,
       ProvisioningReferenceEntity,
       ClientUserEntity,
       UserEntity,
@@ -74,6 +81,7 @@ const authMethod = getAuthenticationMethod();
     ClientStatisticsController,
     StatisticsController,
     TicketsController,
+    OpenAiV1Controller,
   ],
   providers: [
     ClientsService,
@@ -83,7 +91,11 @@ const authMethod = getAuthenticationMethod();
     ClientUsersService,
     UsersRepository,
     KeycloakTokenService,
+    ClientAgentOpenAiApiKeysRepository,
+    ClientAgentOpenAiApiKeysService,
     ClientAgentProxyService,
+    OpenAiAgentWsProxyService,
+    OpenAiApiKeyGuard,
     ClientAgentFileSystemProxyService,
     ClientAgentVcsProxyService,
     ClientAgentDeploymentsProxyService,
