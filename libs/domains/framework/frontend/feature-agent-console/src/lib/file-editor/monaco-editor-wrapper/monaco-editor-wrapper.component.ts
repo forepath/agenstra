@@ -136,7 +136,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     theme: this.themeService.isDarkMode() ? 'vs-dark' : 'vs-light',
     language: this.language(),
     automaticLayout: true,
-    minimap: { enabled: true },
+    minimap: { enabled: false },
     scrollBeyondLastLine: false,
     fontSize: 14,
     lineNumbers: 'on' as const,
