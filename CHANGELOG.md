@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.44.0](https://github.com/forepath/agenstra/compare/v1.43.0...v1.44.0) (2026-04-11)
+
+
+### Features
+
+* agent message streaming support ([#276](https://github.com/forepath/agenstra/issues/276)) ([201282e](https://github.com/forepath/agenstra/commit/201282ed6d4ffc00a0b678600d8bdd988e5c87ba))
+* dynamic model lists ([#277](https://github.com/forepath/agenstra/issues/277)) ([aa39550](https://github.com/forepath/agenstra/commit/aa395504750696d660eb6e72a9a4e112585275cb))
+* professional color scheme ([#279](https://github.com/forepath/agenstra/issues/279)) ([72b415a](https://github.com/forepath/agenstra/commit/72b415a7f702e16b6ef0dddf6a7de92d9db0623c))
+
 ## [1.43.0](https://github.com/forepath/agenstra/compare/v1.42.0...v1.43.0) (2026-04-07)
 
 
