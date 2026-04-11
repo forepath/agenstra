@@ -182,7 +182,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
     this.diffEditor = monaco.editor.createDiffEditor(container, {
       theme,
       automaticLayout: true,
-      minimap: { enabled: true },
+      minimap: { enabled: false },
       scrollBeyondLastLine: false,
       fontSize: 14,
       lineNumbers: 'on',

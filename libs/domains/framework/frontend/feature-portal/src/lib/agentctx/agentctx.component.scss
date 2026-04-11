@@ -71,11 +71,11 @@
 
 // Accordion header (plan)
 .agentctx-accordion-header {
-  background: rgba(139, 92, 246, 0.05) !important;
+  background: transparent !important;
   font-weight: 600;
 
   &:not(.collapsed) {
-    background: rgba(139, 92, 246, 0.08) !important;
+    background: transparent !important;
   }
 }
 
