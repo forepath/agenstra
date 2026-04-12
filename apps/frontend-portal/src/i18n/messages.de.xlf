@@ -803,16 +803,16 @@
         <target>Agenstra Desktop bietet Entwicklern ein sicheres lokales Kontrollzentrum, um sich mit Agenstra zu verbinden, Agenten zu inspizieren und mit Kontext in ihrem täglichen Workflow zu arbeiten.</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroTitle" datatype="html">
-        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Centralized Control<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> For Distributed AI Agents </source>
-        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Zentrale Kontrolle<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> für verteilte KI-Agenten </target>
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Centralized control<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for AI agents in your software delivery pipeline </source>
+        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Zentrale Kontrolle<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> für KI-Agenten in Ihrer Softwareauslieferungskette </target>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroLead" datatype="html">
-        <source> Modern teams don&apos;t struggle to create AI agents. They struggle to control them. Agenstra gives engineering and platform teams a single place to design, deploy, and govern AI agents across tools, clouds, and environments. </source>
-        <target> Moderne Teams haben keine Schwierigkeiten, KI-Agenten zu erstellen. Sie haben Schwierigkeiten, sie zu kontrollieren. Agenstra bietet Engineering- und Plattform-Teams einen einzigen Ort, um KI-Agenten über Tools, Clouds und Umgebungen hinweg zu entwerfen, bereitzustellen und zu steuern. </target>
+        <source> Agents are wired into editors, pipelines, and internal tools as part of how teams ship. Agenstra gives engineering and platform teams one place to define policy, observe behavior, and govern how agents access code, systems, and environments from development through production. </source>
+        <target> Agenten sind in IDEs, Pipelines und internen Tools eingebunden und längst ein fester Teil der Softwareentwicklung geworden. Agenstra bietet Engineering- und Plattform-Teams einen Ort, um Richtlinien zu definieren, Verhalten zu beobachten und zu steuern, wie Agenten auf Code, Systeme und Umgebungen von der Entwicklung bis zur Produktion zugreifen. </target>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroCtaLine" datatype="html">
-        <source> Start building reliable agentic systems with guardrails, observability, and workflows that match how your team already ships software. </source>
-        <target> Beginnen Sie mit dem Aufbau zuverlässiger agentischer Systeme mit Guardrails, Observability und Workflows, die zu der Art passen, wie Ihr Team bereits Software ausliefert. </target>
+        <source> Keep agent-assisted work on the same bar as the rest of your practice: guardrails, observability, and controls that match how you review changes, manage access, and release software. </source>
+        <target> Halten Sie agentisch unterstützte Arbeit auf dem gleichen Niveau wie den Rest Ihrer Praxis: Guardrails, Observability und Kontrollen, die zu Ihrer Art passen, Änderungen zu prüfen, Zugriffe zu verwalten und Software auszurollen. </target>
         </trans-unit>
       <trans-unit id="featurePortalHome-getStarted" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>

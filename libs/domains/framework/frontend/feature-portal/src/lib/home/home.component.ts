@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 
@@ -14,6 +14,9 @@ import { RouterModule } from '@angular/router';
 export class PortalHomeComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly platformId = inject(PLATFORM_ID);
+  activeSlide = signal<number>(1);
+  autoplayInterval = this.initializeAutoplayInterval();
 
   ngOnInit(): void {
     this.titleService.setTitle(
@@ -32,5 +35,39 @@ export class PortalHomeComponent implements OnInit {
       { name: 'robots', content: 'index, follow' },
       { name: 'canonical', content: 'https://agenstra.com' },
     ]);
+  }
+
+  scrollToIntent(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const slideWidth = rect.width / 4;
+    let slideNum = Math.floor(clickX / slideWidth) + 1;
+    slideNum = Math.max(1, Math.min(4, slideNum));
+    this.activeSlide.set(slideNum);
+  }
+
+  pauseAutoplay() {
+    if (this.autoplayInterval) {
+      clearInterval(this.autoplayInterval);
+    }
+    this.autoplayInterval = null;
+  }
+
+  resumeAutoplay() {
+    this.autoplayInterval = this.initializeAutoplayInterval();
+  }
+
+  private initializeAutoplayInterval() {
+    if (isPlatformBrowser(this.platformId)) {
+      return setInterval(() => {
+        this.activeSlide.update((prev) => prev + 1);
+        if (this.activeSlide() > 4) {
+          this.activeSlide.set(1);
+        }
+      }, 3000);
+    }
+
+    return null;
   }
 }

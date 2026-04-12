@@ -1,18 +1,19 @@
 <!-- Hero Section -->
-<section id="hero" class="py-10 py-lg-6 bg-dark text-white">
-  <div class="container">
+<section id="hero" class="pt-10 py-lg-6 bg-dark text-white">
+  <div class="container hero-content">
     <div class="row justify-content-center">
       <div class="col-12 text-center hero-container">
         <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalHome-heroTitle">
-          <span class="text-primary">Centralized Control</span> For Distributed AI Agents
+          <span class="text-primary">Centralized control</span> for AI agents in your software delivery pipeline
         </h1>
         <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featurePortalHome-heroLead">
-          Modern teams don't struggle to create AI agents. They struggle to control them. Agenstra gives engineering and
-          platform teams a single place to design, deploy, and govern AI agents across tools, clouds, and environments.
+          Agents are wired into editors, pipelines, and internal tools as part of how teams ship. Agenstra gives
+          engineering and platform teams one place to define policy, observe behavior, and govern how agents access
+          code, systems, and environments from development through production.
         </p>
         <p class="fs-6 mb-5 hero-cta-line" i18n="@@featurePortalHome-heroCtaLine">
-          Start building reliable agentic systems with guardrails, observability, and workflows that match how your team
-          already ships software.
+          Keep agent-assisted work on the same bar as the rest of your practice: guardrails, observability, and controls
+          that match how you review changes, manage access, and release software.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
           <a
@@ -35,6 +36,41 @@
             View product tour
           </a>
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 intent-cards" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
+        <img
+          src="assets/images/screenshots/spaces-dark_framed.png"
+          alt="Spaces"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 1"
+        />
+        <img
+          src="assets/images/screenshots/tasks-dark_framed.png"
+          alt="Tasks"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 2"
+        />
+        <img
+          src="assets/images/screenshots/editor-dark_framed.png"
+          alt="IDE"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 3"
+        />
+        <img
+          src="assets/images/screenshots/audit-dark_framed.png"
+          alt="Audit"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 4"
+        />
+        <div
+          class="intent-card-progress bg-body-tertiary"
+          style="--progress: {{ (activeSlide() / 4) * 75 }}px"
+          (click)="scrollToIntent($event)"
+        ></div>
       </div>
     </div>
   </div>

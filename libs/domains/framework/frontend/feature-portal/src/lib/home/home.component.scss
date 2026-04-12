@@ -105,3 +105,63 @@
   font-size: 6rem;
   opacity: 0.2;
 }
+
+.intent-cards {
+  margin-top: -5rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding-top: 2.5rem;
+    margin-top: 0;
+
+    > .intent-card {
+      display: none;
+    }
+
+    .intent-card-progress {
+      display: none;
+    }
+  }
+
+  @media (max-width: 992px) and (min-width: 768px) {
+    margin-top: -2rem;
+  }
+
+  @media (max-width: 1200px) and (min-width: 992px) {
+    margin-top: -3rem;
+  }
+
+  > .intent-card {
+    position: relative;
+    z-index: 3;
+  }
+
+  .intent-card-progress {
+    position: relative;
+    width: 75px;
+    height: 10px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: -10px;
+    z-index: 4;
+    top: -1rem;
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--progress);
+      height: 100%;
+      background-color: var(--bs-primary);
+      transition: width 0.3s ease;
+    }
+  }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+}
