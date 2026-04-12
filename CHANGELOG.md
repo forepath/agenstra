@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.44.1](https://github.com/forepath/agenstra/compare/v1.44.0...v1.44.1) (2026-04-12)
+
+
+### Chores
+
+* improved value claim ([#280](https://github.com/forepath/agenstra/issues/280)) ([c36b606](https://github.com/forepath/agenstra/commit/c36b606a5a70a3d92ecf8296c55dd759f7938a92))
+
 ## [1.44.0](https://github.com/forepath/agenstra/compare/v1.43.0...v1.44.0) (2026-04-11)
 
 
