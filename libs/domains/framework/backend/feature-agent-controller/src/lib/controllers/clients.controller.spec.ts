@@ -23,6 +23,7 @@ import {
   ClientUsersRepository,
   ClientUsersService,
   UserRole,
+  WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE,
 } from '@forepath/identity/backend';
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
@@ -59,6 +60,7 @@ describe('ClientsController', () => {
     endpoint: 'https://example.com/api',
     authenticationType: AuthenticationType.API_KEY,
     isAutoProvisioned: false,
+    canManageWorkspaceConfiguration: true,
     config: {
       gitRepositoryUrl: 'https://github.com/user/repo.git',
       agentTypes: [{ type: 'cursor', displayName: 'Cursor' }],
@@ -265,7 +267,7 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(mockCreateClientResponse);
       expect(result.apiKey).toBeDefined();
-      expect(service.create).toHaveBeenCalledWith(createDto, undefined);
+      expect(service.create).toHaveBeenCalledWith(createDto, undefined, undefined, true);
     });
 
     it('should create new client with Keycloak credentials for KEYCLOAK type', async () => {
@@ -290,7 +292,7 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(responseWithoutApiKey);
       expect(result.apiKey).toBeUndefined();
-      expect(service.create).toHaveBeenCalledWith(createDto, undefined);
+      expect(service.create).toHaveBeenCalledWith(createDto, undefined, undefined, true);
     });
   });
 
@@ -399,6 +401,22 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(mockCreateAgentResponse);
       expect(proxyService.createClientAgent).toHaveBeenCalledWith('client-uuid', createDto, undefined);
+    });
+
+    it('should reject when user is plain workspace member', async () => {
+      const createDto: CreateAgentDto = { name: 'New Agent', description: 'd' };
+      const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'owner-id' } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue({
+        userId: 'user-1',
+        clientId: 'client-uuid',
+        role: ClientUserRole.USER,
+      } as any);
+
+      await expect(controller.createClientAgent('client-uuid', createDto, mockReq)).rejects.toMatchObject({
+        response: { message: WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE },
+      });
+      expect(proxyService.createClientAgent).not.toHaveBeenCalled();
     });
   });
 
@@ -835,7 +853,7 @@ describe('ClientsController', () => {
       const result = await controller.provisionServer(provisionDto);
 
       expect(result).toEqual(mockResponse);
-      expect(provisioningService.provisionServer).toHaveBeenCalledWith(provisionDto, undefined);
+      expect(provisioningService.provisionServer).toHaveBeenCalledWith(provisionDto, undefined, undefined, false);
     });
   });
 

@@ -13,7 +13,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   ApplyGeneratedBodyDto,
   CreateTicketCommentDto,
@@ -29,6 +29,7 @@ import {
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
+import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketPriority, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
@@ -39,6 +40,7 @@ import {
   type TicketPromptNode,
 } from '../utils/tickets-prototype-prompt.utils';
 import { ClientsService } from './clients.service';
+import { TicketAutomationService, TICKET_APPROVAL_INVALIDATION_FIELDS } from './ticket-automation.service';
 
 const DEFAULT_SESSION_TTL_MS = 15 * 60 * 1000;
 
@@ -59,10 +61,13 @@ export class TicketsService {
     private readonly activityRepo: Repository<TicketActivityEntity>,
     @InjectRepository(TicketBodyGenerationSessionEntity)
     private readonly bodySessionRepo: Repository<TicketBodyGenerationSessionEntity>,
+    @InjectRepository(TicketAutomationEntity)
+    private readonly ticketAutomationRepo: Repository<TicketAutomationEntity>,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly usersRepository: UsersRepository,
     private readonly clientsService: ClientsService,
+    private readonly ticketAutomationService: TicketAutomationService,
   ) {}
 
   private isApiKeyMode(): boolean {
@@ -129,12 +134,14 @@ export class TicketsService {
     }
     qb.orderBy('t.updated_at', 'DESC');
     const rows = await qb.getMany();
-    return Promise.all(rows.map((row) => this.mapTicket(row)));
+    const eligMap = await this.loadAutomationEligibleByTicketIds(rows.map((r) => r.id));
+    return Promise.all(rows.map((row) => this.mapTicket(row, eligMap.get(row.id) ?? false)));
   }
 
   async findOne(id: string, includeDescendants: boolean, req?: RequestWithUser): Promise<TicketResponseDto> {
     const ticket = await this.assertTicketReadable(id, req);
-    const dto = await this.mapTicket(ticket);
+    const eligMap = await this.loadAutomationEligibleByTicketIds([ticket.id]);
+    const dto = await this.mapTicket(ticket, eligMap.get(ticket.id) ?? false);
     if (includeDescendants) {
       dto.children = await this.loadDescendantTree(id, req);
     }
@@ -148,6 +155,7 @@ export class TicketsService {
       where: { clientId: root.clientId },
       order: { createdAt: 'ASC' },
     });
+    const eligMap = await this.loadAutomationEligibleByTicketIds(all.map((t) => t.id));
     const byParent = new Map<string | null, TicketEntity[]>();
     for (const t of all) {
       const p = t.parentId ?? null;
@@ -160,7 +168,7 @@ export class TicketsService {
       const kids = byParent.get(parentId) ?? [];
       const out: TicketResponseDto[] = [];
       for (const k of kids) {
-        const d = await this.mapTicket(k);
+        const d = await this.mapTicket(k, eligMap.get(k.id) ?? false);
         d.children = await build(k.id);
         out.push(d);
       }
@@ -255,6 +263,15 @@ export class TicketsService {
       ticket.clientId = dto.clientId;
     }
 
+    if (dto.preferredChatAgentId !== undefined) {
+      const newPref = dto.preferredChatAgentId;
+      const oldPref = ticket.preferredChatAgentId ?? null;
+      if (newPref !== oldPref) {
+        changes.preferredChatAgentId = { old: oldPref, new: newPref };
+        ticket.preferredChatAgentId = newPref;
+      }
+    }
+
     if (dto.parentId !== undefined) {
       const newParentId = dto.parentId;
       if (newParentId === ticket.id) {
@@ -296,6 +313,11 @@ export class TicketsService {
         }),
       );
     });
+
+    const changedKeys = Object.keys(changes);
+    if (changedKeys.some((k) => TICKET_APPROVAL_INVALIDATION_FIELDS.has(k))) {
+      await this.ticketAutomationService.invalidateAfterTicketFieldChanges(id, changedKeys, req);
+    }
 
     const refreshed = await this.loadTicketOrThrow(id);
     return this.mapTicket(refreshed);
@@ -560,11 +582,36 @@ export class TicketsService {
     return this.mapTicket(await this.loadTicketOrThrow(ticketId));
   }
 
-  private async mapTicket(row: TicketEntity): Promise<TicketResponseDto> {
+  private async loadAutomationEligibleByTicketIds(ticketIds: string[]): Promise<Map<string, boolean>> {
+    const map = new Map<string, boolean>();
+    if (ticketIds.length === 0) {
+      return map;
+    }
+    const rows = await this.ticketAutomationRepo.find({
+      where: { ticketId: In(ticketIds) },
+      select: ['ticketId', 'eligible'],
+    });
+    for (const r of rows) {
+      map.set(r.ticketId, r.eligible);
+    }
+    return map;
+  }
+
+  private async mapTicket(row: TicketEntity, automationEligible?: boolean): Promise<TicketResponseDto> {
     let createdByEmail: string | null = null;
     if (row.createdByUserId) {
       const u = await this.usersRepository.findById(row.createdByUserId);
       createdByEmail = u?.email ?? null;
+    }
+    let eligible = false;
+    if (automationEligible !== undefined) {
+      eligible = automationEligible;
+    } else {
+      const autoRow = await this.ticketAutomationRepo.findOne({
+        where: { ticketId: row.id },
+        select: ['eligible'],
+      });
+      eligible = autoRow?.eligible ?? false;
     }
     return {
       id: row.id,
@@ -576,6 +623,8 @@ export class TicketsService {
       status: row.status,
       createdByUserId: row.createdByUserId,
       createdByEmail,
+      preferredChatAgentId: row.preferredChatAgentId ?? null,
+      automationEligible: eligible,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

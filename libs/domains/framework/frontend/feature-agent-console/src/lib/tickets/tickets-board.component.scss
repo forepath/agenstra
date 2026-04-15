@@ -24,13 +24,6 @@
   overflow: hidden;
 }
 
-.alert {
-  border: 0;
-  border-bottom: 1px solid var(--bs-border-color);
-  border-radius: 0;
-  margin-bottom: 0;
-}
-
 .tickets-board__lanes {
   min-height: 12rem;
 }
@@ -308,6 +301,11 @@
 
 .tickets-board__workspace-badge-label {
   min-width: 0;
+}
+
+.tickets-board__automation-branch-badge {
+  max-width: min(14rem, 42vw);
+  vertical-align: middle;
 }
 
 .tickets-board__workspace-switch-list {

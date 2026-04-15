@@ -47,4 +47,28 @@ describe('StatisticsChatIoEntity', () => {
     expect(entity.direction).toBe(ChatDirection.OUTPUT);
     expect(entity.direction).toBe('output');
   });
+
+  it('should support prompt enhancement and ticket body generation interaction kinds', () => {
+    const enhancement = new StatisticsChatIoEntity();
+    enhancement.interactionKind = StatisticsInteractionKind.PROMPT_ENHANCEMENT;
+    expect(enhancement.interactionKind).toBe('prompt_enhancement');
+
+    const ticketBody = new StatisticsChatIoEntity();
+    ticketBody.interactionKind = StatisticsInteractionKind.TICKET_BODY_GENERATION;
+    expect(ticketBody.interactionKind).toBe('ticket_body_generation');
+  });
+
+  it('should support autonomous ticket run interaction kinds', () => {
+    const run = new StatisticsChatIoEntity();
+    run.interactionKind = StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN;
+    expect(run.interactionKind).toBe('autonomous_ticket_run');
+
+    const turn = new StatisticsChatIoEntity();
+    turn.interactionKind = StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN;
+    expect(turn.interactionKind).toBe('autonomous_ticket_run_turn');
+
+    const commitMsg = new StatisticsChatIoEntity();
+    commitMsg.interactionKind = StatisticsInteractionKind.AUTONOMOUS_TICKET_COMMIT_MESSAGE;
+    expect(commitMsg.interactionKind).toBe('autonomous_ticket_commit_message');
+  });
 });

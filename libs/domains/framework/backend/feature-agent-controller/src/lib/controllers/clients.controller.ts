@@ -38,6 +38,7 @@ import {
   ClientUsersRepository,
   ClientUsersService,
   ensureClientAccess,
+  ensureWorkspaceManagementAccess,
   getUserFromRequest,
   type RequestWithUser,
   UserRole,
@@ -112,7 +113,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<CreateClientResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
-    return await this.clientsService.create(createClientDto, userInfo.userId);
+    return await this.clientsService.create(createClientDto, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth);
   }
 
   /**
@@ -221,7 +222,7 @@ export class ClientsController {
     @Body() updateAgentDto: UpdateAgentDto,
     @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
     return await this.clientAgentProxyService.updateClientAgent(id, agentId, updateAgentDto, userInfo.userId);
   }
@@ -241,7 +242,7 @@ export class ClientsController {
     @Body() createAgentDto: CreateAgentDto,
     @Req() req?: RequestWithUser,
   ): Promise<CreateAgentResponseDto> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
     return await this.clientAgentProxyService.createClientAgent(id, createAgentDto, userInfo.userId);
   }
@@ -260,7 +261,7 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
     await this.clientAgentProxyService.deleteClientAgent(id, agentId, userInfo.userId);
   }
@@ -372,6 +373,7 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
     // Check if client has provisioning - if so, delete the server from the provider
     try {
@@ -627,7 +629,12 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<ProvisionedServerResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
-    return await this.provisioningService.provisionServer(provisionServerDto, userInfo.userId);
+    return await this.provisioningService.provisionServer(
+      provisionServerDto,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+    );
   }
 
   /**
@@ -722,7 +729,7 @@ export class ClientsController {
     @Body() createDto: CreateEnvironmentVariableDto,
     @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.createEnvironmentVariable(id, agentId, createDto);
   }
 
@@ -744,7 +751,7 @@ export class ClientsController {
     @Body() updateDto: UpdateEnvironmentVariableDto,
     @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.updateEnvironmentVariable(
       id,
       agentId,
@@ -769,7 +776,7 @@ export class ClientsController {
     @Param('envVarId', new ParseUUIDPipe({ version: '4' })) envVarId: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     await this.clientAgentEnvironmentVariablesProxyService.deleteEnvironmentVariable(id, agentId, envVarId);
   }
 
@@ -788,7 +795,7 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Req() req?: RequestWithUser,
   ): Promise<{ deletedCount: number }> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     return await this.clientAgentEnvironmentVariablesProxyService.deleteAllEnvironmentVariables(id, agentId);
   }
 

@@ -32,6 +32,13 @@ flowchart TB
         ENV_USE --> ENV6["🗑️ Delete All Variables<br/>DELETE /api/agents/:id/environment<br/>Returns: Deleted Count"]
     end
 
+    subgraph AUTO_HTTP["🧪 HTTP - Automation helpers (/api/agents/:id)"]
+        direction TB
+        AUTO_HTTP_USE["Use Case: Clean tree &amp; verifier runs<br/>Ticket automation support"]
+        AUTO_HTTP_USE --> AUTO1["🧹 Prepare clean workspace<br/>POST .../vcs/workspace/prepare-clean<br/>Returns: 204"]
+        AUTO_HTTP_USE --> AUTO2["✅ Run verifier commands<br/>POST .../automation/verify-commands<br/>Returns: exit codes + output"]
+    end
+
     subgraph WS["🔶 WebSocket Gateway (namespace: /agents)"]
         direction TB
         WS_USE["Use Case: Real-time Communication<br/>Bidirectional Messages<br/>Persistent Connection"]
@@ -42,20 +49,24 @@ flowchart TB
     Start([Agent Manager Feature]) --> HTTP
     Start --> FILES
     Start --> ENV
+    Start --> AUTO_HTTP
     Start --> WS
 
     HTTP -.->|"Stateless<br/>Request-Response"| HTTP_USE
     FILES -.->|"Stateless<br/>Request-Response"| FILES_USE
     ENV -.->|"Stateless<br/>Request-Response"| ENV_USE
+    AUTO_HTTP -.->|"Stateless<br/>Request-Response"| AUTO_HTTP_USE
     WS -.->|"Stateful<br/>Persistent Connection"| WS_USE
 
     style HTTP fill:#e6f0ff,stroke:#4a90e2,stroke-width:3px
     style FILES fill:#e6ffe6,stroke:#4a9e2,stroke-width:3px
     style ENV fill:#ffe6f0,stroke:#e24a9e,stroke-width:3px
+    style AUTO_HTTP fill:#eef6ff,stroke:#5c6bc0,stroke-width:3px
     style WS fill:#fff4e6,stroke:#ff8c42,stroke-width:3px
     style HTTP_USE fill:#d6e9ff,stroke:#4a90e2
     style FILES_USE fill:#d6ffd6,stroke:#4a9e2
     style ENV_USE fill:#ffd6f0,stroke:#e24a9e
+    style AUTO_HTTP_USE fill:#e3eafc,stroke:#5c6bc0
     style WS_USE fill:#ffe6cc,stroke:#ff8c42
     style HTTP1 fill:#f0f7ff,stroke:#4a90e2
     style HTTP2 fill:#f0f7ff,stroke:#4a90e2
@@ -74,5 +85,7 @@ flowchart TB
     style ENV4 fill:#fff0f7,stroke:#e24a9e
     style ENV5 fill:#fff0f7,stroke:#e24a9e
     style ENV6 fill:#fff0f7,stroke:#e24a9e
+    style AUTO1 fill:#f5f8ff,stroke:#5c6bc0
+    style AUTO2 fill:#f5f8ff,stroke:#5c6bc0
     style WS1 fill:#fff9f0,stroke:#ff8c42
     style WS2 fill:#fff9f0,stroke:#ff8c42

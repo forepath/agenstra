@@ -20,6 +20,8 @@ export interface ClientResponseDto {
   agentWsPort?: number;
   config?: ConfigResponseDto;
   isAutoProvisioned: boolean;
+  /** True if the current user may change autonomy, env vars, agents, and workspace settings. */
+  canManageWorkspaceConfiguration: boolean;
   createdAt: string;
   updatedAt: string;
 }

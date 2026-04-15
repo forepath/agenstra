@@ -151,16 +151,21 @@ export class AuditComponent implements OnInit {
   } | null>(() => {
     const s = this.summary();
     if (!s) return null;
+    const dropPrefix = $localize`:@@featureAudit-chartDropPrefix:Drop`;
+    const flagPrefix = $localize`:@@featureAudit-chartFlagPrefix:Flag`;
     const drops = (s.filterTypesBreakdown ?? []).map((b) => ({
-      label: `Drop: ${b.filterType} (${b.direction})`,
+      label: `${dropPrefix}: ${b.filterType} (${this.formatFilterDirection(b.direction)})`,
       count: b.count,
     }));
     const flags = (s.filterFlagsBreakdown ?? []).map((b) => ({
-      label: `Flag: ${b.filterType} (${b.direction})`,
+      label: `${flagPrefix}: ${b.filterType} (${this.formatFilterDirection(b.direction)})`,
       count: b.count,
     }));
     const items = [...drops, ...flags];
-    const labels = items.length > 0 ? items.map((i) => i.label) : ['No filter drops or flags'];
+    const labels =
+      items.length > 0
+        ? items.map((i) => i.label)
+        : [$localize`:@@featureAudit-chartNoFilterBreakdown:No filter drops or flags`];
     const series = items.length > 0 ? items.map((i) => i.count) : [1];
     const colors =
       items.length > 0 ? items.map((_, i) => BS_CHART_COLORS[i % BS_CHART_COLORS.length]) : ['var(--bs-secondary)'];
@@ -172,7 +177,10 @@ export class AuditComponent implements OnInit {
       legend: {
         labels: { colors: 'var(--bs-body-color)' },
       },
-      title: { text: 'Filter drops and flags by type', style: { color: 'var(--bs-body-color)' } },
+      title: {
+        text: $localize`:@@featureAudit-chartFilterBreakdownTitle:Filter drops and flags by type`,
+        style: { color: 'var(--bs-body-color)' },
+      },
     };
   });
 
@@ -481,6 +489,62 @@ export class AuditComponent implements OnInit {
       return new Date(iso).toLocaleString();
     } catch {
       return iso;
+    }
+  }
+
+  /** Human-readable label for Chat I/O direction (API: input | output). */
+  formatChatIoDirection(direction: string): string {
+    switch (direction) {
+      case 'input':
+        return $localize`:@@featureAudit-chatIoDirectionInput:User message`;
+      case 'output':
+        return $localize`:@@featureAudit-chatIoDirectionOutput:Assistant reply`;
+      default:
+        return direction;
+    }
+  }
+
+  /** Human-readable label for filter audit direction (API: incoming | outgoing). */
+  formatFilterDirection(direction: string): string {
+    switch (direction) {
+      case 'incoming':
+        return $localize`:@@featureAudit-filterDirectionIncoming:Incoming`;
+      case 'outgoing':
+        return $localize`:@@featureAudit-filterDirectionOutgoing:Outgoing`;
+      default:
+        return direction;
+    }
+  }
+
+  /** Human-readable label for entity audit row type. */
+  formatEntityType(entityType: string): string {
+    switch (entityType) {
+      case 'user':
+        return $localize`:@@featureAudit-entityTypeUser:User`;
+      case 'client':
+        return $localize`:@@featureAudit-entityTypeClient:Client`;
+      case 'agent':
+        return $localize`:@@featureAudit-entityTypeAgent:Agent`;
+      case 'client_user':
+        return $localize`:@@featureAudit-entityTypeClientUser:Client user`;
+      case 'provisioning_reference':
+        return $localize`:@@featureAudit-entityTypeProvisioningReference:Provisioning reference`;
+      default:
+        return entityType;
+    }
+  }
+
+  /** Human-readable label for entity audit event type. */
+  formatEntityEventType(eventType: string): string {
+    switch (eventType) {
+      case 'created':
+        return $localize`:@@featureAudit-eventTypeCreated:Created`;
+      case 'updated':
+        return $localize`:@@featureAudit-eventTypeUpdated:Updated`;
+      case 'deleted':
+        return $localize`:@@featureAudit-eventTypeDeleted:Deleted`;
+      default:
+        return eventType;
     }
   }
 

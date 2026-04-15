@@ -9,7 +9,9 @@ info:
     url: https://forepath.io
 servers:
   - url: http://localhost:3000/api
-    description: Local development
+    description: |
+      HTTP API (global prefix `/api`). Listen port from env `PORT` (default 3000).
+      WebSocket gateway for agents is separate; see the Agent Manager AsyncAPI (port `WEBSOCKET_PORT`, default 8080).
 security:
   - bearerAuth: []
 paths:
@@ -809,6 +811,34 @@ paths:
           description: Changes fetched successfully
         '404':
           description: Agent not found
+  /agents/{agentId}/vcs/workspace/prepare-clean:
+    post:
+      summary: Prepare clean workspace
+      operationId: prepareCleanWorkspace
+      description: |
+        Runs git fetch, checks out the requested base branch, hard-resets the working tree to match
+        origin for that branch, and removes untracked files. Used by autonomous ticket orchestration
+        before creating an automation branch.
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrepareCleanWorkspaceDto'
+      responses:
+        '204':
+          description: Workspace prepared successfully
+        '400':
+          description: Invalid base branch or git operation failed
+        '404':
+          description: Agent or container not found
   /agents/{agentId}/vcs/rebase:
     post:
       summary: Rebase current branch
@@ -857,6 +887,37 @@ paths:
           description: Invalid conflict resolution strategy
         '404':
           description: Agent or file not found
+  /agents/{agentId}/automation/verify-commands:
+    post:
+      summary: Run verifier shell commands in the agent container
+      operationId: runVerifierCommands
+      description: |
+        Executes a bounded list of shell commands sequentially in the agent container (fail-fast).
+        Commands are validated for safe characters; captured output per command is capped.
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunVerifierCommandsDto'
+      responses:
+        '200':
+          description: Per-command exit codes and output
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunVerifierCommandsResponseDto'
+        '400':
+          description: Invalid command or execution failed
+        '404':
+          description: Agent or container not found
   /agents/{agentId}/deployments/configuration:
     get:
       summary: Get deployment configuration for an agent
@@ -1586,6 +1647,56 @@ components:
           type: string
           enum: [yours, mine, both]
           description: Merge strategy - 'yours' (accept incoming), 'mine' (accept current), 'both' (keep both)
+    PrepareCleanWorkspaceDto:
+      type: object
+      required: [baseBranch]
+      properties:
+        baseBranch:
+          type: string
+          pattern: '^[a-zA-Z0-9/_-]+$'
+          description: Branch to check out and reset to (must match upstream after fetch)
+    VerifierShellCommandDto:
+      type: object
+      required: [cmd]
+      properties:
+        cmd:
+          type: string
+          description: Shell command (validated; no shell metacharacters)
+        cwd:
+          type: string
+          description: Optional working directory inside the repository
+    RunVerifierCommandsDto:
+      type: object
+      required: [commands]
+      properties:
+        commands:
+          type: array
+          maxItems: 32
+          items:
+            $ref: '#/components/schemas/VerifierShellCommandDto'
+        timeoutMs:
+          type: integer
+          minimum: 1000
+          maximum: 3600000
+          description: Optional timeout per command batch (default 120000)
+    VerifierCommandResultDto:
+      type: object
+      required: [cmd, exitCode, output]
+      properties:
+        cmd:
+          type: string
+        exitCode:
+          type: integer
+        output:
+          type: string
+    RunVerifierCommandsResponseDto:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerifierCommandResultDto'
     CreateDeploymentConfigurationDto:
       type: object
       required: [providerType, repositoryId, providerToken]

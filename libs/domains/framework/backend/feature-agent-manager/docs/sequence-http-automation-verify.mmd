@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant Client as HTTP Client
+    participant API as AgentsVerificationController<br/>(/api/agents/:id/automation)
+    participant VerifySvc as AgentsVerificationService
+    participant AgentService as AgentsService
+    participant Docker as DockerService
+    participant Container as Agent Container<br/>(/app)
+
+    Note over Client,Container: HTTP API - Ticket automation verification (bounded shell)
+
+    rect rgb(245, 245, 255)
+        Note over Client,Container: Run verifier commands
+        Client->>API: POST /api/agents/{id}/automation/verify-commands<br/>{commands[], timeoutMs?}
+        API->>VerifySvc: runVerifierCommands(agentId, dto)
+        VerifySvc->>AgentService: findOne(agentId)
+        AgentService-->>VerifySvc: agent entity
+        loop For each command (fail-fast)
+            VerifySvc->>VerifySvc: assertSafeCommand(cmd)
+            VerifySvc->>Docker: sendCommandToContainer (wrapped sh script)
+            Docker->>Container: Execute verifier script
+            Container-->>Docker: stdout + __EXIT marker
+            Docker-->>VerifySvc: raw output
+            VerifySvc->>VerifySvc: parse exit code and truncate output
+        end
+        VerifySvc-->>API: RunVerifierCommandsResponseDto
+        API-->>Client: 200 OK<br/>{results[]}
+    end

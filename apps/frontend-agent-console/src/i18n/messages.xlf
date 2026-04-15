@@ -122,6 +122,54 @@
       <trans-unit id="featureAudit-noData" datatype="html">
         <source>No data yet. Apply filters and load statistics.</source>
         </trans-unit>
+      <trans-unit id="featureAudit-chatIoDirectionInput" datatype="html">
+        <source>User message</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chatIoDirectionOutput" datatype="html">
+        <source>Assistant reply</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterDirectionIncoming" datatype="html">
+        <source>Incoming</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-filterDirectionOutgoing" datatype="html">
+        <source>Outgoing</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityTypeUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityTypeClient" datatype="html">
+        <source>Client</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityTypeAgent" datatype="html">
+        <source>Agent</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityTypeClientUser" datatype="html">
+        <source>Client user</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityTypeProvisioningReference" datatype="html">
+        <source>Provisioning reference</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-eventTypeCreated" datatype="html">
+        <source>Created</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-eventTypeUpdated" datatype="html">
+        <source>Updated</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-eventTypeDeleted" datatype="html">
+        <source>Deleted</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartDropPrefix" datatype="html">
+        <source>Drop</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartFlagPrefix" datatype="html">
+        <source>Flag</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartNoFilterBreakdown" datatype="html">
+        <source>No filter drops or flags</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartFilterBreakdownTitle" datatype="html">
+        <source>Filter drops and flags by type</source>
+        </trans-unit>
       <trans-unit id="featureChat-brandAlt" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
@@ -208,6 +256,12 @@
         </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentTitle" datatype="html">
         <source>Delete Environment</source>
+        </trans-unit>
+      <trans-unit id="featureChat-ticketAutonomyModalTitle" datatype="html">
+        <source>Prototype autonomy</source>
+        </trans-unit>
+      <trans-unit id="featureChat-ticketAutonomyButtonTitle" datatype="html">
+        <source>Prototype autonomy</source>
         </trans-unit>
       <trans-unit id="featureChat-chatHeader" datatype="html">
         <source>Chat</source>
@@ -301,6 +355,15 @@
         </trans-unit>
       <trans-unit id="featureChat-modelAuto" datatype="html">
         <source>Auto</source>
+        </trans-unit>
+      <trans-unit id="featureChat-responseMode" datatype="html">
+        <source>Response</source>
+        </trans-unit>
+      <trans-unit id="featureChat-responseModeStream" datatype="html">
+        <source>Streaming</source>
+        </trans-unit>
+      <trans-unit id="featureChat-responseModeFull" datatype="html">
+        <source>Full response</source>
         </trans-unit>
       <trans-unit id="featureChat-connectToSend" datatype="html">
         <source>Connect to socket to send messages</source>
@@ -1309,6 +1372,36 @@
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
         <source>New Terminal</source>
         </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-loading" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-intro" datatype="html">
+        <source> Control whether this agent may run autonomous ticket prototyping, including scope and safety limits. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-enabled" datatype="html">
+        <source>Autonomy enabled</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-preImprove" datatype="html">
+        <source>Pre-improve ticket before run</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-maxRuntime" datatype="html">
+        <source>Max runtime (ms)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-maxIterations" datatype="html">
+        <source>Max iterations</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-tokenBudget" datatype="html">
+        <source>Token budget limit (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-tokenBudgetPh" datatype="html">
+        <source>Leave empty for no limit</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
+        <source><x id="START_BLOCK_IF" equiv-text="@if (saving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-reset" datatype="html">
+        <source> Reset </source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-title" datatype="html">
         <source>Tickets</source>
         </trans-unit>
@@ -1324,6 +1417,18 @@
       <trans-unit id="featureTicketsBoard-newTicket" datatype="html">
         <source>Add</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherLoading" datatype="html">
+        <source>Loading workspaces…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
+        <source>You don&apos;t have any workspaces yet.</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
+        <source> Create one from Spaces, or open Spaces if a workspace was shared with you. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
+        <source>Go to Spaces</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-selectSpacePrefix" datatype="html">
         <source>Select a space from</source>
         </trans-unit>
@@ -1333,6 +1438,9 @@
       <trans-unit id="featureTicketsBoard-selectSpaceSuffix" datatype="html">
         <source>to load tickets.</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
+        <source>Choose workspace…</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-loading" datatype="html">
         <source>Loading tickets…</source>
         </trans-unit>
@@ -1341,6 +1449,9 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-searchLanePlaceholder" datatype="html">
         <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationEligibleTitle" datatype="html">
+        <source>Autonomous prototyping enabled</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
         <source> Drop tickets here </source>
@@ -1396,6 +1507,114 @@
       <trans-unit id="featureTicketsBoard-openSubtaskTitle" datatype="html">
         <source>Open subtask</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationAccordionTitle" datatype="html">
+        <source>Autonomous prototyping</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationDismissError" datatype="html">
+        <source> Dismiss </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationLoadingConfig" datatype="html">
+        <source>Loading automation settings…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationEligible" datatype="html">
+        <source>Eligible for automated runs</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRequiresApproval" datatype="html">
+        <source>Require approval before running</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationApprovedHeading" datatype="html">
+        <source> Approved for automation </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationNeedsApproval" datatype="html">
+        <source> Configuration changes may require approval before runs execute. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationAllowedAgents" datatype="html">
+        <source>Allowed agents</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationAllowedAgentsHint" datatype="html">
+        <source> If none are selected, every agent with prototype autonomy enabled for this workspace may run this ticket. Select specific agents to restrict who can pick it up. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationLoadingAgents" datatype="html">
+        <source>Loading agents…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationNoAgents" datatype="html">
+        <source> No agents in this workspace. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationNoAutonomyAgents" datatype="html">
+        <source> No agents have prototype autonomy enabled for this workspace. Enable it for an agent in chat under Prototype autonomy. Only those agents can run autonomous ticket work. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationOrphanAgentsHeading" datatype="html">
+        <source> Allowed agents not listed above—uncheck to remove (e.g. autonomy off or agent removed) </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationDefaultBranch" datatype="html">
+        <source>Default branch override</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationDefaultBranchPh" datatype="html">
+        <source>Optional — leave empty to use repository default</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifierHeading" datatype="html">
+        <source>Verifier commands</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifierAdd" datatype="html">
+        <source> Add command </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifierCmd" datatype="html">
+        <source>Command</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifierCmdPh" datatype="html">
+        <source>Command</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifierCwd" datatype="html">
+        <source>Working directory</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifierCwdPh" datatype="html">
+        <source>cwd (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifierRemoveTitle" datatype="html">
+        <source>Remove</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationSaving" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm text-primary&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Saving automation settings… </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationApprove" datatype="html">
+        <source> Approve </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationUnapprove" datatype="html">
+        <source> Unapprove </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationFailures" datatype="html">
+        <source> Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationNextRetry" datatype="html">
+        <source> Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunsHeading" datatype="html">
+        <source>Runs</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRefreshRunsTitle" datatype="html">
+        <source>Refresh runs</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationNoRuns" datatype="html">
+        <source>No runs yet.</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifyOk" datatype="html">
+        <source>Verify: passed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationVerifyFail" datatype="html">
+        <source>Verify: failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationOpenDetailTitle" datatype="html">
+        <source>Open details</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationCancelRunTitle" datatype="html">
+        <source>Cancel run</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationLoadingTrace" datatype="html">
+        <source>Loading steps…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationNoSteps" datatype="html">
+        <source> No steps recorded for this run. </source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-commentsHeading" datatype="html">
         <source>Comments</source>
         </trans-unit>
@@ -1422,6 +1641,48 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-close" datatype="html">
         <source> Close </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunModalTitle" datatype="html">
+        <source> Automation run </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunPhase" datatype="html">
+        <source>Phase</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunBranch" datatype="html">
+        <source>Branch</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunAgent" datatype="html">
+        <source>Agent</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunIterations" datatype="html">
+        <source>Iterations</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunFailure" datatype="html">
+        <source>Failure</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunCancelReason" datatype="html">
+        <source>Cancellation</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunSummary" datatype="html">
+        <source>Summary (JSON)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunSteps" datatype="html">
+        <source>Steps</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationStepExcerpt" datatype="html">
+        <source>Excerpt</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationStepPayload" datatype="html">
+        <source>Payload (JSON)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationRunModalEmpty" datatype="html">
+        <source> Open a run from the ticket detail panel. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationCancelRun" datatype="html">
+        <source> Cancel run </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-deleteConfirmModalTitle" datatype="html">
         <source> Delete ticket </source>
@@ -1494,21 +1755,6 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherSearchPlaceholder" datatype="html">
         <source>Search workspaces</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherLoading" datatype="html">
-        <source>Loading workspaces…</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
-        <source>You don't have any workspaces yet.</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
-        <source>Create one from Spaces, or open Spaces if a workspace was shared with you.</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
-        <source>Go to Spaces</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
-        <source>Choose workspace…</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherNoMatch" datatype="html">
         <source> No matching workspaces </source>
@@ -1588,8 +1834,53 @@
       <trans-unit id="featureTicketsBoard-activityActionPrototypePromptGenerated" datatype="html">
         <source>Prototype prompt generated</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationClaimed" datatype="html">
+        <source>Automation claimed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationStarted" datatype="html">
+        <source>Automation started</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationSucceeded" datatype="html">
+        <source>Automation succeeded</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationFailed" datatype="html">
+        <source>Automation failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationTimedOut" datatype="html">
+        <source>Automation timed out</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationEscalated" datatype="html">
+        <source>Automation escalated</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationRequeued" datatype="html">
+        <source>Automation requeued</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationApprovalInvalidated" datatype="html">
+        <source>Automation approval invalidated</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationCancelled" datatype="html">
+        <source>Automation cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationApproved" datatype="html">
+        <source>Automation approved</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationUnapproved" datatype="html">
+        <source>Automation approval revoked</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationEligibilityChanged" datatype="html">
+        <source>Automated runs eligibility changed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationApprovalRequirementChanged" datatype="html">
+        <source>Automation approval requirement changed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-activityActionAutomationSettingsUpdated" datatype="html">
+        <source>Automation settings updated</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-activityActionUnknown" datatype="html">
         <source>Unknown activity</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationChatAgentLockTitle" datatype="html">
+        <source>Matches Agent for chat / AI — change the chat agent to allow unchecking.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createNeedClient" datatype="html">
         <source>Select a space before creating a ticket.</source>
@@ -2092,6 +2383,105 @@
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelApprovalInvalidated" datatype="html">
+        <source>Approval invalidated</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelLeaseExpired" datatype="html">
+        <source>Lease expired</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelSystemShutdown" datatype="html">
+        <source>System shutdown</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelUserRequest" datatype="html">
+        <source>User request</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureAgentNoCompletionMarker" datatype="html">
+        <source>No completion marker</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureAgentProviderError" datatype="html">
+        <source>Agent provider error</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureApprovalMissing" datatype="html">
+        <source>Approval missing</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureBudgetExceeded" datatype="html">
+        <source>Budget exceeded</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureCommitFailed" datatype="html">
+        <source>Git commit failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureHumanEscalation" datatype="html">
+        <source>Human escalation</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureLeaseContention" datatype="html">
+        <source>Lease contention</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureMarkerWithoutVerify" datatype="html">
+        <source>Completion marker without verify profile</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureOrchestratorStale" datatype="html">
+        <source>Orchestrator stale</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailurePushFailed" datatype="html">
+        <source>Git push failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureVerifyCommandFailed" datatype="html">
+        <source>Verify command failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureVcsBranchExists" datatype="html">
+        <source>Branch already exists</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureVcsDirtyWorkspace" datatype="html">
+        <source>Dirty workspace</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runPhaseAgentLoop" datatype="html">
+        <source>Agent loop</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runPhaseFinalize" datatype="html">
+        <source>Finalize</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runPhasePreImprove" datatype="html">
+        <source>Pre-improve</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runPhaseVerify" datatype="html">
+        <source>Verify</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runPhaseWorkspacePrep" datatype="html">
+        <source>Workspace prep</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStatusCancelled" datatype="html">
+        <source>Cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStatusEscalated" datatype="html">
+        <source>Escalated</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStatusPending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStatusRunning" datatype="html">
+        <source>Running</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStatusSucceeded" datatype="html">
+        <source>Succeeded</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStatusTimedOut" datatype="html">
+        <source>Timed out</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindAgentTurn" datatype="html">
+        <source>Agent turn</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindGitCommit" datatype="html">
+        <source>Git commit</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindGitPush" datatype="html">
+        <source>Git push</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindVcsPrepare" datatype="html">
+        <source>Repository setup</source>
         </trans-unit>
     </body>
   </file>

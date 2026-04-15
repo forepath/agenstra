@@ -27,12 +27,18 @@ import { StatisticsUserEntity } from '../entities/statistics-user.entity';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
+import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease.entity';
+import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
+import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
+import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
 import { ClientsModule } from './clients.module';
 
 describe('ClientsModule', () => {
@@ -62,6 +68,7 @@ describe('ClientsModule', () => {
         };
         return fn(em);
       }),
+      query: jest.fn().mockResolvedValue([]),
     },
     createQueryBuilder: jest.fn().mockReturnValue({
       andWhere: jest.fn().mockReturnThis(),
@@ -123,8 +130,24 @@ describe('ClientsModule', () => {
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(TicketBodyGenerationSessionEntity))
       .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(TicketAutomationEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(TicketAutomationRunEntity))
+      .useValue(mockTicketRepository)
+      .overrideProvider(getRepositoryToken(TicketAutomationLeaseEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(TicketAutomationRunStepEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(ClientAgentAutonomyEntity))
+      .useValue(mockRepository)
       .overrideProvider(UsersRepository)
-      .useValue(mockRepository);
+      .useValue(mockRepository)
+      .overrideProvider(AutonomousTicketScheduler)
+      .useValue({
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+        tick: jest.fn().mockResolvedValue(undefined),
+      });
 
     // Mock Keycloak providers if auth method is keycloak
     if (authMethod === 'keycloak') {

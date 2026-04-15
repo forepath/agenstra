@@ -485,13 +485,15 @@ See the [AsyncAPI specification](./spec/asyncapi.yaml) for complete event docume
 
 The agent-controller collects persistent statistics for analytics and future REST API exposure:
 
-- **Chat I/O** - Word and character counts for user input and agent output (includes **prompt enhancement** via `forward` event `enhanceChat`; rows use `interaction_kind` to distinguish normal chat from enhancement)
+- **Chat I/O** - Word and character counts for user input and agent output (includes **prompt enhancement** via `forward` event `enhanceChat`; rows use `interaction_kind` to distinguish normal chat from enhancement, **ticket body generation**, and **autonomous ticket runs** via `autonomous_ticket_run` / `autonomous_ticket_run_turn`)
 - **Filter drops** - Messages dropped by content filters (profanity, PII, etc.) with filter type and direction
 - **Entity lifecycle** - Creation, update, and deletion of clients, agents, users, client-user relationships, and provisioning references
 
 Data is stored in shadow tables (`statistics_*`) with no secrets. See [Statistics Model](./docs/statistics-architecture.mmd) for the full design, collection points, and REST API. The [HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd) shows the request flow for statistics endpoints.
 
 **Prompt enhancement (magic wand)** does not create rows in `agent_messages` or show up as normal chat bubbles; the controller records draft and enhanced text metrics in `statistics_chat_io` with `interaction_kind = prompt_enhancement`. Filter parity with normal chat applies on the agent-manager side.
+
+**Autonomous ticket prototyping** records each background `RemoteAgentsSessionService` turn under `autonomous_ticket_run_turn` (orchestrator-level summaries may use `autonomous_ticket_run` when wired). See `autonomous-ticket-automation.md` and `docs/sequence-autonomous-ticket.mmd`.
 
 ### WebSocket Authentication
 

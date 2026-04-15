@@ -4,6 +4,7 @@ import {
   GitBranchDto,
   GitDiffDto,
   GitStatusDto,
+  PrepareCleanWorkspaceDto,
   PushOptionsDto,
   RebaseDto,
   ResolveConflictDto,
@@ -186,6 +187,18 @@ export class ClientsVcsController {
    * @param clientId - The UUID of the client
    * @param agentId - The UUID of the agent
    */
+  @Post('workspace/prepare-clean')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async prepareCleanWorkspace(
+    @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Body() body: PrepareCleanWorkspaceDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<void> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+    await this.clientAgentVcsProxyService.prepareCleanWorkspace(clientId, agentId, body);
+  }
+
   @Post('fetch')
   @HttpCode(HttpStatus.NO_CONTENT)
   async fetch(

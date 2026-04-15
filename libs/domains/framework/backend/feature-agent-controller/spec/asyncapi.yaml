@@ -11,11 +11,15 @@ info:
     the requested client (global admin, client creator, or client_users entry) can set that
     client context. Unauthorized setClient attempts emit an `error` event with message
     "You do not have access to this client".
+    HTTP REST endpoints for prototype autonomy, environment variables, and agent CRUD enforce additional
+    workspace-manager rules; see OpenAPI spec (ClientResponseDto.canManageWorkspaceConfiguration and 403 descriptions).
 servers:
   local:
     host: localhost:8081
     protocol: ws
-    description: Socket.IO server (namespace /clients). Pass Authorization header in handshake.
+    description: |
+      Socket.IO server (namespace from env WEBSOCKET_NAMESPACE, default "clients"; port from env WEBSOCKET_PORT, default 8081).
+      Pass Authorization header in handshake (or handshake.auth.Authorization for browser WebSockets).
 channels:
   clients/setClient:
     address: clients/setClient
@@ -54,7 +58,31 @@ channels:
     messages:
       forwardCommand:
         $ref: '#/components/messages/Forward'
-    description: Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided, the gateway automatically logs in the agent using stored credentials before forwarding the event. To restore chat history for an agent, forward a "login" event with `agentId` (the payload is automatically overridden with credentials from the database, triggering login and subsequent chat history restoration). Supported events include "chat", "enhanceChat" (prompt improvement; payload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from agent-manager, proxied to this socket only), "generateTicketBody" (ticket body from title; payload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput", "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit response events (e.g., "chatMessage", "chatEnhanceResult", "ticketBodyResult", "fileUpdateNotification", "terminalCreated", "terminalOutput", "terminalClosed", "containerStats") which are automatically forwarded back to the client. The "containerStats" event payload (defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when running, container statistics.
+    description: |
+      Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,
+      the gateway automatically logs in the agent using stored credentials before forwarding the event.
+      To restore chat history for an agent, forward a "login" event with `agentId` (the payload is
+      automatically overridden with credentials from the database, triggering login and subsequent
+      chat history restoration). Supported events include "chat", "enhanceChat" (prompt improvement;
+      payload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from
+      agent-manager, proxied to this socket only), "generateTicketBody" (ticket body from title;
+      payload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope
+      shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput",
+      "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit
+      response events (e.g., "chatMessage", "chatEnhanceResult", "ticketBodyResult",
+      "fileUpdateNotification", "terminalCreated", "terminalOutput", "terminalClosed", "containerStats")
+      which are automatically forwarded back to the client. The "containerStats" event payload
+      (defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when
+      running, container statistics. For autonomous ticket runs, proxied `chat` may include
+      `responseMode: "single" | "stream" | "sync"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;
+      the controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for
+      implementation turns vs. post-verify conventional-commit subject generation; statistics on the controller
+      side record the latter under interaction kind `autonomous_ticket_commit_message`.
+      After a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS
+      `commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).
+      agent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.
+      When `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting
+      socket (not broadcast to other viewers on the same agent).
   clients/forwardAck:
     address: clients/forwardAck
     messages:
@@ -200,7 +228,7 @@ components:
               When event is "closeTerminal", the payload should contain {sessionId: string}.
               When event is "enhanceChat", the payload should contain { message: string, correlationId: string, model?: string }.
               When event is "generateTicketBody", the payload should contain { title: string, correlationId: string, model?: string }.
-              When event is "chat", the payload may include { correlationId?: string, responseMode?: \"single\"|\"stream\" } to enable streaming/tool events.
+              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string }.
               Response events forwarded from the agent-manager include "containerStats" (payload has status.running and optional stats).
           agentId:
             type: string

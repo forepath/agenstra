@@ -62,6 +62,10 @@ export class TicketEntity {
   @JoinColumn({ name: 'created_by_user_id' })
   createdByUser?: UserEntity | null;
 
+  /** Workspace agent the user last chose for chat/AI on this ticket (agent-manager agent UUID). */
+  @Column({ type: 'uuid', nullable: true, name: 'preferred_chat_agent_id' })
+  preferredChatAgentId?: string | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
 

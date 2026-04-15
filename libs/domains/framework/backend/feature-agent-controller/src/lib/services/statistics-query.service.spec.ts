@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 import { StatisticsQueryService } from './statistics-query.service';
@@ -230,6 +231,25 @@ describe('StatisticsQueryService', () => {
         expect.objectContaining({
           statisticsClientIds: ['sc1'],
           search: 'agent',
+        }),
+      );
+    });
+  });
+
+  describe('getClientChatIo interactionKind filter', () => {
+    it('accepts autonomous_ticket_run_turn', async () => {
+      mockRepository.findStatisticsClientIdsByOriginalIds.mockResolvedValue(['sc1']);
+      mockRepository.queryChatIo.mockResolvedValue({ rows: [], total: 0 });
+
+      await service.getClientChatIo('client-1', {
+        limit: 10,
+        offset: 0,
+        interactionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
+      });
+
+      expect(repository.queryChatIo).toHaveBeenCalledWith(
+        expect.objectContaining({
+          interactionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
         }),
       );
     });

@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
   OnDestroy,
@@ -11,13 +12,14 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
   AuthenticationFacade,
+  ClientAgentAutonomyFacade,
   ClientsFacade,
   ContainerType,
   DeploymentsService,
@@ -30,6 +32,7 @@ import {
   type AgentResponseDto,
   type AgentResponseObject,
   type ChatMessageData,
+  type ClientAgentAutonomyResponseDto,
   type ClientAuthenticationType,
   type ClientResponseDto,
   type ClientUserResponseDto,
@@ -45,6 +48,7 @@ import {
   type UpdateAgentDto,
   type UpdateClientDto,
   type UpdateEnvironmentVariableDto,
+  type UpsertClientAgentAutonomyDto,
   type WriteFileDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
@@ -59,6 +63,7 @@ import {
   map,
   Observable,
   of,
+  pairwise,
   shareReplay,
   skip,
   startWith,
@@ -120,6 +125,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly statsFacade = inject(StatsFacade);
   private readonly filesFacade = inject(FilesFacade);
   private readonly envFacade = inject(EnvFacade);
+  private readonly autonomyFacade = inject(ClientAgentAutonomyFacade);
   private readonly deploymentsService = inject(DeploymentsService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly sanitizer = inject(DomSanitizer);
@@ -151,6 +157,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   @ViewChild('environmentVariablesModal', { static: false })
   private environmentVariablesModal!: ElementRef<HTMLDivElement>;
+
+  @ViewChild('ticketAutonomyModal', { static: false })
+  private ticketAutonomyModal!: ElementRef<HTMLDivElement>;
 
   @ViewChild('clientUsersModal', { static: false })
   private clientUsersModal!: ElementRef<HTMLDivElement>;
@@ -463,8 +472,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!selectedAgent || selectedAgent.agentType === 'openclaw') {
         return false;
       }
-      // Show chat if editor and deployment manager are not open, or if one is open and chat is visible
-      return (!editorOpen && !deploymentManagerOpen) || chatVisible;
+      const sidePanelOpen = deploymentManagerOpen;
+      return (!editorOpen && !sidePanelOpen) || chatVisible;
     }),
   );
 
@@ -479,8 +488,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!selectedAgent) {
         return false;
       }
-      // Show gateway if editor and deployment manager are not open, or if one is open and chat is visible
-      return ((!editorOpen && !deploymentManagerOpen) || gatewayVisible) && selectedAgent.agentType === 'openclaw';
+      const sidePanelOpen = deploymentManagerOpen;
+      return ((!editorOpen && !sidePanelOpen) || gatewayVisible) && selectedAgent.agentType === 'openclaw';
     }),
   );
 
@@ -686,6 +695,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     content: '',
   });
 
+  /** Agent whose prototype autonomy modal is open (null when closed). */
+  readonly managingTicketAutonomyAgentId = signal<string | null>(null);
+  readonly ticketAutonomyDraftEnabled = signal(false);
+  readonly ticketAutonomyDraftPreImprove = signal(false);
+  readonly ticketAutonomyDraftMaxRuntimeMs = signal(3_600_000);
+  readonly ticketAutonomyDraftMaxIterations = signal(25);
+  /** Empty string means null token budget. */
+  readonly ticketAutonomyDraftTokenBudgetText = signal('');
+  readonly autonomyRow = toSignal(this.autonomyFacade.autonomy$, { initialValue: null });
+  readonly autonomyLoading = toSignal(this.autonomyFacade.loading$, { initialValue: false });
+  readonly autonomySaving = toSignal(this.autonomyFacade.saving$, { initialValue: false });
+  readonly autonomyError = toSignal(this.autonomyFacade.error$, { initialValue: null });
+
   // Environment variables observables (computed based on active client and managing agent)
   readonly managingEnvVarsAgentId$ = toObservable(this.managingEnvVarsAgentId);
   readonly environmentVariables$: Observable<EnvironmentVariableResponseDto[]> = combineLatest([
@@ -825,6 +847,25 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    */
   private isMobile(): boolean {
     return typeof window !== 'undefined' && window.innerWidth <= 767.98;
+  }
+
+  constructor() {
+    effect(() => {
+      const agentId = this.managingTicketAutonomyAgentId();
+      const clientId = this.activeClientId;
+      if (clientId && agentId) {
+        this.autonomyFacade.load(clientId, agentId);
+      }
+    });
+    effect(() => {
+      if (!this.managingTicketAutonomyAgentId()) {
+        return;
+      }
+      const row = this.autonomyRow();
+      if (row) {
+        this.applyTicketAutonomyDraftFromRow(row);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -1993,6 +2034,72 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onCloseDeploymentManager(): void {
     this.deploymentManagerOpen.set(false);
+  }
+
+  onManageTicketAutonomyClick(agent: AgentResponseDto): void {
+    const clientId = this.activeClientId;
+    if (!clientId) {
+      return;
+    }
+    this.managingTicketAutonomyAgentId.set(agent.id);
+    this.showModal(this.ticketAutonomyModal);
+  }
+
+  onCloseTicketAutonomyModal(): void {
+    this.managingTicketAutonomyAgentId.set(null);
+    this.autonomyFacade.clear();
+  }
+
+  private applyTicketAutonomyDraftFromRow(row: ClientAgentAutonomyResponseDto): void {
+    this.ticketAutonomyDraftEnabled.set(row.enabled);
+    this.ticketAutonomyDraftPreImprove.set(row.preImproveTicket);
+    this.ticketAutonomyDraftMaxRuntimeMs.set(row.maxRuntimeMs);
+    this.ticketAutonomyDraftMaxIterations.set(row.maxIterations);
+    this.ticketAutonomyDraftTokenBudgetText.set(row.tokenBudgetLimit !== null ? String(row.tokenBudgetLimit) : '');
+  }
+
+  onResetTicketAutonomyDraft(): void {
+    const row = this.autonomyRow();
+    if (row) {
+      this.applyTicketAutonomyDraftFromRow(row);
+      return;
+    }
+    this.ticketAutonomyDraftEnabled.set(false);
+    this.ticketAutonomyDraftPreImprove.set(false);
+    this.ticketAutonomyDraftMaxRuntimeMs.set(3_600_000);
+    this.ticketAutonomyDraftMaxIterations.set(25);
+    this.ticketAutonomyDraftTokenBudgetText.set('');
+  }
+
+  onSaveTicketAutonomy(): void {
+    const clientId = this.activeClientId;
+    const agentId = this.managingTicketAutonomyAgentId();
+    if (!clientId || !agentId) {
+      return;
+    }
+    const tokenRaw = this.ticketAutonomyDraftTokenBudgetText().trim();
+    const tokenBudgetLimit = tokenRaw === '' ? null : Number(tokenRaw);
+    const dto: UpsertClientAgentAutonomyDto = {
+      enabled: this.ticketAutonomyDraftEnabled(),
+      preImproveTicket: this.ticketAutonomyDraftPreImprove(),
+      maxRuntimeMs: Number(this.ticketAutonomyDraftMaxRuntimeMs()) || 1,
+      maxIterations: Number(this.ticketAutonomyDraftMaxIterations()) || 1,
+      tokenBudgetLimit: tokenBudgetLimit !== null && !Number.isNaN(tokenBudgetLimit) ? tokenBudgetLimit : null,
+    };
+    this.autonomyFacade.clearError();
+    this.autonomyFacade.upsert(clientId, agentId, dto);
+
+    // Close modal when save completes (same pattern as onSubmitUpdateAgent)
+    this.autonomyFacade.saving$
+      .pipe(
+        pairwise(),
+        filter(([wasSaving, isSaving]) => wasSaving && !isSaving),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.hideModal(this.ticketAutonomyModal);
+      });
   }
 
   /**

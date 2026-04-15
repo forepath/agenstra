@@ -2,12 +2,18 @@ asyncapi: 3.0.0
 info:
   title: Agent Gateway
   version: 1.0.0
-  description: WebSocket events for the agents chat gateway (Socket.IO namespace "agents")
+  description: |
+    WebSocket events for the agents chat gateway. Socket.IO namespace from env `WEBSOCKET_NAMESPACE` (default `agents`);
+    listen port from env `WEBSOCKET_PORT` (default 8080). CORS for the gateway from `WEBSOCKET_CORS_ORIGIN` (default `*`).
+    Connection state recovery uses `SOCKET_MAX_DISCONNECTION_DURATION` ms (default 120000) per NestJS `connectionStateRecovery`.
+    The REST API runs on a separate HTTP port (`PORT`, default 3000); see the Agent Manager OpenAPI spec.
 servers:
   local:
     host: localhost:8080
     protocol: ws
-    description: Socket.IO server (namespace /agents)
+    description: |
+      Socket.IO server; path `/socket.io` with namespace `/agents` (e.g. `ws://localhost:8080/agents` depending on client).
+      Port defaults to 8080 unless `WEBSOCKET_PORT` is set.
 channels:
   agents/login:
     address: agents/login
@@ -32,7 +38,12 @@ channels:
     messages:
       chatCommand:
         $ref: '#/components/messages/Chat'
-    description: Client sends a chat message (requires prior login)
+    description: |
+      Client sends a chat message (requires prior login). Payload may include `responseMode` "single" | "stream" | "sync",
+      `ephemeral` (skip `agent_messages` persistence for the turn), `continue`, `resumeSessionSuffix`, `correlationId`, `model`.
+      When `ephemeral` is true, `chatMessage`, `chatEvent`, and `messageFilterResult` for that turn are emitted only to the
+      requesting socket (not broadcast to other clients on the same agent). Otherwise those events are broadcast to every
+      socket authenticated to the agent. The gateway forwards options to `sendMessage` as implemented in code.
   agents/enhanceChat:
     address: agents/enhanceChat
     messages:
@@ -66,21 +77,28 @@ channels:
     messages:
       chatBroadcast:
         $ref: '#/components/messages/ChatMessage'
-    description: Server broadcasts chat messages to all connected clients. Also used for chat history restoration after successful login (messages are emitted in chronological order to the authenticated client only).
+    description: |
+      Emits standardized chat line envelopes (`success` + `data` + `timestamp`). Normally broadcast to all clients
+      authenticated to the same agent; for a `chat` request with `ephemeral: true`, user/agent lines for that turn are
+      unicast to the requesting socket only. After successful login, chat history is replayed as `chatMessage` events in
+      chronological order to the authenticating client only.
   agents/chatEvent:
     address: agents/chatEvent
     messages:
       chatEventBroadcast:
         $ref: '#/components/messages/ChatEvent'
     description: >
-      Server broadcasts structured chat events (streaming deltas, tool calls/results, questions, and final assistant messages)
-      to all connected clients authenticated to the same agent. This is additive and does not replace chatMessage.
+      Structured chat events (streaming deltas, tool calls/results, questions, final assistant messages). Normally broadcast
+      to all clients authenticated to the same agent; for an ephemeral chat turn, events for that turn are emitted only to
+      the requesting socket. Additive; does not replace chatMessage.
   agents/messageFilterResult:
     address: agents/messageFilterResult
     messages:
       messageFilterResultEvent:
         $ref: '#/components/messages/MessageFilterResult'
-    description: Server broadcasts filter result messages to all connected clients authenticated to the same agent. Sent after applying filters to incoming or outgoing messages.
+    description: >
+      Filter outcome for incoming or outgoing messages. Follows the same broadcast vs ephemeral unicast rules as chatMessage:
+      when the related `chat` request had `ephemeral: true`, results for that turn go only to the requesting socket.
   agents/error:
     address: agents/error
     messages:
@@ -387,8 +405,21 @@ components:
             description: Optional client-supplied correlation id for streaming/tool events; if omitted the server will generate one.
           responseMode:
             type: string
-            enum: [single, stream]
-            description: Optional response mode preference. When stream, the server may emit chatEvent deltas before the final chatMessage.
+            enum: [single, stream, sync]
+            description: >
+              Optional response mode. "stream" may emit chatEvent deltas before the final chatMessage; "sync" uses a
+              non-streaming path suitable for background automation; "single" is the default when omitted.
+          ephemeral:
+            type: boolean
+            description: >
+              When true, skips persisting user and assistant messages for this turn and emits chatMessage, chatEvent, and
+              messageFilterResult for this turn only to the requesting socket (no fan-out to other viewers on the agent).
+          continue:
+            type: boolean
+            description: Optional continuation flag forwarded to the agent sendMessage flow.
+          resumeSessionSuffix:
+            type: string
+            description: Optional suffix to isolate or resume session routing for this chat turn.
     EnhanceChat:
       name: EnhanceChat
       title: Prompt enhancement command

@@ -17,6 +17,10 @@ import type {
   ServerType,
   UpdateClientDto,
 } from '../state/clients/clients.types';
+import type {
+  ClientAgentAutonomyResponseDto,
+  UpsertClientAgentAutonomyDto,
+} from '../state/client-agent-autonomy/client-agent-autonomy.types';
 
 @Injectable({
   providedIn: 'root',
@@ -131,5 +135,29 @@ export class ClientsService {
    */
   removeClientUser(clientId: string, relationshipId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/clients/${clientId}/users/${relationshipId}`);
+  }
+
+  /**
+   * Agent UUIDs with prototype autonomy enabled for this client (scheduler only considers these agents).
+   */
+  listEnabledAutonomyAgentIds(clientId: string): Observable<{ agentIds: string[] }> {
+    return this.http.get<{ agentIds: string[] }>(`${this.apiUrl}/clients/${clientId}/agent-autonomy/enabled-agent-ids`);
+  }
+
+  getClientAgentAutonomy(clientId: string, agentId: string): Observable<ClientAgentAutonomyResponseDto> {
+    return this.http.get<ClientAgentAutonomyResponseDto>(
+      `${this.apiUrl}/clients/${clientId}/agents/${agentId}/autonomy`,
+    );
+  }
+
+  upsertClientAgentAutonomy(
+    clientId: string,
+    agentId: string,
+    dto: UpsertClientAgentAutonomyDto,
+  ): Observable<ClientAgentAutonomyResponseDto> {
+    return this.http.put<ClientAgentAutonomyResponseDto>(
+      `${this.apiUrl}/clients/${clientId}/agents/${agentId}/autonomy`,
+      dto,
+    );
   }
 }

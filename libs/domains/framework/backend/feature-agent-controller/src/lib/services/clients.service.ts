@@ -5,9 +5,11 @@ import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import {
+  assertWorkspaceManagementAccessForUser,
   AuthenticationType,
+  canManageWorkspaceConfiguration,
+  checkClientAccess,
   ClientEntity,
-  ClientUserRole,
   ClientUsersRepository,
   KeycloakTokenService,
   UserRole,
@@ -63,51 +65,18 @@ export class ClientsService {
   }
 
   /**
-   * Check if a user has access to a client.
-   * @param userId - The UUID of the user
-   * @param userRole - The role of the user (from users table)
-   * @param client - The client entity
-   * @param isApiKeyAuth - Whether the request is authenticated via API key
-   * @returns Object with access status and client user role if applicable
-   */
-  private async checkClientAccess(
-    userId: string,
-    userRole: UserRole,
-    client: ClientEntity,
-    isApiKeyAuth: boolean,
-  ): Promise<{ hasAccess: boolean; clientUserRole?: ClientUserRole }> {
-    // API key mode: always grant access
-    if (isApiKeyAuth || this.isApiKeyMode()) {
-      return { hasAccess: true };
-    }
-
-    // Global admin: always has access
-    if (userRole === UserRole.ADMIN) {
-      return { hasAccess: true };
-    }
-
-    // Creator: always has access
-    if (client.userId === userId) {
-      return { hasAccess: true };
-    }
-
-    // Check many-to-many relationship
-    const clientUser = await this.clientUsersRepository.findUserClientAccess(userId, client.id);
-    if (clientUser) {
-      return { hasAccess: true, clientUserRole: clientUser.role };
-    }
-
-    return { hasAccess: false };
-  }
-
-  /**
    * Create a new client with API key (provided or auto-generated if needed).
    * @param createClientDto - Data transfer object for creating a client
    * @param userId - The UUID of the user creating the client (optional, for api-key mode)
    * @returns The created client response DTO with API key (if applicable)
    * @throws BadRequestException if client name already exists
    */
-  async create(createClientDto: CreateClientDto, userId?: string): Promise<CreateClientResponseDto> {
+  async create(
+    createClientDto: CreateClientDto,
+    userId?: string,
+    userRole?: UserRole,
+    isApiKeyAuth = false,
+  ): Promise<CreateClientResponseDto> {
     // Check if client with the same name already exists
     const existingClient = await this.clientsRepository.findByName(createClientDto.name);
     if (existingClient) {
@@ -143,7 +112,7 @@ export class ClientsService {
       userId: userId ?? null,
     });
 
-    const response = await this.mapToResponseDto(client);
+    const response = await this.mapToResponseDto(client, { userId, userRole, isApiKeyAuth });
     this.statisticsService
       .recordEntityCreated(StatisticsEntityType.CLIENT, client.id, {}, userId ?? undefined)
       .catch(() => undefined);
@@ -172,9 +141,10 @@ export class ClientsService {
     // In api-key mode, return all clients
     if (isApiKeyAuth || this.isApiKeyMode()) {
       const clients = await this.clientsRepository.findAll(limit, offset);
+      const viewer = { userId, userRole, isApiKeyAuth: true };
       return Promise.all(
         clients.map(async (client) => {
-          const dto = await this.mapToResponseDto(client);
+          const dto = await this.mapToResponseDto(client, viewer);
           try {
             dto.config = await this.clientAgentProxyService.getClientConfig(client.id);
           } catch (error) {
@@ -193,9 +163,10 @@ export class ClientsService {
     // Global admin: return all clients
     if (userRole === UserRole.ADMIN) {
       const clients = await this.clientsRepository.findAll(limit, offset);
+      const viewer = { userId, userRole, isApiKeyAuth: false };
       return Promise.all(
         clients.map(async (client) => {
-          const dto = await this.mapToResponseDto(client);
+          const dto = await this.mapToResponseDto(client, viewer);
           try {
             dto.config = await this.clientAgentProxyService.getClientConfig(client.id);
           } catch (error) {
@@ -220,9 +191,10 @@ export class ClientsService {
     // Apply pagination
     const paginatedClients = accessibleClients.slice(offset, offset + limit);
 
+    const viewer = { userId, userRole, isApiKeyAuth: false };
     return Promise.all(
       paginatedClients.map(async (client) => {
-        const dto = await this.mapToResponseDto(client);
+        const dto = await this.mapToResponseDto(client, viewer);
         try {
           dto.config = await this.clientAgentProxyService.getClientConfig(client.id);
         } catch (error) {
@@ -248,13 +220,20 @@ export class ClientsService {
 
     // Check access permissions
     if (!isApiKeyAuth && !this.isApiKeyMode() && userId && userRole) {
-      const access = await this.checkClientAccess(userId, userRole, client, isApiKeyAuth);
+      const access = await checkClientAccess(
+        this.clientsRepository,
+        this.clientUsersRepository,
+        id,
+        userId,
+        userRole,
+        isApiKeyAuth,
+      );
       if (!access.hasAccess) {
         throw new ForbiddenException('You do not have access to this client');
       }
     }
 
-    const dto = await this.mapToResponseDto(client);
+    const dto = await this.mapToResponseDto(client, { userId, userRole, isApiKeyAuth });
     // Fetch config from agent-manager, but don't fail if request fails
     try {
       dto.config = await this.clientAgentProxyService.getClientConfig(id);
@@ -286,12 +265,16 @@ export class ClientsService {
   ): Promise<ClientResponseDto> {
     const client = await this.clientsRepository.findByIdOrThrow(id);
 
-    // Check access permissions
+    // Check access permissions (workspace managers only)
     if (!isApiKeyAuth && !this.isApiKeyMode() && userId && userRole) {
-      const access = await this.checkClientAccess(userId, userRole, client, isApiKeyAuth);
-      if (!access.hasAccess) {
-        throw new ForbiddenException('You do not have access to this client');
-      }
+      await assertWorkspaceManagementAccessForUser(
+        this.clientsRepository,
+        this.clientUsersRepository,
+        id,
+        userId,
+        userRole,
+        isApiKeyAuth,
+      );
     }
     // If name is being updated, check for conflicts
     if (updateClientDto.name) {
@@ -361,7 +344,7 @@ export class ClientsService {
     this.statisticsService
       .recordEntityUpdated(StatisticsEntityType.CLIENT, id, {}, userId ?? undefined)
       .catch(() => undefined);
-    const dto = await this.mapToResponseDto(updatedClient);
+    const dto = await this.mapToResponseDto(updatedClient, { userId, userRole, isApiKeyAuth });
     // Fetch config from agent-manager, but don't fail if request fails
     try {
       dto.config = await this.clientAgentProxyService.getClientConfig(id);
@@ -383,12 +366,16 @@ export class ClientsService {
   async remove(id: string, userId?: string, userRole?: UserRole, isApiKeyAuth = false): Promise<void> {
     const client = await this.clientsRepository.findByIdOrThrow(id);
 
-    // Check access permissions
+    // Check access permissions (workspace managers only)
     if (!isApiKeyAuth && !this.isApiKeyMode() && userId && userRole) {
-      const access = await this.checkClientAccess(userId, userRole, client, isApiKeyAuth);
-      if (!access.hasAccess) {
-        throw new ForbiddenException('You do not have access to this client');
-      }
+      await assertWorkspaceManagementAccessForUser(
+        this.clientsRepository,
+        this.clientUsersRepository,
+        id,
+        userId,
+        userRole,
+        isApiKeyAuth,
+      );
     }
 
     // Clear token cache if it's a Keycloak client
@@ -471,12 +458,22 @@ export class ClientsService {
    * Map client entity to response DTO.
    * Excludes sensitive information like API key.
    * @param client - The client entity to map
+   * @param viewer - Current viewer; used to compute {@link ClientResponseDto.canManageWorkspaceConfiguration}
    * @returns The client response DTO
    */
-  private async mapToResponseDto(client: ClientEntity): Promise<ClientResponseDto> {
+  private async mapToResponseDto(
+    client: ClientEntity,
+    viewer: { userId?: string; userRole?: UserRole; isApiKeyAuth: boolean } = {
+      userId: undefined,
+      userRole: undefined,
+      isApiKeyAuth: false,
+    },
+  ): Promise<ClientResponseDto> {
     // Check if client was auto-provisioned by checking for provisioning reference
     const provisioningReference = await this.provisioningReferencesRepository.findByClientId(client.id);
     const isAutoProvisioned = provisioningReference !== null;
+
+    const canManageWorkspaceConfiguration = await this.computeCanManageWorkspaceConfiguration(client.id, viewer);
 
     return {
       id: client.id,
@@ -485,8 +482,33 @@ export class ClientsService {
       endpoint: client.endpoint,
       authenticationType: client.authenticationType,
       isAutoProvisioned,
+      canManageWorkspaceConfiguration,
       createdAt: client.createdAt,
       updatedAt: client.updatedAt,
     };
+  }
+
+  private async computeCanManageWorkspaceConfiguration(
+    clientId: string,
+    viewer: { userId?: string; userRole?: UserRole; isApiKeyAuth: boolean },
+  ): Promise<boolean> {
+    if (viewer.isApiKeyAuth || this.isApiKeyMode()) {
+      return true;
+    }
+    if (!viewer.userId || !viewer.userRole) {
+      return false;
+    }
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      clientId,
+      viewer.userId,
+      viewer.userRole,
+      false,
+    );
+    return canManageWorkspaceConfiguration(
+      { userId: viewer.userId, userRole: viewer.userRole, isApiKeyAuth: false },
+      access,
+    );
   }
 }

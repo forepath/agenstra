@@ -1,5 +1,8 @@
 import {
+  collapseConsecutiveIdenticalResultParts,
+  collapseRepeatedWholeCopiesInString,
   dropRedundantTrailingStreamResultParts,
+  finalizeStreamingTranscriptParts,
   materializeDeltaPartsIntoInterleavedResults,
 } from './materialize-streaming-deltas-for-transcript';
 
@@ -69,5 +72,49 @@ describe('dropRedundantTrailingStreamResultParts', () => {
       { type: 'result', subtype: 'success', result: 'Done' },
     ];
     expect(dropRedundantTrailingStreamResultParts(parts)).toEqual(parts);
+  });
+});
+
+describe('collapseRepeatedWholeCopiesInString', () => {
+  it('collapses k identical concatenated segments when each segment is long enough', () => {
+    const unit = 'x'.repeat(40);
+    const triple = unit + unit + unit;
+    expect(collapseRepeatedWholeCopiesInString(triple)).toBe(unit);
+  });
+
+  it('does not change short strings that happen to repeat as halves', () => {
+    expect(collapseRepeatedWholeCopiesInString('abab')).toBe('abab');
+  });
+});
+
+describe('collapseConsecutiveIdenticalResultParts', () => {
+  it('merges three trailing identical Cursor result frames into one with merged metadata', () => {
+    const essay = 'y'.repeat(50);
+    const merged = collapseConsecutiveIdenticalResultParts([
+      { type: 'tool_call', id: 't' },
+      { type: 'result', subtype: 'success', result: essay },
+      { type: 'result', subtype: 'success', result: essay, duration_ms: 12 },
+      { type: 'result', subtype: 'success', result: essay, usage: { outputTokens: 1 } },
+    ]);
+    expect(merged).toEqual([
+      { type: 'tool_call', id: 't' },
+      { type: 'result', subtype: 'success', result: essay, duration_ms: 12, usage: { outputTokens: 1 } },
+    ]);
+  });
+});
+
+describe('finalizeStreamingTranscriptParts', () => {
+  it('dedupes doubled prose inside one result plus duplicate NDJSON result lines', () => {
+    const unit = 'z'.repeat(40);
+    const doubledInFrame = unit + unit;
+    const finalized = finalizeStreamingTranscriptParts([
+      { type: 'tool_call', id: 'c' },
+      { type: 'result', subtype: 'success', result: doubledInFrame },
+      { type: 'result', subtype: 'success', result: unit, duration_ms: 99 },
+    ]);
+    expect(finalized).toEqual([
+      { type: 'tool_call', id: 'c' },
+      { type: 'result', subtype: 'success', result: unit, duration_ms: 99 },
+    ]);
   });
 });

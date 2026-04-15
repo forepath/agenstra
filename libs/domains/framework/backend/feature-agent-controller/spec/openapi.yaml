@@ -344,6 +344,7 @@ paths:
             type: boolean
       responses:
         '200':
+          description: Ticket
           content:
             application/json:
               schema:
@@ -360,6 +361,7 @@ paths:
               $ref: '#/components/schemas/UpdateTicketDto'
       responses:
         '200':
+          description: Ticket updated
           content:
             application/json:
               schema:
@@ -385,6 +387,7 @@ paths:
             format: uuid
       responses:
         '200':
+          description: Prototype prompt
           content:
             application/json:
               schema:
@@ -402,6 +405,7 @@ paths:
       operationId: listTicketComments
       responses:
         '200':
+          description: Ticket comments
           content:
             application/json:
               schema:
@@ -419,6 +423,7 @@ paths:
               $ref: '#/components/schemas/CreateTicketCommentDto'
       responses:
         '201':
+          description: Comment added
           content:
             application/json:
               schema:
@@ -446,6 +451,7 @@ paths:
             default: 0
       responses:
         '200':
+          description: Ticket activity
           content:
             application/json:
               schema:
@@ -470,6 +476,7 @@ paths:
               $ref: '#/components/schemas/StartBodyGenerationSessionDto'
       responses:
         '200':
+          description: AI body generation session started
           content:
             application/json:
               schema:
@@ -493,10 +500,243 @@ paths:
               $ref: '#/components/schemas/ApplyGeneratedBodyDto'
       responses:
         '200':
+          description: AI-generated ticket body applied
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponseDto'
+  /tickets/{ticketId}/automation:
+    get:
+      summary: Get ticket automation configuration
+      operationId: getTicketAutomation
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Automation row for the ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketAutomationResponseDto'
+    patch:
+      summary: Update ticket automation configuration
+      description: >
+        Applies partial updates. Only fields present in the body are considered; unchanged values do not
+        persist a new row or emit activity. Activity rows use action types such as AUTOMATION_ELIGIBILITY_CHANGED,
+        AUTOMATION_APPROVAL_REQUIREMENT_CHANGED, AUTOMATION_SETTINGS_UPDATED, and AUTOMATION_APPROVAL_INVALIDATED
+        only when prior approval was meaningful (requiresApproval was true and approval existed), except that
+        turning off the approval requirement alone does not emit AUTOMATION_APPROVAL_INVALIDATED.
+      operationId: patchTicketAutomation
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTicketAutomationDto'
+      responses:
+        '200':
+          description: Updated automation configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketAutomationResponseDto'
+  /tickets/{ticketId}/automation/approve:
+    post:
+      summary: Approve automation run (when requiresApproval is true)
+      operationId: approveTicketAutomation
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Approval recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketAutomationResponseDto'
+  /tickets/{ticketId}/automation/unapprove:
+    post:
+      summary: Revoke automation approval (when requiresApproval is true)
+      operationId: unapproveTicketAutomation
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Approval revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketAutomationResponseDto'
+  /tickets/{ticketId}/automation/runs:
+    get:
+      summary: List automation runs for a ticket
+      operationId: listTicketAutomationRuns
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Run history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketAutomationRunResponseDto'
+  /tickets/{ticketId}/automation/runs/{runId}:
+    get:
+      summary: Get automation run detail including steps
+      operationId: getTicketAutomationRun
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Run detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketAutomationRunResponseDto'
+  /tickets/{ticketId}/automation/runs/{runId}/cancel:
+    post:
+      summary: Cancel a pending or running automation run
+      operationId: cancelTicketAutomationRun
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Run cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketAutomationRunResponseDto'
+  /clients/{id}/agent-autonomy/enabled-agent-ids:
+    get:
+      summary: List agent IDs with prototype autonomy enabled for this client
+      description: |
+        Only agents returned here can be picked by the autonomous ticket scheduler for this workspace
+        (intersection with each ticket's allowed-agent list). Matches `client_agent_autonomy.enabled = true`.
+      operationId: listEnabledAutonomyAgentIds
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: UUIDs of agents with autonomy enabled
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - agentIds
+                properties:
+                  agentIds:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+  /clients/{id}/agents/{agentId}/autonomy:
+    get:
+      summary: Get per-agent autonomy settings
+      operationId: getClientAgentAutonomy
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Autonomy configuration
+    put:
+      summary: Create or update per-agent autonomy settings
+      description: |
+        Requires workspace management rights (see ClientResponseDto.canManageWorkspaceConfiguration).
+        Interactive user context required; API key auth may manage when applicable.
+      operationId: upsertClientAgentAutonomy
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Saved autonomy configuration
+        '403':
+          description: |
+            No client access, or workspace management rights required (plain client member cannot update autonomy).
   /clients:
     get:
       summary: List clients
@@ -578,8 +818,9 @@ paths:
     post:
       summary: Update client
       description: |
-        Updates a client. Only accessible if the user has access to the client.
-        Access rules are the same as GET /clients/{id}.
+        Updates a client. Requires workspace management rights: global admin, workspace creator,
+        client_users role `admin`, API key authentication, or api-key server mode (not plain client_users `user`).
+        See `canManageWorkspaceConfiguration` on ClientResponseDto.
       operationId: updateClient
       parameters:
         - in: path
@@ -602,12 +843,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ClientResponseDto'
         '403':
-          description: User does not have access to this client
+          description: |
+            Forbidden — no access to this client, or caller lacks workspace management rights
+            (same rule as POST for updates).
     delete:
       summary: Delete client
       description: |
-        Deletes a client. Only accessible if the user has access to the client.
-        Access rules are the same as GET /clients/{id}.
+        Deletes a client. Same workspace management requirement as POST /clients/{id} (not available to plain client_users `user`).
       operationId: deleteClient
       parameters:
         - in: path
@@ -620,7 +862,8 @@ paths:
         '204':
           description: Deleted
         '403':
-          description: User does not have access to this client
+          description: |
+            Forbidden — no access to this client, or caller lacks workspace management rights.
   /clients/{id}/users:
     get:
       summary: List users associated with a client
@@ -755,6 +998,7 @@ paths:
           description: User does not have access to this client
     post:
       summary: Create agent for a client
+      description: Requires workspace management rights (see ClientResponseDto.canManageWorkspaceConfiguration).
       operationId: createClientAgent
       parameters:
         - in: path
@@ -778,7 +1022,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreateAgentResponseDto'
         '403':
-          description: User does not have access to this client
+          description: No client access, or workspace management rights required
   /clients/{id}/agents/{agentId}:
     get:
       summary: Get agent by id for a client
@@ -809,6 +1053,7 @@ paths:
           description: User does not have access to this client
     post:
       summary: Update agent for a client
+      description: Requires workspace management rights (see ClientResponseDto.canManageWorkspaceConfiguration).
       operationId: updateClientAgent
       parameters:
         - in: path
@@ -839,9 +1084,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/AgentResponseDto'
         '403':
-          description: User does not have access to this client
+          description: No client access, or workspace management rights required
     delete:
       summary: Delete agent for a client
+      description: Requires workspace management rights.
       operationId: deleteClientAgent
       parameters:
         - in: path
@@ -862,7 +1108,7 @@ paths:
         '204':
           description: Deleted
         '403':
-          description: User does not have access to this client
+          description: No client access, or workspace management rights required
   /clients/{id}/agents/{agentId}/models:
     get:
       summary: List models for an agent (proxied)
@@ -1264,6 +1510,7 @@ paths:
           description: Client or agent not found
     post:
       summary: Create environment variable for an agent (proxied)
+      description: Requires workspace management rights.
       operationId: createClientAgentEnvironmentVariable
       parameters:
         - in: path
@@ -1295,10 +1542,13 @@ paths:
                 $ref: '#/components/schemas/EnvironmentVariableResponseDto'
         '400':
           description: Invalid request
+        '403':
+          description: No client access, or workspace management rights required
         '404':
           description: Client or agent not found
     delete:
       summary: Delete all environment variables for an agent (proxied)
+      description: Requires workspace management rights.
       operationId: deleteAllClientAgentEnvironmentVariables
       parameters:
         - in: path
@@ -1327,7 +1577,7 @@ paths:
                   deletedCount:
                     type: integer
         '403':
-          description: User does not have access to this client
+          description: No client access, or workspace management rights required
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/environment/count:
@@ -1367,6 +1617,7 @@ paths:
   /clients/{id}/agents/{agentId}/environment/{envVarId}:
     put:
       summary: Update environment variable for an agent (proxied)
+      description: Requires workspace management rights.
       operationId: updateClientAgentEnvironmentVariable
       parameters:
         - in: path
@@ -1406,11 +1657,12 @@ paths:
         '400':
           description: Invalid request
         '403':
-          description: User does not have access to this client
+          description: No client access, or workspace management rights required
         '404':
           description: Client, agent, or environment variable not found
     delete:
       summary: Delete environment variable for an agent (proxied)
+      description: Requires workspace management rights.
       operationId: deleteClientAgentEnvironmentVariable
       parameters:
         - in: path
@@ -1438,7 +1690,7 @@ paths:
         '204':
           description: Environment variable deleted successfully
         '403':
-          description: User does not have access to this client
+          description: No client access, or workspace management rights required
         '404':
           description: Client, agent, or environment variable not found
   /clients/{id}/agents/{agentId}/vcs/status:
@@ -1830,6 +2082,67 @@ paths:
           description: User does not have access to this client
         '404':
           description: Client or agent not found
+  /clients/{id}/agents/{agentId}/vcs/workspace/prepare-clean:
+    post:
+      summary: Prepare clean workspace (fetch, reset --hard, clean) — proxied
+      operationId: prepareCleanClientAgentWorkspace
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [baseBranch]
+              properties:
+                baseBranch:
+                  type: string
+      responses:
+        '204':
+          description: Workspace reset
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+  /clients/{id}/agents/{agentId}/automation/verify-commands:
+    post:
+      summary: Run verifier shell commands in agent container (proxied)
+      operationId: runClientAgentVerifierCommands
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Command results with exit codes
   /clients/{id}/agents/{agentId}/vcs/rebase:
     post:
       summary: Rebase current branch (proxied)
@@ -3163,6 +3476,7 @@ components:
           endpoint,
           authenticationType,
           isAutoProvisioned,
+          canManageWorkspaceConfiguration,
           createdAt,
           updatedAt,
         ]
@@ -3190,6 +3504,12 @@ components:
         isAutoProvisioned:
           type: boolean
           description: Indicates whether the client was auto-provisioned via server provisioning. Used to determine if server info endpoints should be called.
+        canManageWorkspaceConfiguration:
+          type: boolean
+          description: |
+            True if the current caller may change prototype autonomy, agent environment variables, agent CRUD,
+            and workspace (client) update/delete. Requires global admin, workspace creator, client_users admin,
+            API key authentication, or api-key server mode.
         createdAt:
           type: string
           format: date-time
@@ -4104,9 +4424,48 @@ components:
     TicketActorType:
       type: string
       enum: [human, ai, system]
+    TicketActionType:
+      type: string
+      description: Ticket activity row discriminator; stored as varchar(64) in the database.
+      enum:
+        - CREATED
+        - FIELD_UPDATED
+        - STATUS_CHANGED
+        - PRIORITY_CHANGED
+        - WORKSPACE_MOVED
+        - PARENT_CHANGED
+        - DELETED
+        - COMMENT_ADDED
+        - CONTENT_APPLIED_FROM_AI
+        - BODY_GENERATION_STARTED
+        - PROTOTYPE_PROMPT_GENERATED
+        - AUTOMATION_CLAIMED
+        - AUTOMATION_STARTED
+        - AUTOMATION_SUCCEEDED
+        - AUTOMATION_FAILED
+        - AUTOMATION_TIMED_OUT
+        - AUTOMATION_ESCALATED
+        - AUTOMATION_REQUEUED
+        - AUTOMATION_APPROVAL_INVALIDATED
+        - AUTOMATION_CANCELLED
+        - AUTOMATION_APPROVED
+        - AUTOMATION_UNAPPROVED
+        - AUTOMATION_ELIGIBILITY_CHANGED
+        - AUTOMATION_APPROVAL_REQUIREMENT_CHANGED
+        - AUTOMATION_SETTINGS_UPDATED
     TicketResponseDto:
       type: object
-      required: [id, clientId, title, priority, status, createdAt, updatedAt]
+      required:
+        [
+          id,
+          clientId,
+          title,
+          priority,
+          status,
+          automationEligible,
+          createdAt,
+          updatedAt,
+        ]
       properties:
         id:
           type: string
@@ -4117,12 +4476,10 @@ components:
         parentId:
           type: string
           format: uuid
-          nullable: true
         title:
           type: string
         content:
           type: string
-          nullable: true
         priority:
           $ref: '#/components/schemas/TicketPriority'
         status:
@@ -4130,10 +4487,15 @@ components:
         createdByUserId:
           type: string
           format: uuid
-          nullable: true
         createdByEmail:
           type: string
-          nullable: true
+        preferredChatAgentId:
+          type: string
+          format: uuid
+          description: Preferred workspace agent for chat/AI when viewing this ticket (agent-manager agent id).
+        automationEligible:
+          type: boolean
+          description: Whether autonomous prototyping is enabled for this ticket (ticket_automation.eligible).
         createdAt:
           type: string
           format: date-time
@@ -4154,7 +4516,6 @@ components:
         parentId:
           type: string
           format: uuid
-          nullable: true
         title:
           type: string
         content:
@@ -4172,7 +4533,6 @@ components:
         parentId:
           type: string
           format: uuid
-          nullable: true
         title:
           type: string
         content:
@@ -4181,6 +4541,10 @@ components:
           $ref: '#/components/schemas/TicketPriority'
         status:
           $ref: '#/components/schemas/TicketStatus'
+        preferredChatAgentId:
+          type: string
+          format: uuid
+          description: Persist preferred workspace agent for chat/AI; send null to clear.
     TicketCommentResponseDto:
       type: object
       required: [id, ticketId, body, createdAt]
@@ -4194,10 +4558,8 @@ components:
         authorUserId:
           type: string
           format: uuid
-          nullable: true
         authorEmail:
           type: string
-          nullable: true
         body:
           type: string
         createdAt:
@@ -4227,15 +4589,227 @@ components:
         actorUserId:
           type: string
           format: uuid
-          nullable: true
         actorEmail:
           type: string
-          nullable: true
         actionType:
+          $ref: '#/components/schemas/TicketActionType'
+        payload:
+          type: object
+          additionalProperties: true
+          description: >
+            Shape depends on actionType (e.g. automation eligibility changes include { eligible: boolean };
+            AUTOMATION_SETTINGS_UPDATED includes { fields: string[] };
+            AUTOMATION_APPROVAL_INVALIDATED may include { reason: string, fields: string[] }).
+    VerifierCommandEntryDto:
+      type: object
+      required: [cmd]
+      properties:
+        cmd:
+          type: string
+          maxLength: 2048
+        cwd:
+          type: string
+          maxLength: 2048
+    TicketVerifierProfileDto:
+      type: object
+      required: [commands]
+      properties:
+        commands:
+          type: array
+          maxItems: 32
+          items:
+            $ref: '#/components/schemas/VerifierCommandEntryDto'
+    UpdateTicketAutomationDto:
+      type: object
+      properties:
+        eligible:
+          type: boolean
+        allowedAgentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        verifierProfile:
+          $ref: '#/components/schemas/TicketVerifierProfileDto'
+        requiresApproval:
+          type: boolean
+        defaultBranchOverride:
+          type: string
+          maxLength: 256
+    TicketAutomationResponseDto:
+      type: object
+      required:
+        - ticketId
+        - eligible
+        - allowedAgentIds
+        - verifierProfile
+        - requiresApproval
+        - approvedAt
+        - approvedByUserId
+        - approvalBaselineTicketUpdatedAt
+        - defaultBranchOverride
+        - nextRetryAt
+        - consecutiveFailureCount
+        - createdAt
+        - updatedAt
+      properties:
+        ticketId:
+          type: string
+          format: uuid
+        eligible:
+          type: boolean
+        allowedAgentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        verifierProfile:
+          oneOf:
+            - $ref: '#/components/schemas/TicketVerifierProfileDto'
+            - type: 'null'
+        requiresApproval:
+          type: boolean
+        approvedAt:
+          type: string
+          format: date-time
+        approvedByUserId:
+          type: string
+          format: uuid
+        approvalBaselineTicketUpdatedAt:
+          type: string
+          format: date-time
+        defaultBranchOverride:
+          type: string
+        nextRetryAt:
+          type: string
+          format: date-time
+        consecutiveFailureCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TicketAutomationRunStatus:
+      type: string
+      enum:
+        [pending, running, succeeded, failed, timed_out, escalated, cancelled]
+    TicketAutomationRunPhase:
+      type: string
+      enum: [pre_improve, workspace_prep, agent_loop, verify, finalize]
+    TicketAutomationCancellationReason:
+      type: string
+      enum: [user_request, approval_invalidated, lease_expired, system_shutdown]
+    TicketAutomationRunStepResponseDto:
+      type: object
+      required: [id, stepIndex, phase, kind, payload, excerpt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        stepIndex:
+          type: integer
+        phase:
+          type: string
+        kind:
           type: string
         payload:
           type: object
           additionalProperties: true
+        excerpt:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    TicketAutomationRunResponseDto:
+      type: object
+      required:
+        - id
+        - ticketId
+        - clientId
+        - agentId
+        - status
+        - phase
+        - ticketStatusBefore
+        - branchName
+        - baseBranch
+        - baseSha
+        - startedAt
+        - finishedAt
+        - updatedAt
+        - iterationCount
+        - completionMarkerSeen
+        - verificationPassed
+        - failureCode
+        - summary
+        - cancelRequestedAt
+        - cancelledByUserId
+        - cancellationReason
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticketId:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/TicketAutomationRunStatus'
+        phase:
+          $ref: '#/components/schemas/TicketAutomationRunPhase'
+        ticketStatusBefore:
+          type: string
+        branchName:
+          type: string
+        baseBranch:
+          type: string
+        baseSha:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        iterationCount:
+          type: integer
+        completionMarkerSeen:
+          type: boolean
+        verificationPassed:
+          type: boolean
+        failureCode:
+          type: string
+          description: >
+            Present when a run ends unsuccessfully. Includes values such as verify_command_failed,
+            commit_failed (git commit after successful verification), push_failed (git push after that commit),
+            agent_no_completion_marker, marker_without_verify, agent_provider_error, vcs_dirty_workspace,
+            and others defined by the controller.
+        summary:
+          type: object
+          additionalProperties: true
+        cancelRequestedAt:
+          type: string
+          format: date-time
+        cancelledByUserId:
+          type: string
+          format: uuid
+        cancellationReason:
+          oneOf:
+            - $ref: '#/components/schemas/TicketAutomationCancellationReason'
+            - type: 'null'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketAutomationRunStepResponseDto'
     PrototypePromptResponseDto:
       type: object
       required: [prompt]

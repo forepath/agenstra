@@ -12,6 +12,10 @@ export enum StatisticsInteractionKind {
   CHAT = 'chat',
   PROMPT_ENHANCEMENT = 'prompt_enhancement',
   TICKET_BODY_GENERATION = 'ticket_body_generation',
+  AUTONOMOUS_TICKET_RUN = 'autonomous_ticket_run',
+  AUTONOMOUS_TICKET_RUN_TURN = 'autonomous_ticket_run_turn',
+  /** Ephemeral remote chat used only to propose a Conventional Commits subject before `git commit`. */
+  AUTONOMOUS_TICKET_COMMIT_MESSAGE = 'autonomous_ticket_commit_message',
 }
 
 /**

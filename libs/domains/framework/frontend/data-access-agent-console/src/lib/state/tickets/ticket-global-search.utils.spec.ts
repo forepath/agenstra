@@ -13,6 +13,7 @@ describe('ticket-global-search.utils', () => {
     content: null,
     priority: 'medium',
     status: 'draft',
+    automationEligible: false,
     createdAt: '',
     updatedAt: '',
     ...overrides,

@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthenticationFacade, ClientsFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
-import { combineLatest, filter, map, startWith } from 'rxjs';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
+import { combineLatest, filter, map, startWith } from 'rxjs';
 import { ThemeService } from '../theme.service';
 
 @Component({

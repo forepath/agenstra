@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Sched as AutonomousTicketScheduler
+    participant Orch as AutonomousRunOrchestrator
+    participant DB as Postgres
+    participant Vcs as ClientAgentVcsProxy
+    participant Chat as RemoteAgentsSession
+    participant Mgr as AgentManagerGateway
+    participant Prov as AgentProvider
+
+    Sched->>Orch: processBatch(batchSize)
+    Orch->>DB: find eligible tickets + autonomy
+    Orch->>DB: pessimistic lease + create run
+    Orch->>Vcs: prepareCleanWorkspace(baseBranch)
+    Orch->>Vcs: createBranch(automation/…)
+    loop maxIterations
+        Orch->>Chat: sendChatSync(sync, ephemeral)
+        Chat->>Mgr: chat
+        Mgr->>Prov: sendMessage(continue, resumeSessionSuffix)
+        Prov-->>Mgr: NDJSON / text
+        Mgr-->>Chat: chatMessage
+        Chat-->>Orch: assistant text
+        Orch->>DB: append run step
+    end
+    Orch->>Vcs: runVerifierCommands
+    Orch->>Vcs: getStatus; if dirty: stage all
+    Orch->>Chat: sendChatSync (conventional commit subject; autonomous_ticket_commit_message)
+    Orch->>Vcs: commit (fallback message if AI invalid or timed out)
+    Orch->>Vcs: push (current branch to origin; fails run on error)
+    Orch->>DB: finalize run + ticket prototype / restore
+    Orch->>DB: release lease

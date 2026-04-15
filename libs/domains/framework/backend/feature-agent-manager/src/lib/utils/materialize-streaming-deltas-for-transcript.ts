@@ -88,3 +88,97 @@ export function dropRedundantTrailingStreamResultParts(parts: AgentResponseObjec
   }
   return parts;
 }
+
+const DEFAULT_MIN_UNIT_FOR_WHOLE_STRING_REPEAT = 32;
+const MAX_REPEAT_COPIES_TO_DETECT = 10;
+
+/**
+ * Cursor stream-json sometimes repeats the full assistant answer multiple times inside one
+ * `result` string (concatenated copies). Detect whole-string repetition (k identical segments) and
+ * keep a single copy. Uses a minimum segment length to avoid false positives on short strings.
+ */
+export function collapseRepeatedWholeCopiesInString(
+  s: string,
+  minUnitLength = DEFAULT_MIN_UNIT_FOR_WHOLE_STRING_REPEAT,
+): string {
+  const n = s.length;
+  if (n < minUnitLength * 2) {
+    return s;
+  }
+  for (let k = Math.min(MAX_REPEAT_COPIES_TO_DETECT, n); k >= 2; k--) {
+    if (n % k !== 0) {
+      continue;
+    }
+    const unitLen = n / k;
+    if (unitLen < minUnitLength) {
+      continue;
+    }
+    const unit = s.slice(0, unitLen);
+    let allMatch = true;
+    for (let i = 1; i < k; i++) {
+      if (s.slice(i * unitLen, (i + 1) * unitLen) !== unit) {
+        allMatch = false;
+        break;
+      }
+    }
+    if (allMatch) {
+      return unit;
+    }
+  }
+  return s;
+}
+
+function normalizeResultPartRepeatedProse(part: AgentResponseObject): AgentResponseObject {
+  if (String(part.type) !== 'result') {
+    return part;
+  }
+  const raw = extractResultTextBody(part);
+  if (!raw.trim()) {
+    return part;
+  }
+  const collapsed = collapseRepeatedWholeCopiesInString(raw);
+  if (collapsed === raw) {
+    return part;
+  }
+  return { ...(part as Record<string, unknown>), result: collapsed } as AgentResponseObject;
+}
+
+/**
+ * Cursor may emit several NDJSON `result` lines with the same prose (and richer metadata on the
+ * last). `dropRedundantTrailingStreamResultParts` only removes one layer when the trailing body
+ * equals the *concatenation* of all prior results — multiple identical copies break that check.
+ * Merge consecutive `result` parts with the same normalized body and keep metadata from the later
+ * frame.
+ */
+export function collapseConsecutiveIdenticalResultParts(parts: AgentResponseObject[]): AgentResponseObject[] {
+  const out: AgentResponseObject[] = [];
+  for (const p of parts) {
+    if (String(p.type) !== 'result') {
+      out.push(p);
+      continue;
+    }
+    const last = out[out.length - 1];
+    if (out.length > 0 && String(last.type) === 'result') {
+      const prevBody = collapseWhitespaceForCompare(extractResultTextBody(last));
+      const nextBody = collapseWhitespaceForCompare(extractResultTextBody(p));
+      if (prevBody.length > 0 && prevBody === nextBody) {
+        out[out.length - 1] = {
+          ...(last as Record<string, unknown>),
+          ...(p as Record<string, unknown>),
+        } as AgentResponseObject;
+        continue;
+      }
+    }
+    out.push(p);
+  }
+  return out;
+}
+
+/**
+ * Full post-processing for streamed unified frames before building `agenstra_turn.parts`.
+ */
+export function finalizeStreamingTranscriptParts(streamedUnified: AgentResponseObject[]): AgentResponseObject[] {
+  const materialized = materializeDeltaPartsIntoInterleavedResults(streamedUnified);
+  const proseNormalized = materialized.map((p) => normalizeResultPartRepeatedProse(p));
+  return dropRedundantTrailingStreamResultParts(collapseConsecutiveIdenticalResultParts(proseNormalized));
+}

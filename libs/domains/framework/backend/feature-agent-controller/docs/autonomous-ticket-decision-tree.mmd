@@ -1,0 +1,56 @@
+flowchart TD
+    tickStart["Scheduler tick"] --> findCandidates["findCandidates SQL filter"]
+
+    findCandidates --> eligible{"ta.eligible = true?"}
+    eligible -- "No" --> skipNotEligible["Skip ticket"]
+    eligible -- "Yes" --> ticketStatus{"t.status in (todo, in_progress)?"}
+    ticketStatus -- "No" --> skipStatus["Skip ticket"]
+    ticketStatus -- "Yes" --> allowedAgent{"allowed_agent_ids empty OR contains agent?"}
+    allowedAgent -- "No" --> skipAllowed["Skip candidate"]
+    allowedAgent -- "Yes" --> approvalGate{"requires_approval = false?"}
+
+    approvalGate -- "Yes" --> retryGate{"next_retry_at null OR <= now?"}
+    approvalGate -- "No" --> approvedValid{"approved_at set AND baseline set AND t.updated_at <= baseline?"}
+    approvedValid -- "No" --> skipApproval["Skip until approved/valid"]
+    approvedValid -- "Yes" --> retryGate
+
+    retryGate -- "No" --> skipRetry["Skip until retry time"]
+    retryGate -- "Yes" --> runningGate{"No running run exists?"}
+    runningGate -- "No" --> skipRunning["Skip (already running)"]
+    runningGate -- "Yes" --> leaseGate{"No active non-expired lease?"}
+    leaseGate -- "No" --> skipLease["Skip (lease held)"]
+    leaseGate -- "Yes" --> startRun["Create run + lease"]
+
+    startRun --> workspacePrep{"Workspace/branch prep succeeds?"}
+    workspacePrep -- "No" --> failProvider["Fail run: AGENT_PROVIDER_ERROR"]
+    workspacePrep -- "Yes" --> loopStart["Agent loop (maxIterations)"]
+
+    loopStart --> markerSeen{"Completion marker seen?"}
+    markerSeen -- "No, iterations exhausted" --> failNoMarker["Fail run: AGENT_NO_COMPLETION_MARKER (timed_out)"]
+    markerSeen -- "Yes" --> verifierConfigured{"Verifier commands configured?"}
+
+    verifierConfigured -- "No" --> verifySkipped["Skip verify"]
+    verifierConfigured -- "Yes" --> verifyResult{"All verifier commands exit 0?"}
+    verifyResult -- "No" --> failVerify["Fail run: VERIFY_COMMAND_FAILED"]
+    verifyResult -- "Yes" --> verifyPassed["verificationPassed=true"]
+
+    verifySkipped --> finalize["Finalize git step"]
+    verifyPassed --> finalize
+
+    finalize --> gitClean{"Working tree clean?"}
+    gitClean -- "Yes" --> successFinalize["No commit/push needed"]
+    gitClean -- "No" --> commitOk{"git commit succeeds?"}
+    commitOk -- "No" --> failCommit["Fail run: COMMIT_FAILED"]
+    commitOk -- "Yes" --> pushOk{"git push succeeds?"}
+    pushOk -- "No" --> failPush["Fail run: PUSH_FAILED"]
+    pushOk -- "Yes" --> successFinalize
+
+    successFinalize --> success["Run SUCCEEDED; ticket -> PROTOTYPE; reset retry/fail counters"]
+
+    failProvider --> failureRoute["Route failure to run status + ticket status + requeue"]
+    failNoMarker --> failureRoute
+    failVerify --> failureRoute
+    failCommit --> failureRoute
+    failPush --> failureRoute
+
+    failureRoute --> endFailure["Run terminal (failed/timed_out/escalated), lease released, retry maybe scheduled"]

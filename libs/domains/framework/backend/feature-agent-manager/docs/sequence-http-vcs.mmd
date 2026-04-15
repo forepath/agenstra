@@ -169,3 +169,17 @@ sequenceDiagram
         VcsService-->>API: void
         API-->>Client: 204 No Content
     end
+
+    rect rgb(235, 250, 235)
+        Note over Client,Container: Prepare clean workspace (orchestration)
+        Client->>API: POST /api/agents/{id}/vcs/workspace/prepare-clean<br/>{baseBranch}
+        API->>VcsService: prepareCleanWorkspace(agentId, baseBranch)
+        VcsService->>AgentService: findOne(agentId)
+        AgentService-->>VcsService: agent entity
+        VcsService->>Docker: sendCommandToContainer (git fetch, checkout, reset --hard, clean)
+        Docker->>Container: Sequential git commands
+        Container-->>Docker: success
+        Docker-->>VcsService: success
+        VcsService-->>API: void
+        API-->>Client: 204 No Content
+    end

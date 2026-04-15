@@ -5,8 +5,11 @@ import {
   GitBranchDto,
   GitDiffDto,
   GitStatusDto,
+  PrepareCleanWorkspaceDto,
   RebaseDto,
   ResolveConflictDto,
+  RunVerifierCommandsDto,
+  RunVerifierCommandsResponseDto,
   StageFilesDto,
   UnstageFilesDto,
 } from '@forepath/framework/backend/feature-agent-manager';
@@ -57,11 +60,9 @@ export class ClientAgentVcsProxyService {
    * @param agentId - The UUID of the agent
    * @returns The base URL for agent VCS API requests
    */
-  private buildAgentVcsApiUrl(endpoint: string, agentId: string): string {
-    // Remove trailing slash if present
+  private buildAgentManagerResourceUrl(endpoint: string, agentId: string, resource: 'vcs' | 'automation'): string {
     const baseUrl = endpoint.replace(/\/$/, '');
-    // Ensure /api/agents/{agentId}/vcs path
-    return `${baseUrl}/api/agents/${agentId}/vcs`;
+    return `${baseUrl}/api/agents/${agentId}/${resource}`;
   }
 
   /**
@@ -73,10 +74,15 @@ export class ClientAgentVcsProxyService {
    * @throws NotFoundException if client or agent is not found
    * @throws BadRequestException if request fails
    */
-  private async makeRequest<T>(clientId: string, agentId: string, config: AxiosRequestConfig): Promise<T> {
+  private async makeRequest<T>(
+    clientId: string,
+    agentId: string,
+    config: AxiosRequestConfig,
+    resource: 'vcs' | 'automation' = 'vcs',
+  ): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
     const authHeader = await this.getAuthHeader(clientId);
-    const baseUrl = this.buildAgentVcsApiUrl(clientEntity.endpoint, agentId);
+    const baseUrl = this.buildAgentManagerResourceUrl(clientEntity.endpoint, agentId, resource);
 
     try {
       this.logger.debug(
@@ -332,5 +338,36 @@ export class ClientAgentVcsProxyService {
       url: '/conflicts/resolve',
       data: resolveConflictDto,
     });
+  }
+
+  /**
+   * Fetch, checkout base branch, hard reset to upstream, and clean (proxied to client agent-manager).
+   */
+  async prepareCleanWorkspace(clientId: string, agentId: string, body: PrepareCleanWorkspaceDto): Promise<void> {
+    await this.makeRequest<void>(clientId, agentId, {
+      method: 'POST',
+      url: '/workspace/prepare-clean',
+      data: body,
+    });
+  }
+
+  /**
+   * Run verifier shell commands in the agent container (proxied).
+   */
+  async runVerifierCommands(
+    clientId: string,
+    agentId: string,
+    body: RunVerifierCommandsDto,
+  ): Promise<RunVerifierCommandsResponseDto> {
+    return await this.makeRequest<RunVerifierCommandsResponseDto>(
+      clientId,
+      agentId,
+      {
+        method: 'POST',
+        url: '/verify-commands',
+        data: body,
+      },
+      'automation',
+    );
   }
 }

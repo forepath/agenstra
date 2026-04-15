@@ -1,5 +1,5 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AuthenticationType } from '@forepath/identity/backend';
+import { AuthenticationType, UserRole } from '@forepath/identity/backend';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { randomBytes } from 'crypto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
@@ -294,11 +294,15 @@ DOCKER_COMPOSE_EOF
    * Provision a new server and create a client.
    * @param provisionServerDto - Provisioning options
    * @param userId - The UUID of the user creating the client (optional, for api-key mode)
+   * @param userRole - Global user role when authenticated interactively
+   * @param isApiKeyAuth - True when the request used API key authentication
    * @returns Provisioned server response with client information
    */
   async provisionServer(
     provisionServerDto: ProvisionServerDto,
     userId?: string,
+    userRole?: UserRole,
+    isApiKeyAuth = false,
   ): Promise<ProvisionedServerResponseDto> {
     // Get the provider
     if (!this.provisioningProviderFactory.hasProvider(provisionServerDto.providerType)) {
@@ -373,6 +377,8 @@ DOCKER_COMPOSE_EOF
         agentWsPort: provisionServerDto.agentWsPort || 8443,
       },
       userId,
+      userRole,
+      isApiKeyAuth,
     );
 
     // Create provisioning reference

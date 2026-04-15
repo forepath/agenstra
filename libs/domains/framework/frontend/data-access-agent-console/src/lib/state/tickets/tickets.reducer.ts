@@ -1,4 +1,10 @@
 import { createReducer, on } from '@ngrx/store';
+import {
+  approveTicketAutomationSuccess,
+  loadTicketAutomationSuccess,
+  patchTicketAutomationSuccess,
+  unapproveTicketAutomationSuccess,
+} from '../ticket-automation/ticket-automation.actions';
 import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
 import {
   addTicketComment,
@@ -19,6 +25,7 @@ import {
   loadTicketsSuccess,
   openTicketDetail,
   prependTicketDetailActivity,
+  replaceTicketDetailActivity,
   updateTicket,
   updateTicketFailure,
   updateTicketSuccess,
@@ -59,6 +66,28 @@ function mergeTicketInList(list: TicketResponseDto[], ticket: TicketResponseDto)
 }
 
 /** When a subtask is created while its parent is open in the detail panel, merge it into `detail.children`. */
+/** Keep `TicketResponseDto.automationEligible` in sync when automation config is loaded or patched (activity is refreshed separately). */
+function syncTicketAutomationEligible(state: TicketsState, ticketId: string, eligible: boolean): TicketsState {
+  const list = state.list.map((t) => (t.id === ticketId ? { ...t, automationEligible: eligible } : t));
+  const detail = state.detail;
+  if (!detail) {
+    return { ...state, list };
+  }
+  if (detail.id === ticketId) {
+    return { ...state, list, detail: { ...detail, automationEligible: eligible } };
+  }
+  const children = detail.children;
+  if (children?.length) {
+    const idx = children.findIndex((c) => c.id === ticketId);
+    if (idx >= 0) {
+      const nextChildren = [...children];
+      nextChildren[idx] = { ...nextChildren[idx], automationEligible: eligible };
+      return { ...state, list, detail: { ...detail, children: nextChildren } };
+    }
+  }
+  return { ...state, list, detail };
+}
+
 function mergeCreatedChildIntoDetail(
   detail: TicketResponseDto | null,
   created: TicketResponseDto,
@@ -167,4 +196,14 @@ export const ticketsReducer = createReducer(
     }
     return { ...state, activity: [activity, ...state.activity] };
   }),
+  on(replaceTicketDetailActivity, (state, { ticketId, activity }) =>
+    state.selectedTicketId === ticketId ? { ...state, activity } : state,
+  ),
+  on(
+    patchTicketAutomationSuccess,
+    approveTicketAutomationSuccess,
+    unapproveTicketAutomationSuccess,
+    loadTicketAutomationSuccess,
+    (state, { config }) => syncTicketAutomationEligible(state, config.ticketId, config.eligible),
+  ),
 );

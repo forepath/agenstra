@@ -193,6 +193,8 @@ describe('ProvisioningService', () => {
           agentWsPort: 8080,
         }),
         undefined, // userId
+        undefined, // userRole
+        false, // isApiKeyAuth
       );
       expect(mockProvisioningReferencesRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -240,7 +242,9 @@ describe('ProvisioningService', () => {
           keycloakClientSecret: 'keycloak-client-secret',
           keycloakRealm: 'test-realm',
         }),
-        undefined, // userId
+        undefined,
+        undefined,
+        false,
       );
     });
 
@@ -262,7 +266,9 @@ describe('ProvisioningService', () => {
         expect.objectContaining({
           apiKey: 'custom-api-key-123',
         }),
-        undefined, // userId
+        undefined,
+        undefined,
+        false,
       );
     });
 

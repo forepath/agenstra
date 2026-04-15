@@ -13,10 +13,12 @@ import {
   loadTicketsSuccess,
   openTicketDetail,
   prependTicketDetailActivity,
+  replaceTicketDetailActivity,
   updateTicket,
   updateTicketFailure,
   updateTicketSuccess,
 } from './tickets.actions';
+import { patchTicketAutomationSuccess } from '../ticket-automation/ticket-automation.actions';
 import { initialTicketsState, ticketsReducer, type TicketsState } from './tickets.reducer';
 import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
 
@@ -28,6 +30,8 @@ describe('ticketsReducer', () => {
     content: null,
     priority: 'medium',
     status: 'draft',
+    preferredChatAgentId: null,
+    automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
@@ -318,6 +322,38 @@ describe('ticketsReducer', () => {
     });
   });
 
+  describe('replaceTicketDetailActivity', () => {
+    it('should replace activity when detail is open for that ticket', () => {
+      const fresh: TicketActivityResponseDto[] = [
+        {
+          id: 'act-new',
+          ticketId: mockTicket.id,
+          occurredAt: '2024-01-04T12:00:00Z',
+          actorType: 'human',
+          actionType: 'AUTOMATION_APPROVED',
+          payload: {},
+        },
+      ];
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: mockTicket.id,
+        activity: [mockActivity],
+      };
+      const next = ticketsReducer(prev, replaceTicketDetailActivity({ ticketId: mockTicket.id, activity: fresh }));
+      expect(next.activity).toEqual(fresh);
+    });
+
+    it('should not change activity when selected ticket differs', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: 'other-ticket',
+        activity: [mockActivity],
+      };
+      const next = ticketsReducer(prev, replaceTicketDetailActivity({ ticketId: mockTicket.id, activity: [] }));
+      expect(next.activity).toEqual([mockActivity]);
+    });
+  });
+
   describe('closeTicketDetail', () => {
     it('should clear detail state', () => {
       const prev: TicketsState = {
@@ -354,6 +390,36 @@ describe('ticketsReducer', () => {
     it('should set saving', () => {
       const next = ticketsReducer(initialTicketsState, addTicketComment({ ticketId: '1', body: 'a' }));
       expect(next.saving).toBe(true);
+    });
+  });
+
+  describe('patchTicketAutomationSuccess → tickets slice', () => {
+    const automationConfig = {
+      ticketId: 'ticket-1',
+      eligible: true,
+      allowedAgentIds: [] as string[],
+      verifierProfile: null,
+      requiresApproval: false,
+      approvedAt: null,
+      approvedByUserId: null,
+      approvalBaselineTicketUpdatedAt: null,
+      defaultBranchOverride: null,
+      nextRetryAt: null,
+      consecutiveFailureCount: 0,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-02T00:00:00Z',
+    };
+
+    it('updates automationEligible on list and open detail', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket],
+        detail: mockTicket,
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(prev, patchTicketAutomationSuccess({ config: automationConfig }));
+      expect(next.list[0].automationEligible).toBe(true);
+      expect(next.detail?.automationEligible).toBe(true);
     });
   });
 });

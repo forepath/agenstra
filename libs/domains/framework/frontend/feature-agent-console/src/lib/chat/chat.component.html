@@ -207,26 +207,28 @@
                         >
                           <i class="bi bi-people"></i>
                         </button>
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-primary"
-                          (click)="onEditClientClick(client); $event.stopPropagation()"
-                          [disabled]="(clientsUpdating$ | async) === true"
-                          i18n-title="@@featureChat-editWorkspaceTitle"
-                          title="Edit workspace"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger"
-                          (click)="onDeleteClientClick(client.id, client.name); $event.stopPropagation()"
-                          [disabled]="(clientsDeleting$ | async) === true"
-                          i18n-title="@@featureChat-deleteWorkspaceTitle"
-                          title="Delete Workspace"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
+                        @if (client.canManageWorkspaceConfiguration) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            (click)="onEditClientClick(client); $event.stopPropagation()"
+                            [disabled]="(clientsUpdating$ | async) === true"
+                            i18n-title="@@featureChat-editWorkspaceTitle"
+                            title="Edit workspace"
+                          >
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="onDeleteClientClick(client.id, client.name); $event.stopPropagation()"
+                            [disabled]="(clientsDeleting$ | async) === true"
+                            i18n-title="@@featureChat-deleteWorkspaceTitle"
+                            title="Delete Workspace"
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        }
                       </div>
                     </div>
                   }
@@ -260,17 +262,19 @@
               </button>
               <h5 class="mb-0 fw-semibold" i18n="@@featureChat-environments">Environments</h5>
             </div>
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              (click)="onAddAgentClick()"
-              [disabled]="!(activeClientId$ | async) || (agentsCreating$ | async) === true"
-              i18n-title="@@featureChat-addEnvironmentTitle"
-              title="Add Environment"
-            >
-              <i class="bi bi-plus-circle me-1"></i>
-              <span i18n="@@featureChat-add">Add</span>
-            </button>
+            @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
+              <button
+                type="button"
+                class="btn btn-sm btn-primary"
+                (click)="onAddAgentClick()"
+                [disabled]="!(activeClientId$ | async) || (agentsCreating$ | async) === true"
+                i18n-title="@@featureChat-addEnvironmentTitle"
+                title="Add Environment"
+              >
+                <i class="bi bi-plus-circle me-1"></i>
+                <span i18n="@@featureChat-add">Add</span>
+              </button>
+            }
           </div>
         </div>
         <form #searchAgentForm="ngForm">
@@ -381,37 +385,50 @@
                           }
                         </div>
                       </button>
-                      <div class="btn-group ms-2" role="group">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-primary"
-                          (click)="onManageEnvironmentVariablesClick(agent); $event.stopPropagation()"
-                          i18n-title="@@featureChat-manageEnvVarsTitle"
-                          title="Manage Environment Variables"
-                        >
-                          <i class="bi bi-sliders"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-primary"
-                          (click)="onEditAgentClick(agent); $event.stopPropagation()"
-                          [disabled]="(agentsUpdating$ | async) === true"
-                          i18n-title="@@featureChat-editEnvironmentTitle"
-                          title="Edit environment"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger"
-                          (click)="onDeleteAgentClick(agent.id, agent.name); $event.stopPropagation()"
-                          [disabled]="(agentsDeleting$ | async) === true"
-                          i18n-title="@@featureChat-deleteEnvironmentTitle"
-                          title="Delete Environment"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
+                      @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
+                        <div class="btn-group ms-2" role="group">
+                          <button
+                            type="button"
+                            class="btn btn-sm"
+                            [class.btn-primary]="managingTicketAutonomyAgentId() === agent.id"
+                            [class.btn-outline-primary]="managingTicketAutonomyAgentId() !== agent.id"
+                            (click)="onManageTicketAutonomyClick(agent); $event.stopPropagation()"
+                            i18n-title="@@featureChat-ticketAutonomyButtonTitle"
+                            title="Prototype autonomy"
+                          >
+                            <i class="bi bi-lightning-charge" aria-hidden="true"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            (click)="onManageEnvironmentVariablesClick(agent); $event.stopPropagation()"
+                            i18n-title="@@featureChat-manageEnvVarsTitle"
+                            title="Manage Environment Variables"
+                          >
+                            <i class="bi bi-sliders"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            (click)="onEditAgentClick(agent); $event.stopPropagation()"
+                            [disabled]="(agentsUpdating$ | async) === true"
+                            i18n-title="@@featureChat-editEnvironmentTitle"
+                            title="Edit environment"
+                          >
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="onDeleteAgentClick(agent.id, agent.name); $event.stopPropagation()"
+                            [disabled]="(agentsDeleting$ | async) === true"
+                            i18n-title="@@featureChat-deleteEnvironmentTitle"
+                            title="Delete Environment"
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      }
                     </div>
                   }
                 </div>
@@ -2659,7 +2676,7 @@
               </div>
             }
           </div>
-          <div class="card-body">
+          <div class="card-body p-0">
             @if (environmentVariablesLoading$ | async) {
               <div class="d-flex justify-content-center align-items-center p-4">
                 <div class="spinner-border text-primary" role="status">
@@ -2677,7 +2694,7 @@
                   <div class="list-group list-group-flush">
                     @for (envVar of envVars; track envVar.id) {
                       <div class="list-group-item border-bottom">
-                        <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex justify-content-between align-items-center">
                           <div class="flex-grow-1 me-3">
                             <div class="fw-semibold mb-1">{{ envVar.variable }}</div>
                             @if (editingEnvVarId() === envVar.id) {
@@ -2762,6 +2779,166 @@
           [disabled]="(environmentVariablesCreating$ | async) === true"
         >
           <span i18n="@@featureChat-close">Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Prototype autonomy modal -->
+<div
+  class="modal fade"
+  id="ticketAutonomyModal"
+  tabindex="-1"
+  aria-labelledby="ticketAutonomyModalLabel"
+  aria-hidden="true"
+  #ticketAutonomyModal
+  (hidden.bs.modal)="onCloseTicketAutonomyModal()"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ticketAutonomyModalLabel" i18n="@@featureChat-ticketAutonomyModalTitle">
+          Prototype autonomy
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          (click)="onCloseTicketAutonomyModal()"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="autonomySaving()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (autonomyLoading()) {
+          <div class="d-flex justify-content-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden" i18n="@@featureTicketAutonomyManager-loading">Loading…</span>
+            </div>
+          </div>
+        } @else {
+          @if (autonomyError(); as err) {
+            <div class="alert alert-danger small" role="alert">{{ err }}</div>
+          }
+          <p class="text-muted small" i18n="@@featureTicketAutonomyManager-intro">
+            Control whether this agent may run autonomous ticket prototyping, including scope and safety limits.
+          </p>
+          <div class="form-check form-switch mb-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="ticketAutonomyEnabled"
+              [ngModel]="ticketAutonomyDraftEnabled()"
+              (ngModelChange)="ticketAutonomyDraftEnabled.set($event)"
+            />
+            <label class="form-check-label" for="ticketAutonomyEnabled" i18n="@@featureTicketAutonomyManager-enabled"
+              >Autonomy enabled</label
+            >
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="ticketAutonomyPreImprove"
+              [ngModel]="ticketAutonomyDraftPreImprove()"
+              (ngModelChange)="ticketAutonomyDraftPreImprove.set($event)"
+            />
+            <label
+              class="form-check-label"
+              for="ticketAutonomyPreImprove"
+              i18n="@@featureTicketAutonomyManager-preImprove"
+              >Pre-improve ticket before run</label
+            >
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label
+                class="form-label small mb-1"
+                for="ticketAutonomyMaxRuntime"
+                i18n="@@featureTicketAutonomyManager-maxRuntime"
+                >Max runtime (ms)</label
+              >
+              <input
+                id="ticketAutonomyMaxRuntime"
+                type="number"
+                class="form-control form-control-sm"
+                min="1"
+                [ngModel]="ticketAutonomyDraftMaxRuntimeMs()"
+                (ngModelChange)="ticketAutonomyDraftMaxRuntimeMs.set($event)"
+              />
+            </div>
+            <div class="col-md-6">
+              <label
+                class="form-label small mb-1"
+                for="ticketAutonomyMaxIter"
+                i18n="@@featureTicketAutonomyManager-maxIterations"
+                >Max iterations</label
+              >
+              <input
+                id="ticketAutonomyMaxIter"
+                type="number"
+                class="form-control form-control-sm"
+                min="1"
+                [ngModel]="ticketAutonomyDraftMaxIterations()"
+                (ngModelChange)="ticketAutonomyDraftMaxIterations.set($event)"
+              />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label
+              class="form-label small mb-1"
+              for="ticketAutonomyTokenBudget"
+              i18n="@@featureTicketAutonomyManager-tokenBudget"
+              >Token budget limit (optional)</label
+            >
+            <input
+              id="ticketAutonomyTokenBudget"
+              type="number"
+              class="form-control form-control-sm"
+              min="0"
+              [ngModel]="ticketAutonomyDraftTokenBudgetText()"
+              (ngModelChange)="ticketAutonomyDraftTokenBudgetText.set($event)"
+              i18n-placeholder="@@featureTicketAutonomyManager-tokenBudgetPh"
+              placeholder="Leave empty for no limit"
+            />
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          data-bs-dismiss="modal"
+          (click)="onCloseTicketAutonomyModal()"
+          [disabled]="autonomySaving()"
+          i18n="@@featureChat-close"
+        >
+          Close
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="onResetTicketAutonomyDraft()"
+          [disabled]="autonomySaving()"
+          i18n="@@featureTicketAutonomyManager-reset"
+        >
+          Reset
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="onSaveTicketAutonomy()"
+          [disabled]="autonomySaving() || autonomyLoading()"
+          i18n="@@featureTicketAutonomyManager-save"
+        >
+          @if (autonomySaving()) {
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          }
+          Save
         </button>
       </div>
     </div>
@@ -2874,7 +3051,7 @@
               </div>
             }
           </div>
-          <div class="card-body">
+          <div class="card-body p-0">
             @if (clientUsersLoading$ | async) {
               <div class="d-flex justify-content-center align-items-center p-4">
                 <div class="spinner-border text-primary" role="status">

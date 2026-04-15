@@ -8,6 +8,7 @@ describe('buildTicketBodyHierarchyContext', () => {
     title: 'T',
     priority: 'medium',
     status: 'draft',
+    automationEligible: false,
     createdAt: '',
     updatedAt: '',
     ...overrides,

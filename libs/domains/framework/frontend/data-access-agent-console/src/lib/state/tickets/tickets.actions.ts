@@ -66,3 +66,9 @@ export const prependTicketDetailActivity = createAction(
   '[Tickets] Prepend Detail Activity',
   props<{ activity: TicketActivityResponseDto }>(),
 );
+
+/** Replaces activity list for an open ticket (e.g. after automation patch without reloading the whole bundle). */
+export const replaceTicketDetailActivity = createAction(
+  '[Tickets] Replace Detail Activity',
+  props<{ ticketId: string; activity: TicketActivityResponseDto[] }>(),
+);
