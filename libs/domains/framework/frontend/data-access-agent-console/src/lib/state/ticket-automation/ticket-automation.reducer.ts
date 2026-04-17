@@ -9,6 +9,9 @@ import {
   cancelTicketAutomationRunSuccess,
   clearTicketAutomation,
   clearTicketAutomationError,
+  ticketBoardAutomationRunStepAppended,
+  ticketBoardAutomationRunUpsert,
+  ticketBoardAutomationUpsert,
   loadTicketAutomation,
   loadTicketAutomationFailure,
   loadTicketAutomationRunDetail,
@@ -152,4 +155,40 @@ export const ticketAutomationReducer = createReducer(
   })),
   on(clearTicketAutomationError, (state) => ({ ...state, error: null })),
   on(clearTicketAutomation, () => ({ ...initialTicketAutomationState })),
+  on(ticketBoardAutomationUpsert, (state, { config }) => {
+    if (state.activeTicketId !== config.ticketId) {
+      return state;
+    }
+    return { ...state, config, error: null };
+  }),
+  on(ticketBoardAutomationRunUpsert, (state, { run }) => {
+    if (state.activeTicketId !== run.ticketId) {
+      return state;
+    }
+    const runs = mergeRunInList(state.runs, run);
+    const runDetail =
+      state.runDetail?.id === run.id
+        ? {
+            ...state.runDetail,
+            ...run,
+            steps: run.steps ?? state.runDetail.steps,
+          }
+        : state.runDetail;
+    return { ...state, runs, runDetail, error: null };
+  }),
+  on(ticketBoardAutomationRunStepAppended, (state, { runId, step }) => {
+    if (state.runDetail?.id !== runId) {
+      return state;
+    }
+    const prev = state.runDetail.steps ?? [];
+    if (prev.some((s) => s.id === step.id)) {
+      return state;
+    }
+    const nextSteps = [...prev, step].sort((a, b) => a.stepIndex - b.stepIndex);
+    return {
+      ...state,
+      runDetail: { ...state.runDetail, steps: nextSteps },
+      runs: mergeRunInList(state.runs, { ...state.runDetail, steps: nextSteps }),
+    };
+  }),
 );

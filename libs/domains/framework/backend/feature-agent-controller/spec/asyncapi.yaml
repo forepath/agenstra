@@ -1,10 +1,11 @@
 asyncapi: 3.0.0
 info:
-  title: Clients Gateway
+  title: Agent controller WebSocket (clients + tickets)
   version: 1.0.0
   description: |
-    Socket.IO events for the clients proxy gateway (Socket.IO namespace "clients").
-    All connections require authentication via the `Authorization` header in the handshake
+    Socket.IO events for the agent-controller WebSocket port: namespace **clients** (proxy to agent-manager)
+    and namespace **tickets** (ticket board / automation realtime). See channel `tickets/*` for board coherence.
+    For **clients**, all connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
     The `setClient` operation enforces per-client authorization: only users with access to
@@ -18,7 +19,8 @@ servers:
     host: localhost:8081
     protocol: ws
     description: |
-      Socket.IO server (namespace from env WEBSOCKET_NAMESPACE, default "clients"; port from env WEBSOCKET_PORT, default 8081).
+      Socket.IO server (port from env WEBSOCKET_PORT, default 8081). Namespaces: **clients** (WEBSOCKET_NAMESPACE, default "clients")
+      and **tickets** (TICKETS_WEBSOCKET_NAMESPACE, default "tickets") on the same port and CORS (WEBSOCKET_CORS_ORIGIN).
       Pass Authorization header in handshake (or handshake.auth.Authorization for browser WebSockets).
 channels:
   clients/setClient:
@@ -119,6 +121,71 @@ channels:
       remoteReconnectFailedEvent:
         $ref: '#/components/messages/RemoteReconnectFailed'
     description: Server notifies client that all reconnection attempts to agent-manager have failed
+  tickets/setClient:
+    address: tickets/setClient
+    messages:
+      ticketsSetClientCommand:
+        $ref: '#/components/messages/SetClient'
+    description: |
+      Select workspace for ticket board realtime (Socket.IO namespace "tickets"). Same auth and `ensureClientAccess`
+      rules as `clients/setClient`. Joins room `client:{clientId}`; server emits only to sockets in that room.
+  tickets/setClientSuccess:
+    address: tickets/setClientSuccess
+    messages:
+      ticketsSetClientSuccessEvent:
+        $ref: '#/components/messages/SetClientSuccess'
+    description: Acknowledgement after tickets namespace setClient
+  tickets/error:
+    address: tickets/error
+    messages:
+      ticketsErrorEvent:
+        $ref: '#/components/messages/TicketsBoardError'
+    description: |
+      Errors for tickets namespace (e.g. missing clientId, Unauthorized, forbidden client, or "Unable to set client context").
+  tickets/ticketUpsert:
+    address: tickets/ticketUpsert
+    messages:
+      ticketUpsertEvent:
+        $ref: '#/components/messages/TicketBoardTicketPayload'
+    description: Full ticket row after create/update (aligns with OpenAPI TicketResponseDto)
+  tickets/ticketRemoved:
+    address: tickets/ticketRemoved
+    messages:
+      ticketRemovedEvent:
+        $ref: '#/components/messages/TicketBoardTicketRemoved'
+    description: Ticket deleted or removed from a workspace list (e.g. workspace move from old client)
+  tickets/ticketCommentCreated:
+    address: tickets/ticketCommentCreated
+    messages:
+      ticketCommentCreatedEvent:
+        $ref: '#/components/messages/TicketBoardCommentPayload'
+    description: New comment on a ticket
+  tickets/ticketActivityCreated:
+    address: tickets/ticketActivityCreated
+    messages:
+      ticketActivityCreatedEvent:
+        $ref: '#/components/messages/TicketBoardActivityPayload'
+    description: New activity row (audit trail); aligns with OpenAPI TicketActivityResponseDto
+  tickets/ticketAutomationUpsert:
+    address: tickets/ticketAutomationUpsert
+    messages:
+      ticketAutomationUpsertEvent:
+        $ref: '#/components/messages/TicketBoardAutomationPayload'
+    description: Automation settings row; aligns with OpenAPI ticket automation response
+  tickets/ticketAutomationRunUpsert:
+    address: tickets/ticketAutomationRunUpsert
+    messages:
+      ticketAutomationRunUpsertEvent:
+        $ref: '#/components/messages/TicketBoardRunPayload'
+    description: |
+      Automation run summary (may omit `steps`). During agent iterations, emissions may be throttled (about 1s per run)
+      in addition to `ticketAutomationRunStepAppended` for each step.
+  tickets/ticketAutomationRunStepAppended:
+    address: tickets/ticketAutomationRunStepAppended
+    messages:
+      ticketAutomationRunStepAppendedEvent:
+        $ref: '#/components/messages/TicketBoardRunStepPayload'
+    description: New run step row (e.g. agent_turn iteration)
 operations:
   clientSendsSetClient:
     action: send
@@ -336,3 +403,85 @@ components:
           error:
             type: string
             description: Final error message after all reconnection attempts were exhausted
+    TicketsBoardError:
+      name: TicketsBoardError
+      title: Tickets namespace error
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          message:
+            type: string
+    TicketBoardTicketPayload:
+      name: TicketBoardTicketPayload
+      title: Ticket upsert payload
+      contentType: application/json
+      description: Same shape as OpenAPI `TicketResponseDto` (including optional `children` when loaded with descendants).
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardTicketRemoved:
+      name: TicketBoardTicketRemoved
+      title: Ticket removed
+      contentType: application/json
+      payload:
+        type: object
+        required: [id, clientId]
+        properties:
+          id:
+            type: string
+            format: uuid
+          clientId:
+            type: string
+            format: uuid
+    TicketBoardCommentPayload:
+      name: TicketBoardCommentPayload
+      title: Ticket comment created
+      contentType: application/json
+      description: Same shape as OpenAPI `TicketCommentResponseDto`.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardActivityPayload:
+      name: TicketBoardActivityPayload
+      title: Ticket activity created
+      contentType: application/json
+      description: Same shape as OpenAPI `TicketActivityResponseDto`.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardAutomationPayload:
+      name: TicketBoardAutomationPayload
+      title: Ticket automation upsert
+      contentType: application/json
+      description: Same shape as OpenAPI ticket automation settings response.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardRunPayload:
+      name: TicketBoardRunPayload
+      title: Automation run upsert
+      contentType: application/json
+      description: Same shape as OpenAPI automation run response; `steps` may be omitted on the wire.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardRunStepPayload:
+      name: TicketBoardRunStepPayload
+      title: Automation run step appended
+      contentType: application/json
+      description: Run id plus step row (OpenAPI automation run step DTO under `step`).
+      payload:
+        type: object
+        required:
+          - runId
+          - step
+        properties:
+          runId:
+            type: string
+            format: uuid
+          step:
+            type: object
+            additionalProperties: true
+        additionalProperties: false

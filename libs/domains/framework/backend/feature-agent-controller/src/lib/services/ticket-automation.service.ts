@@ -4,7 +4,14 @@ import {
   getUserFromRequest,
   type RequestWithUser,
 } from '@forepath/identity/backend';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -27,7 +34,11 @@ import {
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
 import { parseAndValidateVerifierProfile } from '../utils/verifier-profile.validation';
+import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
+import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
+import { TicketsService } from './tickets.service';
 
 const APPROVAL_RELEVANT_AUTOMATION_FIELDS = new Set([
   'eligible',
@@ -75,6 +86,9 @@ export class TicketAutomationService {
     private readonly activityRepo: Repository<TicketActivityEntity>,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
+    private readonly ticketBoardRealtime: TicketBoardRealtimeService,
+    @Inject(forwardRef(() => TicketsService))
+    private readonly ticketsService: TicketsService,
   ) {}
 
   private async assertTicketAccess(ticketId: string, req?: RequestWithUser): Promise<TicketEntity> {
@@ -109,6 +123,11 @@ export class TicketAutomationService {
     return row;
   }
 
+  /** In-process consumers (e.g. autonomous orchestrator) for realtime payloads. */
+  mapAutomationForBoard(row: TicketAutomationEntity): TicketAutomationResponseDto {
+    return this.mapAutomation(row);
+  }
+
   private mapAutomation(row: TicketAutomationEntity): TicketAutomationResponseDto {
     return {
       ticketId: row.ticketId,
@@ -138,7 +157,7 @@ export class TicketAutomationService {
     dto: UpdateTicketAutomationDto,
     req?: RequestWithUser,
   ): Promise<TicketAutomationResponseDto> {
-    await this.assertTicketAccess(ticketId, req);
+    const ticket = await this.assertTicketAccess(ticketId, req);
     const row = await this.ensureRow(ticketId);
 
     const prevEligible = row.eligible;
@@ -243,7 +262,9 @@ export class TicketAutomationService {
 
     await this.cancelRunningIfApprovalLost(ticketId, req, shouldLogApprovalInvalidated);
 
-    return this.mapAutomation(saved);
+    const automationDto = this.mapAutomation(saved);
+    this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationUpsert, automationDto);
+    return automationDto;
   }
 
   private async appendActivity(
@@ -253,7 +274,7 @@ export class TicketAutomationService {
     req?: RequestWithUser,
   ) {
     const actor = this.resolveActor(req);
-    await this.activityRepo.save(
+    const row = await this.activityRepo.save(
       this.activityRepo.create({
         ticketId,
         actorType: actor.actorType,
@@ -262,6 +283,14 @@ export class TicketAutomationService {
         payload,
       }),
     );
+    const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+    if (t) {
+      this.ticketBoardRealtime.emitToClient(
+        t.clientId,
+        TICKETS_BOARD_EVENTS.ticketActivityCreated,
+        ticketActivityEntityToDto(row),
+      );
+    }
   }
 
   /**
@@ -293,6 +322,17 @@ export class TicketAutomationService {
       req,
     );
     await this.cancelRunningIfApprovalLost(ticketId, req, true);
+    const refreshed = await this.automationRepo.findOne({ where: { ticketId } });
+    if (refreshed) {
+      const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+      if (t) {
+        this.ticketBoardRealtime.emitToClient(
+          t.clientId,
+          TICKETS_BOARD_EVENTS.ticketAutomationUpsert,
+          this.mapAutomation(refreshed),
+        );
+      }
+    }
   }
 
   private async cancelRunningIfApprovalLost(
@@ -312,7 +352,7 @@ export class TicketAutomationService {
   }
 
   async approve(ticketId: string, req?: RequestWithUser): Promise<TicketAutomationResponseDto> {
-    await this.assertTicketAccess(ticketId, req);
+    const ticket = await this.assertTicketAccess(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
     if (!info.userId) {
       throw new ForbiddenException('Only interactive users can approve automation');
@@ -338,11 +378,13 @@ export class TicketAutomationService {
       throw new NotFoundException('Automation settings not found');
     }
     await this.appendActivity(ticketId, TicketActionType.AUTOMATION_APPROVED, { approvedByUserId: info.userId }, req);
-    return this.mapAutomation(saved);
+    const dto = this.mapAutomation(saved);
+    this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationUpsert, dto);
+    return dto;
   }
 
   async unapprove(ticketId: string, req?: RequestWithUser): Promise<TicketAutomationResponseDto> {
-    await this.assertTicketAccess(ticketId, req);
+    const ticket = await this.assertTicketAccess(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
     if (!info.userId) {
       throw new ForbiddenException('Only interactive users can unapprove automation');
@@ -366,7 +408,9 @@ export class TicketAutomationService {
       req,
     );
     await this.cancelRunningIfApprovalLost(ticketId, req, true);
-    return this.mapAutomation(saved);
+    const dto = this.mapAutomation(saved);
+    this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationUpsert, dto);
+    return dto;
   }
 
   async listRuns(ticketId: string, req?: RequestWithUser): Promise<TicketAutomationRunResponseDto[]> {
@@ -437,6 +481,22 @@ export class TicketAutomationService {
     }
 
     await this.appendActivity(ticketId, TicketActionType.AUTOMATION_CANCELLED, { runId, reason }, req);
+
+    this.ticketBoardRealtime.emitToClient(
+      ticket.clientId,
+      TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
+      this.mapRun(run),
+    );
+    const autoFresh = await this.automationRepo.findOne({ where: { ticketId } });
+    if (autoFresh) {
+      this.ticketBoardRealtime.emitToClient(
+        ticket.clientId,
+        TICKETS_BOARD_EVENTS.ticketAutomationUpsert,
+        this.mapAutomation(autoFresh),
+      );
+    }
+    await this.ticketsService.emitBoardTicketSnapshotInternal(ticketId);
+
     return this.mapRun(run);
   }
 

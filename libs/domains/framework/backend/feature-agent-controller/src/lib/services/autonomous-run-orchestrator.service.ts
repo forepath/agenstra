@@ -25,8 +25,17 @@ import {
 import { routeAutomationFailure } from '../utils/automation-failure-routing';
 import { isUsablePartialPrototype } from '../utils/automation-usable-partial';
 import { buildAutonomousTicketRunPreamble } from '../utils/tickets-prototype-prompt.utils';
+import {
+  ticketActivityEntityToDto,
+  ticketAutomationRunEntityToDto,
+  ticketAutomationRunStepEntityToDto,
+} from '../utils/ticket-board-realtime-mappers';
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
+import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
+import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
+import { TicketAutomationService } from './ticket-automation.service';
+import { TicketsService } from './tickets.service';
 
 interface RunnableCandidate {
   ticket_id: string;
@@ -37,6 +46,8 @@ interface RunnableCandidate {
 @Injectable()
 export class AutonomousRunOrchestratorService {
   private readonly logger = new Logger(AutonomousRunOrchestratorService.name);
+  private readonly runSummaryEmitMinIntervalMs = 1000;
+  private readonly lastRunSummaryEmitMs = new Map<string, number>();
 
   constructor(
     @InjectRepository(TicketEntity)
@@ -55,6 +66,9 @@ export class AutonomousRunOrchestratorService {
     private readonly autonomyRepo: Repository<ClientAgentAutonomyEntity>,
     private readonly remoteChat: RemoteAgentsSessionService,
     private readonly vcsProxy: ClientAgentVcsProxyService,
+    private readonly ticketBoardRealtime: TicketBoardRealtimeService,
+    private readonly ticketsService: TicketsService,
+    private readonly ticketAutomationService: TicketAutomationService,
   ) {}
 
   async processBatch(batchSize: number): Promise<void> {
@@ -130,6 +144,7 @@ export class AutonomousRunOrchestratorService {
     }
 
     await this.appendSystemActivity(ticket.id, TicketActionType.AUTOMATION_STARTED, { runId: run.id });
+    await this.emitRunSummaryNow(ticket.clientId, run.id);
 
     try {
       await this.executeRunWorkflow(run, ticket, automation, autonomy, c.agent_id);
@@ -206,6 +221,7 @@ export class AutonomousRunOrchestratorService {
     await this.persistStep(run.id, stepIdx++, TicketAutomationRunPhase.WORKSPACE_PREP, 'vcs_prepare', {
       baseBranch,
     });
+    await this.emitRunSummaryNow(ticket.clientId, run.id);
 
     const branchName = `automation/${run.id.slice(0, 8)}`;
     await this.vcsProxy.createBranch(ticket.clientId, agentId, {
@@ -213,6 +229,7 @@ export class AutonomousRunOrchestratorService {
       baseBranch,
     });
     await this.runRepo.update(run.id, { branchName, baseBranch });
+    await this.emitRunSummaryNow(ticket.clientId, run.id);
 
     if (autonomy.preImproveTicket) {
       await this.remoteChat.sendChatSync({
@@ -244,9 +261,11 @@ export class AutonomousRunOrchestratorService {
       });
       await this.persistStep(run.id, stepIdx++, TicketAutomationRunPhase.AGENT_LOOP, 'agent_turn', { iteration }, text);
       await this.runRepo.update(run.id, { iterationCount: iteration, phase: TicketAutomationRunPhase.AGENT_LOOP });
+      this.emitRunSummaryThrottled(ticket.clientId, run.id);
       if (text.includes(AGENSTRA_AUTOMATION_COMPLETE)) {
         sawMarker = true;
         await this.runRepo.update(run.id, { completionMarkerSeen: true });
+        await this.emitRunSummaryNow(ticket.clientId, run.id);
         break;
       }
     }
@@ -259,6 +278,7 @@ export class AutonomousRunOrchestratorService {
     const profile = automation.verifierProfile;
     if (profile?.commands?.length) {
       await this.runRepo.update(run.id, { phase: TicketAutomationRunPhase.VERIFY });
+      await this.emitRunSummaryNow(ticket.clientId, run.id);
       const verify = await this.vcsProxy.runVerifierCommands(ticket.clientId, agentId, {
         commands: profile.commands,
         timeoutMs: 120_000,
@@ -266,10 +286,12 @@ export class AutonomousRunOrchestratorService {
       const failed = verify.results.find((r) => r.exitCode !== 0);
       if (failed) {
         await this.runRepo.update(run.id, { verificationPassed: false });
+        await this.emitRunSummaryNow(ticket.clientId, run.id);
         await this.failRun(run.id, TicketAutomationFailureCode.VERIFY_COMMAND_FAILED);
         return;
       }
       await this.runRepo.update(run.id, { verificationPassed: true });
+      await this.emitRunSummaryNow(ticket.clientId, run.id);
     } else {
       this.logger.log(`Run ${run.id}: no verifier commands configured, skipping verification`);
     }
@@ -301,6 +323,16 @@ export class AutonomousRunOrchestratorService {
       }
     }
     await this.automationRepo.update({ ticketId: ticket.id }, successAutomationPatch);
+    await this.emitRunSummaryNow(ticket.clientId, run.id);
+    const autoAfter = await this.automationRepo.findOne({ where: { ticketId: ticket.id } });
+    if (autoAfter) {
+      this.ticketBoardRealtime.emitToClient(
+        ticket.clientId,
+        TICKETS_BOARD_EVENTS.ticketAutomationUpsert,
+        this.ticketAutomationService.mapAutomationForBoard(autoAfter),
+      );
+    }
+    await this.ticketsService.emitBoardTicketSnapshotInternal(ticket.id);
   }
 
   /**
@@ -455,6 +487,24 @@ export class AutonomousRunOrchestratorService {
       }
     }
     await this.automationRepo.update({ ticketId: run.ticketId }, failAutomationPatch);
+
+    const refreshedRun = await this.safeFindRunById(runId);
+    if (refreshedRun) {
+      this.ticketBoardRealtime.emitToClient(
+        ticket.clientId,
+        TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
+        ticketAutomationRunEntityToDto(refreshedRun),
+      );
+    }
+    const autoAfterFail = await this.automationRepo.findOne({ where: { ticketId: run.ticketId } });
+    if (autoAfterFail) {
+      this.ticketBoardRealtime.emitToClient(
+        ticket.clientId,
+        TICKETS_BOARD_EVENTS.ticketAutomationUpsert,
+        this.ticketAutomationService.mapAutomationForBoard(autoAfterFail),
+      );
+    }
+    await this.ticketsService.emitBoardTicketSnapshotInternal(run.ticketId);
   }
 
   private async releaseLease(ticketId: string): Promise<void> {
@@ -472,7 +522,7 @@ export class AutonomousRunOrchestratorService {
     payload: Record<string, unknown>,
     excerpt?: string,
   ): Promise<void> {
-    await this.stepRepo.save(
+    const saved = await this.stepRepo.save(
       this.stepRepo.create({
         runId,
         stepIndex: index,
@@ -482,10 +532,17 @@ export class AutonomousRunOrchestratorService {
         excerpt: excerpt ?? null,
       }),
     );
+    const runRow = await this.safeFindRunById(runId);
+    if (runRow) {
+      this.ticketBoardRealtime.emitToClient(runRow.clientId, TICKETS_BOARD_EVENTS.ticketAutomationRunStepAppended, {
+        runId: runRow.id,
+        step: ticketAutomationRunStepEntityToDto(saved),
+      });
+    }
   }
 
   private async appendSystemActivity(ticketId: string, action: TicketActionType, payload: Record<string, unknown>) {
-    await this.activityRepo.save(
+    const row = await this.activityRepo.save(
       this.activityRepo.create({
         ticketId,
         actorType: TicketActorType.SYSTEM,
@@ -494,5 +551,43 @@ export class AutonomousRunOrchestratorService {
         payload,
       }),
     );
+    const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+    if (t) {
+      this.ticketBoardRealtime.emitToClient(
+        t.clientId,
+        TICKETS_BOARD_EVENTS.ticketActivityCreated,
+        ticketActivityEntityToDto(row),
+      );
+    }
+  }
+
+  private emitRunSummaryThrottled(clientId: string, runId: string): void {
+    const now = Date.now();
+    const last = this.lastRunSummaryEmitMs.get(runId) ?? 0;
+    if (now - last < this.runSummaryEmitMinIntervalMs) {
+      return;
+    }
+    this.lastRunSummaryEmitMs.set(runId, now);
+    void this.emitRunSummaryNow(clientId, runId);
+  }
+
+  private async emitRunSummaryNow(clientId: string, runId: string): Promise<void> {
+    const r = await this.safeFindRunById(runId);
+    if (r) {
+      this.ticketBoardRealtime.emitToClient(
+        clientId,
+        TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
+        ticketAutomationRunEntityToDto(r),
+      );
+    }
+  }
+
+  /** Unit tests may supply partial repository mocks without `findOne`. */
+  private async safeFindRunById(runId: string): Promise<TicketAutomationRunEntity | null> {
+    const repo = this.runRepo as Pick<Repository<TicketAutomationRunEntity>, 'findOne'>;
+    if (typeof repo.findOne !== 'function') {
+      return null;
+    }
+    return repo.findOne({ where: { id: runId } });
   }
 }

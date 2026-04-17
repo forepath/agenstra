@@ -14,11 +14,18 @@ import {
   openTicketDetail,
   prependTicketDetailActivity,
   replaceTicketDetailActivity,
+  ticketBoardActivityCreated,
+  ticketBoardCommentCreated,
+  ticketBoardTicketRemoved,
+  ticketBoardTicketUpsert,
   updateTicket,
   updateTicketFailure,
   updateTicketSuccess,
 } from './tickets.actions';
-import { patchTicketAutomationSuccess } from '../ticket-automation/ticket-automation.actions';
+import {
+  patchTicketAutomationSuccess,
+  ticketBoardAutomationUpsert,
+} from '../ticket-automation/ticket-automation.actions';
 import { initialTicketsState, ticketsReducer, type TicketsState } from './tickets.reducer';
 import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
 
@@ -420,6 +427,77 @@ describe('ticketsReducer', () => {
       const next = ticketsReducer(prev, patchTicketAutomationSuccess({ config: automationConfig }));
       expect(next.list[0].automationEligible).toBe(true);
       expect(next.detail?.automationEligible).toBe(true);
+    });
+
+    it('updates automationEligible from board socket automation upsert', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [{ ...mockTicket, automationEligible: false }],
+        detail: { ...mockTicket, automationEligible: false },
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(
+        prev,
+        ticketBoardAutomationUpsert({
+          config: { ...automationConfig, eligible: true },
+        }),
+      );
+      expect(next.list[0].automationEligible).toBe(true);
+      expect(next.detail?.automationEligible).toBe(true);
+    });
+  });
+
+  describe('board socket ticket upsert', () => {
+    it('merges ticket into list and open detail', () => {
+      const updated = { ...mockTicket, title: 'Renamed' };
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket],
+        detail: mockTicket,
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(prev, ticketBoardTicketUpsert({ ticket: updated }));
+      expect(next.list[0].title).toBe('Renamed');
+      expect(next.detail?.title).toBe('Renamed');
+    });
+  });
+
+  describe('board socket ticket removed', () => {
+    it('removes ticket from list and clears open detail', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket],
+        detail: mockTicket,
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(prev, ticketBoardTicketRemoved({ id: mockTicket.id, clientId: mockTicket.clientId }));
+      expect(next.list).toEqual([]);
+      expect(next.detail).toBeNull();
+      expect(next.selectedTicketId).toBeNull();
+    });
+  });
+
+  describe('board socket comment', () => {
+    it('appends comment when detail is open for that ticket', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: mockTicket.id,
+        comments: [],
+      };
+      const next = ticketsReducer(prev, ticketBoardCommentCreated({ comment: mockComment }));
+      expect(next.comments).toEqual([mockComment]);
+    });
+  });
+
+  describe('board socket activity', () => {
+    it('prepends activity when detail is open for that ticket', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: mockTicket.id,
+        activity: [],
+      };
+      const next = ticketsReducer(prev, ticketBoardActivityCreated({ activity: mockActivity }));
+      expect(next.activity).toEqual([mockActivity]);
     });
   });
 });

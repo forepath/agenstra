@@ -9,6 +9,8 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -41,6 +43,8 @@ import {
 } from '../utils/tickets-prototype-prompt.utils';
 import { ClientsService } from './clients.service';
 import { TicketAutomationService, TICKET_APPROVAL_INVALIDATION_FIELDS } from './ticket-automation.service';
+import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
+import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 
 const DEFAULT_SESSION_TTL_MS = 15 * 60 * 1000;
 
@@ -67,8 +71,67 @@ export class TicketsService {
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly usersRepository: UsersRepository,
     private readonly clientsService: ClientsService,
+    @Inject(forwardRef(() => TicketAutomationService))
     private readonly ticketAutomationService: TicketAutomationService,
+    private readonly ticketBoardRealtime: TicketBoardRealtimeService,
   ) {}
+
+  /**
+   * Publishes latest ticket + newest activity row for realtime subscribers (e.g. after automation cancel).
+   */
+  async emitBoardTicketAndActivity(ticketId: string, req?: RequestWithUser): Promise<void> {
+    const dto = await this.findOne(ticketId, false, req);
+    this.ticketBoardRealtime.emitToClient(dto.clientId, TICKETS_BOARD_EVENTS.ticketUpsert, dto);
+    const rows = await this.activityRepo.find({
+      where: { ticketId },
+      order: { occurredAt: 'DESC' },
+      take: 1,
+    });
+    if (rows[0]) {
+      this.ticketBoardRealtime.emitToClient(
+        dto.clientId,
+        TICKETS_BOARD_EVENTS.ticketActivityCreated,
+        await this.mapActivity(rows[0]),
+      );
+    }
+  }
+
+  /** Realtime ticket list/detail only (activity emitted separately). */
+  async emitBoardTicketSnapshot(ticketId: string, req?: RequestWithUser): Promise<void> {
+    const dto = await this.findOne(ticketId, false, req);
+    this.boardEmitTicketUpsert(dto.clientId, dto);
+  }
+
+  /**
+   * Internal: emit mapped ticket for board subscribers without HTTP request context
+   * (e.g. autonomous orchestrator after ticket row changes).
+   */
+  async emitBoardTicketSnapshotInternal(ticketId: string): Promise<void> {
+    const ticket = await this.loadTicketOrThrow(ticketId);
+    const eligMap = await this.loadAutomationEligibleByTicketIds([ticket.id]);
+    const dto = await this.mapTicket(ticket, eligMap.get(ticket.id) ?? false);
+    this.boardEmitTicketUpsert(dto.clientId, dto);
+  }
+
+  private boardEmitTicketUpsert(clientId: string, dto: TicketResponseDto): void {
+    this.ticketBoardRealtime.emitToClient(clientId, TICKETS_BOARD_EVENTS.ticketUpsert, dto);
+  }
+
+  private boardEmitTicketRemoved(clientId: string, id: string): void {
+    this.ticketBoardRealtime.emitToClient(clientId, TICKETS_BOARD_EVENTS.ticketRemoved, { id, clientId });
+  }
+
+  private async boardEmitTicketActivityMapped(clientId: string, row: TicketActivityEntity): Promise<void> {
+    this.ticketBoardRealtime.emitToClient(
+      clientId,
+      TICKETS_BOARD_EVENTS.ticketActivityCreated,
+      await this.mapActivity(row),
+    );
+  }
+
+  private boardEmitTicketComment(clientId: string, dto: TicketCommentResponseDto): void {
+    this.ticketBoardRealtime.emitToClient(clientId, TICKETS_BOARD_EVENTS.ticketCommentCreated, dto);
+  }
 
   private isApiKeyMode(): boolean {
     const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
@@ -224,7 +287,17 @@ export class TicketsService {
       return inserted;
     });
 
-    return this.mapTicket(saved);
+    const ticketDto = await this.mapTicket(saved);
+    this.boardEmitTicketUpsert(ticketDto.clientId, ticketDto);
+    const activityRows = await this.activityRepo.find({
+      where: { ticketId: saved.id },
+      order: { occurredAt: 'DESC' },
+      take: 1,
+    });
+    if (activityRows[0]) {
+      await this.boardEmitTicketActivityMapped(ticketDto.clientId, activityRows[0]);
+    }
+    return ticketDto;
   }
 
   async update(id: string, dto: UpdateTicketDto, req?: RequestWithUser): Promise<TicketResponseDto> {
@@ -320,7 +393,21 @@ export class TicketsService {
     }
 
     const refreshed = await this.loadTicketOrThrow(id);
-    return this.mapTicket(refreshed);
+    const mapped = await this.mapTicket(refreshed);
+    if (changes.clientId) {
+      const oldCid = changes.clientId.old as string;
+      this.boardEmitTicketRemoved(oldCid, id);
+    }
+    this.boardEmitTicketUpsert(mapped.clientId, mapped);
+    const activityRows = await this.activityRepo.find({
+      where: { ticketId: id },
+      order: { occurredAt: 'DESC' },
+      take: 1,
+    });
+    if (activityRows[0]) {
+      await this.boardEmitTicketActivityMapped(mapped.clientId, activityRows[0]);
+    }
+    return mapped;
   }
 
   private async wouldCreateCycle(ticketId: string, newParentId: string): Promise<boolean> {
@@ -347,6 +434,7 @@ export class TicketsService {
     if (childCount > 0) {
       throw new ConflictException('Cannot delete ticket with subtasks');
     }
+    const clientId = ticket.clientId;
     await this.ticketRepo.manager.transaction(async (em) => {
       const aRepo = em.getRepository(TicketActivityEntity);
       const tRepo = em.getRepository(TicketEntity);
@@ -361,6 +449,7 @@ export class TicketsService {
       );
       await tRepo.delete(id);
     });
+    this.boardEmitTicketRemoved(clientId, id);
   }
 
   async listComments(ticketId: string, req?: RequestWithUser): Promise<TicketCommentResponseDto[]> {
@@ -381,7 +470,7 @@ export class TicketsService {
     await this.assertTicketReadable(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
 
-    const saved = await this.ticketRepo.manager.transaction(async (em) => {
+    const { comment: saved, activityRow } = await this.ticketRepo.manager.transaction(async (em) => {
       const cRepo = em.getRepository(TicketCommentEntity);
       const aRepo = em.getRepository(TicketActivityEntity);
       const comment = await cRepo.save(
@@ -391,7 +480,7 @@ export class TicketsService {
           authorUserId: info.userId ?? null,
         }),
       );
-      await aRepo.save(
+      const activityRow = await aRepo.save(
         aRepo.create({
           ticketId,
           actorType: actor.actorType,
@@ -400,10 +489,14 @@ export class TicketsService {
           payload: { commentId: comment.id },
         }),
       );
-      return comment;
+      return { comment, activityRow };
     });
 
-    return this.mapComment(saved);
+    const ticketRow = await this.loadTicketOrThrow(ticketId);
+    const mappedComment = await this.mapComment(saved);
+    this.boardEmitTicketComment(ticketRow.clientId, mappedComment);
+    await this.boardEmitTicketActivityMapped(ticketRow.clientId, activityRow);
+    return mappedComment;
   }
 
   async listActivity(
@@ -444,7 +537,7 @@ export class TicketsService {
     }
     body += buildPrototypePrompt(tree);
     const actor = this.resolveActor(req);
-    await this.activityRepo.save(
+    const activityRow = await this.activityRepo.save(
       this.activityRepo.create({
         ticketId,
         actorType: actor.actorType,
@@ -453,6 +546,7 @@ export class TicketsService {
         payload: { rootTicketId: ticketId },
       }),
     );
+    await this.boardEmitTicketActivityMapped(ticket.clientId, activityRow);
     return { prompt: body };
   }
 
@@ -523,6 +617,9 @@ export class TicketsService {
       return { session: s, activityDto: mapped };
     });
 
+    const ticketRow = await this.loadTicketOrThrow(ticketId);
+    this.ticketBoardRealtime.emitToClient(ticketRow.clientId, TICKETS_BOARD_EVENTS.ticketActivityCreated, activityDto);
+
     return {
       generationId: session.id,
       expiresAt: session.expiresAt.toISOString(),
@@ -563,7 +660,7 @@ export class TicketsService {
       await tRepo.save(ticket);
       session.consumedAt = new Date();
       await sRepo.save(session);
-      await aRepo.save(
+      return await aRepo.save(
         aRepo.create({
           ticketId,
           actorType: TicketActorType.AI,
@@ -579,7 +676,18 @@ export class TicketsService {
       );
     });
 
-    return this.mapTicket(await this.loadTicketOrThrow(ticketId));
+    const refreshed = await this.loadTicketOrThrow(ticketId);
+    const mappedTicket = await this.mapTicket(refreshed);
+    this.boardEmitTicketUpsert(mappedTicket.clientId, mappedTicket);
+    const activityRows = await this.activityRepo.find({
+      where: { ticketId },
+      order: { occurredAt: 'DESC' },
+      take: 1,
+    });
+    if (activityRows[0]) {
+      await this.boardEmitTicketActivityMapped(mappedTicket.clientId, activityRows[0]);
+    }
+    return mappedTicket;
   }
 
   private async loadAutomationEligibleByTicketIds(ticketIds: string[]): Promise<Map<string, boolean>> {

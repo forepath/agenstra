@@ -10,6 +10,7 @@ import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from './clients.service';
 import { TicketAutomationService } from './ticket-automation.service';
+import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
 
 jest.mock('@forepath/identity/backend', () => {
@@ -37,6 +38,17 @@ describe('TicketsService', () => {
   const activityRepo = {
     save: jest.fn(),
     create: jest.fn((x: unknown) => x),
+    find: jest.fn().mockResolvedValue([
+      {
+        id: '00000000-0000-4000-8000-00000000a099',
+        ticketId,
+        occurredAt: new Date('2024-01-02T00:00:00.000Z'),
+        actorType: 'human',
+        actorUserId: 'user-1',
+        actionType: 'FIELD_UPDATED',
+        payload: {},
+      },
+    ]),
   };
 
   const ticketRepo = {
@@ -105,6 +117,7 @@ describe('TicketsService', () => {
         { provide: UsersRepository, useValue: usersRepository },
         { provide: ClientsService, useValue: clientsService },
         { provide: TicketAutomationService, useValue: ticketAutomationService },
+        { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
       ],
     }).compile();
 

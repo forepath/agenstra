@@ -18,6 +18,8 @@ export interface Environment {
   controller: {
     restApiUrl: string;
     websocketUrl: string;
+    /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/tickets`. */
+    ticketsWebsocketUrl?: string;
   };
   billing: {
     restApiUrl: string;

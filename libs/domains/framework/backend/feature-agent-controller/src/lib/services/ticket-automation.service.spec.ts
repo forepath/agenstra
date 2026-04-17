@@ -11,6 +11,8 @@ import { TicketEntity } from '../entities/ticket.entity';
 import { TicketAutomationLeaseStatus, TicketAutomationRunStatus } from '../entities/ticket-automation.enums';
 import { TicketActionType, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
+import { TicketsService } from './tickets.service';
 import { TicketAutomationService } from './ticket-automation.service';
 
 jest.mock('@forepath/identity/backend', () => {
@@ -39,6 +41,13 @@ describe('TicketAutomationService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    activityRepo.save.mockImplementation((row: unknown) =>
+      Promise.resolve({
+        ...(row as object),
+        id: '00000000-0000-4000-8000-00000000a001',
+        occurredAt: new Date('2020-01-02'),
+      }),
+    );
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TicketAutomationService,
@@ -50,6 +59,14 @@ describe('TicketAutomationService', () => {
         { provide: getRepositoryToken(TicketActivityEntity), useValue: activityRepo },
         { provide: ClientsRepository, useValue: {} },
         { provide: ClientUsersRepository, useValue: {} },
+        { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
+        {
+          provide: TicketsService,
+          useValue: {
+            emitBoardTicketSnapshotInternal: jest.fn().mockResolvedValue(undefined),
+            emitBoardTicketAndActivity: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
     service = module.get(TicketAutomationService);

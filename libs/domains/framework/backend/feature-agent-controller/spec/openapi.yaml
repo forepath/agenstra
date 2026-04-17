@@ -281,7 +281,10 @@ paths:
   /tickets:
     get:
       summary: List project tickets
-      description: Returns tickets for workspaces the user can access; global admins see all.
+      description: |
+        Returns tickets for workspaces the user can access; global admins see all.
+        For realtime list coherence after mutations, subscribe to the Socket.IO **tickets** namespace
+        (see AsyncAPI `tickets/*` channels in `spec/asyncapi.yaml`); REST remains the source of truth for loads.
       operationId: listTickets
       parameters:
         - in: query

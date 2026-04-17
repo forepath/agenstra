@@ -25,6 +25,7 @@ import {
   filterTicketsForGlobalSearch,
   SocketsFacade,
   TicketAutomationFacade,
+  TicketsBoardSocketFacade,
   TicketsFacade,
   TicketsService,
   type AgentResponseDto,
@@ -54,16 +55,15 @@ import {
   combineLatest,
   debounceTime,
   distinctUntilChanged,
+  EMPTY,
   filter,
   finalize,
   map,
   Observable,
   of,
-  race,
   switchMap,
   take,
   tap,
-  timer,
 } from 'rxjs';
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
 import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
@@ -144,6 +144,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private readonly ticketsFacade = inject(TicketsFacade);
   private readonly ticketsService = inject(TicketsService);
   private readonly socketsFacade = inject(SocketsFacade);
+  private readonly ticketsBoardSocketFacade = inject(TicketsBoardSocketFacade);
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -151,10 +152,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private readonly actions$ = inject(Actions);
 
   /**
-   * Hydrate automation draft from server only when the open ticket changes (same idea as `descriptionDraft`).
-   * Avoids overwriting in-flight edits when a patch returns.
+   * Tracks which ticket the automation form was last aligned to (detail open).
+   * `automationDraftLastSyncedConfigUpdatedAt` avoids re-applying the same server snapshot repeatedly,
+   * but allows websocket / REST config updates when `updatedAt` advances.
    */
   private automationDraftSyncTicketId: string | null = null;
+  private automationDraftLastSyncedConfigUpdatedAt: string | null = null;
   /** If autosave ran while `ticketAutomationSaving`, flush again once the store finishes saving. */
   private pendingAutomationAutosaveAfterBusy = false;
   /**
@@ -272,6 +275,14 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     map((agents) => agents.filter((a) => a.agentType !== 'openclaw')),
   );
 
+  /** Mirrors `chatCapableAgents$` for constructor effects (WebSocket detail updates, socket agent changes). */
+  private readonly chatCapableAgentsSignal = toSignal(this.chatCapableAgents$, {
+    initialValue: [] as AgentResponseDto[],
+  });
+  private readonly socketSelectedAgentIdSignal = toSignal(this.socketsFacade.selectedAgentId$, {
+    initialValue: null as string | null,
+  });
+
   selectedLane = signal<BoardLaneStatus>('draft');
   selectedAgentForAi = signal<string | null>(null);
   newCommentText = signal('');
@@ -326,7 +337,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   });
 
   automationDraftEligible = signal(false);
-  /** Shown when ticket detail opens; set from server `eligible` on first config sync for that ticket. */
+  /**
+   * Accordion open state for autonomous prototyping (user-controlled via toggle).
+   * Defaults from server `eligible` only on the first automation config apply after opening a ticket;
+   * later websocket/REST config updates must not reset it.
+   */
   ticketAutomationAccordionExpanded = signal(false);
   automationDraftRequiresApproval = signal(false);
   /** Sorted unique agent UUIDs allowed to run automation for this ticket. */
@@ -358,28 +373,76 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   /** Set when opening the delete confirmation modal (stacked over detail modal). */
   ticketPendingDelete = signal<{ id: string; title: string } | null>(null);
 
-  /** Local description text; synced from `detail` when the open ticket id changes. */
+  /** Local description text; synced from `detail` when the open ticket id or server `updatedAt` changes. */
   readonly descriptionDraft = signal('');
   private descriptionDraftSyncTicketId: string | null = null;
+  private descriptionDraftLastSyncedUpdatedAt: string | null = null;
+
+  /**
+   * Keeps "Agent for chat / AI" aligned with `detail` (incl. `ticketUpsert`) and with socket / agent list changes.
+   * Replaces a one-shot `combineLatest`+`take(1)` on open that never saw later store updates.
+   */
+  private chatAgentForAiSyncTicketId: string | null = null;
+  private chatAgentForAiLastSyncedDetailUpdatedAt: string | null = null;
 
   constructor() {
     effect(() => {
       const d = this.detail();
       if (!d) {
         this.descriptionDraftSyncTicketId = null;
+        this.descriptionDraftLastSyncedUpdatedAt = null;
         this.descriptionDraft.set('');
         return;
       }
       if (this.descriptionDraftSyncTicketId !== d.id) {
         this.descriptionDraftSyncTicketId = d.id;
-        this.descriptionDraft.set(d.content ?? '');
+        this.descriptionDraftLastSyncedUpdatedAt = null;
       }
+      const rev = d.updatedAt;
+      if (rev === this.descriptionDraftLastSyncedUpdatedAt) {
+        return;
+      }
+      this.descriptionDraftLastSyncedUpdatedAt = rev;
+      this.descriptionDraft.set(d.content ?? '');
+    });
+
+    effect(() => {
+      const d = this.detail();
+      const chatAgents = this.chatCapableAgentsSignal();
+      const socketAgentId = this.socketSelectedAgentIdSignal();
+      if (!d) {
+        this.chatAgentForAiSyncTicketId = null;
+        this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
+        this.selectedAgentForAi.set(null);
+        return;
+      }
+      if (this.chatAgentForAiSyncTicketId !== d.id) {
+        this.chatAgentForAiSyncTicketId = d.id;
+        this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
+        this.selectedAgentForAi.set(null);
+      }
+      if (chatAgents.length === 0 && this.chatAgentForAiLastSyncedDetailUpdatedAt === null) {
+        return;
+      }
+      const pick = this.pickChatAgentForTicket(d, chatAgents, socketAgentId);
+      const rev = d.updatedAt;
+      const revBumped = rev !== this.chatAgentForAiLastSyncedDetailUpdatedAt;
+      const prevPick = this.selectedAgentForAi();
+      if (!revBumped && pick === prevPick) {
+        return;
+      }
+      if (revBumped) {
+        this.chatAgentForAiLastSyncedDetailUpdatedAt = rev;
+      }
+      this.selectedAgentForAi.set(pick);
+      queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
     });
 
     effect(() => {
       const d = this.detail()?.id;
       if (!d) {
         this.automationDraftSyncTicketId = null;
+        this.automationDraftLastSyncedConfigUpdatedAt = null;
         this.ticketAutomationAccordionExpanded.set(false);
         return;
       }
@@ -387,12 +450,20 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       if (!cfg || cfg.ticketId !== d) {
         return;
       }
-      if (this.automationDraftSyncTicketId === d) {
+      if (this.automationDraftSyncTicketId !== d) {
+        this.automationDraftSyncTicketId = d;
+        this.automationDraftLastSyncedConfigUpdatedAt = null;
+      }
+      const rev = cfg.updatedAt;
+      if (rev === this.automationDraftLastSyncedConfigUpdatedAt) {
         return;
       }
-      this.automationDraftSyncTicketId = d;
+      const applyAccordionDefaultFromEligible = this.automationDraftLastSyncedConfigUpdatedAt === null;
+      this.automationDraftLastSyncedConfigUpdatedAt = rev;
       this.automationDraftEligible.set(cfg.eligible);
-      this.ticketAutomationAccordionExpanded.set(cfg.eligible);
+      if (applyAccordionDefaultFromEligible) {
+        this.ticketAutomationAccordionExpanded.set(cfg.eligible);
+      }
       this.automationDraftRequiresApproval.set(cfg.requiresApproval);
       this.automationDraftAllowedAgentIds.set(normalizeAllowedAgentIdList(cfg.allowedAgentIds));
       this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
@@ -467,6 +538,20 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.clientsFacade.loadClients();
+
+    this.effectiveClientId$
+      .pipe(
+        distinctUntilChanged(),
+        switchMap((clientId) => {
+          if (!clientId) {
+            this.ticketsBoardSocketFacade.disconnect();
+            return EMPTY;
+          }
+          return this.ticketsBoardSocketFacade.ensureConnectedAndSetClient(clientId);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
 
     this.effectiveClientId$
       .pipe(
@@ -812,28 +897,6 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       this.agentsFacade.loadClientAgents(clientId);
     }
 
-    combineLatest([
-      this.ticketsFacade.detail$.pipe(
-        filter((d): d is TicketResponseDto => !!d && d.id === ticketId),
-        take(1),
-      ),
-      race(
-        this.chatCapableAgents$.pipe(
-          filter((agents) => agents.length > 0),
-          take(1),
-        ),
-        timer(4000).pipe(switchMap(() => this.chatCapableAgents$.pipe(take(1)))),
-      ),
-      this.socketsFacade.selectedAgentId$.pipe(take(1)),
-    ])
-      .pipe(take(1))
-      .subscribe(([detail, chatAgents, socketAgentId]) => {
-        const pick = this.pickChatAgentForTicket(detail, chatAgents, socketAgentId);
-        this.selectedAgentForAi.set(pick);
-        queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
-        setTimeout(() => this.ensureChatAgentInAutomationAllowedList(), 0);
-        setTimeout(() => this.ensureChatAgentInAutomationAllowedList(), 200);
-      });
     setTimeout(() => this.showModal(), 0);
   }
 

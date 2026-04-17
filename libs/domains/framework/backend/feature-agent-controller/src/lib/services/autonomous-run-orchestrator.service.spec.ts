@@ -13,6 +13,36 @@ import { AGENSTRA_AUTOMATION_COMPLETE } from '../utils/automation-completion.con
 import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.service';
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
+import { TicketAutomationService } from './ticket-automation.service';
+import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
+import { TicketsService } from './tickets.service';
+
+function realtimeSideProviders(ticketIdForBoard: string) {
+  return [
+    { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
+    { provide: TicketsService, useValue: { emitBoardTicketSnapshotInternal: jest.fn().mockResolvedValue(undefined) } },
+    {
+      provide: TicketAutomationService,
+      useValue: {
+        mapAutomationForBoard: jest.fn().mockReturnValue({
+          ticketId: ticketIdForBoard,
+          eligible: false,
+          allowedAgentIds: [],
+          verifierProfile: null,
+          requiresApproval: false,
+          approvedAt: null,
+          approvedByUserId: null,
+          approvalBaselineTicketUpdatedAt: null,
+          defaultBranchOverride: null,
+          nextRetryAt: null,
+          consecutiveFailureCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
+      },
+    },
+  ];
+}
 
 describe('AutonomousRunOrchestratorService', () => {
   const ticketId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -60,6 +90,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: {} },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: {} },
@@ -143,6 +174,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -253,6 +285,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -344,6 +377,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -398,6 +432,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -476,6 +511,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -564,6 +600,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -664,6 +701,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -745,6 +783,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -838,6 +877,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -928,6 +968,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -1017,6 +1058,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -1111,6 +1153,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
@@ -1208,6 +1251,7 @@ describe('AutonomousRunOrchestratorService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },

@@ -18,6 +18,9 @@ import {
   patchTicketAutomation,
   patchTicketAutomationFailure,
   patchTicketAutomationSuccess,
+  ticketBoardAutomationRunStepAppended,
+  ticketBoardAutomationRunUpsert,
+  ticketBoardAutomationUpsert,
   unapproveTicketAutomation,
   unapproveTicketAutomationFailure,
   unapproveTicketAutomationSuccess,
@@ -179,5 +182,66 @@ describe('ticketAutomationReducer', () => {
     state = ticketAutomationReducer(state, loadTicketAutomationRunDetailSuccess({ run: mockRun }));
     expect(state.loadingRunDetail).toBe(false);
     expect(state.runDetail).toEqual(mockRun);
+  });
+
+  it('merges config from board socket upsert for active ticket', () => {
+    const prev: TicketAutomationState = {
+      ...initialTicketAutomationState,
+      activeTicketId: 't1',
+      config: { ...mockConfig, eligible: false },
+    };
+    const next = ticketAutomationReducer(
+      prev,
+      ticketBoardAutomationUpsert({ config: { ...mockConfig, eligible: true } }),
+    );
+    expect(next.config?.eligible).toBe(true);
+  });
+
+  it('ignores board socket config upsert for a different ticket', () => {
+    const prev: TicketAutomationState = {
+      ...initialTicketAutomationState,
+      activeTicketId: 't1',
+      config: mockConfig,
+    };
+    const next = ticketAutomationReducer(
+      prev,
+      ticketBoardAutomationUpsert({
+        config: { ...mockConfig, ticketId: 'other' },
+      }),
+    );
+    expect(next.config?.ticketId).toBe('t1');
+  });
+
+  it('merges run from board socket upsert', () => {
+    const prev: TicketAutomationState = {
+      ...initialTicketAutomationState,
+      activeTicketId: 't1',
+      runs: [],
+      runDetail: mockRun,
+    };
+    const updated = { ...mockRun, phase: 'verify' as const };
+    const next = ticketAutomationReducer(prev, ticketBoardAutomationRunUpsert({ run: updated }));
+    expect(next.runs[0].phase).toBe('verify');
+    expect(next.runDetail?.phase).toBe('verify');
+  });
+
+  it('appends a step to open run detail from board socket', () => {
+    const prev: TicketAutomationState = {
+      ...initialTicketAutomationState,
+      activeTicketId: 't1',
+      runs: [mockRun],
+      runDetail: { ...mockRun, steps: [] },
+    };
+    const step = {
+      id: 's1',
+      stepIndex: 0,
+      phase: 'agent_loop',
+      kind: 'agent_turn',
+      payload: null,
+      excerpt: null,
+      createdAt: '2024-01-01T00:01:00Z',
+    };
+    const next = ticketAutomationReducer(prev, ticketBoardAutomationRunStepAppended({ runId: 'r1', step }));
+    expect(next.runDetail?.steps).toEqual([step]);
   });
 });

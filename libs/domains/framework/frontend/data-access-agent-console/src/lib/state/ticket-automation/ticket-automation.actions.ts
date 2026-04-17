@@ -2,6 +2,7 @@ import { createAction, props } from '@ngrx/store';
 import type {
   TicketAutomationResponseDto,
   TicketAutomationRunResponseDto,
+  TicketAutomationRunStepResponseDto,
   UpdateTicketAutomationDto,
 } from './ticket-automation.types';
 
@@ -101,3 +102,18 @@ export const cancelTicketAutomationRunFailure = createAction(
 export const clearTicketAutomationError = createAction('[Ticket Automation] Clear Error');
 
 export const clearTicketAutomation = createAction('[Ticket Automation] Clear State');
+
+export const ticketBoardAutomationUpsert = createAction(
+  '[Ticket Automation] Board Socket Config Upsert',
+  props<{ config: TicketAutomationResponseDto }>(),
+);
+
+export const ticketBoardAutomationRunUpsert = createAction(
+  '[Ticket Automation] Board Socket Run Upsert',
+  props<{ run: TicketAutomationRunResponseDto }>(),
+);
+
+export const ticketBoardAutomationRunStepAppended = createAction(
+  '[Ticket Automation] Board Socket Run Step Appended',
+  props<{ runId: string; step: TicketAutomationRunStepResponseDto }>(),
+);

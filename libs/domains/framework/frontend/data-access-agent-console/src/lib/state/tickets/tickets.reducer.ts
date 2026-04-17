@@ -3,6 +3,7 @@ import {
   approveTicketAutomationSuccess,
   loadTicketAutomationSuccess,
   patchTicketAutomationSuccess,
+  ticketBoardAutomationUpsert,
   unapproveTicketAutomationSuccess,
 } from '../ticket-automation/ticket-automation.actions';
 import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
@@ -26,6 +27,10 @@ import {
   openTicketDetail,
   prependTicketDetailActivity,
   replaceTicketDetailActivity,
+  ticketBoardActivityCreated,
+  ticketBoardCommentCreated,
+  ticketBoardTicketRemoved,
+  ticketBoardTicketUpsert,
   updateTicket,
   updateTicketFailure,
   updateTicketSuccess,
@@ -204,6 +209,46 @@ export const ticketsReducer = createReducer(
     approveTicketAutomationSuccess,
     unapproveTicketAutomationSuccess,
     loadTicketAutomationSuccess,
+    ticketBoardAutomationUpsert,
     (state, { config }) => syncTicketAutomationEligible(state, config.ticketId, config.eligible),
   ),
+  on(ticketBoardTicketUpsert, (state, { ticket }) => {
+    const detail =
+      state.detail?.id === ticket.id
+        ? {
+            ...state.detail,
+            ...ticket,
+            children: ticket.children ?? state.detail.children,
+          }
+        : (mergeCreatedChildIntoDetail(state.detail, ticket) ?? state.detail);
+    return {
+      ...state,
+      list: mergeTicketInList(state.list, ticket),
+      detail,
+    };
+  }),
+  on(ticketBoardTicketRemoved, (state, { id }) => ({
+    ...state,
+    list: state.list.filter((t) => t.id !== id),
+    selectedTicketId: state.selectedTicketId === id ? null : state.selectedTicketId,
+    detail: state.detail?.id === id ? null : state.detail,
+  })),
+  on(ticketBoardCommentCreated, (state, { comment }) => {
+    if (state.selectedTicketId !== comment.ticketId) {
+      return state;
+    }
+    if (state.comments.some((c) => c.id === comment.id)) {
+      return state;
+    }
+    return { ...state, comments: [...state.comments, comment] };
+  }),
+  on(ticketBoardActivityCreated, (state, { activity }) => {
+    if (state.selectedTicketId !== activity.ticketId) {
+      return state;
+    }
+    if (state.activity.some((a) => a.id === activity.id)) {
+      return state;
+    }
+    return { ...state, activity: [activity, ...state.activity] };
+  }),
 );

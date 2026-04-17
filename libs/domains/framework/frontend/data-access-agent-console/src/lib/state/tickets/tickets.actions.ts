@@ -72,3 +72,24 @@ export const replaceTicketDetailActivity = createAction(
   '[Tickets] Replace Detail Activity',
   props<{ ticketId: string; activity: TicketActivityResponseDto[] }>(),
 );
+
+/** Realtime: full ticket snapshot (merge list + open detail; does not replace activity/comments). */
+export const ticketBoardTicketUpsert = createAction(
+  '[Tickets] Board Socket Ticket Upsert',
+  props<{ ticket: TicketResponseDto }>(),
+);
+
+export const ticketBoardTicketRemoved = createAction(
+  '[Tickets] Board Socket Ticket Removed',
+  props<{ id: string; clientId: string }>(),
+);
+
+export const ticketBoardCommentCreated = createAction(
+  '[Tickets] Board Socket Comment Created',
+  props<{ comment: TicketCommentResponseDto }>(),
+);
+
+export const ticketBoardActivityCreated = createAction(
+  '[Tickets] Board Socket Activity Created',
+  props<{ activity: TicketActivityResponseDto }>(),
+);

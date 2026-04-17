@@ -37,6 +37,7 @@ import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.ent
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
+import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
 import { DigitalOceanProvider } from '../providers/digital-ocean.provider';
 import { HetznerProvider } from '../providers/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
@@ -53,6 +54,7 @@ import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.s
 import { ClientsService } from '../services/clients.service';
 import { RemoteAgentsSessionService } from '../services/remote-agents-session.service';
 import { TicketAutomationService } from '../services/ticket-automation.service';
+import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { StatisticsAgentSyncService } from '../services/statistics-agent-sync.service';
@@ -120,6 +122,8 @@ const authMethod = getAuthenticationMethod();
     ClientAgentCredentialsService,
     SocketAuthService,
     ClientsGateway,
+    TicketBoardRealtimeService,
+    TicketsBoardGateway,
     ProvisioningService,
     ProvisioningProviderFactory,
     ProvisioningReferencesRepository,
