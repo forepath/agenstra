@@ -20,6 +20,8 @@ import {
   withLatestFrom,
 } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+import { ticketBoardAutomationRunUpsert } from '../ticket-automation/ticket-automation.actions';
+import { ticketBoardTicketUpsert } from '../tickets/tickets.actions';
 import {
   connectSocket,
   connectSocketFailure,
@@ -42,8 +44,18 @@ import {
   socketReconnectFailed,
   socketReconnecting,
 } from './sockets.actions';
+import {
+  CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
+  CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
+} from './client-chat-automation.constants';
 import { selectSelectedAgentId, selectSelectedClientId, selectSettingClient } from './sockets.selectors';
-import { ForwardableEvent, type ForwardedEventPayload } from './sockets.types';
+import {
+  ForwardableEvent,
+  type ForwardedEventPayload,
+  type TicketAutomationRunChatEventPayload,
+} from './sockets.types';
+import type { TicketResponseDto } from '../tickets/tickets.types';
+import { ticketAutomationRunChatSummaryToResponseDto } from '../../utils/ticket-automation-chat-run-mapper';
 
 /**
  * Socket.IO internal events that should not be forwarded or handled as application events
@@ -406,5 +418,40 @@ export const restoreAgentLogin$ = createEffect(
       filter((action) => action !== undefined && action !== null),
     );
   },
+  { functional: true },
+);
+
+/**
+ * Keeps ticket-automation run cache in sync with clients-namespace automation chat snapshots
+ * so chat cards can merge live run status without subscribing to the tickets board socket.
+ */
+export const syncTicketAutomationRunFromClientsChat$ = createEffect(
+  (actions$ = inject(Actions)) =>
+    actions$.pipe(
+      ofType(forwardedEventReceived),
+      filter((a) => {
+        if (a.event !== CLIENT_CHAT_AUTOMATION_SOCKET_EVENT) {
+          return false;
+        }
+        const p = a.payload as TicketAutomationRunChatEventPayload;
+        return !!p?.run?.id;
+      }),
+      map((a) =>
+        ticketBoardAutomationRunUpsert({
+          run: ticketAutomationRunChatSummaryToResponseDto((a.payload as TicketAutomationRunChatEventPayload).run),
+        }),
+      ),
+    ),
+  { functional: true },
+);
+
+/** Merge ticket list/detail from clients-namespace ticket snapshots (same payload as tickets-board `ticketUpsert`). */
+export const syncTicketsFromClientsChatTicketUpsert$ = createEffect(
+  (actions$ = inject(Actions)) =>
+    actions$.pipe(
+      ofType(forwardedEventReceived),
+      filter((a) => a.event === CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT),
+      map((a) => ticketBoardTicketUpsert({ ticket: a.payload as unknown as TicketResponseDto })),
+    ),
   { functional: true },
 );

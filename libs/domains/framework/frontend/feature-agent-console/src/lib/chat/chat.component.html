@@ -851,6 +851,48 @@
                         </div>
                       </div>
                     }
+                  } @else if (item.kind === 'ticketAutomationRun') {
+                    <div class="d-flex justify-content-start">
+                      <div class="card border-secondary bg-body chat-message-card">
+                        <div class="card-body chat-message-body">
+                          <div class="fw-semibold text-truncate" [attr.title]="item.payload.ticket.title">
+                            {{ item.payload.ticket.title }}
+                          </div>
+                          <div class="small text-muted mt-1 d-flex flex-wrap gap-1">
+                            <span class="badge text-bg-light border">{{
+                              ticketWorkflowLaneLabel(item.payload.ticket.status)
+                            }}</span>
+                            <span class="badge text-bg-secondary">{{
+                              automationRunStatusLabel(item.payload.run.status)
+                            }}</span>
+                            <span class="badge text-bg-info text-dark">{{
+                              automationRunPhaseLabel(item.payload.run.phase)
+                            }}</span>
+                          </div>
+                          <div class="d-flex flex-wrap gap-2 mt-2">
+                            @if (item.payload.actions[0]; as act) {
+                              <button
+                                type="button"
+                                class="btn btn-sm btn-primary"
+                                (click)="openTicketAutomationRunFromChat(item.payload)"
+                              >
+                                {{ act.label }}
+                              </button>
+                            }
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-outline-primary"
+                              (click)="openTicketDetailFromChat(item.payload)"
+                            >
+                              {{ openTicketFromChatButtonLabel }}
+                            </button>
+                          </div>
+                          <small class="chat-message-timestamp text-muted d-block mt-2">{{
+                            formatTimestamp(item.sortTime)
+                          }}</small>
+                        </div>
+                      </div>
+                    </div>
                   }
                 }
                 <!-- Live stream preview (chatEvent) until final chatMessage arrives -->

@@ -19,6 +19,7 @@ import {
   selectTicketAutomationLoadingConfig,
   selectTicketAutomationLoadingRunDetail,
   selectTicketAutomationLoadingRuns,
+  selectTicketAutomationRunCacheByRunId,
   selectTicketAutomationRunDetail,
   selectTicketAutomationRuns,
   selectTicketAutomationSaving,
@@ -38,6 +39,9 @@ export class TicketAutomationFacade {
   readonly activeTicketId$: Observable<string | null> = this.store.select(selectTicketAutomationActiveTicketId);
   readonly config$: Observable<TicketAutomationResponseDto | null> = this.store.select(selectTicketAutomationConfig);
   readonly runs$: Observable<TicketAutomationRunResponseDto[]> = this.store.select(selectTicketAutomationRuns);
+  readonly runCacheByRunId$: Observable<Record<string, TicketAutomationRunResponseDto>> = this.store.select(
+    selectTicketAutomationRunCacheByRunId,
+  );
   readonly runDetail$: Observable<TicketAutomationRunResponseDto | null> = this.store.select(
     selectTicketAutomationRunDetail,
   );

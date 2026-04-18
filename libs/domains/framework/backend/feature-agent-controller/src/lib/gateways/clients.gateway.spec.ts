@@ -7,8 +7,10 @@ import {
 } from '@forepath/identity/backend';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientsService } from '../services/clients.service';
 import { StatisticsService } from '../services/statistics.service';
+import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { ClientsGateway } from './clients.gateway';
 
 jest.mock(
@@ -121,6 +123,15 @@ describe('ClientsGateway', () => {
     recordChatInput: jest.fn().mockResolvedValue(undefined),
     recordChatOutput: jest.fn().mockResolvedValue(undefined),
     recordChatFilterDrop: jest.fn().mockResolvedValue(undefined),
+    recordChatFilterFlag: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockClientAutomationChatRealtime = {
+    attachServer: jest.fn(),
+  };
+
+  const mockTicketAutomationChatSync = {
+    hydrateForAgentClient: jest.fn().mockResolvedValue(undefined),
   };
 
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
@@ -128,6 +139,8 @@ describe('ClientsGateway', () => {
     const socket = {
       id,
       emit: jest.fn((event: string, payload: unknown) => emitted.push({ event, payload })),
+      join: jest.fn().mockResolvedValue(undefined),
+      leave: jest.fn().mockResolvedValue(undefined),
       getEmitted: () => emitted,
       connected: true, // Required for event forwarding in gateway
       data: withUserInfo ? { userInfo: { isApiKeyAuth: true, user: { id: 'api-key-user', roles: ['admin'] } } } : {},
@@ -146,6 +159,8 @@ describe('ClientsGateway', () => {
         { provide: ClientAgentCredentialsRepository, useValue: mockCredentialsRepo },
         { provide: SocketAuthService, useValue: mockSocketAuthService },
         { provide: StatisticsService, useValue: mockStatisticsService },
+        { provide: ClientAutomationChatRealtimeService, useValue: mockClientAutomationChatRealtime },
+        { provide: TicketAutomationChatSyncService, useValue: mockTicketAutomationChatSync },
       ],
     }).compile();
 

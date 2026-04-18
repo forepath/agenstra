@@ -1,4 +1,11 @@
-import { buildAgentTurnView, buildChatDisplayThread, type ChatMessageWithFilter } from './chat-thread-display';
+import type { TicketAutomationRunChatEventPayload } from '@forepath/framework/frontend/data-access-agent-console';
+import {
+  buildAgentTurnView,
+  buildChatDisplayThread,
+  buildMergedChatDisplayThread,
+  type ChatMessageWithFilter,
+  type ChatTimelineOrderedRowLike,
+} from './chat-thread-display';
 
 function chatMsg(from: 'user' | 'agent', response: unknown, ts: number): ChatMessageWithFilter {
   const iso = new Date(ts).toISOString();
@@ -122,5 +129,76 @@ describe('buildAgentTurnView', () => {
     if (mid?.kind === 'markdown') {
       expect(mid.markdown).toContain('Middle reply');
     }
+  });
+});
+
+function autoPayload(
+  ticketId: string,
+  runId: string,
+  agentId: string,
+  timelineAt: string,
+): TicketAutomationRunChatEventPayload {
+  return {
+    timelineAt,
+    hydrate: false,
+    ticket: {
+      id: ticketId,
+      clientId: 'c1',
+      title: 'T',
+      priority: 'medium',
+      status: 'todo',
+      automationEligible: true,
+      preferredChatAgentId: null,
+      createdAt: timelineAt,
+      updatedAt: timelineAt,
+    },
+    run: {
+      id: runId,
+      ticketId,
+      clientId: 'c1',
+      agentId,
+      status: 'running',
+      phase: 'iterate',
+      startedAt: timelineAt,
+      updatedAt: timelineAt,
+      finishedAt: null,
+    },
+    actions: [{ type: 'openTicketAutomationRun', ticketId, runId, label: 'Open' }],
+  };
+}
+
+describe('buildMergedChatDisplayThread', () => {
+  it('interleaves automation between user and agent by semantic order', () => {
+    const u = chatMsg('user', 'hi', 1);
+    const a = chatMsg('agent', { type: 'result', result: 'ok' }, 4);
+    const p = autoPayload('tid', 'rid', 'aid', new Date(2).toISOString());
+    const ordered: ChatTimelineOrderedRowLike[] = [
+      { ...u, semanticTimestamp: 1 },
+      {
+        event: 'ticketAutomationRunChatUpsert',
+        payload: p,
+        timestamp: 2,
+        semanticTimestamp: 2,
+      },
+      { ...a, semanticTimestamp: 4 },
+    ];
+    const thread = buildMergedChatDisplayThread(ordered, [u, a]);
+    expect(thread.map((i) => i.kind)).toEqual(['user', 'ticketAutomationRun', 'agentTurn']);
+  });
+
+  it('dedupes automation by run id is done upstream; single automation row is preserved', () => {
+    const u = chatMsg('user', 'x', 10);
+    const p = autoPayload('tid', 'rid', 'aid', new Date(11).toISOString());
+    const ordered: ChatTimelineOrderedRowLike[] = [
+      { ...u, semanticTimestamp: 10 },
+      {
+        event: 'ticketAutomationRunChatUpsert',
+        payload: p,
+        timestamp: 11,
+        semanticTimestamp: 11,
+      },
+    ];
+    const thread = buildMergedChatDisplayThread(ordered, [u]);
+    expect(thread[1]?.kind).toBe('ticketAutomationRun');
   });
 });

@@ -10,6 +10,7 @@ import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from './clients.service';
 import { TicketAutomationService } from './ticket-automation.service';
+import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
 
@@ -118,6 +119,7 @@ describe('TicketsService', () => {
         { provide: ClientsService, useValue: clientsService },
         { provide: TicketAutomationService, useValue: ticketAutomationService },
         { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
+        { provide: ClientAutomationChatRealtimeService, useValue: { emitTicketChatUpsert: jest.fn() } },
       ],
     }).compile();
 

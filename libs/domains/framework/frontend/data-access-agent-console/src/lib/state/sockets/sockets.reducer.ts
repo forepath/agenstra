@@ -1,4 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
+import {
+  CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
+  CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
+} from './client-chat-automation.constants';
 import { ForwardableEvent, type AgentResponseMode } from './sockets.types';
 import {
   chatEnhancementStarted,
@@ -451,10 +455,21 @@ export const socketsReducer = createReducer(
           : updatedFilterResults;
     }
 
-    const skipForwardedAppend = event === 'chatEnhanceResult' || event === 'ticketBodyResult';
+    const skipForwardedAppend =
+      event === 'chatEnhanceResult' || event === 'ticketBodyResult' || event === CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT;
+    let eventRowTimestamp = Date.now();
+    if (event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT && payload && typeof payload === 'object') {
+      const tl = (payload as { timelineAt?: unknown }).timelineAt;
+      if (typeof tl === 'string') {
+        const parsed = Date.parse(tl);
+        if (!Number.isNaN(parsed)) {
+          eventRowTimestamp = parsed;
+        }
+      }
+    }
     const updatedForwardedEvents = skipForwardedAppend
       ? state.forwardedEvents
-      : [...state.forwardedEvents, { event, payload, timestamp: Date.now() }];
+      : [...state.forwardedEvents, { event, payload, timestamp: eventRowTimestamp }];
     const trimmedForwardedEvents =
       updatedForwardedEvents.length > state.maxForwardedEvents
         ? updatedForwardedEvents.slice(-state.maxForwardedEvents)

@@ -74,6 +74,7 @@ import {
   ticketAutomationRunStatusLabel,
   ticketAutomationRunStepKindLabel,
 } from './ticket-automation-run-labels';
+import { ticketLaneStatusLabel } from './ticket-lane-status-label';
 
 const ALL_TICKET_STATUSES: TicketStatus[] = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'];
 
@@ -619,6 +620,33 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
           },
         });
       });
+
+    this.route.queryParamMap.pipe(distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const ticketId = params.get('openTicketId')?.trim();
+      const runId = params.get('openAutomationRunId')?.trim();
+      if (ticketId && runId) {
+        queueMicrotask(() => {
+          this.openTicketDetailFlow(ticketId);
+          this.scheduleOpenAutomationRunWhenDetailReady(ticketId, runId);
+        });
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { openTicketId: null, openAutomationRunId: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+        return;
+      }
+      if (ticketId) {
+        queueMicrotask(() => this.openTicketDetailFlow(ticketId));
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { openTicketId: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -648,22 +676,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   laneLabel(status: TicketStatus): string {
-    switch (status) {
-      case 'draft':
-        return $localize`:@@featureTicketsBoard-laneDraft:Draft`;
-      case 'todo':
-        return $localize`:@@featureTicketsBoard-laneTodo:To do`;
-      case 'in_progress':
-        return $localize`:@@featureTicketsBoard-laneInProgress:In progress`;
-      case 'prototype':
-        return $localize`:@@featureTicketsBoard-lanePrototype:Prototype`;
-      case 'done':
-        return $localize`:@@featureTicketsBoard-laneDone:Done`;
-      case 'closed':
-        return $localize`:@@featureTicketsBoard-laneClosed:Closed`;
-      default:
-        return status;
-    }
+    return ticketLaneStatusLabel(status);
   }
 
   priorityLabel(priority: TicketPriority): string {
@@ -1019,6 +1032,20 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       return;
     }
     this.ticketAutomationFacade.loadRuns(tid);
+  }
+
+  /**
+   * Polls until ticket detail matches `ticketId` (after {@link openTicketDetailFlow}), then opens the run modal.
+   */
+  private scheduleOpenAutomationRunWhenDetailReady(ticketId: string, runId: string, attempt = 0): void {
+    if (attempt > 60) {
+      return;
+    }
+    if (this.detail()?.id !== ticketId) {
+      setTimeout(() => this.scheduleOpenAutomationRunWhenDetailReady(ticketId, runId, attempt + 1), 40);
+      return;
+    }
+    this.openTicketAutomationRunDetailModal(runId);
   }
 
   openTicketAutomationRunDetailModal(runId: string): void {

@@ -4813,6 +4813,82 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TicketAutomationRunStepResponseDto'
+    TicketAutomationRunChatTicketSummaryDto:
+      type: object
+      description: Ticket fields included in chat timeline bubbles for automation runs.
+      required:
+        [
+          id,
+          clientId,
+          title,
+          priority,
+          status,
+          automationEligible,
+          preferredChatAgentId,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        priority:
+          $ref: '#/components/schemas/TicketPriority'
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+        automationEligible:
+          type: boolean
+        preferredChatAgentId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TicketAutomationRunChatOpenActionDto:
+      type: object
+      required: [type, ticketId, runId, label]
+      properties:
+        type:
+          type: string
+          enum: [openTicketAutomationRun]
+        ticketId:
+          type: string
+          format: uuid
+        runId:
+          type: string
+          format: uuid
+        label:
+          type: string
+          description: Suggested button label (UI may use i18n instead).
+    TicketAutomationRunChatEventDto:
+      type: object
+      description: >
+        Payload for WebSocket event `ticketAutomationRunChatUpsert` on namespace **clients** (not proxied from
+        agent-manager). `timelineAt` uses `run.startedAt` when `hydrate` is true (historic replay after login) and
+        `run.updatedAt` when `hydrate` is false (live updates). Clients merge with chat messages by this timestamp.
+      required: [timelineAt, hydrate, ticket, run, actions]
+      properties:
+        timelineAt:
+          type: string
+          format: date-time
+        hydrate:
+          type: boolean
+        ticket:
+          $ref: '#/components/schemas/TicketAutomationRunChatTicketSummaryDto'
+        run:
+          $ref: '#/components/schemas/TicketAutomationRunResponseDto'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketAutomationRunChatOpenActionDto'
     PrototypePromptResponseDto:
       type: object
       required: [prompt]

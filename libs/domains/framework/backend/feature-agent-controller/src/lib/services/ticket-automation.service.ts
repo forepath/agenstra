@@ -37,6 +37,7 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
 import { parseAndValidateVerifierProfile } from '../utils/verifier-profile.validation';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
+import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
 
@@ -87,6 +88,7 @@ export class TicketAutomationService {
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly ticketBoardRealtime: TicketBoardRealtimeService,
+    private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
     @Inject(forwardRef(() => TicketsService))
     private readonly ticketsService: TicketsService,
   ) {}
@@ -487,6 +489,7 @@ export class TicketAutomationService {
       TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
       this.mapRun(run),
     );
+    this.ticketAutomationChatSync.emitLiveRunUpdateFromEntity(run);
     const autoFresh = await this.automationRepo.findOne({ where: { ticketId } });
     if (autoFresh) {
       this.ticketBoardRealtime.emitToClient(

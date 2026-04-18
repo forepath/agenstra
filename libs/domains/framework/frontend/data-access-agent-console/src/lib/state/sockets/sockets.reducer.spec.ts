@@ -428,6 +428,46 @@ describe('socketsReducer', () => {
       jest.spyOn(Date, 'now').mockRestore();
     });
 
+    it('stores ticketAutomationRunChatUpsert with timestamp from timelineAt', () => {
+      const state: SocketsState = {
+        ...initialSocketsState,
+        forwardedEvents: [],
+      };
+      const timelineMs = Date.parse('2022-06-15T12:00:00.000Z');
+      const payload = {
+        timelineAt: '2022-06-15T12:00:00.000Z',
+        hydrate: false,
+        ticket: {
+          id: 't1',
+          clientId: 'c1',
+          title: 'x',
+          priority: 'low',
+          status: 'todo',
+          automationEligible: false,
+          preferredChatAgentId: null,
+          createdAt: '',
+          updatedAt: '',
+        },
+        run: {
+          id: 'r1',
+          ticketId: 't1',
+          clientId: 'c1',
+          agentId: 'a1',
+          status: 'running',
+          phase: 'iterate',
+          startedAt: '2022-06-15T11:00:00.000Z',
+          updatedAt: '2022-06-15T12:00:00.000Z',
+          finishedAt: null,
+        },
+        actions: [],
+      };
+      const newState = socketsReducer(
+        state,
+        forwardedEventReceived({ event: 'ticketAutomationRunChatUpsert', payload: payload as never }),
+      );
+      expect(newState.forwardedEvents[0]?.timestamp).toBe(timelineMs);
+    });
+
     it('should handle chatEnhanceResult without appending to forwardedEvents', () => {
       const timestamp = Date.now();
       jest.spyOn(Date, 'now').mockReturnValue(timestamp);

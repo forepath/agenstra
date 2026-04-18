@@ -103,6 +103,7 @@ export {
   type ListUsersParams,
 } from '@forepath/identity/frontend';
 
+export * from './lib/utils/ticket-automation-chat-run-mapper';
 export * from './lib/services/agents.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/deployments.service';
@@ -147,6 +148,7 @@ export * from './lib/state/files/files.facade';
 export * from './lib/state/files/files.reducer';
 export * from './lib/state/files/files.selectors';
 export * from './lib/state/files/files.types';
+export * from './lib/state/sockets/client-chat-automation.constants';
 export * from './lib/state/sockets/sockets.actions';
 export * from './lib/state/sockets/sockets.effects';
 export * from './lib/state/sockets/sockets.facade';

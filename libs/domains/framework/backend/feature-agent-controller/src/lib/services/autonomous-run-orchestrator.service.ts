@@ -33,6 +33,7 @@ import {
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
+import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketAutomationService } from './ticket-automation.service';
 import { TicketsService } from './tickets.service';
@@ -67,6 +68,7 @@ export class AutonomousRunOrchestratorService {
     private readonly remoteChat: RemoteAgentsSessionService,
     private readonly vcsProxy: ClientAgentVcsProxyService,
     private readonly ticketBoardRealtime: TicketBoardRealtimeService,
+    private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
     private readonly ticketsService: TicketsService,
     private readonly ticketAutomationService: TicketAutomationService,
   ) {}
@@ -495,6 +497,7 @@ export class AutonomousRunOrchestratorService {
         TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
         ticketAutomationRunEntityToDto(refreshedRun),
       );
+      this.ticketAutomationChatSync.emitLiveRunUpdateFromEntity(refreshedRun);
     }
     const autoAfterFail = await this.automationRepo.findOne({ where: { ticketId: run.ticketId } });
     if (autoAfterFail) {
@@ -579,6 +582,7 @@ export class AutonomousRunOrchestratorService {
         TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
         ticketAutomationRunEntityToDto(r),
       );
+      this.ticketAutomationChatSync.emitLiveRunUpdateFromEntity(r);
     }
   }
 

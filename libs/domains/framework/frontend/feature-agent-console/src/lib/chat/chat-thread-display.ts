@@ -2,7 +2,18 @@ import type {
   AgentResponseObject,
   ChatMessageData,
   ForwardedEventPayload,
+  TicketAutomationRunChatEventPayload,
 } from '@forepath/framework/frontend/data-access-agent-console';
+
+/** Matches `selectChatTimelineOrdered` rows (avoid importing selector here for Jest graph). */
+export interface ChatTimelineOrderedRowLike {
+  event: string;
+  payload: unknown;
+  timestamp: number;
+  semanticTimestamp: number;
+}
+
+const TICKET_AUTOMATION_RUN_CHAT_UPSERT = 'ticketAutomationRunChatUpsert';
 import { mergeAdjacentThinkingDisplayRows, type AgentChatEventDisplayRow } from './agent-chat-event-display';
 import { extractThinkingPreviewText, formatAgentResponseForChatMarkdown } from './agent-chat-response-markdown';
 
@@ -25,7 +36,8 @@ export type ChatMessageWithFilter = {
 
 export type ChatDisplayThreadItem =
   | { kind: 'user'; msg: ChatMessageWithFilter }
-  | { kind: 'agentTurn'; msgs: ChatMessageWithFilter[]; view: AgentTurnView };
+  | { kind: 'agentTurn'; msgs: ChatMessageWithFilter[]; view: AgentTurnView }
+  | { kind: 'ticketAutomationRun'; sortTime: number; payload: TicketAutomationRunChatEventPayload };
 
 /** Ordered slices of an agent turn: structured rows and prose markdown interleaved as produced. */
 export type AgentTurnSegment =
@@ -322,6 +334,66 @@ export function buildChatDisplayThread(messages: ChatMessageWithFilter[]): ChatD
   };
 
   for (const msg of messages) {
+    if (isUserPayload(msg.payload)) {
+      flushAgent();
+      out.push({ kind: 'user', msg });
+    } else if (isAgentPayload(msg.payload)) {
+      agentRun.push(msg);
+    }
+  }
+  flushAgent();
+  return out;
+}
+
+/**
+ * Merges ordered chat + automation timeline rows into display items (automation rows break agent turns).
+ */
+export function buildMergedChatDisplayThread(
+  orderedRows: ChatTimelineOrderedRowLike[],
+  filteredChatMessages: ChatMessageWithFilter[],
+): ChatDisplayThreadItem[] {
+  const resolveChatRow = (row: ChatTimelineOrderedRowLike): ChatMessageWithFilter | null => {
+    const hit = filteredChatMessages.find((m) => m.payload === row.payload && m.timestamp === row.timestamp);
+    if (hit) {
+      return hit;
+    }
+    if (row.event !== 'chatMessage') {
+      return null;
+    }
+    return {
+      event: row.event,
+      payload: row.payload as ForwardedEventPayload,
+      timestamp: row.timestamp,
+      filterResult: null,
+    };
+  };
+
+  const out: ChatDisplayThreadItem[] = [];
+  let agentRun: ChatMessageWithFilter[] = [];
+
+  const flushAgent = (): void => {
+    if (agentRun.length === 0) {
+      return;
+    }
+    const view = buildAgentTurnView(agentRun);
+    out.push({ kind: 'agentTurn', msgs: [...agentRun], view });
+    agentRun = [];
+  };
+
+  for (const row of orderedRows) {
+    if (row.event === TICKET_AUTOMATION_RUN_CHAT_UPSERT) {
+      flushAgent();
+      const payload = row.payload as TicketAutomationRunChatEventPayload;
+      out.push({ kind: 'ticketAutomationRun', sortTime: row.semanticTimestamp, payload });
+      continue;
+    }
+    if (row.event !== 'chatMessage') {
+      continue;
+    }
+    const msg = resolveChatRow(row);
+    if (!msg) {
+      continue;
+    }
     if (isUserPayload(msg.payload)) {
       flushAgent();
       out.push({ kind: 'user', msg });

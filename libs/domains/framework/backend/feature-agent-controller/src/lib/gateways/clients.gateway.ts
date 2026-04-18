@@ -23,8 +23,11 @@ import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.ent
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientsService } from '../services/clients.service';
 import { StatisticsService } from '../services/statistics.service';
+import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
+import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 // socket.io-client is required at runtime when forwarding; avoid static import to keep optional dependency for tests
 // Using type-only import for ClientSocket to avoid runtime dependency
 
@@ -78,6 +81,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   // Track last agentId and message for statistics (last forward with agentId)
   private lastAgentIdBySocket = new Map<string, string>();
   private lastChatMessageBySocket = new Map<string, string>();
+  /** Local Socket.IO sockets by id (Namespace typings do not expose sockets.get). */
+  private readonly localSocketById = new Map<string, Socket>();
 
   constructor(
     private readonly clientsService: ClientsService,
@@ -86,9 +91,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly clientAgentCredentialsRepository: ClientAgentCredentialsRepository,
     private readonly socketAuthService: SocketAuthService,
     private readonly statisticsService: StatisticsService,
+    private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
+    private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
   ) {}
 
   afterInit(server: Server): void {
+    this.clientAutomationChatRealtime.attachServer(server);
     // When using namespace: 'clients', NestJS passes the namespace (not root Server) to afterInit.
     // Namespaces don't have .of(); use server directly for middleware.
     server.use(async (socket, next) => {
@@ -107,10 +115,16 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   handleConnection(socket: Socket): void {
     this.logger.log(`Client connected: ${socket.id}`);
+    this.localSocketById.set(socket.id, socket);
   }
 
   handleDisconnect(socket: Socket): void {
     this.logger.log(`Client disconnected: ${socket.id}`);
+    this.localSocketById.delete(socket.id);
+    const prevClient = this.selectedClientBySocket.get(socket.id);
+    if (prevClient) {
+      void socket.leave(TicketBoardRealtimeService.clientRoom(prevClient));
+    }
     this.selectedClientBySocket.delete(socket.id);
     const remote = this.remoteSocketBySocket.get(socket.id);
     if (remote) {
@@ -159,6 +173,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     // Skip if already selected (unless it's a different clientId, which would be a change)
     if (currentSelectedClientId === clientId && !currentSettingClientId) {
       this.logger.debug(`Client ${clientId} already selected for socket ${socket.id}`);
+      void socket.join(TicketBoardRealtimeService.clientRoom(clientId));
       // Still emit success to acknowledge the request
       socket.emit('setClientSuccess', { message: 'Client context already set', clientId });
       return;
@@ -181,6 +196,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         clientId,
         buildRequestFromSocketUser(userInfo),
       );
+
+      const previousSelectedClientId = this.selectedClientBySocket.get(socket.id);
+      if (previousSelectedClientId && previousSelectedClientId !== clientId) {
+        await socket.leave(TicketBoardRealtimeService.clientRoom(previousSelectedClientId));
+      }
+      await socket.join(TicketBoardRealtimeService.clientRoom(clientId));
 
       const client = await this.clientsRepository.findByIdOrThrow(clientId as string);
       this.selectedClientBySocket.set(socket.id, clientId);
@@ -851,6 +872,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           remote.once('loginError', onLoginError);
           remote.emit('login', loginPayload);
         });
+        this.scheduleTicketAutomationChatHydrate(socket, clientId, agentId);
         // Login event already emitted, don't forward again
         // SECURITY: Acknowledgement sent only to the initiating socket
         socket.emit('forwardAck', { received: true, event });
@@ -858,6 +880,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       // Auto-login for other events if agentId is provided and not yet logged in
+      let performedFreshAutoLogin = false;
       if (agentId && !loggedIn.has(agentId)) {
         const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(clientId, agentId);
         if (creds?.password) {
@@ -889,9 +912,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             remote.once('loginError', onLoginError);
             remote.emit('login', { agentId, password: creds.password });
           });
+          performedFreshAutoLogin = true;
         } else {
           this.logger.warn(`No stored credentials for client ${clientId}, agent ${agentId}; skipping auto-login`);
         }
+      }
+      if (performedFreshAutoLogin && agentId) {
+        this.scheduleTicketAutomationChatHydrate(socket, clientId, agentId);
       }
       if (event === 'chat' && agentId) {
         const message = (payload as { message?: string })?.message ?? '';
@@ -1013,12 +1040,23 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           remote.once('loginError', onLoginError);
           remote.emit('login', { agentId, password: creds.password });
         });
+        const localSocket = this.localSocketById.get(socketId);
+        if (localSocket) {
+          this.scheduleTicketAutomationChatHydrate(localSocket, clientId, agentId);
+        }
       } catch (error) {
         const errorMessage = (error as { message?: string }).message || 'Unknown error';
         this.logger.error(`Error restoring login for agent ${agentId} on socket ${socketId}: ${errorMessage}`);
         // Continue with other agents even if one fails
       }
     }
+  }
+
+  private scheduleTicketAutomationChatHydrate(socket: Socket, clientId: string, agentId: string): void {
+    void this.ticketAutomationChatSync.hydrateForAgentClient(socket, clientId, agentId).catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Ticket automation chat hydrate failed for agent ${agentId}: ${message}`);
+    });
   }
 
   private async getAuthHeader(clientId: string): Promise<string> {
