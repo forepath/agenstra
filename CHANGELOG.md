@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.45.0](https://github.com/forepath/agenstra/compare/v1.44.1...v1.45.0) (2026-04-18)
+
+
+### Features
+
+* automatic ai ticket prototyping ([#281](https://github.com/forepath/agenstra/issues/281)) ([f678f6c](https://github.com/forepath/agenstra/commit/f678f6c153d2d95cc44c52afb1f4c8b8ba7b8881))
+* chat automation run details ([#282](https://github.com/forepath/agenstra/issues/282)) ([eb1de6d](https://github.com/forepath/agenstra/commit/eb1de6d39b3d43c12c00ea9e46455fad07f20aa6))
+
 ## [1.44.1](https://github.com/forepath/agenstra/compare/v1.44.0...v1.44.1) (2026-04-12)
 
 
