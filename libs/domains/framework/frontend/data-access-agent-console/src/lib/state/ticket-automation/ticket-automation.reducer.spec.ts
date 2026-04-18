@@ -223,6 +223,18 @@ describe('ticketAutomationReducer', () => {
     const next = ticketAutomationReducer(prev, ticketBoardAutomationRunUpsert({ run: updated }));
     expect(next.runs[0].phase).toBe('verify');
     expect(next.runDetail?.phase).toBe('verify');
+    expect(next.runCacheByRunId[mockRun.id]?.phase).toBe('verify');
+  });
+
+  it('caches board run upsert globally when not the active ticket', () => {
+    const prev: TicketAutomationState = {
+      ...initialTicketAutomationState,
+      activeTicketId: 'other-ticket',
+      runs: [],
+    };
+    const next = ticketAutomationReducer(prev, ticketBoardAutomationRunUpsert({ run: mockRun }));
+    expect(next.runs).toEqual([]);
+    expect(next.runCacheByRunId[mockRun.id]?.id).toBe(mockRun.id);
   });
 
   it('appends a step to open run detail from board socket', () => {

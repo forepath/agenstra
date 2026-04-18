@@ -16,6 +16,8 @@ import { getSocketInstance } from './sockets.effects';
 import {
   selectChatEnhancementLastResult,
   selectChatEnhancementPending,
+  selectChatTimelineOrdered,
+  type ChatTimelineOrderedRow,
   selectTicketBodyGenerationPending,
   selectTicketBodyLastResult,
   selectChatForwarding,
@@ -84,6 +86,9 @@ export class SocketsFacade {
   readonly error$: Observable<string | null> = this.store.select(selectSocketError);
   readonly forwardedEvents$: Observable<Array<{ event: string; payload: ForwardedEventPayload; timestamp: number }>> =
     this.store.select(selectForwardedEvents);
+  /** Chat messages + ticket automation chat events, ordered for the timeline. */
+  readonly chatTimelineOrdered$: Observable<ChatTimelineOrderedRow[]> = this.store.select(selectChatTimelineOrdered);
+
   readonly messageFilterResults$: Observable<
     Array<{
       direction: 'incoming' | 'outgoing';

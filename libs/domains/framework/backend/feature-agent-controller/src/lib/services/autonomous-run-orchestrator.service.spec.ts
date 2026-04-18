@@ -14,12 +14,14 @@ import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 import { TicketAutomationService } from './ticket-automation.service';
+import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
 
 function realtimeSideProviders(ticketIdForBoard: string) {
   return [
     { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
+    { provide: TicketAutomationChatSyncService, useValue: { emitLiveRunUpdateFromEntity: jest.fn() } },
     { provide: TicketsService, useValue: { emitBoardTicketSnapshotInternal: jest.fn().mockResolvedValue(undefined) } },
     {
       provide: TicketAutomationService,

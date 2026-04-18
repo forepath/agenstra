@@ -44,6 +44,7 @@ import {
 import { ClientsService } from './clients.service';
 import { TicketAutomationService, TICKET_APPROVAL_INVALIDATION_FIELDS } from './ticket-automation.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
+import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 
 const DEFAULT_SESSION_TTL_MS = 15 * 60 * 1000;
@@ -74,6 +75,7 @@ export class TicketsService {
     @Inject(forwardRef(() => TicketAutomationService))
     private readonly ticketAutomationService: TicketAutomationService,
     private readonly ticketBoardRealtime: TicketBoardRealtimeService,
+    private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
   ) {}
 
   /**
@@ -115,6 +117,7 @@ export class TicketsService {
 
   private boardEmitTicketUpsert(clientId: string, dto: TicketResponseDto): void {
     this.ticketBoardRealtime.emitToClient(clientId, TICKETS_BOARD_EVENTS.ticketUpsert, dto);
+    this.clientAutomationChatRealtime.emitTicketChatUpsert(clientId, dto);
   }
 
   private boardEmitTicketRemoved(clientId: string, id: string): void {

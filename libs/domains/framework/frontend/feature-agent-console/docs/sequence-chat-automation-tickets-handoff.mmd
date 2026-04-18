@@ -1,0 +1,15 @@
+sequenceDiagram
+  participant User
+  participant Chat as Chat_component
+  participant Router
+  participant Board as Tickets_board
+  participant API as Agent_controller_REST
+
+  User->>Chat: Click View_automation_run
+  Chat->>Router: navigate_/tickets/:clientId?openTicketId&openAutomationRunId
+  Router->>Board: activate_route
+  Board->>Board: openTicketDetailFlow(ticketId)
+  Board->>API: load_ticket_and_automation
+  Board->>Board: scheduleOpenAutomationRunWhenDetailReady(ticketId, runId)
+  Board->>Board: openTicketAutomationRunDetailModal(runId)
+  Board->>Router: replaceUrl_clear_query_params

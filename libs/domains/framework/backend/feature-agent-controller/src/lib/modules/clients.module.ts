@@ -48,12 +48,14 @@ import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
+import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
 import { ClientAgentAutonomyService } from '../services/client-agent-autonomy.service';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { RemoteAgentsSessionService } from '../services/remote-agents-session.service';
 import { TicketAutomationService } from '../services/ticket-automation.service';
+import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
 import { ProvisioningService } from '../services/provisioning.service';
@@ -123,6 +125,8 @@ const authMethod = getAuthenticationMethod();
     SocketAuthService,
     ClientsGateway,
     TicketBoardRealtimeService,
+    ClientAutomationChatRealtimeService,
+    TicketAutomationChatSyncService,
     TicketsBoardGateway,
     ProvisioningService,
     ProvisioningProviderFactory,

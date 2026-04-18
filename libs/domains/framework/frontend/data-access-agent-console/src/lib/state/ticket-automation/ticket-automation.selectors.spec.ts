@@ -13,6 +13,7 @@ describe('ticketAutomation selectors', () => {
     config: null,
     runs: [],
     runDetail: null,
+    runCacheByRunId: {},
     loadingConfig: true,
     loadingRuns: false,
     loadingRunDetail: false,

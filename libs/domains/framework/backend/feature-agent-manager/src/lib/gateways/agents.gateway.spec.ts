@@ -2276,6 +2276,59 @@ describe('AgentsGateway', () => {
         expect(results).toHaveLength(1);
         expect(results[0].result).toBe(essay);
       });
+
+      it('streaming persist does not triple assistant prose when deltas plus repeated result NDJSON lines', async () => {
+        const socketId = mockSocket.id || 'test-socket-id';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).socketById.set(socketId, mockSocket);
+        agentsService.findOne.mockResolvedValue(mockAgentResponse);
+        agentsRepository.findById.mockResolvedValue(mockAgent);
+        agentMessagesService.getChatHistory.mockResolvedValue([
+          {
+            id: 'msg-1',
+            agentId: mockAgent.id,
+            agent: mockAgent,
+            actor: 'user',
+            message: 'Say hi',
+            filtered: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ]);
+
+        mockAgentProvider.getCapabilities.mockReturnValue({
+          supportsChat: true,
+          supportsStreaming: true,
+          supportsToolEvents: false,
+          supportsQuestions: false,
+        });
+
+        const prose = 'Hello — nice to hear from you.';
+        const line = (obj: unknown) => `${JSON.stringify(obj)}\n`;
+
+        mockAgentProvider.sendMessageStream = jest.fn().mockImplementation(async function* () {
+          yield `${line({ type: 'delta', delta: prose.slice(0, 6) })}${line({ type: 'delta', delta: prose.slice(6) })}`;
+          yield line({ type: 'result', subtype: 'success', result: prose });
+          yield line({ type: 'result', subtype: 'success', result: prose });
+        });
+
+        mockAgentProvider.toParseableStrings.mockImplementation((raw: string) =>
+          raw.split('\n').filter((s) => s.trim()),
+        );
+        mockAgentProvider.toUnifiedResponse.mockImplementation((s: string) => JSON.parse(s) as AgentResponseObject);
+
+        await gateway.handleChat({ message: 'Say hello', responseMode: 'stream' }, mockSocket as Socket);
+
+        const agentCalls = agentMessagesService.createAgentMessage.mock.calls.filter(
+          (c) => c[0] === mockAgent.id && typeof c[1] === 'object' && c[1] !== null,
+        );
+        expect(agentCalls.length).toBeGreaterThanOrEqual(1);
+        const payload = agentCalls[agentCalls.length - 1][1] as Record<string, unknown>;
+        const asJson = JSON.stringify(payload);
+        expect(asJson.split(prose).length - 1).toBe(1);
+      });
     });
 
     describe('initialization message', () => {

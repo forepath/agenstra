@@ -34,6 +34,8 @@ export interface TicketAutomationState {
   config: TicketAutomationResponseDto | null;
   runs: TicketAutomationRunResponseDto[];
   runDetail: TicketAutomationRunResponseDto | null;
+  /** Latest known run payloads (board socket + clients chat); used to hydrate chat automation cards live. */
+  runCacheByRunId: Record<string, TicketAutomationRunResponseDto>;
   loadingConfig: boolean;
   loadingRuns: boolean;
   loadingRunDetail: boolean;
@@ -46,6 +48,7 @@ export const initialTicketAutomationState: TicketAutomationState = {
   config: null,
   runs: [],
   runDetail: null,
+  runCacheByRunId: {},
   loadingConfig: false,
   loadingRuns: false,
   loadingRunDetail: false,
@@ -64,6 +67,38 @@ function mergeRunInList(
   const next = [...runs];
   next[idx] = run;
   return next;
+}
+
+function mergeIntoRunCache(
+  cache: Record<string, TicketAutomationRunResponseDto>,
+  incoming: TicketAutomationRunResponseDto,
+): Record<string, TicketAutomationRunResponseDto> {
+  const prev = cache[incoming.id];
+  if (!prev) {
+    return { ...cache, [incoming.id]: incoming };
+  }
+  const prevT = Date.parse(prev.updatedAt);
+  const nextT = Date.parse(incoming.updatedAt);
+  if (!Number.isNaN(prevT) && !Number.isNaN(nextT) && nextT < prevT) {
+    return cache;
+  }
+  const merged: TicketAutomationRunResponseDto = {
+    ...prev,
+    ...incoming,
+    steps: incoming.steps ?? prev.steps,
+    ticketStatusBefore:
+      incoming.ticketStatusBefore && incoming.ticketStatusBefore.length > 0
+        ? incoming.ticketStatusBefore
+        : prev.ticketStatusBefore,
+  };
+  return { ...cache, [incoming.id]: merged };
+}
+
+function foldRunsIntoRunCache(
+  cache: Record<string, TicketAutomationRunResponseDto>,
+  runs: TicketAutomationRunResponseDto[],
+): Record<string, TicketAutomationRunResponseDto> {
+  return runs.reduce((acc, run) => mergeIntoRunCache(acc, run), cache);
 }
 
 export const ticketAutomationReducer = createReducer(
@@ -122,6 +157,7 @@ export const ticketAutomationReducer = createReducer(
     ...state,
     loadingRuns: false,
     runs,
+    runCacheByRunId: foldRunsIntoRunCache(state.runCacheByRunId, runs),
     error: null,
   })),
   on(loadTicketAutomationRunsFailure, (state, { error }) => ({
@@ -139,6 +175,7 @@ export const ticketAutomationReducer = createReducer(
     loadingRunDetail: false,
     runDetail: run,
     runs: mergeRunInList(state.runs, run),
+    runCacheByRunId: mergeIntoRunCache(state.runCacheByRunId, run),
     error: null,
   })),
   on(loadTicketAutomationRunDetailFailure, (state, { error }) => ({
@@ -151,6 +188,7 @@ export const ticketAutomationReducer = createReducer(
     saving: false,
     runs: mergeRunInList(state.runs, run),
     runDetail: state.runDetail?.id === run.id ? run : state.runDetail,
+    runCacheByRunId: mergeIntoRunCache(state.runCacheByRunId, run),
     error: null,
   })),
   on(clearTicketAutomationError, (state) => ({ ...state, error: null })),
@@ -162,8 +200,9 @@ export const ticketAutomationReducer = createReducer(
     return { ...state, config, error: null };
   }),
   on(ticketBoardAutomationRunUpsert, (state, { run }) => {
+    const runCacheByRunId = mergeIntoRunCache(state.runCacheByRunId, run);
     if (state.activeTicketId !== run.ticketId) {
-      return state;
+      return { ...state, runCacheByRunId };
     }
     const runs = mergeRunInList(state.runs, run);
     const runDetail =
@@ -174,7 +213,7 @@ export const ticketAutomationReducer = createReducer(
             steps: run.steps ?? state.runDetail.steps,
           }
         : state.runDetail;
-    return { ...state, runs, runDetail, error: null };
+    return { ...state, runCacheByRunId, runs, runDetail, error: null };
   }),
   on(ticketBoardAutomationRunStepAppended, (state, { runId, step }) => {
     if (state.runDetail?.id !== runId) {
@@ -185,10 +224,12 @@ export const ticketAutomationReducer = createReducer(
       return state;
     }
     const nextSteps = [...prev, step].sort((a, b) => a.stepIndex - b.stepIndex);
+    const updatedRun: TicketAutomationRunResponseDto = { ...state.runDetail, steps: nextSteps };
     return {
       ...state,
-      runDetail: { ...state.runDetail, steps: nextSteps },
-      runs: mergeRunInList(state.runs, { ...state.runDetail, steps: nextSteps }),
+      runDetail: updatedRun,
+      runs: mergeRunInList(state.runs, updatedRun),
+      runCacheByRunId: mergeIntoRunCache(state.runCacheByRunId, updatedRun),
     };
   }),
 );

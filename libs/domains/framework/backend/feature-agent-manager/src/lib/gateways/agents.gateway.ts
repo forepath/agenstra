@@ -1023,8 +1023,16 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   streamedUnified.push(parsed);
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, parsed);
                   for (const ev of events) {
-                    if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
-                    if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
+                    if (ev.kind === 'assistantDelta') {
+                      aggregatedText += ev.payload.delta;
+                    } else if (ev.kind === 'assistantMessage') {
+                      // Full replacement: deltas already built the prose; final `result` NDJSON repeats it.
+                      // Multiple `result` lines must not be concatenated or persisted text becomes 2–3× duplicate.
+                      const t = ev.payload.text;
+                      if (typeof t === 'string' && t.length > 0) {
+                        aggregatedText = t;
+                      }
+                    }
                     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
 
@@ -1040,8 +1048,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   this.logger.warn(`Failed to parse streaming agent line: ${parseErr.message}`);
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, toParse);
                   for (const ev of events) {
-                    if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
-                    if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
+                    if (ev.kind === 'assistantDelta') {
+                      aggregatedText += ev.payload.delta;
+                    } else if (ev.kind === 'assistantMessage') {
+                      const t = ev.payload.text;
+                      if (typeof t === 'string' && t.length > 0) {
+                        aggregatedText = t;
+                      }
+                    }
                     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
                 }

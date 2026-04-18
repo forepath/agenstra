@@ -27,6 +27,8 @@ import {
   FilesFacade,
   SocketsFacade,
   StatsFacade,
+  TicketAutomationFacade,
+  TicketsFacade,
   type AddClientUserDto,
   type AgentModelsMap,
   type AgentResponseDto,
@@ -45,6 +47,7 @@ import {
   type EnvironmentVariableResponseDto,
   type ForwardedEventPayload,
   type ProvisionServerDto,
+  type TicketAutomationRunChatEventPayload,
   type UpdateAgentDto,
   type UpdateClientDto,
   type UpdateEnvironmentVariableDto,
@@ -76,10 +79,16 @@ import { DeploymentManagerComponent } from '../deployment-manager/deployment-man
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
 import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
+import {
+  ticketAutomationRunPhaseLabel as ticketAutomationRunPhaseLabelFn,
+  ticketAutomationRunStatusLabel as ticketAutomationRunStatusLabelFn,
+} from '../tickets/ticket-automation-run-labels';
+import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
 import { mapForwardedChatEventsToDisplayRows } from './agent-chat-event-display';
-import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
 import { formatAgentResponseForChatMarkdown, formatUnknownAsMarkdown } from './agent-chat-response-markdown';
-import { buildChatDisplayThread, type ChatDisplayThreadItem } from './chat-thread-display';
+import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
+import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
+import { buildMergedChatDisplayThread, type ChatDisplayThreadItem } from './chat-thread-display';
 
 // Type declaration for marked library
 interface Marked {
@@ -118,11 +127,20 @@ type ChatMessageWithFilter = {
   standalone: true,
 })
 export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDestroy {
+  /** Board-parity labels for automation snapshot cards (same i18n as tickets board). */
+  readonly ticketWorkflowLaneLabel = ticketLaneStatusLabel;
+  readonly automationRunStatusLabel = ticketAutomationRunStatusLabelFn;
+  readonly automationRunPhaseLabel = ticketAutomationRunPhaseLabelFn;
+
+  readonly openTicketFromChatButtonLabel = $localize`:@@featureChat-openTicketFromAutomationCard:Open ticket`;
+
   readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly socketsFacade = inject(SocketsFacade);
   private readonly statsFacade = inject(StatsFacade);
+  private readonly ticketsFacade = inject(TicketsFacade);
+  private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
   private readonly filesFacade = inject(FilesFacade);
   private readonly envFacade = inject(EnvFacade);
   private readonly autonomyFacade = inject(ClientAgentAutonomyFacade);
@@ -405,8 +423,27 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     distinctUntilChanged((prev, curr) => this.chatMessagesWithFilterViewEqual(prev, curr)),
   );
 
-  /** User rows plus one bubble per agent turn (matches streaming layout for multi-part / full-response). */
-  readonly displayChatThread$ = this.chatMessagesWithFilters$.pipe(map((messages) => buildChatDisplayThread(messages)));
+  /** User rows, agent turns, and ticket automation run cards merged by semantic timeline order. */
+  readonly displayChatThread$ = combineLatest([
+    this.socketsFacade.chatTimelineOrdered$,
+    this.chatMessagesWithFilters$,
+    this.ticketsFacade.tickets$,
+    this.ticketAutomationFacade.runCacheByRunId$,
+  ]).pipe(
+    map(([ordered, filtered, tickets, runCache]) => {
+      const thread = buildMergedChatDisplayThread(ordered, filtered);
+      const ticketsById = new Map(tickets.map((t) => [t.id, t]));
+      return thread.map((item) => {
+        if (item.kind !== 'ticketAutomationRun') {
+          return item;
+        }
+        const liveTicket = ticketsById.get(item.payload.ticket.id);
+        const cachedRun = runCache[item.payload.run.id];
+        const payload = mergeTicketAutomationChatCardPayload(item.payload, liveTicket, cachedRun);
+        return payload === item.payload ? item : { ...item, payload };
+      });
+    }),
+  );
 
   readonly forwarding$: Observable<boolean> = this.socketsFacade.chatForwarding$;
   readonly chatResponseMode$ = this.socketsFacade.chatResponseMode$;
@@ -604,6 +641,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private activeClientId: string | null = null;
   private shouldScrollToBottom = false;
   private previousMessageCount = 0;
+  /** Tracks merged chat thread rows (messages + automation cards); grows when hydration adds cards without new `chatMessage` events. */
+  private previousDisplayThreadLength = 0;
   private readonly destroyRef = inject(DestroyRef);
   private syncAnimationFrameId: number | null = null;
   private syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -1146,6 +1185,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.router.navigate(['/clients', this.activeClientId, 'agents', currentAgentId]);
         // Reset message count when switching agents
         this.previousMessageCount = 0;
+        this.previousDisplayThreadLength = 0;
         this.lastUserMessageTimestamp.set(null);
         // Disconnect current socket, then connect and auto-login agent
         this.disconnectAndReconnectForAgent(this.activeClientId, currentAgentId);
@@ -1276,8 +1316,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       } else if (currentMessageCount < this.previousMessageCount) {
         // Messages were cleared (e.g., switching clients/agents)
         this.previousMessageCount = currentMessageCount;
+        this.previousDisplayThreadLength = 0;
         this.lastUserMessageTimestamp.set(null);
         this.lastAgentMessageTimestamp = 0;
+      }
+    });
+
+    // Merged thread can grow when automation cards hydrate or appear without new `chatMessage` rows — still scroll.
+    this.displayChatThread$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((thread) => {
+      const len = thread.length;
+      if (len > this.previousDisplayThreadLength) {
+        this.shouldScrollToBottom = true;
+        this.previousDisplayThreadLength = len;
+        this.cdr.detectChanges();
+      } else if (len < this.previousDisplayThreadLength) {
+        this.previousDisplayThreadLength = len;
       }
     });
 
@@ -1545,6 +1598,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
       // Reset message count
       this.previousMessageCount = 0;
+      this.previousDisplayThreadLength = 0;
       this.lastUserMessageTimestamp.set(null);
       // Close editor if open
       if (this.editorOpen()) {
@@ -1577,6 +1631,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
       // Reset message count when switching clients
       this.previousMessageCount = 0;
+      this.previousDisplayThreadLength = 0;
       this.lastUserMessageTimestamp.set(null);
       // Reset file opened flag when switching clients
       this.fileOpenedFromQuery = false;
@@ -1608,6 +1663,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.filesFacade.listDirectory(clientId, agentId, { path: '.cursor/commands' });
         // Reset message count when switching agents
         this.previousMessageCount = 0;
+        this.previousDisplayThreadLength = 0;
         this.lastUserMessageTimestamp.set(null);
         // Disconnect current socket, then connect and auto-login agent
         this.disconnectAndReconnectForAgent(clientId, agentId);
@@ -1644,6 +1700,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
     // Reset message count
     this.previousMessageCount = 0;
+    this.previousDisplayThreadLength = 0;
     this.lastUserMessageTimestamp.set(null);
     // Close editor if open
     if (this.editorOpen()) {
@@ -3320,6 +3377,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return new Date(timestamp).toLocaleTimeString();
   }
 
+  openTicketAutomationRunFromChat(payload: TicketAutomationRunChatEventPayload): void {
+    const act = payload.actions.find((a) => a.type === 'openTicketAutomationRun');
+    if (!act) {
+      return;
+    }
+    void this.router.navigate(['/tickets', payload.ticket.clientId], {
+      queryParams: { openTicketId: act.ticketId, openAutomationRunId: act.runId },
+    });
+  }
+
+  openTicketDetailFromChat(payload: TicketAutomationRunChatEventPayload): void {
+    void this.router.navigate(['/tickets', payload.ticket.clientId], {
+      queryParams: { openTicketId: payload.ticket.id },
+    });
+  }
+
   /**
    * Format a price value to 2 decimal places with currency symbol
    * @param price - The price value (can be number, string, null, or undefined)
@@ -3697,6 +3770,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (item.kind === 'user') {
       return `u-${item.msg.timestamp}`;
     }
+    if (item.kind === 'ticketAutomationRun') {
+      return `ar-${item.payload.run.id}-${item.sortTime}`;
+    }
     const firstTs = item.msgs[0]?.timestamp ?? item.view.displayTimestamp;
     const lastTs = item.msgs[item.msgs.length - 1]?.timestamp ?? firstTs;
     return `a-${firstTs}-${lastTs}-${item.msgs.length}-${item.view.hasFiltered ? 'f' : 'n'}-${item.view.hasDropped ? 'd' : 'n'}`;
@@ -3955,13 +4031,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * Scroll chat messages container to the bottom
    */
   private scrollToBottom(): void {
-    if (this.chatMessagesContainer?.nativeElement) {
-      const element = this.chatMessagesContainer.nativeElement;
-      // Use requestAnimationFrame to ensure DOM is fully updated
-      requestAnimationFrame(() => {
-        element.scrollTop = element.scrollHeight;
-      });
+    if (!this.chatMessagesContainer?.nativeElement) {
+      return;
     }
+    const element = this.chatMessagesContainer.nativeElement;
+    const apply = (): void => {
+      element.scrollTop = element.scrollHeight;
+    };
+    // Double rAF + microtask catches rows whose height changes after first paint (e.g. automation cards).
+    requestAnimationFrame(() => {
+      apply();
+      requestAnimationFrame(() => {
+        apply();
+        queueMicrotask(apply);
+      });
+    });
   }
 
   /**

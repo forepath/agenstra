@@ -1,5 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { CLIENT_CHAT_AUTOMATION_SOCKET_EVENT } from './client-chat-automation.constants';
 import type { SocketsState } from './sockets.reducer';
+import type { ChatMessageData, TicketAutomationRunChatEventPayload } from './sockets.types';
 
 export const selectSocketsState = createFeatureSelector<SocketsState>('sockets');
 
@@ -142,3 +144,72 @@ export const selectFilterResultForMessage = (direction: 'incoming' | 'outgoing',
         : closest,
     );
   });
+
+export type ChatTimelineOrderedRow = {
+  event: string;
+  payload: import('./sockets.types').ForwardedEventPayload;
+  timestamp: number;
+  semanticTimestamp: number;
+};
+
+function semanticSortKey(row: { event: string; payload: unknown; timestamp: number }): number {
+  if (row.event === 'chatMessage' && row.payload && typeof row.payload === 'object' && 'success' in row.payload) {
+    const envelope = row.payload as { success?: boolean; data?: ChatMessageData };
+    if (envelope.success && envelope.data?.timestamp) {
+      const t = Date.parse(envelope.data.timestamp);
+      if (!Number.isNaN(t)) {
+        return t;
+      }
+    }
+  }
+  if (row.event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT) {
+    const p = row.payload as TicketAutomationRunChatEventPayload | undefined;
+    if (p?.timelineAt) {
+      const t = Date.parse(p.timelineAt);
+      if (!Number.isNaN(t)) {
+        return t;
+      }
+    }
+  }
+  return row.timestamp;
+}
+
+/**
+ * Chat messages merged with ticket automation chat events, ordered by semantic time.
+ * Automation rows are deduped by `run.id` (latest `timelineAt` wins). Filtered to `run.agentId === selectedAgentId` when an agent is selected.
+ */
+export const selectChatTimelineOrdered = createSelector(
+  selectForwardedEvents,
+  selectSelectedAgentId,
+  (events, selectedAgentId): ChatTimelineOrderedRow[] => {
+    const chatMsgs = events.filter((e) => e.event === 'chatMessage');
+    const rawAuto = events.filter((e) => e.event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT);
+    const byRun = new Map<string, (typeof events)[0]>();
+    for (const e of rawAuto) {
+      const run = (e.payload as TicketAutomationRunChatEventPayload | undefined)?.run;
+      if (!run?.id || !run.agentId) {
+        continue;
+      }
+      if (selectedAgentId && run.agentId !== selectedAgentId) {
+        continue;
+      }
+      const prev = byRun.get(run.id);
+      if (!prev) {
+        byRun.set(run.id, e);
+        continue;
+      }
+      const prevT = semanticSortKey(prev);
+      const curT = semanticSortKey(e);
+      if (curT >= prevT) {
+        byRun.set(run.id, e);
+      }
+    }
+    const automations = [...byRun.values()];
+    const merged: ChatTimelineOrderedRow[] = [...chatMsgs, ...automations].map((e) => ({
+      ...e,
+      semanticTimestamp: semanticSortKey(e),
+    }));
+    merged.sort((a, b) => a.semanticTimestamp - b.semanticTimestamp || a.timestamp - b.timestamp);
+    return merged;
+  },
+);

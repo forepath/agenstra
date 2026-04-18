@@ -89,6 +89,7 @@ sequenceDiagram
                                 RemoteWS-->>Gateway: loginSuccess event
                                 Gateway->>Gateway: loggedInAgentsBySocket.set(socket.id, Set with agentId)
                                 Note over Gateway: Wait for loginSuccess before proceeding<br/>Login event already emitted, don't forward again
+                                Gateway->>Gateway: scheduleTicketAutomationChatHydrate(localSocket, clientId, agentId)<br/>TicketAutomationChatSyncService loads ticket_automation_run rows<br/>and emits ticketAutomationRunChatUpsert (unicast) per run
                             else Authentication failed
                                 RemoteWS-->>Gateway: loginError event
                                 Gateway-->>WSClient: error<br/>{message: "Login failed"}

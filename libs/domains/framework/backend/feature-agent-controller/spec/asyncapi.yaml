@@ -5,6 +5,10 @@ info:
   description: |
     Socket.IO events for the agent-controller WebSocket port: namespace **clients** (proxy to agent-manager)
     and namespace **tickets** (ticket board / automation realtime). See channel `tickets/*` for board coherence.
+    Namespace **clients** also emits controller-originated `ticketAutomationRunChatUpsert` for chat UI timeline
+    (see `clients/ticketAutomationRunChatUpsert` and OpenAPI `TicketAutomationRunChatEventDto`), and
+    `ticketChatTicketUpsert` with the same payload shape as tickets-board `ticketUpsert` so chat clients can refresh
+    ticket fields on automation cards without joining namespace **tickets**.
     For **clients**, all connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
@@ -85,6 +89,30 @@ channels:
       agent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.
       When `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting
       socket (not broadcast to other viewers on the same agent).
+      After a successful **login** (explicit `forward` with `event: "login"` or first-time auto-login before another event),
+      the controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that
+      `clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use
+      the same event broadcast to room `client:{clientId}` on the **clients** namespace.
+      When a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**
+      to room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).
+  clients/ticketAutomationRunChatUpsert:
+    address: clients/ticketAutomationRunChatUpsert
+    messages:
+      ticketAutomationRunChatUpsertEvent:
+        $ref: '#/components/messages/TicketAutomationRunChatEvent'
+    description: |
+      Controller-originated ticket automation snapshot for the chat UI (namespace **clients** only; not forwarded from
+      agent-manager). Aligns with OpenAPI schema `TicketAutomationRunChatEventDto`. Hydration uses `timelineAt` from
+      `run.startedAt`; live updates use `run.updatedAt`.
+  clients/ticketChatTicketUpsert:
+    address: clients/ticketChatTicketUpsert
+    messages:
+      ticketChatTicketUpsertEvent:
+        $ref: '#/components/messages/TicketBoardTicketPayload'
+    description: |
+      Full `TicketResponseDto` snapshot on namespace **clients** (room `client:{clientId}`), emitted whenever the
+      controller would emit `ticketUpsert` on namespace **tickets**, so manager/chat UIs can merge ticket metadata
+      without a `/tickets` socket connection.
   clients/forwardAck:
     address: clients/forwardAck
     messages:
@@ -247,6 +275,18 @@ operations:
       $ref: '#/channels/clients~1remoteReconnectFailed'
     messages:
       - $ref: '#/channels/clients~1remoteReconnectFailed/messages/remoteReconnectFailedEvent'
+  serverEmitsTicketAutomationRunChatUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1ticketAutomationRunChatUpsert'
+    messages:
+      - $ref: '#/channels/clients~1ticketAutomationRunChatUpsert/messages/ticketAutomationRunChatUpsertEvent'
+  serverEmitsTicketChatTicketUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1ticketChatTicketUpsert'
+    messages:
+      - $ref: '#/channels/clients~1ticketChatTicketUpsert/messages/ticketChatTicketUpsertEvent'
 components:
   messages:
     SetClient:
@@ -484,4 +524,42 @@ components:
           step:
             type: object
             additionalProperties: true
+        additionalProperties: false
+    TicketAutomationRunChatEvent:
+      name: TicketAutomationRunChatEvent
+      title: Ticket automation run in chat timeline
+      contentType: application/json
+      description: Same shape as OpenAPI `TicketAutomationRunChatEventDto`.
+      payload:
+        type: object
+        required: [timelineAt, hydrate, ticket, run, actions]
+        properties:
+          timelineAt:
+            type: string
+            format: date-time
+          hydrate:
+            type: boolean
+          ticket:
+            type: object
+            additionalProperties: true
+          run:
+            type: object
+            additionalProperties: true
+          actions:
+            type: array
+            items:
+              type: object
+              required: [type, ticketId, runId, label]
+              properties:
+                type:
+                  type: string
+                  enum: [openTicketAutomationRun]
+                ticketId:
+                  type: string
+                  format: uuid
+                runId:
+                  type: string
+                  format: uuid
+                label:
+                  type: string
         additionalProperties: false

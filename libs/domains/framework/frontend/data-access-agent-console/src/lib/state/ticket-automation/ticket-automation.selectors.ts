@@ -12,6 +12,11 @@ export const selectTicketAutomationConfig = createSelector(selectTicketAutomatio
 
 export const selectTicketAutomationRuns = createSelector(selectTicketAutomationState, (s) => s.runs);
 
+export const selectTicketAutomationRunCacheByRunId = createSelector(
+  selectTicketAutomationState,
+  (s) => s.runCacheByRunId,
+);
+
 export const selectTicketAutomationRunDetail = createSelector(selectTicketAutomationState, (s) => s.runDetail);
 
 export const selectTicketAutomationLoadingConfig = createSelector(selectTicketAutomationState, (s) => s.loadingConfig);

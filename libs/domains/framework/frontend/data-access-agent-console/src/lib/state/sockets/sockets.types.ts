@@ -381,6 +381,47 @@ export interface ContainerStatsPayload {
   timestamp: string;
 }
 
+/** Controller-originated `ticketAutomationRunChatUpsert` payload (clients namespace). */
+export interface TicketAutomationRunChatTicketSummary {
+  id: string;
+  clientId: string;
+  title: string;
+  priority: string;
+  status: string;
+  automationEligible: boolean;
+  preferredChatAgentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TicketAutomationRunChatRunSummary {
+  id: string;
+  ticketId: string;
+  clientId: string;
+  agentId: string;
+  status: string;
+  phase: string;
+  startedAt: string;
+  updatedAt: string;
+  finishedAt: string | null;
+  iterationCount?: number;
+}
+
+export interface TicketAutomationRunChatOpenAction {
+  type: 'openTicketAutomationRun';
+  ticketId: string;
+  runId: string;
+  label: string;
+}
+
+export interface TicketAutomationRunChatEventPayload {
+  timelineAt: string;
+  hydrate: boolean;
+  ticket: TicketAutomationRunChatTicketSummary;
+  run: TicketAutomationRunChatRunSummary;
+  actions: TicketAutomationRunChatOpenAction[];
+}
+
 /**
  * Typed forwarded event payloads based on event name
  */
@@ -398,4 +439,5 @@ export type ForwardedEventPayload =
   | SuccessResponse<TerminalClosedData> // terminalClosed
   | SuccessResponse<ContainerStatsPayload> // containerStats
   | SuccessResponse<AgentEventEnvelope> // chatEvent
+  | TicketAutomationRunChatEventPayload // ticketAutomationRunChatUpsert
   | ErrorResponse; // error
