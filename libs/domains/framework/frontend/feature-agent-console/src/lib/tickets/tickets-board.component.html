@@ -148,7 +148,20 @@
                     role="button"
                   >
                     <div class="tickets-board__card-content">
-                      <div class="fw-medium text-truncate" [title]="row.ticket.title">{{ row.ticket.title }}</div>
+                      <div class="d-flex align-items-center gap-2 min-width-0 w-100">
+                        <div class="fw-medium text-truncate flex-grow-1 min-width-0" [title]="row.ticket.title">
+                          {{ row.ticket.title }}
+                        </div>
+                        @if (row.ticket.automationEligible) {
+                          <small class="flex-shrink-0">
+                            <i
+                              class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
+                              i18n-title="@@featureTicketsBoard-automationEligibleTitle"
+                              title="Autonomous prototyping enabled"
+                            ></i>
+                          </small>
+                        }
+                      </div>
                       <div class="tickets-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
                         <small
                           class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
@@ -203,9 +216,21 @@
     <div class="modal-content">
       <div class="modal-header flex-column align-items-stretch gap-0 pb-2">
         <div class="d-flex w-100 align-items-center justify-content-between">
-          <h2 class="modal-title h5 mb-0" id="ticketDetailModalLabel">
+          <h2
+            class="modal-title h5 mb-0 d-flex align-items-center gap-2 min-width-0 flex-grow-1"
+            id="ticketDetailModalLabel"
+          >
             @if (detail(); as det) {
-              {{ det.title }}
+              <span class="text-truncate min-width-0" [attr.title]="det.title">{{ det.title }}</span>
+              @if (det.automationEligible) {
+                <small class="flex-shrink-0">
+                  <i
+                    class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
+                    i18n-title="@@featureTicketsBoard-automationEligibleTitle"
+                    title="Autonomous prototyping enabled"
+                  ></i>
+                </small>
+              }
             } @else {
               <span i18n="@@featureTicketsBoard-modalLoadingTitle">Ticket</span>
             }
@@ -221,7 +246,8 @@
         @if (detail(); as d) {
           <div class="d-flex w-100 flex-wrap align-items-center gap-2 my-2 min-width-0">
             <nav
-              class="info-badge text-muted bg-body-tertiary py-1 px-3 rounded tickets-board__chip--status-draft tickets-hierarchy-badge flex-grow-1 min-width-0"
+              class="info-badge text-muted bg-body-tertiary py-1 px-3 rounded tickets-hierarchy-badge flex-grow-1 min-width-0"
+              [ngClass]="ticketStatusBadgeClass(d.status)"
               aria-label="Ticket hierarchy"
               i18n-aria-label="@@featureTicketsBoard-breadcrumbNavAria"
             >
@@ -260,7 +286,7 @@
           </div>
         }
       </div>
-      <div class="modal-body p-0 d-flex">
+      <div class="modal-body p-0 d-flex overflow-hidden">
         @if (detailLoading$ | async) {
           <div class="d-flex justify-content-center py-4">
             <div class="spinner-border text-primary" role="status">
@@ -277,7 +303,7 @@
                     <select
                       class="form-select form-select-sm"
                       [ngModel]="d.status"
-                      (ngModelChange)="onUpdateTicketField(d.id, 'status', $event)"
+                      (ngModelChange)="onDetailStatusModelChange(d.id, $event)"
                     >
                       @for (s of statusOptions; track s) {
                         <option [ngValue]="s">{{ laneLabel(s) }}</option>
@@ -289,7 +315,7 @@
                     <select
                       class="form-select form-select-sm"
                       [ngModel]="d.priority"
-                      (ngModelChange)="onUpdateTicketField(d.id, 'priority', $event)"
+                      (ngModelChange)="onDetailPriorityModelChange(d.id, $event)"
                     >
                       @for (p of priorityOptions; track p) {
                         <option [ngValue]="p">{{ priorityLabel(p) }}</option>
@@ -305,7 +331,7 @@
                       class="form-select form-select-sm"
                       aria-labelledby="ticketAgentSelectLabel"
                       [ngModel]="selectedAgentForAi() ?? ''"
-                      (ngModelChange)="selectedAgentForAi.set($event || null)"
+                      (ngModelChange)="onPreferredChatAgentChange(d, $event)"
                     >
                       <option value="" i18n="@@featureTicketsBoard-agentPlaceholder">Select agent…</option>
                       @for (a of chatCapableAgents$ | async; track a.id) {
@@ -383,7 +409,18 @@
                           i18n-title="@@featureTicketsBoard-openSubtaskTitle"
                           title="Open subtask"
                         >
-                          <span class="fw-medium text-break">{{ row.ticket.title }}</span>
+                          <span class="d-flex align-items-center gap-2 w-100 min-width-0">
+                            <span class="fw-medium text-break flex-grow-1 min-width-0">{{ row.ticket.title }}</span>
+                            @if (row.ticket.automationEligible) {
+                              <small class="flex-shrink-0">
+                                <i
+                                  class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
+                                  i18n-title="@@featureTicketsBoard-automationEligibleTitle"
+                                  title="Autonomous prototyping enabled"
+                                ></i>
+                              </small>
+                            }
+                          </span>
                         </button>
                         <div class="tickets-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
                           <small
@@ -403,6 +440,437 @@
                     }
                   </ul>
                 }
+
+                <div class="accordion mb-3 mt-2" id="ticketAutomationAccordion">
+                  <div class="accordion-item">
+                    <h3 class="accordion-header">
+                      <button
+                        class="accordion-button"
+                        [class.collapsed]="!ticketAutomationAccordionExpanded()"
+                        type="button"
+                        (click)="toggleTicketAutomationAccordion()"
+                        [attr.aria-expanded]="ticketAutomationAccordionExpanded()"
+                        aria-controls="ticketAutomationCollapse"
+                      >
+                        <span class="d-inline-flex align-items-center gap-2 flex-wrap">
+                          <span i18n="@@featureTicketsBoard-automationAccordionTitle">Autonomous prototyping</span>
+                          @if (ticketAutomationBranchBadge(); as automationBranch) {
+                            <span
+                              class="badge rounded-pill text-bg-secondary text-truncate tickets-board__automation-branch-badge"
+                              [attr.title]="automationBranch"
+                              >{{ automationBranch }}</span
+                            >
+                          }
+                        </span>
+                      </button>
+                    </h3>
+                    <div
+                      id="ticketAutomationCollapse"
+                      class="accordion-collapse collapse"
+                      [class.show]="ticketAutomationAccordionExpanded()"
+                    >
+                      <div class="accordion-body small">
+                        @if (ticketAutomationError(); as ae) {
+                          <div
+                            class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2 py-2"
+                            role="alert"
+                          >
+                            <span>{{ ae }}</span>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-outline-danger"
+                              (click)="onDismissTicketAutomationError()"
+                              i18n="@@featureTicketsBoard-automationDismissError"
+                            >
+                              Dismiss
+                            </button>
+                          </div>
+                        }
+                        @if (ticketAutomationLoadingConfig()) {
+                          <div class="d-flex align-items-center gap-2 text-muted py-2">
+                            <span
+                              class="spinner-border spinner-border-sm text-primary"
+                              role="status"
+                              aria-hidden="true"
+                            ></span>
+                            <span i18n="@@featureTicketsBoard-automationLoadingConfig"
+                              >Loading automation settings…</span
+                            >
+                          </div>
+                        } @else if (ticketAutomationConfig(); as acfg) {
+                          <div class="form-check form-switch mb-2">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              role="switch"
+                              id="ticketAutomationEligible"
+                              [ngModel]="automationDraftEligible()"
+                              (ngModelChange)="automationDraftEligible.set($event)"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="ticketAutomationEligible"
+                              i18n="@@featureTicketsBoard-automationEligible"
+                              >Eligible for automated runs</label
+                            >
+                          </div>
+                          <div class="form-check form-switch mb-3">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              role="switch"
+                              id="ticketAutomationRequiresApproval"
+                              [ngModel]="automationDraftRequiresApproval()"
+                              (ngModelChange)="automationDraftRequiresApproval.set($event)"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="ticketAutomationRequiresApproval"
+                              i18n="@@featureTicketsBoard-automationRequiresApproval"
+                              >Require approval before running</label
+                            >
+                          </div>
+                          @if (acfg.requiresApproval) {
+                            @if (acfg.approvedAt) {
+                              <div class="alert alert-success py-2 mb-3" role="status">
+                                <div class="fw-semibold mb-1" i18n="@@featureTicketsBoard-automationApprovedHeading">
+                                  Approved for automation
+                                </div>
+                                <div class="text-break">{{ acfg.approvedAt | date: activityOccurredAtFormat }}</div>
+                              </div>
+                            } @else {
+                              <div
+                                class="alert alert-warning py-2 mb-3"
+                                role="status"
+                                i18n="@@featureTicketsBoard-automationNeedsApproval"
+                              >
+                                Configuration changes may require approval before runs execute.
+                              </div>
+                            }
+                          }
+                          <div class="mb-3">
+                            <span
+                              class="form-label d-block mb-1"
+                              id="ticketAutomationAgentsLabel"
+                              i18n="@@featureTicketsBoard-automationAllowedAgents"
+                              >Allowed agents</span
+                            >
+                            @if (automationTicketAutomationAgentChoices().length > 0) {
+                              <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationAllowedAgentsHint">
+                                If none are selected, every agent with prototype autonomy enabled for this workspace may
+                                run this ticket. Select specific agents to restrict who can pick it up.
+                              </p>
+                            }
+                            @if (
+                              (automationAgentsLoading() || autonomyEnabledAgentIdsLoading()) &&
+                              automationTicketAutomationAgentChoices().length === 0
+                            ) {
+                              <div class="text-muted d-flex align-items-center gap-2 py-1">
+                                <span
+                                  class="spinner-border spinner-border-sm text-primary"
+                                  role="status"
+                                  aria-hidden="true"
+                                ></span>
+                                <span i18n="@@featureTicketsBoard-automationLoadingAgents">Loading agents…</span>
+                              </div>
+                            } @else if (automationAgentChoices().length === 0) {
+                              <div class="text-muted" i18n="@@featureTicketsBoard-automationNoAgents" role="status">
+                                No agents in this workspace.
+                              </div>
+                            } @else if (automationTicketAutomationAgentChoices().length === 0) {
+                              <div
+                                class="text-muted"
+                                i18n="@@featureTicketsBoard-automationNoAutonomyAgents"
+                                role="status"
+                              >
+                                No agents have prototype autonomy enabled for this workspace. Enable it for an agent in
+                                chat under Prototype autonomy. Only those agents can run autonomous ticket work.
+                              </div>
+                            } @else {
+                              <ul
+                                class="list-group list-group-flush border rounded small mb-0"
+                                role="group"
+                                aria-labelledby="ticketAutomationAgentsLabel"
+                              >
+                                @for (a of automationTicketAutomationAgentChoices(); track a.id) {
+                                  <li class="list-group-item py-2">
+                                    <div class="form-check mb-0 mh-0">
+                                      <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        [id]="'ticketAutomationAgent' + a.id"
+                                        [checked]="isAutomationAgentAllowed(a.id)"
+                                        [disabled]="isAutomationAllowedAgentLockedToChat(a.id)"
+                                        [attr.title]="
+                                          isAutomationAllowedAgentLockedToChat(a.id)
+                                            ? ticketAutomationChatAgentLockTitle
+                                            : null
+                                        "
+                                        (change)="onAutomationAllowedAgentToggle(a.id, $any($event.target).checked)"
+                                      />
+                                      <label class="form-check-label w-100" [for]="'ticketAutomationAgent' + a.id">
+                                        <span class="fw-medium">{{ a.name }}</span>
+                                        <span class="text-muted ms-1">({{ a.agentType }})</span>
+                                      </label>
+                                    </div>
+                                  </li>
+                                }
+                              </ul>
+                            }
+                            @if (automationOrphanAllowedAgentIds().length > 0) {
+                              <div class="alert alert-warning py-2 mt-2 mb-0 small" role="status">
+                                <div
+                                  class="fw-semibold mb-2"
+                                  i18n="@@featureTicketsBoard-automationOrphanAgentsHeading"
+                                >
+                                  Allowed agents not listed above—uncheck to remove (e.g. autonomy off or agent removed)
+                                </div>
+                                @for (oid of automationOrphanAllowedAgentIds(); track oid) {
+                                  <div class="form-check mb-1">
+                                    <input
+                                      class="form-check-input font-monospace"
+                                      type="checkbox"
+                                      [id]="'ticketAutomationAgentOrphan' + oid"
+                                      [checked]="isAutomationAgentAllowed(oid)"
+                                      [disabled]="isAutomationAllowedAgentLockedToChat(oid)"
+                                      [attr.title]="
+                                        isAutomationAllowedAgentLockedToChat(oid)
+                                          ? ticketAutomationChatAgentLockTitle
+                                          : null
+                                      "
+                                      (change)="onAutomationAllowedAgentToggle(oid, $any($event.target).checked)"
+                                    />
+                                    <label
+                                      class="form-check-label font-monospace text-break"
+                                      [for]="'ticketAutomationAgentOrphan' + oid"
+                                      >{{ oid }}</label
+                                    >
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div class="mb-3">
+                            <label
+                              class="form-label mb-1"
+                              for="ticketAutomationBranch"
+                              i18n="@@featureTicketsBoard-automationDefaultBranch"
+                              >Default branch override</label
+                            >
+                            <input
+                              id="ticketAutomationBranch"
+                              type="text"
+                              class="form-control form-control-sm font-monospace"
+                              [ngModel]="automationDraftDefaultBranch()"
+                              (ngModelChange)="automationDraftDefaultBranch.set($event)"
+                              i18n-placeholder="@@featureTicketsBoard-automationDefaultBranchPh"
+                              placeholder="Optional — leave empty to use repository default"
+                            />
+                          </div>
+                          <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold" i18n="@@featureTicketsBoard-automationVerifierHeading"
+                              >Verifier commands</span
+                            >
+                            <button
+                              type="button"
+                              class="btn btn-outline-secondary btn-sm"
+                              (click)="addAutomationVerifierRow()"
+                              i18n="@@featureTicketsBoard-automationVerifierAdd"
+                            >
+                              Add command
+                            </button>
+                          </div>
+                          @for (row of automationVerifierRows(); track $index) {
+                            <div class="row g-2 mb-2 align-items-end">
+                              <div class="col-md-6">
+                                <label
+                                  class="form-label mb-0 visually-hidden"
+                                  [attr.for]="'automationVerifierCmd' + $index"
+                                  i18n="@@featureTicketsBoard-automationVerifierCmd"
+                                  >Command</label
+                                >
+                                <input
+                                  [id]="'automationVerifierCmd' + $index"
+                                  type="text"
+                                  class="form-control form-control-sm font-monospace"
+                                  [ngModel]="row.cmd"
+                                  (ngModelChange)="automationVerifierRows.update((list) => list.map((r, i) => (i === $index ? { ...r, cmd: $event } : r)))"
+                                  i18n-placeholder="@@featureTicketsBoard-automationVerifierCmdPh"
+                                  placeholder="Command"
+                                />
+                              </div>
+                              <div class="col-md-5">
+                                <label
+                                  class="form-label mb-0 visually-hidden"
+                                  [attr.for]="'automationVerifierCwd' + $index"
+                                  i18n="@@featureTicketsBoard-automationVerifierCwd"
+                                  >Working directory</label
+                                >
+                                <input
+                                  [id]="'automationVerifierCwd' + $index"
+                                  type="text"
+                                  class="form-control form-control-sm font-monospace"
+                                  [ngModel]="row.cwd"
+                                  (ngModelChange)="automationVerifierRows.update((list) => list.map((r, i) => (i === $index ? { ...r, cwd: $event } : r)))"
+                                  i18n-placeholder="@@featureTicketsBoard-automationVerifierCwdPh"
+                                  placeholder="cwd (optional)"
+                                />
+                              </div>
+                              <div class="col-md-1 d-flex justify-content-end">
+                                <button
+                                  type="button"
+                                  class="btn btn-outline-danger btn-sm"
+                                  (click)="removeAutomationVerifierRow($index)"
+                                  i18n-title="@@featureTicketsBoard-automationVerifierRemoveTitle"
+                                  title="Remove"
+                                >
+                                  <i class="bi bi-trash" aria-hidden="true"></i>
+                                </button>
+                              </div>
+                            </div>
+                          }
+                          <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                            @if (ticketAutomationSaving()) {
+                              <span
+                                class="text-muted small d-inline-flex align-items-center gap-2"
+                                role="status"
+                                i18n="@@featureTicketsBoard-automationSaving"
+                              >
+                                <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+                                Saving automation settings…
+                              </span>
+                            }
+                            @if (acfg.requiresApproval && !acfg.approvedAt) {
+                              <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="onApproveTicketAutomation()"
+                                [disabled]="ticketAutomationSaving()"
+                                i18n="@@featureTicketsBoard-automationApprove"
+                              >
+                                Approve
+                              </button>
+                            }
+                            @if (acfg.requiresApproval && acfg.approvedAt) {
+                              <button
+                                type="button"
+                                class="btn btn-outline-warning btn-sm"
+                                (click)="onUnapproveTicketAutomation()"
+                                [disabled]="ticketAutomationSaving()"
+                                i18n="@@featureTicketsBoard-automationUnapprove"
+                              >
+                                Unapprove
+                              </button>
+                            }
+                          </div>
+                          @if (acfg.consecutiveFailureCount > 0 || acfg.nextRetryAt) {
+                            <div class="alert alert-secondary py-2 mb-3" role="status">
+                              @if (acfg.consecutiveFailureCount > 0) {
+                                <div i18n="@@featureTicketsBoard-automationFailures">
+                                  Consecutive failures: {{ acfg.consecutiveFailureCount }}
+                                </div>
+                              }
+                              @if (acfg.nextRetryAt) {
+                                <div i18n="@@featureTicketsBoard-automationNextRetry">
+                                  Next retry: {{ acfg.nextRetryAt | date: activityOccurredAtFormat }}
+                                </div>
+                              }
+                            </div>
+                          }
+                          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                            <h4 class="h6 mb-0" i18n="@@featureTicketsBoard-automationRunsHeading">Runs</h4>
+                            <button
+                              type="button"
+                              class="btn btn-outline-primary btn-sm"
+                              (click)="onRefreshTicketAutomationRuns()"
+                              [disabled]="ticketAutomationLoadingRuns()"
+                              i18n-title="@@featureTicketsBoard-automationRefreshRunsTitle"
+                              title="Refresh runs"
+                            >
+                              @if (ticketAutomationLoadingRuns()) {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                              } @else {
+                                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                              }
+                            </button>
+                          </div>
+                          @if (automationSortedRuns().length === 0) {
+                            <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationNoRuns">No runs yet.</p>
+                          } @else {
+                            <ul class="list-group list-group-flush border rounded mb-3">
+                              @for (run of automationSortedRuns(); track run.id) {
+                                <li class="list-group-item py-2">
+                                  <div class="d-flex flex-wrap justify-content-between gap-2 align-items-start">
+                                    <div class="min-width-0">
+                                      <span
+                                        class="badge me-1"
+                                        [ngClass]="ticketAutomationRunStatusBadgeClass(run.status)"
+                                        [attr.title]="automationRunStatusLabel(run.status)"
+                                        >{{ automationRunStatusLabel(run.status) }}</span
+                                      >
+                                      <span
+                                        class="badge text-bg-light me-1"
+                                        [attr.title]="automationRunPhaseLabel(run.phase)"
+                                        >{{ automationRunPhaseLabel(run.phase) }}</span
+                                      >
+                                      <div class="text-muted mt-1">
+                                        <span>{{ run.startedAt | date: activityOccurredAtFormat }}</span>
+                                        @if (run.branchName) {
+                                          <span class="ms-1 text-break">· {{ run.branchName }}</span>
+                                        }
+                                      </div>
+                                      @if (run.verificationPassed === true) {
+                                        <div class="mt-1">
+                                          <span
+                                            class="badge text-bg-success"
+                                            i18n="@@featureTicketsBoard-automationVerifyOk"
+                                            >Verify: passed</span
+                                          >
+                                        </div>
+                                      }
+                                      @if (run.verificationPassed === false) {
+                                        <div class="mt-1">
+                                          <span
+                                            class="badge text-bg-warning text-dark"
+                                            i18n="@@featureTicketsBoard-automationVerifyFail"
+                                            >Verify: failed</span
+                                          >
+                                        </div>
+                                      }
+                                    </div>
+                                    <div class="btn-group btn-group-sm flex-shrink-0">
+                                      <button
+                                        type="button"
+                                        class="btn btn-outline-secondary"
+                                        (click)="openTicketAutomationRunDetailModal(run.id)"
+                                        i18n-title="@@featureTicketsBoard-automationOpenDetailTitle"
+                                        title="Open details"
+                                      >
+                                        <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                                      </button>
+                                      @if (ticketAutomationRunCanCancel(run)) {
+                                        <button
+                                          type="button"
+                                          class="btn btn-outline-danger"
+                                          (click)="onCancelTicketAutomationRun(run)"
+                                          [disabled]="ticketAutomationSaving()"
+                                          i18n-title="@@featureTicketsBoard-automationCancelRunTitle"
+                                          title="Cancel run"
+                                        >
+                                          <i class="bi bi-stop-circle" aria-hidden="true"></i>
+                                        </button>
+                                      }
+                                    </div>
+                                  </div>
+                                </li>
+                              }
+                            </ul>
+                          }
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 @if (prototypeError(); as pe) {
                   <div class="alert alert-warning small mt-2 py-2 mb-0" role="alert">{{ pe }}</div>
@@ -506,6 +974,169 @@
           type="button"
           class="btn btn-secondary btn-sm"
           (click)="onCloseModal()"
+          i18n="@@featureTicketsBoard-close"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Automation run detail (swaps with ticket detail: ticket hides while this is open) -->
+<div
+  class="modal fade"
+  id="ticketAutomationRunModal"
+  tabindex="-1"
+  aria-hidden="true"
+  #ticketAutomationRunModal
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2
+          class="modal-title h5"
+          id="ticketAutomationRunModalLabel"
+          i18n="@@featureTicketsBoard-automationRunModalTitle"
+        >
+          Automation run
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
+          (click)="onCloseTicketAutomationRunModal()"
+        ></button>
+      </div>
+      <div class="modal-body small">
+        @if (ticketAutomationRunDetail(); as ar) {
+          <dl class="row mb-3">
+            <dt class="col-sm-4" i18n="@@featureTicketsBoard-automationRunStatus">Status</dt>
+            <dd class="col-sm-8 mb-0">
+              <span
+                class="badge"
+                [ngClass]="ticketAutomationRunStatusBadgeClass(ar.status)"
+                [attr.title]="automationRunStatusLabel(ar.status)"
+                >{{ automationRunStatusLabel(ar.status) }}</span
+              >
+            </dd>
+            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunPhase">Phase</dt>
+            <dd class="col-sm-8 mt-2 mb-0" [attr.title]="automationRunPhaseLabel(ar.phase)">
+              {{ automationRunPhaseLabel(ar.phase) }}
+            </dd>
+            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunBranch">Branch</dt>
+            <dd class="col-sm-8 mt-2 mb-0 text-break">{{ ar.branchName ?? '—' }}</dd>
+            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunAgent">Agent</dt>
+            <dd class="col-sm-8 mt-2 mb-0 font-monospace text-break">{{ ar.agentId }}</dd>
+            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunIterations">Iterations</dt>
+            <dd class="col-sm-8 mt-2 mb-0">{{ ar.iterationCount }}</dd>
+            @if (ar.failureCode) {
+              <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunFailure">Failure</dt>
+              <dd class="col-sm-8 mt-2 mb-0 text-break" [attr.title]="ar.failureCode">
+                {{ automationFailureCodeLabel(ar.failureCode) }}
+              </dd>
+            }
+            @if (ar.cancellationReason) {
+              <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunCancelReason">Cancellation</dt>
+              <dd class="col-sm-8 mt-2 mb-0 text-break" [attr.title]="ar.cancellationReason">
+                {{ automationCancellationReasonLabel(ar.cancellationReason) }}
+              </dd>
+            }
+          </dl>
+          @if (ar.summary) {
+            <h3 class="h6" i18n="@@featureTicketsBoard-automationRunSummary">Summary (JSON)</h3>
+            <pre class="small bg-body-tertiary rounded p-2 border overflow-auto" style="max-height: 12rem">{{
+              formatAutomationJson(ar.summary)
+            }}</pre>
+          }
+          <h3 class="h6 mt-3" i18n="@@featureTicketsBoard-automationRunSteps">Steps</h3>
+          @if (ticketAutomationLoadingRunDetail()) {
+            <div class="d-flex align-items-center gap-2 text-muted py-3">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span i18n="@@featureTicketsBoard-automationLoadingTrace">Loading steps…</span>
+            </div>
+          } @else if (ar.steps && ar.steps.length > 0) {
+            <div class="accordion" id="automationStepAccordion">
+              @for (step of ar.steps; track step.id) {
+                <div class="accordion-item">
+                  <h4 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed py-2"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      [attr.data-bs-target]="'#automationStep' + step.id"
+                      [attr.aria-controls]="'automationStep' + step.id"
+                      aria-expanded="false"
+                    >
+                      <span class="me-2 badge text-bg-light">#{{ step.stepIndex }}</span>
+                      <span class="me-2" [attr.title]="automationRunPhaseLabel(step.phase)">{{
+                        automationRunPhaseLabel(step.phase)
+                      }}</span>
+                      <span class="text-muted small" [attr.title]="automationRunStepKindLabel(step.kind)">{{
+                        automationRunStepKindLabel(step.kind)
+                      }}</span>
+                    </button>
+                  </h4>
+                  <div
+                    [id]="'automationStep' + step.id"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#automationStepAccordion"
+                  >
+                    <div class="accordion-body">
+                      @if (step.excerpt) {
+                        <div class="mb-2">
+                          <span class="fw-semibold d-block mb-1" i18n="@@featureTicketsBoard-automationStepExcerpt"
+                            >Excerpt</span
+                          >
+                          <pre class="small mb-0 text-wrap font-monospace bg-body-secondary rounded p-2">{{
+                            step.excerpt
+                          }}</pre>
+                        </div>
+                      }
+                      <span class="fw-semibold d-block mb-1" i18n="@@featureTicketsBoard-automationStepPayload"
+                        >Payload (JSON)</span
+                      >
+                      <pre
+                        class="small mb-0 bg-body-tertiary rounded p-2 border overflow-auto"
+                        style="max-height: 16rem"
+                        >{{ formatAutomationJson(step.payload) }}</pre
+                      >
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationNoSteps">
+              No steps recorded for this run.
+            </p>
+          }
+        } @else {
+          <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationRunModalEmpty">
+            Open a run from the ticket detail panel.
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        @if (ticketAutomationRunDetail(); as ar2) {
+          @if (ticketAutomationRunCanCancel(ar2)) {
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm me-auto"
+              (click)="onCancelTicketAutomationRun(ar2)"
+              [disabled]="ticketAutomationSaving()"
+              i18n="@@featureTicketsBoard-automationCancelRun"
+            >
+              Cancel run
+            </button>
+          }
+        }
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="onCloseTicketAutomationRunModal()"
           i18n="@@featureTicketsBoard-close"
         >
           Close
@@ -764,7 +1395,16 @@
                 (click)="onGlobalSearchResultClick(hit)"
               >
                 <div class="d-flex flex-wrap align-items-center gap-2 w-100 min-width-0">
-                  <span class="fw-medium text-break">{{ hit.ticket.title }}</span>
+                  <span class="fw-medium text-break flex-grow-1 min-width-0">{{ hit.ticket.title }}</span>
+                  @if (hit.ticket.automationEligible) {
+                    <small class="flex-shrink-0">
+                      <i
+                        class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
+                        i18n-title="@@featureTicketsBoard-automationEligibleTitle"
+                        title="Autonomous prototyping enabled"
+                      ></i>
+                    </small>
+                  }
                   <small
                     class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded flex-shrink-0"
                     [ngClass]="ticketStatusBadgeClass(hit.ticket.status)"

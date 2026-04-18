@@ -41,6 +41,7 @@ describe('TicketsEffects', () => {
     title: 'T',
     priority: 'low',
     status: 'todo',
+    automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };

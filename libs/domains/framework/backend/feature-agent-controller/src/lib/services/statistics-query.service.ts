@@ -34,14 +34,21 @@ function normalizeToEndOfDay(value: string | undefined): string | undefined {
   return value;
 }
 
+const ALLOWED_INTERACTION_KINDS: ReadonlySet<string> = new Set([
+  StatisticsInteractionKind.CHAT,
+  StatisticsInteractionKind.PROMPT_ENHANCEMENT,
+  StatisticsInteractionKind.TICKET_BODY_GENERATION,
+  StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN,
+  StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
+  StatisticsInteractionKind.AUTONOMOUS_TICKET_COMMIT_MESSAGE,
+]);
+
 function parseStatisticsInteractionKind(value: string | undefined): StatisticsInteractionKind | undefined {
   if (!value) return undefined;
-  if (value === StatisticsInteractionKind.CHAT || value === StatisticsInteractionKind.PROMPT_ENHANCEMENT) {
-    return value;
+  if (ALLOWED_INTERACTION_KINDS.has(value)) {
+    return value as StatisticsInteractionKind;
   }
-  throw new BadRequestException(
-    `interactionKind must be "${StatisticsInteractionKind.CHAT}" or "${StatisticsInteractionKind.PROMPT_ENHANCEMENT}"`,
-  );
+  throw new BadRequestException(`interactionKind must be one of: ${[...ALLOWED_INTERACTION_KINDS].join(', ')}`);
 }
 
 @Injectable()

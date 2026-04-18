@@ -13,10 +13,19 @@ import {
   loadTicketsSuccess,
   openTicketDetail,
   prependTicketDetailActivity,
+  replaceTicketDetailActivity,
+  ticketBoardActivityCreated,
+  ticketBoardCommentCreated,
+  ticketBoardTicketRemoved,
+  ticketBoardTicketUpsert,
   updateTicket,
   updateTicketFailure,
   updateTicketSuccess,
 } from './tickets.actions';
+import {
+  patchTicketAutomationSuccess,
+  ticketBoardAutomationUpsert,
+} from '../ticket-automation/ticket-automation.actions';
 import { initialTicketsState, ticketsReducer, type TicketsState } from './tickets.reducer';
 import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
 
@@ -28,6 +37,8 @@ describe('ticketsReducer', () => {
     content: null,
     priority: 'medium',
     status: 'draft',
+    preferredChatAgentId: null,
+    automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
@@ -318,6 +329,38 @@ describe('ticketsReducer', () => {
     });
   });
 
+  describe('replaceTicketDetailActivity', () => {
+    it('should replace activity when detail is open for that ticket', () => {
+      const fresh: TicketActivityResponseDto[] = [
+        {
+          id: 'act-new',
+          ticketId: mockTicket.id,
+          occurredAt: '2024-01-04T12:00:00Z',
+          actorType: 'human',
+          actionType: 'AUTOMATION_APPROVED',
+          payload: {},
+        },
+      ];
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: mockTicket.id,
+        activity: [mockActivity],
+      };
+      const next = ticketsReducer(prev, replaceTicketDetailActivity({ ticketId: mockTicket.id, activity: fresh }));
+      expect(next.activity).toEqual(fresh);
+    });
+
+    it('should not change activity when selected ticket differs', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: 'other-ticket',
+        activity: [mockActivity],
+      };
+      const next = ticketsReducer(prev, replaceTicketDetailActivity({ ticketId: mockTicket.id, activity: [] }));
+      expect(next.activity).toEqual([mockActivity]);
+    });
+  });
+
   describe('closeTicketDetail', () => {
     it('should clear detail state', () => {
       const prev: TicketsState = {
@@ -354,6 +397,107 @@ describe('ticketsReducer', () => {
     it('should set saving', () => {
       const next = ticketsReducer(initialTicketsState, addTicketComment({ ticketId: '1', body: 'a' }));
       expect(next.saving).toBe(true);
+    });
+  });
+
+  describe('patchTicketAutomationSuccess → tickets slice', () => {
+    const automationConfig = {
+      ticketId: 'ticket-1',
+      eligible: true,
+      allowedAgentIds: [] as string[],
+      verifierProfile: null,
+      requiresApproval: false,
+      approvedAt: null,
+      approvedByUserId: null,
+      approvalBaselineTicketUpdatedAt: null,
+      defaultBranchOverride: null,
+      nextRetryAt: null,
+      consecutiveFailureCount: 0,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-02T00:00:00Z',
+    };
+
+    it('updates automationEligible on list and open detail', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket],
+        detail: mockTicket,
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(prev, patchTicketAutomationSuccess({ config: automationConfig }));
+      expect(next.list[0].automationEligible).toBe(true);
+      expect(next.detail?.automationEligible).toBe(true);
+    });
+
+    it('updates automationEligible from board socket automation upsert', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [{ ...mockTicket, automationEligible: false }],
+        detail: { ...mockTicket, automationEligible: false },
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(
+        prev,
+        ticketBoardAutomationUpsert({
+          config: { ...automationConfig, eligible: true },
+        }),
+      );
+      expect(next.list[0].automationEligible).toBe(true);
+      expect(next.detail?.automationEligible).toBe(true);
+    });
+  });
+
+  describe('board socket ticket upsert', () => {
+    it('merges ticket into list and open detail', () => {
+      const updated = { ...mockTicket, title: 'Renamed' };
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket],
+        detail: mockTicket,
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(prev, ticketBoardTicketUpsert({ ticket: updated }));
+      expect(next.list[0].title).toBe('Renamed');
+      expect(next.detail?.title).toBe('Renamed');
+    });
+  });
+
+  describe('board socket ticket removed', () => {
+    it('removes ticket from list and clears open detail', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket],
+        detail: mockTicket,
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(prev, ticketBoardTicketRemoved({ id: mockTicket.id, clientId: mockTicket.clientId }));
+      expect(next.list).toEqual([]);
+      expect(next.detail).toBeNull();
+      expect(next.selectedTicketId).toBeNull();
+    });
+  });
+
+  describe('board socket comment', () => {
+    it('appends comment when detail is open for that ticket', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: mockTicket.id,
+        comments: [],
+      };
+      const next = ticketsReducer(prev, ticketBoardCommentCreated({ comment: mockComment }));
+      expect(next.comments).toEqual([mockComment]);
+    });
+  });
+
+  describe('board socket activity', () => {
+    it('prepends activity when detail is open for that ticket', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        selectedTicketId: mockTicket.id,
+        activity: [],
+      };
+      const next = ticketsReducer(prev, ticketBoardActivityCreated({ activity: mockActivity }));
+      expect(next.activity).toEqual([mockActivity]);
     });
   });
 });

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { AgentProvider } from '../providers/agent-provider.interface';
+import { AgentProvider, AgentResponseObject } from '../providers/agent-provider.interface';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
@@ -15,6 +15,9 @@ import { AgentsGateway } from './agents.gateway';
 interface ChatPayload {
   message: string;
   model?: string;
+  responseMode?: 'stream' | 'sync' | 'single';
+  ephemeral?: boolean;
+  correlationId?: string;
 }
 
 describe('AgentsGateway', () => {
@@ -1998,6 +2001,281 @@ describe('AgentsGateway', () => {
         }),
       );
       loggerLogSpy.mockRestore();
+    });
+
+    describe('ephemeral chat (unicast to requesting socket)', () => {
+      it('should emit chat traffic only to the requesting socket when ephemeral is true', async () => {
+        const requesterSocketId = mockSocket.id || 'test-socket-id';
+        const otherSocketId = 'other-viewer-socket-id';
+        const otherViewerSocket: Partial<Socket> = {
+          id: otherSocketId,
+          emit: jest.fn(),
+          connected: true,
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(requesterSocketId, mockAgent.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).socketById.set(requesterSocketId, mockSocket);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(otherSocketId, mockAgent.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).socketById.set(otherSocketId, otherViewerSocket);
+
+        agentsService.findOne.mockResolvedValue(mockAgentResponse);
+        agentsRepository.findById.mockResolvedValue(mockAgent);
+
+        agentMessagesService.getChatHistory.mockResolvedValue([
+          {
+            id: 'msg-1',
+            agentId: mockAgent.id,
+            agent: mockAgent,
+            actor: 'user',
+            message: 'Previous message',
+            filtered: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ]);
+
+        const mockAgentResponseJson = JSON.stringify({
+          type: 'result',
+          subtype: 'success',
+          is_error: false,
+          result: 'Automation reply',
+        });
+        const mockParsedResponse = {
+          type: 'result',
+          subtype: 'success',
+          is_error: false,
+          result: 'Automation reply',
+        };
+        mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);
+        mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
+        mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
+
+        await gateway.handleChat(
+          {
+            message: 'Ephemeral user prompt',
+            ephemeral: true,
+            responseMode: 'sync',
+            correlationId: 'auto-run-corr-1',
+          },
+          mockSocket as Socket,
+        );
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+          'chatMessage',
+          expect.objectContaining({
+            success: true,
+            data: expect.objectContaining({ from: 'user', text: 'Ephemeral user prompt' }),
+          }),
+        );
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+          'chatMessage',
+          expect.objectContaining({
+            success: true,
+            data: expect.objectContaining({ from: 'agent' }),
+          }),
+        );
+
+        const otherEmits = (otherViewerSocket.emit as jest.Mock).mock.calls;
+        expect(otherEmits.filter(([event]) => event === 'chatMessage')).toHaveLength(0);
+        expect(otherEmits.filter(([event]) => event === 'chatEvent')).toHaveLength(0);
+        expect(otherEmits.filter(([event]) => event === 'messageFilterResult')).toHaveLength(0);
+
+        expect(agentMessagesService.createUserMessage).not.toHaveBeenCalled();
+        expect(agentMessagesService.createAgentMessage).not.toHaveBeenCalled();
+        expect(mockAgentMessageEventsService.persistEvent).not.toHaveBeenCalled();
+      });
+
+      it('should broadcast chat traffic to all authenticated sockets when ephemeral is false', async () => {
+        const requesterSocketId = mockSocket.id || 'test-socket-id';
+        const otherSocketId = 'other-viewer-socket-id';
+        const otherViewerSocket: Partial<Socket> = {
+          id: otherSocketId,
+          emit: jest.fn(),
+          connected: true,
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(requesterSocketId, mockAgent.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).socketById.set(requesterSocketId, mockSocket);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(otherSocketId, mockAgent.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).socketById.set(otherSocketId, otherViewerSocket);
+
+        agentsService.findOne.mockResolvedValue(mockAgentResponse);
+        agentsRepository.findById.mockResolvedValue(mockAgent);
+
+        agentMessagesService.getChatHistory.mockResolvedValue([
+          {
+            id: 'msg-1',
+            agentId: mockAgent.id,
+            agent: mockAgent,
+            actor: 'user',
+            message: 'Previous message',
+            filtered: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ]);
+
+        const mockAgentResponseJson = JSON.stringify({
+          type: 'result',
+          subtype: 'success',
+          is_error: false,
+          result: 'Hello from agent!',
+        });
+        const mockParsedResponse = {
+          type: 'result',
+          subtype: 'success',
+          is_error: false,
+          result: 'Hello from agent!',
+        };
+        mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);
+        mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
+        mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
+
+        await gateway.handleChat({ message: 'Hello, world!' }, mockSocket as Socket);
+
+        const requesterChatMessages = (mockSocket.emit as jest.Mock).mock.calls.filter(([e]) => e === 'chatMessage');
+        const otherChatMessages = (otherViewerSocket.emit as jest.Mock).mock.calls.filter(([e]) => e === 'chatMessage');
+
+        expect(requesterChatMessages.length).toBeGreaterThanOrEqual(2);
+        expect(otherChatMessages.length).toBe(requesterChatMessages.length);
+
+        expect(mockAgentMessageEventsService.persistEvent).toHaveBeenCalled();
+      });
+    });
+
+    describe('streaming mode', () => {
+      afterEach(() => {
+        mockAgentProvider.getCapabilities.mockReturnValue({
+          supportsChat: true,
+          supportsStreaming: false,
+          supportsToolEvents: false,
+          supportsQuestions: false,
+        });
+        (mockAgentProvider as { sendMessageStream?: unknown }).sendMessageStream = undefined;
+        mockAgentProvider.toParseableStrings.mockReset();
+        mockAgentProvider.toUnifiedResponse.mockReset();
+      });
+
+      it('buildFinalStreamingResponse collapses repeated Cursor result NDJSON into one agenstra_turn result part', () => {
+        const essay = 'v'.repeat(40);
+        const streamedUnified = [
+          { type: 'tool_call', toolCallId: 'tc', name: 'read', args: { path: '/p' }, status: 'started' },
+          { type: 'result', subtype: 'success', result: essay + essay },
+          { type: 'result', subtype: 'success', result: essay, duration_ms: 42 },
+          { type: 'result', subtype: 'success', result: essay, usage: { outputTokens: 7 } },
+        ];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const built = (gateway as any).buildFinalStreamingResponse(streamedUnified, '') as {
+          type: string;
+          subtype?: string;
+          parts: Array<Record<string, unknown>>;
+        };
+        expect(built).not.toBeNull();
+        expect(built.type).toBe('agenstra_turn');
+        expect(built.subtype).toBe('success');
+        const resultParts = built.parts.filter((p) => p.type === 'result');
+        expect(resultParts).toHaveLength(1);
+        expect(resultParts[0].result).toBe(essay);
+        expect(resultParts[0].duration_ms).toBe(42);
+        expect(resultParts[0].usage).toEqual({ outputTokens: 7 });
+      });
+
+      it('buildFinalStreamingResponse removes trailing stream result that repeats materialized delta prose', () => {
+        const streamedUnified = [
+          { type: 'delta', delta: 'Hello ' },
+          { type: 'tool_call', id: 't', name: 'x', args: {}, status: 'started' },
+          { type: 'delta', delta: 'world' },
+          { type: 'result', subtype: 'success', result: 'Hello world' },
+        ];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const built = (gateway as any).buildFinalStreamingResponse(streamedUnified, '') as {
+          type: string;
+          parts: Array<Record<string, unknown>>;
+        };
+        expect(built.type).toBe('agenstra_turn');
+        expect(built.parts.filter((p) => p.type === 'result')).toEqual([
+          { type: 'result', subtype: 'success', result: 'Hello ' },
+          { type: 'result', subtype: 'success', result: 'world' },
+        ]);
+        expect(built.parts.some((p) => p.type === 'tool_call')).toBe(true);
+      });
+
+      it('persists deduped agenstra_turn when handleChat uses sendMessageStream with doubled Cursor result text', async () => {
+        const socketId = mockSocket.id || 'test-socket-id';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).socketById.set(socketId, mockSocket);
+        agentsService.findOne.mockResolvedValue(mockAgentResponse);
+        agentsRepository.findById.mockResolvedValue(mockAgent);
+        agentMessagesService.getChatHistory.mockResolvedValue([
+          {
+            id: 'msg-1',
+            agentId: mockAgent.id,
+            agent: mockAgent,
+            actor: 'user',
+            message: 'Previous',
+            filtered: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ]);
+
+        mockAgentProvider.getCapabilities.mockReturnValue({
+          supportsChat: true,
+          supportsStreaming: true,
+          supportsToolEvents: false,
+          supportsQuestions: false,
+        });
+
+        const essay = 'q'.repeat(40);
+        const toolLine = JSON.stringify({
+          type: 'tool_call',
+          toolCallId: 't-read',
+          name: 'read',
+          args: { path: '/x' },
+          status: 'started',
+        });
+        const doubledResultLine = JSON.stringify({
+          type: 'result',
+          subtype: 'success',
+          result: essay + essay,
+        });
+
+        mockAgentProvider.sendMessageStream = jest.fn().mockImplementation(async function* () {
+          yield `${toolLine}\n${doubledResultLine}\n`;
+        });
+
+        mockAgentProvider.toParseableStrings.mockImplementation((line: string) => [line.trim()]);
+        mockAgentProvider.toUnifiedResponse.mockImplementation((s: string) => JSON.parse(s) as AgentResponseObject);
+
+        await gateway.handleChat({ message: 'Stream me', responseMode: 'stream' }, mockSocket as Socket);
+
+        expect(mockAgentProvider.sendMessageStream).toHaveBeenCalledWith(
+          mockAgent.id,
+          mockAgent.containerId,
+          'Stream me',
+          expect.any(Object),
+        );
+        expect(mockAgentProvider.sendMessage).not.toHaveBeenCalled();
+
+        const createCalls = agentMessagesService.createAgentMessage.mock.calls;
+        const payload = createCalls.find(
+          (c) => typeof c[1] === 'object' && c[1] !== null && (c[1] as { type?: string }).type === 'agenstra_turn',
+        )?.[1] as { type: string; parts: Array<{ type?: string; result?: unknown }> } | undefined;
+        expect(payload).toBeDefined();
+        const results = payload!.parts.filter((p) => p.type === 'result');
+        expect(results).toHaveLength(1);
+        expect(results[0].result).toBe(essay);
+      });
     });
 
     describe('initialization message', () => {

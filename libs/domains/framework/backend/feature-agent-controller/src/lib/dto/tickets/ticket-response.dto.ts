@@ -11,6 +11,10 @@ export class TicketResponseDto {
   status!: TicketStatus;
   createdByUserId?: string | null;
   createdByEmail?: string | null;
+  /** Preferred workspace agent for chat/AI when viewing this ticket. */
+  preferredChatAgentId?: string | null;
+  /** True when autonomous prototyping is enabled for this ticket (`ticket_automation.eligible`). */
+  automationEligible!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
   children?: TicketResponseDto[];

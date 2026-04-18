@@ -1066,4 +1066,39 @@ export class AgentsVcsService {
       throw new BadRequestException(`Failed to resolve conflict: ${err.message || 'Unknown error'}`);
     }
   }
+
+  /**
+   * Fetch, checkout `baseBranch`, hard-reset to `origin/baseBranch`, and clean untracked files.
+   * Intended for autonomous ticket orchestration after access checks upstream.
+   */
+  async prepareCleanWorkspace(agentId: string, baseBranch: string): Promise<void> {
+    await this.agentsService.findOne(agentId);
+    const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
+
+    if (!agentEntity.containerId) {
+      throw new NotFoundException(`Agent ${agentId} has no associated container`);
+    }
+
+    const b = baseBranch.trim();
+    if (!/^[a-zA-Z0-9/_-]+$/.test(b)) {
+      throw new BadRequestException('Invalid base branch name');
+    }
+
+    const containerId = agentEntity.containerId;
+    const escaped = this.escapePath(b);
+
+    try {
+      await this.executeGitCommand(containerId, 'fetch origin', this.BASE_PATH, false, true, true);
+      await this.executeGitCommand(containerId, `checkout ${escaped}`, this.BASE_PATH, false, true, true);
+      await this.executeGitCommand(containerId, `reset --hard origin/${escaped}`, this.BASE_PATH, false, true, true);
+      await this.executeGitCommand(containerId, 'clean -fd', this.BASE_PATH, false, true, true);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`prepareCleanWorkspace failed for agent ${agentId}: ${err.message}`);
+      throw new BadRequestException(`Failed to prepare clean workspace: ${err.message || 'Unknown error'}`);
+    }
+  }
 }

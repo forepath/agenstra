@@ -570,4 +570,26 @@ describe('AgentsVcsService', () => {
       );
     });
   });
+
+  describe('prepareCleanWorkspace', () => {
+    it('should fetch, checkout, reset, and clean', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('')
+        .mockResolvedValueOnce('')
+        .mockResolvedValueOnce('')
+        .mockResolvedValueOnce('');
+
+      await service.prepareCleanWorkspace(mockAgentId, 'main');
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4);
+    });
+
+    it('should reject invalid branch names', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      await expect(service.prepareCleanWorkspace(mockAgentId, 'bad;branch')).rejects.toThrow();
+    });
+  });
 });

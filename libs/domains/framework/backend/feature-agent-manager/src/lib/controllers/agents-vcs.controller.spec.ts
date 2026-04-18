@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateBranchDto } from '../dto/create-branch.dto';
+import { PrepareCleanWorkspaceDto } from '../dto/prepare-clean-workspace.dto';
 import { GitBranchDto } from '../dto/git-branch.dto';
 import { GitDiffDto } from '../dto/git-diff.dto';
 import { GitStatusDto } from '../dto/git-status.dto';
@@ -58,6 +59,7 @@ describe('AgentsVcsController', () => {
     push: jest.fn(),
     pull: jest.fn(),
     fetch: jest.fn(),
+    prepareCleanWorkspace: jest.fn(),
     rebase: jest.fn(),
     createBranch: jest.fn(),
     switchBranch: jest.fn(),
@@ -190,6 +192,17 @@ describe('AgentsVcsController', () => {
       await controller.fetch(mockAgentId);
 
       expect(service.fetch).toHaveBeenCalledWith(mockAgentId);
+    });
+  });
+
+  describe('prepareCleanWorkspace', () => {
+    it('should delegate to service with base branch', async () => {
+      const body: PrepareCleanWorkspaceDto = { baseBranch: 'main' };
+      service.prepareCleanWorkspace.mockResolvedValue(undefined);
+
+      await controller.prepareCleanWorkspace(mockAgentId, body);
+
+      expect(service.prepareCleanWorkspace).toHaveBeenCalledWith(mockAgentId, 'main');
     });
   });
 

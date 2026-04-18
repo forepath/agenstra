@@ -70,6 +70,7 @@ describe('ClientsEffects', () => {
     endpoint: 'https://example.com/api',
     authenticationType: 'api_key',
     isAutoProvisioned: false,
+    canManageWorkspaceConfiguration: true,
     config: {
       gitRepositoryUrl: 'https://github.com/user/repo.git',
       agentTypes: [{ type: 'cursor', displayName: 'Cursor' }],

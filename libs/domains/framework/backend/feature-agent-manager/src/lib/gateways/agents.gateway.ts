@@ -25,10 +25,7 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
-import {
-  dropRedundantTrailingStreamResultParts,
-  materializeDeltaPartsIntoInterleavedResults,
-} from '../utils/materialize-streaming-deltas-for-transcript';
+import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
 import {
   buildPromptEnhancementMessage,
   PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX,
@@ -48,6 +45,10 @@ interface ChatPayload {
   message: string;
   correlationId?: string;
   responseMode?: AgentResponseMode;
+  /** When true, do not persist user/agent rows in `agent_messages` (background / autonomous runs). */
+  ephemeral?: boolean;
+  continue?: boolean;
+  resumeSessionSuffix?: string;
 }
 
 interface EnhanceChatPayload {
@@ -366,6 +367,37 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * Ephemeral chat turns (e.g. autonomous ticket runs) only notify the requesting socket so other
+   * sessions on the same agent do not show that traffic in the console chat.
+   */
+  private emitChatPayloadToViewers(
+    agentUuid: string,
+    ephemeral: boolean,
+    requestSocket: Socket,
+    event: string,
+    data: unknown,
+  ): void {
+    if (ephemeral) {
+      requestSocket.emit(event, data);
+      return;
+    }
+    this.broadcastToAgent(agentUuid, event, data);
+  }
+
+  private emitOrPersistChatEvent(
+    agentUuid: string,
+    ephemeral: boolean,
+    requestSocket: Socket,
+    envelope: AgentEventEnvelope,
+  ): void {
+    if (ephemeral) {
+      requestSocket.emit('chatEvent', createSuccessResponse<AgentEventEnvelope>(envelope));
+      return;
+    }
+    this.broadcastChatEvent(agentUuid, envelope);
+  }
+
+  /**
    * Cursor stream-json emits a final `{ type: "result", ... }` line when the model finishes, but the
    * Docker exec stream may stay open until the process exits. We persist as soon as we see that frame
    * so `agent_messages` is written even when stdout/stderr have not ended yet.
@@ -395,9 +427,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (streamedUnified.length > 0 && (hasStructuredStreamParts || !finalText)) {
       const streamEmittedResult = streamedUnified.some((p) => String(p.type) === 'result');
-      const parts = dropRedundantTrailingStreamResultParts(
-        materializeDeltaPartsIntoInterleavedResults(streamedUnified),
-      );
+      const parts = finalizeStreamingTranscriptParts(streamedUnified);
       // Keep prior rule: never duplicate the final NDJSON `result` with a synthetic `aggregatedText` blob.
       // After materializing deltas, skip synthetic append when any `result` part exists (from stream or flushes).
       if (finalText && !streamEmittedResult && !parts.some((p) => String(p.type) === 'result')) {
@@ -816,7 +846,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const correlationId =
       typeof data.correlationId === 'string' && data.correlationId.trim() ? data.correlationId.trim() : uuidv4();
-    const responseMode: AgentResponseMode = data.responseMode === 'stream' ? 'stream' : 'single';
+    const ephemeral = data.ephemeral === true;
+    const wantsStream = data.responseMode === 'stream';
+    const responseMode: AgentResponseMode = wantsStream ? 'stream' : data.responseMode === 'sync' ? 'sync' : 'single';
     let sequence = 0;
 
     // Create timestamp immediately for consistent message ordering
@@ -828,9 +860,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       actor: 'user',
     });
 
-    // Broadcast filter result for incoming filters
-    this.broadcastToAgent(
+    this.emitChatPayloadToViewers(
       agentUuid,
+      ephemeral,
+      socket,
       'messageFilterResult',
       createSuccessResponse<MessageFilterResultData>({
         direction: 'incoming',
@@ -849,17 +882,19 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const droppedResponseTimestamp = new Date().toISOString();
       const fakeUserMessage = `Message was dropped by filter: ${incomingFilterResult.matchedFilter?.reason || 'No reason provided'}`;
 
-      // Persist the fake user message
-      try {
-        await this.agentMessagesService.createUserMessage(agentUuid, fakeUserMessage, false);
-      } catch (persistError) {
-        const err = persistError as { message?: string };
-        this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+      if (!ephemeral) {
+        try {
+          await this.agentMessagesService.createUserMessage(agentUuid, fakeUserMessage, false);
+        } catch (persistError) {
+          const err = persistError as { message?: string };
+          this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+        }
       }
 
-      // Broadcast the fake user message (appears on user side)
-      this.broadcastToAgent(
+      this.emitChatPayloadToViewers(
         agentUuid,
+        ephemeral,
+        socket,
         'chatMessage',
         createSuccessResponse<ChatMessageData>({
           from: ChatActor.USER,
@@ -868,7 +903,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }),
       );
 
-      this.broadcastChatEvent(agentUuid, {
+      this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, {
         ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
         kind: 'userMessage',
         payload: { text: fakeUserMessage },
@@ -880,10 +915,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Use modified message if filter provided one, otherwise use original
     const messageToUse = incomingFilterResult.modifiedMessage ?? message;
 
-    // Broadcast user message immediately so UI shows "agent thinking" right away
-    // This is especially important when agent is instantiating
-    this.broadcastToAgent(
+    this.emitChatPayloadToViewers(
       agentUuid,
+      ephemeral,
+      socket,
       'chatMessage',
       createSuccessResponse<ChatMessageData>({
         from: ChatActor.USER,
@@ -892,13 +927,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }),
     );
 
-    this.broadcastChatEvent(agentUuid, {
+    this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, {
       ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
       kind: 'userMessage',
       payload: { text: messageToUse },
     });
 
-    this.broadcastChatEvent(agentUuid, {
+    this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, {
       ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
       kind: 'thinking',
       payload: {},
@@ -942,16 +977,18 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Persist user message (with filtered flag if filter matched)
       // Use modified message if filter provided one
-      try {
-        await this.agentMessagesService.createUserMessage(
-          agentUuid,
-          messageToUse,
-          incomingFilterResult.status === 'filtered',
-        );
-      } catch (persistError) {
-        const err = persistError as { message?: string };
-        this.logger.warn(`Failed to persist user message: ${err.message}`);
-        // Continue with message broadcasting even if persistence fails
+      if (!ephemeral) {
+        try {
+          await this.agentMessagesService.createUserMessage(
+            agentUuid,
+            messageToUse,
+            incomingFilterResult.status === 'filtered',
+          );
+        } catch (persistError) {
+          const err = persistError as { message?: string };
+          this.logger.warn(`Failed to persist user message: ${err.message}`);
+          // Continue with message broadcasting even if persistence fails
+        }
       }
 
       // Forward message to the agent's container stdin
@@ -963,7 +1000,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         try {
           const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
           const supportsStreaming =
-            responseMode === 'stream' && provider.getCapabilities().supportsStreaming && provider.sendMessageStream;
+            wantsStream &&
+            responseMode !== 'sync' &&
+            provider.getCapabilities().supportsStreaming &&
+            provider.sendMessageStream;
 
           const agentResponseTimestamp = new Date().toISOString();
 
@@ -985,10 +1025,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   for (const ev of events) {
                     if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
                     if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
-                    this.broadcastChatEvent(agentUuid, ev);
+                    this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
 
-                  if (!streamingTurnPersisted && this.isStreamingTerminalUnifiedResponse(parsed)) {
+                  if (!ephemeral && !streamingTurnPersisted && this.isStreamingTerminalUnifiedResponse(parsed)) {
                     const built = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
                     if (built) {
                       await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, built);
@@ -1002,7 +1042,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   for (const ev of events) {
                     if (ev.kind === 'assistantDelta') aggregatedText += ev.payload.delta;
                     if (ev.kind === 'assistantMessage') aggregatedText += ev.payload.text;
-                    this.broadcastChatEvent(agentUuid, ev);
+                    this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
                 }
               }
@@ -1010,6 +1050,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             for await (const chunk of provider.sendMessageStream(agent.id, containerId, messageToUse, {
               model: data.model,
+              continue: data.continue,
+              resumeSessionSuffix: data.resumeSessionSuffix,
             })) {
               buffered += chunk;
               const parts = buffered.split('\n');
@@ -1027,7 +1069,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               buffered = '';
             }
 
-            if (!streamingTurnPersisted) {
+            if (!ephemeral && !streamingTurnPersisted) {
               const finalResponse = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
               if (finalResponse) {
                 await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, finalResponse);
@@ -1042,6 +1084,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           } else {
             const agentResponse = await provider.sendMessage(agent.id, containerId, messageToUse, {
               model: data.model,
+              continue: data.continue,
+              resumeSessionSuffix: data.resumeSessionSuffix,
             });
 
             if (agentResponse && agentResponse.trim()) {
@@ -1060,8 +1104,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     actor: 'agent',
                   });
 
-                  this.broadcastToAgent(
+                  this.emitChatPayloadToViewers(
                     agentUuid,
+                    ephemeral,
+                    socket,
                     'messageFilterResult',
                     createSuccessResponse<MessageFilterResultData>({
                       direction: 'outgoing',
@@ -1081,15 +1127,19 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
                     };
 
-                    try {
-                      await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
-                    } catch (persistError) {
-                      const err = persistError as { message?: string };
-                      this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                    if (!ephemeral) {
+                      try {
+                        await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
+                      } catch (persistError) {
+                        const err = persistError as { message?: string };
+                        this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                      }
                     }
 
-                    this.broadcastToAgent(
+                    this.emitChatPayloadToViewers(
                       agentUuid,
+                      ephemeral,
+                      socket,
                       'chatMessage',
                       createSuccessResponse<ChatMessageData>({
                         from: ChatActor.AGENT,
@@ -1105,7 +1155,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       fakeAgentResponse,
                     );
                     for (const ev of events) {
-                      this.broadcastChatEvent(agentUuid, ev);
+                      this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                     }
 
                     return;
@@ -1120,19 +1170,23 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     }
                   }
 
-                  try {
-                    await this.agentMessagesService.createAgentMessage(
-                      agentUuid,
-                      responseToUse,
-                      outgoingFilterResult.status === 'filtered',
-                    );
-                  } catch (persistError) {
-                    const err = persistError as { message?: string };
-                    this.logger.warn(`Failed to persist agent message: ${err.message}`);
+                  if (!ephemeral) {
+                    try {
+                      await this.agentMessagesService.createAgentMessage(
+                        agentUuid,
+                        responseToUse,
+                        outgoingFilterResult.status === 'filtered',
+                      );
+                    } catch (persistError) {
+                      const err = persistError as { message?: string };
+                      this.logger.warn(`Failed to persist agent message: ${err.message}`);
+                    }
                   }
 
-                  this.broadcastToAgent(
+                  this.emitChatPayloadToViewers(
                     agentUuid,
+                    ephemeral,
+                    socket,
                     'chatMessage',
                     createSuccessResponse<ChatMessageData>({
                       from: ChatActor.AGENT,
@@ -1143,7 +1197,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, responseToUse);
                   for (const ev of events) {
-                    this.broadcastChatEvent(agentUuid, ev);
+                    this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
                 } catch (parseError) {
                   const parseErr = parseError as { message?: string };
@@ -1154,8 +1208,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     actor: 'agent',
                   });
 
-                  this.broadcastToAgent(
+                  this.emitChatPayloadToViewers(
                     agentUuid,
+                    ephemeral,
+                    socket,
                     'messageFilterResult',
                     createSuccessResponse<MessageFilterResultData>({
                       direction: 'outgoing',
@@ -1171,14 +1227,18 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
                     };
 
-                    try {
-                      await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
-                    } catch (persistError) {
-                      const err = persistError as { message?: string };
-                      this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                    if (!ephemeral) {
+                      try {
+                        await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
+                      } catch (persistError) {
+                        const err = persistError as { message?: string };
+                        this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
+                      }
                     }
-                    this.broadcastToAgent(
+                    this.emitChatPayloadToViewers(
                       agentUuid,
+                      ephemeral,
+                      socket,
                       'chatMessage',
                       createSuccessResponse<ChatMessageData>({
                         from: ChatActor.AGENT,
@@ -1194,26 +1254,30 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       fakeAgentResponse,
                     );
                     for (const ev of events) {
-                      this.broadcastChatEvent(agentUuid, ev);
+                      this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                     }
 
                     return;
                   }
 
                   const stringResponseToUse = outgoingFilterResult.modifiedMessage ?? toParse;
-                  try {
-                    await this.agentMessagesService.createAgentMessage(
-                      agentUuid,
-                      stringResponseToUse,
-                      outgoingFilterResult.status === 'filtered',
-                    );
-                  } catch (persistError) {
-                    const err = persistError as { message?: string };
-                    this.logger.warn(`Failed to persist agent message: ${err.message}`);
+                  if (!ephemeral) {
+                    try {
+                      await this.agentMessagesService.createAgentMessage(
+                        agentUuid,
+                        stringResponseToUse,
+                        outgoingFilterResult.status === 'filtered',
+                      );
+                    } catch (persistError) {
+                      const err = persistError as { message?: string };
+                      this.logger.warn(`Failed to persist agent message: ${err.message}`);
+                    }
                   }
 
-                  this.broadcastToAgent(
+                  this.emitChatPayloadToViewers(
                     agentUuid,
+                    ephemeral,
+                    socket,
                     'chatMessage',
                     createSuccessResponse<ChatMessageData>({
                       from: ChatActor.AGENT,
@@ -1229,7 +1293,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     stringResponseToUse,
                   );
                   for (const ev of events) {
-                    this.broadcastChatEvent(agentUuid, ev);
+                    this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
                 }
               }

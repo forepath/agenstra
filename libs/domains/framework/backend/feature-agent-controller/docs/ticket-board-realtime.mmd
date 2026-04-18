@@ -1,0 +1,21 @@
+%% Ticket board realtime (Socket.IO namespace `tickets`)
+sequenceDiagram
+    participant Board as TicketsBoard
+    participant Facade as TicketsBoardSocketFacade
+    participant NS as TicketsNamespace
+    participant Room as Room_clientId
+    participant Svc as TicketsService
+    participant RT as TicketBoardRealtimeService
+
+    Board->>Facade: connect(auth)
+    Facade->>NS: Socket.IO connect /tickets
+    Board->>Facade: setClient(clientId)
+    Facade->>NS: emit setClient
+    NS->>Room: join client:clientId
+    NS-->>Facade: setClientSuccess
+
+    Note over Svc: After successful DB change (REST or orchestrator)
+    Svc->>RT: emitToClient(clientId, ticketUpsert, dto)
+    RT->>Room: ticketUpsert
+    Room-->>Facade: ticketUpsert
+    Facade-->>Board: NgRx merge list or detail

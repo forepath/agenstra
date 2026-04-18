@@ -82,7 +82,8 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[Overview Diagram](./docs/overview.mmd)** - High-level flowchart showing when to use HTTP vs WebSocket protocols and their respective use cases
 - **[HTTP Sequence Diagram](./docs/sequence-http.mmd)** - Detailed sequence diagram for all HTTP CRUD operations (create, list, get, update, delete)
 - **[HTTP Environment Variables Sequence Diagram](./docs/sequence-http-environment.mmd)** - Detailed sequence diagram for environment variable operations (create, list, get, update, delete)
-- **[HTTP VCS Sequence Diagram](./docs/sequence-http-vcs.mmd)** - Detailed sequence diagram for all VCS (Git) operations (status, branches, diff, stage, commit, push, pull, etc.)
+- **[HTTP VCS Sequence Diagram](./docs/sequence-http-vcs.mmd)** - Detailed sequence diagram for all VCS (Git) operations (status, branches, diff, stage, commit, push, pull, workspace prepare-clean, etc.)
+- **[HTTP Automation Verification Sequence Diagram](./docs/sequence-http-automation-verify.mmd)** - Sequence diagram for `POST .../automation/verify-commands` (bounded shell in the agent container)
 - **[WebSocket Auth & Logs Diagram](./docs/sequence-ws-auth-logs.mmd)** - Sequence diagram for WebSocket connection, authentication flow, and container log streaming
 - **[WebSocket Chat Diagram](./docs/sequence-ws-chat.mmd)** - Sequence diagram for WebSocket chat message flow and disconnection handling
 - **[Lifecycle Diagram](./docs/lifecycle.mmd)** - End-to-end sequence diagram showing the complete agent lifecycle from creation through deletion

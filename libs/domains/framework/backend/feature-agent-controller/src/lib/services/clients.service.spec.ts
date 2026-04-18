@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   AuthenticationType,
   ClientEntity,
+  ClientUserRole,
   ClientUsersRepository,
   KeycloakTokenService,
   UserRole,
@@ -385,6 +386,27 @@ describe('ClientsService', () => {
       await service.findAll(10, 0, undefined, undefined, true);
 
       expect(repository.findAll).toHaveBeenCalledWith(10, 0);
+    });
+
+    it('should set canManageWorkspaceConfiguration to false for plain client_users user', async () => {
+      const clientForList: ClientEntity = { ...mockClient, userId: 'other-creator' };
+      mockRepository.findAll.mockResolvedValue([clientForList]);
+      mockRepository.findById.mockResolvedValue(clientForList);
+      clientUsersRepository.findByUserId.mockResolvedValue([
+        { clientId: clientForList.id, userId: 'member-1', role: ClientUserRole.USER } as any,
+      ]);
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue({
+        userId: 'member-1',
+        clientId: clientForList.id,
+        role: ClientUserRole.USER,
+      } as any);
+      clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
+      provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
+
+      const result = await service.findAll(10, 0, 'member-1', UserRole.USER, false);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].canManageWorkspaceConfiguration).toBe(false);
     });
   });
 

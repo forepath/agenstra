@@ -22,6 +22,8 @@ describe('ConfigService', () => {
     sendInitialization: jest.fn(),
     toParseableStrings: jest.fn(),
     toUnifiedResponse: jest.fn(),
+    getModelsListCommand: jest.fn().mockReturnValue(undefined),
+    toModelsList: jest.fn().mockReturnValue(undefined),
   };
 
   const mockAgentProviderFactory = {
@@ -98,6 +100,8 @@ describe('ConfigService', () => {
         sendInitialization: jest.fn(),
         toParseableStrings: jest.fn(),
         toUnifiedResponse: jest.fn(),
+        getModelsListCommand: jest.fn().mockReturnValue(undefined),
+        toModelsList: jest.fn().mockReturnValue(undefined),
       };
       const mockAnthropicProvider = {
         getType: jest.fn().mockReturnValue('anthropic'),
@@ -115,6 +119,8 @@ describe('ConfigService', () => {
         sendInitialization: jest.fn(),
         toParseableStrings: jest.fn(),
         toUnifiedResponse: jest.fn(),
+        getModelsListCommand: jest.fn().mockReturnValue(undefined),
+        toModelsList: jest.fn().mockReturnValue(undefined),
       };
 
       const agentTypes = ['cursor', 'openai', 'anthropic'];

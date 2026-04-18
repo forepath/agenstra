@@ -13,6 +13,11 @@ import type {
   TicketResponseDto,
   UpdateTicketDto,
 } from '../state/tickets/tickets.types';
+import type {
+  TicketAutomationResponseDto,
+  TicketAutomationRunResponseDto,
+  UpdateTicketAutomationDto,
+} from '../state/ticket-automation/ticket-automation.types';
 
 @Injectable({
   providedIn: 'root',
@@ -92,5 +97,36 @@ export class TicketsService {
       generationId,
       content,
     });
+  }
+
+  getTicketAutomation(ticketId: string): Observable<TicketAutomationResponseDto> {
+    return this.http.get<TicketAutomationResponseDto>(`${this.apiUrl}/tickets/${ticketId}/automation`);
+  }
+
+  patchTicketAutomation(ticketId: string, dto: UpdateTicketAutomationDto): Observable<TicketAutomationResponseDto> {
+    return this.http.patch<TicketAutomationResponseDto>(`${this.apiUrl}/tickets/${ticketId}/automation`, dto);
+  }
+
+  approveTicketAutomation(ticketId: string): Observable<TicketAutomationResponseDto> {
+    return this.http.post<TicketAutomationResponseDto>(`${this.apiUrl}/tickets/${ticketId}/automation/approve`, {});
+  }
+
+  unapproveTicketAutomation(ticketId: string): Observable<TicketAutomationResponseDto> {
+    return this.http.post<TicketAutomationResponseDto>(`${this.apiUrl}/tickets/${ticketId}/automation/unapprove`, {});
+  }
+
+  listTicketAutomationRuns(ticketId: string): Observable<TicketAutomationRunResponseDto[]> {
+    return this.http.get<TicketAutomationRunResponseDto[]>(`${this.apiUrl}/tickets/${ticketId}/automation/runs`);
+  }
+
+  getTicketAutomationRun(ticketId: string, runId: string): Observable<TicketAutomationRunResponseDto> {
+    return this.http.get<TicketAutomationRunResponseDto>(`${this.apiUrl}/tickets/${ticketId}/automation/runs/${runId}`);
+  }
+
+  cancelTicketAutomationRun(ticketId: string, runId: string): Observable<TicketAutomationRunResponseDto> {
+    return this.http.post<TicketAutomationRunResponseDto>(
+      `${this.apiUrl}/tickets/${ticketId}/automation/runs/${runId}/cancel`,
+      {},
+    );
   }
 }

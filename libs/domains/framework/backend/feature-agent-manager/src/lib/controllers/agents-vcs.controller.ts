@@ -4,6 +4,7 @@ import { CreateBranchDto } from '../dto/create-branch.dto';
 import { GitBranchDto } from '../dto/git-branch.dto';
 import { GitDiffDto } from '../dto/git-diff.dto';
 import { GitStatusDto } from '../dto/git-status.dto';
+import { PrepareCleanWorkspaceDto } from '../dto/prepare-clean-workspace.dto';
 import { PushOptionsDto } from '../dto/push-options.dto';
 import { RebaseDto } from '../dto/rebase.dto';
 import { ResolveConflictDto } from '../dto/resolve-conflict.dto';
@@ -129,6 +130,18 @@ export class AgentsVcsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async fetch(@Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string): Promise<void> {
     await this.agentsVcsService.fetch(agentId);
+  }
+
+  /**
+   * Reset working tree to match upstream default branch (fetch, reset --hard, clean).
+   */
+  @Post('workspace/prepare-clean')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async prepareCleanWorkspace(
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Body() body: PrepareCleanWorkspaceDto,
+  ): Promise<void> {
+    await this.agentsVcsService.prepareCleanWorkspace(agentId, body.baseBranch);
   }
 
   /**

@@ -1,4 +1,11 @@
 import { createReducer, on } from '@ngrx/store';
+import {
+  approveTicketAutomationSuccess,
+  loadTicketAutomationSuccess,
+  patchTicketAutomationSuccess,
+  ticketBoardAutomationUpsert,
+  unapproveTicketAutomationSuccess,
+} from '../ticket-automation/ticket-automation.actions';
 import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
 import {
   addTicketComment,
@@ -19,6 +26,11 @@ import {
   loadTicketsSuccess,
   openTicketDetail,
   prependTicketDetailActivity,
+  replaceTicketDetailActivity,
+  ticketBoardActivityCreated,
+  ticketBoardCommentCreated,
+  ticketBoardTicketRemoved,
+  ticketBoardTicketUpsert,
   updateTicket,
   updateTicketFailure,
   updateTicketSuccess,
@@ -59,6 +71,28 @@ function mergeTicketInList(list: TicketResponseDto[], ticket: TicketResponseDto)
 }
 
 /** When a subtask is created while its parent is open in the detail panel, merge it into `detail.children`. */
+/** Keep `TicketResponseDto.automationEligible` in sync when automation config is loaded or patched (activity is refreshed separately). */
+function syncTicketAutomationEligible(state: TicketsState, ticketId: string, eligible: boolean): TicketsState {
+  const list = state.list.map((t) => (t.id === ticketId ? { ...t, automationEligible: eligible } : t));
+  const detail = state.detail;
+  if (!detail) {
+    return { ...state, list };
+  }
+  if (detail.id === ticketId) {
+    return { ...state, list, detail: { ...detail, automationEligible: eligible } };
+  }
+  const children = detail.children;
+  if (children?.length) {
+    const idx = children.findIndex((c) => c.id === ticketId);
+    if (idx >= 0) {
+      const nextChildren = [...children];
+      nextChildren[idx] = { ...nextChildren[idx], automationEligible: eligible };
+      return { ...state, list, detail: { ...detail, children: nextChildren } };
+    }
+  }
+  return { ...state, list, detail };
+}
+
 function mergeCreatedChildIntoDetail(
   detail: TicketResponseDto | null,
   created: TicketResponseDto,
@@ -159,6 +193,56 @@ export const ticketsReducer = createReducer(
   on(addTicketCommentFailure, (state, { error }) => ({ ...state, saving: false, error })),
   on(clearTicketsError, (state) => ({ ...state, error: null })),
   on(prependTicketDetailActivity, (state, { activity }) => {
+    if (state.selectedTicketId !== activity.ticketId) {
+      return state;
+    }
+    if (state.activity.some((a) => a.id === activity.id)) {
+      return state;
+    }
+    return { ...state, activity: [activity, ...state.activity] };
+  }),
+  on(replaceTicketDetailActivity, (state, { ticketId, activity }) =>
+    state.selectedTicketId === ticketId ? { ...state, activity } : state,
+  ),
+  on(
+    patchTicketAutomationSuccess,
+    approveTicketAutomationSuccess,
+    unapproveTicketAutomationSuccess,
+    loadTicketAutomationSuccess,
+    ticketBoardAutomationUpsert,
+    (state, { config }) => syncTicketAutomationEligible(state, config.ticketId, config.eligible),
+  ),
+  on(ticketBoardTicketUpsert, (state, { ticket }) => {
+    const detail =
+      state.detail?.id === ticket.id
+        ? {
+            ...state.detail,
+            ...ticket,
+            children: ticket.children ?? state.detail.children,
+          }
+        : (mergeCreatedChildIntoDetail(state.detail, ticket) ?? state.detail);
+    return {
+      ...state,
+      list: mergeTicketInList(state.list, ticket),
+      detail,
+    };
+  }),
+  on(ticketBoardTicketRemoved, (state, { id }) => ({
+    ...state,
+    list: state.list.filter((t) => t.id !== id),
+    selectedTicketId: state.selectedTicketId === id ? null : state.selectedTicketId,
+    detail: state.detail?.id === id ? null : state.detail,
+  })),
+  on(ticketBoardCommentCreated, (state, { comment }) => {
+    if (state.selectedTicketId !== comment.ticketId) {
+      return state;
+    }
+    if (state.comments.some((c) => c.id === comment.id)) {
+      return state;
+    }
+    return { ...state, comments: [...state.comments, comment] };
+  }),
+  on(ticketBoardActivityCreated, (state, { activity }) => {
     if (state.selectedTicketId !== activity.ticketId) {
       return state;
     }

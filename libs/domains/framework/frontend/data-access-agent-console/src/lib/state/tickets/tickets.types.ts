@@ -12,6 +12,10 @@ export interface TicketResponseDto {
   status: TicketStatus;
   createdByUserId?: string | null;
   createdByEmail?: string | null;
+  /** Preferred workspace agent for chat/AI when viewing this ticket. */
+  preferredChatAgentId?: string | null;
+  /** True when autonomous prototyping is enabled for this ticket. */
+  automationEligible: boolean;
   createdAt: string;
   updatedAt: string;
   children?: TicketResponseDto[];
@@ -33,6 +37,7 @@ export interface UpdateTicketDto {
   content?: string;
   priority?: TicketPriority;
   status?: TicketStatus;
+  preferredChatAgentId?: string | null;
 }
 
 export interface TicketCommentResponseDto {

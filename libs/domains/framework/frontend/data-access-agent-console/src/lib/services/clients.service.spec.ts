@@ -21,6 +21,7 @@ describe('ClientsService', () => {
     endpoint: 'https://example.com/api',
     authenticationType: 'api_key',
     isAutoProvisioned: false,
+    canManageWorkspaceConfiguration: true,
     config: {
       gitRepositoryUrl: 'https://github.com/user/repo.git',
       agentTypes: [{ type: 'cursor', displayName: 'Cursor' }],
@@ -224,6 +225,57 @@ describe('ClientsService', () => {
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/users/${relationshipId}`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
+    });
+  });
+
+  describe('client agent autonomy', () => {
+    const mockAutonomy = {
+      clientId: 'client-1',
+      agentId: 'agent-1',
+      enabled: true,
+      preImproveTicket: false,
+      maxRuntimeMs: 3_600_000,
+      maxIterations: 20,
+      tokenBudgetLimit: null as number | null,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+    };
+
+    it('listEnabledAutonomyAgentIds GETs id list', (done) => {
+      service.listEnabledAutonomyAgentIds('client-1').subscribe((res) => {
+        expect(res).toEqual({ agentIds: ['agent-1', 'agent-2'] });
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/clients/client-1/agent-autonomy/enabled-agent-ids`);
+      expect(req.request.method).toBe('GET');
+      req.flush({ agentIds: ['agent-1', 'agent-2'] });
+    });
+
+    it('getClientAgentAutonomy GETs autonomy', (done) => {
+      service.getClientAgentAutonomy('client-1', 'agent-1').subscribe((row) => {
+        expect(row).toEqual(mockAutonomy);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/clients/client-1/agents/agent-1/autonomy`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockAutonomy);
+    });
+
+    it('upsertClientAgentAutonomy PUTs dto', (done) => {
+      const dto = {
+        enabled: false,
+        preImproveTicket: true,
+        maxRuntimeMs: 120_000,
+        maxIterations: 10,
+      };
+      service.upsertClientAgentAutonomy('client-1', 'agent-1', dto).subscribe((row) => {
+        expect(row).toEqual(mockAutonomy);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/clients/client-1/agents/agent-1/autonomy`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockAutonomy);
     });
   });
 });

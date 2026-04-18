@@ -50,6 +50,88 @@ export interface ClientAccessResult {
   clientUserRole?: ClientUserRole;
 }
 
+/** Stable message when a workspace member lacks permission to change configuration. */
+export const WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE = 'Workspace admin or owner role required';
+
+/**
+ * Whether the caller may mutate workspace configuration (autonomy, env vars, agents, client settings).
+ * API key and global admins may always manage; otherwise workspace creator or client_users admin may manage.
+ */
+export function canManageWorkspaceConfiguration(userInfo: UserInfoFromRequest, access: ClientAccessResult): boolean {
+  if (userInfo.isApiKeyAuth) {
+    return true;
+  }
+  if (userInfo.userRole === UserRole.ADMIN) {
+    return true;
+  }
+  if (!access.hasAccess) {
+    return false;
+  }
+  if (access.isClientCreator) {
+    return true;
+  }
+  if (access.clientUserRole === ClientUserRole.ADMIN) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Ensure the user may mutate workspace configuration; throws {@link ForbiddenException} if not.
+ */
+export async function ensureWorkspaceManagementAccess(
+  clientsRepository: ClientAccessClientsRepository,
+  clientUsersRepository: ClientAccessClientUsersRepository,
+  clientId: string,
+  req?: RequestWithUser,
+): Promise<void> {
+  const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+  const access = await checkClientAccess(
+    clientsRepository,
+    clientUsersRepository,
+    clientId,
+    userInfo.userId,
+    userInfo.userRole,
+    userInfo.isApiKeyAuth,
+  );
+  if (!access.hasAccess) {
+    throw new ForbiddenException('You do not have access to this client');
+  }
+  if (!canManageWorkspaceConfiguration(userInfo, access)) {
+    throw new ForbiddenException(WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE);
+  }
+}
+
+/**
+ * Same as {@link ensureWorkspaceManagementAccess} but with explicit user fields (for services without a Request).
+ */
+export async function assertWorkspaceManagementAccessForUser(
+  clientsRepository: ClientAccessClientsRepository,
+  clientUsersRepository: ClientAccessClientUsersRepository,
+  clientId: string,
+  userId: string | undefined,
+  userRole: UserRole | undefined,
+  isApiKeyAuth: boolean,
+): Promise<void> {
+  const access = await checkClientAccess(
+    clientsRepository,
+    clientUsersRepository,
+    clientId,
+    userId,
+    userRole,
+    isApiKeyAuth,
+  );
+  if (!access.hasAccess) {
+    throw new ForbiddenException('You do not have access to this client');
+  }
+  const userInfo: UserInfoFromRequest = isApiKeyAuth
+    ? { isApiKeyAuth: true }
+    : { userId, userRole, isApiKeyAuth: false };
+  if (!canManageWorkspaceConfiguration(userInfo, access)) {
+    throw new ForbiddenException(WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE);
+  }
+}
+
 /**
  * Extract user information from request for permission checks.
  * @param req - The request object

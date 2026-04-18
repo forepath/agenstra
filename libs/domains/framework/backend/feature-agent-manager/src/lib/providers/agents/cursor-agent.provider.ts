@@ -88,11 +88,14 @@ export class CursorAgentProvider implements AgentProvider {
 
   private static readonly MODEL_LINE_SEPARATOR = ' - ';
 
+  /** ANSI CSI sequences; ESC from char code to satisfy eslint no-control-regex. */
+  private static readonly ANSI_CSI_ESCAPE = new RegExp(`${String.fromCharCode(0x1b)}\\[[0-9;]*[A-Za-z]`, 'g');
+
   /**
    * Strip ANSI CSI escape sequences (e.g. cursor movement / clear line) from CLI output.
    */
   private static stripAnsiSequences(text: string): string {
-    return text.replace(/\u001b\[[0-9;]*[A-Za-z]/g, '');
+    return text.replace(CursorAgentProvider.ANSI_CSI_ESCAPE, '');
   }
 
   /**

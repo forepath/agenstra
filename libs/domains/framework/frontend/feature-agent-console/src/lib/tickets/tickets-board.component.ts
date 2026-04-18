@@ -13,16 +13,19 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
   BOARD_LANE_STATUSES,
   ClientsFacade,
+  ClientsService,
   deleteTicketSuccess,
   filterTicketsForGlobalSearch,
   SocketsFacade,
+  TicketAutomationFacade,
+  TicketsBoardSocketFacade,
   TicketsFacade,
   TicketsService,
   type AgentResponseDto,
@@ -33,26 +36,83 @@ import {
   type TicketPriority,
   type TicketResponseDto,
   type TicketStatus,
+  type TicketAutomationResponseDto,
+  type TicketAutomationRunResponseDto,
+  type TicketAutomationRunStatus,
+  type UpdateTicketAutomationDto,
+  approveTicketAutomationFailure,
+  approveTicketAutomationSuccess,
+  cancelTicketAutomationRunFailure,
+  cancelTicketAutomationRunSuccess,
+  patchTicketAutomationFailure,
+  patchTicketAutomationSuccess,
+  unapproveTicketAutomationFailure,
+  unapproveTicketAutomationSuccess,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { Actions, ofType } from '@ngrx/effects';
 import {
   catchError,
   combineLatest,
+  debounceTime,
   distinctUntilChanged,
+  EMPTY,
   filter,
+  finalize,
   map,
   Observable,
   of,
-  race,
   switchMap,
   take,
   tap,
-  timer,
 } from 'rxjs';
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
 import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
+import {
+  ticketAutomationCancellationReasonLabel,
+  ticketAutomationFailureCodeLabel,
+  ticketAutomationRunPhaseLabel,
+  ticketAutomationRunStatusLabel,
+  ticketAutomationRunStepKindLabel,
+} from './ticket-automation-run-labels';
 
 const ALL_TICKET_STATUSES: TicketStatus[] = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'];
+
+function normalizeAllowedAgentIdList(ids: string[] | undefined): string[] {
+  return [...new Set((ids ?? []).map((id) => id.trim()).filter((id) => id.length > 0))].sort();
+}
+
+function normalizeVerifierCommandsForCompare(
+  cmds: Array<{ cmd: string; cwd?: string }> | undefined | null,
+): Array<{ cmd: string; cwd?: string | undefined }> {
+  return (cmds ?? [])
+    .map((c) => ({ cmd: c.cmd.trim(), cwd: c.cwd?.trim() ? c.cwd.trim() : undefined }))
+    .filter((c) => c.cmd.length > 0);
+}
+
+function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: TicketAutomationResponseDto): boolean {
+  if (dto.eligible !== cfg.eligible) {
+    return false;
+  }
+  if (dto.requiresApproval !== cfg.requiresApproval) {
+    return false;
+  }
+  const dAgents = normalizeAllowedAgentIdList(dto.allowedAgentIds);
+  const cAgents = normalizeAllowedAgentIdList(cfg.allowedAgentIds);
+  if (dAgents.length !== cAgents.length || dAgents.some((id, i) => id !== cAgents[i])) {
+    return false;
+  }
+  const dBranch = (dto.defaultBranchOverride ?? '').trim();
+  const cBranch = (cfg.defaultBranchOverride ?? '').trim();
+  if (dBranch !== cBranch) {
+    return false;
+  }
+  const dVer = normalizeVerifierCommandsForCompare(dto.verifierProfile?.commands);
+  const cVer = normalizeVerifierCommandsForCompare(cfg.verifierProfile?.commands);
+  if (dVer.length !== cVer.length) {
+    return false;
+  }
+  return dVer.every((row, i) => row.cmd === cVer[i].cmd && row.cwd === cVer[i].cwd);
+}
 
 function isEditableDomTarget(target: EventTarget | null): boolean {
   if (!target || !(target instanceof HTMLElement)) {
@@ -79,14 +139,32 @@ interface TicketDetailSubtaskRow {
 })
 export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private readonly clientsFacade = inject(ClientsFacade);
+  private readonly clientsService = inject(ClientsService);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
   private readonly ticketsService = inject(TicketsService);
   private readonly socketsFacade = inject(SocketsFacade);
+  private readonly ticketsBoardSocketFacade = inject(TicketsBoardSocketFacade);
+  private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly actions$ = inject(Actions);
+
+  /**
+   * Tracks which ticket the automation form was last aligned to (detail open).
+   * `automationDraftLastSyncedConfigUpdatedAt` avoids re-applying the same server snapshot repeatedly,
+   * but allows websocket / REST config updates when `updatedAt` advances.
+   */
+  private automationDraftSyncTicketId: string | null = null;
+  private automationDraftLastSyncedConfigUpdatedAt: string | null = null;
+  /** If autosave ran while `ticketAutomationSaving`, flush again once the store finishes saving. */
+  private pendingAutomationAutosaveAfterBusy = false;
+  /**
+   * Ticket detail was hidden so the automation run modal can show alone; when automation closes, show ticket again.
+   * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
+   */
+  private ticketDetailSuspendedForAutomationRun = false;
 
   @ViewChild('ticketDetailModal', { static: false })
   private ticketDetailModal?: ElementRef<HTMLDivElement>;
@@ -105,6 +183,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   @ViewChild('globalSearchInput', { static: false })
   private globalSearchInput?: ElementRef<HTMLInputElement>;
+
+  @ViewChild('ticketAutomationRunModal', { static: false })
+  private ticketAutomationRunModal?: ElementRef<HTMLDivElement>;
 
   readonly lanes = BOARD_LANE_STATUSES;
   readonly statusOptions: TicketStatus[] = [...ALL_TICKET_STATUSES];
@@ -171,9 +252,36 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     switchMap((clientId) => (clientId ? this.agentsFacade.getClientAgents$(clientId) : of([]))),
   );
 
+  /** Agents for the board workspace (same store as `loadClientAgents` in `ngOnInit`). */
+  readonly automationAgentChoices = toSignal(this.agents$, { initialValue: [] });
+  readonly automationAgentsLoading = toSignal(
+    this.effectiveClientId$.pipe(
+      switchMap((clientId) => (clientId ? this.agentsFacade.getClientAgentsLoading$(clientId) : of(false))),
+    ),
+    { initialValue: false },
+  );
+
+  /** Agent IDs with prototype autonomy enabled (`client_agent_autonomy.enabled`); required for the scheduler to pick runs. */
+  autonomyEnabledAgentIds = signal<string[]>([]);
+  autonomyEnabledAgentIdsLoading = signal(false);
+
+  /** Workspace agents that may actually run autonomous prototyping for this client. */
+  readonly automationTicketAutomationAgentChoices = computed(() => {
+    const enabled = new Set(this.autonomyEnabledAgentIds());
+    return this.automationAgentChoices().filter((a) => enabled.has(a.id));
+  });
+
   readonly chatCapableAgents$: Observable<AgentResponseDto[]> = this.agents$.pipe(
     map((agents) => agents.filter((a) => a.agentType !== 'openclaw')),
   );
+
+  /** Mirrors `chatCapableAgents$` for constructor effects (WebSocket detail updates, socket agent changes). */
+  private readonly chatCapableAgentsSignal = toSignal(this.chatCapableAgents$, {
+    initialValue: [] as AgentResponseDto[],
+  });
+  private readonly socketSelectedAgentIdSignal = toSignal(this.socketsFacade.selectedAgentId$, {
+    initialValue: null as string | null,
+  });
 
   selectedLane = signal<BoardLaneStatus>('draft');
   selectedAgentForAi = signal<string | null>(null);
@@ -184,6 +292,62 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   pendingBodyCorrelation = signal<string | null>(null);
   private activeGenerationId: string | null = null;
 
+  readonly ticketAutomationConfig = toSignal(this.ticketAutomationFacade.config$, { initialValue: null });
+  readonly ticketAutomationRuns = toSignal(this.ticketAutomationFacade.runs$, { initialValue: [] });
+  readonly ticketAutomationRunDetail = toSignal(this.ticketAutomationFacade.runDetail$, { initialValue: null });
+  readonly ticketAutomationLoadingConfig = toSignal(this.ticketAutomationFacade.loadingConfig$, {
+    initialValue: false,
+  });
+  readonly ticketAutomationLoadingRuns = toSignal(this.ticketAutomationFacade.loadingRuns$, { initialValue: false });
+  readonly ticketAutomationLoadingRunDetail = toSignal(this.ticketAutomationFacade.loadingRunDetail$, {
+    initialValue: false,
+  });
+  readonly ticketAutomationSaving = toSignal(this.ticketAutomationFacade.saving$, { initialValue: false });
+  readonly ticketAutomationError = toSignal(this.ticketAutomationFacade.error$, { initialValue: null });
+
+  readonly automationSortedRuns = computed(() =>
+    [...this.ticketAutomationRuns()].sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()),
+  );
+
+  /**
+   * Branch label for the automation accordion: saved `defaultBranchOverride`, or else `branchName`
+   * from the most recent run (by `startedAt`).
+   */
+  readonly ticketAutomationBranchBadge = computed(() => {
+    const cfg = this.ticketAutomationConfig();
+    const override = cfg?.defaultBranchOverride?.trim();
+    if (override && override.length > 0) {
+      return override;
+    }
+    const runs = this.automationSortedRuns();
+    const fromRun = runs[0]?.branchName?.trim();
+    return fromRun && fromRun.length > 0 ? fromRun : null;
+  });
+
+  /** Stable fingerprint of automation draft for debounced autosave (JSON key order follows `buildTicketAutomationPatchDto`). */
+  private readonly automationAutosaveFingerprint = computed(() => JSON.stringify(this.buildTicketAutomationPatchDto()));
+
+  /**
+   * Allowed agent IDs not shown in the main checkbox list (removed agent, autonomy disabled, etc.).
+   */
+  readonly automationOrphanAllowedAgentIds = computed(() => {
+    const allowed = this.automationDraftAllowedAgentIds();
+    const listed = new Set(this.automationTicketAutomationAgentChoices().map((a) => a.id));
+    return allowed.filter((id) => !listed.has(id));
+  });
+
+  automationDraftEligible = signal(false);
+  /**
+   * Accordion open state for autonomous prototyping (user-controlled via toggle).
+   * Defaults from server `eligible` only on the first automation config apply after opening a ticket;
+   * later websocket/REST config updates must not reset it.
+   */
+  ticketAutomationAccordionExpanded = signal(false);
+  automationDraftRequiresApproval = signal(false);
+  /** Sorted unique agent UUIDs allowed to run automation for this ticket. */
+  automationDraftAllowedAgentIds = signal<string[]>([]);
+  automationDraftDefaultBranch = signal('');
+  automationVerifierRows = signal<Array<{ cmd: string; cwd: string }>>([{ cmd: '', cwd: '' }]);
   /** HTML5 DnD (same pattern as file-tree). */
   draggedTicket = signal<TicketResponseDto | null>(null);
   dragOverLane = signal<BoardLaneStatus | null>(null);
@@ -209,23 +373,167 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   /** Set when opening the delete confirmation modal (stacked over detail modal). */
   ticketPendingDelete = signal<{ id: string; title: string } | null>(null);
 
-  /** Local description text; synced from `detail` when the open ticket id changes. */
+  /** Local description text; synced from `detail` when the open ticket id or server `updatedAt` changes. */
   readonly descriptionDraft = signal('');
   private descriptionDraftSyncTicketId: string | null = null;
+  private descriptionDraftLastSyncedUpdatedAt: string | null = null;
+
+  /**
+   * Keeps "Agent for chat / AI" aligned with `detail` (incl. `ticketUpsert`) and with socket / agent list changes.
+   * Replaces a one-shot `combineLatest`+`take(1)` on open that never saw later store updates.
+   */
+  private chatAgentForAiSyncTicketId: string | null = null;
+  private chatAgentForAiLastSyncedDetailUpdatedAt: string | null = null;
 
   constructor() {
     effect(() => {
       const d = this.detail();
       if (!d) {
         this.descriptionDraftSyncTicketId = null;
+        this.descriptionDraftLastSyncedUpdatedAt = null;
         this.descriptionDraft.set('');
         return;
       }
       if (this.descriptionDraftSyncTicketId !== d.id) {
         this.descriptionDraftSyncTicketId = d.id;
-        this.descriptionDraft.set(d.content ?? '');
+        this.descriptionDraftLastSyncedUpdatedAt = null;
       }
+      const rev = d.updatedAt;
+      if (rev === this.descriptionDraftLastSyncedUpdatedAt) {
+        return;
+      }
+      this.descriptionDraftLastSyncedUpdatedAt = rev;
+      this.descriptionDraft.set(d.content ?? '');
     });
+
+    effect(() => {
+      const d = this.detail();
+      const chatAgents = this.chatCapableAgentsSignal();
+      const socketAgentId = this.socketSelectedAgentIdSignal();
+      if (!d) {
+        this.chatAgentForAiSyncTicketId = null;
+        this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
+        this.selectedAgentForAi.set(null);
+        return;
+      }
+      if (this.chatAgentForAiSyncTicketId !== d.id) {
+        this.chatAgentForAiSyncTicketId = d.id;
+        this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
+        this.selectedAgentForAi.set(null);
+      }
+      if (chatAgents.length === 0 && this.chatAgentForAiLastSyncedDetailUpdatedAt === null) {
+        return;
+      }
+      const pick = this.pickChatAgentForTicket(d, chatAgents, socketAgentId);
+      const rev = d.updatedAt;
+      const revBumped = rev !== this.chatAgentForAiLastSyncedDetailUpdatedAt;
+      const prevPick = this.selectedAgentForAi();
+      if (!revBumped && pick === prevPick) {
+        return;
+      }
+      if (revBumped) {
+        this.chatAgentForAiLastSyncedDetailUpdatedAt = rev;
+      }
+      this.selectedAgentForAi.set(pick);
+      queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
+    });
+
+    effect(() => {
+      const d = this.detail()?.id;
+      if (!d) {
+        this.automationDraftSyncTicketId = null;
+        this.automationDraftLastSyncedConfigUpdatedAt = null;
+        this.ticketAutomationAccordionExpanded.set(false);
+        return;
+      }
+      const cfg = this.ticketAutomationConfig();
+      if (!cfg || cfg.ticketId !== d) {
+        return;
+      }
+      if (this.automationDraftSyncTicketId !== d) {
+        this.automationDraftSyncTicketId = d;
+        this.automationDraftLastSyncedConfigUpdatedAt = null;
+      }
+      const rev = cfg.updatedAt;
+      if (rev === this.automationDraftLastSyncedConfigUpdatedAt) {
+        return;
+      }
+      const applyAccordionDefaultFromEligible = this.automationDraftLastSyncedConfigUpdatedAt === null;
+      this.automationDraftLastSyncedConfigUpdatedAt = rev;
+      this.automationDraftEligible.set(cfg.eligible);
+      if (applyAccordionDefaultFromEligible) {
+        this.ticketAutomationAccordionExpanded.set(cfg.eligible);
+      }
+      this.automationDraftRequiresApproval.set(cfg.requiresApproval);
+      this.automationDraftAllowedAgentIds.set(normalizeAllowedAgentIdList(cfg.allowedAgentIds));
+      this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
+      const cmds = cfg.verifierProfile?.commands?.length
+        ? cfg.verifierProfile.commands.map((c) => ({ cmd: c.cmd, cwd: c.cwd ?? '' }))
+        : [{ cmd: '', cwd: '' }];
+      this.automationVerifierRows.set(cmds);
+      queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
+    });
+
+    effect(() => {
+      const d = this.detail()?.id;
+      const cfg = this.ticketAutomationConfig();
+      this.selectedAgentForAi();
+      this.automationTicketAutomationAgentChoices();
+      this.autonomyEnabledAgentIds();
+      if (!d || !cfg || cfg.ticketId !== d) {
+        return;
+      }
+      if (this.automationDraftSyncTicketId !== d) {
+        return;
+      }
+      queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
+    });
+
+    toObservable(this.automationAutosaveFingerprint)
+      .pipe(debounceTime(500), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.tryAutosaveTicketAutomationSettings();
+      });
+
+    this.actions$
+      .pipe(
+        ofType(
+          patchTicketAutomationSuccess,
+          patchTicketAutomationFailure,
+          approveTicketAutomationSuccess,
+          approveTicketAutomationFailure,
+          unapproveTicketAutomationSuccess,
+          unapproveTicketAutomationFailure,
+          cancelTicketAutomationRunSuccess,
+          cancelTicketAutomationRunFailure,
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((action) => {
+        if (
+          action.type === patchTicketAutomationFailure.type ||
+          action.type === approveTicketAutomationFailure.type ||
+          action.type === unapproveTicketAutomationFailure.type ||
+          action.type === cancelTicketAutomationRunFailure.type
+        ) {
+          this.pendingAutomationAutosaveAfterBusy = false;
+          return;
+        }
+        const tid = this.detail()?.id;
+        if (!tid) {
+          return;
+        }
+        const affectedTicketId =
+          'config' in action ? action.config.ticketId : 'run' in action ? action.run.ticketId : null;
+        if (!affectedTicketId || affectedTicketId !== tid) {
+          return;
+        }
+        if (!this.pendingAutomationAutosaveAfterBusy) {
+          return;
+        }
+        this.pendingAutomationAutosaveAfterBusy = false;
+        queueMicrotask(() => this.tryAutosaveTicketAutomationSettings());
+      });
   }
 
   ngOnInit(): void {
@@ -234,13 +542,41 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.effectiveClientId$
       .pipe(
         distinctUntilChanged(),
-        filter((id): id is string => !!id),
+        switchMap((clientId) => {
+          if (!clientId) {
+            this.ticketsBoardSocketFacade.disconnect();
+            return EMPTY;
+          }
+          return this.ticketsBoardSocketFacade.ensureConnectedAndSetClient(clientId);
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((clientId) => {
-        this.agentsFacade.loadClientAgents(clientId);
-        this.ticketsFacade.loadTickets({ clientId });
-      });
+      .subscribe();
+
+    this.effectiveClientId$
+      .pipe(
+        distinctUntilChanged(),
+        tap((clientId) => {
+          if (!clientId) {
+            this.autonomyEnabledAgentIds.set([]);
+            this.autonomyEnabledAgentIdsLoading.set(false);
+          }
+        }),
+        switchMap((clientId) => {
+          if (!clientId) {
+            return of({ agentIds: [] as string[] });
+          }
+          this.agentsFacade.loadClientAgents(clientId);
+          this.ticketsFacade.loadTickets({ clientId });
+          this.autonomyEnabledAgentIdsLoading.set(true);
+          return this.clientsService.listEnabledAutonomyAgentIds(clientId).pipe(
+            catchError(() => of({ agentIds: [] as string[] })),
+            finalize(() => this.autonomyEnabledAgentIdsLoading.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((r) => this.autonomyEnabledAgentIds.set(r.agentIds));
 
     this.socketsFacade.ticketBodyLastResult$
       .pipe(
@@ -372,6 +708,34 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         return $localize`:@@featureTicketsBoard-activityActionBodyGenerationStarted:AI description generation started`;
       case 'PROTOTYPE_PROMPT_GENERATED':
         return $localize`:@@featureTicketsBoard-activityActionPrototypePromptGenerated:Prototype prompt generated`;
+      case 'AUTOMATION_CLAIMED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationClaimed:Automation claimed`;
+      case 'AUTOMATION_STARTED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationStarted:Automation started`;
+      case 'AUTOMATION_SUCCEEDED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationSucceeded:Automation succeeded`;
+      case 'AUTOMATION_FAILED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationFailed:Automation failed`;
+      case 'AUTOMATION_TIMED_OUT':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationTimedOut:Automation timed out`;
+      case 'AUTOMATION_ESCALATED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationEscalated:Automation escalated`;
+      case 'AUTOMATION_REQUEUED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationRequeued:Automation requeued`;
+      case 'AUTOMATION_APPROVAL_INVALIDATED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationApprovalInvalidated:Automation approval invalidated`;
+      case 'AUTOMATION_CANCELLED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationCancelled:Automation cancelled`;
+      case 'AUTOMATION_APPROVED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationApproved:Automation approved`;
+      case 'AUTOMATION_UNAPPROVED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationUnapproved:Automation approval revoked`;
+      case 'AUTOMATION_ELIGIBILITY_CHANGED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationEligibilityChanged:Automated runs eligibility changed`;
+      case 'AUTOMATION_APPROVAL_REQUIREMENT_CHANGED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationApprovalRequirementChanged:Automation approval requirement changed`;
+      case 'AUTOMATION_SETTINGS_UPDATED':
+        return $localize`:@@featureTicketsBoard-activityActionAutomationSettingsUpdated:Automation settings updated`;
       default:
         return $localize`:@@featureTicketsBoard-activityActionUnknown:Unknown activity`;
     }
@@ -396,12 +760,29 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       case 'WORKSPACE_MOVED':
       case 'PARENT_CHANGED':
       case 'FIELD_UPDATED':
+      case 'AUTOMATION_ELIGIBILITY_CHANGED':
+      case 'AUTOMATION_APPROVAL_REQUIREMENT_CHANGED':
+      case 'AUTOMATION_SETTINGS_UPDATED':
         return 'tickets-board__chip--activity-muted';
       case 'CONTENT_APPLIED_FROM_AI':
         return 'tickets-board__chip--activity-ai-content';
       case 'BODY_GENERATION_STARTED':
       case 'PROTOTYPE_PROMPT_GENERATED':
         return 'tickets-board__chip--activity-ai';
+      case 'AUTOMATION_SUCCEEDED':
+      case 'AUTOMATION_APPROVED':
+      case 'AUTOMATION_UNAPPROVED':
+        return 'tickets-board__chip--activity-created';
+      case 'AUTOMATION_FAILED':
+      case 'AUTOMATION_TIMED_OUT':
+      case 'AUTOMATION_ESCALATED':
+      case 'AUTOMATION_CANCELLED':
+      case 'AUTOMATION_APPROVAL_INVALIDATED':
+        return 'tickets-board__chip--activity-deleted';
+      case 'AUTOMATION_CLAIMED':
+      case 'AUTOMATION_STARTED':
+      case 'AUTOMATION_REQUEUED':
+        return 'tickets-board__chip--activity-status';
       default:
         return 'tickets-board__chip--neutral';
     }
@@ -508,36 +889,46 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.bodyGenError.set(null);
     this.newCommentText.set('');
     this.ticketsFacade.openDetail(ticketId);
+    this.ticketAutomationFacade.loadConfig(ticketId);
+    this.ticketAutomationFacade.loadRuns(ticketId);
 
     const clientId = this.effectiveClientId();
     if (clientId) {
       this.agentsFacade.loadClientAgents(clientId);
     }
 
-    combineLatest([
-      this.effectiveClientId$.pipe(take(1)),
-      race(
-        this.chatCapableAgents$.pipe(
-          filter((agents) => agents.length > 0),
-          take(1),
-        ),
-        timer(4000).pipe(switchMap(() => this.chatCapableAgents$.pipe(take(1)))),
-      ),
-      this.socketsFacade.selectedAgentId$.pipe(take(1)),
-    ])
-      .pipe(take(1))
-      .subscribe(([cid, chatAgents, socketAgentId]) => {
-        const pick =
-          (socketAgentId && chatAgents.some((a) => a.id === socketAgentId) ? socketAgentId : null) ??
-          chatAgents[0]?.id ??
-          null;
-        this.selectedAgentForAi.set(pick);
-      });
     setTimeout(() => this.showModal(), 0);
   }
 
   onBreadcrumbNavigate(ticketId: string): void {
     this.openTicketDetailFlow(ticketId);
+  }
+
+  /** Prefer stored ticket choice when still valid; else socket agent; else first chat-capable agent. */
+  private pickChatAgentForTicket(
+    detail: TicketResponseDto,
+    chatAgents: AgentResponseDto[],
+    socketAgentId: string | null,
+  ): string | null {
+    const ids = new Set(chatAgents.map((a) => a.id));
+    const preferred = detail.preferredChatAgentId ?? null;
+    if (preferred && ids.has(preferred)) {
+      return preferred;
+    }
+    if (socketAgentId && ids.has(socketAgentId)) {
+      return socketAgentId;
+    }
+    return chatAgents[0]?.id ?? null;
+  }
+
+  onPreferredChatAgentChange(ticket: TicketResponseDto, raw: string): void {
+    const agentId = raw === '' ? null : raw;
+    this.selectedAgentForAi.set(agentId);
+    const current = ticket.preferredChatAgentId ?? null;
+    if (agentId === current) {
+      return;
+    }
+    this.ticketsFacade.update(ticket.id, { preferredChatAgentId: agentId });
   }
 
   showCreateSubtaskModal(): void {
@@ -555,13 +946,313 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   onCloseModal(): void {
+    this.ticketDetailSuspendedForAutomationRun = false;
     this.hideModal();
+    this.hideAutomationRunDetailModal();
     this.ticketsFacade.closeDetail();
     this.prototypeError.set(null);
     this.bodyGenError.set(null);
     this.pendingBodyCorrelation.set(null);
     this.bodyGenInProgress.set(false);
     this.activeGenerationId = null;
+    this.ticketAutomationFacade.clear();
+  }
+
+  onDismissTicketAutomationError(): void {
+    this.ticketAutomationFacade.clearError();
+  }
+
+  toggleTicketAutomationAccordion(): void {
+    this.ticketAutomationAccordionExpanded.update((open) => !open);
+  }
+
+  private tryAutosaveTicketAutomationSettings(): void {
+    const tid = this.detail()?.id;
+    const cfg = this.ticketAutomationConfig();
+    if (!tid || !cfg || cfg.ticketId !== tid) {
+      return;
+    }
+    if (this.automationDraftSyncTicketId !== tid) {
+      return;
+    }
+    if (this.ticketAutomationLoadingConfig()) {
+      return;
+    }
+    const dto = this.buildTicketAutomationPatchDto();
+    if (automationDtoMatchesServerConfig(dto, cfg)) {
+      return;
+    }
+    if (this.ticketAutomationSaving()) {
+      this.pendingAutomationAutosaveAfterBusy = true;
+      return;
+    }
+    this.pendingAutomationAutosaveAfterBusy = false;
+    this.ticketAutomationFacade.clearError();
+    this.ticketAutomationFacade.patchConfig(tid, dto);
+    const clientId = this.effectiveClientId();
+    if (clientId) {
+      setTimeout(() => this.ticketAutomationFacade.loadRuns(tid), 400);
+    }
+  }
+
+  onApproveTicketAutomation(): void {
+    const tid = this.detail()?.id;
+    if (!tid) {
+      return;
+    }
+    this.ticketAutomationFacade.clearError();
+    this.ticketAutomationFacade.approve(tid);
+  }
+
+  onUnapproveTicketAutomation(): void {
+    const tid = this.detail()?.id;
+    if (!tid) {
+      return;
+    }
+    this.ticketAutomationFacade.clearError();
+    this.ticketAutomationFacade.unapprove(tid);
+  }
+
+  onRefreshTicketAutomationRuns(): void {
+    const tid = this.detail()?.id;
+    if (!tid) {
+      return;
+    }
+    this.ticketAutomationFacade.loadRuns(tid);
+  }
+
+  openTicketAutomationRunDetailModal(runId: string): void {
+    const tid = this.detail()?.id;
+    if (!tid) {
+      return;
+    }
+    this.ticketAutomationFacade.loadRunDetail(tid, runId);
+
+    const automationEl = this.ticketAutomationRunModal?.nativeElement;
+    if (automationEl?.classList.contains('show')) {
+      return;
+    }
+    if (this.ticketDetailSuspendedForAutomationRun) {
+      return;
+    }
+
+    const ticketEl = this.ticketDetailModal?.nativeElement;
+    if (!ticketEl || !ticketEl.classList.contains('show')) {
+      queueMicrotask(() => this.showAutomationRunDetailModal());
+      return;
+    }
+
+    this.ticketDetailSuspendedForAutomationRun = true;
+    const onTicketHidden = (): void => {
+      queueMicrotask(() => {
+        const runModalEl = this.ticketAutomationRunModal?.nativeElement;
+        if (!runModalEl) {
+          this.ticketDetailSuspendedForAutomationRun = false;
+          this.showModal();
+          return;
+        }
+        this.showAutomationRunDetailModal();
+        this.registerReopenTicketDetailAfterAutomationRunModal();
+      });
+    };
+    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
+    this.hideModal();
+  }
+
+  onCancelTicketAutomationRun(run: TicketAutomationRunResponseDto): void {
+    const tid = this.detail()?.id;
+    if (!tid || !this.ticketAutomationRunCanCancel(run)) {
+      return;
+    }
+    this.ticketAutomationFacade.clearError();
+    this.ticketAutomationFacade.cancelRun(tid, run.id);
+  }
+
+  addAutomationVerifierRow(): void {
+    this.automationVerifierRows.update((rows) => [...rows, { cmd: '', cwd: '' }]);
+  }
+
+  removeAutomationVerifierRow(index: number): void {
+    this.automationVerifierRows.update((rows) => {
+      if (rows.length <= 1) {
+        return [{ cmd: '', cwd: '' }];
+      }
+      return rows.filter((_, i) => i !== index);
+    });
+  }
+
+  ticketAutomationRunCanCancel(run: TicketAutomationRunResponseDto): boolean {
+    return run.status === 'pending' || run.status === 'running';
+  }
+
+  ticketAutomationRunStatusBadgeClass(status: TicketAutomationRunStatus): string {
+    switch (status) {
+      case 'succeeded':
+        return 'text-bg-success';
+      case 'failed':
+      case 'timed_out':
+      case 'escalated':
+        return 'text-bg-danger';
+      case 'running':
+      case 'pending':
+        return 'text-bg-primary';
+      case 'cancelled':
+        return 'text-bg-secondary';
+      default:
+        return 'text-bg-secondary';
+    }
+  }
+
+  automationRunStatusLabel(status: TicketAutomationRunStatus): string {
+    return ticketAutomationRunStatusLabel(status);
+  }
+
+  automationRunPhaseLabel(phase: string): string {
+    return ticketAutomationRunPhaseLabel(phase);
+  }
+
+  automationRunStepKindLabel(kind: string): string {
+    return ticketAutomationRunStepKindLabel(kind);
+  }
+
+  automationFailureCodeLabel(code: string): string {
+    return ticketAutomationFailureCodeLabel(code);
+  }
+
+  automationCancellationReasonLabel(reason: string): string {
+    return ticketAutomationCancellationReasonLabel(reason);
+  }
+
+  formatAutomationJson(value: unknown): string {
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  }
+
+  private buildTicketAutomationPatchDto(): UpdateTicketAutomationDto {
+    const commands = this.automationVerifierRows()
+      .map((r) => ({
+        cmd: r.cmd.trim(),
+        cwd: r.cwd.trim().length > 0 ? r.cwd.trim() : undefined,
+      }))
+      .filter((r) => r.cmd.length > 0);
+    const branch = this.automationDraftDefaultBranch().trim();
+    return {
+      eligible: this.automationDraftEligible(),
+      requiresApproval: this.automationDraftRequiresApproval(),
+      allowedAgentIds: this.automationDraftAllowedAgentIds(),
+      defaultBranchOverride: branch.length > 0 ? branch : null,
+      verifierProfile: { commands },
+    };
+  }
+
+  isAutomationAgentAllowed(agentId: string): boolean {
+    return this.automationDraftAllowedAgentIds().includes(agentId);
+  }
+
+  /**
+   * When the allowlist includes the same agent as "Agent for chat / AI", that row stays checked and cannot be cleared
+   * until the chat selection changes.
+   */
+  isAutomationAllowedAgentLockedToChat(agentId: string): boolean {
+    const chatId = this.selectedAgentForAi();
+    if (!chatId || chatId !== agentId) {
+      return false;
+    }
+    return this.isAutomationAgentAllowed(agentId);
+  }
+
+  readonly ticketAutomationChatAgentLockTitle = $localize`:@@featureTicketsBoard-automationChatAgentLockTitle:Matches Agent for chat / AI — change the chat agent to allow unchecking.`;
+
+  onAutomationAllowedAgentToggle(agentId: string, checked: boolean): void {
+    if (!checked && this.isAutomationAllowedAgentLockedToChat(agentId)) {
+      return;
+    }
+    this.automationDraftAllowedAgentIds.update((ids) => {
+      const next = new Set(ids);
+      if (checked) {
+        next.add(agentId);
+      } else {
+        next.delete(agentId);
+      }
+      return [...next].sort();
+    });
+    queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
+  }
+
+  /**
+   * Ensures the "Agent for chat / AI" agent is checked in the automation allowlist when that agent appears in the
+   * allowed-agents checkbox list (prototype autonomy enabled). Runs regardless of ticket automation `eligible`.
+   * Adding the chat agent when the server had an empty list narrows meaning to that agent on the next autosave.
+   */
+  private ensureChatAgentInAutomationAllowedList(): void {
+    const tid = this.detail()?.id;
+    if (!tid || this.automationDraftSyncTicketId !== tid) {
+      return;
+    }
+    const chatId = this.selectedAgentForAi();
+    if (!chatId) {
+      return;
+    }
+    if (!this.automationTicketAutomationAgentChoices().some((a) => a.id === chatId)) {
+      return;
+    }
+    this.automationDraftAllowedAgentIds.update((ids) => {
+      if (ids.includes(chatId)) {
+        return ids;
+      }
+      return normalizeAllowedAgentIdList([...ids, chatId]);
+    });
+  }
+
+  private showAutomationRunDetailModal(): void {
+    const el = this.ticketAutomationRunModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const win = window as unknown as {
+      bootstrap?: {
+        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
+      };
+    };
+    const Modal = win.bootstrap?.Modal;
+    if (Modal) {
+      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+      inst.show();
+    }
+  }
+
+  onCloseTicketAutomationRunModal(): void {
+    this.hideAutomationRunDetailModal();
+  }
+
+  private hideAutomationRunDetailModal(): void {
+    const el = this.ticketAutomationRunModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const win = window as unknown as {
+      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
+    };
+    win.bootstrap?.Modal?.getInstance(el)?.hide();
+  }
+
+  /** One-time: after automation run modal hides, restore ticket detail if it was swapped out for this flow. */
+  private registerReopenTicketDetailAfterAutomationRunModal(): void {
+    const el = this.ticketAutomationRunModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const onAutomationHidden = (): void => {
+      if (!this.ticketDetailSuspendedForAutomationRun) {
+        return;
+      }
+      this.ticketDetailSuspendedForAutomationRun = false;
+      queueMicrotask(() => this.showModal());
+    };
+    el.addEventListener('hidden.bs.modal', onAutomationHidden, { once: true });
   }
 
   effectiveWorkspaceTitle(ew: { id: string; client: ClientResponseDto | null }): string {
@@ -593,12 +1284,15 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       return;
     }
     this.hideWorkspaceSwitchModal();
+    this.ticketDetailSuspendedForAutomationRun = false;
     this.hideModal();
+    this.hideAutomationRunDetailModal();
     this.hideCreateModalEl();
     this.hideDeleteTicketConfirmModal();
     this.hideGlobalSearchModalEl();
     this.ticketPendingDelete.set(null);
     this.ticketsFacade.closeDetail();
+    this.ticketAutomationFacade.clear();
     this.clientsFacade.setActiveClient(client.id);
     const parent = this.route.parent;
     if (parent) {
@@ -643,6 +1337,14 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     } else {
       this.ticketsFacade.update(id, { priority: value as TicketPriority });
     }
+  }
+
+  onDetailStatusModelChange(ticketId: string, value: TicketStatus): void {
+    this.onUpdateTicketField(ticketId, 'status', value);
+  }
+
+  onDetailPriorityModelChange(ticketId: string, value: TicketPriority): void {
+    this.onUpdateTicketField(ticketId, 'priority', value);
   }
 
   /** Persists description when the editor loses focus (if it changed). */
@@ -832,8 +1534,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.ticketsService.getPrototypePrompt(ticketId).subscribe({
       next: ({ prompt }) => {
         storeAgentConsoleChatDraft(prompt);
+        this.ticketDetailSuspendedForAutomationRun = false;
         this.hideModal();
+        this.hideAutomationRunDetailModal();
         this.ticketsFacade.closeDetail();
+        this.ticketAutomationFacade.clear();
         void this.router.navigate(['/clients', clientId, 'agents', agentId]);
       },
       error: (err: unknown) => {

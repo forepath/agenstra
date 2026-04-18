@@ -1,5 +1,15 @@
 import { ForbiddenException } from '@nestjs/common';
-import { checkClientAccess, ensureClientAccess, getUserFromRequest, type RequestWithUser } from './client-access.utils';
+import {
+  assertWorkspaceManagementAccessForUser,
+  canManageWorkspaceConfiguration,
+  checkClientAccess,
+  ensureClientAccess,
+  ensureWorkspaceManagementAccess,
+  getUserFromRequest,
+  WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE,
+  type RequestWithUser,
+  type UserInfoFromRequest,
+} from './client-access.utils';
 import { ClientUserRole } from './entities/client-user.entity';
 import { UserRole } from './entities/user.entity';
 
@@ -183,6 +193,138 @@ describe('client-access.utils', () => {
       await expect(
         ensureClientAccess(mockClientsRepository as any, mockClientUsersRepository as any, 'client-1', req),
       ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('canManageWorkspaceConfiguration', () => {
+    it('returns true for API key auth regardless of access shape', () => {
+      const userInfo: UserInfoFromRequest = { isApiKeyAuth: true };
+      expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: false, isClientCreator: false })).toBe(true);
+    });
+
+    it('returns true for global admin', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.ADMIN,
+        isApiKeyAuth: false,
+      };
+      expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: true, isClientCreator: false })).toBe(true);
+    });
+
+    it('returns true for workspace creator', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+      };
+      expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: true, isClientCreator: true })).toBe(true);
+    });
+
+    it('returns true for client_users admin', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+      };
+      expect(
+        canManageWorkspaceConfiguration(userInfo, {
+          hasAccess: true,
+          isClientCreator: false,
+          clientUserRole: ClientUserRole.ADMIN,
+        }),
+      ).toBe(true);
+    });
+
+    it('returns false for plain client user', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+      };
+      expect(
+        canManageWorkspaceConfiguration(userInfo, {
+          hasAccess: true,
+          isClientCreator: false,
+          clientUserRole: ClientUserRole.USER,
+        }),
+      ).toBe(false);
+    });
+
+    it('returns false when no access', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+      };
+      expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: false, isClientCreator: false })).toBe(false);
+    });
+  });
+
+  describe('ensureWorkspaceManagementAccess', () => {
+    it('throws workspace management message for plain client user with access', async () => {
+      mockClientsRepository.findById.mockResolvedValue({ id: 'client-1', userId: 'other' });
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue({
+        userId: 'user-1',
+        clientId: 'client-1',
+        role: ClientUserRole.USER,
+      });
+
+      const req = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as RequestWithUser;
+
+      await expect(
+        ensureWorkspaceManagementAccess(
+          mockClientsRepository as any,
+          mockClientUsersRepository as any,
+          'client-1',
+          req,
+        ),
+      ).rejects.toMatchObject({
+        response: expect.objectContaining({ message: WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE }),
+      });
+    });
+
+    it('does not throw for client admin', async () => {
+      mockClientsRepository.findById.mockResolvedValue({ id: 'client-1', userId: 'other' });
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue({
+        userId: 'user-1',
+        clientId: 'client-1',
+        role: ClientUserRole.ADMIN,
+      });
+
+      const req = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as RequestWithUser;
+
+      await expect(
+        ensureWorkspaceManagementAccess(
+          mockClientsRepository as any,
+          mockClientUsersRepository as any,
+          'client-1',
+          req,
+        ),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe('assertWorkspaceManagementAccessForUser', () => {
+    it('throws workspace management message for plain client user', async () => {
+      mockClientsRepository.findById.mockResolvedValue({ id: 'client-1', userId: 'other' });
+      mockClientUsersRepository.findUserClientAccess.mockResolvedValue({
+        userId: 'user-1',
+        clientId: 'client-1',
+        role: ClientUserRole.USER,
+      });
+
+      await expect(
+        assertWorkspaceManagementAccessForUser(
+          mockClientsRepository as any,
+          mockClientUsersRepository as any,
+          'client-1',
+          'user-1',
+          UserRole.USER,
+          false,
+        ),
+      ).rejects.toMatchObject({
+        response: expect.objectContaining({ message: WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE }),
+      });
     });
   });
 });

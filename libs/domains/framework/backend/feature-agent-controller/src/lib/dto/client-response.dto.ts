@@ -13,6 +13,8 @@ export class ClientResponseDto {
   authenticationType!: AuthenticationType;
   config?: ConfigResponseDto;
   isAutoProvisioned!: boolean;
+  /** True if the current viewer may change autonomy, env vars, agents, and workspace (client) settings. */
+  canManageWorkspaceConfiguration!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
 }

@@ -28,6 +28,7 @@ describe('Clients Selectors', () => {
     endpoint: 'https://example.com/api',
     authenticationType: 'api_key',
     isAutoProvisioned: false,
+    canManageWorkspaceConfiguration: true,
     config: {
       gitRepositoryUrl: 'https://github.com/user/repo.git',
       agentTypes: [{ type: 'cursor', displayName: 'Cursor' }],
@@ -42,6 +43,7 @@ describe('Clients Selectors', () => {
     endpoint: 'https://example2.com/api',
     authenticationType: 'keycloak',
     isAutoProvisioned: false,
+    canManageWorkspaceConfiguration: true,
     config: {
       gitRepositoryUrl: 'https://github.com/user2/repo2.git',
       agentTypes: [{ type: 'cursor', displayName: 'Cursor' }],

@@ -15,6 +15,7 @@ describe('TicketsService', () => {
     title: 'Example',
     priority: 'medium',
     status: 'draft',
+    automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
@@ -103,6 +104,120 @@ describe('TicketsService', () => {
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(patch);
       req.flush(mockTicket);
+    });
+  });
+
+  describe('ticket automation', () => {
+    const mockAutomation = {
+      ticketId: 'ticket-1',
+      eligible: true,
+      allowedAgentIds: ['agent-1'],
+      verifierProfile: null,
+      requiresApproval: false,
+      approvedAt: null,
+      approvedByUserId: null,
+      approvalBaselineTicketUpdatedAt: null,
+      defaultBranchOverride: null,
+      nextRetryAt: null,
+      consecutiveFailureCount: 0,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+    };
+
+    const mockRun = {
+      id: 'run-1',
+      ticketId: 'ticket-1',
+      clientId: 'client-1',
+      agentId: 'agent-1',
+      status: 'running' as const,
+      phase: 'agent_loop' as const,
+      ticketStatusBefore: 'todo',
+      branchName: 'automation/x',
+      baseBranch: 'main',
+      baseSha: null,
+      startedAt: '2024-01-01T00:00:00Z',
+      finishedAt: null,
+      updatedAt: '2024-01-01T00:00:00Z',
+      iterationCount: 0,
+      completionMarkerSeen: false,
+      verificationPassed: null,
+      failureCode: null,
+      summary: null,
+      cancelRequestedAt: null,
+      cancelledByUserId: null,
+      cancellationReason: null,
+    };
+
+    it('getTicketAutomation GETs /tickets/:id/automation', (done) => {
+      service.getTicketAutomation('ticket-1').subscribe((row) => {
+        expect(row).toEqual(mockAutomation);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockAutomation);
+    });
+
+    it('patchTicketAutomation PATCHes body', (done) => {
+      const dto = { eligible: false };
+      service.patchTicketAutomation('ticket-1', dto).subscribe((row) => {
+        expect(row).toEqual(mockAutomation);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation`);
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockAutomation);
+    });
+
+    it('approveTicketAutomation POSTs approve', (done) => {
+      service.approveTicketAutomation('ticket-1').subscribe((row) => {
+        expect(row).toEqual(mockAutomation);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/approve`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockAutomation);
+    });
+
+    it('unapproveTicketAutomation POSTs unapprove', (done) => {
+      service.unapproveTicketAutomation('ticket-1').subscribe((row) => {
+        expect(row).toEqual(mockAutomation);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/unapprove`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockAutomation);
+    });
+
+    it('listTicketAutomationRuns GETs runs', (done) => {
+      service.listTicketAutomationRuns('ticket-1').subscribe((runs) => {
+        expect(runs).toEqual([mockRun]);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/runs`);
+      expect(req.request.method).toBe('GET');
+      req.flush([mockRun]);
+    });
+
+    it('getTicketAutomationRun GETs run detail', (done) => {
+      service.getTicketAutomationRun('ticket-1', 'run-1').subscribe((run) => {
+        expect(run).toEqual(mockRun);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/runs/run-1`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockRun);
+    });
+
+    it('cancelTicketAutomationRun POSTs cancel', (done) => {
+      service.cancelTicketAutomationRun('ticket-1', 'run-1').subscribe((run) => {
+        expect(run).toEqual({ ...mockRun, status: 'cancelled' });
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/runs/run-1/cancel`);
+      expect(req.request.method).toBe('POST');
+      req.flush({ ...mockRun, status: 'cancelled' });
     });
   });
 });

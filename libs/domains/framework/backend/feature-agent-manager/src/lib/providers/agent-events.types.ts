@@ -1,4 +1,4 @@
-export type AgentResponseMode = 'single' | 'stream';
+export type AgentResponseMode = 'single' | 'stream' | 'sync';
 
 export type AgentEventKind =
   | 'userMessage'

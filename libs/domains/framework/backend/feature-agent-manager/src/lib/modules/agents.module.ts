@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
 import { AgentsEnvironmentVariablesController } from '../controllers/agents-environment-variables.controller';
 import { AgentsFilesController } from '../controllers/agents-files.controller';
+import { AgentsVerificationController } from '../controllers/agents-verification.controller';
 import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { ConfigController } from '../controllers/config.controller';
@@ -35,6 +36,7 @@ import { AgentEnvironmentVariablesService } from '../services/agent-environment-
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
+import { AgentsVerificationService } from '../services/agents-verification.service';
 import { AgentsVcsService } from '../services/agents-vcs.service';
 import { AgentsService } from '../services/agents.service';
 import { ConfigService } from '../services/config.service';
@@ -61,6 +63,7 @@ import { PasswordService } from '@forepath/identity/backend';
     AgentsController,
     AgentsFilesController,
     AgentsVcsController,
+    AgentsVerificationController,
     AgentsDeploymentsController,
     AgentsEnvironmentVariablesController,
     ConfigController,
@@ -73,6 +76,7 @@ import { PasswordService } from '@forepath/identity/backend';
     AgentEnvironmentVariablesService,
     AgentFileSystemService,
     AgentsVcsService,
+    AgentsVerificationService,
     ConfigService,
     PasswordService,
     DeploymentsService,

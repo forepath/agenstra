@@ -257,7 +257,7 @@
                               class="badge"
                               [class.bg-primary]="row.direction === 'input'"
                               [class.bg-secondary]="row.direction === 'output'"
-                              >{{ row.direction }}</span
+                              >{{ formatChatIoDirection(row.direction) }}</span
                             >
                           </td>
                           <td>{{ row.wordCount }}</td>
@@ -364,7 +364,7 @@
                               class="badge"
                               [class.bg-primary]="row.direction === 'incoming'"
                               [class.bg-secondary]="row.direction === 'outgoing'"
-                              >{{ row.direction }}</span
+                              >{{ formatFilterDirection(row.direction) }}</span
                             >
                           </td>
                           <td>{{ row.wordCount }}</td>
@@ -471,7 +471,7 @@
                               class="badge"
                               [class.bg-primary]="row.direction === 'incoming'"
                               [class.bg-secondary]="row.direction === 'outgoing'"
-                              >{{ row.direction }}</span
+                              >{{ formatFilterDirection(row.direction) }}</span
                             >
                           </td>
                           <td>{{ row.wordCount }}</td>
@@ -559,7 +559,7 @@
                         <tr>
                           <td>{{ formatDateTime(row.occurredAt) }}</td>
                           <td>{{ resolveUserDisplay(row.originalUserId) }}</td>
-                          <td>{{ row.entityType }}</td>
+                          <td>{{ formatEntityType(row.entityType) }}</td>
                           <td>
                             @if (buildEntityEventRoute(row); as route) {
                               <a
@@ -578,7 +578,7 @@
                               [class.bg-warning]="row.eventType === 'updated'"
                               [class.bg-danger]="row.eventType === 'deleted'"
                               [class.text-dark]="row.eventType === 'updated'"
-                              >{{ row.eventType }}</span
+                              >{{ formatEntityEventType(row.eventType) }}</span
                             >
                           </td>
                         </tr>

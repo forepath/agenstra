@@ -1,21 +1,27 @@
 asyncapi: 3.0.0
 info:
-  title: Clients Gateway
+  title: Agent controller WebSocket (clients + tickets)
   version: 1.0.0
   description: |
-    Socket.IO events for the clients proxy gateway (Socket.IO namespace "clients").
-    All connections require authentication via the `Authorization` header in the handshake
+    Socket.IO events for the agent-controller WebSocket port: namespace **clients** (proxy to agent-manager)
+    and namespace **tickets** (ticket board / automation realtime). See channel `tickets/*` for board coherence.
+    For **clients**, all connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
     The `setClient` operation enforces per-client authorization: only users with access to
     the requested client (global admin, client creator, or client_users entry) can set that
     client context. Unauthorized setClient attempts emit an `error` event with message
     "You do not have access to this client".
+    HTTP REST endpoints for prototype autonomy, environment variables, and agent CRUD enforce additional
+    workspace-manager rules; see OpenAPI spec (ClientResponseDto.canManageWorkspaceConfiguration and 403 descriptions).
 servers:
   local:
     host: localhost:8081
     protocol: ws
-    description: Socket.IO server (namespace /clients). Pass Authorization header in handshake.
+    description: |
+      Socket.IO server (port from env WEBSOCKET_PORT, default 8081). Namespaces: **clients** (WEBSOCKET_NAMESPACE, default "clients")
+      and **tickets** (TICKETS_WEBSOCKET_NAMESPACE, default "tickets") on the same port and CORS (WEBSOCKET_CORS_ORIGIN).
+      Pass Authorization header in handshake (or handshake.auth.Authorization for browser WebSockets).
 channels:
   clients/setClient:
     address: clients/setClient
@@ -54,7 +60,31 @@ channels:
     messages:
       forwardCommand:
         $ref: '#/components/messages/Forward'
-    description: Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided, the gateway automatically logs in the agent using stored credentials before forwarding the event. To restore chat history for an agent, forward a "login" event with `agentId` (the payload is automatically overridden with credentials from the database, triggering login and subsequent chat history restoration). Supported events include "chat", "enhanceChat" (prompt improvement; payload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from agent-manager, proxied to this socket only), "generateTicketBody" (ticket body from title; payload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput", "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit response events (e.g., "chatMessage", "chatEnhanceResult", "ticketBodyResult", "fileUpdateNotification", "terminalCreated", "terminalOutput", "terminalClosed", "containerStats") which are automatically forwarded back to the client. The "containerStats" event payload (defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when running, container statistics.
+    description: |
+      Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,
+      the gateway automatically logs in the agent using stored credentials before forwarding the event.
+      To restore chat history for an agent, forward a "login" event with `agentId` (the payload is
+      automatically overridden with credentials from the database, triggering login and subsequent
+      chat history restoration). Supported events include "chat", "enhanceChat" (prompt improvement;
+      payload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from
+      agent-manager, proxied to this socket only), "generateTicketBody" (ticket body from title;
+      payload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope
+      shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput",
+      "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit
+      response events (e.g., "chatMessage", "chatEnhanceResult", "ticketBodyResult",
+      "fileUpdateNotification", "terminalCreated", "terminalOutput", "terminalClosed", "containerStats")
+      which are automatically forwarded back to the client. The "containerStats" event payload
+      (defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when
+      running, container statistics. For autonomous ticket runs, proxied `chat` may include
+      `responseMode: "single" | "stream" | "sync"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;
+      the controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for
+      implementation turns vs. post-verify conventional-commit subject generation; statistics on the controller
+      side record the latter under interaction kind `autonomous_ticket_commit_message`.
+      After a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS
+      `commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).
+      agent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.
+      When `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting
+      socket (not broadcast to other viewers on the same agent).
   clients/forwardAck:
     address: clients/forwardAck
     messages:
@@ -91,6 +121,71 @@ channels:
       remoteReconnectFailedEvent:
         $ref: '#/components/messages/RemoteReconnectFailed'
     description: Server notifies client that all reconnection attempts to agent-manager have failed
+  tickets/setClient:
+    address: tickets/setClient
+    messages:
+      ticketsSetClientCommand:
+        $ref: '#/components/messages/SetClient'
+    description: |
+      Select workspace for ticket board realtime (Socket.IO namespace "tickets"). Same auth and `ensureClientAccess`
+      rules as `clients/setClient`. Joins room `client:{clientId}`; server emits only to sockets in that room.
+  tickets/setClientSuccess:
+    address: tickets/setClientSuccess
+    messages:
+      ticketsSetClientSuccessEvent:
+        $ref: '#/components/messages/SetClientSuccess'
+    description: Acknowledgement after tickets namespace setClient
+  tickets/error:
+    address: tickets/error
+    messages:
+      ticketsErrorEvent:
+        $ref: '#/components/messages/TicketsBoardError'
+    description: |
+      Errors for tickets namespace (e.g. missing clientId, Unauthorized, forbidden client, or "Unable to set client context").
+  tickets/ticketUpsert:
+    address: tickets/ticketUpsert
+    messages:
+      ticketUpsertEvent:
+        $ref: '#/components/messages/TicketBoardTicketPayload'
+    description: Full ticket row after create/update (aligns with OpenAPI TicketResponseDto)
+  tickets/ticketRemoved:
+    address: tickets/ticketRemoved
+    messages:
+      ticketRemovedEvent:
+        $ref: '#/components/messages/TicketBoardTicketRemoved'
+    description: Ticket deleted or removed from a workspace list (e.g. workspace move from old client)
+  tickets/ticketCommentCreated:
+    address: tickets/ticketCommentCreated
+    messages:
+      ticketCommentCreatedEvent:
+        $ref: '#/components/messages/TicketBoardCommentPayload'
+    description: New comment on a ticket
+  tickets/ticketActivityCreated:
+    address: tickets/ticketActivityCreated
+    messages:
+      ticketActivityCreatedEvent:
+        $ref: '#/components/messages/TicketBoardActivityPayload'
+    description: New activity row (audit trail); aligns with OpenAPI TicketActivityResponseDto
+  tickets/ticketAutomationUpsert:
+    address: tickets/ticketAutomationUpsert
+    messages:
+      ticketAutomationUpsertEvent:
+        $ref: '#/components/messages/TicketBoardAutomationPayload'
+    description: Automation settings row; aligns with OpenAPI ticket automation response
+  tickets/ticketAutomationRunUpsert:
+    address: tickets/ticketAutomationRunUpsert
+    messages:
+      ticketAutomationRunUpsertEvent:
+        $ref: '#/components/messages/TicketBoardRunPayload'
+    description: |
+      Automation run summary (may omit `steps`). During agent iterations, emissions may be throttled (about 1s per run)
+      in addition to `ticketAutomationRunStepAppended` for each step.
+  tickets/ticketAutomationRunStepAppended:
+    address: tickets/ticketAutomationRunStepAppended
+    messages:
+      ticketAutomationRunStepAppendedEvent:
+        $ref: '#/components/messages/TicketBoardRunStepPayload'
+    description: New run step row (e.g. agent_turn iteration)
 operations:
   clientSendsSetClient:
     action: send
@@ -200,7 +295,7 @@ components:
               When event is "closeTerminal", the payload should contain {sessionId: string}.
               When event is "enhanceChat", the payload should contain { message: string, correlationId: string, model?: string }.
               When event is "generateTicketBody", the payload should contain { title: string, correlationId: string, model?: string }.
-              When event is "chat", the payload may include { correlationId?: string, responseMode?: \"single\"|\"stream\" } to enable streaming/tool events.
+              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string }.
               Response events forwarded from the agent-manager include "containerStats" (payload has status.running and optional stats).
           agentId:
             type: string
@@ -308,3 +403,85 @@ components:
           error:
             type: string
             description: Final error message after all reconnection attempts were exhausted
+    TicketsBoardError:
+      name: TicketsBoardError
+      title: Tickets namespace error
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          message:
+            type: string
+    TicketBoardTicketPayload:
+      name: TicketBoardTicketPayload
+      title: Ticket upsert payload
+      contentType: application/json
+      description: Same shape as OpenAPI `TicketResponseDto` (including optional `children` when loaded with descendants).
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardTicketRemoved:
+      name: TicketBoardTicketRemoved
+      title: Ticket removed
+      contentType: application/json
+      payload:
+        type: object
+        required: [id, clientId]
+        properties:
+          id:
+            type: string
+            format: uuid
+          clientId:
+            type: string
+            format: uuid
+    TicketBoardCommentPayload:
+      name: TicketBoardCommentPayload
+      title: Ticket comment created
+      contentType: application/json
+      description: Same shape as OpenAPI `TicketCommentResponseDto`.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardActivityPayload:
+      name: TicketBoardActivityPayload
+      title: Ticket activity created
+      contentType: application/json
+      description: Same shape as OpenAPI `TicketActivityResponseDto`.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardAutomationPayload:
+      name: TicketBoardAutomationPayload
+      title: Ticket automation upsert
+      contentType: application/json
+      description: Same shape as OpenAPI ticket automation settings response.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardRunPayload:
+      name: TicketBoardRunPayload
+      title: Automation run upsert
+      contentType: application/json
+      description: Same shape as OpenAPI automation run response; `steps` may be omitted on the wire.
+      payload:
+        type: object
+        additionalProperties: true
+    TicketBoardRunStepPayload:
+      name: TicketBoardRunStepPayload
+      title: Automation run step appended
+      contentType: application/json
+      description: Run id plus step row (OpenAPI automation run step DTO under `step`).
+      payload:
+        type: object
+        required:
+          - runId
+          - step
+        properties:
+          runId:
+            type: string
+            format: uuid
+          step:
+            type: object
+            additionalProperties: true
+        additionalProperties: false
