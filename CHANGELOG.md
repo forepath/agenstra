@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.46.0](https://github.com/forepath/agenstra/compare/v1.45.0...v1.46.0) (2026-04-20)
+
+
+### Features
+
+* agent context configuration ([#283](https://github.com/forepath/agenstra/issues/283)) ([6c252f3](https://github.com/forepath/agenstra/commit/6c252f335b5fa0c6ec41d4b86afd33aaaba75c14))
+
 ## [1.45.0](https://github.com/forepath/agenstra/compare/v1.44.1...v1.45.0) (2026-04-18)
 
 
