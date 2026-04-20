@@ -35,6 +35,7 @@
         <framework-file-tree
           [clientId]="clientId()!"
           [agentId]="agentId()!"
+          [fileManagerContext]="fileManagerContext()"
           [expandedPaths]="expandedPaths()"
           [selectedPath]="selectedFilePath()"
           [gitManagerVisible]="gitManagerVisible()"
@@ -47,8 +48,8 @@
         ></framework-file-tree>
       </div>
 
-      <!-- Git Manager below File Tree -->
-      @if (gitManagerVisible()) {
+      <!-- Git Manager below File Tree (workspace app root only) -->
+      @if (fileManagerContext() === 'app' && gitManagerVisible()) {
         <div
           class="git-manager-wrapper d-flex flex-column"
           [class.border-top]="fileTreeVisible()"
@@ -222,7 +223,7 @@
     }
 
     <div class="editor-content-wrapper flex-grow-1 d-flex flex-column">
-      @if (gitDiffViewerVisible()) {
+      @if (fileManagerContext() === 'app' && gitDiffViewerVisible()) {
         <div class="git-diff-viewer-wrapper flex-grow-1">
           <framework-git-diff-viewer
             [clientId]="clientId()"

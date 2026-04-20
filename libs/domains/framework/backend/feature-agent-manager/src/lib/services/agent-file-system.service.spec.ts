@@ -49,10 +49,12 @@ describe('AgentFileSystemService', () => {
     sendCommandToContainer: jest.fn(),
     readFileFromContainer: jest.fn(),
     copyFileFromContainer: jest.fn(),
+    getContainerHomeDirectory: jest.fn().mockResolvedValue('/root'),
   };
 
   const mockProvider = {
     getBasePath: jest.fn().mockReturnValue('/app'),
+    getConfigBasePath: jest.fn().mockReturnValue('~/.cursor'),
   };
 
   const mockAgentProviderFactory = {
@@ -93,6 +95,8 @@ describe('AgentFileSystemService', () => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
     mockProvider.getBasePath.mockReturnValue('/app');
+    mockProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.cursor');
+    mockDockerService.getContainerHomeDirectory.mockResolvedValue('/root');
     mockAgentProviderFactory.getProvider.mockReturnValue(mockProvider);
   });
 
@@ -724,6 +728,42 @@ file|file2.txt|2048|1704067200`;
         `/app/${filePath}`,
         expect.any(String),
       );
+    });
+  });
+
+  describe('file manager context=config', () => {
+    it('should read file under expanded config root', async () => {
+      const filePath = 'settings.json';
+      const fileContent = '{}';
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.copyFileFromContainer.mockResolvedValue(undefined);
+
+      const mockTempDir = '/tmp/agent-file-read-abc123';
+      jest.spyOn(fs, 'mkdtempSync').mockReturnValue(mockTempDir);
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      jest.spyOn(fs, 'statSync').mockReturnValue({ size: fileContent.length } as fs.Stats);
+      jest.spyOn(fs, 'readFileSync').mockReturnValue(Buffer.from(fileContent, 'utf-8'));
+      jest.spyOn(fs, 'unlinkSync').mockImplementation(jest.fn());
+      jest.spyOn(fs, 'rmSync').mockImplementation(jest.fn());
+
+      await service.readFile(mockAgentId, filePath, 'config');
+
+      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(mockContainerId);
+      expect(dockerService.copyFileFromContainer).toHaveBeenCalledWith(
+        mockContainerId,
+        '/root/.cursor/settings.json',
+        expect.any(String),
+      );
+    });
+
+    it('should throw BadRequestException when provider has no getConfigBasePath', async () => {
+      const noConfig = { getBasePath: () => '/app' };
+      mockAgentProviderFactory.getProvider.mockReturnValue(noConfig as never);
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+
+      await expect(service.readFile(mockAgentId, 'x', 'config')).rejects.toThrow(BadRequestException);
     });
   });
 });

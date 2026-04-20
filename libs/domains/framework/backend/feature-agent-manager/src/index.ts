@@ -41,6 +41,7 @@ export * from './lib/services/agents-vcs.service';
 export * from './lib/services/agents.service';
 export * from './lib/services/config.service';
 export * from './lib/services/docker.service';
+export * from './lib/utils/agent-file-manager-context';
 
 // Re-export PasswordService from identity for backward compatibility
 export { PasswordService } from '@forepath/identity/backend';

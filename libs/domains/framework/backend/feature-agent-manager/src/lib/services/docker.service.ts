@@ -1233,6 +1233,97 @@ export class DockerService {
   }
 
   /**
+   * Resolve the container user's home directory (for tilde expansion in provider config paths).
+   * @param containerId - Docker container ID
+   * @returns Trimmed HOME path, or `/root` when empty
+   */
+  async getContainerHomeDirectory(containerId: string): Promise<string> {
+    try {
+      const container = this.docker.getContainer(containerId);
+      try {
+        await container.inspect();
+      } catch (error: unknown) {
+        const dockerError = error as { statusCode?: number };
+        if (dockerError.statusCode === 404) {
+          throw new NotFoundException(`Container with ID '${containerId}' not found`);
+        }
+        throw error;
+      }
+
+      const exec = await container.exec({
+        Cmd: ['sh', '-c', 'printf %s "${HOME:-/root}"'],
+        AttachStdin: false,
+        AttachStdout: true,
+        AttachStderr: true,
+        Tty: false,
+      });
+
+      const stream = (await exec.start({
+        hijack: true,
+        stdin: false,
+      })) as NodeJS.ReadWriteStream;
+
+      const stdoutStream = new PassThrough();
+      const stderrStream = new PassThrough();
+      let stdoutData = '';
+      container.modem.demuxStream(stream, stdoutStream, stderrStream);
+      stdoutStream.on('data', (chunk: Buffer) => {
+        stdoutData += chunk.toString('utf8');
+      });
+
+      const output = await new Promise<string>((resolve, reject) => {
+        let resolved = false;
+        const resolveOnce = (v: string) => {
+          if (!resolved) {
+            resolved = true;
+            resolve(v);
+          }
+        };
+        const rejectOnce = (err: unknown) => {
+          if (!resolved) {
+            resolved = true;
+            reject(err);
+          }
+        };
+        stream.on('end', () => {
+          stdoutStream.end();
+          stderrStream.end();
+          resolveOnce(stdoutData);
+        });
+        stream.on('close', () => {
+          if (!resolved) {
+            stdoutStream.end();
+            stderrStream.end();
+            resolveOnce(stdoutData);
+          }
+        });
+        stream.on('error', (err: unknown) => {
+          stdoutStream.end();
+          stderrStream.end();
+          rejectOnce(err);
+        });
+        setTimeout(() => {
+          if (!resolved) {
+            stdoutStream.end();
+            stderrStream.end();
+            resolveOnce(stdoutData);
+          }
+        }, 60000);
+      });
+
+      const home = output.trim() || '/root';
+      return home;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      const err = error as { message?: string; stack?: string };
+      this.logger.error(`Error resolving HOME in container: ${err.message}`, err.stack);
+      throw error;
+    }
+  }
+
+  /**
    * Create a new terminal session (TTY) for a container.
    * Creates a persistent TTY exec instance that can be used for interactive terminal sessions.
    * @param containerId - The ID of the container

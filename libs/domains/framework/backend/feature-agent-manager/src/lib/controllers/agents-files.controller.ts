@@ -19,6 +19,7 @@ import { FileNodeDto } from '../dto/file-node.dto';
 import { MoveFileDto } from '../dto/move-file.dto';
 import { WriteFileDto } from '../dto/write-file.dto';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
+import { parseAgentFileManagerContext } from '../utils/agent-file-manager-context';
 
 /**
  * Controller for agent file system operations.
@@ -38,7 +39,9 @@ export class AgentsFilesController {
   async readFile(
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Query('context') contextRaw?: string,
   ): Promise<FileContentDto> {
+    const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string;
     if (typeof path === 'string') {
@@ -51,7 +54,7 @@ export class AgentsFilesController {
     } else {
       normalizedPath = '.';
     }
-    return await this.agentFileSystemService.readFile(agentId, normalizedPath);
+    return await this.agentFileSystemService.readFile(agentId, normalizedPath, context);
   }
 
   /**
@@ -66,7 +69,9 @@ export class AgentsFilesController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() writeFileDto: WriteFileDto,
+    @Query('context') contextRaw?: string,
   ): Promise<void> {
+    const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -80,7 +85,13 @@ export class AgentsFilesController {
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
-    await this.agentFileSystemService.writeFile(agentId, normalizedPath, writeFileDto.content, writeFileDto.encoding);
+    await this.agentFileSystemService.writeFile(
+      agentId,
+      normalizedPath,
+      writeFileDto.content,
+      writeFileDto.encoding,
+      context,
+    );
   }
 
   /**
@@ -93,8 +104,10 @@ export class AgentsFilesController {
   async listDirectory(
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Query('path') path?: string,
+    @Query('context') contextRaw?: string,
   ): Promise<FileNodeDto[]> {
-    return await this.agentFileSystemService.listDirectory(agentId, path || '.');
+    const context = parseAgentFileManagerContext(contextRaw);
+    return await this.agentFileSystemService.listDirectory(agentId, path || '.', context);
   }
 
   /**
@@ -109,7 +122,9 @@ export class AgentsFilesController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() createFileDto: CreateFileDto,
+    @Query('context') contextRaw?: string,
   ): Promise<void> {
+    const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -128,6 +143,7 @@ export class AgentsFilesController {
       normalizedPath,
       createFileDto.type,
       createFileDto.content,
+      context,
     );
   }
 
@@ -141,7 +157,9 @@ export class AgentsFilesController {
   async deleteFileOrDirectory(
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Query('context') contextRaw?: string,
   ): Promise<void> {
+    const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -155,7 +173,7 @@ export class AgentsFilesController {
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
-    await this.agentFileSystemService.deleteFileOrDirectory(agentId, normalizedPath);
+    await this.agentFileSystemService.deleteFileOrDirectory(agentId, normalizedPath, context);
   }
 
   /**
@@ -170,7 +188,9 @@ export class AgentsFilesController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() moveFileDto: MoveFileDto,
+    @Query('context') contextRaw?: string,
   ): Promise<void> {
+    const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -187,6 +207,6 @@ export class AgentsFilesController {
     if (!moveFileDto.destination) {
       throw new BadRequestException('Destination path is required');
     }
-    await this.agentFileSystemService.moveFileOrDirectory(agentId, normalizedPath, moveFileDto.destination);
+    await this.agentFileSystemService.moveFileOrDirectory(agentId, normalizedPath, moveFileDto.destination, context);
   }
 }

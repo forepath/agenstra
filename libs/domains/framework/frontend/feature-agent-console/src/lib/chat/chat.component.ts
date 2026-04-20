@@ -15,7 +15,7 @@ import {
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
   AuthenticationFacade,
@@ -45,6 +45,7 @@ import {
   type CreateFileDto,
   type DeploymentRun,
   type EnvironmentVariableResponseDto,
+  type FileManagerContext,
   type ForwardedEventPayload,
   type ProvisionServerDto,
   type TicketAutomationRunChatEventPayload,
@@ -476,6 +477,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   selectedCommand = signal<string | null>(null);
   selectedAgentId = signal<string | null>(null);
   editorOpen = signal<boolean>(false);
+  /** Active file editor API root from the current route (`/editor` vs `/config`). */
+  fileManagerContext = signal<FileManagerContext>('app');
   deploymentManagerOpen = signal<boolean>(false);
   chatVisible = signal<boolean>(false);
   gatewayVisible = signal<boolean>(false);
@@ -494,6 +497,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   // Convert signals to observables (must be in field initializer for injection context)
   private readonly standaloneMode$ = toObservable(this.standaloneMode);
+  private readonly fileManagerContext$ = toObservable(this.fileManagerContext);
 
   // Expose ContainerType enum for template use
   readonly ContainerType = ContainerType;
@@ -908,6 +912,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   ngOnInit(): void {
+    this.fileManagerContext.set(this.router.url.includes('/config') ? 'config' : 'app');
+
     // Default chat model to auto mode on load
     this.socketsFacade.setChatModel(null);
 
@@ -1029,11 +1035,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           }
         }
 
-        // Select editor from route params
+        // Select editor from route params (workspace editor or provider config editor)
         if (
           !this.initialRouting['editor'] &&
           agents.length > 0 &&
-          this.router.url.includes('/editor') &&
+          (this.router.url.includes('/editor') || this.router.url.includes('/config')) &&
           !this.editorOpen()
         ) {
           // Check if file query parameter is set
@@ -1169,6 +1175,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           // Reset flag when file query parameter is removed
           this.fileOpenedFromQuery = false;
         }
+      });
+
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.fileManagerContext.set(this.router.url.includes('/config') ? 'config' : 'app');
       });
 
     // Reset editor view when selected agent changes and load commands
@@ -1382,18 +1397,30 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Silently fail - will use plain text fallback
     });
 
-    // Watch for file content loading in standalone mode
-    combineLatest([this.standaloneMode$, this.selectedAgent$, this.activeClientId$, this.route.queryParams])
+    // Watch for file content loading in standalone mode (must use same file API context as the editor route)
+    combineLatest([
+      this.standaloneMode$,
+      this.selectedAgent$,
+      this.activeClientId$,
+      this.route.queryParams,
+      this.fileManagerContext$,
+    ])
       .pipe(
         filter(([standalone, agent, clientId]) => {
           // Show loading if standalone mode is active and we have agent/client
           // If no file is specified, we'll hide loading immediately
           return standalone && !!agent && !!clientId && !this.standaloneFileLoaded;
         }),
-        switchMap(([, agent, clientId, queryParams]) => {
+        switchMap(([, agent, clientId, queryParams, fileContext]) => {
           // TypeScript guard: agent and clientId are checked in filter, but we need to assert here
           if (!agent || !clientId) {
-            return of({ error: false, filePath: undefined, clientId: undefined, agentId: undefined });
+            return of({
+              error: false,
+              filePath: undefined,
+              clientId: undefined,
+              agentId: undefined,
+              fileContext: undefined as FileManagerContext | undefined,
+            });
           }
           // At this point, TypeScript knows agent and clientId are non-null
           const nonNullAgent = agent;
@@ -1402,7 +1429,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           const filePathParam = queryParams?.['file'];
           // If no file is specified, hide loading immediately
           if (!filePathParam || typeof filePathParam !== 'string') {
-            return of({ error: false, filePath: undefined, clientId: nonNullClientId, agentId: nonNullAgent.id }); // No file to wait for
+            return of({
+              error: false,
+              filePath: undefined,
+              clientId: nonNullClientId,
+              agentId: nonNullAgent.id,
+              fileContext,
+            }); // No file to wait for
           }
           const filePath: string = filePathParam;
           // Decode the file path
@@ -1415,9 +1448,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           })();
           // Watch for file content to be loaded or error to occur
           return combineLatest([
-            this.filesFacade.isReadingFile$(nonNullClientId, nonNullAgent.id, decodedFilePath),
-            this.filesFacade.getFileContent$(nonNullClientId, nonNullAgent.id, decodedFilePath),
-            this.filesFacade.getFileError$(nonNullClientId, nonNullAgent.id, decodedFilePath),
+            this.filesFacade.isReadingFile$(nonNullClientId, nonNullAgent.id, decodedFilePath, fileContext),
+            this.filesFacade.getFileContent$(nonNullClientId, nonNullAgent.id, decodedFilePath, fileContext),
+            this.filesFacade.getFileError$(nonNullClientId, nonNullAgent.id, decodedFilePath, fileContext),
           ]).pipe(
             // Wait until file is not loading AND (content is available OR error occurred)
             filter(([isLoading, content, error]) => !isLoading && (content !== null || error !== null)),
@@ -1427,6 +1460,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               filePath: decodedFilePath,
               clientId: nonNullClientId,
               agentId: nonNullAgent.id,
+              fileContext,
             })),
             catchError(() => {
               // Handle any unexpected errors
@@ -1435,6 +1469,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
                 filePath: decodedFilePath,
                 clientId: nonNullClientId,
                 agentId: nonNullAgent.id,
+                fileContext,
               });
             }),
           );
@@ -1447,7 +1482,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           // If file was not found (error occurred), unselect the file and close the tab
           if (result?.error && result.filePath && result.clientId && result.agentId) {
             // Close the tab
-            this.filesFacade.closeFileTab(result.clientId, result.agentId, result.filePath);
+            this.filesFacade.closeFileTab(result.clientId, result.agentId, result.filePath, result.fileContext);
             // Open chat if it's not open
             if (!this.chatVisible()) {
               this.chatVisible.set(true);
@@ -1567,6 +1602,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * Wrapper for fileEditor's onToggleGitManager that syncs visibility after toggle
    */
   onToggleGitManager(): void {
+    if (this.fileManagerContext() === 'config') {
+      return;
+    }
     if (this.fileEditor) {
       this.fileEditor.onToggleGitManager();
       this.syncFileEditorVisibility();
@@ -1861,6 +1899,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   /**
+   * Navigate to the provider agent config file editor (requires workspace management access).
+   */
+  onOpenAgentConfigFiles(openInNewWindow = false): void {
+    const clientId = this.activeClientId;
+    const agentId = this.selectedAgentId();
+    if (!clientId || !agentId) {
+      return;
+    }
+    if (openInNewWindow) {
+      this.openAgentConfigInNewWindow();
+      return;
+    }
+    void this.router.navigate(['/clients', clientId, 'agents', agentId, 'config']);
+  }
+
+  /**
    * Open virtual desktop for the selected agent
    */
   onToggleVNC(client: ClientResponseDto, agent: AgentResponseDto): void {
@@ -1970,6 +2024,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       : $localize`:@@featureChat-openEditor:Open Editor`;
   }
 
+  getOpenAgentConfigFilesTitle(): string {
+    return this.getOpenInNewWindow()
+      ? $localize`:@@featureChat-openAgentConfigFilesNewWindow:Open agent config in New Window`
+      : $localize`:@@featureChat-openAgentConfigFilesTitle:Open provider agent config files (requires workspace management access)`;
+  }
+
   getDeploymentManagerToggleTitle(): string {
     const openInNew = this.getDeploymentOpenInNewWindow();
     const isOpen = this.deploymentManagerOpen();
@@ -1999,7 +2059,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Build the URL
     const baseUrl = window.location.origin;
-    const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
+    const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
+    const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
     const queryParams = new URLSearchParams();
     queryParams.set('standalone', 'true');
     if (filePath) {
@@ -2045,6 +2106,67 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           }
         } catch (e) {
           // Browser may block window manipulation for security reasons
+          console.warn('Could not maximize window:', e);
+        }
+      }, 100);
+    }
+  }
+
+  /**
+   * Open the config file editor in a new window with standalone mode (same as {@link openEditorInNewWindow}).
+   */
+  private openAgentConfigInNewWindow(): void {
+    const clientId = this.activeClientId;
+    const agentId = this.selectedAgentId();
+    if (!clientId || !agentId) {
+      return;
+    }
+
+    let filePath: string | undefined;
+    if (this.fileEditor && this.fileManagerContext() === 'config') {
+      filePath = this.fileEditor.selectedFilePath() || undefined;
+    }
+
+    const baseUrl = window.location.origin;
+    const configPath = `/clients/${clientId}/agents/${agentId}/config`;
+    const queryParams = new URLSearchParams();
+    queryParams.set('standalone', 'true');
+    if (filePath) {
+      queryParams.set('file', encodeURIComponent(filePath));
+    }
+    const url = `${baseUrl}${configPath}?${queryParams.toString()}`;
+
+    const screenWidth = window.screen.availWidth || window.screen.width;
+    const screenHeight = window.screen.availHeight || window.screen.height;
+
+    const windowFeatures = [
+      'menubar=no',
+      'toolbar=no',
+      'location=no',
+      'status=no',
+      'resizable=yes',
+      'scrollbars=yes',
+      `width=${screenWidth}`,
+      `height=${screenHeight}`,
+      `left=0`,
+      `top=0`,
+    ].join(',');
+
+    const newWindow = window.open(url, '_blank', windowFeatures);
+
+    if (newWindow) {
+      setTimeout(() => {
+        try {
+          newWindow.moveTo(0, 0);
+          newWindow.resizeTo(screenWidth, screenHeight);
+          if (newWindow.screen && 'availWidth' in newWindow.screen) {
+            const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
+            const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+            if (availWidth && availHeight) {
+              newWindow.resizeTo(availWidth, availHeight);
+            }
+          }
+        } catch (e) {
           console.warn('Could not maximize window:', e);
         }
       }, 100);
@@ -2260,7 +2382,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Build the URL
     const baseUrl = window.location.origin;
-    const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
+    const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
+    const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
     const queryParams = new URLSearchParams();
     queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(filePath));

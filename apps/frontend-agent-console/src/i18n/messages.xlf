@@ -299,6 +299,18 @@
       <trans-unit id="featureChat-openEditor" datatype="html">
         <source>Open Editor</source>
         </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFiles" datatype="html">
+        <source>Open agent config</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFilesTitle" datatype="html">
+        <source>Open provider agent config files (requires workspace management access)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFilesNewWindow" datatype="html">
+        <source>Open agent config in New Window</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentConfigBadge" datatype="html">
+        <source>Agent config</source>
+        </trans-unit>
       <trans-unit id="featureChat-openVirtualDesktop" datatype="html">
         <source>Open Virtual Desktop</source>
         </trans-unit>

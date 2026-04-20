@@ -4,6 +4,7 @@ import {
   FileContentDto,
   FileNodeDto,
   MoveFileDto,
+  type AgentFileManagerContext,
   WriteFileDto,
 } from '@forepath/framework/backend/feature-agent-manager';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
@@ -146,11 +147,17 @@ export class ClientAgentFileSystemProxyService {
    * @param filePath - The relative path to the file (from /app)
    * @returns File content (base64-encoded) and encoding type
    */
-  async readFile(clientId: string, agentId: string, filePath: string): Promise<FileContentDto> {
+  async readFile(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<FileContentDto> {
     const encodedPath = encodeURIComponent(filePath);
     return await this.makeRequest<FileContentDto>(clientId, agentId, {
       method: 'GET',
       url: `/${encodedPath}`,
+      params: context === 'config' ? { context: 'config' } : undefined,
     });
   }
 
@@ -161,12 +168,19 @@ export class ClientAgentFileSystemProxyService {
    * @param filePath - The relative path to the file (from /app)
    * @param writeFileDto - The file content to write (base64-encoded)
    */
-  async writeFile(clientId: string, agentId: string, filePath: string, writeFileDto: WriteFileDto): Promise<void> {
+  async writeFile(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    writeFileDto: WriteFileDto,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<void> {
     const encodedPath = encodeURIComponent(filePath);
     await this.makeRequest<void>(clientId, agentId, {
       method: 'PUT',
       url: `/${encodedPath}`,
       data: writeFileDto,
+      params: context === 'config' ? { context: 'config' } : undefined,
     });
   }
 
@@ -177,10 +191,22 @@ export class ClientAgentFileSystemProxyService {
    * @param path - Optional directory path (defaults to '.')
    * @returns Array of file nodes
    */
-  async listDirectory(clientId: string, agentId: string, path?: string): Promise<FileNodeDto[]> {
+  async listDirectory(
+    clientId: string,
+    agentId: string,
+    path?: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<FileNodeDto[]> {
+    const params: Record<string, string> = {};
+    if (path) {
+      params.path = path;
+    }
+    if (context === 'config') {
+      params.context = 'config';
+    }
     return await this.makeRequest<FileNodeDto[]>(clientId, agentId, {
       method: 'GET',
-      params: path ? { path } : undefined,
+      params: Object.keys(params).length ? params : undefined,
     });
   }
 
@@ -196,12 +222,14 @@ export class ClientAgentFileSystemProxyService {
     agentId: string,
     filePath: string,
     createFileDto: CreateFileDto,
+    context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeURIComponent(filePath);
     await this.makeRequest<void>(clientId, agentId, {
       method: 'POST',
       url: `/${encodedPath}`,
       data: createFileDto,
+      params: context === 'config' ? { context: 'config' } : undefined,
     });
   }
 
@@ -211,11 +239,17 @@ export class ClientAgentFileSystemProxyService {
    * @param agentId - The UUID of the agent
    * @param filePath - The relative path to delete (from /app)
    */
-  async deleteFileOrDirectory(clientId: string, agentId: string, filePath: string): Promise<void> {
+  async deleteFileOrDirectory(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<void> {
     const encodedPath = encodeURIComponent(filePath);
     await this.makeRequest<void>(clientId, agentId, {
       method: 'DELETE',
       url: `/${encodedPath}`,
+      params: context === 'config' ? { context: 'config' } : undefined,
     });
   }
 
@@ -231,12 +265,14 @@ export class ClientAgentFileSystemProxyService {
     agentId: string,
     sourcePath: string,
     moveFileDto: MoveFileDto,
+    context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeURIComponent(sourcePath);
     await this.makeRequest<void>(clientId, agentId, {
       method: 'PATCH',
       url: `/${encodedPath}`,
       data: moveFileDto,
+      params: context === 'config' ? { context: 'config' } : undefined,
     });
   }
 }

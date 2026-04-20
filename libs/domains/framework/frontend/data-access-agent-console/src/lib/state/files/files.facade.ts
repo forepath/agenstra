@@ -35,11 +35,19 @@ import {
 import type {
   CreateFileDto,
   FileContentDto,
+  FileManagerContext,
   FileNodeDto,
   ListDirectoryParams,
   MoveFileDto,
   WriteFileDto,
 } from './files.types';
+
+function withOptionalFileContext<T extends object>(
+  payload: T,
+  context?: FileManagerContext,
+): T | (T & { context: FileManagerContext }) {
+  return context === undefined ? payload : { ...payload, context };
+}
 
 /**
  * Facade for file system state management.
@@ -60,8 +68,13 @@ export class FilesFacade {
    * @param filePath - The file path relative to /app
    * @returns Observable of file content or null if not loaded
    */
-  getFileContent$(clientId: string, agentId: string, filePath: string): Observable<FileContentDto | null> {
-    return this.store.select(selectFileContent(clientId, agentId, filePath));
+  getFileContent$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<FileContentDto | null> {
+    return this.store.select(selectFileContent(clientId, agentId, filePath, context));
   }
 
   /**
@@ -71,8 +84,13 @@ export class FilesFacade {
    * @param directoryPath - The directory path relative to /app (defaults to '.')
    * @returns Observable of file nodes array or null if not loaded
    */
-  getDirectoryListing$(clientId: string, agentId: string, directoryPath = '.'): Observable<FileNodeDto[] | null> {
-    return this.store.select(selectDirectoryListing(clientId, agentId, directoryPath));
+  getDirectoryListing$(
+    clientId: string,
+    agentId: string,
+    directoryPath = '.',
+    context?: FileManagerContext,
+  ): Observable<FileNodeDto[] | null> {
+    return this.store.select(selectDirectoryListing(clientId, agentId, directoryPath, context));
   }
 
   /**
@@ -82,8 +100,13 @@ export class FilesFacade {
    * @param filePath - The file path
    * @returns Observable of loading state
    */
-  isReadingFile$(clientId: string, agentId: string, filePath: string): Observable<boolean> {
-    return this.store.select(selectIsReadingFile(clientId, agentId, filePath));
+  isReadingFile$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectIsReadingFile(clientId, agentId, filePath, context));
   }
 
   /**
@@ -93,8 +116,13 @@ export class FilesFacade {
    * @param filePath - The file path
    * @returns Observable of loading state
    */
-  isWritingFile$(clientId: string, agentId: string, filePath: string): Observable<boolean> {
-    return this.store.select(selectIsWritingFile(clientId, agentId, filePath));
+  isWritingFile$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectIsWritingFile(clientId, agentId, filePath, context));
   }
 
   /**
@@ -104,8 +132,13 @@ export class FilesFacade {
    * @param directoryPath - The directory path
    * @returns Observable of loading state
    */
-  isListingDirectory$(clientId: string, agentId: string, directoryPath = '.'): Observable<boolean> {
-    return this.store.select(selectIsListingDirectory(clientId, agentId, directoryPath));
+  isListingDirectory$(
+    clientId: string,
+    agentId: string,
+    directoryPath = '.',
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectIsListingDirectory(clientId, agentId, directoryPath, context));
   }
 
   /**
@@ -115,8 +148,13 @@ export class FilesFacade {
    * @param filePath - The file path
    * @returns Observable of loading state
    */
-  isCreatingFile$(clientId: string, agentId: string, filePath: string): Observable<boolean> {
-    return this.store.select(selectIsCreatingFile(clientId, agentId, filePath));
+  isCreatingFile$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectIsCreatingFile(clientId, agentId, filePath, context));
   }
 
   /**
@@ -126,8 +164,13 @@ export class FilesFacade {
    * @param filePath - The file path
    * @returns Observable of loading state
    */
-  isDeletingFile$(clientId: string, agentId: string, filePath: string): Observable<boolean> {
-    return this.store.select(selectIsDeletingFile(clientId, agentId, filePath));
+  isDeletingFile$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectIsDeletingFile(clientId, agentId, filePath, context));
   }
 
   /**
@@ -137,8 +180,13 @@ export class FilesFacade {
    * @param filePath - The file path
    * @returns Observable of loading state
    */
-  isMovingFile$(clientId: string, agentId: string, filePath: string): Observable<boolean> {
-    return this.store.select(selectIsMovingFile(clientId, agentId, filePath));
+  isMovingFile$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectIsMovingFile(clientId, agentId, filePath, context));
   }
 
   /**
@@ -148,8 +196,13 @@ export class FilesFacade {
    * @param filePath - The file path
    * @returns Observable of combined loading state
    */
-  isFileOperationLoading$(clientId: string, agentId: string, filePath: string): Observable<boolean> {
-    return this.store.select(selectFileOperationLoading(clientId, agentId, filePath));
+  isFileOperationLoading$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectFileOperationLoading(clientId, agentId, filePath, context));
   }
 
   /**
@@ -159,8 +212,13 @@ export class FilesFacade {
    * @param directoryPath - The directory path
    * @returns Observable of loading state
    */
-  isDirectoryOperationLoading$(clientId: string, agentId: string, directoryPath = '.'): Observable<boolean> {
-    return this.store.select(selectDirectoryOperationLoading(clientId, agentId, directoryPath));
+  isDirectoryOperationLoading$(
+    clientId: string,
+    agentId: string,
+    directoryPath = '.',
+    context?: FileManagerContext,
+  ): Observable<boolean> {
+    return this.store.select(selectDirectoryOperationLoading(clientId, agentId, directoryPath, context));
   }
 
   /**
@@ -170,8 +228,13 @@ export class FilesFacade {
    * @param filePath - The file path
    * @returns Observable of error message or null
    */
-  getFileError$(clientId: string, agentId: string, filePath: string): Observable<string | null> {
-    return this.store.select(selectFileError(clientId, agentId, filePath));
+  getFileError$(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context?: FileManagerContext,
+  ): Observable<string | null> {
+    return this.store.select(selectFileError(clientId, agentId, filePath, context));
   }
 
   /**
@@ -180,8 +243,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path relative to /app
    */
-  readFile(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(readFile({ clientId, agentId, filePath }));
+  readFile(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(readFile(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -191,8 +254,14 @@ export class FilesFacade {
    * @param filePath - The file path relative to /app
    * @param writeFileDto - The file content to write (base64-encoded)
    */
-  writeFile(clientId: string, agentId: string, filePath: string, writeFileDto: WriteFileDto): void {
-    this.store.dispatch(writeFile({ clientId, agentId, filePath, writeFileDto }));
+  writeFile(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    writeFileDto: WriteFileDto,
+    context?: FileManagerContext,
+  ): void {
+    this.store.dispatch(writeFile(withOptionalFileContext({ clientId, agentId, filePath, writeFileDto }, context)));
   }
 
   /**
@@ -212,8 +281,16 @@ export class FilesFacade {
    * @param filePath - The file path relative to /app
    * @param createFileDto - The file/directory creation data
    */
-  createFileOrDirectory(clientId: string, agentId: string, filePath: string, createFileDto: CreateFileDto): void {
-    this.store.dispatch(createFileOrDirectory({ clientId, agentId, filePath, createFileDto }));
+  createFileOrDirectory(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    createFileDto: CreateFileDto,
+    context?: FileManagerContext,
+  ): void {
+    this.store.dispatch(
+      createFileOrDirectory(withOptionalFileContext({ clientId, agentId, filePath, createFileDto }, context)),
+    );
   }
 
   /**
@@ -222,8 +299,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path relative to /app
    */
-  deleteFileOrDirectory(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(deleteFileOrDirectory({ clientId, agentId, filePath }));
+  deleteFileOrDirectory(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(deleteFileOrDirectory(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -233,8 +310,16 @@ export class FilesFacade {
    * @param sourcePath - The source file path relative to /app
    * @param moveFileDto - The move operation data (destination path)
    */
-  moveFileOrDirectory(clientId: string, agentId: string, sourcePath: string, moveFileDto: MoveFileDto): void {
-    this.store.dispatch(moveFileOrDirectory({ clientId, agentId, sourcePath, moveFileDto }));
+  moveFileOrDirectory(
+    clientId: string,
+    agentId: string,
+    sourcePath: string,
+    moveFileDto: MoveFileDto,
+    context?: FileManagerContext,
+  ): void {
+    this.store.dispatch(
+      moveFileOrDirectory(withOptionalFileContext({ clientId, agentId, sourcePath, moveFileDto }, context)),
+    );
   }
 
   /**
@@ -243,8 +328,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path
    */
-  clearFileContent(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(clearFileContent({ clientId, agentId, filePath }));
+  clearFileContent(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(clearFileContent(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -253,8 +338,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param directoryPath - The directory path
    */
-  clearDirectoryListing(clientId: string, agentId: string, directoryPath: string): void {
-    this.store.dispatch(clearDirectoryListing({ clientId, agentId, directoryPath }));
+  clearDirectoryListing(clientId: string, agentId: string, directoryPath: string, context?: FileManagerContext): void {
+    this.store.dispatch(clearDirectoryListing(withOptionalFileContext({ clientId, agentId, directoryPath }, context)));
   }
 
   /**
@@ -263,8 +348,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @returns Observable of open tabs array
    */
-  getOpenTabs$(clientId: string, agentId: string): Observable<OpenTab[]> {
-    return this.store.select(selectOpenTabsForClientAgent(clientId, agentId));
+  getOpenTabs$(clientId: string, agentId: string, context?: FileManagerContext): Observable<OpenTab[]> {
+    return this.store.select(selectOpenTabsForClientAgent(clientId, agentId, context));
   }
 
   /**
@@ -273,8 +358,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path
    */
-  openFileTab(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(openFileTab({ clientId, agentId, filePath }));
+  openFileTab(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(openFileTab(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -283,8 +368,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path
    */
-  closeFileTab(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(closeFileTab({ clientId, agentId, filePath }));
+  closeFileTab(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(closeFileTab(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -293,8 +378,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path
    */
-  pinFileTab(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(pinFileTab({ clientId, agentId, filePath }));
+  pinFileTab(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(pinFileTab(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -303,8 +388,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path
    */
-  unpinFileTab(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(unpinFileTab({ clientId, agentId, filePath }));
+  unpinFileTab(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(unpinFileTab(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -313,8 +398,8 @@ export class FilesFacade {
    * @param agentId - The agent ID
    * @param filePath - The file path
    */
-  moveTabToFront(clientId: string, agentId: string, filePath: string): void {
-    this.store.dispatch(moveTabToFront({ clientId, agentId, filePath }));
+  moveTabToFront(clientId: string, agentId: string, filePath: string, context?: FileManagerContext): void {
+    this.store.dispatch(moveTabToFront(withOptionalFileContext({ clientId, agentId, filePath }, context)));
   }
 
   /**
@@ -322,7 +407,7 @@ export class FilesFacade {
    * @param clientId - The client ID
    * @param agentId - The agent ID
    */
-  clearOpenTabs(clientId: string, agentId: string): void {
-    this.store.dispatch(clearOpenTabs({ clientId, agentId }));
+  clearOpenTabs(clientId: string, agentId: string, context?: FileManagerContext): void {
+    this.store.dispatch(clearOpenTabs(withOptionalFileContext({ clientId, agentId }, context)));
   }
 }

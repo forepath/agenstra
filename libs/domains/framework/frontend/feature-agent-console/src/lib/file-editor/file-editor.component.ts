@@ -23,7 +23,9 @@ import {
   VcsFacade,
   type CreateFileDto,
   type FileContentDto,
+  type FileManagerContext,
   type FileUpdateNotificationData,
+  type ListDirectoryParams,
   type OpenTab,
   type WriteFileDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
@@ -72,6 +74,8 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   clientId = input.required<string>();
   agentId = input.required<string>();
   chatVisible = input<boolean>(true);
+  /** Files API root: workspace (`app`) or provider agent config (`config`). */
+  fileManagerContext = input<FileManagerContext>('app');
 
   // Internal state
   selectedFilePath = signal<string | null>(null);
@@ -119,23 +123,26 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   // Refresh debounce subject to prevent multiple rapid refreshes
   private readonly refreshTrigger$ = new Subject<void>();
   private isRefreshing = false;
+  private previousFileManagerContext: FileManagerContext | null = null;
 
   // Convert signals to observables
   private readonly selectedFilePath$ = toObservable(this.selectedFilePath);
   private readonly clientId$ = toObservable(this.clientId);
   private readonly agentId$ = toObservable(this.agentId);
+  private readonly fileManagerContext$ = toObservable(this.fileManagerContext);
 
   // Computed observables
   readonly selectedFileContent$: Observable<FileContentDto | null> = combineLatest([
     this.selectedFilePath$,
     this.clientId$,
     this.agentId$,
+    this.fileManagerContext$,
   ]).pipe(
-    switchMap(([filePath, clientId, agentId]) => {
+    switchMap(([filePath, clientId, agentId, fileCtx]) => {
       if (!filePath || !clientId || !agentId) {
         return of(null);
       }
-      return this.filesFacade.getFileContent$(clientId, agentId, filePath);
+      return this.filesFacade.getFileContent$(clientId, agentId, filePath, fileCtx);
     }),
   );
 
@@ -143,15 +150,16 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     this.selectedFilePath$,
     this.clientId$,
     this.agentId$,
+    this.fileManagerContext$,
     toObservable(this.lastLoadedFilePath),
   ]).pipe(
-    switchMap(([filePath, clientId, agentId, lastLoadedFilePath]) => {
+    switchMap(([filePath, clientId, agentId, fileCtx, lastLoadedFilePath]) => {
       if (!filePath || !clientId || !agentId) {
         return of(false);
       }
 
       return this.filesFacade
-        .isReadingFile$(clientId, agentId, filePath)
+        .isReadingFile$(clientId, agentId, filePath, fileCtx)
         .pipe(map((isLoading) => isLoading && lastLoadedFilePath !== filePath));
     }),
   );
@@ -160,12 +168,13 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     this.selectedFilePath$,
     this.clientId$,
     this.agentId$,
+    this.fileManagerContext$,
   ]).pipe(
-    switchMap(([filePath, clientId, agentId]) => {
+    switchMap(([filePath, clientId, agentId, fileCtx]) => {
       if (!filePath || !clientId || !agentId) {
         return of(false);
       }
-      return this.filesFacade.isWritingFile$(clientId, agentId, filePath);
+      return this.filesFacade.isWritingFile$(clientId, agentId, filePath, fileCtx);
     }),
   );
 
@@ -180,23 +189,46 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   });
 
   // Open tabs
-  readonly openTabs$: Observable<OpenTab[]> = combineLatest([this.clientId$, this.agentId$]).pipe(
-    switchMap(([clientId, agentId]) => {
+  readonly openTabs$: Observable<OpenTab[]> = combineLatest([
+    this.clientId$,
+    this.agentId$,
+    this.fileManagerContext$,
+  ]).pipe(
+    switchMap(([clientId, agentId, fileCtx]) => {
       if (!clientId || !agentId) {
         return of([]);
       }
-      return this.filesFacade.getOpenTabs$(clientId, agentId);
+      return this.filesFacade.getOpenTabs$(clientId, agentId, fileCtx);
     }),
   );
 
   private resizeObserver?: ResizeObserver;
 
+  private listParams(path: string): ListDirectoryParams {
+    const c = this.fileManagerContext();
+    return c === 'app' ? { path } : { path, context: c };
+  }
+
   constructor() {
+    effect(() => {
+      const ctx = this.fileManagerContext();
+      if (this.previousFileManagerContext !== null && this.previousFileManagerContext !== ctx) {
+        this.selectedFilePath.set(null);
+        this.lastLoadedFilePath.set(null);
+        this.dirtyFiles.set(new Set());
+        this.expandedPaths.set(new Set());
+        this.gitManagerVisible.set(false);
+        this.gitDiffViewerVisible.set(false);
+        this.gitDiffFilePath.set(null);
+      }
+      this.previousFileManagerContext = ctx;
+    });
+
     // Load file when selected
     effect(() => {
       const filePath = this.selectedFilePath();
       if (filePath && this.clientId() && this.agentId()) {
-        this.filesFacade.readFile(this.clientId(), this.agentId(), filePath);
+        this.filesFacade.readFile(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
       }
     });
 
@@ -231,7 +263,12 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
               const overflowed = this.overflowedTabs();
               const isOverflowed = overflowed.some((tab) => tab.filePath === selectedPath);
               if (isOverflowed) {
-                this.filesFacade.moveTabToFront(this.clientId(), this.agentId(), selectedPath);
+                this.filesFacade.moveTabToFront(
+                  this.clientId(),
+                  this.agentId(),
+                  selectedPath,
+                  this.fileManagerContext(),
+                );
                 // Recalculate after moving
                 setTimeout(() => this.calculateVisibleTabs(), 50);
               }
@@ -262,9 +299,13 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       const currentSelectedPath = this.selectedFilePath();
       const clientId = this.clientId();
       const agentId = this.agentId();
+      const actionCtx = action.context ?? 'app';
+      if (actionCtx !== this.fileManagerContext()) {
+        return;
+      }
 
-      // Reload git status after file move
-      if (clientId === action.clientId && agentId === action.agentId) {
+      // Reload git status after file move (workspace only)
+      if (this.fileManagerContext() === 'app' && clientId === action.clientId && agentId === action.agentId) {
         setTimeout(() => {
           this.vcsFacade.loadStatus(clientId, agentId);
         }, 500);
@@ -288,7 +329,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
         // Load the file content at the new location
         // The effect will automatically load it when selectedFilePath changes
-        this.filesFacade.readFile(clientId, agentId, action.destinationPath);
+        this.filesFacade.readFile(clientId, agentId, action.destinationPath, this.fileManagerContext());
       }
     });
 
@@ -420,7 +461,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     // Open tab when file is selected
     // The effect will automatically move it to front if it ends up in overflow
     if (this.clientId() && this.agentId()) {
-      this.filesFacade.openFileTab(this.clientId(), this.agentId(), filePath);
+      this.filesFacade.openFileTab(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
     }
   }
 
@@ -496,7 +537,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       encoding: 'utf-8',
     };
 
-    this.filesFacade.writeFile(clientId, agentId, filePath, writeDto);
+    this.filesFacade.writeFile(clientId, agentId, filePath, writeDto, this.fileManagerContext());
 
     // Mark as not dirty and sync editorContent after successful save
     // Also emit file update notification to other clients after successful save
@@ -531,10 +572,12 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
           return newSaved;
         });
 
-        // Reload git status after file save
-        setTimeout(() => {
-          this.vcsFacade.loadStatus(clientId, agentId);
-        }, 300);
+        // Reload git status after file save (workspace only)
+        if (this.fileManagerContext() === 'app') {
+          setTimeout(() => {
+            this.vcsFacade.loadStatus(clientId, agentId);
+          }, 300);
+        }
 
         // Emit file update notification to other clients after successful save
         // agentId is required for routing the event to the correct agent
@@ -595,15 +638,23 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     };
 
     const fullPath = event.path === '.' ? event.name : `${event.path}/${event.name}`;
-    this.filesFacade.createFileOrDirectory(this.clientId(), this.agentId(), fullPath, createDto);
+    this.filesFacade.createFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      fullPath,
+      createDto,
+      this.fileManagerContext(),
+    );
 
     // Refresh directory listing
-    this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: event.path });
+    this.filesFacade.listDirectory(this.clientId(), this.agentId(), this.listParams(event.path));
 
-    // Reload git status after file creation
-    setTimeout(() => {
-      this.vcsFacade.loadStatus(this.clientId(), this.agentId());
-    }, 500);
+    // Reload git status after file creation (workspace only)
+    if (this.fileManagerContext() === 'app') {
+      setTimeout(() => {
+        this.vcsFacade.loadStatus(this.clientId(), this.agentId());
+      }, 500);
+    }
 
     // If it's a file, select it
     if (event.type === 'file') {
@@ -622,7 +673,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
   onFileDelete(filePath: string): void {
     // Confirmation is handled by the file-tree component's Bootstrap modal
-    this.filesFacade.deleteFileOrDirectory(this.clientId(), this.agentId(), filePath);
+    this.filesFacade.deleteFileOrDirectory(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
 
     // If deleted file was selected, clear selection
     if (this.selectedFilePath() === filePath) {
@@ -635,12 +686,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     }
 
     // Refresh root directory listing
-    this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: '.' });
+    this.filesFacade.listDirectory(this.clientId(), this.agentId(), this.listParams('.'));
 
-    // Reload git status after file deletion
-    setTimeout(() => {
-      this.vcsFacade.loadStatus(this.clientId(), this.agentId());
-    }, 500);
+    // Reload git status after file deletion (workspace only)
+    if (this.fileManagerContext() === 'app') {
+      setTimeout(() => {
+        this.vcsFacade.loadStatus(this.clientId(), this.agentId());
+      }, 500);
+    }
   }
 
   onDirectoryExpand(path: string | Event): void {
@@ -714,17 +767,17 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       if (path === '.') {
         // Small delay for root directory to avoid cancellation
         setTimeout(() => {
-          this.filesFacade.listDirectory(clientId, agentId, { path: '.' });
+          this.filesFacade.listDirectory(clientId, agentId, this.listParams('.'));
         }, 50);
       } else {
-        this.filesFacade.listDirectory(clientId, agentId, { path });
+        this.filesFacade.listDirectory(clientId, agentId, this.listParams(path));
       }
     });
 
     // If root is not in expanded paths, reload it anyway (it's always needed)
     if (!currentExpandedPaths.has('.')) {
       setTimeout(() => {
-        this.filesFacade.listDirectory(clientId, agentId, { path: '.' });
+        this.filesFacade.listDirectory(clientId, agentId, this.listParams('.'));
       }, 50);
     }
 
@@ -736,7 +789,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Reload currently selected file if it exists
     if (currentSelectedFile) {
-      this.filesFacade.readFile(clientId, agentId, currentSelectedFile);
+      this.filesFacade.readFile(clientId, agentId, currentSelectedFile, this.fileManagerContext());
     }
   }
 
@@ -754,7 +807,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Move the tab to the front before selecting it
     if (this.clientId() && this.agentId()) {
-      this.filesFacade.moveTabToFront(this.clientId(), this.agentId(), filePath);
+      this.filesFacade.moveTabToFront(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
     }
 
     this.onTabClick(filePath);
@@ -781,7 +834,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     event.preventDefault();
     event.stopPropagation();
     if (this.clientId() && this.agentId()) {
-      this.filesFacade.pinFileTab(this.clientId(), this.agentId(), filePath);
+      this.filesFacade.pinFileTab(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
     }
   }
 
@@ -789,7 +842,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     event.preventDefault();
     event.stopPropagation();
     if (this.clientId() && this.agentId()) {
-      this.filesFacade.closeFileTab(this.clientId(), this.agentId(), filePath);
+      this.filesFacade.closeFileTab(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
       // If the closed tab was selected, select the first remaining tab or clear selection
       if (this.selectedFilePath() === filePath) {
         this.openTabs$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((tabs) => {
@@ -821,7 +874,8 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Build the URL
     const baseUrl = window.location.origin;
-    const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
+    const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
+    const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
     const queryParams = new URLSearchParams();
     queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(filePath));
@@ -874,7 +928,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     // Wait a bit to ensure the new window has opened before closing the tab
     setTimeout(() => {
       if (this.clientId() && this.agentId()) {
-        this.filesFacade.closeFileTab(this.clientId(), this.agentId(), filePath);
+        this.filesFacade.closeFileTab(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
         // If the closed tab was selected, select the first remaining tab or clear selection
         if (this.selectedFilePath() === filePath) {
           this.openTabs$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((tabs) => {
@@ -969,7 +1023,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       const isOverflowed = overflowed.some((tab) => tab.filePath === selectedPath);
       if (isOverflowed) {
         // Move selected tab to front and recalculate
-        this.filesFacade.moveTabToFront(this.clientId(), this.agentId(), selectedPath);
+        this.filesFacade.moveTabToFront(this.clientId(), this.agentId(), selectedPath, this.fileManagerContext());
         // The tab order change will trigger a recalculation via the effect
         // But we also need to recalculate immediately to show the change
         setTimeout(() => this.calculateVisibleTabs(), 50);
@@ -1003,6 +1057,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   onToggleGitManager(): void {
+    if (this.fileManagerContext() !== 'app') {
+      return;
+    }
     const wasVisible = this.gitManagerVisible();
     this.gitManagerVisible.update((visible) => !visible);
 
@@ -1021,6 +1078,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   onShowGitDiff(filePath: string): void {
+    if (this.fileManagerContext() !== 'app') {
+      return;
+    }
     this.gitDiffFilePath.set(filePath);
     this.gitDiffViewerVisible.set(true);
   }
@@ -1040,6 +1100,10 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
    * - If file is not dirty: automatically reloads the file from server
    */
   private handleFileUpdateNotification(notification: FileUpdateNotificationData): void {
+    if (this.fileManagerContext() !== 'app') {
+      return;
+    }
+
     const currentFilePath = this.selectedFilePath();
     const currentSocketId = getSocketInstance()?.id;
     const clientId = this.clientId();
@@ -1080,7 +1144,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         }
       } else {
         // File is not dirty - automatically reload from server (no need to disable autosave)
-        this.filesFacade.readFile(clientId, agentId, notification.filePath);
+        this.filesFacade.readFile(clientId, agentId, notification.filePath, this.fileManagerContext());
       }
     }
   }
@@ -1138,11 +1202,11 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     }
 
     // Clear cached content first so Monaco wrapper receives a fresh emission and updates correctly
-    this.filesFacade.clearFileContent(clientId, agentId, filePath);
+    this.filesFacade.clearFileContent(clientId, agentId, filePath, this.fileManagerContext());
     // Reset lastLoadedFilePath so the content effect will run when new content arrives
     this.lastLoadedFilePath.set(null);
     // Reload the file from server
-    this.filesFacade.readFile(clientId, agentId, filePath);
+    this.filesFacade.readFile(clientId, agentId, filePath, this.fileManagerContext());
 
     // Clear dirty state for this file
     this.dirtyFiles.update((dirty) => {
@@ -1165,10 +1229,12 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     this.showFileUpdateModal.set(false);
     this.fileUpdateNotification.set(null);
 
-    // Reload git status after accepting file update
-    setTimeout(() => {
-      this.vcsFacade.loadStatus(clientId, agentId);
-    }, 500);
+    // Reload git status after accepting file update (workspace only)
+    if (this.fileManagerContext() === 'app') {
+      setTimeout(() => {
+        this.vcsFacade.loadStatus(clientId, agentId);
+      }, 500);
+    }
   }
 
   /**
@@ -1291,7 +1357,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   ngOnDestroy(): void {
     // Clear all open tabs when component is destroyed
     if (this.clientId() && this.agentId()) {
-      this.filesFacade.clearOpenTabs(this.clientId(), this.agentId());
+      this.filesFacade.clearOpenTabs(this.clientId(), this.agentId(), this.fileManagerContext());
     }
     // Clean up ResizeObserver
     if (this.resizeObserver) {

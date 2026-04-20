@@ -10,8 +10,8 @@ sequenceDiagram
 
     rect rgb(230, 240, 255)
         Note over Client,Container: Read File
-        Client->>API: GET /api/agents/{id}/files/{path}
-        API->>FileService: readFile(agentId, filePath)
+        Client->>API: GET /api/agents/{id}/files/{path}?context=app|config
+        API->>FileService: readFile(agentId, filePath, context)
         FileService->>FileService: sanitizePath(filePath)
         FileService->>AgentService: findOne(agentId)
         AgentService-->>FileService: agent entity
@@ -26,8 +26,8 @@ sequenceDiagram
 
     rect rgb(240, 255, 240)
         Note over Client,Container: Write File
-        Client->>API: PUT /api/agents/{id}/files/{path}<br/>{content}
-        API->>FileService: writeFile(agentId, filePath, content)
+        Client->>API: PUT /api/agents/{id}/files/{path}?context=app|config<br/>{content}
+        API->>FileService: writeFile(agentId, filePath, content, encoding, context)
         FileService->>FileService: sanitizePath(filePath)
         FileService->>FileService: validate content size
         FileService->>AgentService: findOne(agentId)
@@ -43,8 +43,8 @@ sequenceDiagram
 
     rect rgb(255, 240, 240)
         Note over Client,Container: List Directory
-        Client->>API: GET /api/agents/{id}/files?path={dir}
-        API->>FileService: listDirectory(agentId, path)
+        Client->>API: GET /api/agents/{id}/files?path={dir}&context=app|config
+        API->>FileService: listDirectory(agentId, path, context)
         FileService->>FileService: sanitizePath(path)
         FileService->>AgentService: findOne(agentId)
         AgentService-->>FileService: agent entity

@@ -2,10 +2,10 @@ flowchart TB
     subgraph STATE["📦 NgRx State Management"]
         direction TB
         STATE_USE["Use Case: File System State<br/>Reactive State Management<br/>Caching & Loading States"]
-        STATE_USE --> STATE1["📄 File Contents Cache<br/>Key: clientId:agentId:filePath<br/>Value: FileContentDto (base64)"]
-        STATE_USE --> STATE2["📂 Directory Listings Cache<br/>Key: clientId:agentId:directoryPath<br/>Value: FileNodeDto[]"]
+        STATE_USE -->         STATE1["📄 File Contents Cache<br/>Key: clientId:agentId:context:filePath<br/>Value: FileContentDto (base64)"]
+        STATE_USE --> STATE2["📂 Directory Listings Cache<br/>Key: clientId:agentId:context:directoryPath<br/>Value: FileNodeDto[]"]
         STATE_USE --> STATE3["⏳ Loading States<br/>reading, writing, listing,<br/>creating, deleting"]
-        STATE_USE --> STATE4["❌ Error States<br/>Key: clientId:agentId:path<br/>Value: error message"]
+        STATE_USE --> STATE4["❌ Error States<br/>Key: clientId:agentId:context:path<br/>Value: error message"]
     end
 
     subgraph FACADE["🎭 FilesFacade"]
@@ -32,11 +32,11 @@ flowchart TB
     subgraph SERVICE["🌐 FilesService"]
         direction TB
         SERVICE_USE["Use Case: HTTP Client<br/>REST API Communication<br/>Base64 Encoding"]
-        SERVICE_USE --> SERVICE1["readFile()<br/>GET /api/clients/{id}/agents/{agentId}/files/{path}"]
-        SERVICE_USE --> SERVICE2["writeFile()<br/>PUT /api/clients/{id}/agents/{agentId}/files/{path}"]
-        SERVICE_USE --> SERVICE3["listDirectory()<br/>GET /api/clients/{id}/agents/{agentId}/files?path="]
-        SERVICE_USE --> SERVICE4["createFileOrDirectory()<br/>POST /api/clients/{id}/agents/{agentId}/files/{path}"]
-        SERVICE_USE --> SERVICE5["deleteFileOrDirectory()<br/>DELETE /api/clients/{id}/agents/{agentId}/files/{path}"]
+        SERVICE_USE -->         SERVICE1["readFile()<br/>GET .../files/{path}?context=app|config (optional)"]
+        SERVICE_USE --> SERVICE2["writeFile()<br/>PUT .../files/{path}?context=app|config (optional)"]
+        SERVICE_USE --> SERVICE3["listDirectory()<br/>GET .../files?path= plus optional context"]
+        SERVICE_USE --> SERVICE4["createFileOrDirectory()<br/>POST .../files/{path}?context= (optional)"]
+        SERVICE_USE --> SERVICE5["deleteFileOrDirectory()<br/>DELETE .../files/{path}?context= (optional)"]
     end
 
     subgraph API["🔷 HTTP REST API"]

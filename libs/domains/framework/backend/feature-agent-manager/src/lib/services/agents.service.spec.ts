@@ -55,6 +55,7 @@ describe('AgentsService', () => {
     createNetwork: jest.fn(),
     deleteNetwork: jest.fn(),
     sendCommandToContainer: jest.fn(),
+    getContainerHomeDirectory: jest.fn().mockResolvedValue('/root'),
     startContainer: jest.fn(),
     stopContainer: jest.fn(),
     restartContainer: jest.fn(),
@@ -78,6 +79,8 @@ describe('AgentsService', () => {
     toUnifiedResponse: jest.fn(),
     getModelsListCommand: jest.fn().mockReturnValue('cursor-agent --list-models'),
     toModelsList: jest.fn().mockReturnValue({}),
+    getBasePath: jest.fn().mockReturnValue('/app'),
+    getConfigBasePath: jest.fn().mockReturnValue('~/.cursor'),
   };
 
   const mockAgentProviderFactory = {
@@ -148,6 +151,12 @@ describe('AgentsService', () => {
       process.env.GIT_REPOSITORY_URL = 'https://github.com/user/repo.git';
     });
 
+    afterEach(() => {
+      // Tests may delete optional provider methods; restore defaults for isolation
+      mockAgentProvider.getBasePath = jest.fn().mockReturnValue('/app');
+      mockAgentProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.cursor');
+    });
+
     it('should create new agent with auto-generated password and container', async () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
@@ -206,8 +215,8 @@ describe('AgentsService', () => {
           },
         ],
       });
-      // Verify .netrc file creation commands were called (2 commands: base64 write + chmod)
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(3); // 2 for .netrc + 1 for git clone
+      // Verify .netrc file creation commands were called (2 commands: base64 write + chmod), then config dir, then git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4); // 2 for .netrc + 1 for config mkdir + 1 for git clone
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         1,
         containerId,
@@ -217,6 +226,14 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(2, containerId, 'chmod 600 /root/.netrc');
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
+        containerId,
+        `sh -c "mkdir -p -- '/root/.cursor'"`,
+        undefined,
+        true,
+      );
+      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        4,
         containerId,
         expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
       );
@@ -287,7 +304,7 @@ describe('AgentsService', () => {
         ],
       });
       // Verify .netrc file creation was called
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(3); // 2 for .netrc + 1 for git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4); // 2 for .netrc + 1 for config mkdir + 1 for git clone
       expect(repository.create).toHaveBeenCalledWith({
         name: createDto.name,
         description: undefined,
@@ -382,7 +399,7 @@ describe('AgentsService', () => {
       await service.create(createDto);
 
       // Verify .netrc creation was called (should use GIT_PASSWORD)
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(3); // 2 for .netrc + 1 for git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4); // 2 for .netrc + 1 for config mkdir + 1 for git clone
     });
 
     it('should throw BadRequestException when agent name already exists', async () => {
@@ -434,6 +451,7 @@ describe('AgentsService', () => {
       dockerService.sendCommandToContainer
         .mockResolvedValueOnce(undefined) // First call for .netrc base64 write succeeds
         .mockResolvedValueOnce(undefined) // Second call for chmod succeeds
+        .mockResolvedValueOnce(undefined) // mkdir provider config dir
         .mockRejectedValueOnce(gitCloneError); // Git clone fails
       dockerService.deleteContainer.mockResolvedValue(undefined);
 
@@ -441,8 +459,8 @@ describe('AgentsService', () => {
 
       // Verify container was created
       expect(dockerService.createContainer).toHaveBeenCalled();
-      // Verify .netrc creation (2 commands) and git clone (1 attempt) were called
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(3);
+      // Verify .netrc creation (2 commands), config mkdir, and git clone (1 attempt) were called
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4);
       // Verify container cleanup was attempted
       expect(dockerService.deleteContainer).toHaveBeenCalledWith(containerId);
       // Verify repository.create was never called
@@ -467,8 +485,8 @@ describe('AgentsService', () => {
 
       // Verify container was created
       expect(dockerService.createContainer).toHaveBeenCalled();
-      // Verify .netrc creation (2 commands) and git clone (1 command) were attempted
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(3);
+      // Verify .netrc creation (2 commands), config mkdir, and git clone (1 command) were attempted
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4);
       // Verify repository.create was attempted
       expect(repository.create).toHaveBeenCalled();
       // Verify container cleanup was attempted
@@ -489,6 +507,7 @@ describe('AgentsService', () => {
       dockerService.sendCommandToContainer
         .mockResolvedValueOnce(undefined) // First call for .netrc base64 write succeeds
         .mockResolvedValueOnce(undefined) // Second call for chmod succeeds
+        .mockResolvedValueOnce(undefined) // mkdir provider config dir
         .mockRejectedValueOnce(originalError); // Git clone fails
       dockerService.deleteContainer.mockRejectedValue(cleanupError);
 
@@ -559,8 +578,8 @@ describe('AgentsService', () => {
           },
         ],
       });
-      // Verify SSH setup commands: mkdir, chmod .ssh, write key, chmod key, ssh-keyscan, chmod known_hosts, git clone
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(7);
+      // Verify SSH setup commands, provider config mkdir, then git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(8);
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(1, containerId, 'mkdir -p /root/.ssh');
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(2, containerId, 'chmod 700 /root/.ssh');
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
@@ -585,6 +604,13 @@ describe('AgentsService', () => {
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         7,
+        containerId,
+        `sh -c "mkdir -p -- '/root/.cursor'"`,
+        undefined,
+        true,
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        8,
         containerId,
         expect.stringMatching(/sh -c "git clone .*git@github\.com:user\/repo\.git.*'\/app'"/),
       );
@@ -635,7 +661,7 @@ describe('AgentsService', () => {
       // Verify git clone uses basePath + repositoryPath for SSH repository
       const expectedPath = basePath + repositoryPath;
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        7,
+        8,
         containerId,
         expect.stringMatching(
           new RegExp(`sh -c "git clone .*git@github\\.com:user/repo\\.git.*'${expectedPath.replace(/'/g, "'\\''")}'"`),
@@ -825,7 +851,7 @@ describe('AgentsService', () => {
       // Verify git clone uses the custom base path (escaped for shell)
       // Since getRepositoryPath is not defined, it should use just basePath
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        3,
+        4,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -868,7 +894,7 @@ describe('AgentsService', () => {
       // Verify git clone uses basePath + repositoryPath
       const expectedPath = basePath + repositoryPath;
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        3,
+        4,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -931,7 +957,7 @@ describe('AgentsService', () => {
       // Verify git clone uses basePath + repositoryPath
       const expectedPath = customBasePath + repositoryPath;
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        3,
+        4,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -972,7 +998,7 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
       // Verify git clone uses only basePath when getRepositoryPath is not defined
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        3,
+        4,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -1031,7 +1057,7 @@ describe('AgentsService', () => {
       });
       // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        3,
+        4,
         containerId,
         expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
       );
@@ -1090,7 +1116,7 @@ describe('AgentsService', () => {
       });
       // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        3,
+        4,
         containerId,
         expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
       );
@@ -1339,6 +1365,72 @@ describe('AgentsService', () => {
 
       expect(result.id).toBe(mockAgent.id);
       expect(result.name).toBe(createDto.name);
+    });
+
+    it('should not mkdir provider config when getConfigBasePath is not defined', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'Agent Without Config Base',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-123';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        hashedPassword,
+        containerId,
+        volumePath: '/opt/agents/vol',
+      };
+
+      delete (mockAgentProvider as { getConfigBasePath?: () => string }).getConfigBasePath;
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(3);
+      expect(dockerService.getContainerHomeDirectory).not.toHaveBeenCalled();
+    });
+
+    it('should mkdir absolute provider config path without calling getContainerHomeDirectory', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'Agent Abs Config',
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-abc';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        hashedPassword,
+        containerId,
+        volumePath: '/opt/agents/vol2',
+      };
+
+      mockAgentProvider.getConfigBasePath = jest.fn().mockReturnValue('/var/my-agent-config');
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(dockerService.getContainerHomeDirectory).not.toHaveBeenCalled();
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        3,
+        containerId,
+        `sh -c "mkdir -p -- '/var/my-agent-config'"`,
+        undefined,
+        true,
+      );
     });
   });
 

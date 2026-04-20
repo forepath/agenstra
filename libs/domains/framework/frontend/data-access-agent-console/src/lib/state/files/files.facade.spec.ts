@@ -204,6 +204,12 @@ describe('FilesFacade', () => {
       expect(store.dispatch).toHaveBeenCalledWith(readFile({ clientId, agentId, filePath }));
     });
 
+    it('should dispatch readFile with config context when provided', () => {
+      facade.readFile(clientId, agentId, filePath, 'config');
+
+      expect(store.dispatch).toHaveBeenCalledWith(readFile({ clientId, agentId, filePath, context: 'config' }));
+    });
+
     it('should dispatch writeFile action', () => {
       const writeDto: WriteFileDto = {
         content: Buffer.from('New content', 'utf-8').toString('base64'),

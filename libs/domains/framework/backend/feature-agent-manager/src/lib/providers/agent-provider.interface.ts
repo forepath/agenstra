@@ -97,6 +97,13 @@ export interface AgentProvider {
   getBasePath?(): string;
 
   /**
+   * Get the base path for the provider's configuration.
+   * This is used to construct the API base URL for the provider's configuration.
+   * @returns The base path string (e.g., '~/.cursor')
+   */
+  getConfigBasePath?(): string;
+
+  /**
    * Get the path to the repository relative to the base path for the provider.
    * This is used to construct the repository path within agent containers.
    * @returns The repository path string (e.g., 'repository'). Defaults to '' if not implemented.

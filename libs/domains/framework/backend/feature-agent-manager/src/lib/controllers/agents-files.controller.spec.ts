@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateFileDto } from '../dto/create-file.dto';
 import { FileContentDto } from '../dto/file-content.dto';
@@ -67,10 +68,18 @@ describe('AgentsFilesController', () => {
     it('should return file content', async () => {
       service.readFile.mockResolvedValue(mockFileContent);
 
-      const result = await controller.readFile(mockAgentId, mockFilePath);
+      const result = await controller.readFile(mockAgentId, mockFilePath, undefined);
 
       expect(result).toEqual(mockFileContent);
-      expect(service.readFile).toHaveBeenCalledWith(mockAgentId, mockFilePath);
+      expect(service.readFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'app');
+    });
+
+    it('should forward config context to service', async () => {
+      service.readFile.mockResolvedValue(mockFileContent);
+
+      await controller.readFile(mockAgentId, mockFilePath, 'config');
+
+      expect(service.readFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'config');
     });
   });
 
@@ -82,9 +91,15 @@ describe('AgentsFilesController', () => {
 
       service.writeFile.mockResolvedValue(undefined);
 
-      await controller.writeFile(mockAgentId, mockFilePath, writeDto);
+      await controller.writeFile(mockAgentId, mockFilePath, writeDto, undefined);
 
-      expect(service.writeFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, writeDto.content, writeDto.encoding);
+      expect(service.writeFile).toHaveBeenCalledWith(
+        mockAgentId,
+        mockFilePath,
+        writeDto.content,
+        writeDto.encoding,
+        'app',
+      );
     });
   });
 
@@ -92,19 +107,23 @@ describe('AgentsFilesController', () => {
     it('should return directory contents', async () => {
       service.listDirectory.mockResolvedValue(mockFileNodes);
 
-      const result = await controller.listDirectory(mockAgentId, mockDirectoryPath);
+      const result = await controller.listDirectory(mockAgentId, mockDirectoryPath, undefined);
 
       expect(result).toEqual(mockFileNodes);
-      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, mockDirectoryPath);
+      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, mockDirectoryPath, 'app');
     });
 
     it('should use default path when not provided', async () => {
       service.listDirectory.mockResolvedValue(mockFileNodes);
 
-      const result = await controller.listDirectory(mockAgentId);
+      const result = await controller.listDirectory(mockAgentId, undefined, undefined);
 
       expect(result).toEqual(mockFileNodes);
-      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, '.');
+      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, '.', 'app');
+    });
+
+    it('should reject invalid context', async () => {
+      await expect(controller.listDirectory(mockAgentId, '.', 'workspace')).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -117,9 +136,15 @@ describe('AgentsFilesController', () => {
 
       service.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory(mockAgentId, mockFilePath, createDto);
+      await controller.createFileOrDirectory(mockAgentId, mockFilePath, createDto, undefined);
 
-      expect(service.createFileOrDirectory).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'file', 'File content');
+      expect(service.createFileOrDirectory).toHaveBeenCalledWith(
+        mockAgentId,
+        mockFilePath,
+        'file',
+        'File content',
+        'app',
+      );
     });
 
     it('should create directory', async () => {
@@ -129,13 +154,14 @@ describe('AgentsFilesController', () => {
 
       service.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory(mockAgentId, mockDirectoryPath, createDto);
+      await controller.createFileOrDirectory(mockAgentId, mockDirectoryPath, createDto, undefined);
 
       expect(service.createFileOrDirectory).toHaveBeenCalledWith(
         mockAgentId,
         mockDirectoryPath,
         'directory',
         undefined,
+        'app',
       );
     });
 
@@ -147,13 +173,14 @@ describe('AgentsFilesController', () => {
 
       service.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory(mockAgentId, ['nested', 'path', 'file.txt'], createDto);
+      await controller.createFileOrDirectory(mockAgentId, ['nested', 'path', 'file.txt'], createDto, undefined);
 
       expect(service.createFileOrDirectory).toHaveBeenCalledWith(
         mockAgentId,
         'nested/path/file.txt',
         'file',
         'File content',
+        'app',
       );
     });
 
@@ -163,7 +190,7 @@ describe('AgentsFilesController', () => {
         content: 'File content',
       };
 
-      await expect(controller.createFileOrDirectory(mockAgentId, undefined, createDto)).rejects.toThrow(
+      await expect(controller.createFileOrDirectory(mockAgentId, undefined, createDto, undefined)).rejects.toThrow(
         'File path is required',
       );
     });
@@ -174,9 +201,9 @@ describe('AgentsFilesController', () => {
         content: 'File content',
       };
 
-      await expect(controller.createFileOrDirectory(mockAgentId, { invalid: 'path' }, createDto)).rejects.toThrow(
-        'File path must be a string or array, got object',
-      );
+      await expect(
+        controller.createFileOrDirectory(mockAgentId, { invalid: 'path' }, createDto, undefined),
+      ).rejects.toThrow('File path must be a string or array, got object');
     });
   });
 
@@ -184,9 +211,9 @@ describe('AgentsFilesController', () => {
     it('should delete file or directory', async () => {
       service.deleteFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.deleteFileOrDirectory(mockAgentId, mockFilePath);
+      await controller.deleteFileOrDirectory(mockAgentId, mockFilePath, undefined);
 
-      expect(service.deleteFileOrDirectory).toHaveBeenCalledWith(mockAgentId, mockFilePath);
+      expect(service.deleteFileOrDirectory).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'app');
     });
   });
 
@@ -198,9 +225,9 @@ describe('AgentsFilesController', () => {
 
       service.moveFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.moveFileOrDirectory(mockAgentId, mockFilePath, moveDto);
+      await controller.moveFileOrDirectory(mockAgentId, mockFilePath, moveDto, undefined);
 
-      expect(service.moveFileOrDirectory).toHaveBeenCalledWith(mockAgentId, mockFilePath, moveDto.destination);
+      expect(service.moveFileOrDirectory).toHaveBeenCalledWith(mockAgentId, mockFilePath, moveDto.destination, 'app');
     });
 
     it('should handle array path parameter', async () => {
@@ -210,12 +237,13 @@ describe('AgentsFilesController', () => {
 
       service.moveFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.moveFileOrDirectory(mockAgentId, ['nested', 'path', 'file.txt'], moveDto);
+      await controller.moveFileOrDirectory(mockAgentId, ['nested', 'path', 'file.txt'], moveDto, undefined);
 
       expect(service.moveFileOrDirectory).toHaveBeenCalledWith(
         mockAgentId,
         'nested/path/file.txt',
         moveDto.destination,
+        'app',
       );
     });
 
@@ -224,7 +252,7 @@ describe('AgentsFilesController', () => {
         destination: 'new-location/file.txt',
       };
 
-      await expect(controller.moveFileOrDirectory(mockAgentId, undefined, moveDto)).rejects.toThrow(
+      await expect(controller.moveFileOrDirectory(mockAgentId, undefined, moveDto, undefined)).rejects.toThrow(
         'File path is required',
       );
     });
@@ -234,9 +262,9 @@ describe('AgentsFilesController', () => {
         destination: 'new-location/file.txt',
       };
 
-      await expect(controller.moveFileOrDirectory(mockAgentId, { invalid: 'path' }, moveDto)).rejects.toThrow(
-        'File path must be a string or array, got object',
-      );
+      await expect(
+        controller.moveFileOrDirectory(mockAgentId, { invalid: 'path' }, moveDto, undefined),
+      ).rejects.toThrow('File path must be a string or array, got object');
     });
 
     it('should throw BadRequestException when destination is missing', async () => {
@@ -244,7 +272,7 @@ describe('AgentsFilesController', () => {
         destination: '',
       };
 
-      await expect(controller.moveFileOrDirectory(mockAgentId, mockFilePath, moveDto)).rejects.toThrow(
+      await expect(controller.moveFileOrDirectory(mockAgentId, mockFilePath, moveDto, undefined)).rejects.toThrow(
         'Destination path is required',
       );
     });

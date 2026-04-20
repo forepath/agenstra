@@ -68,12 +68,12 @@ describe('filesReducer', () => {
     it('should set reading to true and clear error', () => {
       const state: FilesState = {
         ...initialFilesState,
-        errors: { [`${clientId}:${agentId}:${filePath}`]: 'Previous error' },
+        errors: { [`${clientId}:${agentId}:app:${filePath}`]: 'Previous error' },
       };
 
       const newState = filesReducer(state, readFile({ clientId, agentId, filePath }));
 
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       expect(newState.reading[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -83,12 +83,12 @@ describe('filesReducer', () => {
     it('should store file content and set reading to false', () => {
       const state: FilesState = {
         ...initialFilesState,
-        reading: { [`${clientId}:${agentId}:${filePath}`]: true },
+        reading: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
 
       const newState = filesReducer(state, readFileSuccess({ clientId, agentId, filePath, content: mockFileContent }));
 
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       expect(newState.fileContents[key]).toEqual(mockFileContent);
       expect(newState.reading[key]).toBe(false);
       expect(newState.errors[key]).toBeNull();
@@ -99,12 +99,12 @@ describe('filesReducer', () => {
     it('should set error and set reading to false', () => {
       const state: FilesState = {
         ...initialFilesState,
-        reading: { [`${clientId}:${agentId}:${filePath}`]: true },
+        reading: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
 
       const newState = filesReducer(state, readFileFailure({ clientId, agentId, filePath, error: 'Read failed' }));
 
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       expect(newState.errors[key]).toBe('Read failed');
       expect(newState.reading[key]).toBe(false);
     });
@@ -114,7 +114,7 @@ describe('filesReducer', () => {
     it('should set writing to true and clear error', () => {
       const state: FilesState = {
         ...initialFilesState,
-        errors: { [`${clientId}:${agentId}:${filePath}`]: 'Previous error' },
+        errors: { [`${clientId}:${agentId}:app:${filePath}`]: 'Previous error' },
       };
 
       const newState = filesReducer(
@@ -122,7 +122,7 @@ describe('filesReducer', () => {
         writeFile({ clientId, agentId, filePath, writeFileDto: { content: 'base64' } }),
       );
 
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       expect(newState.writing[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -130,7 +130,7 @@ describe('filesReducer', () => {
 
   describe('writeFileSuccess', () => {
     it('should invalidate cached content and set writing to false', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         fileContents: { [key]: mockFileContent },
@@ -147,7 +147,7 @@ describe('filesReducer', () => {
 
   describe('writeFileFailure', () => {
     it('should set error and set writing to false', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         writing: { [key]: true },
@@ -162,7 +162,7 @@ describe('filesReducer', () => {
 
   describe('listDirectory', () => {
     it('should set listing to true and clear error', () => {
-      const key = `${clientId}:${agentId}:${directoryPath}`;
+      const key = `${clientId}:${agentId}:app:${directoryPath}`;
       const state: FilesState = {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
@@ -176,7 +176,7 @@ describe('filesReducer', () => {
 
     it('should use provided path parameter', () => {
       const customPath = 'subdirectory';
-      const key = `${clientId}:${agentId}:${customPath}`;
+      const key = `${clientId}:${agentId}:app:${customPath}`;
 
       const newState = filesReducer(
         initialFilesState,
@@ -189,7 +189,7 @@ describe('filesReducer', () => {
 
   describe('listDirectorySuccess', () => {
     it('should store directory listing and set listing to false', () => {
-      const key = `${clientId}:${agentId}:${directoryPath}`;
+      const key = `${clientId}:${agentId}:app:${directoryPath}`;
       const state: FilesState = {
         ...initialFilesState,
         listing: { [key]: true },
@@ -208,7 +208,7 @@ describe('filesReducer', () => {
 
   describe('listDirectoryFailure', () => {
     it('should set error and set listing to false', () => {
-      const key = `${clientId}:${agentId}:${directoryPath}`;
+      const key = `${clientId}:${agentId}:app:${directoryPath}`;
       const state: FilesState = {
         ...initialFilesState,
         listing: { [key]: true },
@@ -226,7 +226,7 @@ describe('filesReducer', () => {
 
   describe('createFileOrDirectory', () => {
     it('should set creating to true and clear error', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
@@ -244,9 +244,9 @@ describe('filesReducer', () => {
 
   describe('createFileOrDirectorySuccess', () => {
     it('should invalidate parent directory listing and set creating to false', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const parentPath = '.';
-      const parentKey = `${clientId}:${agentId}:${parentPath}`;
+      const parentKey = `${clientId}:${agentId}:app:${parentPath}`;
       const state: FilesState = {
         ...initialFilesState,
         directoryListings: { [parentKey]: mockFileNodes },
@@ -266,7 +266,7 @@ describe('filesReducer', () => {
 
   describe('createFileOrDirectoryFailure', () => {
     it('should set error and set creating to false', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         creating: { [key]: true },
@@ -284,7 +284,7 @@ describe('filesReducer', () => {
 
   describe('deleteFileOrDirectory', () => {
     it('should set deleting to true and clear error', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
@@ -299,9 +299,9 @@ describe('filesReducer', () => {
 
   describe('deleteFileOrDirectorySuccess', () => {
     it('should remove from cache and invalidate parent directory listing', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const parentPath = '.';
-      const parentKey = `${clientId}:${agentId}:${parentPath}`;
+      const parentKey = `${clientId}:${agentId}:app:${parentPath}`;
       const state: FilesState = {
         ...initialFilesState,
         fileContents: { [key]: mockFileContent },
@@ -321,7 +321,7 @@ describe('filesReducer', () => {
 
   describe('deleteFileOrDirectoryFailure', () => {
     it('should set error and set deleting to false', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         deleting: { [key]: true },
@@ -340,7 +340,7 @@ describe('filesReducer', () => {
   describe('moveFileOrDirectory', () => {
     it('should set moving to true and clear error', () => {
       const sourcePath = 'source-file.txt';
-      const key = `${clientId}:${agentId}:${sourcePath}`;
+      const key = `${clientId}:${agentId}:app:${sourcePath}`;
       const state: FilesState = {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
@@ -365,10 +365,10 @@ describe('filesReducer', () => {
     it('should move file content to destination and invalidate parent directory listings', () => {
       const sourcePath = 'source-file.txt';
       const destinationPath = 'dest-file.txt';
-      const sourceKey = `${clientId}:${agentId}:${sourcePath}`;
-      const destinationKey = `${clientId}:${agentId}:${destinationPath}`;
+      const sourceKey = `${clientId}:${agentId}:app:${sourcePath}`;
+      const destinationKey = `${clientId}:${agentId}:app:${destinationPath}`;
       const sourceParentPath = '.';
-      const sourceParentKey = `${clientId}:${agentId}:${sourceParentPath}`;
+      const sourceParentKey = `${clientId}:${agentId}:app:${sourceParentPath}`;
       const state: FilesState = {
         ...initialFilesState,
         fileContents: { [sourceKey]: mockFileContent },
@@ -391,8 +391,8 @@ describe('filesReducer', () => {
     it('should update open tabs when file is moved', () => {
       const sourcePath = 'source-file.txt';
       const destinationPath = 'dest-file.txt';
-      const sourceKey = `${clientId}:${agentId}:${sourcePath}`;
-      const clientAgentKey = `${clientId}:${agentId}`;
+      const sourceKey = `${clientId}:${agentId}:app:${sourcePath}`;
+      const clientAgentKey = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -412,10 +412,10 @@ describe('filesReducer', () => {
     it('should handle move when file content does not exist in cache', () => {
       const sourcePath = 'source-file.txt';
       const destinationPath = 'dest-file.txt';
-      const sourceKey = `${clientId}:${agentId}:${sourcePath}`;
-      const destinationKey = `${clientId}:${agentId}:${destinationPath}`;
+      const sourceKey = `${clientId}:${agentId}:app:${sourcePath}`;
+      const destinationKey = `${clientId}:${agentId}:app:${destinationPath}`;
       const sourceParentPath = '.';
-      const sourceParentKey = `${clientId}:${agentId}:${sourceParentPath}`;
+      const sourceParentKey = `${clientId}:${agentId}:app:${sourceParentPath}`;
       const state: FilesState = {
         ...initialFilesState,
         directoryListings: { [sourceParentKey]: mockFileNodes },
@@ -437,7 +437,7 @@ describe('filesReducer', () => {
   describe('moveFileOrDirectoryFailure', () => {
     it('should set error and set moving to false', () => {
       const sourcePath = 'source-file.txt';
-      const key = `${clientId}:${agentId}:${sourcePath}`;
+      const key = `${clientId}:${agentId}:app:${sourcePath}`;
       const state: FilesState = {
         ...initialFilesState,
         moving: { [key]: true },
@@ -455,7 +455,7 @@ describe('filesReducer', () => {
 
   describe('clearFileContent', () => {
     it('should remove file content from cache', () => {
-      const key = `${clientId}:${agentId}:${filePath}`;
+      const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         fileContents: { [key]: mockFileContent },
@@ -469,7 +469,7 @@ describe('filesReducer', () => {
 
   describe('clearDirectoryListing', () => {
     it('should remove directory listing from cache', () => {
-      const key = `${clientId}:${agentId}:${directoryPath}`;
+      const key = `${clientId}:${agentId}:app:${directoryPath}`;
       const state: FilesState = {
         ...initialFilesState,
         directoryListings: { [key]: mockFileNodes },
@@ -486,8 +486,8 @@ describe('filesReducer', () => {
       const clientId2 = 'client-2';
       const agentId2 = 'agent-2';
       const filePath2 = 'other-file.txt';
-      const key1 = `${clientId}:${agentId}:${filePath}`;
-      const key2 = `${clientId2}:${agentId2}:${filePath2}`;
+      const key1 = `${clientId}:${agentId}:app:${filePath}`;
+      const key2 = `${clientId2}:${agentId2}:app:${filePath2}`;
 
       let state = initialFilesState;
 
@@ -512,13 +512,13 @@ describe('filesReducer', () => {
     it('should add a new tab when opening a file', () => {
       const newState = filesReducer(initialFilesState, openFileTab({ clientId, agentId, filePath }));
 
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       expect(newState.openTabs[key]).toHaveLength(1);
       expect(newState.openTabs[key][0]).toEqual({ filePath, pinned: false });
     });
 
     it('should not add duplicate tabs if tab is already pinned', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
@@ -532,7 +532,7 @@ describe('filesReducer', () => {
     });
 
     it('should replace unpinned tab when opening the same file again', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
@@ -547,7 +547,7 @@ describe('filesReducer', () => {
 
     it('should remove unpinned tabs when opening a new file', () => {
       const filePath2 = 'other-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       let state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
@@ -563,7 +563,7 @@ describe('filesReducer', () => {
     it('should keep pinned tabs when opening a new file', () => {
       const filePath2 = 'other-file.txt';
       const filePath3 = 'third-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       let state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -586,7 +586,7 @@ describe('filesReducer', () => {
 
   describe('closeFileTab', () => {
     it('should remove a tab when closing', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
@@ -599,7 +599,7 @@ describe('filesReducer', () => {
 
     it('should only remove the specified tab', () => {
       const filePath2 = 'other-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -617,7 +617,7 @@ describe('filesReducer', () => {
     });
 
     it('should not change state when closing a tab that does not exist', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const nonExistentPath = 'non-existent.txt';
       const state: FilesState = {
         ...initialFilesState,
@@ -631,7 +631,7 @@ describe('filesReducer', () => {
     });
 
     it('should handle closing when no tabs exist', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {},
@@ -646,7 +646,7 @@ describe('filesReducer', () => {
 
   describe('pinFileTab', () => {
     it('should pin a tab', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
@@ -659,7 +659,7 @@ describe('filesReducer', () => {
 
     it('should only pin the specified tab', () => {
       const filePath2 = 'other-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -677,7 +677,7 @@ describe('filesReducer', () => {
     });
 
     it('should not change state when pinning a tab that does not exist', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const nonExistentPath = 'non-existent.txt';
       const state: FilesState = {
         ...initialFilesState,
@@ -692,7 +692,7 @@ describe('filesReducer', () => {
     });
 
     it('should not change state when pinning an already pinned tab', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
@@ -706,7 +706,7 @@ describe('filesReducer', () => {
 
   describe('unpinFileTab', () => {
     it('should unpin a tab', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
@@ -719,7 +719,7 @@ describe('filesReducer', () => {
 
     it('should only unpin the specified tab', () => {
       const filePath2 = 'other-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -737,7 +737,7 @@ describe('filesReducer', () => {
     });
 
     it('should not change state when unpinning a tab that does not exist', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const nonExistentPath = 'non-existent.txt';
       const state: FilesState = {
         ...initialFilesState,
@@ -752,7 +752,7 @@ describe('filesReducer', () => {
     });
 
     it('should not change state when unpinning an already unpinned tab', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
@@ -768,7 +768,7 @@ describe('filesReducer', () => {
     it('should move a tab to the front of the tabs list', () => {
       const filePath2 = 'second-file.txt';
       const filePath3 = 'third-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -791,7 +791,7 @@ describe('filesReducer', () => {
 
     it('should not change state if tab is already at front', () => {
       const filePath2 = 'second-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -813,7 +813,7 @@ describe('filesReducer', () => {
     it('should not change state if tab is not found', () => {
       const filePath2 = 'second-file.txt';
       const nonExistentPath = 'non-existent.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -834,7 +834,7 @@ describe('filesReducer', () => {
 
     it('should preserve tab properties when moving to front', () => {
       const filePath2 = 'second-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -858,8 +858,8 @@ describe('filesReducer', () => {
       const clientId2 = 'client-2';
       const agentId2 = 'agent-2';
       const filePath2 = 'second-file.txt';
-      const key1 = `${clientId}:${agentId}`;
-      const key2 = `${clientId2}:${agentId2}`;
+      const key1 = `${clientId}:${agentId}:app`;
+      const key2 = `${clientId2}:${agentId2}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -890,7 +890,7 @@ describe('filesReducer', () => {
 
   describe('clearOpenTabs', () => {
     it('should clear all tabs for a client/agent', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -909,8 +909,8 @@ describe('filesReducer', () => {
     it('should only clear tabs for the specified client/agent', () => {
       const clientId2 = 'client-2';
       const agentId2 = 'agent-2';
-      const key1 = `${clientId}:${agentId}`;
-      const key2 = `${clientId2}:${agentId2}`;
+      const key1 = `${clientId}:${agentId}:app`;
+      const key2 = `${clientId2}:${agentId2}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -928,11 +928,11 @@ describe('filesReducer', () => {
 
   describe('writeFileSuccess pins tab', () => {
     it('should pin the tab when a file is saved', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
-        writing: { [`${clientId}:${agentId}:${filePath}`]: true },
+        writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
 
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
@@ -941,11 +941,11 @@ describe('filesReducer', () => {
     });
 
     it('should keep tab pinned if already pinned when file is saved', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
-        writing: { [`${clientId}:${agentId}:${filePath}`]: true },
+        writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
 
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
@@ -954,11 +954,11 @@ describe('filesReducer', () => {
     });
 
     it('should create a pinned tab if tab does not exist when file is saved', () => {
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {},
-        writing: { [`${clientId}:${agentId}:${filePath}`]: true },
+        writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
 
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
@@ -970,7 +970,7 @@ describe('filesReducer', () => {
 
     it('should preserve other tabs when pinning a saved file', () => {
       const filePath2 = 'other-file.txt';
-      const key = `${clientId}:${agentId}`;
+      const key = `${clientId}:${agentId}:app`;
       const state: FilesState = {
         ...initialFilesState,
         openTabs: {
@@ -979,7 +979,7 @@ describe('filesReducer', () => {
             { filePath: filePath2, pinned: true },
           ],
         },
-        writing: { [`${clientId}:${agentId}:${filePath}`]: true },
+        writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
 
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
@@ -997,8 +997,8 @@ describe('filesReducer', () => {
       const clientId2 = 'client-2';
       const agentId2 = 'agent-2';
       const filePath2 = 'other-file.txt';
-      const key1 = `${clientId}:${agentId}`;
-      const key2 = `${clientId2}:${agentId2}`;
+      const key1 = `${clientId}:${agentId}:app`;
+      const key2 = `${clientId2}:${agentId2}:app`;
 
       let state = initialFilesState;
 
@@ -1009,6 +1009,28 @@ describe('filesReducer', () => {
       expect(state.openTabs[key1][0].filePath).toBe(filePath);
       expect(state.openTabs[key2]).toHaveLength(1);
       expect(state.openTabs[key2][0].filePath).toBe(filePath2);
+    });
+  });
+
+  describe('file manager context', () => {
+    it('should keep app and config file content caches independent', () => {
+      const appKey = `${clientId}:${agentId}:app:${filePath}`;
+      const configContent: FileContentDto = {
+        content: Buffer.from('config', 'utf-8').toString('base64'),
+        encoding: 'utf-8',
+      };
+
+      let state = filesReducer(
+        initialFilesState,
+        readFileSuccess({ clientId, agentId, filePath, content: mockFileContent, context: 'app' }),
+      );
+      state = filesReducer(
+        state,
+        readFileSuccess({ clientId, agentId, filePath, content: configContent, context: 'config' }),
+      );
+
+      expect(state.fileContents[appKey]).toEqual(mockFileContent);
+      expect(state.fileContents[`${clientId}:${agentId}:config:${filePath}`]).toEqual(configContent);
     });
   });
 });

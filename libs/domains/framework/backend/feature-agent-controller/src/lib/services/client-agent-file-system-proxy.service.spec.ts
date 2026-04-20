@@ -107,6 +107,23 @@ describe('ClientAgentFileSystemProxyService', () => {
           headers: expect.objectContaining({
             Authorization: 'Bearer test-api-key',
           }),
+          params: undefined,
+        }),
+      );
+    });
+
+    it('should forward context=config on read', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        status: 200,
+        data: mockFileContent,
+      } as any);
+
+      await service.readFile(mockClientId, mockAgentId, mockFilePath, 'config');
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: { context: 'config' },
         }),
       );
     });
@@ -133,6 +150,7 @@ describe('ClientAgentFileSystemProxyService', () => {
           headers: expect.objectContaining({
             Authorization: 'Bearer keycloak-jwt-token',
           }),
+          params: undefined,
         }),
       );
     });
@@ -185,6 +203,23 @@ describe('ClientAgentFileSystemProxyService', () => {
           method: 'PUT',
           url: expect.stringContaining(`/api/agents/${mockAgentId}/files`),
           data: writeDto,
+          params: undefined,
+        }),
+      );
+    });
+
+    it('should forward context=config on write', async () => {
+      const writeDto: WriteFileDto = {
+        content: Buffer.from('x', 'utf-8').toString('base64'),
+      };
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+
+      await service.writeFile(mockClientId, mockAgentId, mockFilePath, writeDto, 'config');
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: { context: 'config' },
         }),
       );
     });
@@ -205,6 +240,22 @@ describe('ClientAgentFileSystemProxyService', () => {
         expect.objectContaining({
           method: 'GET',
           params: { path: mockDirectoryPath },
+        }),
+      );
+    });
+
+    it('should forward context=config on list', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        status: 200,
+        data: mockFileNodes,
+      } as any);
+
+      await service.listDirectory(mockClientId, mockAgentId, '.', 'config');
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: { path: '.', context: 'config' },
         }),
       );
     });

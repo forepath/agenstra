@@ -9,6 +9,8 @@ import {
   FileContentDto,
   FileNodeDto,
   MoveFileDto,
+  parseAgentFileManagerContext,
+  type AgentFileManagerContext,
   UpdateAgentDto,
   UpdateEnvironmentVariableDto,
   WriteFileDto,
@@ -396,6 +398,23 @@ export class ClientsController {
   }
 
   /**
+   * Authorize proxied file API access. `context=config` requires workspace management rights.
+   */
+  private async authorizeFileProxyRequest(
+    clientId: string,
+    contextRaw: string | undefined,
+    req?: RequestWithUser,
+  ): Promise<AgentFileManagerContext> {
+    const context = parseAgentFileManagerContext(contextRaw);
+    if (context === 'config') {
+      await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+    } else {
+      await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+    }
+    return context;
+  }
+
+  /**
    * Read file content from agent container via client proxy.
    * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
@@ -409,9 +428,10 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Query('context') contextRaw?: string,
     @Req() req?: RequestWithUser,
   ): Promise<FileContentDto> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string;
     if (typeof path === 'string') {
@@ -424,7 +444,7 @@ export class ClientsController {
     } else {
       normalizedPath = '.';
     }
-    return await this.clientAgentFileSystemProxyService.readFile(id, agentId, normalizedPath);
+    return await this.clientAgentFileSystemProxyService.readFile(id, agentId, normalizedPath, context);
   }
 
   /**
@@ -443,9 +463,10 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() writeFileDto: WriteFileDto,
+    @Query('context') contextRaw?: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -459,7 +480,7 @@ export class ClientsController {
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
-    await this.clientAgentFileSystemProxyService.writeFile(id, agentId, normalizedPath, writeFileDto);
+    await this.clientAgentFileSystemProxyService.writeFile(id, agentId, normalizedPath, writeFileDto, context);
   }
 
   /**
@@ -476,10 +497,11 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Query('path') path?: string,
+    @Query('context') contextRaw?: string,
     @Req() req?: RequestWithUser,
   ): Promise<FileNodeDto[]> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
-    return await this.clientAgentFileSystemProxyService.listDirectory(id, agentId, path || '.');
+    const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
+    return await this.clientAgentFileSystemProxyService.listDirectory(id, agentId, path || '.', context);
   }
 
   /**
@@ -498,9 +520,10 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() createFileDto: CreateFileDto,
+    @Query('context') contextRaw?: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -514,7 +537,13 @@ export class ClientsController {
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
-    await this.clientAgentFileSystemProxyService.createFileOrDirectory(id, agentId, normalizedPath, createFileDto);
+    await this.clientAgentFileSystemProxyService.createFileOrDirectory(
+      id,
+      agentId,
+      normalizedPath,
+      createFileDto,
+      context,
+    );
   }
 
   /**
@@ -531,9 +560,10 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Query('context') contextRaw?: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -547,7 +577,7 @@ export class ClientsController {
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
-    await this.clientAgentFileSystemProxyService.deleteFileOrDirectory(id, agentId, normalizedPath);
+    await this.clientAgentFileSystemProxyService.deleteFileOrDirectory(id, agentId, normalizedPath, context);
   }
 
   /**
@@ -566,9 +596,10 @@ export class ClientsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
     @Body() moveFileDto: MoveFileDto,
+    @Query('context') contextRaw?: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
-    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+    const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
     if (typeof path === 'string') {
@@ -585,7 +616,7 @@ export class ClientsController {
     if (!moveFileDto.destination) {
       throw new BadRequestException('Destination path is required');
     }
-    await this.clientAgentFileSystemProxyService.moveFileOrDirectory(id, agentId, normalizedPath, moveFileDto);
+    await this.clientAgentFileSystemProxyService.moveFileOrDirectory(id, agentId, normalizedPath, moveFileDto, context);
   }
 
   /**
