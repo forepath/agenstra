@@ -438,6 +438,22 @@
         <source>Open Editor</source>
         <target>Editor öffnen</target>
         </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFiles" datatype="html">
+        <source>Open agent config</source>
+        <target>Agentenkonfiguration öffnen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFilesTitle" datatype="html">
+        <source>Open provider agent config files (requires workspace management access)</source>
+        <target>Provider-Konfigurationsdateien öffnen (erfordert Verwaltungszugriff auf den Arbeitsbereich)</target>
+        </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFilesNewWindow" datatype="html">
+        <source>Open agent config in New Window</source>
+        <target>Agentenkonfiguration in neuem Fenster öffnen</target>
+        </trans-unit>
+      <trans-unit id="featureChat-agentConfigBadge" datatype="html">
+        <source>Agent config</source>
+        <target>Agentenkonfiguration</target>
+        </trans-unit>
       <trans-unit id="featureChat-openVirtualDesktop" datatype="html">
         <source>Open Virtual Desktop</source>
         <target>Virtuellen Desktop öffnen</target>

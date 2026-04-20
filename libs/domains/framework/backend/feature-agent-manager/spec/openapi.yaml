@@ -227,7 +227,8 @@ paths:
           name: path
           schema:
             type: string
-          description: Directory path relative to /app (defaults to '.')
+          description: Directory path relative to the selected context root (defaults to '.')
+        - $ref: '#/components/parameters/fileManagerContext'
       responses:
         '200':
           description: Array of file nodes
@@ -237,6 +238,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FileNodeDto'
+        '400':
+          description: Invalid path, invalid context, or agent type does not support configuration file access
         '404':
           description: Agent or directory not found
   /agents/{agentId}/files/{path}:
@@ -255,7 +258,8 @@ paths:
           required: true
           schema:
             type: string
-          description: File path relative to /app (supports nested paths)
+          description: File path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       responses:
         '200':
           description: File content
@@ -264,7 +268,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FileContentDto'
         '400':
-          description: Invalid path
+          description: Invalid path, invalid context, or agent type does not support configuration file access
         '404':
           description: Agent or file not found
     post:
@@ -282,7 +286,8 @@ paths:
           required: true
           schema:
             type: string
-          description: File or directory path relative to /app (supports nested paths)
+          description: File or directory path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       requestBody:
         required: true
         content:
@@ -293,7 +298,7 @@ paths:
         '201':
           description: File or directory created
         '400':
-          description: Invalid request
+          description: Invalid request, invalid context, or agent type does not support configuration file access
         '404':
           description: Agent not found
     put:
@@ -311,7 +316,8 @@ paths:
           required: true
           schema:
             type: string
-          description: File path relative to /app (supports nested paths)
+          description: File path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       requestBody:
         required: true
         content:
@@ -322,7 +328,7 @@ paths:
         '204':
           description: File written successfully
         '400':
-          description: Invalid path or content too large
+          description: Invalid path, content too large, invalid context, or agent type does not support configuration file access
         '404':
           description: Agent not found
     delete:
@@ -340,12 +346,13 @@ paths:
           required: true
           schema:
             type: string
-          description: File or directory path relative to /app (supports nested paths)
+          description: File or directory path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       responses:
         '204':
           description: File or directory deleted successfully
         '400':
-          description: Invalid path
+          description: Invalid path, invalid context, or agent type does not support configuration file access
         '404':
           description: Agent or file/directory not found
     patch:
@@ -363,7 +370,8 @@ paths:
           required: true
           schema:
             type: string
-          description: Source file or directory path relative to /app (supports nested paths)
+          description: Source file or directory path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       requestBody:
         required: true
         content:
@@ -374,7 +382,7 @@ paths:
         '204':
           description: File or directory moved successfully
         '400':
-          description: Invalid path or destination
+          description: Invalid path, destination, invalid context, or agent type does not support configuration file access
         '404':
           description: Agent or source file/directory not found
   /agents/{agentId}/environment:
@@ -1267,6 +1275,18 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  parameters:
+    fileManagerContext:
+      name: context
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [app, config]
+        default: app
+      description: |
+        Filesystem root for relative paths. `app` (default) uses the provider workspace root (e.g. /app).
+        `config` uses the provider agent configuration directory when implemented (e.g. ~/.cursor, resolved in the container).
   schemas:
     CreateAgentDto:
       type: object

@@ -4,23 +4,23 @@ sequenceDiagram
     participant Store as NgRx Store
     participant Effects as FilesEffects
     participant Service as FilesService
-    participant API as HTTP API<br/>(/api/clients/:id/agents/:agentId/files)
+    participant API as HTTP API<br/>(/api/clients/:id/agents/:agentId/files?context= optional)
 
     Note over Component,API: NgRx File System Operations Flow
 
     rect rgb(230, 240, 255)
         Note over Component,API: Read File
-        Component->>Facade: readFile(clientId, agentId, filePath)
-        Facade->>Store: dispatch(readFile({clientId, agentId, filePath}))
+        Component->>Facade: readFile(clientId, agentId, filePath, context?)
+        Facade->>Store: dispatch(readFile({clientId, agentId, filePath, context?}))
         Store->>Store: Update state: reading[key] = true
         Store->>Effects: readFile$ effect triggered
-        Effects->>Service: readFile(clientId, agentId, filePath)
-        Service->>API: GET /api/clients/{id}/agents/{agentId}/files/{path}
+        Effects->>Service: readFile(clientId, agentId, filePath, context default app)
+        Service->>API: GET .../files/{path}?context=config when not app
         API-->>Service: 200 OK<br/>{content: base64, encoding: 'utf-8'|'base64'}
         Service-->>Effects: Observable<FileContentDto>
-        Effects->>Store: dispatch(readFileSuccess({clientId, agentId, filePath, content}))
-        Store->>Store: Update state:<br/>fileContents[key] = content<br/>reading[key] = false
-        Component->>Facade: getFileContent$(clientId, agentId, filePath)
+        Effects->>Store: dispatch(readFileSuccess({clientId, agentId, filePath, content, context}))
+        Store->>Store: Update state:<br/>fileContents[clientId:agentId:context:path] = content<br/>reading[key] = false
+        Component->>Facade: getFileContent$(clientId, agentId, filePath, context?)
         Facade->>Store: select(selectFileContent(...))
         Store-->>Facade: Observable<FileContentDto | null>
         Facade-->>Component: Observable<FileContentDto | null>
@@ -28,15 +28,15 @@ sequenceDiagram
 
     rect rgb(240, 255, 240)
         Note over Component,API: Write File
-        Component->>Facade: writeFile(clientId, agentId, filePath, writeFileDto)
-        Facade->>Store: dispatch(writeFile({clientId, agentId, filePath, writeFileDto}))
+        Component->>Facade: writeFile(clientId, agentId, filePath, writeFileDto, context?)
+        Facade->>Store: dispatch(writeFile({clientId, agentId, filePath, writeFileDto, context?}))
         Store->>Store: Update state: writing[key] = true
         Store->>Effects: writeFile$ effect triggered
-        Effects->>Service: writeFile(clientId, agentId, filePath, writeFileDto)
-        Service->>API: PUT /api/clients/{id}/agents/{agentId}/files/{path}<br/>{content: base64, encoding?}
+        Effects->>Service: writeFile(..., context default app)
+        Service->>API: PUT .../files/{path} optional ?context=config<br/>{content: base64, encoding?}
         API-->>Service: 204 No Content
         Service-->>Effects: Observable<void>
-        Effects->>Store: dispatch(writeFileSuccess({clientId, agentId, filePath}))
+        Effects->>Store: dispatch(writeFileSuccess({clientId, agentId, filePath, context}))
         Store->>Store: Update state:<br/>Remove fileContents[key]<br/>writing[key] = false
         Component->>Facade: isWritingFile$(clientId, agentId, filePath)
         Facade->>Store: select(selectIsWritingFile(...))
@@ -51,10 +51,10 @@ sequenceDiagram
         Store->>Store: Update state: listing[key] = true
         Store->>Effects: listDirectory$ effect triggered
         Effects->>Service: listDirectory(clientId, agentId, params)
-        Service->>API: GET /api/clients/{id}/agents/{agentId}/files?path={dir}
+        Service->>API: GET .../files?path={dir} optional context
         API-->>Service: 200 OK<br/>[file nodes]
         Service-->>Effects: Observable<FileNodeDto[]>
-        Effects->>Store: dispatch(listDirectorySuccess({clientId, agentId, directoryPath, files}))
+        Effects->>Store: dispatch(listDirectorySuccess({clientId, agentId, directoryPath, files, context}))
         Store->>Store: Update state:<br/>directoryListings[key] = files<br/>listing[key] = false
         Component->>Facade: getDirectoryListing$(clientId, agentId, directoryPath)
         Facade->>Store: select(selectDirectoryListing(...))

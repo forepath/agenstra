@@ -6,6 +6,8 @@ import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
+import type { AgentFileManagerContext } from '../utils/agent-file-manager-context';
+import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
@@ -18,6 +20,7 @@ export class AgentFileSystemService {
   private readonly logger = new Logger(AgentFileSystemService.name);
   private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
   private readonly DEFAULT_BASE_PATH = '/app';
+  private static readonly CONFIG_NOT_SUPPORTED = 'Agent provider does not support agent-wide configuration file access';
 
   constructor(
     private readonly agentsService: AgentsService,
@@ -80,16 +83,56 @@ export class AgentFileSystemService {
   }
 
   /**
-   * Build the full container path from a relative path.
-   * Uses the provider's base path if available, otherwise defaults to '/app'.
-   * @param relativePath - The relative path from the base path
-   * @param agentType - The agent type identifier
-   * @returns The full container path
+   * Expand leading `~` in a provider path using the container user's HOME.
    */
-  private buildContainerPath(relativePath: string, agentType: string): string {
+  private async expandTildeInProviderPath(providerPath: string, containerId: string): Promise<string> {
+    return expandProviderPathTildeInContainer(providerPath, containerId, (id) =>
+      this.dockerService.getContainerHomeDirectory(id),
+    );
+  }
+
+  /**
+   * Resolve absolute filesystem root inside the container for the given context.
+   */
+  private async resolveFilesystemRoot(
+    agentType: string,
+    context: AgentFileManagerContext,
+    containerId: string,
+  ): Promise<string> {
+    if (context === 'app') {
+      return this.getBasePath(agentType);
+    }
+    try {
+      const provider = this.agentProviderFactory.getProvider(agentType);
+      if (!provider.getConfigBasePath) {
+        throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
+      }
+      const raw = provider.getConfigBasePath();
+      if (!raw?.trim()) {
+        throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
+      }
+      return await this.expandTildeInProviderPath(raw.trim(), containerId);
+    } catch (error: unknown) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.warn(`Failed to resolve config base for agent type '${agentType}': ${error}`);
+      throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
+    }
+  }
+
+  /**
+   * Build the full container path from a relative path and context root.
+   */
+  private async buildContainerPath(
+    relativePath: string,
+    agentType: string,
+    context: AgentFileManagerContext,
+    containerId: string,
+  ): Promise<string> {
     const sanitized = this.sanitizePath(relativePath);
-    const basePath = this.getBasePath(agentType);
-    return `${basePath}/${sanitized}`;
+    const root = (await this.resolveFilesystemRoot(agentType, context, containerId)).replace(/\/+$/, '');
+    return `${root}/${sanitized}`;
   }
 
   /**
@@ -98,11 +141,12 @@ export class AgentFileSystemService {
    * This approach avoids corruption issues that can occur with shell commands, especially for binary files.
    * @param agentId - The UUID of the agent
    * @param filePath - The relative path to the file (from the provider's base path, defaults to /app)
+   * @param context - `app` (workspace) or `config` (provider config directory)
    * @returns File content (base64-encoded) and encoding type
    * @throws NotFoundException if agent or file is not found
    * @throws BadRequestException if path is invalid or file is too large
    */
-  async readFile(agentId: string, filePath: string): Promise<FileContentDto> {
+  async readFile(agentId: string, filePath: string, context: AgentFileManagerContext = 'app'): Promise<FileContentDto> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
@@ -110,7 +154,12 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
+    const containerPath = await this.buildContainerPath(
+      filePath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
     let tempFilePath: string | null = null;
 
     try {
@@ -234,10 +283,17 @@ export class AgentFileSystemService {
    * @param filePath - The relative path to the file (from the provider's base path, defaults to /app)
    * @param content - The file content as base64-encoded string
    * @param encoding - Optional encoding indicator ('utf-8' or 'base64')
+   * @param context - `app` or `config`
    * @throws NotFoundException if agent is not found
    * @throws BadRequestException if path is invalid or content is too large
    */
-  async writeFile(agentId: string, filePath: string, content: string, encoding?: 'utf-8' | 'base64'): Promise<void> {
+  async writeFile(
+    agentId: string,
+    filePath: string,
+    content: string,
+    encoding?: 'utf-8' | 'base64',
+    context: AgentFileManagerContext = 'app',
+  ): Promise<void> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
@@ -245,7 +301,12 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
+    const containerPath = await this.buildContainerPath(
+      filePath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
 
     // Content is already base64-encoded, so we check the approximate decoded size
     // Base64 is ~33% larger: original_size ≈ base64_length * 3/4
@@ -282,10 +343,15 @@ export class AgentFileSystemService {
    * @param agentId - The UUID of the agent
    * @param directoryPath - The relative path to the directory (from the provider's base path, defaults to /app), defaults to '.'
    * @returns Array of file nodes
+   * @param context - `app` or `config`
    * @throws NotFoundException if agent or directory is not found
    * @throws BadRequestException if path is invalid
    */
-  async listDirectory(agentId: string, directoryPath = '.'): Promise<FileNodeDto[]> {
+  async listDirectory(
+    agentId: string,
+    directoryPath = '.',
+    context: AgentFileManagerContext = 'app',
+  ): Promise<FileNodeDto[]> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
@@ -293,7 +359,12 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(directoryPath, agentEntity.agentType);
+    const containerPath = await this.buildContainerPath(
+      directoryPath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
 
     try {
       // Use a simpler approach: ls to list, then process with find for each item
@@ -429,6 +500,7 @@ export class AgentFileSystemService {
    * @param filePath - The relative path to create (from the provider's base path, defaults to /app)
    * @param type - The type to create ('file' or 'directory')
    * @param content - Optional content for file creation
+   * @param context - `app` or `config`
    * @throws NotFoundException if agent is not found
    * @throws BadRequestException if path is invalid or file already exists
    */
@@ -437,6 +509,7 @@ export class AgentFileSystemService {
     filePath: string,
     type: 'file' | 'directory',
     content?: string,
+    context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
@@ -445,7 +518,12 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
+    const containerPath = await this.buildContainerPath(
+      filePath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
 
     try {
       if (type === 'directory') {
@@ -458,7 +536,7 @@ export class AgentFileSystemService {
         // Create file with optional content
         if (content !== undefined) {
           // Content should be base64-encoded
-          await this.writeFile(agentId, filePath, content, 'utf-8');
+          await this.writeFile(agentId, filePath, content, 'utf-8', context);
         } else {
           // Create empty file
           await this.dockerService.sendCommandToContainer(
@@ -480,10 +558,15 @@ export class AgentFileSystemService {
    * Delete a file or directory from agent container.
    * @param agentId - The UUID of the agent
    * @param filePath - The relative path to delete (from the provider's base path, defaults to /app)
+   * @param context - `app` or `config`
    * @throws NotFoundException if agent or file is not found
    * @throws BadRequestException if path is invalid
    */
-  async deleteFileOrDirectory(agentId: string, filePath: string): Promise<void> {
+  async deleteFileOrDirectory(
+    agentId: string,
+    filePath: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<void> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
@@ -491,7 +574,12 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const containerPath = this.buildContainerPath(filePath, agentEntity.agentType);
+    const containerPath = await this.buildContainerPath(
+      filePath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
 
     try {
       // Use rm -rf to delete file or directory
@@ -516,10 +604,16 @@ export class AgentFileSystemService {
    * @param agentId - The UUID of the agent
    * @param sourcePath - The relative path to the source file/directory (from the provider's base path, defaults to /app)
    * @param destinationPath - The relative path to the destination (from the provider's base path, defaults to /app)
+   * @param context - `app` or `config`
    * @throws NotFoundException if agent, source file, or destination directory is not found
    * @throws BadRequestException if paths are invalid
    */
-  async moveFileOrDirectory(agentId: string, sourcePath: string, destinationPath: string): Promise<void> {
+  async moveFileOrDirectory(
+    agentId: string,
+    sourcePath: string,
+    destinationPath: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<void> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
@@ -527,8 +621,18 @@ export class AgentFileSystemService {
       throw new NotFoundException(`Agent ${agentId} has no associated container`);
     }
 
-    const sourceContainerPath = this.buildContainerPath(sourcePath, agentEntity.agentType);
-    const destinationContainerPath = this.buildContainerPath(destinationPath, agentEntity.agentType);
+    const sourceContainerPath = await this.buildContainerPath(
+      sourcePath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
+    const destinationContainerPath = await this.buildContainerPath(
+      destinationPath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
 
     try {
       // Use mv command to move file or directory

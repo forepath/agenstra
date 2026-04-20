@@ -11,6 +11,7 @@ import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
 
@@ -72,6 +73,26 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   private escapeForShell(str: string): string {
     return `'${str.replace(/'/g, "'\\''")}'`;
+  }
+
+  /**
+   * Ensure the provider agent config directory exists inside the container when the provider defines one.
+   * Uses `mkdir -p` so nested paths (e.g. ~/.config/opencode) are created idempotently.
+   */
+  private async ensureProviderConfigBaseDirectoryExists(containerId: string, agentType: string): Promise<void> {
+    const provider = this.agentProviderFactory.getProvider(agentType);
+    if (!provider.getConfigBasePath) {
+      return;
+    }
+    const raw = provider.getConfigBasePath()?.trim();
+    if (!raw) {
+      return;
+    }
+    const expanded = await expandProviderPathTildeInContainer(raw, containerId, (id) =>
+      this.dockerService.getContainerHomeDirectory(id),
+    );
+    const escaped = this.escapeForShell(expanded);
+    await this.dockerService.sendCommandToContainer(containerId, `sh -c "mkdir -p -- ${escaped}"`, undefined, true);
   }
 
   /**
@@ -298,6 +319,8 @@ export class AgentsService implements OnApplicationBootstrap {
         // Create .netrc file for git authentication
         await this.createNetrcFile(containerId, repositoryUrl);
       }
+
+      await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
 
       const escapedUrl = this.escapeForShell(repositoryUrl);
       const repositoryPath = provider.getRepositoryPath ? basePath + provider.getRepositoryPath() : basePath;

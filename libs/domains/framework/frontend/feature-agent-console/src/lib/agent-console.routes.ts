@@ -143,6 +143,7 @@ import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 import { AuditComponent } from './audit/audit.component';
 import { AgentConsoleChatComponent } from './chat/chat.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
+import { configEditorGuard } from './guards/config-editor.guard';
 import { ticketsRequireActiveClientGuard } from './guards/tickets-require-active-client.guard';
 import { TicketsBoardComponent } from './tickets/tickets-board.component';
 
@@ -198,6 +199,12 @@ export const agentConsoleRoutes: Route[] = [
           },
           {
             path: ':clientId/agents/:agentId/editor',
+            component: AgentConsoleChatComponent,
+            pathMatch: 'full',
+          },
+          {
+            path: ':clientId/agents/:agentId/config',
+            canActivate: [authGuard, configEditorGuard],
             component: AgentConsoleChatComponent,
             pathMatch: 'full',
           },

@@ -60,6 +60,12 @@ describe('CursorAgentProvider', () => {
     });
   });
 
+  describe('getConfigBasePath', () => {
+    it('should return "~/.cursor"', () => {
+      expect(provider.getConfigBasePath()).toBe('~/.cursor');
+    });
+  });
+
   describe('getDockerImage', () => {
     it('should return default image when CURSOR_AGENT_DOCKER_IMAGE is not set', () => {
       delete process.env.CURSOR_AGENT_DOCKER_IMAGE;

@@ -23,9 +23,9 @@ describe('Files Selectors', () => {
   const agentId = 'agent-1';
   const filePath = 'test-file.txt';
   const directoryPath = '.';
-  const fileKey = `${clientId}:${agentId}:${filePath}`;
-  const directoryKey = `${clientId}:${agentId}:${directoryPath}`;
-  const clientAgentKey = `${clientId}:${agentId}`;
+  const fileKey = `${clientId}:${agentId}:app:${filePath}`;
+  const directoryKey = `${clientId}:${agentId}:app:${directoryPath}`;
+  const clientAgentKey = `${clientId}:${agentId}:app`;
 
   const mockFileContent: FileContentDto = {
     content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
@@ -78,6 +78,18 @@ describe('Files Selectors', () => {
       const selector = selectFileContent(clientId, agentId, 'non-existent.txt');
       const result = selector.projector(mockFilesState.fileContents);
       expect(result).toBeNull();
+    });
+
+    it('should resolve config context keys separately from app', () => {
+      const configKey = `${clientId}:${agentId}:config:${filePath}`;
+      const configContent: FileContentDto = {
+        content: Buffer.from('x', 'utf-8').toString('base64'),
+        encoding: 'utf-8',
+      };
+      const fileContents = { ...mockFilesState.fileContents, [configKey]: configContent };
+      const selector = selectFileContent(clientId, agentId, filePath, 'config');
+      const result = selector.projector(fileContents);
+      expect(result).toEqual(configContent);
     });
   });
 
@@ -291,7 +303,7 @@ describe('Files Selectors', () => {
     it('should handle multiple client/agent combinations independently', () => {
       const clientId2 = 'client-2';
       const agentId2 = 'agent-2';
-      const clientAgentKey2 = `${clientId2}:${agentId2}`;
+      const clientAgentKey2 = `${clientId2}:${agentId2}:app`;
       const mockOpenTabs2: OpenTab[] = [{ filePath: 'file3.txt', pinned: false }];
 
       const multiState = {

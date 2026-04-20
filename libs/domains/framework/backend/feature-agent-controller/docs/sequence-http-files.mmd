@@ -11,8 +11,9 @@ sequenceDiagram
 
     rect rgb(230, 240, 255)
         Note over Client,Remote: Read File (Proxied)
-        Client->>API: GET /api/clients/{id}/agents/{agentId}/files/{path}
-        API->>FileProxy: readFile(clientId, agentId, filePath)
+        Client->>API: GET /api/clients/{id}/agents/{agentId}/files/{path}?context=app|config
+        API->>API: authorizeFileProxyRequest<br/>(ensureClientAccess or<br/>ensureWorkspaceManagementAccess if config)
+        API->>FileProxy: readFile(clientId, agentId, filePath, context)
         FileProxy->>Repo: findByIdOrThrow(clientId)
         Repo-->>FileProxy: client entity
         alt Authentication Type: API_KEY
@@ -25,7 +26,7 @@ sequenceDiagram
             FileProxy->>FileProxy: getAuthHeader(clientId)<br/>Returns: Bearer {token}
         end
         FileProxy->>FileProxy: buildAgentFilesApiUrl(endpoint, agentId)
-        FileProxy->>Remote: GET {endpoint}/api/agents/{agentId}/files/{path}<br/>Authorization: Bearer {token/apiKey}
+        FileProxy->>Remote: GET .../files/{path}?context=...<br/>Authorization: Bearer {token/apiKey}
         Remote-->>FileProxy: 200 OK<br/>{content: base64, encoding: 'utf-8'|'base64'}
         FileProxy-->>API: FileContentDto
         API-->>Client: 200 OK<br/>{file content}
@@ -33,8 +34,8 @@ sequenceDiagram
 
     rect rgb(240, 255, 240)
         Note over Client,Remote: Write File (Proxied)
-        Client->>API: PUT /api/clients/{id}/agents/{agentId}/files/{path}<br/>{content: base64, encoding?}
-        API->>FileProxy: writeFile(clientId, agentId, filePath, writeFileDto)
+        Client->>API: PUT /api/clients/{id}/agents/{agentId}/files/{path}?context=app|config<br/>{content: base64, encoding?}
+        API->>FileProxy: writeFile(clientId, agentId, filePath, writeFileDto, context)
         FileProxy->>Repo: findByIdOrThrow(clientId)
         Repo-->>FileProxy: client entity
         FileProxy->>FileProxy: getAuthHeader(clientId)

@@ -18,7 +18,9 @@ import {
   ClientsFacade,
   FilesFacade,
   VcsFacade,
+  type FileManagerContext,
   type FileNodeDto,
+  type ListDirectoryParams,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { combineLatest, filter, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
 import { GitBranchModalComponent } from '../git-branch-modal/git-branch-modal.component';
@@ -68,6 +70,8 @@ export class FileTreeComponent implements OnInit {
   expandedPaths = input<Set<string>>(new Set());
   selectedPath = input<string | null>(null);
   gitManagerVisible = input<boolean>(false);
+  /** Files API root: workspace (`app`) or provider agent config (`config`). */
+  fileManagerContext = input<FileManagerContext>('app');
 
   // Outputs
   fileSelect = output<string>();
@@ -96,15 +100,24 @@ export class FileTreeComponent implements OnInit {
   private hoverTimeout: ReturnType<typeof setTimeout> | null = null;
   private expandedDirectorySubscriptions = new Map<string, Subscription>();
 
+  private listParams(path: string): ListDirectoryParams {
+    const c = this.fileManagerContext();
+    return c === 'app' ? { path } : { path, context: c };
+  }
+
+  private listDirectoryRel(path: string): void {
+    this.filesFacade.listDirectory(this.clientId(), this.agentId(), this.listParams(path));
+  }
+
   // Computed observables for directory listings - convert computed signals to observables
   private readonly rootDirectorySignal = computed(() => {
     const clientId = this.clientId();
     const agentId = this.agentId();
+    const context = this.fileManagerContext();
     if (!clientId || !agentId) {
       return null;
     }
-    // Return a placeholder - we'll use toObservable to convert the signal
-    return { clientId, agentId };
+    return { clientId, agentId, context };
   });
 
   readonly rootDirectory$: Observable<FileNodeDto[] | null> = toObservable(this.rootDirectorySignal).pipe(
@@ -112,17 +125,18 @@ export class FileTreeComponent implements OnInit {
       if (!config) {
         return of(null);
       }
-      return this.filesFacade.getDirectoryListing$(config.clientId, config.agentId, '.');
+      return this.filesFacade.getDirectoryListing$(config.clientId, config.agentId, '.', config.context);
     }),
   );
 
   private readonly rootLoadingSignal = computed(() => {
     const clientId = this.clientId();
     const agentId = this.agentId();
+    const context = this.fileManagerContext();
     if (!clientId || !agentId) {
       return false;
     }
-    return { clientId, agentId };
+    return { clientId, agentId, context };
   });
 
   readonly rootLoading$: Observable<boolean> = toObservable(this.rootLoadingSignal).pipe(
@@ -132,8 +146,8 @@ export class FileTreeComponent implements OnInit {
       }
       // Only show loading if we don't have cached data (silent refresh)
       return combineLatest([
-        this.filesFacade.isListingDirectory$(config.clientId, config.agentId, '.'),
-        this.filesFacade.getDirectoryListing$(config.clientId, config.agentId, '.'),
+        this.filesFacade.isListingDirectory$(config.clientId, config.agentId, '.', config.context),
+        this.filesFacade.getDirectoryListing$(config.clientId, config.agentId, '.', config.context),
       ]).pipe(
         map(([isLoading, cachedData]) => {
           // Show loading only if loading AND no cached data exists
@@ -204,12 +218,12 @@ export class FileTreeComponent implements OnInit {
 
   // Helper to get directory listing observable
   getDirectoryListing$(path: string): Observable<FileNodeDto[] | null> {
-    return this.filesFacade.getDirectoryListing$(this.clientId(), this.agentId(), path);
+    return this.filesFacade.getDirectoryListing$(this.clientId(), this.agentId(), path, this.fileManagerContext());
   }
 
   // Helper to get directory loading observable
   getDirectoryLoading$(path: string): Observable<boolean> {
-    return this.filesFacade.isListingDirectory$(this.clientId(), this.agentId(), path);
+    return this.filesFacade.isListingDirectory$(this.clientId(), this.agentId(), path, this.fileManagerContext());
   }
 
   constructor() {
@@ -227,9 +241,10 @@ export class FileTreeComponent implements OnInit {
         this.hasLoadedContent.set(false);
         this.hasHadOperation.set(false);
         this.isReloadingAfterOperation.set(false);
-        this.filesFacade.listDirectory(clientId, agentId, { path: '.' });
-        // Load git status
-        this.vcsFacade.loadStatus(clientId, agentId);
+        this.filesFacade.listDirectory(clientId, agentId, this.listParams('.'));
+        if (this.fileManagerContext() === 'app') {
+          this.vcsFacade.loadStatus(clientId, agentId);
+        }
       }
     });
 
@@ -384,7 +399,7 @@ export class FileTreeComponent implements OnInit {
       if (!hasCachedData) {
         // Only show loading if we don't have cached data (silent refresh)
         node.loading = true;
-        this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: node.path });
+        this.listDirectoryRel(node.path);
         // Subscribe to directory listing
         this.getDirectoryListing$(node.path)
           .pipe(
@@ -401,7 +416,7 @@ export class FileTreeComponent implements OnInit {
           });
       } else {
         // We have cached data, but still reload to get fresh data (silent)
-        this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: node.path });
+        this.listDirectoryRel(node.path);
       }
       this.directoryExpand.emit(node.path);
     }
@@ -691,21 +706,27 @@ export class FileTreeComponent implements OnInit {
     }
 
     // Use move functionality
-    this.filesFacade.moveFileOrDirectory(this.clientId(), this.agentId(), dragged.path, {
-      destination: destinationPath,
-    });
+    this.filesFacade.moveFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      dragged.path,
+      {
+        destination: destinationPath,
+      },
+      this.fileManagerContext(),
+    );
 
     this.draggedItem.set(null);
 
     // Refresh source parent directory
     const sourceParentPath = this.getParentPath(dragged.path);
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: sourceParentPath });
+      this.listDirectoryRel(sourceParentPath);
     }, 100);
 
     // Refresh destination directory
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: node.path });
+      this.listDirectoryRel(node.path);
     }, 200);
 
     // Expand target path in the tree
@@ -802,20 +823,26 @@ export class FileTreeComponent implements OnInit {
     }
 
     // Use move functionality
-    this.filesFacade.moveFileOrDirectory(this.clientId(), this.agentId(), dragged.path, {
-      destination: destinationPath,
-    });
+    this.filesFacade.moveFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      dragged.path,
+      {
+        destination: destinationPath,
+      },
+      this.fileManagerContext(),
+    );
 
     this.draggedItem.set(null);
 
     // Refresh source parent directory
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: sourceParentPath });
+      this.listDirectoryRel(sourceParentPath);
     }, 100);
 
     // Refresh root directory
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: '.' });
+      this.listDirectoryRel('.');
     }, 200);
   }
 
@@ -847,7 +874,7 @@ export class FileTreeComponent implements OnInit {
         // Load directory if not cached
         const hasCachedData = this.treeCache().has(path);
         if (!hasCachedData) {
-          this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path });
+          this.listDirectoryRel(path);
         }
       }
       this.hoverTimeout = null;
@@ -891,7 +918,7 @@ export class FileTreeComponent implements OnInit {
 
     // Wait a bit for the file/directory to be created, then refresh the parent directory listing
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: creating.path });
+      this.listDirectoryRel(creating.path);
     }, 100);
 
     this.creatingItem.set(null);
@@ -951,7 +978,7 @@ export class FileTreeComponent implements OnInit {
       this.removeFromCache(item.path);
 
       // Refresh the parent directory listing to update the tree
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: parentPath });
+      this.listDirectoryRel(parentPath);
     }
   }
 
@@ -969,9 +996,15 @@ export class FileTreeComponent implements OnInit {
     const destinationPath = parentPath === '.' ? newName : `${parentPath}/${newName}`;
 
     // Use move functionality to rename
-    this.filesFacade.moveFileOrDirectory(this.clientId(), this.agentId(), item.path, {
-      destination: destinationPath,
-    });
+    this.filesFacade.moveFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      item.path,
+      {
+        destination: destinationPath,
+      },
+      this.fileManagerContext(),
+    );
 
     this.hideModal(this.renameFileModal);
     this.itemToRename.set(null);
@@ -979,7 +1012,7 @@ export class FileTreeComponent implements OnInit {
 
     // Refresh the parent directory listing to update the tree
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: parentPath });
+      this.listDirectoryRel(parentPath);
     }, 100);
   }
 
@@ -1002,9 +1035,15 @@ export class FileTreeComponent implements OnInit {
     }
 
     // Use move functionality
-    this.filesFacade.moveFileOrDirectory(this.clientId(), this.agentId(), item.path, {
-      destination: fullDestinationPath,
-    });
+    this.filesFacade.moveFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      item.path,
+      {
+        destination: fullDestinationPath,
+      },
+      this.fileManagerContext(),
+    );
 
     this.hideModal(this.moveFileModal);
     this.itemToMove.set(null);
@@ -1013,13 +1052,13 @@ export class FileTreeComponent implements OnInit {
     // Refresh source parent directory
     const sourceParentPath = this.getParentPath(item.path);
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: sourceParentPath });
+      this.listDirectoryRel(sourceParentPath);
     }, 100);
 
     // Refresh destination directory and expand target path in the tree
     const destinationParentPath = this.getParentPath(fullDestinationPath);
     setTimeout(() => {
-      this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: destinationParentPath });
+      this.listDirectoryRel(destinationParentPath);
     }, 200);
 
     // Expand target path in the tree
@@ -1063,7 +1102,7 @@ export class FileTreeComponent implements OnInit {
           // Load directory if not cached
           const hasCachedData = this.treeCache().has(path);
           if (!hasCachedData) {
-            this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path });
+            this.listDirectoryRel(path);
           }
         }
       }, index * 100); // 100ms delay between each expansion
@@ -1384,7 +1423,7 @@ export class FileTreeComponent implements OnInit {
     const pathsArray = Array.from(pathsToRefresh);
     pathsArray.forEach((path, index) => {
       setTimeout(() => {
-        this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path });
+        this.listDirectoryRel(path);
       }, index * 50); // 50ms delay between each call
     });
   }
@@ -1432,7 +1471,7 @@ export class FileTreeComponent implements OnInit {
 
     pathsArray.forEach((path, index) => {
       setTimeout(() => {
-        this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path });
+        this.listDirectoryRel(path);
       }, index * 50); // 50ms delay between each call
     });
   }
@@ -1471,10 +1510,16 @@ export class FileTreeComponent implements OnInit {
         const fullPath = targetPath === '.' ? file.name : `${targetPath}/${file.name}`;
 
         // Create file with content using createFileOrDirectory
-        this.filesFacade.createFileOrDirectory(this.clientId(), this.agentId(), fullPath, {
-          type: 'file',
-          content: base64Content,
-        });
+        this.filesFacade.createFileOrDirectory(
+          this.clientId(),
+          this.agentId(),
+          fullPath,
+          {
+            type: 'file',
+            content: base64Content,
+          },
+          this.fileManagerContext(),
+        );
 
         uploadedCount++;
 
@@ -1486,19 +1531,21 @@ export class FileTreeComponent implements OnInit {
             // Load directory if not cached
             const hasCachedData = this.treeCache().has(targetPath);
             if (!hasCachedData) {
-              this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: targetPath });
+              this.listDirectoryRel(targetPath);
             }
           }
 
           // Refresh directory listing
           setTimeout(() => {
-            this.filesFacade.listDirectory(this.clientId(), this.agentId(), { path: targetPath });
+            this.listDirectoryRel(targetPath);
           }, 100);
 
-          // Reload git status after file upload
-          setTimeout(() => {
-            this.vcsFacade.loadStatus(this.clientId(), this.agentId());
-          }, 500);
+          // Reload git status after file upload (workspace app tree only)
+          if (this.fileManagerContext() === 'app') {
+            setTimeout(() => {
+              this.vcsFacade.loadStatus(this.clientId(), this.agentId());
+            }, 500);
+          }
 
           // Select the last uploaded file
           if (fileArray.length === 1) {

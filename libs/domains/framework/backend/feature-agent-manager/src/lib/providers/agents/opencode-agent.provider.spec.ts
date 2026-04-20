@@ -62,6 +62,12 @@ describe('OpenCodeAgentProvider', () => {
     });
   });
 
+  describe('getConfigBasePath', () => {
+    it('should return "~/.config/opencode"', () => {
+      expect(provider.getConfigBasePath()).toBe('~/.config/opencode');
+    });
+  });
+
   describe('getDockerImage', () => {
     it('should return default image when OPENCODE_AGENT_DOCKER_IMAGE is not set', () => {
       delete process.env.OPENCODE_AGENT_DOCKER_IMAGE;
@@ -100,7 +106,7 @@ openrouter/z-ai/glm-5.1`;
     });
 
     it('should drop empty lines and trim whitespace', () => {
-      const raw = `  model-a  
+      const raw = `  model-a
 
 model-b
 `;

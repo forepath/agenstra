@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 import type {
   CreateFileDto,
   FileContentDto,
+  FileManagerContext,
   FileNodeDto,
   ListDirectoryParams,
   MoveFileDto,
@@ -48,9 +49,16 @@ export class FilesService {
    * @param filePath - The file path relative to /app
    * @returns Observable of file content (base64-encoded)
    */
-  readFile(clientId: string, agentId: string, filePath: string): Observable<FileContentDto> {
+  readFile(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context: FileManagerContext = 'app',
+  ): Observable<FileContentDto> {
     const encodedPath = this.encodePath(filePath);
-    return this.http.get<FileContentDto>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`);
+    const url = `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`;
+    const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
+    return this.http.get<FileContentDto>(url, httpParams ? { params: httpParams } : {});
   }
 
   /**
@@ -61,11 +69,19 @@ export class FilesService {
    * @param writeFileDto - The file content to write (base64-encoded)
    * @returns Observable of void
    */
-  writeFile(clientId: string, agentId: string, filePath: string, writeFileDto: WriteFileDto): Observable<void> {
+  writeFile(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    writeFileDto: WriteFileDto,
+    context: FileManagerContext = 'app',
+  ): Observable<void> {
     const encodedPath = this.encodePath(filePath);
+    const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
     return this.http.put<void>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
       writeFileDto,
+      httpParams ? { params: httpParams } : {},
     );
   }
 
@@ -80,6 +96,9 @@ export class FilesService {
     let httpParams = new HttpParams();
     if (params?.path !== undefined) {
       httpParams = httpParams.set('path', params.path);
+    }
+    if (params?.context === 'config') {
+      httpParams = httpParams.set('context', 'config');
     }
 
     return this.http.get<FileNodeDto[]>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/files`, {
@@ -100,11 +119,14 @@ export class FilesService {
     agentId: string,
     filePath: string,
     createFileDto: CreateFileDto,
+    context: FileManagerContext = 'app',
   ): Observable<void> {
     const encodedPath = this.encodePath(filePath);
+    const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
     return this.http.post<void>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
       createFileDto,
+      httpParams ? { params: httpParams } : {},
     );
   }
 
@@ -115,9 +137,18 @@ export class FilesService {
    * @param filePath - The file path relative to /app
    * @returns Observable of void
    */
-  deleteFileOrDirectory(clientId: string, agentId: string, filePath: string): Observable<void> {
+  deleteFileOrDirectory(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    context: FileManagerContext = 'app',
+  ): Observable<void> {
     const encodedPath = this.encodePath(filePath);
-    return this.http.delete<void>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`);
+    const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
+    return this.http.delete<void>(
+      `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
+      httpParams ? { params: httpParams } : {},
+    );
   }
 
   /**
@@ -133,11 +164,14 @@ export class FilesService {
     agentId: string,
     sourcePath: string,
     moveFileDto: MoveFileDto,
+    context: FileManagerContext = 'app',
   ): Observable<void> {
     const encodedPath = this.encodePath(sourcePath);
+    const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
     return this.http.patch<void>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
       moveFileDto,
+      httpParams ? { params: httpParams } : {},
     );
   }
 }

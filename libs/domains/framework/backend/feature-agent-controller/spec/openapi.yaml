@@ -1265,7 +1265,8 @@ paths:
           name: path
           schema:
             type: string
-          description: Directory path relative to /app (defaults to '.')
+          description: Directory path relative to the selected context root (defaults to '.')
+        - $ref: '#/components/parameters/fileManagerContext'
       responses:
         '200':
           description: Array of file nodes
@@ -1275,8 +1276,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FileNodeDto'
+        '400':
+          description: Invalid context or agent type does not support configuration file access (proxied from agent-manager)
         '403':
-          description: User does not have access to this client
+          description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client, agent, or directory not found
   /clients/{id}/agents/{agentId}/files/{path}:
@@ -1303,7 +1306,8 @@ paths:
           required: true
           schema:
             type: string
-          description: File path relative to /app (supports nested paths)
+          description: File path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       responses:
         '200':
           description: File content (base64-encoded)
@@ -1312,9 +1316,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/FileContentDto'
         '400':
-          description: Invalid path
+          description: Invalid path, invalid context, or agent type does not support configuration file access
         '403':
-          description: User does not have access to this client
+          description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client, agent, or file not found
     put:
@@ -1340,7 +1344,8 @@ paths:
           required: true
           schema:
             type: string
-          description: File path relative to /app (supports nested paths)
+          description: File path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       requestBody:
         required: true
         content:
@@ -1351,9 +1356,9 @@ paths:
         '204':
           description: File written successfully
         '400':
-          description: Invalid path or content too large
+          description: Invalid path, content too large, invalid context, or agent type does not support configuration file access
         '403':
-          description: User does not have access to this client
+          description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client or agent not found
     delete:
@@ -1379,14 +1384,15 @@ paths:
           required: true
           schema:
             type: string
-          description: File or directory path relative to /app (supports nested paths)
+          description: File or directory path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       responses:
         '204':
           description: File or directory deleted successfully
         '400':
-          description: Invalid path
+          description: Invalid path, invalid context, or agent type does not support configuration file access
         '403':
-          description: User does not have access to this client
+          description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client, agent, or file/directory not found
     patch:
@@ -1412,7 +1418,8 @@ paths:
           required: true
           schema:
             type: string
-          description: Source file or directory path relative to /app (supports nested paths)
+          description: Source file or directory path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       requestBody:
         required: true
         content:
@@ -1423,9 +1430,9 @@ paths:
         '204':
           description: File or directory moved successfully
         '400':
-          description: Invalid path or destination
+          description: Invalid path, destination, invalid context, or agent type does not support configuration file access
         '403':
-          description: User does not have access to this client
+          description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client, agent, or source file/directory not found
     post:
@@ -1451,7 +1458,8 @@ paths:
           required: true
           schema:
             type: string
-          description: File or directory path relative to /app (supports nested paths)
+          description: File or directory path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
       requestBody:
         required: true
         content:
@@ -1462,9 +1470,9 @@ paths:
         '201':
           description: File or directory created
         '400':
-          description: Invalid request
+          description: Invalid request, invalid context, or agent type does not support configuration file access
         '403':
-          description: User does not have access to this client
+          description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/environment:
@@ -3304,6 +3312,18 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  parameters:
+    fileManagerContext:
+      name: context
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [app, config]
+        default: app
+      description: |
+        Proxied to agent-manager. `app` (default) is the workspace root; `config` is the provider configuration directory when supported.
+        When `config` is set, the caller must have workspace management rights (same as other workspace configuration APIs).
   schemas:
     AuthenticationType:
       type: string

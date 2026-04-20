@@ -27,7 +27,7 @@ import {
   writeFileFailure,
   writeFileSuccess,
 } from './files.actions';
-import type { FileContentDto, FileNodeDto } from './files.types';
+import type { FileContentDto, FileManagerContext, FileNodeDto } from './files.types';
 
 export interface OpenTab {
   filePath: string;
@@ -65,33 +65,39 @@ export const initialFilesState: FilesState = {
   openTabs: {},
 };
 
-/**
- * Generate a key for file operations (clientId:agentId:path)
- */
-function getFileKey(clientId: string, agentId: string, path: string): string {
-  return `${clientId}:${agentId}:${path}`;
+function resolveFileContext(context?: FileManagerContext): FileManagerContext {
+  return context ?? 'app';
 }
 
 /**
- * Generate a key for client/agent operations (clientId:agentId)
+ * Generate a key for file operations (clientId:agentId:context:path)
  */
-function getClientAgentKey(clientId: string, agentId: string): string {
-  return `${clientId}:${agentId}`;
+function getFileKey(clientId: string, agentId: string, path: string, context?: FileManagerContext): string {
+  const c = resolveFileContext(context);
+  return `${clientId}:${agentId}:${c}:${path}`;
+}
+
+/**
+ * Generate a key for client/agent + context (tabs and grouped state)
+ */
+function getClientAgentContextKey(clientId: string, agentId: string, context?: FileManagerContext): string {
+  const c = resolveFileContext(context);
+  return `${clientId}:${agentId}:${c}`;
 }
 
 export const filesReducer = createReducer(
   initialFilesState,
   // Read File
-  on(readFile, (state, { clientId, agentId, filePath }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(readFile, (state, { clientId, agentId, filePath, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       reading: { ...state.reading, [key]: true },
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(readFileSuccess, (state, { clientId, agentId, filePath, content }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(readFileSuccess, (state, { clientId, agentId, filePath, content, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       fileContents: { ...state.fileContents, [key]: content },
@@ -99,8 +105,8 @@ export const filesReducer = createReducer(
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(readFileFailure, (state, { clientId, agentId, filePath, error }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(readFileFailure, (state, { clientId, agentId, filePath, error, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       reading: { ...state.reading, [key]: false },
@@ -108,17 +114,17 @@ export const filesReducer = createReducer(
     };
   }),
   // Write File
-  on(writeFile, (state, { clientId, agentId, filePath }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(writeFile, (state, { clientId, agentId, filePath, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       writing: { ...state.writing, [key]: true },
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(writeFileSuccess, (state, { clientId, agentId, filePath }) => {
-    const key = getFileKey(clientId, agentId, filePath);
-    const clientAgentKey = getClientAgentKey(clientId, agentId);
+  on(writeFileSuccess, (state, { clientId, agentId, filePath, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
+    const clientAgentKey = getClientAgentContextKey(clientId, agentId, context);
     // Invalidate cached content after write
     const { [key]: removed, ...fileContents } = state.fileContents;
     // Pin the tab when file is saved (create tab if it doesn't exist)
@@ -143,8 +149,8 @@ export const filesReducer = createReducer(
       },
     };
   }),
-  on(writeFileFailure, (state, { clientId, agentId, filePath, error }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(writeFileFailure, (state, { clientId, agentId, filePath, error, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       writing: { ...state.writing, [key]: false },
@@ -154,15 +160,15 @@ export const filesReducer = createReducer(
   // List Directory
   on(listDirectory, (state, { clientId, agentId, params }) => {
     const directoryPath = params?.path || '.';
-    const key = getFileKey(clientId, agentId, directoryPath);
+    const key = getFileKey(clientId, agentId, directoryPath, params?.context);
     return {
       ...state,
       listing: { ...state.listing, [key]: true },
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(listDirectorySuccess, (state, { clientId, agentId, directoryPath, files }) => {
-    const key = getFileKey(clientId, agentId, directoryPath);
+  on(listDirectorySuccess, (state, { clientId, agentId, directoryPath, files, context }) => {
+    const key = getFileKey(clientId, agentId, directoryPath, context);
     return {
       ...state,
       directoryListings: { ...state.directoryListings, [key]: files },
@@ -170,8 +176,8 @@ export const filesReducer = createReducer(
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(listDirectoryFailure, (state, { clientId, agentId, directoryPath, error }) => {
-    const key = getFileKey(clientId, agentId, directoryPath);
+  on(listDirectoryFailure, (state, { clientId, agentId, directoryPath, error, context }) => {
+    const key = getFileKey(clientId, agentId, directoryPath, context);
     return {
       ...state,
       listing: { ...state.listing, [key]: false },
@@ -179,19 +185,19 @@ export const filesReducer = createReducer(
     };
   }),
   // Create File/Directory
-  on(createFileOrDirectory, (state, { clientId, agentId, filePath }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(createFileOrDirectory, (state, { clientId, agentId, filePath, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       creating: { ...state.creating, [key]: true },
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(createFileOrDirectorySuccess, (state, { clientId, agentId, filePath, fileType }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(createFileOrDirectorySuccess, (state, { clientId, agentId, filePath, fileType, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     // Invalidate parent directory listing
     const parentPath = filePath.split('/').slice(0, -1).join('/') || '.';
-    const parentKey = getFileKey(clientId, agentId, parentPath);
+    const parentKey = getFileKey(clientId, agentId, parentPath, context);
     const { [parentKey]: removed, ...directoryListings } = state.directoryListings;
     return {
       ...state,
@@ -200,8 +206,8 @@ export const filesReducer = createReducer(
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(createFileOrDirectoryFailure, (state, { clientId, agentId, filePath, error }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(createFileOrDirectoryFailure, (state, { clientId, agentId, filePath, error, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       creating: { ...state.creating, [key]: false },
@@ -209,22 +215,22 @@ export const filesReducer = createReducer(
     };
   }),
   // Delete File/Directory
-  on(deleteFileOrDirectory, (state, { clientId, agentId, filePath }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(deleteFileOrDirectory, (state, { clientId, agentId, filePath, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       deleting: { ...state.deleting, [key]: true },
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(deleteFileOrDirectorySuccess, (state, { clientId, agentId, filePath }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(deleteFileOrDirectorySuccess, (state, { clientId, agentId, filePath, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     // Remove from cache
     const { [key]: removedContent, ...fileContents } = state.fileContents;
     const { [key]: removedListing, ...directoryListings } = state.directoryListings;
     // Invalidate parent directory listing
     const parentPath = filePath.split('/').slice(0, -1).join('/') || '.';
-    const parentKey = getFileKey(clientId, agentId, parentPath);
+    const parentKey = getFileKey(clientId, agentId, parentPath, context);
     const { [parentKey]: removedParent, ...remainingListings } = directoryListings;
     return {
       ...state,
@@ -234,8 +240,8 @@ export const filesReducer = createReducer(
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(deleteFileOrDirectoryFailure, (state, { clientId, agentId, filePath, error }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(deleteFileOrDirectoryFailure, (state, { clientId, agentId, filePath, error, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     return {
       ...state,
       deleting: { ...state.deleting, [key]: false },
@@ -243,17 +249,17 @@ export const filesReducer = createReducer(
     };
   }),
   // Move File/Directory
-  on(moveFileOrDirectory, (state, { clientId, agentId, sourcePath }) => {
-    const key = getFileKey(clientId, agentId, sourcePath);
+  on(moveFileOrDirectory, (state, { clientId, agentId, sourcePath, context }) => {
+    const key = getFileKey(clientId, agentId, sourcePath, context);
     return {
       ...state,
       moving: { ...state.moving, [key]: true },
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(moveFileOrDirectorySuccess, (state, { clientId, agentId, sourcePath, destinationPath }) => {
-    const sourceKey = getFileKey(clientId, agentId, sourcePath);
-    const destinationKey = getFileKey(clientId, agentId, destinationPath);
+  on(moveFileOrDirectorySuccess, (state, { clientId, agentId, sourcePath, destinationPath, context }) => {
+    const sourceKey = getFileKey(clientId, agentId, sourcePath, context);
+    const destinationKey = getFileKey(clientId, agentId, destinationPath, context);
     // Remove source file content from cache
     const { [sourceKey]: removedSourceContent, ...fileContents } = state.fileContents;
     // Move file content to destination if it exists
@@ -262,16 +268,16 @@ export const filesReducer = createReducer(
       : fileContents;
     // Remove source and destination directory listings (invalidate cache)
     const sourceParentPath = sourcePath.split('/').slice(0, -1).join('/') || '.';
-    const sourceParentKey = getFileKey(clientId, agentId, sourceParentPath);
+    const sourceParentKey = getFileKey(clientId, agentId, sourceParentPath, context);
     const destinationParentPath = destinationPath.split('/').slice(0, -1).join('/') || '.';
-    const destinationParentKey = getFileKey(clientId, agentId, destinationParentPath);
+    const destinationParentKey = getFileKey(clientId, agentId, destinationParentPath, context);
     const {
       [sourceParentKey]: removedSourceParent,
       [destinationParentKey]: removedDestParent,
       ...directoryListings
     } = state.directoryListings;
     // Update open tabs if the moved file is in a tab
-    const clientAgentKey = getClientAgentKey(clientId, agentId);
+    const clientAgentKey = getClientAgentContextKey(clientId, agentId, context);
     const currentTabs = state.openTabs[clientAgentKey] || [];
     const updatedTabs = currentTabs.map((tab) =>
       tab.filePath === sourcePath ? { ...tab, filePath: destinationPath } : tab,
@@ -288,8 +294,8 @@ export const filesReducer = createReducer(
       },
     };
   }),
-  on(moveFileOrDirectoryFailure, (state, { clientId, agentId, sourcePath, error }) => {
-    const key = getFileKey(clientId, agentId, sourcePath);
+  on(moveFileOrDirectoryFailure, (state, { clientId, agentId, sourcePath, error, context }) => {
+    const key = getFileKey(clientId, agentId, sourcePath, context);
     return {
       ...state,
       moving: { ...state.moving, [key]: false },
@@ -297,8 +303,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Clear File Content
-  on(clearFileContent, (state, { clientId, agentId, filePath }) => {
-    const key = getFileKey(clientId, agentId, filePath);
+  on(clearFileContent, (state, { clientId, agentId, filePath, context }) => {
+    const key = getFileKey(clientId, agentId, filePath, context);
     const { [key]: removed, ...fileContents } = state.fileContents;
     return {
       ...state,
@@ -306,8 +312,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Clear Directory Listing
-  on(clearDirectoryListing, (state, { clientId, agentId, directoryPath }) => {
-    const key = getFileKey(clientId, agentId, directoryPath);
+  on(clearDirectoryListing, (state, { clientId, agentId, directoryPath, context }) => {
+    const key = getFileKey(clientId, agentId, directoryPath, context);
     const { [key]: removed, ...directoryListings } = state.directoryListings;
     return {
       ...state,
@@ -315,8 +321,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Open File Tab
-  on(openFileTab, (state, { clientId, agentId, filePath }) => {
-    const key = getClientAgentKey(clientId, agentId);
+  on(openFileTab, (state, { clientId, agentId, filePath, context }) => {
+    const key = getClientAgentContextKey(clientId, agentId, context);
     const currentTabs = state.openTabs[key] || [];
     // Keep only pinned tabs, remove all unpinned tabs
     const pinnedTabs = currentTabs.filter((tab) => tab.pinned);
@@ -336,8 +342,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Close File Tab
-  on(closeFileTab, (state, { clientId, agentId, filePath }) => {
-    const key = getClientAgentKey(clientId, agentId);
+  on(closeFileTab, (state, { clientId, agentId, filePath, context }) => {
+    const key = getClientAgentContextKey(clientId, agentId, context);
     const currentTabs = state.openTabs[key] || [];
     const updatedTabs = currentTabs.filter((tab) => tab.filePath !== filePath);
     return {
@@ -349,8 +355,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Pin File Tab
-  on(pinFileTab, (state, { clientId, agentId, filePath }) => {
-    const key = getClientAgentKey(clientId, agentId);
+  on(pinFileTab, (state, { clientId, agentId, filePath, context }) => {
+    const key = getClientAgentContextKey(clientId, agentId, context);
     const currentTabs = state.openTabs[key] || [];
     const updatedTabs = currentTabs.map((tab) => (tab.filePath === filePath ? { ...tab, pinned: true } : tab));
     return {
@@ -362,8 +368,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Unpin File Tab
-  on(unpinFileTab, (state, { clientId, agentId, filePath }) => {
-    const key = getClientAgentKey(clientId, agentId);
+  on(unpinFileTab, (state, { clientId, agentId, filePath, context }) => {
+    const key = getClientAgentContextKey(clientId, agentId, context);
     const currentTabs = state.openTabs[key] || [];
     const updatedTabs = currentTabs.map((tab) => (tab.filePath === filePath ? { ...tab, pinned: false } : tab));
     return {
@@ -375,8 +381,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Move Tab To Front
-  on(moveTabToFront, (state, { clientId, agentId, filePath }) => {
-    const key = getClientAgentKey(clientId, agentId);
+  on(moveTabToFront, (state, { clientId, agentId, filePath, context }) => {
+    const key = getClientAgentContextKey(clientId, agentId, context);
     const currentTabs = state.openTabs[key] || [];
     const tabIndex = currentTabs.findIndex((tab) => tab.filePath === filePath);
     if (tabIndex === -1 || tabIndex === 0) {
@@ -394,8 +400,8 @@ export const filesReducer = createReducer(
     };
   }),
   // Clear Open Tabs
-  on(clearOpenTabs, (state, { clientId, agentId }) => {
-    const key = getClientAgentKey(clientId, agentId);
+  on(clearOpenTabs, (state, { clientId, agentId, context }) => {
+    const key = getClientAgentContextKey(clientId, agentId, context);
     const { [key]: removed, ...openTabs } = state.openTabs;
     return {
       ...state,

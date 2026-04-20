@@ -503,10 +503,40 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.readFile.mockResolvedValue(mockFileContent);
 
-      const result = await controller.readFile('client-uuid', 'agent-uuid', 'test.txt', mockReq);
+      const result = await controller.readFile('client-uuid', 'agent-uuid', 'test.txt', undefined, mockReq);
 
       expect(result).toEqual(mockFileContent);
-      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt');
+      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt', 'app');
+    });
+
+    it('should use workspace management access and forward config context', async () => {
+      const mockFileContent: FileContentDto = {
+        content: Buffer.from('{}', 'utf-8').toString('base64'),
+        encoding: 'utf-8',
+      };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      fileSystemProxyService.readFile.mockResolvedValue(mockFileContent);
+
+      await controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', 'config', mockReq);
+
+      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'cfg.json', 'config');
+    });
+
+    it('should reject config context when user cannot manage workspace configuration', async () => {
+      const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as any;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'other-user' } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue({
+        id: 'rel-1',
+        clientId: 'client-uuid',
+        userId: 'user-1',
+        role: ClientUserRole.USER,
+      } as any);
+
+      await expect(controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', 'config', mockReq)).rejects.toThrow(
+        WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE,
+      );
     });
   });
 
@@ -521,9 +551,15 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.writeFile.mockResolvedValue(undefined);
 
-      await controller.writeFile('client-uuid', 'agent-uuid', 'test.txt', writeDto, mockReq);
+      await controller.writeFile('client-uuid', 'agent-uuid', 'test.txt', writeDto, undefined, mockReq);
 
-      expect(fileSystemProxyService.writeFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt', writeDto);
+      expect(fileSystemProxyService.writeFile).toHaveBeenCalledWith(
+        'client-uuid',
+        'agent-uuid',
+        'test.txt',
+        writeDto,
+        'app',
+      );
     });
   });
 
@@ -543,10 +579,10 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.listDirectory.mockResolvedValue(mockFileNodes);
 
-      const result = await controller.listDirectory('client-uuid', 'agent-uuid', 'test-dir', mockReq);
+      const result = await controller.listDirectory('client-uuid', 'agent-uuid', 'test-dir', undefined, mockReq);
 
       expect(result).toEqual(mockFileNodes);
-      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test-dir');
+      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test-dir', 'app');
     });
 
     it('should use default path when not provided', async () => {
@@ -556,9 +592,9 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.listDirectory.mockResolvedValue(mockFileNodes);
 
-      await controller.listDirectory('client-uuid', 'agent-uuid', undefined, mockReq);
+      await controller.listDirectory('client-uuid', 'agent-uuid', undefined, undefined, mockReq);
 
-      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '.');
+      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '.', 'app');
     });
   });
 
@@ -573,13 +609,21 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', 'new-file.txt', createDto, mockReq);
+      await controller.createFileOrDirectory(
+        'client-uuid',
+        'agent-uuid',
+        'new-file.txt',
+        createDto,
+        undefined,
+        mockReq,
+      );
 
       expect(fileSystemProxyService.createFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
         'agent-uuid',
         'new-file.txt',
         createDto,
+        'app',
       );
     });
 
@@ -592,13 +636,14 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', 'new-dir', createDto, mockReq);
+      await controller.createFileOrDirectory('client-uuid', 'agent-uuid', 'new-dir', createDto, undefined, mockReq);
 
       expect(fileSystemProxyService.createFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
         'agent-uuid',
         'new-dir',
         createDto,
+        'app',
       );
     });
 
@@ -617,6 +662,7 @@ describe('ClientsController', () => {
         'agent-uuid',
         ['nested', 'path', 'file.txt'],
         createDto,
+        undefined,
         mockReq,
       );
 
@@ -625,6 +671,7 @@ describe('ClientsController', () => {
         'agent-uuid',
         'nested/path/file.txt',
         createDto,
+        'app',
       );
     });
 
@@ -638,7 +685,7 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
       await expect(
-        controller.createFileOrDirectory('client-uuid', 'agent-uuid', undefined, createDto, mockReq),
+        controller.createFileOrDirectory('client-uuid', 'agent-uuid', undefined, createDto, undefined, mockReq),
       ).rejects.toThrow('File path is required');
     });
 
@@ -652,7 +699,14 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
       await expect(
-        controller.createFileOrDirectory('client-uuid', 'agent-uuid', { invalid: 'path' }, createDto, mockReq),
+        controller.createFileOrDirectory(
+          'client-uuid',
+          'agent-uuid',
+          { invalid: 'path' },
+          createDto,
+          undefined,
+          mockReq,
+        ),
       ).rejects.toThrow('File path must be a string or array, got object');
     });
   });
@@ -664,12 +718,13 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.deleteFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.deleteFileOrDirectory('client-uuid', 'agent-uuid', 'file-to-delete.txt', mockReq);
+      await controller.deleteFileOrDirectory('client-uuid', 'agent-uuid', 'file-to-delete.txt', undefined, mockReq);
 
       expect(fileSystemProxyService.deleteFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
         'agent-uuid',
         'file-to-delete.txt',
+        'app',
       );
     });
   });
@@ -684,13 +739,14 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.moveFileOrDirectory.mockResolvedValue(undefined);
 
-      await controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source-file.txt', moveDto, mockReq);
+      await controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source-file.txt', moveDto, undefined, mockReq);
 
       expect(fileSystemProxyService.moveFileOrDirectory).toHaveBeenCalledWith(
         'client-uuid',
         'agent-uuid',
         'source-file.txt',
         moveDto,
+        'app',
       );
     });
 
@@ -708,6 +764,7 @@ describe('ClientsController', () => {
         'agent-uuid',
         ['nested', 'path', 'file.txt'],
         moveDto,
+        undefined,
         mockReq,
       );
 
@@ -716,6 +773,7 @@ describe('ClientsController', () => {
         'agent-uuid',
         'nested/path/file.txt',
         moveDto,
+        'app',
       );
     });
 
@@ -728,7 +786,7 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
       await expect(
-        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', undefined, moveDto, mockReq),
+        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', undefined, moveDto, undefined, mockReq),
       ).rejects.toThrow('File path is required');
     });
 
@@ -741,7 +799,7 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
       await expect(
-        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', { invalid: 'path' }, moveDto, mockReq),
+        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', { invalid: 'path' }, moveDto, undefined, mockReq),
       ).rejects.toThrow('File path must be a string or array, got object');
     });
 
@@ -754,7 +812,7 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
       await expect(
-        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source.txt', moveDto, mockReq),
+        controller.moveFileOrDirectory('client-uuid', 'agent-uuid', 'source.txt', moveDto, undefined, mockReq),
       ).rejects.toThrow('Destination path is required');
     });
   });

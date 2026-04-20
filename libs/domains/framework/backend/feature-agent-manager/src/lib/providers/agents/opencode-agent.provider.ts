@@ -54,6 +54,15 @@ export class OpenCodeAgentProvider implements AgentProvider {
   }
 
   /**
+   * Get the base path for the provider's configuration.
+   * This is used to construct the API base URL for the provider's configuration.
+   * @returns The base path string (e.g., '~/.config/opencode')
+   */
+  getConfigBasePath(): string {
+    return '~/.config/opencode';
+  }
+
+  /**
    * Get the Docker image (including tag) to use for opencode agent containers.
    * @returns The Docker image string
    */
