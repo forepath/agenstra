@@ -212,7 +212,7 @@
   #ticketDetailModal
   data-bs-backdrop="static"
 >
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+  <div class="modal-dialog modal-xl modal-ticket-detail modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header flex-column align-items-stretch gap-0 pb-2">
         <div class="d-flex w-100 align-items-center justify-content-between">
@@ -366,16 +366,13 @@
                   i18n="@@featureTicketsBoard-descriptionLabel"
                   >Ticket description</label
                 >
-                <textarea
-                  id="ticketDescriptionEditor"
-                  class="form-control tickets-board__body mb-0"
-                  rows="8"
-                  [ngModel]="descriptionDraft()"
-                  (ngModelChange)="descriptionDraft.set($event)"
-                  (blur)="onDescriptionDraftCommit()"
+                <framework-ticket-editor
+                  [markdown]="descriptionDraft()"
+                  (markdownChange)="descriptionDraft.set($event)"
+                  (blurred)="onDescriptionDraftCommit()"
                   i18n-placeholder="@@featureTicketsBoard-descriptionPlaceholder"
                   placeholder="Describe the ticket. Changes save when you leave this field."
-                ></textarea>
+                ></framework-ticket-editor>
 
                 <div class="d-flex flex-wrap align-items-center gap-2 my-3">
                   <button
@@ -1222,7 +1219,7 @@
   #createTicketModal
   data-bs-backdrop="static"
 >
-  <div class="modal-dialog modal-dialog-scrollable">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title h5" id="createTicketModalLabel">
@@ -1269,15 +1266,12 @@
             i18n="@@featureTicketsBoard-createContentLabel"
             >Description</label
           >
-          <textarea
-            id="createTicketContent"
-            class="form-control form-control-sm"
-            rows="3"
-            [ngModel]="createTicketContent()"
-            (ngModelChange)="createTicketContent.set($event)"
+          <framework-ticket-editor
+            [markdown]="createTicketContent()"
+            (markdownChange)="createTicketContent.set($event)"
             i18n-placeholder="@@featureTicketsBoard-createContentPlaceholder"
             placeholder="Optional details"
-          ></textarea>
+          ></framework-ticket-editor>
         </div>
         <div class="row g-2">
           <div class="col-sm-6">

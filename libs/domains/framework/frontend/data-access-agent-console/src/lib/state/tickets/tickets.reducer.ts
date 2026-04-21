@@ -184,12 +184,16 @@ export const ticketsReducer = createReducer(
   })),
   on(deleteTicketFailure, (state, { error }) => ({ ...state, saving: false, error })),
   on(addTicketComment, (state) => ({ ...state, saving: true, error: null })),
-  on(addTicketCommentSuccess, (state, { comment, activity }) => ({
-    ...state,
-    saving: false,
-    comments: [...state.comments, comment],
-    activity: state.selectedTicketId === comment.ticketId ? activity : state.activity,
-  })),
+  on(addTicketCommentSuccess, (state, { comment, activity }) => {
+    const idx = state.comments.findIndex((c) => c.id === comment.id);
+    const comments = idx >= 0 ? state.comments.map((c, i) => (i === idx ? comment : c)) : [...state.comments, comment];
+    return {
+      ...state,
+      saving: false,
+      comments,
+      activity: state.selectedTicketId === comment.ticketId ? activity : state.activity,
+    };
+  }),
   on(addTicketCommentFailure, (state, { error }) => ({ ...state, saving: false, error })),
   on(clearTicketsError, (state) => ({ ...state, error: null })),
   on(prependTicketDetailActivity, (state, { activity }) => {

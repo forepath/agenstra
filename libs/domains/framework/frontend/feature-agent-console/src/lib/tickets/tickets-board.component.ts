@@ -18,36 +18,36 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
+  approveTicketAutomationFailure,
+  approveTicketAutomationSuccess,
   BOARD_LANE_STATUSES,
+  cancelTicketAutomationRunFailure,
+  cancelTicketAutomationRunSuccess,
   ClientsFacade,
   ClientsService,
   deleteTicketSuccess,
   filterTicketsForGlobalSearch,
+  patchTicketAutomationFailure,
+  patchTicketAutomationSuccess,
   SocketsFacade,
   TicketAutomationFacade,
   TicketsBoardSocketFacade,
   TicketsFacade,
   TicketsService,
+  unapproveTicketAutomationFailure,
+  unapproveTicketAutomationSuccess,
   type AgentResponseDto,
   type BoardLaneStatus,
   type ClientResponseDto,
+  type TicketAutomationResponseDto,
+  type TicketAutomationRunResponseDto,
+  type TicketAutomationRunStatus,
   type TicketBoardRow,
   type TicketGlobalSearchHit,
   type TicketPriority,
   type TicketResponseDto,
   type TicketStatus,
-  type TicketAutomationResponseDto,
-  type TicketAutomationRunResponseDto,
-  type TicketAutomationRunStatus,
   type UpdateTicketAutomationDto,
-  approveTicketAutomationFailure,
-  approveTicketAutomationSuccess,
-  cancelTicketAutomationRunFailure,
-  cancelTicketAutomationRunSuccess,
-  patchTicketAutomationFailure,
-  patchTicketAutomationSuccess,
-  unapproveTicketAutomationFailure,
-  unapproveTicketAutomationSuccess,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { Actions, ofType } from '@ngrx/effects';
 import {
@@ -66,7 +66,6 @@ import {
   tap,
 } from 'rxjs';
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
-import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
 import {
   ticketAutomationCancellationReasonLabel,
   ticketAutomationFailureCodeLabel,
@@ -74,6 +73,8 @@ import {
   ticketAutomationRunStatusLabel,
   ticketAutomationRunStepKindLabel,
 } from './ticket-automation-run-labels';
+import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
+import { TicketEditorComponent } from './ticket-editor/ticket-editor.component';
 import { ticketLaneStatusLabel } from './ticket-lane-status-label';
 
 const ALL_TICKET_STATUSES: TicketStatus[] = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'];
@@ -134,7 +135,7 @@ interface TicketDetailSubtaskRow {
 @Component({
   selector: 'framework-tickets-board',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, TicketEditorComponent],
   templateUrl: './tickets-board.component.html',
   styleUrls: ['./tickets-board.component.scss'],
 })
@@ -166,6 +167,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
    * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
    */
   private ticketDetailSuspendedForAutomationRun = false;
+  /**
+   * Ticket detail was hidden so the create-subtask modal can show alone; when create closes, show ticket again.
+   * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
+   */
+  private ticketDetailSuspendedForCreateSubtask = false;
 
   @ViewChild('ticketDetailModal', { static: false })
   private ticketDetailModal?: ElementRef<HTMLDivElement>;
@@ -955,11 +961,40 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.createTicketStatus.set('draft');
     this.createTicketPriority.set('medium');
     this.createTicketParentId.set(parentId);
-    setTimeout(() => this.showCreateModalEl(), 0);
+    const createEl = this.createTicketModal?.nativeElement;
+    if (createEl?.classList.contains('show')) {
+      return;
+    }
+    if (this.ticketDetailSuspendedForCreateSubtask) {
+      return;
+    }
+
+    const ticketEl = this.ticketDetailModal?.nativeElement;
+    if (!ticketEl || !ticketEl.classList.contains('show')) {
+      queueMicrotask(() => this.showCreateModalEl());
+      return;
+    }
+
+    this.ticketDetailSuspendedForCreateSubtask = true;
+    const onTicketHidden = (): void => {
+      queueMicrotask(() => {
+        const subtaskModalEl = this.createTicketModal?.nativeElement;
+        if (!subtaskModalEl) {
+          this.ticketDetailSuspendedForCreateSubtask = false;
+          this.showModal();
+          return;
+        }
+        this.showCreateModalEl();
+        this.registerReopenTicketDetailAfterCreateTicketModal();
+      });
+    };
+    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
+    this.hideModal();
   }
 
   onCloseModal(): void {
     this.ticketDetailSuspendedForAutomationRun = false;
+    this.ticketDetailSuspendedForCreateSubtask = false;
     this.hideModal();
     this.hideAutomationRunDetailModal();
     this.ticketsFacade.closeDetail();
@@ -1282,6 +1317,22 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     el.addEventListener('hidden.bs.modal', onAutomationHidden, { once: true });
   }
 
+  /** One-time: after create modal hides, restore ticket detail if it was swapped out for subtask creation. */
+  private registerReopenTicketDetailAfterCreateTicketModal(): void {
+    const el = this.createTicketModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const onCreateHidden = (): void => {
+      if (!this.ticketDetailSuspendedForCreateSubtask) {
+        return;
+      }
+      this.ticketDetailSuspendedForCreateSubtask = false;
+      queueMicrotask(() => this.showModal());
+    };
+    el.addEventListener('hidden.bs.modal', onCreateHidden, { once: true });
+  }
+
   effectiveWorkspaceTitle(ew: { id: string; client: ClientResponseDto | null }): string {
     const name = ew.client?.name?.trim();
     return name && name.length > 0 ? name : ew.id;
@@ -1312,6 +1363,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     }
     this.hideWorkspaceSwitchModal();
     this.ticketDetailSuspendedForAutomationRun = false;
+    this.ticketDetailSuspendedForCreateSubtask = false;
     this.hideModal();
     this.hideAutomationRunDetailModal();
     this.hideCreateModalEl();
@@ -1562,6 +1614,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       next: ({ prompt }) => {
         storeAgentConsoleChatDraft(prompt);
         this.ticketDetailSuspendedForAutomationRun = false;
+        this.ticketDetailSuspendedForCreateSubtask = false;
         this.hideModal();
         this.hideAutomationRunDetailModal();
         this.ticketsFacade.closeDetail();
