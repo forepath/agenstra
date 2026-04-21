@@ -274,6 +274,20 @@ describe('ticketsReducer', () => {
       expect(next.comments).toEqual([mockComment]);
       expect(next.activity).toEqual([mockActivity]);
     });
+
+    it('should not duplicate when the same comment was already applied via ticketBoardCommentCreated', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        saving: true,
+        comments: [mockComment],
+        selectedTicketId: mockTicket.id,
+        activity: [],
+      };
+      const next = ticketsReducer(prev, addTicketCommentSuccess({ comment: mockComment, activity: [mockActivity] }));
+      expect(next.saving).toBe(false);
+      expect(next.comments).toEqual([mockComment]);
+      expect(next.activity).toEqual([mockActivity]);
+    });
   });
 
   describe('addTicketCommentFailure', () => {

@@ -122,6 +122,18 @@
       <trans-unit id="featureAudit-noData" datatype="html">
         <source>No data yet. Apply filters and load statistics.</source>
         </trans-unit>
+      <trans-unit id="featureAudit-chartDropPrefix" datatype="html">
+        <source>Drop</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartFlagPrefix" datatype="html">
+        <source>Flag</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartNoFilterBreakdown" datatype="html">
+        <source>No filter drops or flags</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartFilterBreakdownTitle" datatype="html">
+        <source>Filter drops and flags by type</source>
+        </trans-unit>
       <trans-unit id="featureAudit-chatIoDirectionInput" datatype="html">
         <source>User message</source>
         </trans-unit>
@@ -158,23 +170,14 @@
       <trans-unit id="featureAudit-eventTypeDeleted" datatype="html">
         <source>Deleted</source>
         </trans-unit>
-      <trans-unit id="featureAudit-chartDropPrefix" datatype="html">
-        <source>Drop</source>
-        </trans-unit>
-      <trans-unit id="featureAudit-chartFlagPrefix" datatype="html">
-        <source>Flag</source>
-        </trans-unit>
-      <trans-unit id="featureAudit-chartNoFilterBreakdown" datatype="html">
-        <source>No filter drops or flags</source>
-        </trans-unit>
-      <trans-unit id="featureAudit-chartFilterBreakdownTitle" datatype="html">
-        <source>Filter drops and flags by type</source>
-        </trans-unit>
       <trans-unit id="featureChat-brandAlt" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
       <trans-unit id="featureChat-appName" datatype="html">
         <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentConfigBadge" datatype="html">
+        <source>Agent config</source>
         </trans-unit>
       <trans-unit id="featureChat-studio" datatype="html">
         <source>Studio</source>
@@ -248,6 +251,9 @@
       <trans-unit id="featureChat-sshAccess" datatype="html">
         <source>SSH Access</source>
         </trans-unit>
+      <trans-unit id="featureChat-ticketAutonomyButtonTitle" datatype="html">
+        <source>Prototype autonomy</source>
+        </trans-unit>
       <trans-unit id="featureChat-manageEnvVarsTitle" datatype="html">
         <source>Manage Environment Variables</source>
         </trans-unit>
@@ -256,12 +262,6 @@
         </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentTitle" datatype="html">
         <source>Delete Environment</source>
-        </trans-unit>
-      <trans-unit id="featureChat-ticketAutonomyModalTitle" datatype="html">
-        <source>Prototype autonomy</source>
-        </trans-unit>
-      <trans-unit id="featureChat-ticketAutonomyButtonTitle" datatype="html">
-        <source>Prototype autonomy</source>
         </trans-unit>
       <trans-unit id="featureChat-chatHeader" datatype="html">
         <source>Chat</source>
@@ -301,15 +301,6 @@
         </trans-unit>
       <trans-unit id="featureChat-openAgentConfigFiles" datatype="html">
         <source>Open agent config</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openAgentConfigFilesTitle" datatype="html">
-        <source>Open provider agent config files (requires workspace management access)</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openAgentConfigFilesNewWindow" datatype="html">
-        <source>Open agent config in New Window</source>
-        </trans-unit>
-      <trans-unit id="featureChat-agentConfigBadge" datatype="html">
-        <source>Agent config</source>
         </trans-unit>
       <trans-unit id="featureChat-openVirtualDesktop" datatype="html">
         <source>Open Virtual Desktop</source>
@@ -570,6 +561,39 @@
       <trans-unit id="featureChat-close" datatype="html">
         <source>Close</source>
         </trans-unit>
+      <trans-unit id="featureChat-ticketAutonomyModalTitle" datatype="html">
+        <source> Prototype autonomy </source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-loading" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-intro" datatype="html">
+        <source> Control whether this agent may run autonomous ticket prototyping, including scope and safety limits. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-enabled" datatype="html">
+        <source>Autonomy enabled</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-preImprove" datatype="html">
+        <source>Pre-improve ticket before run</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-maxRuntime" datatype="html">
+        <source>Max runtime (ms)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-maxIterations" datatype="html">
+        <source>Max iterations</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-tokenBudget" datatype="html">
+        <source>Token budget limit (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-tokenBudgetPh" datatype="html">
+        <source>Leave empty for no limit</source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-reset" datatype="html">
+        <source> Reset </source>
+        </trans-unit>
+      <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
+        <source><x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </source>
+        </trans-unit>
       <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
         <source> Manage Workspace Users </source>
         </trans-unit>
@@ -599,6 +623,9 @@
         </trans-unit>
       <trans-unit id="featureChat-removeClientUserTitle" datatype="html">
         <source>Remove user</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openTicketFromAutomationCard" datatype="html">
+        <source>Open ticket</source>
         </trans-unit>
       <trans-unit id="featureChat-hideFileTree" datatype="html">
         <source>Hide File Tree</source>
@@ -632,6 +659,12 @@
         </trans-unit>
       <trans-unit id="featureChat-openEditorNewWindow" datatype="html">
         <source>Open Editor in New Window</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFilesNewWindow" datatype="html">
+        <source>Open agent config in New Window</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openAgentConfigFilesTitle" datatype="html">
+        <source>Open provider agent config files (requires workspace management access)</source>
         </trans-unit>
       <trans-unit id="featureChat-openDeploymentManagerNewWindow" datatype="html">
         <source>Open Deployment Manager in New Window</source>
@@ -1384,35 +1417,122 @@
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
         <source>New Terminal</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-loading" datatype="html">
-        <source>Loading…</source>
+      <trans-unit id="featureTicketsBoard-runStatusPending" datatype="html">
+        <source>Pending</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-intro" datatype="html">
-        <source> Control whether this agent may run autonomous ticket prototyping, including scope and safety limits. </source>
+      <trans-unit id="featureTicketsBoard-runStatusRunning" datatype="html">
+        <source>Running</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-enabled" datatype="html">
-        <source>Autonomy enabled</source>
+      <trans-unit id="featureTicketsBoard-runStatusSucceeded" datatype="html">
+        <source>Succeeded</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-preImprove" datatype="html">
-        <source>Pre-improve ticket before run</source>
+      <trans-unit id="featureTicketsBoard-runStatusFailed" datatype="html">
+        <source>Failed</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-maxRuntime" datatype="html">
-        <source>Max runtime (ms)</source>
+      <trans-unit id="featureTicketsBoard-runStatusTimedOut" datatype="html">
+        <source>Timed out</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-maxIterations" datatype="html">
-        <source>Max iterations</source>
+      <trans-unit id="featureTicketsBoard-runStatusEscalated" datatype="html">
+        <source>Escalated</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-tokenBudget" datatype="html">
-        <source>Token budget limit (optional)</source>
+      <trans-unit id="featureTicketsBoard-runStatusCancelled" datatype="html">
+        <source>Cancelled</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-tokenBudgetPh" datatype="html">
-        <source>Leave empty for no limit</source>
+      <trans-unit id="featureTicketsBoard-runPhasePreImprove" datatype="html">
+        <source>Pre-improve</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
-        <source><x id="START_BLOCK_IF" equiv-text="@if (saving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </source>
+      <trans-unit id="featureTicketsBoard-runPhaseWorkspacePrep" datatype="html">
+        <source>Workspace prep</source>
         </trans-unit>
-      <trans-unit id="featureTicketAutonomyManager-reset" datatype="html">
-        <source> Reset </source>
+      <trans-unit id="featureTicketsBoard-runPhaseAgentLoop" datatype="html">
+        <source>Agent loop</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runPhaseVerify" datatype="html">
+        <source>Verify</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runPhaseFinalize" datatype="html">
+        <source>Finalize</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindVcsPrepare" datatype="html">
+        <source>Repository setup</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindAgentTurn" datatype="html">
+        <source>Agent turn</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindGitCommit" datatype="html">
+        <source>Git commit</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindGitPush" datatype="html">
+        <source>Git push</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureApprovalMissing" datatype="html">
+        <source>Approval missing</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureLeaseContention" datatype="html">
+        <source>Lease contention</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureVcsDirtyWorkspace" datatype="html">
+        <source>Dirty workspace</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureVcsBranchExists" datatype="html">
+        <source>Branch already exists</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureAgentProviderError" datatype="html">
+        <source>Agent provider error</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureAgentNoCompletionMarker" datatype="html">
+        <source>No completion marker</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureMarkerWithoutVerify" datatype="html">
+        <source>Completion marker without verify profile</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureVerifyCommandFailed" datatype="html">
+        <source>Verify command failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureCommitFailed" datatype="html">
+        <source>Git commit failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailurePushFailed" datatype="html">
+        <source>Git push failed</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureBudgetExceeded" datatype="html">
+        <source>Budget exceeded</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureHumanEscalation" datatype="html">
+        <source>Human escalation</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureOrchestratorStale" datatype="html">
+        <source>Orchestrator stale</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelUserRequest" datatype="html">
+        <source>User request</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelApprovalInvalidated" datatype="html">
+        <source>Approval invalidated</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelLeaseExpired" datatype="html">
+        <source>Lease expired</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-runCancelSystemShutdown" datatype="html">
+        <source>System shutdown</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneDraft" datatype="html">
+        <source>Draft</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneTodo" datatype="html">
+        <source>To do</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneInProgress" datatype="html">
+        <source>In progress</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-lanePrototype" datatype="html">
+        <source>Prototype</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneDone" datatype="html">
+        <source>Done</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-laneClosed" datatype="html">
+        <source>Closed</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-title" datatype="html">
         <source>Tickets</source>
@@ -1621,12 +1741,6 @@
       <trans-unit id="featureTicketsBoard-automationCancelRunTitle" datatype="html">
         <source>Cancel run</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-automationLoadingTrace" datatype="html">
-        <source>Loading steps…</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-automationNoSteps" datatype="html">
-        <source> No steps recorded for this run. </source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-commentsHeading" datatype="html">
         <source>Comments</source>
         </trans-unit>
@@ -1684,11 +1798,17 @@
       <trans-unit id="featureTicketsBoard-automationRunSteps" datatype="html">
         <source>Steps</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationLoadingTrace" datatype="html">
+        <source>Loading steps…</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-automationStepExcerpt" datatype="html">
         <source>Excerpt</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationStepPayload" datatype="html">
         <source>Payload (JSON)</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationNoSteps" datatype="html">
+        <source> No steps recorded for this run. </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunModalEmpty" datatype="html">
         <source> Open a run from the ticket detail panel. </source>
@@ -1782,24 +1902,6 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-bodyGenFailed" datatype="html">
         <source>Generation failed</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-laneDraft" datatype="html">
-        <source>Draft</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-laneTodo" datatype="html">
-        <source>To do</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-laneInProgress" datatype="html">
-        <source>In progress</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-lanePrototype" datatype="html">
-        <source>Prototype</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-laneDone" datatype="html">
-        <source>Done</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-laneClosed" datatype="html">
-        <source>Closed</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-priorityLow" datatype="html">
         <source>Low</source>
@@ -2395,105 +2497,6 @@
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runCancelApprovalInvalidated" datatype="html">
-        <source>Approval invalidated</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runCancelLeaseExpired" datatype="html">
-        <source>Lease expired</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runCancelSystemShutdown" datatype="html">
-        <source>System shutdown</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runCancelUserRequest" datatype="html">
-        <source>User request</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureAgentNoCompletionMarker" datatype="html">
-        <source>No completion marker</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureAgentProviderError" datatype="html">
-        <source>Agent provider error</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureApprovalMissing" datatype="html">
-        <source>Approval missing</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureBudgetExceeded" datatype="html">
-        <source>Budget exceeded</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureCommitFailed" datatype="html">
-        <source>Git commit failed</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureHumanEscalation" datatype="html">
-        <source>Human escalation</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureLeaseContention" datatype="html">
-        <source>Lease contention</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureMarkerWithoutVerify" datatype="html">
-        <source>Completion marker without verify profile</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureOrchestratorStale" datatype="html">
-        <source>Orchestrator stale</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailurePushFailed" datatype="html">
-        <source>Git push failed</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureVerifyCommandFailed" datatype="html">
-        <source>Verify command failed</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureVcsBranchExists" datatype="html">
-        <source>Branch already exists</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runFailureVcsDirtyWorkspace" datatype="html">
-        <source>Dirty workspace</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runPhaseAgentLoop" datatype="html">
-        <source>Agent loop</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runPhaseFinalize" datatype="html">
-        <source>Finalize</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runPhasePreImprove" datatype="html">
-        <source>Pre-improve</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runPhaseVerify" datatype="html">
-        <source>Verify</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runPhaseWorkspacePrep" datatype="html">
-        <source>Workspace prep</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStatusCancelled" datatype="html">
-        <source>Cancelled</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStatusEscalated" datatype="html">
-        <source>Escalated</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStatusFailed" datatype="html">
-        <source>Failed</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStatusPending" datatype="html">
-        <source>Pending</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStatusRunning" datatype="html">
-        <source>Running</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStatusSucceeded" datatype="html">
-        <source>Succeeded</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStatusTimedOut" datatype="html">
-        <source>Timed out</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStepKindAgentTurn" datatype="html">
-        <source>Agent turn</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStepKindGitCommit" datatype="html">
-        <source>Git commit</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStepKindGitPush" datatype="html">
-        <source>Git push</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-runStepKindVcsPrepare" datatype="html">
-        <source>Repository setup</source>
         </trans-unit>
     </body>
   </file>

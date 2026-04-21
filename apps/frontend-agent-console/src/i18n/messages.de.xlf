@@ -335,7 +335,7 @@
         <target>Workspace-Benutzer verwalten</target>
         </trans-unit>
       <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
-        <source>Manage Workspace Users</source>
+        <source> Manage Workspace Users </source>
         <target>Workspace-Benutzer verwalten</target>
         </trans-unit>
       <trans-unit id="featureChat-addClientUser" datatype="html">
@@ -347,7 +347,7 @@
         <target>Benutzer hinzufügen</target>
         </trans-unit>
       <trans-unit id="featureChat-clientUserEmailPlaceholder" datatype="html">
-        <source>user&#64;example.com</source>
+        <source>user@example.com</source>
         <target>benutzer&#64;beispiel.de</target>
         </trans-unit>
       <trans-unit id="featureChat-clientUserRoleUser" datatype="html">
@@ -374,6 +374,10 @@
         <source>Remove user</source>
         <target>Benutzer entfernen</target>
         </trans-unit>
+      <trans-unit id="featureChat-openTicketFromAutomationCard" datatype="html">
+        <source>Open ticket</source>
+        <target>Ticket öffnen</target>
+        </trans-unit>
       <trans-unit id="featureChat-editEnvironmentTitle" datatype="html">
         <source>Edit environment</source>
         <target>Umgebung bearbeiten</target>
@@ -383,7 +387,7 @@
         <target>Umgebung löschen</target>
         </trans-unit>
       <trans-unit id="featureChat-ticketAutonomyModalTitle" datatype="html">
-        <source>Prototype autonomy</source>
+        <source> Prototype autonomy </source>
         <target>Prototyp-Autonomie</target>
         </trans-unit>
       <trans-unit id="featureChat-ticketAutonomyButtonTitle" datatype="html">
@@ -897,8 +901,8 @@
         <target>Leer lassen für kein Limit</target>
         </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
-        <source><x id="START_BLOCK_IF" equiv-text="@if (saving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </source>
-        <target><x id="START_BLOCK_IF" equiv-text="@if (saving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Speichern </target>
+        <source><x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </source>
+        <target><x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Speichern </target>
         </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-reset" datatype="html">
         <source> Reset </source>
@@ -917,7 +921,7 @@
         <target>Tickets durchsuchen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
-        <source>Search tickets</source>
+        <source> Search tickets </source>
         <target>Tickets durchsuchen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchInputLabel" datatype="html">
@@ -929,7 +933,7 @@
         <target>Suche nach Titel, Beschreibung oder ID</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchHint" datatype="html">
-        <source>Type to search all tickets in this workspace, including done and closed.</source>
+        <source> Type to search all tickets in this workspace, including done and closed. </source>
         <target>Tippen, um alle Tickets in diesem Workspace zu durchsuchen, einschließlich erledigter und geschlossener.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchNoResults" datatype="html">
@@ -937,7 +941,7 @@
         <target>Keine passenden Tickets</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchClose" datatype="html">
-        <source>Close</source>
+        <source> Close </source>
         <target>Schließen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceBadgeSwitchTitle" datatype="html">
@@ -945,7 +949,7 @@
         <target>Workspace wechseln</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherTitle" datatype="html">
-        <source>Switch workspace</source>
+        <source> Switch workspace </source>
         <target>Workspace wechseln</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherSearchLabel" datatype="html">
@@ -961,11 +965,11 @@
         <target>Workspaces werden geladen…</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
-        <source>You don't have any workspaces yet.</source>
+        <source>You don&apos;t have any workspaces yet.</source>
         <target>Sie haben noch keine Workspaces.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
-        <source>Create one from Spaces, or open Spaces if a workspace was shared with you.</source>
+        <source> Create one from Spaces, or open Spaces if a workspace was shared with you. </source>
         <target>Legen Sie einen unter Bereiche an, oder öffnen Sie Bereiche, falls ein Workspace für Sie freigegeben wurde.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
@@ -977,7 +981,7 @@
         <target>Workspace wählen…</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherNoMatch" datatype="html">
-        <source>No matching workspaces</source>
+        <source> No matching workspaces </source>
         <target>Keine passenden Workspaces</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherCurrent" datatype="html">
@@ -985,7 +989,7 @@
         <target>Aktuell</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherClose" datatype="html">
-        <source>Close</source>
+        <source> Close </source>
         <target>Schließen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-selectSpacePrefix" datatype="html">
@@ -1077,7 +1081,7 @@
         <target>Beschreiben Sie das Ticket. Änderungen werden gespeichert, wenn Sie das Feld verlassen.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-agentLabel" datatype="html">
-        <source>Agent for chat / AI</source>
+        <source> Agent for chat / AI </source>
         <target>Agent für Chat / KI</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-agentPlaceholder" datatype="html">
@@ -1085,7 +1089,7 @@
         <target>Agent wählen…</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-prototypeButton" datatype="html">
-        <source>Open prototype in chat</source>
+        <source> Open prototype in chat </source>
         <target>Prototyp im Chat öffnen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-generateBodyTitle" datatype="html">
@@ -1109,7 +1113,7 @@
         <target>E-Mail des Autors nicht verfügbar</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-addComment" datatype="html">
-        <source>Add</source>
+        <source> Add </source>
         <target>Hinzufügen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-activityHeading" datatype="html">
@@ -1221,7 +1225,7 @@
         <target>Unbekannte Aktivität</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-close" datatype="html">
-        <source>Close</source>
+        <source> Close </source>
         <target>Schließen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-bodyGenMissingContext" datatype="html">
@@ -1249,7 +1253,7 @@
         <target>Hinzufügen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
-        <source>Drop tickets here</source>
+        <source> Drop tickets here </source>
         <target>Tickets hier ablegen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-searchLaneLabel" datatype="html">
@@ -1265,7 +1269,7 @@
         <target>Autonomes Prototyping aktiviert</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-noMatchingTickets" datatype="html">
-        <source>No matching tickets</source>
+        <source> No matching tickets </source>
         <target>Keine passenden Tickets</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createModalTitle" datatype="html">
@@ -1277,7 +1281,7 @@
         <target>Neue Unteraufgabe</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-addSubtask" datatype="html">
-        <source>Add subtask</source>
+        <source> Add subtask </source>
         <target>Unteraufgabe hinzufügen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-subtasksHeading" datatype="html">
@@ -1289,7 +1293,7 @@
         <target>Unteraufgabe öffnen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationAccordionTitle" datatype="html">
-        <source> Autonomous prototyping </source>
+        <source>Autonomous prototyping</source>
         <target> Autonomes Prototyping </target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationDismissError" datatype="html">
@@ -1309,7 +1313,7 @@
         <target>Freigabe vor dem Ausführen erforderlich</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationApprovedHeading" datatype="html">
-        <source>Approved for automation</source>
+        <source> Approved for automation </source>
         <target>Für Automatisierung freigegeben</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNeedsApproval" datatype="html">
@@ -1389,11 +1393,11 @@
         <target> Freigabe aufheben </target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationFailures" datatype="html">
-        <source>Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}"/></source>
+        <source> Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}"/> </source>
         <target>Aufeinanderfolgende Fehler: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}"/></target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNextRetry" datatype="html">
-        <source>Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}"/></source>
+        <source> Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}"/> </source>
         <target>Nächster Wiederholungsversuch: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}"/></target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunsHeading" datatype="html">
@@ -1433,7 +1437,7 @@
         <target>Schritte werden geladen…</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNoSteps" datatype="html">
-        <source>No steps recorded for this run.</source>
+        <source> No steps recorded for this run. </source>
         <target>Für diesen Lauf wurden keine Schritte aufgezeichnet.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunModalTitle" datatype="html">
@@ -1485,7 +1489,7 @@
         <target>Nutzdaten (JSON)</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunModalEmpty" datatype="html">
-        <source>Open a run from the ticket detail panel.</source>
+        <source> Open a run from the ticket detail panel. </source>
         <target>Öffnen Sie einen Lauf im Ticket-Detailfenster.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationCancelRun" datatype="html">
@@ -1521,11 +1525,11 @@
         <target>Priorität</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createCancel" datatype="html">
-        <source>Cancel</source>
+        <source> Cancel </source>
         <target>Abbrechen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createSubmit" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         <target>Anlegen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createNeedClient" datatype="html">
@@ -1537,7 +1541,7 @@
         <target>Titel ist erforderlich.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         <target>Löschen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-deleteTitle" datatype="html">
@@ -1545,7 +1549,7 @@
         <target>Dieses Ticket endgültig löschen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-deleteConfirmModalTitle" datatype="html">
-        <source>Delete ticket</source>
+        <source> Delete ticket </source>
         <target>Ticket löschen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-deleteConfirmModalLead" datatype="html">
@@ -1557,11 +1561,11 @@
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-deleteConfirmCancel" datatype="html">
-        <source>Cancel</source>
+        <source> Cancel </source>
         <target>Abbrechen</target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-deleteConfirmSubmit" datatype="html">
-        <source>Delete ticket</source>
+        <source> Delete ticket </source>
         <target>Ticket löschen</target>
         </trans-unit>
       <trans-unit id="featureContainer-auditTitle" datatype="html">
@@ -1605,11 +1609,11 @@
         <target>Konfiguration löschen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfirmModalTitle" datatype="html">
-        <source>Delete deployment configuration</source>
+        <source> Delete deployment configuration </source>
         <target>Deployment-Konfiguration löschen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfirmModalBody" datatype="html">
-        <source>Are you sure you want to delete this deployment configuration?</source>
+        <source> Are you sure you want to delete this deployment configuration? </source>
         <target>Möchten Sie diese Deployment-Konfiguration wirklich löschen?</target>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfirmCannotUndo" datatype="html">
@@ -1617,7 +1621,7 @@
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfirmCancel" datatype="html">
-        <source>Cancel</source>
+        <source> Cancel </source>
         <target>Abbrechen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfirmSubmit" datatype="html">
@@ -1845,11 +1849,11 @@
         <target>Lauf abbrechen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmTitle" datatype="html">
-        <source>Cancel run</source>
+        <source> Cancel run </source>
         <target>Lauf abbrechen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmBody" datatype="html">
-        <source>Are you sure you want to cancel this run? In-progress jobs may be stopped.</source>
+        <source> Are you sure you want to cancel this run? In-progress jobs may be stopped. </source>
         <target>Möchten Sie diesen Lauf wirklich abbrechen? Laufende Jobs können gestoppt werden.</target>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmWarning" datatype="html">
@@ -1857,7 +1861,7 @@
         <target>Dies kann nicht rückgängig gemacht werden.</target>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmDismiss" datatype="html">
-        <source>Keep running</source>
+        <source> Keep running </source>
         <target>Lauf fortsetzen</target>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmSubmit" datatype="html">

@@ -105,6 +105,7 @@
     "@angular/ssr": "21.2.6",
     "@fontsource/roboto": "5.2.9",
     "@keycloakify/angular": "21.0.5",
+    "@milkdown/crepe": "7.20.0",
     "@modelcontextprotocol/sdk": "1.18.2",
     "@nestjs/common": "11.1.6",
     "@nestjs/core": "11.1.6",

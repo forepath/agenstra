@@ -178,10 +178,11 @@
 }
 
 .tickets-hierarchy-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: start;
+
   &.info-badge.tickets-board__chip--status-draft {
-    display: inline-flex;
-    align-items: center;
-    justify-content: start;
     background-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
   }
 }
@@ -345,4 +346,8 @@
       border-right: 0;
     }
   }
+}
+
+.modal-ticket-detail {
+  --bs-modal-width: calc(100% - (var(--bs-modal-margin) * 2));
 }
