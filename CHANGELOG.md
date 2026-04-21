@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.47.0](https://github.com/forepath/agenstra/compare/v1.46.0...v1.47.0) (2026-04-21)
+
+
+### Features
+
+* ticket markdown editor ([#284](https://github.com/forepath/agenstra/issues/284)) ([c4a5a94](https://github.com/forepath/agenstra/commit/c4a5a94319748af00a43484d074b9a1383aa460a))
+
 ## [1.46.0](https://github.com/forepath/agenstra/compare/v1.45.0...v1.46.0) (2026-04-20)
 
 
