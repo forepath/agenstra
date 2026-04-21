@@ -40,6 +40,7 @@ export class AgentConsoleContainerComponent implements OnInit {
           (url) =>
             (url.includes('/clients') ||
               url.includes('/users') ||
+              url.includes('/filters') ||
               url.includes('/audit') ||
               url.includes('/tickets')) &&
             !url.includes('/editor') &&
@@ -51,6 +52,7 @@ export class AgentConsoleContainerComponent implements OnInit {
       initialValue:
         (this.router.url.includes('/clients') ||
           this.router.url.includes('/users') ||
+          this.router.url.includes('/filters') ||
           this.router.url.includes('/audit') ||
           this.router.url.includes('/tickets')) &&
         !this.router.url.includes('/editor') &&

@@ -8,6 +8,7 @@ import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
+import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
@@ -18,6 +19,8 @@ import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat
 import { IncomingChatFilter } from '../providers/filters/incoming-chat-filter';
 import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
 import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
+import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
+import { DatabaseRegexOutgoingChatFilter } from '../providers/filters/database-regex-outgoing-chat-filter';
 import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
 import { GitHubProvider } from '../providers/pipelines/github.provider';
 import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
@@ -61,6 +64,8 @@ describe('AgentsModule', () => {
       .overrideProvider(getRepositoryToken(DeploymentConfigurationEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(DeploymentRunEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(RegexFilterRuleEntity))
       .useValue(mockRepository)
       .compile();
   });
@@ -216,6 +221,13 @@ describe('AgentsModule', () => {
     expect(factory.hasFilter('bidirectional-example')).toBe(true);
     expect(factory.getFilter('bidirectional-example')).toBe(bidirectionalFilter);
     expect(bidirectionalFilter.getType()).toBe('bidirectional-example');
+
+    const dbIn = module.get(DatabaseRegexIncomingChatFilter);
+    const dbOut = module.get(DatabaseRegexOutgoingChatFilter);
+    expect(factory.hasFilter('database-regex-incoming')).toBe(true);
+    expect(factory.getFilter('database-regex-incoming')).toBe(dbIn);
+    expect(factory.hasFilter('database-regex-outgoing')).toBe(true);
+    expect(factory.getFilter('database-regex-outgoing')).toBe(dbOut);
   });
 
   it('should initialize CHAT_FILTER_INIT factory', () => {

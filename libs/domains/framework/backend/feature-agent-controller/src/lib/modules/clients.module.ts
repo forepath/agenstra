@@ -13,7 +13,7 @@ import {
   UserEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 import { ClientAgentAutonomyDirectoryController } from '../controllers/client-agent-autonomy-directory.controller';
@@ -60,6 +60,7 @@ import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.se
 import { TicketsService } from '../services/tickets.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { StatisticsAgentSyncService } from '../services/statistics-agent-sync.service';
+import { FilterRulesModule } from './filter-rules.module';
 import { StatisticsModule } from './statistics.module';
 
 const authMethod = getAuthenticationMethod();
@@ -87,6 +88,7 @@ const authMethod = getAuthenticationMethod();
       ClientAgentAutonomyEntity,
     ]),
     StatisticsModule,
+    forwardRef(() => FilterRulesModule),
     // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],

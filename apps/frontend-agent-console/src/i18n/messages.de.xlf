@@ -672,6 +672,10 @@
         <source>Create Workspace</source>
         <target>Arbeitsbereich erstellen</target>
         </trans-unit>
+      <trans-unit id="featureChat-dangerZoneDescription" datatype="html">
+        <source>These features partially ignore the internal permissions and will allow users to modify the agent container files without any restrictions.</source>
+        <target>Diese Funktionen ignorieren teilweise die internen Berechtigungen und ermöglichen es Benutzern, die Dateien des Agenten-Containers ohne Einschränkungen zu ändern.</target>
+        </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
         <source>Create Environment</source>
         <target>Umgebung erstellen</target>
@@ -1583,6 +1587,14 @@
       <trans-unit id="featureContainer-users" datatype="html">
         <source>Users</source>
         <target>Benutzer</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-filtersTitle" datatype="html">
+        <source>Filters</source>
+        <target>Filterregeln</target>
+        </trans-unit>
+      <trans-unit id="featureContainer-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filterregeln</target>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -3081,6 +3093,190 @@
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-title" datatype="html">
+        <source>Filters</source>
+        <target>Filterregeln</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-add" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-addButtonTitle" datatype="html">
+        <source>Add filter rule</source>
+        <target>Filterregel hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-searchPlaceholder" datatype="html">
+        <source>Search rules</source>
+        <target>Regeln suchen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-loading" datatype="html">
+        <source>Loading…</source>
+        <target>Wird geladen…</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-empty" datatype="html">
+        <source>No filter rules yet.</source>
+        <target>Noch keine Filterregeln.</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-statusInactive" datatype="html">
+        <source>Inactive</source>
+        <target>Inaktiv</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-statusActive" datatype="html">
+        <source>Active</source>
+        <target>Ausstehend</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-statusSynced" datatype="html">
+        <source>Synced</source>
+        <target>Synchronisiert</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-allWorkspaces" datatype="html">
+        <source>All workspaces</source>
+        <target>Alle Arbeitsbereiche</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-syncWsTitlePending" datatype="html">
+        <source>Waiting to sync to agent-manager</source>
+        <target>Wartet auf Synchronisation mit dem Agent-Manager</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-syncWsTitleSynced" datatype="html">
+        <source>Synced to agent-manager</source>
+        <target>Mit Agent-Manager synchronisiert</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-syncWsTitleFailed" datatype="html">
+        <source>Sync to agent-manager failed</source>
+        <target>Synchronisation mit Agent-Manager fehlgeschlagen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-test" datatype="html">
+        <source>Test</source>
+        <target>Test</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-edit" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-createTitle" datatype="html">
+        <source>Add filter rule</source>
+        <target>Filterregel hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-pattern" datatype="html">
+        <source>Pattern</source>
+        <target>Muster</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-patternPlaceholder" datatype="html">
+        <source>[a-zA-Z0-9]+</source>
+        <target>[a-zA-Z0-9]+</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-flags" datatype="html">
+        <source>Flags</source>
+        <target>Flags</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-direction" datatype="html">
+        <source>Direction</source>
+        <target>Richtung</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterType" datatype="html">
+        <source>Filter type</source>
+        <target>Filtertyp</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-replace" datatype="html">
+        <source>Replace template</source>
+        <target>Ersetzungsvorlage</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-priority" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-enabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-global" datatype="html">
+        <source>Global (all workspaces)</source>
+        <target>Global (alle Arbeitsbereiche)</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-pickWorkspaces" datatype="html">
+        <source>Workspaces</source>
+        <target>Arbeitsbereiche</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-editTitle" datatype="html">
+        <source>Edit filter rule</source>
+        <target>Filterregel bearbeiten</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-deleteTitle" datatype="html">
+        <source>Delete rule</source>
+        <target>Regel löschen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-deleteConfirm" datatype="html">
+        <source>Delete this rule? Remote copies will be removed where possible.</source>
+        <target>Diese Regel löschen? Remote-Kopien werden nach Möglichkeit entfernt.</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerTitle" datatype="html">
+        <source>Test rule</source>
+        <target>Regel testen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-sample" datatype="html">
+        <source>Sample text</source>
+        <target>Beispieltext</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-runTest" datatype="html">
+        <source>Run test</source>
+        <target>Test ausführen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-close" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-directionIncoming" datatype="html">
+        <source>Incoming</source>
+        <target>Eingehend</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-directionOutgoing" datatype="html">
+        <source>Outgoing</source>
+        <target>Ausgehend</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-directionBidirectional" datatype="html">
+        <source>Bidirectional</source>
+        <target>Bidirektional</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterTypeNone" datatype="html">
+        <source>No content change</source>
+        <target>Keine Inhaltsänderung</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterTypeReplace" datatype="html">
+        <source>Replace content</source>
+        <target>Inhalt ersetzen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterTypeDrop" datatype="html">
+        <source>Drop message</source>
+        <target>Nachricht verwerfen</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerNoMatch" datatype="html">
+        <source>No match.</source>
+        <target>Keine Übereinstimmung.</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerWouldDrop" datatype="html">
+        <source>Match: the message would be dropped.</source>
+        <target>Treffer: Die Nachricht würde verworfen.</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerNoContentChange" datatype="html">
+        <source>Match: no content change.</source>
+        <target>Treffer: Keine Inhaltsänderung.</target>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerReplacedHead" datatype="html">
+        <source>Match: replaced result:</source>
+        <target>Treffer: Ersetztes Ergebnis:</target>
         </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceModalTitle" datatype="html">
         <source> Delete Workspace </source>

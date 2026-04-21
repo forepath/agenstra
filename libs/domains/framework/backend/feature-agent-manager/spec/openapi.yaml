@@ -201,6 +201,122 @@ paths:
           description: Agent provider does not support listing models
         '404':
           description: Agent not found
+  /agents-filters:
+    get:
+      summary: List regex filter rules
+      operationId: listRegexFilterRules
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Array of regex filter rules (ordered by priority)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegexFilterRuleResponseDto'
+    post:
+      summary: Create regex filter rule
+      operationId: createRegexFilterRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRegexFilterRuleDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegexFilterRuleResponseDto'
+  /agents-filters/count:
+    get:
+      summary: Count regex filter rules
+      operationId: countRegexFilterRules
+      responses:
+        '200':
+          description: Count
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count]
+                properties:
+                  count:
+                    type: integer
+                    minimum: 0
+  /agents-filters/{id}:
+    get:
+      summary: Get regex filter rule by id
+      operationId: getRegexFilterRule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegexFilterRuleResponseDto'
+        '404':
+          description: Not found
+    put:
+      summary: Update regex filter rule
+      operationId: updateRegexFilterRule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRegexFilterRuleDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegexFilterRuleResponseDto'
+        '404':
+          description: Not found
+    delete:
+      summary: Delete regex filter rule
+      operationId: deleteRegexFilterRule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
   /config:
     get:
       summary: Get configuration parameters
@@ -1994,3 +2110,82 @@ components:
         updatedAt:
           type: string
           format: date-time
+    RegexFilterRuleResponseDto:
+      type: object
+      required:
+        [
+          id,
+          pattern,
+          regexFlags,
+          direction,
+          filterType,
+          priority,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        pattern:
+          type: string
+        regexFlags:
+          type: string
+          description: Flags passed to JavaScript RegExp (subset g,i,m,s,u)
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        filterType:
+          type: string
+          enum: [none, filter, drop]
+        replaceContent:
+          type: string
+          description: Replacement template when filterType is filter ($1-style backrefs supported)
+        priority:
+          type: integer
+          description: Lower values run first
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateRegexFilterRuleDto:
+      type: object
+      required: [pattern, direction, filterType]
+      properties:
+        pattern:
+          type: string
+        regexFlags:
+          type: string
+          default: g
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        filterType:
+          type: string
+          enum: [none, filter, drop]
+        replaceContent:
+          type: string
+          description: Required when filterType is filter
+        priority:
+          type: integer
+          minimum: 0
+    UpdateRegexFilterRuleDto:
+      type: object
+      properties:
+        pattern:
+          type: string
+        regexFlags:
+          type: string
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        filterType:
+          type: string
+          enum: [none, filter, drop]
+        replaceContent:
+          type: string
+        priority:
+          type: integer
+          minimum: 0

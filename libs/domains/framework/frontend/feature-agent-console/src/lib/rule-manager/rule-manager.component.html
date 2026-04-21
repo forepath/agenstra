@@ -1,0 +1,444 @@
+<div class="rule-manager-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureRuleManager-title">Filters</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="onAdd()"
+      [disabled]="(saving$ | async) === true"
+      i18n-title="@@featureRuleManager-addButtonTitle"
+      title="Add filter rule"
+    >
+      <i class="bi bi-plus-circle me-1"></i>
+      <span i18n="@@featureRuleManager-add">Add</span>
+    </button>
+  </div>
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control border-0 search-input"
+      name="search"
+      [(ngModel)]="searchQuery"
+      i18n-placeholder="@@featureRuleManager-searchPlaceholder"
+      placeholder="Search rules"
+    />
+  </div>
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureRuleManager-loading">Loading…</span>
+        </div>
+      </div>
+    } @else {
+      @if (error$ | async; as err) {
+        <div class="alert alert-danger m-3" role="alert">{{ err }}</div>
+      }
+      @if (filteredRules().length === 0) {
+        <div class="text-center text-muted p-4" i18n="@@featureRuleManager-empty">No filter rules yet.</div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (rule of filteredRules(); track rule.id) {
+            <div class="list-group-item border-bottom">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <div class="flex-grow-1">
+                  <div class="fw-semibold font-monospace mb-2">
+                    <span class="text-muted">/</span>{{ rule.pattern
+                    }}<span class="text-muted">/{{ rule.regexFlags }}</span>
+                  </div>
+                  <div class="small text-muted d-flex flex-wrap gap-2">
+                    <span class="badge bg-secondary" [attr.title]="rule.direction">{{
+                      directionLabel(rule.direction)
+                    }}</span>
+                    <span class="badge bg-info text-dark" [attr.title]="rule.filterType">{{
+                      filterTypeLabel(rule.filterType)
+                    }}</span>
+                    <span
+                      class="badge"
+                      [class.bg-secondary]="statusLabel(rule) === 'inactive'"
+                      [class.bg-warning]="statusLabel(rule) === 'active'"
+                      [class.bg-success]="statusLabel(rule) === 'synced'"
+                    >
+                      @if (statusLabel(rule) === 'inactive') {
+                        <ng-container i18n="@@featureRuleManager-statusInactive">Inactive</ng-container>
+                      } @else if (statusLabel(rule) === 'active') {
+                        <ng-container i18n="@@featureRuleManager-statusActive">Active</ng-container>
+                      } @else {
+                        <ng-container i18n="@@featureRuleManager-statusSynced">Synced</ng-container>
+                      }
+                    </span>
+                  </div>
+                </div>
+                <div class="btn-group btn-group-sm">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="onTest(rule)"
+                    i18n-title="@@featureRuleManager-test"
+                    title="Test"
+                  >
+                    <i class="bi bi-flask"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-warning"
+                    (click)="onEdit(rule)"
+                    i18n-title="@@featureRuleManager-edit"
+                    title="Edit"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    (click)="onDelete(rule)"
+                    i18n-title="@@featureRuleManager-delete"
+                    title="Delete"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap column-gap-1 row-gap-1 mt-3 border rounded px-3 py-2 align-items-center">
+                @if (rule.isGlobal) {
+                  <span class="small text-muted me-3 lh-1" i18n="@@featureRuleManager-allWorkspaces"
+                    >All workspaces</span
+                  >
+                }
+                @if (rule.isGlobal) {
+                  @for (row of sortedWorkspaceSync(rule); track row.clientId) {
+                    <span
+                      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
+                    >
+                      <i [class]="syncWorkspaceIconClass(row)" [attr.title]="workspaceSyncTitle(row)"></i>
+                      <span>{{ clientName(row.clientId) }}</span>
+                    </span>
+                  }
+                } @else {
+                  @for (wid of rule.workspaceIds; track wid) {
+                    @let row = workspaceSyncRow(rule, wid);
+                    <span
+                      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
+                    >
+                      <i [class]="syncWorkspaceIconClass(row)" [attr.title]="workspaceSyncTitle(row)"></i>
+                      <span>{{ clientName(wid) }}</span>
+                    </span>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Create -->
+<div class="modal fade" tabindex="-1" #createModal>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureRuleManager-createTitle">Add filter rule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelCreate()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label" i18n="@@featureRuleManager-pattern">Pattern</label>
+          <input
+            class="form-control font-monospace"
+            [(ngModel)]="createForm.pattern"
+            name="cpat"
+            i18n-placeholder="@@featureRuleManager-patternPlaceholder"
+            placeholder="[a-zA-Z0-9]+"
+          />
+        </div>
+        <div class="row g-2">
+          <div class="col-md-4">
+            <label class="form-label" i18n="@@featureRuleManager-flags">Flags</label>
+            <input class="form-control" [(ngModel)]="createForm.regexFlags" name="cflags" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" i18n="@@featureRuleManager-direction">Direction</label>
+            <select class="form-select" [(ngModel)]="createForm.direction" name="cdir">
+              <option value="incoming">{{ directionLabel('incoming') }}</option>
+              <option value="outgoing">{{ directionLabel('outgoing') }}</option>
+              <option value="bidirectional">{{ directionLabel('bidirectional') }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" i18n="@@featureRuleManager-filterType">Filter type</label>
+            <select class="form-select" [(ngModel)]="createForm.filterType" name="ctype">
+              <option value="none">{{ filterTypeLabel('none') }}</option>
+              <option value="filter">{{ filterTypeLabel('filter') }}</option>
+              <option value="drop">{{ filterTypeLabel('drop') }}</option>
+            </select>
+          </div>
+        </div>
+        @if (createForm.filterType === 'filter') {
+          <div class="mt-2">
+            <label class="form-label" i18n="@@featureRuleManager-replace">Replace template</label>
+            <textarea
+              class="form-control font-monospace"
+              rows="2"
+              [(ngModel)]="createForm.replaceContent"
+              name="crepl"
+            ></textarea>
+          </div>
+        }
+        <div class="row g-2 mt-2">
+          <div class="col-md-4">
+            <label class="form-label" i18n="@@featureRuleManager-priority">Priority</label>
+            <input type="number" class="form-control" [(ngModel)]="createForm.priority" name="cprio" />
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="createForm.enabled" id="cen" name="cen" />
+              <label class="form-check-label" for="cen" i18n="@@featureRuleManager-enabled">Enabled</label>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="createForm.isGlobal" id="cgl" name="cgl" />
+              <label class="form-check-label" for="cgl" i18n="@@featureRuleManager-global"
+                >Global (all workspaces)</label
+              >
+            </div>
+          </div>
+        </div>
+        @if (!createForm.isGlobal) {
+          <div class="mt-3 border rounded p-2" style="max-height: 200px; overflow: auto">
+            <div class="small text-muted mb-2" i18n="@@featureRuleManager-pickWorkspaces">Workspaces</div>
+            @for (c of clients(); track c.id) {
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [id]="'cw-' + c.id"
+                  [checked]="createWorkspaceSelection[c.id]"
+                  (change)="toggleCreateWorkspace(c.id)"
+                />
+                <label class="form-check-label" [for]="'cw-' + c.id">{{ c.name }}</label>
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelCreate()"
+          i18n="@@featureRuleManager-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitCreate()"
+          [disabled]="(saving$ | async) === true"
+          i18n="@@featureRuleManager-save"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit -->
+<div class="modal fade" tabindex="-1" #editModal>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureRuleManager-editTitle">Edit filter rule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelEdit()"></button>
+      </div>
+      @if (editRule) {
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label" i18n="@@featureRuleManager-pattern">Pattern</label>
+            <input
+              class="form-control font-monospace"
+              [(ngModel)]="editForm.pattern"
+              name="epat"
+              i18n-placeholder="@@featureRuleManager-patternPlaceholder"
+              placeholder="[a-zA-Z0-9]+"
+            />
+          </div>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label" i18n="@@featureRuleManager-flags">Flags</label>
+              <input class="form-control" [(ngModel)]="editForm.regexFlags" name="eflags" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" i18n="@@featureRuleManager-direction">Direction</label>
+              <select class="form-select" [(ngModel)]="editForm.direction" name="edir">
+                <option value="incoming">{{ directionLabel('incoming') }}</option>
+                <option value="outgoing">{{ directionLabel('outgoing') }}</option>
+                <option value="bidirectional">{{ directionLabel('bidirectional') }}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" i18n="@@featureRuleManager-filterType">Filter type</label>
+              <select class="form-select" [(ngModel)]="editForm.filterType" name="etype">
+                <option value="none">{{ filterTypeLabel('none') }}</option>
+                <option value="filter">{{ filterTypeLabel('filter') }}</option>
+                <option value="drop">{{ filterTypeLabel('drop') }}</option>
+              </select>
+            </div>
+          </div>
+          @if (editForm.filterType === 'filter') {
+            <div class="mt-2">
+              <label class="form-label" i18n="@@featureRuleManager-replace">Replace template</label>
+              <textarea
+                class="form-control font-monospace"
+                rows="2"
+                [(ngModel)]="editForm.replaceContent"
+                name="erepl"
+              ></textarea>
+            </div>
+          }
+          <div class="row g-2 mt-2">
+            <div class="col-md-4">
+              <label class="form-label" i18n="@@featureRuleManager-priority">Priority</label>
+              <input type="number" class="form-control" [(ngModel)]="editForm.priority" name="eprio" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="editForm.enabled" id="een" name="een" />
+                <label class="form-check-label" for="een" i18n="@@featureRuleManager-enabled">Enabled</label>
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="editForm.isGlobal" id="egl" name="egl" />
+                <label class="form-check-label" for="egl" i18n="@@featureRuleManager-global"
+                  >Global (all workspaces)</label
+                >
+              </div>
+            </div>
+          </div>
+          @if (editForm.isGlobal === false) {
+            <div class="mt-3 border rounded p-2" style="max-height: 200px; overflow: auto">
+              <div class="small text-muted mb-2" i18n="@@featureRuleManager-pickWorkspaces">Workspaces</div>
+              @for (c of clients(); track c.id) {
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [id]="'ew-' + c.id"
+                    [checked]="editForm.workspaceIdsSelected[c.id]"
+                    (change)="toggleEditWorkspace(c.id)"
+                  />
+                  <label class="form-check-label" [for]="'ew-' + c.id">{{ c.name }}</label>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelEdit()"
+          i18n="@@featureRuleManager-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitEdit()"
+          [disabled]="(saving$ | async) === true"
+          i18n="@@featureRuleManager-save"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete -->
+<div class="modal fade" tabindex="-1" #deleteModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureRuleManager-deleteTitle">Delete rule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelDelete()"></button>
+      </div>
+      @if (ruleToDelete; as rd) {
+        <div class="modal-body">
+          <p i18n="@@featureRuleManager-deleteConfirm">
+            Delete this rule? Remote copies will be removed where possible.
+          </p>
+          <p class="font-monospace small">{{ rd.pattern }}</p>
+        </div>
+      }
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelDelete()"
+          i18n="@@featureRuleManager-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="(deleting$ | async) === true"
+        >
+          <span i18n="@@featureRuleManager-delete">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tester -->
+<div class="modal fade" tabindex="-1" #testerModal>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureRuleManager-testerTitle">Test rule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelTest()"></button>
+      </div>
+      @if (ruleToTest; as rt) {
+        <div class="modal-body">
+          <p class="small text-muted font-monospace">{{ rt.pattern }} / {{ rt.regexFlags }}</p>
+          <p class="small text-muted mb-2">{{ directionLabel(rt.direction) }} · {{ filterTypeLabel(rt.filterType) }}</p>
+          <label class="form-label" i18n="@@featureRuleManager-sample">Sample text</label>
+          <textarea class="form-control font-monospace" rows="5" [(ngModel)]="testerInput" name="tinp"></textarea>
+          <button type="button" class="btn btn-primary mt-2" (click)="runTester()" i18n="@@featureRuleManager-runTest">
+            Run test
+          </button>
+          @if (testerResult) {
+            <div class="mt-3" [class.text-danger]="!testerResult.ok" [class.text-success]="testerResult.ok">
+              <pre class="small mb-0" style="white-space: pre-wrap">{{ testerResult.message }}</pre>
+            </div>
+          }
+        </div>
+      }
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelTest()"
+          i18n="@@featureRuleManager-close"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

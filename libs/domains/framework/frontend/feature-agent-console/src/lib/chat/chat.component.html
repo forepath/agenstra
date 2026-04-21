@@ -2306,43 +2306,46 @@
               >Optional. Defaults to workspace Git repository URL if not specified.</small
             >
           </div>
-          <div class="mb-3">
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="createVirtualWorkspace"
-                name="createVirtualWorkspace"
-                [ngModel]="newAgent().createVirtualWorkspace !== false"
-                (ngModelChange)="updateAgentField('createVirtualWorkspace', $event)"
-                [disabled]="(agentsCreating$ | async) === true"
-              />
-              <label class="form-check-label" for="createVirtualWorkspace"> Create Virtual Workspace (VNC) </label>
+          <div class="p-3 border border-warning rounded">
+            <label class="form-label mb-2 text-warning">Danger Zone</label>
+            <p class="small text-warning mb-3" i18n="@@featureChat-dangerZoneDescription">
+              These features partially ignore the internal permissions and will allow users to modify the agent
+              container files without any restrictions.
+            </p>
+            <div class="mb-3">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="createVirtualWorkspace"
+                  name="createVirtualWorkspace"
+                  [ngModel]="!!newAgent().createVirtualWorkspace"
+                  (ngModelChange)="updateAgentField('createVirtualWorkspace', $event)"
+                  [disabled]="(agentsCreating$ | async) === true"
+                />
+                <label class="form-check-label" for="createVirtualWorkspace"> Create Virtual Workspace (VNC) </label>
+              </div>
+              <small class="form-text text-muted d-block mt-1"
+                >Enable VNC access to the environment's virtual workspace. Defaults to enabled.</small
+              >
             </div>
-            <small class="form-text text-muted d-block mt-1"
-              >Enable VNC access to the environment's virtual workspace. Defaults to enabled.</small
-            >
-          </div>
-          <div class="mb-3">
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="createSshConnection"
-                name="createSshConnection"
-                [ngModel]="newAgent().createSshConnection !== false"
-                (ngModelChange)="updateAgentField('createSshConnection', $event)"
-                [disabled]="(agentsCreating$ | async) === true"
-              />
-              <label class="form-check-label" for="createSshConnection"> Create SSH Connection </label>
+            <div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="createSshConnection"
+                  name="createSshConnection"
+                  [ngModel]="!!newAgent().createSshConnection"
+                  (ngModelChange)="updateAgentField('createSshConnection', $event)"
+                  [disabled]="(agentsCreating$ | async) === true"
+                />
+                <label class="form-check-label" for="createSshConnection"> Create SSH Connection </label>
+              </div>
+              <small class="form-text text-muted d-block mt-1"
+                >Enable SSH access to the environment container. Defaults to enabled.</small
+              >
             </div>
-            <small class="form-text text-muted d-block mt-1"
-              >Enable SSH access to the environment container. Defaults to enabled.</small
-            >
-          </div>
-          <div class="alert alert-info mb-0" role="alert">
-            <i class="bi bi-info-circle me-2"></i>
-            A password will be auto-generated and shown after creation.
           </div>
         </div>
         <div class="modal-footer">
@@ -2994,9 +2997,8 @@
           data-bs-dismiss="modal"
           (click)="onCloseTicketAutonomyModal()"
           [disabled]="autonomySaving()"
-          i18n="@@featureChat-close"
         >
-          Close
+          <span i18n="@@featureChat-close">Close</span>
         </button>
         <button
           type="button"

@@ -135,8 +135,15 @@ import {
   VcsFacade,
   vcsReducer,
   writeFile$,
+  FilterRulesFacade,
+  filterRulesReducer,
+  loadFilterRules$,
+  loadFilterRulesBatch$,
+  createFilterRule$,
+  updateFilterRule$,
+  deleteFilterRule$,
 } from '@forepath/framework/frontend/data-access-agent-console';
-import { authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
+import { adminGuard, authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
@@ -146,6 +153,7 @@ import { AgentConsoleContainerComponent } from './container/container.component'
 import { configEditorGuard } from './guards/config-editor.guard';
 import { ticketsRequireActiveClientGuard } from './guards/tickets-require-active-client.guard';
 import { TicketsBoardComponent } from './tickets/tickets-board.component';
+import { RuleManagerComponent } from './rule-manager/rule-manager.component';
 
 export const agentConsoleRoutes: Route[] = [
   {
@@ -164,6 +172,12 @@ export const agentConsoleRoutes: Route[] = [
         canActivate: [authGuard],
         component: AuditComponent,
         title: 'Audit | Agenstra',
+      },
+      {
+        path: 'filters',
+        canActivate: [authGuard, adminGuard],
+        component: RuleManagerComponent,
+        title: 'Filters | Agenstra',
       },
       {
         path: 'tickets/:clientId',
@@ -237,6 +251,7 @@ export const agentConsoleRoutes: Route[] = [
       TicketsFacade,
       TicketAutomationFacade,
       ClientAgentAutonomyFacade,
+      FilterRulesFacade,
       // Feature states - registered at feature level for lazy loading
       provideState('clients', clientsReducer),
       provideState('agents', agentsReducer),
@@ -251,6 +266,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('tickets', ticketsReducer),
       provideState('ticketAutomation', ticketAutomationReducer),
       provideState('clientAgentAutonomy', clientAgentAutonomyReducer),
+      provideState('filterRules', filterRulesReducer),
       // Effects - only active when this feature route is loaded
       provideEffects({
         loadClients$,
@@ -362,6 +378,11 @@ export const agentConsoleRoutes: Route[] = [
         loadTicketAutomationRunDetail$,
         cancelTicketAutomationRun$,
         upsertClientAgentAutonomy$,
+        loadFilterRules$,
+        loadFilterRulesBatch$,
+        createFilterRule$,
+        updateFilterRule$,
+        deleteFilterRule$,
       }),
       provideMonacoEditor(),
     ],

@@ -278,6 +278,126 @@ paths:
           description: Self-unlock is not allowed
         '404':
           description: User not found
+  /filter-rules:
+    get:
+      summary: List regex filter rules (admin only)
+      operationId: listFilterRules
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Maximum number of rules to return
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of rules to skip (pagination)
+      responses:
+        '200':
+          description: Rules with per-workspace sync summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FilterRuleResponseDto'
+        '403':
+          description: Forbidden
+    post:
+      summary: Create filter rule (admin only)
+      operationId: createFilterRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFilterRuleDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilterRuleResponseDto'
+        '400':
+          description: Validation error
+        '403':
+          description: Forbidden
+  /filter-rules/{id}:
+    get:
+      summary: Get filter rule (admin only)
+      operationId: getFilterRule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilterRuleResponseDto'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    put:
+      summary: Update filter rule (admin only)
+      operationId: updateFilterRule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFilterRuleDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilterRuleResponseDto'
+        '400':
+          description: Validation error
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    delete:
+      summary: Delete filter rule (admin only)
+      operationId: deleteFilterRule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Deleted
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
   /tickets:
     get:
       summary: List project tickets
@@ -4942,3 +5062,143 @@ components:
           format: uuid
         content:
           type: string
+    FilterRuleSyncSummaryDto:
+      type: object
+      required: [pending, synced, failed]
+      properties:
+        pending:
+          type: integer
+          minimum: 0
+        synced:
+          type: integer
+          minimum: 0
+        failed:
+          type: integer
+          minimum: 0
+    FilterRuleWorkspaceSyncDto:
+      type: object
+      required: [clientId, syncStatus]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        syncStatus:
+          type: string
+          enum: [pending, synced, failed]
+        lastError:
+          type: string
+          nullable: true
+    FilterRuleResponseDto:
+      type: object
+      required:
+        [
+          id,
+          pattern,
+          regexFlags,
+          direction,
+          filterType,
+          priority,
+          enabled,
+          isGlobal,
+          workspaceIds,
+          sync,
+          workspaceSync,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        pattern:
+          type: string
+        regexFlags:
+          type: string
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        filterType:
+          type: string
+          enum: [none, filter, drop]
+        replaceContent:
+          type: string
+        priority:
+          type: integer
+        enabled:
+          type: boolean
+        isGlobal:
+          type: boolean
+        workspaceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Empty when isGlobal is true (applies to all workspaces)
+        sync:
+          $ref: '#/components/schemas/FilterRuleSyncSummaryDto'
+        workspaceSync:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterRuleWorkspaceSyncDto'
+          description: Per-workspace agent-manager sync status for this rule
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateFilterRuleDto:
+      type: object
+      required: [pattern, direction, filterType, isGlobal]
+      properties:
+        pattern:
+          type: string
+        regexFlags:
+          type: string
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        filterType:
+          type: string
+          enum: [none, filter, drop]
+        replaceContent:
+          type: string
+        priority:
+          type: integer
+          minimum: 0
+        enabled:
+          type: boolean
+        isGlobal:
+          type: boolean
+        workspaceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    UpdateFilterRuleDto:
+      type: object
+      properties:
+        pattern:
+          type: string
+        regexFlags:
+          type: string
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        filterType:
+          type: string
+          enum: [none, filter, drop]
+        replaceContent:
+          type: string
+        priority:
+          type: integer
+          minimum: 0
+        enabled:
+          type: boolean
+        isGlobal:
+          type: boolean
+        workspaceIds:
+          type: array
+          items:
+            type: string
+            format: uuid

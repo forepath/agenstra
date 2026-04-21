@@ -5,6 +5,7 @@ import {
   AgentMessageEventEntity,
   DeploymentConfigurationEntity,
   DeploymentRunEntity,
+  RegexFilterRuleEntity,
 } from '@forepath/framework/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
@@ -30,6 +31,7 @@ export const typeormConfig: DataSourceOptions = {
     AgentMessageEventEntity,
     DeploymentConfigurationEntity,
     DeploymentRunEntity,
+    RegexFilterRuleEntity,
   ],
   // Migration paths:
   // - In development with TypeScript: use path from workspace root
