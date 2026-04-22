@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.48.0](https://github.com/forepath/agenstra/compare/v1.47.0...v1.48.0) (2026-04-22)
+
+
+### Features
+
+* dynamic message filters ([#285](https://github.com/forepath/agenstra/issues/285)) ([7c83d14](https://github.com/forepath/agenstra/commit/7c83d140e9e15e0df99879130e2ff0df81315839))
+
 ## [1.47.0](https://github.com/forepath/agenstra/compare/v1.46.0...v1.47.0) (2026-04-21)
 
 
