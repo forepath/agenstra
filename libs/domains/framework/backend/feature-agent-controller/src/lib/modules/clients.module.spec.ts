@@ -10,6 +10,7 @@ import {
   UserEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
+import { Module } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-connect';
@@ -27,6 +28,9 @@ import { StatisticsUserEntity } from '../entities/statistics-user.entity';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
+import { AgentConsoleRegexFilterRuleClientEntity } from '../entities/agent-console-regex-filter-rule-client.entity';
+import { AgentConsoleRegexFilterRuleSyncTargetEntity } from '../entities/agent-console-regex-filter-rule-sync-target.entity';
+import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease.entity';
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
@@ -39,7 +43,12 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
+import { FilterRulesSyncScheduler } from '../services/filter-rules-sync.scheduler';
 import { ClientsModule } from './clients.module';
+import { FilterRulesModule } from './filter-rules.module';
+
+@Module({})
+class StubFilterRulesModule {}
 
 describe('ClientsModule', () => {
   let module: TestingModule;
@@ -94,6 +103,8 @@ describe('ClientsModule', () => {
     const moduleBuilder = Test.createTestingModule({
       imports: [ClientsModule],
     })
+      .overrideModule(FilterRulesModule)
+      .useModule(StubFilterRulesModule)
       .overrideProvider(getRepositoryToken(ClientEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ClientAgentCredentialEntity))

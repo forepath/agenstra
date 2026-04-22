@@ -1,4 +1,7 @@
 import {
+  AgentConsoleRegexFilterRuleClientEntity,
+  AgentConsoleRegexFilterRuleEntity,
+  AgentConsoleRegexFilterRuleSyncTargetEntity,
   ProvisioningReferenceEntity,
   StatisticsAgentEntity,
   StatisticsChatFilterDropEntity,
@@ -61,6 +64,9 @@ export const typeormConfig: DataSourceOptions = {
     TicketAutomationLeaseEntity,
     TicketAutomationRunStepEntity,
     ClientAgentAutonomyEntity,
+    AgentConsoleRegexFilterRuleEntity,
+    AgentConsoleRegexFilterRuleClientEntity,
+    AgentConsoleRegexFilterRuleSyncTargetEntity,
   ],
   migrations: [
     'src/migrations/*.js',

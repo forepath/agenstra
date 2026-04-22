@@ -495,6 +495,9 @@
       <trans-unit id="featureChat-createWorkspace" datatype="html">
         <source>Create Workspace</source>
         </trans-unit>
+      <trans-unit id="featureChat-dangerZoneDescription" datatype="html">
+        <source>These features partially ignore the internal permissions and will allow users to modify the agent container files without any restrictions.</source>
+        </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
         <source>Create Environment</source>
         </trans-unit>
@@ -713,6 +716,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-users" datatype="html">
         <source>Users</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-filtersTitle" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-filters" datatype="html">
+        <source>Filters</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -1416,6 +1425,144 @@
         </trans-unit>
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
         <source>New Terminal</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-directionIncoming" datatype="html">
+        <source>Incoming</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-directionOutgoing" datatype="html">
+        <source>Outgoing</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-directionBidirectional" datatype="html">
+        <source>Bidirectional</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterTypeNone" datatype="html">
+        <source>No content change</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterTypeReplace" datatype="html">
+        <source>Replace content</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterTypeDrop" datatype="html">
+        <source>Drop message</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerNoMatch" datatype="html">
+        <source>No match.</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerWouldDrop" datatype="html">
+        <source>Match: the message would be dropped.</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerNoContentChange" datatype="html">
+        <source>Match: no content change.</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerReplacedHead" datatype="html">
+        <source>Match: replaced result:</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-syncWsTitleFailed" datatype="html">
+        <source>Sync to agent-manager failed</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-syncWsTitleSynced" datatype="html">
+        <source>Synced to agent-manager</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-syncWsTitlePending" datatype="html">
+        <source>Waiting to sync to agent-manager</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-title" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-addButtonTitle" datatype="html">
+        <source>Add filter rule</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-add" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-searchPlaceholder" datatype="html">
+        <source>Search rules</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-loading" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-empty" datatype="html">
+        <source>No filter rules yet.</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-statusInactive" datatype="html">
+        <source>Inactive</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-statusActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-statusSynced" datatype="html">
+        <source>Synced</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-test" datatype="html">
+        <source>Test</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-edit" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-allWorkspaces" datatype="html">
+        <source>All workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-createTitle" datatype="html">
+        <source>Add filter rule</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-pattern" datatype="html">
+        <source>Pattern</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-patternPlaceholder" datatype="html">
+        <source>[a-zA-Z0-9]+</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-flags" datatype="html">
+        <source>Flags</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-direction" datatype="html">
+        <source>Direction</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-filterType" datatype="html">
+        <source>Filter type</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-replace" datatype="html">
+        <source>Replace template</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-priority" datatype="html">
+        <source>Priority</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-enabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-global" datatype="html">
+        <source>Global (all workspaces)</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-pickWorkspaces" datatype="html">
+        <source>Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-editTitle" datatype="html">
+        <source>Edit filter rule</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-deleteTitle" datatype="html">
+        <source>Delete rule</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-deleteConfirm" datatype="html">
+        <source> Delete this rule? Remote copies will be removed where possible. </source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-testerTitle" datatype="html">
+        <source>Test rule</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-sample" datatype="html">
+        <source>Sample text</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-runTest" datatype="html">
+        <source> Run test </source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-close" datatype="html">
+        <source> Close </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-runStatusPending" datatype="html">
         <source>Pending</source>
