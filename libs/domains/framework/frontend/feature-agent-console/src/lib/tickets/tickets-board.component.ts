@@ -8,9 +8,12 @@ import {
   effect,
   ElementRef,
   HostListener,
-  inject,
+  Injector,
   OnInit,
+  afterNextRender,
+  inject,
   signal,
+  viewChild,
   ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -159,6 +162,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   private readonly actions$ = inject(Actions);
 
   /**
@@ -201,6 +205,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   @ViewChild('ticketAutomationRunModal', { static: false })
   private ticketAutomationRunModal?: ElementRef<HTMLDivElement>;
+
+  private readonly detailTitleInputRef = viewChild<ElementRef<HTMLInputElement>>('detailTitleInput');
 
   readonly lanes = BOARD_LANE_STATUSES;
   readonly statusOptions: TicketStatus[] = [...ALL_TICKET_STATUSES];
@@ -246,6 +252,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly comments$ = this.ticketsFacade.comments$.pipe(map((comments) => [...comments].reverse()));
   readonly activity$ = this.ticketsFacade.activity$;
   readonly saving$ = this.ticketsFacade.saving$;
+  readonly ticketsSaving = toSignal(this.saving$, { initialValue: false });
 
   readonly detail = toSignal(this.ticketsFacade.detail$, { initialValue: null });
   readonly detailBreadcrumb = toSignal(this.ticketsFacade.detailBreadcrumb$, { initialValue: [] });
@@ -397,6 +404,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private descriptionDraftSyncTicketId: string | null = null;
   private descriptionDraftLastSyncedUpdatedAt: string | null = null;
 
+  /** Inline rename of the ticket title in the detail modal header (blur commits via {@link TicketsFacade.update}). */
+  detailTitleEditing = signal(false);
+  detailTitleDraft = signal('');
+  private readonly pendingDetailTitleRename = signal<{ ticketId: string; sentTitle: string } | null>(null);
+  private detailTitleEditSyncDetailId: string | null = null;
+
   /**
    * Keeps "Agent for chat / AI" aligned with `detail` (incl. `ticketUpsert`) and with socket / agent list changes.
    * Replaces a one-shot `combineLatest`+`take(1)` on open that never saw later store updates.
@@ -405,6 +418,42 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private chatAgentForAiLastSyncedDetailUpdatedAt: string | null = null;
 
   constructor() {
+    effect(() => {
+      const id = this.detail()?.id ?? null;
+      if (id === this.detailTitleEditSyncDetailId) {
+        return;
+      }
+      this.detailTitleEditSyncDetailId = id;
+      this.detailTitleEditing.set(false);
+      this.pendingDetailTitleRename.set(null);
+    });
+
+    effect(() => {
+      const saving = this.ticketsSaving();
+      const pending = this.pendingDetailTitleRename();
+      const editing = this.detailTitleEditing();
+      const d = this.detail();
+      if (saving || !pending || !editing) {
+        return;
+      }
+      if (!d || d.id !== pending.ticketId) {
+        this.pendingDetailTitleRename.set(null);
+        return;
+      }
+      if (d.title.trim() === pending.sentTitle.trim()) {
+        this.detailTitleEditing.set(false);
+        this.pendingDetailTitleRename.set(null);
+        return;
+      }
+      this.pendingDetailTitleRename.set(null);
+      afterNextRender(
+        () => {
+          this.detailTitleInputRef()?.nativeElement?.focus();
+        },
+        { injector: this.injector },
+      );
+    });
+
     effect(() => {
       const d = this.detail();
       if (!d) {
@@ -1008,6 +1057,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   onCloseModal(): void {
+    this.detailTitleEditing.set(false);
+    this.pendingDetailTitleRename.set(null);
     this.ticketDetailSuspendedForAutomationRun = false;
     this.ticketDetailSuspendedForCreateSubtask = false;
     this.hideModal();
@@ -1448,6 +1499,37 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   onDetailPriorityModelChange(ticketId: string, value: TicketPriority): void {
     this.onUpdateTicketField(ticketId, 'priority', value);
+  }
+
+  onDetailTitleClick(ticket: TicketResponseDto): void {
+    this.detailTitleDraft.set(ticket.title);
+    this.detailTitleEditing.set(true);
+    afterNextRender(
+      () => {
+        this.detailTitleInputRef()?.nativeElement?.focus();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  onDetailTitleBlur(): void {
+    const d = this.detail();
+    if (!d || !this.detailTitleEditing()) {
+      return;
+    }
+    const trimmed = this.detailTitleDraft().trim();
+    const current = d.title.trim();
+    if (trimmed === current) {
+      this.detailTitleEditing.set(false);
+      return;
+    }
+    if (!trimmed.length) {
+      this.detailTitleDraft.set(d.title);
+      this.detailTitleEditing.set(false);
+      return;
+    }
+    this.pendingDetailTitleRename.set({ ticketId: d.id, sentTitle: trimmed });
+    this.ticketsFacade.update(d.id, { title: trimmed });
   }
 
   /** Persists description when the editor loses focus (if it changed). */

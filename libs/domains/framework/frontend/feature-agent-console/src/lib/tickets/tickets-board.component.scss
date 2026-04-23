@@ -348,6 +348,10 @@
   }
 }
 
+.tickets-board__detail-title-clickable {
+  cursor: pointer;
+}
+
 .modal-ticket-detail {
   --bs-modal-width: calc(100% - (var(--bs-modal-margin) * 2));
 }
