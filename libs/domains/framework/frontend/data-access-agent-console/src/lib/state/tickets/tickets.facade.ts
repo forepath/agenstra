@@ -16,6 +16,7 @@ import {
   createTicket,
   deleteTicket,
   loadTickets,
+  migrateTicket as migrateTicketAction,
   openTicketDetail,
   prependTicketDetailActivity,
   updateTicket,
@@ -70,6 +71,10 @@ export class TicketsFacade {
 
   update(id: string, dto: UpdateTicketDto): void {
     this.store.dispatch(updateTicket({ id, dto }));
+  }
+
+  migrateTicket(id: string, targetClientId: string): void {
+    this.store.dispatch(migrateTicketAction({ id, targetClientId }));
   }
 
   remove(id: string): void {

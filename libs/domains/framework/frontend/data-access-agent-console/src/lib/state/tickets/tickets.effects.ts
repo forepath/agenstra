@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
-import type { TicketActivityResponseDto } from './tickets.types';
+import type { TicketActivityResponseDto, TicketResponseDto } from './tickets.types';
 import { TicketsService } from '../../services/tickets.service';
 import {
   addTicketComment,
@@ -19,6 +19,9 @@ import {
   loadTickets,
   loadTicketsFailure,
   loadTicketsSuccess,
+  migrateTicket,
+  migrateTicketFailure,
+  migrateTicketSuccess,
   openTicketDetail,
   updateTicket,
   updateTicketFailure,
@@ -36,6 +39,14 @@ function normalizeError(error: unknown): string {
     return error;
   }
   return 'An unexpected error occurred';
+}
+
+function collectTicketTreeIds(root: TicketResponseDto): string[] {
+  const ids = [root.id];
+  for (const c of root.children ?? []) {
+    ids.push(...collectTicketTreeIds(c));
+  }
+  return ids;
 }
 
 export const loadTickets$ = createEffect(
@@ -108,6 +119,27 @@ export const updateTicket$ = createEffect(
             }).pipe(map(({ ticket: t, activity }) => updateTicketSuccess({ ticket: t, activity }))),
           ),
           catchError((error) => of(updateTicketFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const migrateTicket$ = createEffect(
+  (actions$ = inject(Actions), ticketsService = inject(TicketsService)) => {
+    return actions$.pipe(
+      ofType(migrateTicket),
+      switchMap(({ id, targetClientId }) =>
+        ticketsService.migrateTicket(id, { targetClientId }).pipe(
+          map((res) =>
+            migrateTicketSuccess({
+              rootTicket: res.ticket,
+              migratedTicketIds: collectTicketTreeIds(res.ticket),
+              requestedTicketId: id,
+            }),
+          ),
+          catchError((error) => of(migrateTicketFailure({ error: normalizeError(error) }))),
         ),
       ),
     );

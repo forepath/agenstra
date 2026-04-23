@@ -7,6 +7,8 @@ import type {
   CreateTicketDto,
   CreateTicketResultDto,
   ListTicketsParams,
+  MigrateTicketDto,
+  MigrateTicketResultDto,
   PrototypePromptResponseDto,
   StartBodyGenerationSessionResponseDto,
   TicketActivityResponseDto,
@@ -61,6 +63,10 @@ export class TicketsService {
 
   updateTicket(id: string, dto: UpdateTicketDto): Observable<TicketResponseDto> {
     return this.http.patch<TicketResponseDto>(`${this.apiUrl}/tickets/${id}`, dto);
+  }
+
+  migrateTicket(id: string, dto: MigrateTicketDto): Observable<MigrateTicketResultDto> {
+    return this.http.post<MigrateTicketResultDto>(`${this.apiUrl}/tickets/${id}/migrate`, dto);
   }
 
   deleteTicket(id: string): Observable<void> {

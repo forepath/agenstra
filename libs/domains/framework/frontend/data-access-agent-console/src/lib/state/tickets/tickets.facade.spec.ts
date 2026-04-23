@@ -8,6 +8,7 @@ import {
   createTicket,
   deleteTicket,
   loadTickets,
+  migrateTicket,
   openTicketDetail,
   updateTicket,
 } from './tickets.actions';
@@ -192,6 +193,11 @@ describe('TicketsFacade', () => {
       const dto: UpdateTicketDto = { status: 'done' };
       facade.update('ticket-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(updateTicket({ id: 'ticket-1', dto }));
+    });
+
+    it('dispatches migrateTicket', () => {
+      facade.migrateTicket('ticket-1', 'client-2');
+      expect(store.dispatch).toHaveBeenCalledWith(migrateTicket({ id: 'ticket-1', targetClientId: 'client-2' }));
     });
 
     it('dispatches deleteTicket', () => {

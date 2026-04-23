@@ -24,6 +24,9 @@ import {
   loadTickets,
   loadTicketsFailure,
   loadTicketsSuccess,
+  migrateTicket,
+  migrateTicketFailure,
+  migrateTicketSuccess,
   openTicketDetail,
   prependTicketDetailActivity,
   replaceTicketDetailActivity,
@@ -113,6 +116,32 @@ function mergeCreatedChildIntoDetail(
   };
 }
 
+function flattenTicketSubtreeForList(root: TicketResponseDto): TicketResponseDto[] {
+  const acc: TicketResponseDto[] = [];
+  const visit = (t: TicketResponseDto): void => {
+    const { children, ...rest } = t;
+    acc.push({ ...rest, children: undefined });
+    for (const c of children ?? []) {
+      visit(c);
+    }
+  };
+  visit(root);
+  return acc;
+}
+
+function findTicketInTree(root: TicketResponseDto, id: string): TicketResponseDto | null {
+  if (root.id === id) {
+    return root;
+  }
+  for (const c of root.children ?? []) {
+    const found = findTicketInTree(c, id);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}
+
 export const ticketsReducer = createReducer(
   initialTicketsState,
   on(loadTickets, (state) => ({ ...state, loadingList: true, error: null })),
@@ -187,6 +216,30 @@ export const ticketsReducer = createReducer(
     };
   }),
   on(updateTicketFailure, (state, { error }) => ({ ...state, saving: false, error })),
+  on(migrateTicket, (state) => ({ ...state, saving: true, error: null })),
+  on(migrateTicketSuccess, (state, { rootTicket, migratedTicketIds, requestedTicketId }) => {
+    let list = state.list.filter((t) => !migratedTicketIds.includes(t.id));
+    for (const row of flattenTicketSubtreeForList(rootTicket)) {
+      list = mergeTicketInList(list, row);
+    }
+    const focusFromRequest = migratedTicketIds.includes(requestedTicketId) ? requestedTicketId : null;
+    const focusId = focusFromRequest ?? state.selectedTicketId ?? state.detail?.id ?? null;
+    let detail = state.detail;
+    if (focusId && migratedTicketIds.includes(focusId)) {
+      const fromTree = findTicketInTree(rootTicket, focusId);
+      const fromList = list.find((t) => t.id === focusId) ?? null;
+      detail = fromTree ?? fromList ?? state.detail;
+    }
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+    return {
+      ...state,
+      saving: false,
+      list: enriched.list,
+      detail: enriched.detail,
+      error: null,
+    };
+  }),
+  on(migrateTicketFailure, (state, { error }) => ({ ...state, saving: false, error })),
   on(deleteTicket, (state) => ({ ...state, saving: true, error: null })),
   on(deleteTicketSuccess, (state, { id }) => {
     const list = state.list.filter((t) => t.id !== id);
@@ -252,10 +305,12 @@ export const ticketsReducer = createReducer(
       detail: enriched.detail,
     };
   }),
-  on(ticketBoardTicketRemoved, (state, { id }) => {
-    const list = state.list.filter((t) => t.id !== id);
-    const selectedTicketId = state.selectedTicketId === id ? null : state.selectedTicketId;
-    const detail = state.detail?.id === id ? null : state.detail;
+  on(ticketBoardTicketRemoved, (state, { id, clientId }) => {
+    const list = state.list.filter((t) => !(t.id === id && t.clientId === clientId));
+    const clearDetail = state.detail?.id === id && state.detail.clientId === clientId;
+    const detail = clearDetail ? null : state.detail;
+    const selectedTicketId =
+      clearDetail || (!state.detail && state.selectedTicketId === id) ? null : state.selectedTicketId;
     const enriched = enrichTicketsWithSubtaskCounts(list, detail);
     return {
       ...state,

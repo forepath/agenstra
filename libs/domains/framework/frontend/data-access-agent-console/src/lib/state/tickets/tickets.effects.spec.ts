@@ -16,6 +16,9 @@ import {
   loadTicketsFailure,
   loadTicketsSuccess,
   loadTicketDetailBundleSuccess,
+  migrateTicket,
+  migrateTicketFailure,
+  migrateTicketSuccess,
   openTicketDetail,
   updateTicket,
   updateTicketFailure,
@@ -26,6 +29,7 @@ import {
   createTicket$,
   deleteTicket$,
   loadTickets$,
+  migrateTicket$,
   openTicketDetail$,
   updateTicket$,
 } from './tickets.effects';
@@ -55,6 +59,7 @@ describe('TicketsEffects', () => {
       listActivity: jest.fn(),
       createTicket: jest.fn(),
       updateTicket: jest.fn(),
+      migrateTicket: jest.fn(),
       deleteTicket: jest.fn(),
       addComment: jest.fn(),
     } as unknown as jest.Mocked<TicketsService>;
@@ -199,6 +204,37 @@ describe('TicketsEffects', () => {
       actions$ = of(action);
       ticketsService.deleteTicket.mockReturnValue(throwError(() => new Error('gone')));
       deleteTicket$(actions$, ticketsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('migrateTicket$', () => {
+    it('should return migrateTicketSuccess with collected ids', (done) => {
+      const child = { ...mockTicket, id: 'child-1', parentId: 'ticket-1', clientId: 'client-2' };
+      const root = { ...mockTicket, clientId: 'client-2', children: [child] };
+      const action = migrateTicket({ id: 'child-1', targetClientId: 'client-2' });
+      const outcome = migrateTicketSuccess({
+        rootTicket: root,
+        migratedTicketIds: ['ticket-1', 'child-1'],
+        requestedTicketId: 'child-1',
+      });
+      actions$ = of(action);
+      ticketsService.migrateTicket.mockReturnValue(of({ ticket: root }));
+      migrateTicket$(actions$, ticketsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(ticketsService.migrateTicket).toHaveBeenCalledWith('child-1', { targetClientId: 'client-2' });
+        done();
+      });
+    });
+
+    it('should return migrateTicketFailure on error', (done) => {
+      const action = migrateTicket({ id: 'ticket-1', targetClientId: 'client-2' });
+      const outcome = migrateTicketFailure({ error: 'forbidden' });
+      actions$ = of(action);
+      ticketsService.migrateTicket.mockReturnValue(throwError(() => new Error('forbidden')));
+      migrateTicket$(actions$, ticketsService).subscribe((result) => {
         expect(result).toEqual(outcome);
         done();
       });

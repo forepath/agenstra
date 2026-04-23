@@ -19,6 +19,7 @@ import {
   ApplyGeneratedBodyDto,
   CreateTicketCommentDto,
   CreateTicketDto,
+  MigrateTicketDto,
   StartBodyGenerationSessionDto,
   UpdateTicketDto,
 } from '../dto/tickets';
@@ -96,6 +97,11 @@ export class TicketsController {
     @Req() req?: RequestWithUser,
   ) {
     return await this.ticketsService.applyGeneratedBody(id, dto, req);
+  }
+
+  @Post(':id/migrate')
+  async migrate(@Param('id', ParseUUIDPipe) id: string, @Body() dto: MigrateTicketDto, @Req() req?: RequestWithUser) {
+    return await this.ticketsService.migrateTicket(id, dto, req);
   }
 
   @Get(':id')

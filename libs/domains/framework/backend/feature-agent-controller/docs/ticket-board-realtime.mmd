@@ -19,3 +19,5 @@ sequenceDiagram
     RT->>Room: ticketUpsert
     Room-->>Facade: ticketUpsert
     Facade-->>Board: NgRx merge list or detail
+
+    Note over Svc,RT: Workspace migration (POST /tickets/:id/migrate): for each id,<br/>ticketRemoved on source room then ticketUpsert on target room

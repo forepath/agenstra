@@ -305,15 +305,29 @@
                 }
               </ol>
             </nav>
-            <button
-              type="button"
-              class="btn btn-outline-primary btn-sm flex-shrink-0 align-self-center py-1 px-3"
-              (click)="onPrototypeInChat()"
-              [disabled]="bodyGenInProgress()"
-              i18n="@@featureTicketsBoard-prototypeButton"
-            >
-              Open prototype in chat
-            </button>
+            <div class="d-flex align-items-center gap-1 flex-shrink-0 align-self-center">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm py-1 px-3"
+                (click)="onPrototypeInChat()"
+                [disabled]="bodyGenInProgress()"
+                i18n="@@featureTicketsBoard-prototypeButton"
+              >
+                Open prototype in chat
+              </button>
+              @if (effectiveWorkspace()?.client?.canManageWorkspaceConfiguration) {
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm py-1 px-2"
+                  (click)="openTicketMigrationModal()"
+                  [disabled]="ticketsSaving()"
+                  i18n-title="@@featureTicketsBoard-migrateWorkspaceTitle"
+                  title="Move ticket to another workspace"
+                >
+                  <i class="bi bi-folder-symlink" aria-hidden="true"></i>
+                </button>
+              }
+            </div>
           </div>
         }
       </div>
@@ -1105,6 +1119,76 @@
   </div>
 </div>
 
+<!-- Move ticket to workspace (swaps with ticket detail while open) -->
+<div
+  class="modal fade"
+  id="ticketMigrateModal"
+  tabindex="-1"
+  aria-hidden="true"
+  #ticketMigrateModal
+  data-bs-backdrop="static"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="ticketMigrateModalLabel" i18n="@@featureTicketsBoard-migrateModalTitle">
+          Move ticket to workspace
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
+          (click)="onCancelTicketMigrationModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted mb-3" i18n="@@featureTicketsBoard-migrateModalIntro">
+          The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace
+          admin in both places.
+        </p>
+        @if (listError$ | async; as migErr) {
+          <div class="alert alert-danger py-2 small mb-3" role="alert">{{ migErr }}</div>
+        }
+        <label class="form-label" for="ticketMigrateTargetSelect" i18n="@@featureTicketsBoard-migrateTargetLabel"
+          >Target workspace</label
+        >
+        <select
+          id="ticketMigrateTargetSelect"
+          class="form-select"
+          [ngModel]="migrationTargetClientId()"
+          (ngModelChange)="migrationTargetClientId.set($event)"
+          [disabled]="ticketsSaving()"
+        >
+          @for (c of migrationTargetChoices(); track c.id) {
+            <option [ngValue]="c.id">{{ effectiveWorkspaceTitle({ id: c.id, client: c }) }}</option>
+          }
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="onCancelTicketMigrationModal()"
+          [disabled]="ticketsSaving()"
+          i18n="@@featureTicketsBoard-migrateCancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="onConfirmTicketMigration()"
+          [disabled]="ticketsSaving() || !migrationTargetClientId()"
+          i18n="@@featureTicketsBoard-migrateConfirm"
+        >
+          Move ticket
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Automation run detail (swaps with ticket detail: ticket hides while this is open) -->
 <div
   class="modal fade"
@@ -1268,7 +1352,7 @@
   </div>
 </div>
 
-<!-- Delete ticket confirmation (Bootstrap; stacked over detail modal) -->
+<!-- Delete ticket confirmation (swaps with ticket detail while open, like migrate / subtask / automation run) -->
 <div
   class="modal fade"
   id="deleteTicketConfirmModal"

@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant Client as HTTP Client
+    participant API as TicketsController<br/>POST /api/tickets/:id/migrate
+    participant Service as TicketsService
+    participant Access as ensureWorkspaceManagementAccess
+    participant DB as Database (tickets, ticket_activity)
+    participant Board as TicketBoardRealtimeService
+    participant Chat as ClientAutomationChatRealtimeService
+
+    Note over Client,Chat: Workspace ticket migration (admin on source and target)
+
+    Client->>API: POST /api/tickets/{id}/migrate<br/>{ targetClientId }
+    API->>Service: migrateTicket(id, dto, req)
+    Service->>Service: assertTicketReadable (ensureClientAccess on ticket workspace)
+    Service->>Service: resolve root + collect subtree ids (same clientId)
+    Service->>Access: ensureWorkspaceManagementAccess(sourceClientId)
+    Access-->>Service: ok or 403
+    Service->>Access: ensureWorkspaceManagementAccess(targetClientId)
+    Access-->>Service: ok or 403
+    alt targetClientId === sourceClientId
+        Service-->>API: 400 Bad Request
+        API-->>Client: 400
+    else authorized
+        Service->>DB: BEGIN — UPDATE tickets SET client_id = target WHERE id IN subtree
+        Service->>DB: INSERT ticket_activity WORKSPACE_MOVED (root)
+        Service->>DB: COMMIT
+        loop each migrated ticket id
+            Service->>Service: invalidateAfterTicketFieldChanges (automation approval)
+        end
+        loop each migrated ticket id
+            Service->>Board: emit ticketRemoved (sourceClientId)
+        end
+        loop each migrated row (mapped DTO)
+            Service->>Board: emit ticketUpsert (targetClientId)
+            Service->>Chat: emit ticketChatTicketUpsert (targetClientId)
+        end
+        Service->>Service: findOne(root, includeDescendants)
+        Service-->>API: { ticket }
+        API-->>Client: 200 MigrateTicketResponseDto
+    end

@@ -47,6 +47,15 @@ export const updateTicketSuccess = createAction(
 
 export const updateTicketFailure = createAction('[Tickets] Update Failure', props<{ error: string }>());
 
+export const migrateTicket = createAction('[Tickets] Migrate', props<{ id: string; targetClientId: string }>());
+
+export const migrateTicketSuccess = createAction(
+  '[Tickets] Migrate Success',
+  props<{ rootTicket: TicketResponseDto; migratedTicketIds: string[]; requestedTicketId: string }>(),
+);
+
+export const migrateTicketFailure = createAction('[Tickets] Migrate Failure', props<{ error: string }>());
+
 export const deleteTicket = createAction('[Tickets] Delete', props<{ id: string }>());
 
 export const deleteTicketSuccess = createAction('[Tickets] Delete Success', props<{ id: string }>());

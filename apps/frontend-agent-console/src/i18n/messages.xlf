@@ -1756,6 +1756,24 @@
       <trans-unit id="featureTicketsBoard-prototypeButton" datatype="html">
         <source> Open prototype in chat </source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateWorkspaceTitle" datatype="html">
+        <source>Move ticket to another workspace</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateModalTitle" datatype="html">
+        <source>Move ticket to workspace</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateModalIntro" datatype="html">
+        <source>The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace admin in both places.</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateTargetLabel" datatype="html">
+        <source>Target workspace</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateCancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateConfirm" datatype="html">
+        <source>Move ticket</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-detailLoading" datatype="html">
         <source>Loading ticket…</source>
         </trans-unit>
