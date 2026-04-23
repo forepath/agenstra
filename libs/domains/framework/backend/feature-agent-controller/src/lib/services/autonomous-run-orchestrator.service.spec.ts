@@ -10,6 +10,10 @@ import { TicketEntity } from '../entities/ticket.entity';
 import { TicketAutomationFailureCode } from '../entities/ticket-automation.enums';
 import { TicketActionType, TicketStatus } from '../entities/ticket.enums';
 import { AGENSTRA_AUTOMATION_COMPLETE } from '../utils/automation-completion.constants';
+import {
+  ephemeralAutomationBranchNameForRun,
+  stableAutomationBranchNameForTicket,
+} from '../utils/ticket-automation-branch.constants';
 import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.service';
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
@@ -36,6 +40,8 @@ function realtimeSideProviders(ticketIdForBoard: string) {
           approvedByUserId: null,
           approvalBaselineTicketUpdatedAt: null,
           defaultBranchOverride: null,
+          automationBranchStrategy: 'reuse_per_ticket',
+          forceNewAutomationBranchNextRun: false,
           nextRetryAt: null,
           consecutiveFailureCount: 0,
           createdAt: new Date(),
@@ -164,8 +170,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
       getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
       stageFiles: jest.fn().mockResolvedValue(undefined),
@@ -191,6 +199,12 @@ describe('AutonomousRunOrchestratorService', () => {
     const orchestrator = module.get(AutonomousRunOrchestratorService);
     await orchestrator.processBatch(3);
 
+    expect(vcsProxy.fetch).toHaveBeenCalledWith(clientId, agentId);
+    expect(vcsProxy.createBranch).toHaveBeenCalledWith(clientId, agentId, {
+      name: stableAutomationBranchNameForTicket(ticketId),
+      baseBranch: 'main',
+    });
+    expect(vcsProxy.switchBranch).not.toHaveBeenCalled();
     expect(remoteChat.sendChatSync).toHaveBeenCalledTimes(2);
     expect(vcsProxy.runVerifierCommands).toHaveBeenCalledWith(clientId, agentId, {
       commands: [{ cmd: 'echo ok' }],
@@ -275,8 +289,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
       getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
       stageFiles: jest.fn().mockResolvedValue(undefined),
@@ -367,8 +383,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
       getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
       stageFiles: jest.fn().mockResolvedValue(undefined),
@@ -506,8 +524,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -592,8 +612,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({
         results: [{ cmd: 'npm test', exitCode: 1, output: 'fail' }],
       }),
@@ -693,8 +715,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({
         results: [{ cmd: 'npm test', exitCode: 1, output: 'fail' }],
       }),
@@ -864,8 +888,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       getStatus: jest.fn().mockResolvedValue({
         isClean: true,
         currentBranch: 'automation/test',
@@ -958,8 +984,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
       getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
       stageFiles: jest.fn().mockResolvedValue(undefined),
@@ -1041,8 +1069,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
       getStatus: jest.fn().mockResolvedValue({
         isClean: true,
@@ -1143,8 +1173,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
       getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
       stageFiles: jest.fn().mockResolvedValue(undefined),
@@ -1241,8 +1273,10 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
       prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
       createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
       runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
       getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
       stageFiles: jest.fn().mockResolvedValue(undefined),
@@ -1275,6 +1309,282 @@ describe('AutonomousRunOrchestratorService', () => {
         payload: { runId, code: TicketAutomationFailureCode.PUSH_FAILED },
       }),
     );
+    await module.close();
+  });
+
+  it('processBatch reuses existing stable ticket branch when strategy is reuse_per_ticket', async () => {
+    const stable = stableAutomationBranchNameForTicket(ticketId);
+    const ticketRepo = {
+      manager: {
+        query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
+      },
+      findOne: jest.fn().mockResolvedValue({
+        id: ticketId,
+        clientId,
+        title: 'Test ticket',
+        status: TicketStatus.TODO,
+      }),
+      save: jest.fn().mockImplementation((t) => Promise.resolve(t)),
+    };
+    const automationRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        ticketId,
+        allowedAgentIds: [agentId],
+        verifierProfile: { commands: [{ cmd: 'echo ok' }] },
+        automationBranchStrategy: 'reuse_per_ticket',
+        forceNewAutomationBranchNextRun: false,
+      }),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const autonomyRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        clientId,
+        agentId,
+        maxRuntimeMs: 3_600_000,
+        maxIterations: 20,
+        preImproveTicket: false,
+      }),
+    };
+    const runRepo = {
+      manager: { transaction: makeTransactionMock() },
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const stepRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+    };
+    const activityRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+    };
+    const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
+
+    const remoteChat = {
+      sendChatSync: jest
+        .fn()
+        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
+        .mockResolvedValueOnce('feat(automation): implement ticket'),
+    };
+    const mainOnly = [{ name: 'main', isRemote: false }];
+    const withStable = [...mainOnly, { name: stable, isRemote: false }];
+    const vcsProxy = {
+      getBranches: jest.fn().mockResolvedValueOnce(mainOnly).mockResolvedValue(withStable),
+      fetch: jest.fn().mockResolvedValue(undefined),
+      prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
+      createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
+      runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
+      getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
+      stageFiles: jest.fn().mockResolvedValue(undefined),
+      commit: jest.fn().mockResolvedValue(undefined),
+      push: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
+        { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
+        { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
+        { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
+        { provide: getRepositoryToken(TicketAutomationLeaseEntity), useValue: leaseRepo },
+        { provide: getRepositoryToken(TicketAutomationRunStepEntity), useValue: stepRepo },
+        { provide: getRepositoryToken(TicketActivityEntity), useValue: activityRepo },
+        { provide: getRepositoryToken(ClientAgentAutonomyEntity), useValue: autonomyRepo },
+        { provide: RemoteAgentsSessionService, useValue: remoteChat },
+        { provide: ClientAgentVcsProxyService, useValue: vcsProxy },
+      ],
+    }).compile();
+    const orchestrator = module.get(AutonomousRunOrchestratorService);
+    await orchestrator.processBatch(3);
+
+    expect(vcsProxy.switchBranch).toHaveBeenCalledWith(clientId, agentId, stable);
+    expect(vcsProxy.createBranch).not.toHaveBeenCalled();
+    await module.close();
+  });
+
+  it('processBatch uses ephemeral branch when strategy is new_per_run', async () => {
+    const ticketRepo = {
+      manager: {
+        query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
+      },
+      findOne: jest.fn().mockResolvedValue({
+        id: ticketId,
+        clientId,
+        title: 'Test ticket',
+        status: TicketStatus.TODO,
+      }),
+      save: jest.fn().mockImplementation((t) => Promise.resolve(t)),
+    };
+    const automationRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        ticketId,
+        allowedAgentIds: [agentId],
+        verifierProfile: { commands: [{ cmd: 'echo ok' }] },
+        automationBranchStrategy: 'new_per_run',
+        forceNewAutomationBranchNextRun: false,
+      }),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const autonomyRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        clientId,
+        agentId,
+        maxRuntimeMs: 3_600_000,
+        maxIterations: 20,
+        preImproveTicket: false,
+      }),
+    };
+    const runRepo = {
+      manager: { transaction: makeTransactionMock() },
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const stepRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+    };
+    const activityRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+    };
+    const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
+
+    const remoteChat = {
+      sendChatSync: jest
+        .fn()
+        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
+        .mockResolvedValueOnce('feat(automation): implement ticket'),
+    };
+    const vcsProxy = {
+      getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
+      prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
+      createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
+      runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
+      getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
+      stageFiles: jest.fn().mockResolvedValue(undefined),
+      commit: jest.fn().mockResolvedValue(undefined),
+      push: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
+        { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
+        { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
+        { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
+        { provide: getRepositoryToken(TicketAutomationLeaseEntity), useValue: leaseRepo },
+        { provide: getRepositoryToken(TicketAutomationRunStepEntity), useValue: stepRepo },
+        { provide: getRepositoryToken(TicketActivityEntity), useValue: activityRepo },
+        { provide: getRepositoryToken(ClientAgentAutonomyEntity), useValue: autonomyRepo },
+        { provide: RemoteAgentsSessionService, useValue: remoteChat },
+        { provide: ClientAgentVcsProxyService, useValue: vcsProxy },
+      ],
+    }).compile();
+    const orchestrator = module.get(AutonomousRunOrchestratorService);
+    await orchestrator.processBatch(3);
+
+    expect(vcsProxy.createBranch).toHaveBeenCalledWith(clientId, agentId, {
+      name: ephemeralAutomationBranchNameForRun(runId),
+      baseBranch: 'main',
+    });
+    expect(vcsProxy.switchBranch).not.toHaveBeenCalled();
+    await module.close();
+  });
+
+  it('processBatch clears forceNewAutomationBranchNextRun after starting ephemeral branch', async () => {
+    const ticketRepo = {
+      manager: {
+        query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
+      },
+      findOne: jest.fn().mockResolvedValue({
+        id: ticketId,
+        clientId,
+        title: 'Test ticket',
+        status: TicketStatus.TODO,
+      }),
+      save: jest.fn().mockImplementation((t) => Promise.resolve(t)),
+    };
+    const automationRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        ticketId,
+        allowedAgentIds: [agentId],
+        verifierProfile: { commands: [{ cmd: 'echo ok' }] },
+        automationBranchStrategy: 'reuse_per_ticket',
+        forceNewAutomationBranchNextRun: true,
+      }),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const autonomyRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        clientId,
+        agentId,
+        maxRuntimeMs: 3_600_000,
+        maxIterations: 20,
+        preImproveTicket: false,
+      }),
+    };
+    const runRepo = {
+      manager: { transaction: makeTransactionMock() },
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const stepRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+    };
+    const activityRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+    };
+    const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
+
+    const remoteChat = {
+      sendChatSync: jest
+        .fn()
+        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
+        .mockResolvedValueOnce('feat(automation): implement ticket'),
+    };
+    const vcsProxy = {
+      getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
+      prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
+      createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
+      runVerifierCommands: jest.fn().mockResolvedValue({ results: [{ exitCode: 0, cmd: 'echo ok' }] }),
+      getStatus: jest.fn().mockResolvedValue(defaultGitStatusDirty),
+      stageFiles: jest.fn().mockResolvedValue(undefined),
+      commit: jest.fn().mockResolvedValue(undefined),
+      push: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId),
+        { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
+        { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
+        { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
+        { provide: getRepositoryToken(TicketAutomationLeaseEntity), useValue: leaseRepo },
+        { provide: getRepositoryToken(TicketAutomationRunStepEntity), useValue: stepRepo },
+        { provide: getRepositoryToken(TicketActivityEntity), useValue: activityRepo },
+        { provide: getRepositoryToken(ClientAgentAutonomyEntity), useValue: autonomyRepo },
+        { provide: RemoteAgentsSessionService, useValue: remoteChat },
+        { provide: ClientAgentVcsProxyService, useValue: vcsProxy },
+      ],
+    }).compile();
+    const orchestrator = module.get(AutonomousRunOrchestratorService);
+    await orchestrator.processBatch(3);
+
+    expect(automationRepo.update).toHaveBeenCalledWith(
+      { ticketId },
+      expect.objectContaining({ forceNewAutomationBranchNextRun: false }),
+    );
+    expect(vcsProxy.createBranch).toHaveBeenCalledWith(clientId, agentId, {
+      name: ephemeralAutomationBranchNameForRun(runId),
+      baseBranch: 'main',
+    });
     await module.close();
   });
 });

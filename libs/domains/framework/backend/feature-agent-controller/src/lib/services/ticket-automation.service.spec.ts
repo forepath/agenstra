@@ -122,6 +122,8 @@ describe('TicketAutomationService', () => {
         approvedByUserId: null as string | null,
         approvalBaselineTicketUpdatedAt: null as Date | null,
         defaultBranchOverride: null as string | null,
+        automationBranchStrategy: 'reuse_per_ticket' as const,
+        forceNewAutomationBranchNextRun: false,
         consecutiveFailureCount: 0,
         createdAt: new Date('2020-01-01'),
         updatedAt: new Date('2020-01-01'),
@@ -195,6 +197,32 @@ describe('TicketAutomationService', () => {
       );
       expect(automationRepo.save).not.toHaveBeenCalled();
       expect(activityRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('saves forceNewAutomationBranchNextRun without other changes', async () => {
+      automationRepo.findOne.mockResolvedValue(baseAutomation({ forceNewAutomationBranchNextRun: false }));
+      await service.patchAutomation(tid, { forceNewAutomationBranchNextRun: true }, undefined);
+      expect(automationRepo.save).toHaveBeenCalled();
+      const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+      expect(types).toEqual([TicketActionType.AUTOMATION_SETTINGS_UPDATED]);
+    });
+
+    it('invalidates approval when automationBranchStrategy changes while approved', async () => {
+      const approvedAt = new Date('2024-06-01');
+      automationRepo.findOne.mockResolvedValue(
+        baseAutomation({
+          requiresApproval: true,
+          approvedAt,
+          approvedByUserId: 'user-1',
+          automationBranchStrategy: 'reuse_per_ticket',
+        }),
+      );
+      await service.patchAutomation(tid, { automationBranchStrategy: 'new_per_run' }, undefined);
+      const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+      expect(types).toEqual([
+        TicketActionType.AUTOMATION_SETTINGS_UPDATED,
+        TicketActionType.AUTOMATION_APPROVAL_INVALIDATED,
+      ]);
     });
   });
 

@@ -725,6 +725,49 @@
                               placeholder="Optional — leave empty to use repository default"
                             />
                           </div>
+                          <div class="mb-3">
+                            <label
+                              class="form-label mb-1"
+                              id="ticketAutomationBranchStrategyLabel"
+                              i18n="@@featureTicketsBoard-automationBranchStrategyLabel"
+                              >Automation branch</label
+                            >
+                            <select
+                              id="ticketAutomationBranchStrategy"
+                              class="form-select form-select-sm"
+                              aria-labelledby="ticketAutomationBranchStrategyLabel"
+                              [ngModel]="automationDraftBranchStrategy()"
+                              (ngModelChange)="onAutomationBranchStrategyChange($event)"
+                            >
+                              <option value="reuse_per_ticket" i18n="@@featureTicketsBoard-automationBranchReuse">
+                                Reuse one branch per ticket (default)
+                              </option>
+                              <option value="new_per_run" i18n="@@featureTicketsBoard-automationBranchNewPerRun">
+                                New branch every run
+                              </option>
+                            </select>
+                            @if (automationDraftBranchStrategy() === 'reuse_per_ticket') {
+                              <div class="form-check mt-2 mb-0">
+                                <input
+                                  class="form-check-input"
+                                  type="checkbox"
+                                  id="ticketAutomationForceNewBranch"
+                                  [ngModel]="automationDraftForceNewBranchNextRun()"
+                                  (ngModelChange)="automationDraftForceNewBranchNextRun.set($event)"
+                                />
+                                <label class="form-check-label" for="ticketAutomationForceNewBranch">
+                                  <span i18n="@@featureTicketsBoard-automationForceNewBranchLabel"
+                                    >Force a fresh branch on the next run</span
+                                  >
+                                  <span
+                                    class="text-muted d-block small mt-1"
+                                    i18n="@@featureTicketsBoard-automationForceNewBranchHint"
+                                    >Use when a run is stuck; the flag clears after the next run starts.</span
+                                  >
+                                </label>
+                              </div>
+                            }
+                          </div>
                           <div class="mb-2 d-flex justify-content-between align-items-center">
                             <span class="fw-semibold" i18n="@@featureTicketsBoard-automationVerifierHeading"
                               >Verifier commands</span

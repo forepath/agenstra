@@ -11,7 +11,14 @@ sequenceDiagram
     Orch->>DB: find eligible tickets + autonomy
     Orch->>DB: pessimistic lease + create run
     Orch->>Vcs: prepareCleanWorkspace(baseBranch)
-    Orch->>Vcs: createBranch(automation/…)
+    Orch->>Vcs: fetch()
+    Orch->>Vcs: getBranches()
+    alt reuse_per_ticket and stable branch exists
+        Orch->>Vcs: switchBranch(automation/ticket-{ticketId})
+    else new_per_run or force_next or first reuse
+        Orch->>Vcs: createBranch(automation/…)
+    end
+    Note over Orch,Vcs: Default strategy reuses `automation/ticket-{ticketId}`; `new_per_run` or one-shot force uses ephemeral `automation/{runPrefix}`.
     loop maxIterations
         Orch->>Chat: sendChatSync(sync, ephemeral)
         Chat->>Mgr: chat
