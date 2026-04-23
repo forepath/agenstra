@@ -51,6 +51,8 @@ export function ticketAutomationRunStepKindLabel(kind: string): string {
       return $localize`:@@featureTicketsBoard-runStepKindGitCommit:Git commit`;
     case 'git_push':
       return $localize`:@@featureTicketsBoard-runStepKindGitPush:Git push`;
+    case 'vcs_branch':
+      return $localize`:@@featureTicketsBoard-runStepKindVcsBranch:Branch setup`;
     default:
       return kind;
   }

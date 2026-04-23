@@ -496,7 +496,7 @@
         <source>Create Workspace</source>
         </trans-unit>
       <trans-unit id="featureChat-dangerZoneDescription" datatype="html">
-        <source>These features partially ignore the internal permissions and will allow users to modify the agent container files without any restrictions.</source>
+        <source> These features partially ignore the internal permissions and will allow users to modify the agent container files without any restrictions. </source>
         </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
         <source>Create Environment</source>
@@ -1612,6 +1612,9 @@
       <trans-unit id="featureTicketsBoard-runStepKindGitPush" datatype="html">
         <source>Git push</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindVcsBranch" datatype="html">
+        <source>Branch setup</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-runFailureApprovalMissing" datatype="html">
         <source>Approval missing</source>
         </trans-unit>
@@ -1732,6 +1735,9 @@
       <trans-unit id="featureTicketsBoard-automationEligibleTitle" datatype="html">
         <source>Autonomous prototyping enabled</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskCountTitle" datatype="html">
+        <source>Direct subtasks (done / total)</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
         <source> Drop tickets here </source>
         </trans-unit>
@@ -1764,6 +1770,19 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-agentPlaceholder" datatype="html">
         <source>Select agent…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-acceptanceLabel" datatype="html">
+        <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskProgressLabel" datatype="html">
+        <source> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                          &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                        &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskProgressAria" datatype="html">
+        <source>Subtask progress</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-descriptionHeading" datatype="html">
         <source>Description</source>
@@ -1830,6 +1849,21 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationDefaultBranchPh" datatype="html">
         <source>Optional — leave empty to use repository default</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationBranchStrategyLabel" datatype="html">
+        <source>Automation branch</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationBranchReuse" datatype="html">
+        <source> Reuse one branch per ticket (default) </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationBranchNewPerRun" datatype="html">
+        <source> New branch every run </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationForceNewBranchLabel" datatype="html">
+        <source>Force a fresh branch on the next run</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationForceNewBranchHint" datatype="html">
+        <source>Use when a run is stuck; the flag clears after the next run starts.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationVerifierHeading" datatype="html">
         <source>Verifier commands</source>
@@ -1995,6 +2029,15 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createContentPlaceholder" datatype="html">
         <source>Optional details</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTemplateLabel" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTemplateEmpty" datatype="html">
+        <source>Empty</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTemplateSpecification" datatype="html">
+        <source> Specification </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createStatusLabel" datatype="html">
         <source>Status</source>
