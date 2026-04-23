@@ -11,6 +11,9 @@ import {
   loadTickets,
   loadTicketsFailure,
   loadTicketsSuccess,
+  migrateTicket,
+  migrateTicketFailure,
+  migrateTicketSuccess,
   openTicketDetail,
   prependTicketDetailActivity,
   replaceTicketDetailActivity,
@@ -521,6 +524,21 @@ describe('ticketsReducer', () => {
       expect(next.detail).toBeNull();
       expect(next.selectedTicketId).toBeNull();
     });
+
+    it('does not clear detail or drop list row when removal targets another workspace', () => {
+      const migrated = { ...mockTicket, clientId: 'client-2' };
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [migrated],
+        detail: migrated,
+        selectedTicketId: mockTicket.id,
+      };
+      const next = ticketsReducer(prev, ticketBoardTicketRemoved({ id: mockTicket.id, clientId: mockTicket.clientId }));
+      expect(next.list).toHaveLength(1);
+      expect(next.list[0]).toMatchObject(migrated);
+      expect(next.detail).toMatchObject(migrated);
+      expect(next.selectedTicketId).toBe(mockTicket.id);
+    });
   });
 
   describe('board socket comment', () => {
@@ -544,6 +562,79 @@ describe('ticketsReducer', () => {
       };
       const next = ticketsReducer(prev, ticketBoardActivityCreated({ activity: mockActivity }));
       expect(next.activity).toEqual([mockActivity]);
+    });
+  });
+
+  describe('migrateTicket', () => {
+    const child: TicketResponseDto = {
+      ...mockTicket,
+      id: 'ticket-child',
+      parentId: mockTicket.id,
+      clientId: 'client-1',
+    };
+    const migratedRoot: TicketResponseDto = {
+      ...mockTicket,
+      clientId: 'client-2',
+      children: [{ ...child, clientId: 'client-2' }],
+    };
+
+    it('sets saving on migrateTicket', () => {
+      const next = ticketsReducer(
+        initialTicketsState,
+        migrateTicket({ id: 'ticket-child', targetClientId: 'client-2' }),
+      );
+      expect(next.saving).toBe(true);
+      expect(next.error).toBeNull();
+    });
+
+    it('replaces list rows and detail on migrateTicketSuccess', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket, child],
+        detail: child,
+        selectedTicketId: child.id,
+        saving: true,
+      };
+      const next = ticketsReducer(
+        prev,
+        migrateTicketSuccess({
+          rootTicket: migratedRoot,
+          migratedTicketIds: [mockTicket.id, child.id],
+          requestedTicketId: child.id,
+        }),
+      );
+      expect(next.saving).toBe(false);
+      expect(next.list.map((t) => t.id).sort()).toEqual([mockTicket.id, child.id].sort());
+      expect(next.list.every((t) => t.clientId === 'client-2')).toBe(true);
+      expect(next.detail?.id).toBe(child.id);
+      expect(next.detail?.clientId).toBe('client-2');
+    });
+
+    it('updates migrated detail from detail.id when selectedTicketId is null', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        list: [mockTicket, child],
+        detail: child,
+        selectedTicketId: null,
+        saving: true,
+      };
+      const next = ticketsReducer(
+        prev,
+        migrateTicketSuccess({
+          rootTicket: migratedRoot,
+          migratedTicketIds: [mockTicket.id, child.id],
+          requestedTicketId: child.id,
+        }),
+      );
+      expect(next.detail?.id).toBe(child.id);
+      expect(next.detail?.clientId).toBe('client-2');
+    });
+
+    it('clears saving on migrateTicketFailure', () => {
+      const prev = { ...initialTicketsState, saving: true };
+      const next = ticketsReducer(prev, migrateTicketFailure({ error: 'x' }));
+      expect(next.saving).toBe(false);
+      expect(next.error).toBe('x');
     });
   });
 });

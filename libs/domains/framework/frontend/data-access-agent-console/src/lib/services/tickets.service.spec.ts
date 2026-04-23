@@ -237,4 +237,18 @@ describe('TicketsService', () => {
       req.flush({ ...mockRun, status: 'cancelled' });
     });
   });
+
+  describe('migrateTicket', () => {
+    it('POSTs /tickets/:id/migrate with body', (done) => {
+      const body = { targetClientId: 'client-2' };
+      service.migrateTicket('ticket-1', body).subscribe((res) => {
+        expect(res).toEqual({ ticket: { ...mockTicket, clientId: 'client-2' } });
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/migrate`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(body);
+      req.flush({ ticket: { ...mockTicket, clientId: 'client-2' } });
+    });
+  });
 });

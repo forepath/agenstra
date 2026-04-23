@@ -1,6 +1,7 @@
 export * from './apply-generated-body.dto';
 export * from './create-ticket-comment.dto';
 export * from './create-ticket.dto';
+export * from './migrate-ticket.dto';
 export * from './start-body-generation-session.dto';
 export * from './ticket-activity-response.dto';
 export * from './ticket-comment-response.dto';

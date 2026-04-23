@@ -28,8 +28,13 @@ import {
   cancelTicketAutomationRunSuccess,
   ClientsFacade,
   ClientsService,
+  deleteTicketFailure,
   deleteTicketSuccess,
   filterTicketsForGlobalSearch,
+  loadTickets,
+  loadTicketsFailure,
+  loadTicketsSuccess,
+  migrateTicketSuccess,
   patchTicketAutomationFailure,
   patchTicketAutomationSuccess,
   SocketsFacade,
@@ -64,6 +69,7 @@ import {
   filter,
   finalize,
   map,
+  merge,
   Observable,
   of,
   switchMap,
@@ -179,11 +185,17 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
    * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
    */
   private ticketDetailSuspendedForAutomationRun = false;
+  private ticketDetailSuspendedForMigration = false;
   /**
    * Ticket detail was hidden so the create-subtask modal can show alone; when create closes, show ticket again.
    * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
    */
   private ticketDetailSuspendedForCreateSubtask = false;
+  /**
+   * Ticket detail was hidden so the delete confirmation modal can show alone; when delete closes without confirming,
+   * show ticket again.
+   */
+  private ticketDetailSuspendedForDeleteConfirm = false;
 
   @ViewChild('ticketDetailModal', { static: false })
   private ticketDetailModal?: ElementRef<HTMLDivElement>;
@@ -206,6 +218,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   @ViewChild('ticketAutomationRunModal', { static: false })
   private ticketAutomationRunModal?: ElementRef<HTMLDivElement>;
 
+  @ViewChild('ticketMigrateModal', { static: false })
+  private ticketMigrateModal?: ElementRef<HTMLDivElement>;
+
   private readonly detailTitleInputRef = viewChild<ElementRef<HTMLInputElement>>('detailTitleInput');
 
   readonly lanes = BOARD_LANE_STATUSES;
@@ -226,6 +241,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly effectiveClientId = toSignal(this.effectiveClientId$, { initialValue: null });
 
   readonly clients$ = this.clientsFacade.clients$;
+  readonly clientsList = toSignal(this.clients$, { initialValue: [] as ClientResponseDto[] });
   readonly clientsLoading$ = this.clientsFacade.loading$;
 
   /** Workspace shown for the current board URL / active client (name when list is loaded). */
@@ -244,6 +260,14 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     ),
   );
   readonly effectiveWorkspace = toSignal(this.effectiveWorkspace$, { initialValue: null });
+
+  /** Target workspace for POST /tickets/:id/migrate (choices exclude current workspace). */
+  migrationTargetClientId = signal('');
+
+  readonly migrationTargetChoices = computed((): ClientResponseDto[] => {
+    const wsId = this.effectiveWorkspace()?.id ?? this.detail()?.clientId ?? null;
+    return this.clientsList().filter((c) => c.canManageWorkspaceConfiguration && wsId !== null && c.id !== wsId);
+  });
 
   /** Filter text for the workspace switcher modal (same idea as the workspace list on /clients). */
   workspaceSwitchSearch = signal('');
@@ -604,6 +628,32 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         this.pendingAutomationAutosaveAfterBusy = false;
         queueMicrotask(() => this.tryAutosaveTicketAutomationSettings());
       });
+
+    this.actions$.pipe(ofType(migrateTicketSuccess), takeUntilDestroyed(this.destroyRef)).subscribe((a) => {
+      this.ticketDetailSuspendedForMigration = false;
+      this.ticketDetailSuspendedForDeleteConfirm = false;
+      this.hideTicketMigrateModalEl();
+      const targetId = a.rootTicket.clientId;
+      const current = this.effectiveClientId();
+      if (current && current !== targetId) {
+        this.clientsFacade.setActiveClient(targetId);
+        const parent = this.route.parent;
+        const queryClear = {
+          queryParams: { openTicketId: null, openAutomationRunId: null },
+          queryParamsHandling: 'merge' as const,
+        };
+        const nav = parent
+          ? this.router.navigate(['tickets', targetId], { relativeTo: parent, ...queryClear })
+          : this.router.navigate(['/tickets', targetId], queryClear);
+        void nav.then(() => {
+          this.showTicketDetailModalAfterTicketListLoadForClient(targetId, a.requestedTicketId);
+          this.ticketsFacade.loadTickets({ clientId: targetId });
+        });
+      } else {
+        this.showTicketDetailModalAfterTicketListLoadForClient(targetId, a.requestedTicketId);
+        this.ticketsFacade.loadTickets({ clientId: targetId });
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -1061,8 +1111,13 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.pendingDetailTitleRename.set(null);
     this.ticketDetailSuspendedForAutomationRun = false;
     this.ticketDetailSuspendedForCreateSubtask = false;
+    this.ticketDetailSuspendedForMigration = false;
+    this.ticketDetailSuspendedForDeleteConfirm = false;
     this.hideModal();
     this.hideAutomationRunDetailModal();
+    this.hideTicketMigrateModalEl();
+    this.hideDeleteTicketConfirmModal();
+    this.ticketPendingDelete.set(null);
     this.ticketsFacade.closeDetail();
     this.prototypeError.set(null);
     this.bodyGenError.set(null);
@@ -1408,6 +1463,115 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     el.addEventListener('hidden.bs.modal', onCreateHidden, { once: true });
   }
 
+  openTicketMigrationModal(): void {
+    const choices = this.migrationTargetChoices();
+    if (choices.length === 0) {
+      return;
+    }
+    this.ticketsFacade.clearError();
+    this.migrationTargetClientId.set(choices[0]?.id ?? '');
+    const migrateEl = this.ticketMigrateModal?.nativeElement;
+    if (migrateEl?.classList.contains('show')) {
+      return;
+    }
+    if (this.ticketDetailSuspendedForMigration) {
+      return;
+    }
+    const ticketEl = this.ticketDetailModal?.nativeElement;
+    if (!ticketEl || !ticketEl.classList.contains('show')) {
+      queueMicrotask(() => this.showTicketMigrateModalEl());
+      return;
+    }
+    this.ticketDetailSuspendedForMigration = true;
+    const onTicketHidden = (): void => {
+      queueMicrotask(() => {
+        const inner = this.ticketMigrateModal?.nativeElement;
+        if (!inner) {
+          this.ticketDetailSuspendedForMigration = false;
+          this.showModal();
+          return;
+        }
+        this.showTicketMigrateModalEl();
+        this.registerReopenTicketDetailAfterMigrationModal();
+      });
+    };
+    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
+    this.hideModal();
+  }
+
+  onCancelTicketMigrationModal(): void {
+    this.hideTicketMigrateModalEl();
+  }
+
+  onConfirmTicketMigration(): void {
+    const d = this.detail();
+    const targetId = this.migrationTargetClientId().trim();
+    if (!d || !targetId) {
+      return;
+    }
+    this.ticketsFacade.migrateTicket(d.id, targetId);
+  }
+
+  private registerReopenTicketDetailAfterMigrationModal(): void {
+    const el = this.ticketMigrateModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const onHidden = (): void => {
+      if (!this.ticketDetailSuspendedForMigration) {
+        return;
+      }
+      this.ticketDetailSuspendedForMigration = false;
+      queueMicrotask(() => this.showModal());
+    };
+    el.addEventListener('hidden.bs.modal', onHidden, { once: true });
+  }
+
+  /** One-time: after delete confirmation modal hides, restore ticket detail if it was swapped out for this flow. */
+  private registerReopenTicketDetailAfterDeleteConfirmModal(): void {
+    const el = this.deleteTicketConfirmModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const onHidden = (): void => {
+      if (!this.ticketDetailSuspendedForDeleteConfirm) {
+        return;
+      }
+      this.ticketDetailSuspendedForDeleteConfirm = false;
+      this.ticketPendingDelete.set(null);
+      queueMicrotask(() => this.showModal());
+    };
+    el.addEventListener('hidden.bs.modal', onHidden, { once: true });
+  }
+
+  private showTicketMigrateModalEl(): void {
+    const el = this.ticketMigrateModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const win = window as unknown as {
+      bootstrap?: {
+        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
+      };
+    };
+    const Modal = win.bootstrap?.Modal;
+    if (Modal) {
+      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+      inst.show();
+    }
+  }
+
+  private hideTicketMigrateModalEl(): void {
+    const el = this.ticketMigrateModal?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const win = window as unknown as {
+      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
+    };
+    win.bootstrap?.Modal?.getInstance(el)?.hide();
+  }
+
   effectiveWorkspaceTitle(ew: { id: string; client: ClientResponseDto | null }): string {
     const name = ew.client?.name?.trim();
     return name && name.length > 0 ? name : ew.id;
@@ -1439,8 +1603,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.hideWorkspaceSwitchModal();
     this.ticketDetailSuspendedForAutomationRun = false;
     this.ticketDetailSuspendedForCreateSubtask = false;
+    this.ticketDetailSuspendedForMigration = false;
+    this.ticketDetailSuspendedForDeleteConfirm = false;
     this.hideModal();
     this.hideAutomationRunDetailModal();
+    this.hideTicketMigrateModalEl();
     this.hideCreateModalEl();
     this.hideDeleteTicketConfirmModal();
     this.hideGlobalSearchModalEl();
@@ -1458,12 +1625,44 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   onRequestDeleteTicket(ticket: TicketResponseDto): void {
     this.ticketPendingDelete.set({ id: ticket.id, title: ticket.title });
-    setTimeout(() => this.showDeleteTicketConfirmModal(), 0);
+    this.openDeleteTicketConfirmFlow();
+  }
+
+  private openDeleteTicketConfirmFlow(): void {
+    const deleteEl = this.deleteTicketConfirmModal?.nativeElement;
+    if (deleteEl?.classList.contains('show')) {
+      return;
+    }
+    if (this.ticketDetailSuspendedForDeleteConfirm) {
+      return;
+    }
+    const ticketEl = this.ticketDetailModal?.nativeElement;
+    if (!ticketEl || !ticketEl.classList.contains('show')) {
+      queueMicrotask(() => this.showDeleteTicketConfirmModal());
+      return;
+    }
+    this.ticketDetailSuspendedForDeleteConfirm = true;
+    const onTicketHidden = (): void => {
+      queueMicrotask(() => {
+        const inner = this.deleteTicketConfirmModal?.nativeElement;
+        if (!inner) {
+          this.ticketDetailSuspendedForDeleteConfirm = false;
+          this.showModal();
+          return;
+        }
+        this.showDeleteTicketConfirmModal();
+        this.registerReopenTicketDetailAfterDeleteConfirmModal();
+      });
+    };
+    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
+    this.hideModal();
   }
 
   onCancelDeleteTicketConfirm(): void {
     this.hideDeleteTicketConfirmModal();
-    this.ticketPendingDelete.set(null);
+    if (!this.ticketDetailSuspendedForDeleteConfirm) {
+      this.ticketPendingDelete.set(null);
+    }
   }
 
   onConfirmDeleteTicket(): void {
@@ -1472,17 +1671,29 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       return;
     }
     const { id } = pending;
+    this.ticketDetailSuspendedForDeleteConfirm = false;
     this.hideDeleteTicketConfirmModal();
     this.ticketPendingDelete.set(null);
     this.ticketsFacade.remove(id);
-    this.actions$
-      .pipe(
+    merge(
+      this.actions$.pipe(
         ofType(deleteTicketSuccess),
         filter((a) => a.id === id),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => this.onCloseModal());
+        map(() => 'success' as const),
+      ),
+      this.actions$.pipe(
+        ofType(deleteTicketFailure),
+        map(() => 'failure' as const),
+      ),
+    )
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe((outcome) => {
+        if (outcome === 'success') {
+          this.onCloseModal();
+        } else {
+          queueMicrotask(() => this.showModal());
+        }
+      });
   }
 
   onUpdateTicketField(id: string, field: 'status' | 'priority', value: TicketStatus | TicketPriority): void {
@@ -1724,8 +1935,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         storeAgentConsoleChatDraft(prompt);
         this.ticketDetailSuspendedForAutomationRun = false;
         this.ticketDetailSuspendedForCreateSubtask = false;
+        this.ticketDetailSuspendedForMigration = false;
+        this.ticketDetailSuspendedForDeleteConfirm = false;
         this.hideModal();
         this.hideAutomationRunDetailModal();
+        this.hideTicketMigrateModalEl();
+        this.hideDeleteTicketConfirmModal();
         this.ticketsFacade.closeDetail();
         this.ticketAutomationFacade.clear();
         void this.router.navigate(['/clients', clientId, 'agents', agentId]);
@@ -1824,6 +2039,37 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       return err.message;
     }
     return $localize`:@@featureTicketsBoard-requestFailed:Request failed`;
+  }
+
+  /**
+   * Reopens the ticket detail modal after the list load for `clientId` finishes (used after workspace migrate so
+   * the board matches the target workspace before the modal body renders). Subscribes before dispatching load.
+   */
+  private showTicketDetailModalAfterTicketListLoadForClient(
+    clientId: string,
+    reopenTicketIdIfDetailMissing: string | null,
+  ): void {
+    this.actions$
+      .pipe(
+        ofType(loadTickets),
+        filter((a) => (a.params?.clientId ?? '') === clientId),
+        switchMap(() =>
+          merge(
+            this.actions$.pipe(ofType(loadTicketsSuccess), take(1)),
+            this.actions$.pipe(ofType(loadTicketsFailure), take(1)),
+          ),
+        ),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() =>
+        queueMicrotask(() => {
+          if (reopenTicketIdIfDetailMissing && !this.detail()) {
+            this.ticketsFacade.openDetail(reopenTicketIdIfDetailMissing);
+          }
+          this.showModal();
+        }),
+      );
   }
 
   private showModal(): void {

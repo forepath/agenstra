@@ -75,6 +75,14 @@ export interface UpdateTicketDto {
   preferredChatAgentId?: string | null;
 }
 
+export interface MigrateTicketDto {
+  targetClientId: string;
+}
+
+export interface MigrateTicketResultDto {
+  ticket: TicketResponseDto;
+}
+
 export interface TicketCommentResponseDto {
   id: string;
   ticketId: string;

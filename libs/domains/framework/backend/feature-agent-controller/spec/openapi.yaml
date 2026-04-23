@@ -631,6 +631,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponseDto'
+  /tickets/{id}/migrate:
+    post:
+      summary: Migrate ticket subtree to another workspace
+      description: |
+        Moves the resolved root ticket and all of its descendant tickets that share the source workspace to
+        `targetClientId`. The caller may pass any ticket id in the subtree; the server always migrates the full tree.
+        Requires workspace management (see `canManageWorkspaceConfiguration` on clients) on **both** the source and
+        target workspaces. Emits `ticketRemoved` for each id on the source workspace room and `ticketUpsert` on the
+        target workspace room (tickets Socket.IO namespace). `targetClientId` must differ from the ticket workspace (400 otherwise).
+      operationId: migrateTicketToWorkspace
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrateTicketDto'
+      responses:
+        '200':
+          description: Migrated root ticket (includes `children` when descendants exist)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrateTicketResponseDto'
+        '400':
+          description: Invalid request (e.g. target workspace equals source)
+        '403':
+          description: Missing workspace access or insufficient workspace role for source or target
+        '404':
+          description: Ticket not found
   /tickets/{ticketId}/automation:
     get:
       summary: Get ticket automation configuration
@@ -4717,6 +4753,21 @@ components:
               description: Present when `creationTemplate` was `specification` (four subtasks).
               items:
                 $ref: '#/components/schemas/TicketResponseDto'
+    MigrateTicketDto:
+      type: object
+      required: [targetClientId]
+      properties:
+        targetClientId:
+          type: string
+          format: uuid
+          description: Destination workspace (client) id
+    MigrateTicketResponseDto:
+      type: object
+      required: [ticket]
+      properties:
+        ticket:
+          $ref: '#/components/schemas/TicketResponseDto'
+          description: Root ticket after migration, including nested `children` when present
     UpdateTicketDto:
       type: object
       properties:

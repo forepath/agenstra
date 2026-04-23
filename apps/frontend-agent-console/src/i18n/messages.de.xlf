@@ -1120,6 +1120,30 @@
         <source> Open prototype in chat </source>
         <target>Prototyp im Chat öffnen</target>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateWorkspaceTitle" datatype="html">
+        <source>Move ticket to another workspace</source>
+        <target>Ticket in einen anderen Arbeitsbereich verschieben</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateModalTitle" datatype="html">
+        <source>Move ticket to workspace</source>
+        <target>Ticket in Arbeitsbereich verschieben</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateModalIntro" datatype="html">
+        <source>The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace admin in both places.</source>
+        <target>Das Ticket und seine Unteraufgaben in diesem Arbeitsbereich werden in den gewählten Arbeitsbereich verschoben. Sie müssen in beiden Arbeitsbereichen Administrator sein.</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateTargetLabel" datatype="html">
+        <source>Target workspace</source>
+        <target>Ziel-Arbeitsbereich</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateCancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateConfirm" datatype="html">
+        <source>Move ticket</source>
+        <target>Ticket verschieben</target>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-generateBodyTitle" datatype="html">
         <source>Generate description with AI (uses selected agent)</source>
         <target>Beschreibung per KI erzeugen (nutzt gewählten Agenten)</target>

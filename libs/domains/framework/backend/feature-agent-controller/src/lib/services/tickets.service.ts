@@ -1,6 +1,7 @@
 import {
   ClientUsersRepository,
   ensureClientAccess,
+  ensureWorkspaceManagementAccess,
   getUserFromRequest,
   type RequestWithUser,
   UsersRepository,
@@ -21,6 +22,7 @@ import {
   CreateTicketCommentDto,
   CreateTicketDto,
   CreateTicketResponseDto,
+  MigrateTicketDto,
   PrototypePromptResponseDto,
   StartBodyGenerationSessionDto,
   StartBodyGenerationSessionResponseDto,
@@ -184,6 +186,51 @@ export class TicketsService {
     const ticket = await this.loadTicketOrThrow(id);
     await this.assertClientAccess(ticket.clientId, req);
     return ticket;
+  }
+
+  private async resolveRootTicket(ticket: TicketEntity): Promise<TicketEntity> {
+    let current = ticket;
+    while (current.parentId) {
+      const parent = await this.loadTicketOrThrow(current.parentId);
+      if (parent.clientId !== ticket.clientId) {
+        throw new BadRequestException('Ticket hierarchy spans multiple workspaces');
+      }
+      current = parent;
+    }
+    return current;
+  }
+
+  /**
+   * All ticket ids in the subtree under `rootId` within `sourceClientId` (root inclusive), depth-first order.
+   */
+  private async collectSubtreeTicketIds(rootId: string, sourceClientId: string): Promise<string[]> {
+    const all = await this.ticketRepo.find({
+      where: { clientId: sourceClientId },
+      select: ['id', 'parentId'],
+    });
+    const byParent = new Map<string | null, string[]>();
+    for (const t of all) {
+      const p = t.parentId ?? null;
+      if (!byParent.has(p)) {
+        byParent.set(p, []);
+      }
+      byParent.get(p)!.push(t.id);
+    }
+    const out: string[] = [];
+    const stack = [rootId];
+    const visited = new Set<string>();
+    while (stack.length > 0) {
+      const id = stack.pop()!;
+      if (visited.has(id)) {
+        continue;
+      }
+      visited.add(id);
+      out.push(id);
+      for (const childId of byParent.get(id) ?? []) {
+        stack.push(childId);
+      }
+    }
+    return out;
   }
 
   async listTickets(query: TicketListQuery, req?: RequestWithUser): Promise<TicketResponseDto[]> {
@@ -499,6 +546,78 @@ export class TicketsService {
       await this.boardEmitTicketActivityMapped(mapped.clientId, activityRows[0]);
     }
     return mapped;
+  }
+
+  /**
+   * Moves the ticket subtree (root of the given ticket and all descendants in the same workspace) to
+   * `targetClientId`. Requires workspace management (owner / client admin / global admin / API key) on
+   * both source and target workspaces.
+   */
+  async migrateTicket(
+    ticketId: string,
+    dto: MigrateTicketDto,
+    req?: RequestWithUser,
+  ): Promise<{ ticket: TicketResponseDto }> {
+    const targetClientId = dto.targetClientId;
+    const seed = await this.assertTicketReadable(ticketId, req);
+    const sourceClientId = seed.clientId;
+    if (targetClientId === sourceClientId) {
+      throw new BadRequestException('Target workspace must differ from the ticket workspace');
+    }
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, sourceClientId, req);
+    await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, targetClientId, req);
+    const root = await this.resolveRootTicket(seed);
+    const idsToMigrate = await this.collectSubtreeTicketIds(root.id, sourceClientId);
+    const actor = this.resolveActor(req);
+
+    await this.ticketRepo.manager.transaction(async (em: EntityManager) => {
+      const tRepo = em.getRepository(TicketEntity);
+      const aRepo = em.getRepository(TicketActivityEntity);
+      await tRepo.update({ id: In(idsToMigrate) }, { clientId: targetClientId });
+      await aRepo.save(
+        aRepo.create({
+          ticketId: root.id,
+          actorType: actor.actorType,
+          actorUserId: actor.actorUserId ?? null,
+          actionType: TicketActionType.WORKSPACE_MOVED,
+          payload: {
+            fromClientId: sourceClientId,
+            toClientId: targetClientId,
+            migratedTicketIds: idsToMigrate,
+          },
+        }),
+      );
+    });
+
+    for (const id of idsToMigrate) {
+      await this.ticketAutomationService.invalidateAfterTicketFieldChanges(id, ['clientId'], req);
+    }
+
+    for (const id of idsToMigrate) {
+      this.boardEmitTicketRemoved(sourceClientId, id);
+    }
+
+    const rowsAfter = await this.ticketRepo.find({
+      where: { id: In(idsToMigrate) },
+      order: { createdAt: 'ASC' },
+    });
+    for (const row of rowsAfter) {
+      const mapped = await this.mapTicketInWorkspace(row);
+      this.boardEmitTicketUpsert(targetClientId, mapped);
+      this.clientAutomationChatRealtime.emitTicketChatUpsert(targetClientId, mapped);
+    }
+
+    const activityRows = await this.activityRepo.find({
+      where: { ticketId: root.id },
+      order: { occurredAt: 'DESC' },
+      take: 1,
+    });
+    if (activityRows[0]) {
+      await this.boardEmitTicketActivityMapped(targetClientId, activityRows[0]);
+    }
+
+    const ticket = await this.findOne(root.id, true, req);
+    return { ticket };
   }
 
   private async wouldCreateCycle(ticketId: string, newParentId: string): Promise<boolean> {

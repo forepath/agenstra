@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClientUsersRepository, UsersRepository } from '@forepath/identity/backend';
@@ -8,6 +8,7 @@ import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketCreationTemplate, TicketPriority, TicketStatus } from '../entities/ticket.enums';
+import { ensureWorkspaceManagementAccess } from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from './clients.service';
 import { TicketAutomationService } from './ticket-automation.service';
@@ -20,6 +21,7 @@ jest.mock('@forepath/identity/backend', () => {
   return {
     ...actual,
     ensureClientAccess: jest.fn().mockResolvedValue(undefined),
+    ensureWorkspaceManagementAccess: jest.fn().mockResolvedValue(undefined),
     getUserFromRequest: jest.fn().mockReturnValue({ userId: 'user-1', userRole: 'admin', isApiKeyAuth: false }),
   };
 });
@@ -285,6 +287,79 @@ describe('TicketsService', () => {
           undefined,
         ),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('migrateTicket', () => {
+    const targetClientId = '90000000-9000-4000-8000-0000000000c2';
+
+    afterEach(() => {
+      (ensureWorkspaceManagementAccess as jest.Mock).mockResolvedValue(undefined);
+    });
+
+    it('rejects when target workspace equals source', async () => {
+      await expect(service.migrateTicket(ticketId, { targetClientId: clientId }, undefined)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('propagates Forbidden when workspace management is denied', async () => {
+      (ensureWorkspaceManagementAccess as jest.Mock).mockRejectedValueOnce(new ForbiddenException('no'));
+      await expect(service.migrateTicket(ticketId, { targetClientId: targetClientId }, undefined)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('requires workspace management on source and target before updating', async () => {
+      (ensureWorkspaceManagementAccess as jest.Mock).mockClear();
+      ticket.parentId = null;
+      ticket.clientId = clientId;
+      ticketRepo.findOne.mockResolvedValue({ ...ticket });
+      ticketRepo.find.mockImplementation(async (opts?: { where?: Record<string, unknown> }) => {
+        const w = opts?.where;
+        if (w && w.clientId === clientId) {
+          return [{ id: ticketId, parentId: null } as TicketEntity];
+        }
+        if (w && w.clientId === targetClientId) {
+          return [{ ...ticket, clientId: targetClientId } as TicketEntity];
+        }
+        if (w && Object.prototype.hasOwnProperty.call(w, 'id')) {
+          return [{ ...ticket, clientId: targetClientId } as TicketEntity];
+        }
+        return [];
+      });
+      ticketRepo.manager.transaction.mockImplementation(async (fn: (em: unknown) => Promise<unknown>) => {
+        const em = {
+          getRepository: (entity: unknown) => {
+            if (entity === TicketEntity) {
+              return { update: jest.fn().mockResolvedValue({ affected: 1 }) };
+            }
+            if (entity === TicketActivityEntity) {
+              return activityRepo;
+            }
+            throw new Error(`Unexpected entity ${String(entity)}`);
+          },
+        };
+        return fn(em);
+      });
+
+      await service.migrateTicket(ticketId, { targetClientId: targetClientId }, undefined);
+
+      expect(ensureWorkspaceManagementAccess).toHaveBeenCalledTimes(2);
+      expect(ensureWorkspaceManagementAccess).toHaveBeenNthCalledWith(
+        1,
+        expect.anything(),
+        expect.anything(),
+        clientId,
+        undefined,
+      );
+      expect(ensureWorkspaceManagementAccess).toHaveBeenNthCalledWith(
+        2,
+        expect.anything(),
+        expect.anything(),
+        targetClientId,
+        undefined,
+      );
     });
   });
 });

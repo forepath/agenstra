@@ -73,6 +73,7 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd)** - Sequence diagram for Statistics REST API (client-scoped and aggregate endpoints)
 - **[HTTP Sequence Diagram](./docs/sequence-http.mmd)** - Detailed sequence diagram for all HTTP CRUD operations (client management and proxied agent operations)
 - **[HTTP Environment Variables Sequence Diagram](./docs/sequence-http-environment.mmd)** - Detailed sequence diagram for proxied environment variable operations
+- **[Ticket workspace migration](./docs/sequence-http-ticket-workspace-migrate.mmd)** - `POST /tickets/:id/migrate` (workspace management on source and target)
 - **[HTTP VCS Sequence Diagram](./docs/sequence-http-vcs.mmd)** - Detailed sequence diagram for proxied VCS (Git) operations
 - **[WebSocket Forwarding Diagram](./docs/sequence-ws-forward.mmd)** - Sequence diagram for WebSocket connection, client context setup, event forwarding, and auto-login
 - **[Chat prompt enhancement](./docs/sequence-chat-enhancement.mmd)** - Sequence for `enhanceChat` / `chatEnhanceResult` (magic-wand flow; statistics only, no `agent_messages`)
