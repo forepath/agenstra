@@ -1092,6 +1092,30 @@
         <source>Select agent…</source>
         <target>Agent wählen…</target>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-acceptanceLabel" datatype="html">
+        <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></source>
+        <target> Abnahme <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskProgressLabel" datatype="html">
+        <source> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                          &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                        &gt;"/></source>
+        <target> Unteraufgaben <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                          &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                        &gt;"/></target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskProgressAria" datatype="html">
+        <source>Subtask progress</source>
+        <target>Fortschritt bei Unteraufgaben</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskCountTitle" datatype="html">
+        <source>Direct subtasks (done / total)</source>
+        <target>Direkte Unteraufgaben (erledigt / gesamt)</target>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-prototypeButton" datatype="html">
         <source> Open prototype in chat </source>
         <target>Prototyp im Chat öffnen</target>
@@ -1356,6 +1380,26 @@
         <source>Optional — leave empty to use repository default</source>
         <target>Optional — leer lassen, um den Repository-Standard zu verwenden</target>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationBranchStrategyLabel" datatype="html">
+        <source>Automation branch</source>
+        <target>Automations-Branch</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationBranchReuse" datatype="html">
+        <source> Reuse one branch per ticket (default) </source>
+        <target> Einen Branch pro Ticket wiederverwenden (Standard) </target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationBranchNewPerRun" datatype="html">
+        <source> New branch every run </source>
+        <target> Bei jedem Lauf neuer Branch </target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationForceNewBranchLabel" datatype="html">
+        <source>Force a fresh branch on the next run</source>
+        <target>Beim nächsten Lauf einen neuen Branch erzwingen</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationForceNewBranchHint" datatype="html">
+        <source>Use when a run is stuck; the flag clears after the next run starts.</source>
+        <target>Nutzen Sie dies, wenn ein Lauf hängt; das Flag wird zurückgesetzt, sobald der nächste Lauf startet.</target>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-automationVerifierHeading" datatype="html">
         <source>Verifier commands</source>
         <target>Verifizierer-Befehle</target>
@@ -1519,6 +1563,18 @@
       <trans-unit id="featureTicketsBoard-createContentPlaceholder" datatype="html">
         <source>Optional details</source>
         <target>Optionale Details</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTemplateLabel" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTemplateEmpty" datatype="html">
+        <source>Empty</source>
+        <target>Leer</target>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-createTemplateSpecification" datatype="html">
+        <source> Specification </source>
+        <target> Spezifikation </target>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-createStatusLabel" datatype="html">
         <source>Status</source>
@@ -3521,6 +3577,10 @@
       <trans-unit id="featureTicketsBoard-runStepKindGitPush" datatype="html">
         <source>Git push</source>
         <target>Git-Push</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-runStepKindVcsBranch" datatype="html">
+        <source>Branch setup</source>
+        <target>Branch-Einrichtung</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-runStepKindVcsPrepare" datatype="html">
         <source>Repository setup</source>
