@@ -133,6 +133,8 @@ describe('TicketsService', () => {
       approvedByUserId: null,
       approvalBaselineTicketUpdatedAt: null,
       defaultBranchOverride: null,
+      automationBranchStrategy: 'reuse_per_ticket',
+      forceNewAutomationBranchNextRun: false,
       nextRetryAt: null,
       consecutiveFailureCount: 0,
       createdAt: '2024-01-01T00:00:00Z',

@@ -3,12 +3,14 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsOptional,
   IsString,
   IsUUID,
   MaxLength,
   ValidateNested,
 } from 'class-validator';
+import { TICKET_AUTOMATION_BRANCH_STRATEGIES } from '../../utils/ticket-automation-branch.constants';
 
 /** Single verifier command; mirrors {@link parseAndValidateVerifierProfile} bounds. */
 export class VerifierCommandEntryDto {
@@ -53,4 +55,12 @@ export class UpdateTicketAutomationDto {
   @IsString()
   @MaxLength(256)
   defaultBranchOverride?: string | null;
+
+  @IsOptional()
+  @IsIn(TICKET_AUTOMATION_BRANCH_STRATEGIES)
+  automationBranchStrategy?: (typeof TICKET_AUTOMATION_BRANCH_STRATEGIES)[number];
+
+  @IsOptional()
+  @IsBoolean()
+  forceNewAutomationBranchNextRun?: boolean;
 }

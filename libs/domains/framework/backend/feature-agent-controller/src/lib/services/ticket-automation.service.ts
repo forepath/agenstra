@@ -35,6 +35,10 @@ import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
+import {
+  DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
+  type TicketAutomationBranchStrategy,
+} from '../utils/ticket-automation-branch.constants';
 import { parseAndValidateVerifierProfile } from '../utils/verifier-profile.validation';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
@@ -47,6 +51,7 @@ const APPROVAL_RELEVANT_AUTOMATION_FIELDS = new Set([
   'verifierProfile',
   'requiresApproval',
   'defaultBranchOverride',
+  'automationBranchStrategy',
 ]);
 
 function sortUuidList(ids: string[]): string[] {
@@ -119,6 +124,8 @@ export class TicketAutomationService {
           eligible: false,
           allowedAgentIds: [],
           requiresApproval: false,
+          automationBranchStrategy: DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
+          forceNewAutomationBranchNextRun: false,
         }),
       );
     }
@@ -141,6 +148,9 @@ export class TicketAutomationService {
       approvedByUserId: row.approvedByUserId ?? null,
       approvalBaselineTicketUpdatedAt: row.approvalBaselineTicketUpdatedAt ?? null,
       defaultBranchOverride: row.defaultBranchOverride ?? null,
+      automationBranchStrategy: (row.automationBranchStrategy ??
+        DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY) as TicketAutomationBranchStrategy,
+      forceNewAutomationBranchNextRun: row.forceNewAutomationBranchNextRun === true,
       nextRetryAt: row.nextRetryAt ?? null,
       consecutiveFailureCount: row.consecutiveFailureCount,
       createdAt: row.createdAt,
@@ -168,6 +178,9 @@ export class TicketAutomationService {
     const prevAllowedSorted = sortUuidList(row.allowedAgentIds ?? []);
     const prevVerifierJson = JSON.stringify(parseAndValidateVerifierProfile(row.verifierProfile ?? { commands: [] }));
     const prevDefaultBranch = normalizeDefaultBranch(row.defaultBranchOverride);
+    const prevStrategy: TicketAutomationBranchStrategy =
+      row.automationBranchStrategy ?? DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY;
+    const prevForce = row.forceNewAutomationBranchNextRun === true;
 
     const actuallyChanged: string[] = [];
 
@@ -200,6 +213,14 @@ export class TicketAutomationService {
         row.defaultBranchOverride = nextBranch;
         actuallyChanged.push('defaultBranchOverride');
       }
+    }
+    if (dto.automationBranchStrategy !== undefined && dto.automationBranchStrategy !== prevStrategy) {
+      row.automationBranchStrategy = dto.automationBranchStrategy;
+      actuallyChanged.push('automationBranchStrategy');
+    }
+    if (dto.forceNewAutomationBranchNextRun !== undefined && dto.forceNewAutomationBranchNextRun !== prevForce) {
+      row.forceNewAutomationBranchNextRun = dto.forceNewAutomationBranchNextRun;
+      actuallyChanged.push('forceNewAutomationBranchNextRun');
     }
 
     if (actuallyChanged.length === 0) {
@@ -239,7 +260,12 @@ export class TicketAutomationService {
       );
     }
     const settingsDetailFields = actuallyChanged.filter(
-      (k) => k === 'allowedAgentIds' || k === 'verifierProfile' || k === 'defaultBranchOverride',
+      (k) =>
+        k === 'allowedAgentIds' ||
+        k === 'verifierProfile' ||
+        k === 'defaultBranchOverride' ||
+        k === 'automationBranchStrategy' ||
+        k === 'forceNewAutomationBranchNextRun',
     );
     if (settingsDetailFields.length > 0) {
       await this.appendActivity(

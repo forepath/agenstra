@@ -4829,6 +4829,17 @@ components:
         defaultBranchOverride:
           type: string
           maxLength: 256
+        automationBranchStrategy:
+          type: string
+          enum: [reuse_per_ticket, new_per_run]
+          description: >
+            `reuse_per_ticket` (default): reuse `automation/ticket-{ticketId}` when it exists. `new_per_run`: create a
+            fresh `automation/{runIdPrefix}` branch for every run (legacy behaviour).
+        forceNewAutomationBranchNextRun:
+          type: boolean
+          description: >
+            When true with `reuse_per_ticket`, the next automation run uses an ephemeral branch; cleared when that run
+            starts branch setup. Lets operators force a clean branch without switching strategy permanently.
     TicketAutomationResponseDto:
       type: object
       required:
@@ -4841,6 +4852,8 @@ components:
         - approvedByUserId
         - approvalBaselineTicketUpdatedAt
         - defaultBranchOverride
+        - automationBranchStrategy
+        - forceNewAutomationBranchNextRun
         - nextRetryAt
         - consecutiveFailureCount
         - createdAt
@@ -4873,6 +4886,11 @@ components:
           format: date-time
         defaultBranchOverride:
           type: string
+        automationBranchStrategy:
+          type: string
+          enum: [reuse_per_ticket, new_per_run]
+        forceNewAutomationBranchNextRun:
+          type: boolean
         nextRetryAt:
           type: string
           format: date-time
@@ -5137,7 +5155,6 @@ components:
           enum: [pending, synced, failed]
         lastError:
           type: string
-          nullable: true
     FilterRuleResponseDto:
       type: object
       required:

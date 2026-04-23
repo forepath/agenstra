@@ -1,4 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import type { TicketAutomationBranchStrategy } from '../utils/ticket-automation-branch.constants';
+import { DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY } from '../utils/ticket-automation-branch.constants';
 import { TicketEntity } from './ticket.entity';
 
 /** JSON shape for verifier profile stored in DB (validated on write). */
@@ -42,6 +44,24 @@ export class TicketAutomationEntity {
 
   @Column({ type: 'varchar', name: 'default_branch_override', length: 256, nullable: true })
   defaultBranchOverride?: string | null;
+
+  /**
+   * `reuse_per_ticket` (default): one `automation/ticket-{ticketId}` branch per ticket, reused across runs when it exists.
+   * `new_per_run`: create `automation/{runIdPrefix}` for every run (legacy behaviour).
+   */
+  @Column({
+    type: 'varchar',
+    name: 'automation_branch_strategy',
+    length: 32,
+    default: DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
+  })
+  automationBranchStrategy!: TicketAutomationBranchStrategy;
+
+  /**
+   * When true with `reuse_per_ticket`, the next run uses a fresh ephemeral branch; cleared after that run starts branch setup.
+   */
+  @Column({ type: 'boolean', name: 'force_new_automation_branch_next_run', default: false })
+  forceNewAutomationBranchNextRun!: boolean;
 
   @Column({ type: 'timestamptz', name: 'next_retry_at', nullable: true })
   nextRetryAt?: Date | null;

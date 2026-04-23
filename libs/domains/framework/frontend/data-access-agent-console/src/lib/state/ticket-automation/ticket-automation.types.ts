@@ -3,12 +3,16 @@ export interface TicketVerifierProfileJson {
   commands: Array<{ cmd: string; cwd?: string }>;
 }
 
+export type TicketAutomationBranchStrategy = 'reuse_per_ticket' | 'new_per_run';
+
 export interface UpdateTicketAutomationDto {
   eligible?: boolean;
   allowedAgentIds?: string[];
   verifierProfile?: TicketVerifierProfileJson;
   requiresApproval?: boolean;
   defaultBranchOverride?: string | null;
+  automationBranchStrategy?: TicketAutomationBranchStrategy;
+  forceNewAutomationBranchNextRun?: boolean;
 }
 
 export type TicketAutomationRunStatus =
@@ -32,6 +36,8 @@ export interface TicketAutomationResponseDto {
   approvedByUserId: string | null;
   approvalBaselineTicketUpdatedAt: string | null;
   defaultBranchOverride: string | null;
+  automationBranchStrategy: TicketAutomationBranchStrategy;
+  forceNewAutomationBranchNextRun: boolean;
   nextRetryAt: string | null;
   consecutiveFailureCount: number;
   createdAt: string;

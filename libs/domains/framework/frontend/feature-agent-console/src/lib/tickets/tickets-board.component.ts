@@ -39,6 +39,7 @@ import {
   type AgentResponseDto,
   type BoardLaneStatus,
   type ClientResponseDto,
+  type TicketAutomationBranchStrategy,
   type TicketAutomationResponseDto,
   type TicketAutomationRunResponseDto,
   type TicketAutomationRunStatus,
@@ -107,6 +108,12 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
   const dBranch = (dto.defaultBranchOverride ?? '').trim();
   const cBranch = (cfg.defaultBranchOverride ?? '').trim();
   if (dBranch !== cBranch) {
+    return false;
+  }
+  if ((dto.automationBranchStrategy ?? 'reuse_per_ticket') !== cfg.automationBranchStrategy) {
+    return false;
+  }
+  if ((dto.forceNewAutomationBranchNextRun ?? false) !== cfg.forceNewAutomationBranchNextRun) {
     return false;
   }
   const dVer = normalizeVerifierCommandsForCompare(dto.verifierProfile?.commands);
@@ -355,6 +362,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   /** Sorted unique agent UUIDs allowed to run automation for this ticket. */
   automationDraftAllowedAgentIds = signal<string[]>([]);
   automationDraftDefaultBranch = signal('');
+  automationDraftBranchStrategy = signal<TicketAutomationBranchStrategy>('reuse_per_ticket');
+  automationDraftForceNewBranchNextRun = signal(false);
   automationVerifierRows = signal<Array<{ cmd: string; cwd: string }>>([{ cmd: '', cwd: '' }]);
   /** HTML5 DnD (same pattern as file-tree). */
   draggedTicket = signal<TicketResponseDto | null>(null);
@@ -477,6 +486,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       this.automationDraftRequiresApproval.set(cfg.requiresApproval);
       this.automationDraftAllowedAgentIds.set(normalizeAllowedAgentIdList(cfg.allowedAgentIds));
       this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
+      this.automationDraftBranchStrategy.set(cfg.automationBranchStrategy ?? 'reuse_per_ticket');
+      this.automationDraftForceNewBranchNextRun.set(cfg.forceNewAutomationBranchNextRun === true);
       const cmds = cfg.verifierProfile?.commands?.length
         ? cfg.verifierProfile.commands.map((c) => ({ cmd: c.cmd, cwd: c.cwd ?? '' }))
         : [{ cmd: '', cwd: '' }];
@@ -1210,6 +1221,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       requiresApproval: this.automationDraftRequiresApproval(),
       allowedAgentIds: this.automationDraftAllowedAgentIds(),
       defaultBranchOverride: branch.length > 0 ? branch : null,
+      automationBranchStrategy: this.automationDraftBranchStrategy(),
+      forceNewAutomationBranchNextRun: this.automationDraftForceNewBranchNextRun(),
       verifierProfile: { commands },
     };
   }
@@ -1231,6 +1244,13 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   readonly ticketAutomationChatAgentLockTitle = $localize`:@@featureTicketsBoard-automationChatAgentLockTitle:Matches Agent for chat / AI — change the chat agent to allow unchecking.`;
+
+  onAutomationBranchStrategyChange(strategy: TicketAutomationBranchStrategy): void {
+    this.automationDraftBranchStrategy.set(strategy);
+    if (strategy === 'new_per_run') {
+      this.automationDraftForceNewBranchNextRun.set(false);
+    }
+  }
 
   onAutomationAllowedAgentToggle(agentId: string, checked: boolean): void {
     if (!checked && this.isAutomationAllowedAgentLockedToChat(agentId)) {

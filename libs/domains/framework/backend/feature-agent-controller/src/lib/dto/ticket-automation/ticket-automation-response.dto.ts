@@ -10,6 +10,8 @@ export class TicketAutomationResponseDto {
   approvedByUserId!: string | null;
   approvalBaselineTicketUpdatedAt!: Date | null;
   defaultBranchOverride!: string | null;
+  automationBranchStrategy!: 'reuse_per_ticket' | 'new_per_run';
+  forceNewAutomationBranchNextRun!: boolean;
   nextRetryAt!: Date | null;
   consecutiveFailureCount!: number;
   createdAt!: Date;

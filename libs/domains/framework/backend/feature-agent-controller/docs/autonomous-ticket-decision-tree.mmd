@@ -21,7 +21,8 @@ flowchart TD
     leaseGate -- "No" --> skipLease["Skip (lease held)"]
     leaseGate -- "Yes" --> startRun["Create run + lease"]
 
-    startRun --> workspacePrep{"Workspace/branch prep succeeds?"}
+    startRun --> branchPick{"Branch: reuse stable / ephemeral new / switch existing?"}
+    branchPick --> workspacePrep{"Workspace/branch prep succeeds?"}
     workspacePrep -- "No" --> failProvider["Fail run: AGENT_PROVIDER_ERROR"]
     workspacePrep -- "Yes" --> loopStart["Agent loop (maxIterations)"]
 

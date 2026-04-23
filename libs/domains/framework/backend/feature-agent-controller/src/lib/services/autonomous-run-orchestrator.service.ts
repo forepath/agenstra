@@ -24,6 +24,13 @@ import {
 } from '../utils/autonomous-commit-message.utils';
 import { routeAutomationFailure } from '../utils/automation-failure-routing';
 import { isUsablePartialPrototype } from '../utils/automation-usable-partial';
+import {
+  DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
+  ephemeralAutomationBranchNameForRun,
+  stableAutomationBranchNameForTicket,
+  type TicketAutomationBranchStrategy,
+} from '../utils/ticket-automation-branch.constants';
+import { listContainsBranchName } from '../utils/ticket-automation-branch.utils';
 import { buildAutonomousTicketRunPreamble } from '../utils/tickets-prototype-prompt.utils';
 import {
   ticketActivityEntityToDto,
@@ -210,12 +217,12 @@ export class AutonomousRunOrchestratorService {
     autonomy: ClientAgentAutonomyEntity,
     agentId: string,
   ): Promise<void> {
-    const branches = await this.vcsProxy.getBranches(ticket.clientId, agentId);
+    const branchesInitial = await this.vcsProxy.getBranches(ticket.clientId, agentId);
     const baseBranch =
       automation.defaultBranchOverride?.trim() ||
-      branches.find((b) => b.name === 'main')?.name ||
-      branches.find((b) => b.name === 'master')?.name ||
-      branches.find((b) => !b.isRemote)?.name ||
+      branchesInitial.find((b) => b.name === 'main')?.name ||
+      branchesInitial.find((b) => b.name === 'master')?.name ||
+      branchesInitial.find((b) => !b.isRemote)?.name ||
       'main';
 
     await this.vcsProxy.prepareCleanWorkspace(ticket.clientId, agentId, { baseBranch });
@@ -225,10 +232,46 @@ export class AutonomousRunOrchestratorService {
     });
     await this.emitRunSummaryNow(ticket.clientId, run.id);
 
-    const branchName = `automation/${run.id.slice(0, 8)}`;
-    await this.vcsProxy.createBranch(ticket.clientId, agentId, {
-      name: branchName,
-      baseBranch,
+    await this.vcsProxy.fetch(ticket.clientId, agentId);
+    const branches = await this.vcsProxy.getBranches(ticket.clientId, agentId);
+
+    const strategy: TicketAutomationBranchStrategy =
+      automation.automationBranchStrategy ?? DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY;
+    const forceNext = automation.forceNewAutomationBranchNextRun === true;
+    const useEphemeral = strategy === 'new_per_run' || forceNext;
+
+    let branchName: string;
+    let branchMode: 'ephemeral_new' | 'reuse_existing' | 'reuse_create';
+
+    if (useEphemeral) {
+      branchName = ephemeralAutomationBranchNameForRun(run.id);
+      branchMode = 'ephemeral_new';
+      await this.vcsProxy.createBranch(ticket.clientId, agentId, {
+        name: branchName,
+        baseBranch,
+      });
+      if (forceNext) {
+        await this.automationRepo.update({ ticketId: ticket.id }, { forceNewAutomationBranchNextRun: false });
+      }
+    } else {
+      branchName = stableAutomationBranchNameForTicket(ticket.id);
+      if (listContainsBranchName(branches, branchName)) {
+        branchMode = 'reuse_existing';
+        await this.vcsProxy.switchBranch(ticket.clientId, agentId, branchName);
+      } else {
+        branchMode = 'reuse_create';
+        await this.vcsProxy.createBranch(ticket.clientId, agentId, {
+          name: branchName,
+          baseBranch,
+        });
+      }
+    }
+
+    await this.persistStep(run.id, stepIdx++, TicketAutomationRunPhase.WORKSPACE_PREP, 'vcs_branch', {
+      branchName,
+      branchMode,
+      strategy,
+      forceNewBranchNextRunConsumed: forceNext,
     });
     await this.runRepo.update(run.id, { branchName, baseBranch });
     await this.emitRunSummaryNow(ticket.clientId, run.id);
