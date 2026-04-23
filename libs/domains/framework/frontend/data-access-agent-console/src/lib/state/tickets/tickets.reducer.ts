@@ -35,6 +35,7 @@ import {
   updateTicketFailure,
   updateTicketSuccess,
 } from './tickets.actions';
+import { enrichTicketsWithSubtaskCounts } from './tickets-subtask-counts.utils';
 
 export interface TicketsState {
   list: TicketResponseDto[];
@@ -115,11 +116,10 @@ function mergeCreatedChildIntoDetail(
 export const ticketsReducer = createReducer(
   initialTicketsState,
   on(loadTickets, (state) => ({ ...state, loadingList: true, error: null })),
-  on(loadTicketsSuccess, (state, { tickets }) => ({
-    ...state,
-    loadingList: false,
-    list: tickets,
-  })),
+  on(loadTicketsSuccess, (state, { tickets }) => {
+    const { list, detail } = enrichTicketsWithSubtaskCounts(tickets, state.detail);
+    return { ...state, loadingList: false, list, detail };
+  }),
   on(loadTicketsFailure, (state, { error }) => ({ ...state, loadingList: false, error })),
   on(openTicketDetail, (state, { id }) => ({
     ...state,
@@ -130,13 +130,17 @@ export const ticketsReducer = createReducer(
     activity: [],
     error: null,
   })),
-  on(loadTicketDetailBundleSuccess, (state, { ticket, comments, activity }) => ({
-    ...state,
-    detail: ticket,
-    comments,
-    activity,
-    loadingDetail: false,
-  })),
+  on(loadTicketDetailBundleSuccess, (state, { ticket, comments, activity }) => {
+    const { list, detail } = enrichTicketsWithSubtaskCounts(state.list, ticket);
+    return {
+      ...state,
+      list,
+      detail,
+      comments,
+      activity,
+      loadingDetail: false,
+    };
+  }),
   on(loadTicketDetailFailure, (state, { error }) => ({
     ...state,
     loadingDetail: false,
@@ -151,37 +155,52 @@ export const ticketsReducer = createReducer(
     activity: [],
   })),
   on(createTicket, (state) => ({ ...state, saving: true, error: null })),
-  on(createTicketSuccess, (state, { ticket }) => ({
-    ...state,
-    saving: false,
-    list: mergeTicketInList(state.list, ticket),
-    detail: mergeCreatedChildIntoDetail(state.detail, ticket),
-  })),
+  on(createTicketSuccess, (state, { ticket, createdChildTickets = [] }) => {
+    let list = mergeTicketInList(state.list, ticket);
+    let detail = mergeCreatedChildIntoDetail(state.detail, ticket);
+    for (const c of createdChildTickets) {
+      list = mergeTicketInList(list, c);
+      detail = mergeCreatedChildIntoDetail(detail, c);
+    }
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+    return { ...state, saving: false, list: enriched.list, detail: enriched.detail };
+  }),
   on(createTicketFailure, (state, { error }) => ({ ...state, saving: false, error })),
   on(updateTicket, (state) => ({ ...state, saving: true, error: null })),
-  on(updateTicketSuccess, (state, { ticket, activity }) => ({
-    ...state,
-    saving: false,
-    list: mergeTicketInList(state.list, ticket),
-    detail:
+  on(updateTicketSuccess, (state, { ticket, activity }) => {
+    const list = mergeTicketInList(state.list, ticket);
+    const detail =
       state.detail?.id === ticket.id
         ? {
             ...state.detail,
             ...ticket,
             children: ticket.children ?? state.detail.children,
           }
-        : state.detail,
-    activity: state.selectedTicketId === ticket.id ? activity : state.activity,
-  })),
+        : state.detail;
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+    return {
+      ...state,
+      saving: false,
+      list: enriched.list,
+      detail: enriched.detail,
+      activity: state.selectedTicketId === ticket.id ? activity : state.activity,
+    };
+  }),
   on(updateTicketFailure, (state, { error }) => ({ ...state, saving: false, error })),
   on(deleteTicket, (state) => ({ ...state, saving: true, error: null })),
-  on(deleteTicketSuccess, (state, { id }) => ({
-    ...state,
-    saving: false,
-    list: state.list.filter((t) => t.id !== id),
-    selectedTicketId: state.selectedTicketId === id ? null : state.selectedTicketId,
-    detail: state.detail?.id === id ? null : state.detail,
-  })),
+  on(deleteTicketSuccess, (state, { id }) => {
+    const list = state.list.filter((t) => t.id !== id);
+    const selectedTicketId = state.selectedTicketId === id ? null : state.selectedTicketId;
+    const detail = state.detail?.id === id ? null : state.detail;
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+    return {
+      ...state,
+      saving: false,
+      list: enriched.list,
+      detail: enriched.detail,
+      selectedTicketId,
+    };
+  }),
   on(deleteTicketFailure, (state, { error }) => ({ ...state, saving: false, error })),
   on(addTicketComment, (state) => ({ ...state, saving: true, error: null })),
   on(addTicketCommentSuccess, (state, { comment, activity }) => {
@@ -217,6 +236,7 @@ export const ticketsReducer = createReducer(
     (state, { config }) => syncTicketAutomationEligible(state, config.ticketId, config.eligible),
   ),
   on(ticketBoardTicketUpsert, (state, { ticket }) => {
+    const list = mergeTicketInList(state.list, ticket);
     const detail =
       state.detail?.id === ticket.id
         ? {
@@ -225,18 +245,25 @@ export const ticketsReducer = createReducer(
             children: ticket.children ?? state.detail.children,
           }
         : (mergeCreatedChildIntoDetail(state.detail, ticket) ?? state.detail);
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
     return {
       ...state,
-      list: mergeTicketInList(state.list, ticket),
-      detail,
+      list: enriched.list,
+      detail: enriched.detail,
     };
   }),
-  on(ticketBoardTicketRemoved, (state, { id }) => ({
-    ...state,
-    list: state.list.filter((t) => t.id !== id),
-    selectedTicketId: state.selectedTicketId === id ? null : state.selectedTicketId,
-    detail: state.detail?.id === id ? null : state.detail,
-  })),
+  on(ticketBoardTicketRemoved, (state, { id }) => {
+    const list = state.list.filter((t) => t.id !== id);
+    const selectedTicketId = state.selectedTicketId === id ? null : state.selectedTicketId;
+    const detail = state.detail?.id === id ? null : state.detail;
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+    return {
+      ...state,
+      list: enriched.list,
+      detail: enriched.detail,
+      selectedTicketId,
+    };
+  }),
   on(ticketBoardCommentCreated, (state, { comment }) => {
     if (state.selectedTicketId !== comment.ticketId) {
       return state;

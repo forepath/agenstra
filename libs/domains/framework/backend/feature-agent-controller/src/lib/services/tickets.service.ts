@@ -15,11 +15,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, type EntityManager } from 'typeorm';
 import {
   ApplyGeneratedBodyDto,
   CreateTicketCommentDto,
   CreateTicketDto,
+  CreateTicketResponseDto,
   PrototypePromptResponseDto,
   StartBodyGenerationSessionDto,
   StartBodyGenerationSessionResponseDto,
@@ -33,9 +34,20 @@ import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-gener
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
-import { TicketActionType, TicketActorType, TicketPriority, TicketStatus } from '../entities/ticket.enums';
+import {
+  TicketActionType,
+  TicketActorType,
+  TicketCreationTemplate,
+  TicketPriority,
+  TicketStatus,
+} from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { derivePatchActionType, type FieldChange } from '../utils/ticket-activity-payload.utils';
+import {
+  buildDescendantCheckboxTaskTotalsByTicketId,
+  countMarkdownCheckboxTasks,
+} from '../utils/ticket-content-checkbox-tasks.utils';
+import { buildSpecificationSubtaskSeeds } from '../utils/specification-ticket-subtasks.utils';
 import {
   buildPrototypePrompt,
   buildPrototypePromptPreamble,
@@ -110,8 +122,7 @@ export class TicketsService {
    */
   async emitBoardTicketSnapshotInternal(ticketId: string): Promise<void> {
     const ticket = await this.loadTicketOrThrow(ticketId);
-    const eligMap = await this.loadAutomationEligibleByTicketIds([ticket.id]);
-    const dto = await this.mapTicket(ticket, eligMap.get(ticket.id) ?? false);
+    const dto = await this.mapTicketInWorkspace(ticket);
     this.boardEmitTicketUpsert(dto.clientId, dto);
   }
 
@@ -200,28 +211,40 @@ export class TicketsService {
     }
     qb.orderBy('t.updated_at', 'DESC');
     const rows = await qb.getMany();
-    const eligMap = await this.loadAutomationEligibleByTicketIds(rows.map((r) => r.id));
-    return Promise.all(rows.map((row) => this.mapTicket(row, eligMap.get(row.id) ?? false)));
+    if (rows.length === 0) {
+      return [];
+    }
+    const clientIds = [...new Set(rows.map((r) => r.clientId))];
+    const allForAgg = await this.ticketRepo.find({
+      where: { clientId: In(clientIds) },
+      order: { createdAt: 'ASC' },
+    });
+    const descMap = buildDescendantCheckboxTaskTotalsByTicketId(allForAgg);
+    const eligMap = await this.loadAutomationEligibleByTicketIds(allForAgg.map((t) => t.id));
+    return Promise.all(rows.map((row) => this.mapTicket(row, eligMap.get(row.id) ?? false, descMap)));
   }
 
   async findOne(id: string, includeDescendants: boolean, req?: RequestWithUser): Promise<TicketResponseDto> {
     const ticket = await this.assertTicketReadable(id, req);
-    const eligMap = await this.loadAutomationEligibleByTicketIds([ticket.id]);
-    const dto = await this.mapTicket(ticket, eligMap.get(ticket.id) ?? false);
+    const all = await this.ticketRepo.find({
+      where: { clientId: ticket.clientId },
+      order: { createdAt: 'ASC' },
+    });
+    const eligMap = await this.loadAutomationEligibleByTicketIds(all.map((t) => t.id));
+    const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
+    const dto = await this.mapTicket(ticket, eligMap.get(ticket.id) ?? false, descMap);
     if (includeDescendants) {
-      dto.children = await this.loadDescendantTree(id, req);
+      dto.children = await this.buildChildTicketDtos(ticket.id, all, eligMap, descMap);
     }
     return dto;
   }
 
-  private async loadDescendantTree(rootId: string, req?: RequestWithUser): Promise<TicketResponseDto[]> {
-    const root = await this.loadTicketOrThrow(rootId);
-    await this.assertClientAccess(root.clientId, req);
-    const all = await this.ticketRepo.find({
-      where: { clientId: root.clientId },
-      order: { createdAt: 'ASC' },
-    });
-    const eligMap = await this.loadAutomationEligibleByTicketIds(all.map((t) => t.id));
+  private async buildChildTicketDtos(
+    parentTicketId: string,
+    all: TicketEntity[],
+    eligMap: Map<string, boolean>,
+    descMap: Map<string, { open: number; done: number }>,
+  ): Promise<TicketResponseDto[]> {
     const byParent = new Map<string | null, TicketEntity[]>();
     for (const t of all) {
       const p = t.parentId ?? null;
@@ -230,52 +253,38 @@ export class TicketsService {
       }
       byParent.get(p)!.push(t);
     }
-    const build = async (parentId: string | null): Promise<TicketResponseDto[]> => {
+    const build = async (parentId: string): Promise<TicketResponseDto[]> => {
       const kids = byParent.get(parentId) ?? [];
       const out: TicketResponseDto[] = [];
       for (const k of kids) {
-        const d = await this.mapTicket(k, eligMap.get(k.id) ?? false);
+        const d = await this.mapTicket(k, eligMap.get(k.id) ?? false, descMap);
         d.children = await build(k.id);
         out.push(d);
       }
       return out;
     };
-    return build(rootId);
+    return build(parentTicketId);
   }
 
-  async create(dto: CreateTicketDto, req?: RequestWithUser): Promise<TicketResponseDto> {
-    const actor = this.resolveActor(req);
-    const info = getUserFromRequest(req || ({} as RequestWithUser));
-
-    let clientId = dto.clientId;
-    const parentId = dto.parentId ?? null;
-
-    if (parentId) {
-      const parent = await this.loadTicketOrThrow(parentId);
-      await this.assertClientAccess(parent.clientId, req);
-      clientId = parent.clientId;
-    } else {
-      if (!clientId) {
-        throw new BadRequestException('clientId is required when parentId is not set');
-      }
-      await this.assertClientAccess(clientId, req);
-    }
-
-    const ticket = this.ticketRepo.create({
-      clientId: clientId!,
-      parentId,
-      title: dto.title.trim(),
-      content: dto.content ?? null,
-      priority: dto.priority ?? TicketPriority.MEDIUM,
-      status: dto.status ?? TicketStatus.DRAFT,
-      createdByUserId: info.userId ?? null,
-    });
-
-    const saved = await this.ticketRepo.manager.transaction(async (em) => {
-      const tRepo = em.getRepository(TicketEntity);
-      const aRepo = em.getRepository(TicketActivityEntity);
-      const inserted = await tRepo.save(ticket);
-      const act = aRepo.create({
+  private async saveNewTicketWithCreatedActivity(
+    em: EntityManager,
+    actor: { actorType: TicketActorType; actorUserId?: string },
+    fields: {
+      clientId: string;
+      parentId: string | null;
+      title: string;
+      content: string | null;
+      priority: TicketPriority;
+      status: TicketStatus;
+      createdByUserId: string | null;
+    },
+  ): Promise<TicketEntity> {
+    const tRepo = em.getRepository(TicketEntity);
+    const aRepo = em.getRepository(TicketActivityEntity);
+    const ticket = tRepo.create(fields);
+    const inserted = await tRepo.save(ticket);
+    await aRepo.save(
+      aRepo.create({
         ticketId: inserted.id,
         actorType: actor.actorType,
         actorUserId: actor.actorUserId ?? null,
@@ -285,22 +294,101 @@ export class TicketsService {
           clientId: inserted.clientId,
           parentId: inserted.parentId,
         },
+      }),
+    );
+    return inserted;
+  }
+
+  async create(dto: CreateTicketDto, req?: RequestWithUser): Promise<CreateTicketResponseDto> {
+    const actor = this.resolveActor(req);
+    const info = getUserFromRequest(req || ({} as RequestWithUser));
+
+    let clientId = dto.clientId;
+    const parentId = dto.parentId ?? null;
+    const template = dto.creationTemplate ?? TicketCreationTemplate.EMPTY;
+
+    if (parentId && template === TicketCreationTemplate.SPECIFICATION) {
+      throw new BadRequestException('creationTemplate "specification" is only valid for root tickets');
+    }
+
+    if (parentId) {
+      const parentTicket = await this.loadTicketOrThrow(parentId);
+      await this.assertClientAccess(parentTicket.clientId, req);
+      clientId = parentTicket.clientId;
+    } else {
+      if (!clientId) {
+        throw new BadRequestException('clientId is required when parentId is not set');
+      }
+      await this.assertClientAccess(clientId, req);
+    }
+
+    const priority = dto.priority ?? TicketPriority.MEDIUM;
+    const status = dto.status ?? TicketStatus.DRAFT;
+    const createdByUserId = info.userId ?? null;
+
+    const childSeeds =
+      !parentId && template === TicketCreationTemplate.SPECIFICATION
+        ? buildSpecificationSubtaskSeeds(dto.title.trim(), dto.content)
+        : [];
+
+    const { parent, children } = await this.ticketRepo.manager.transaction(async (em) => {
+      const p = await this.saveNewTicketWithCreatedActivity(em, actor, {
+        clientId: clientId!,
+        parentId,
+        title: dto.title.trim(),
+        content: dto.content ?? null,
+        priority,
+        status,
+        createdByUserId,
       });
-      await aRepo.save(act);
-      return inserted;
+      const kids: TicketEntity[] = [];
+      for (const seed of childSeeds) {
+        kids.push(
+          await this.saveNewTicketWithCreatedActivity(em, actor, {
+            clientId: p.clientId,
+            parentId: p.id,
+            title: seed.title,
+            content: seed.content,
+            priority,
+            status,
+            createdByUserId,
+          }),
+        );
+      }
+      return { parent: p, children: kids };
     });
 
-    const ticketDto = await this.mapTicket(saved);
-    this.boardEmitTicketUpsert(ticketDto.clientId, ticketDto);
-    const activityRows = await this.activityRepo.find({
-      where: { ticketId: saved.id },
-      order: { occurredAt: 'DESC' },
-      take: 1,
+    const all = await this.ticketRepo.find({
+      where: { clientId: parent.clientId },
+      order: { createdAt: 'ASC' },
     });
-    if (activityRows[0]) {
-      await this.boardEmitTicketActivityMapped(ticketDto.clientId, activityRows[0]);
+    const eligMap = await this.loadAutomationEligibleByTicketIds(all.map((t) => t.id));
+    const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
+    const parentDto = await this.mapTicket(parent, eligMap.get(parent.id) ?? false, descMap);
+    const childDtos =
+      children.length > 0
+        ? await Promise.all(children.map((c) => this.mapTicket(c, eligMap.get(c.id) ?? false, descMap)))
+        : [];
+
+    const allRows = [parent, ...children];
+    const allDtos = [parentDto, ...childDtos];
+    for (let i = 0; i < allDtos.length; i++) {
+      const ticketDto = allDtos[i];
+      this.boardEmitTicketUpsert(ticketDto.clientId, ticketDto);
+      const activityRows = await this.activityRepo.find({
+        where: { ticketId: allRows[i].id },
+        order: { occurredAt: 'DESC' },
+        take: 1,
+      });
+      if (activityRows[0]) {
+        await this.boardEmitTicketActivityMapped(ticketDto.clientId, activityRows[0]);
+      }
     }
-    return ticketDto;
+
+    if (childDtos.length === 0) {
+      return parentDto;
+    }
+    return { ...parentDto, createdChildTickets: childDtos };
   }
 
   async update(id: string, dto: UpdateTicketDto, req?: RequestWithUser): Promise<TicketResponseDto> {
@@ -370,7 +458,7 @@ export class TicketsService {
     }
 
     if (Object.keys(changes).length === 0) {
-      return this.mapTicket(ticket);
+      return this.mapTicketInWorkspace(ticket);
     }
 
     const actionType = derivePatchActionType(changes);
@@ -396,7 +484,7 @@ export class TicketsService {
     }
 
     const refreshed = await this.loadTicketOrThrow(id);
-    const mapped = await this.mapTicket(refreshed);
+    const mapped = await this.mapTicketInWorkspace(refreshed);
     if (changes.clientId) {
       const oldCid = changes.clientId.old as string;
       this.boardEmitTicketRemoved(oldCid, id);
@@ -680,7 +768,7 @@ export class TicketsService {
     });
 
     const refreshed = await this.loadTicketOrThrow(ticketId);
-    const mappedTicket = await this.mapTicket(refreshed);
+    const mappedTicket = await this.mapTicketInWorkspace(refreshed);
     this.boardEmitTicketUpsert(mappedTicket.clientId, mappedTicket);
     const activityRows = await this.activityRepo.find({
       where: { ticketId },
@@ -708,22 +796,28 @@ export class TicketsService {
     return map;
   }
 
-  private async mapTicket(row: TicketEntity, automationEligible?: boolean): Promise<TicketResponseDto> {
+  private async mapTicketInWorkspace(row: TicketEntity): Promise<TicketResponseDto> {
+    const all = await this.ticketRepo.find({
+      where: { clientId: row.clientId },
+      order: { createdAt: 'ASC' },
+    });
+    const eligMap = await this.loadAutomationEligibleByTicketIds(all.map((t) => t.id));
+    const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
+    return this.mapTicket(row, eligMap.get(row.id) ?? false, descMap);
+  }
+
+  private async mapTicket(
+    row: TicketEntity,
+    automationEligible: boolean,
+    descendantTotals: Map<string, { open: number; done: number }>,
+  ): Promise<TicketResponseDto> {
     let createdByEmail: string | null = null;
     if (row.createdByUserId) {
       const u = await this.usersRepository.findById(row.createdByUserId);
       createdByEmail = u?.email ?? null;
     }
-    let eligible = false;
-    if (automationEligible !== undefined) {
-      eligible = automationEligible;
-    } else {
-      const autoRow = await this.ticketAutomationRepo.findOne({
-        where: { ticketId: row.id },
-        select: ['eligible'],
-      });
-      eligible = autoRow?.eligible ?? false;
-    }
+    const own = countMarkdownCheckboxTasks(row.content);
+    const child = descendantTotals.get(row.id) ?? { open: 0, done: 0 };
     return {
       id: row.id,
       clientId: row.clientId,
@@ -735,9 +829,14 @@ export class TicketsService {
       createdByUserId: row.createdByUserId,
       createdByEmail,
       preferredChatAgentId: row.preferredChatAgentId ?? null,
-      automationEligible: eligible,
+      automationEligible,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      tasks: {
+        open: own.open,
+        done: own.done,
+        children: { open: child.open, done: child.done },
+      },
     };
   }
 

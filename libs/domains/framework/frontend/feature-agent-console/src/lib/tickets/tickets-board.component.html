@@ -175,6 +175,16 @@
                           [attr.title]="row.ticket.status"
                           >{{ laneLabel(row.ticket.status) }}</small
                         >
+                        @if (row.ticket.subtaskCounts; as sc) {
+                          @if (sc.open + sc.done > 0) {
+                            <small
+                              class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                              i18n-title="@@featureTicketsBoard-subtaskCountTitle"
+                              title="Direct subtasks (done / total)"
+                              >{{ sc.done }}/{{ sc.open + sc.done }}</small
+                            >
+                          }
+                        }
                       </div>
                     </div>
                   </div>
@@ -339,6 +349,57 @@
                       }
                     </select>
                   </dd>
+                  @let total = d.tasks.open + d.tasks.children.open + d.tasks.done + d.tasks.children.done;
+                  @if (total > 0) {
+                    <dt class="col-sm-3 mt-2" id="ticketAcceptanceLabel" i18n="@@featureTicketsBoard-acceptanceLabel">
+                      Acceptance
+                      @let percentage = ((d.tasks.done + d.tasks.children.done) / total) * 100;
+                      <span class="text-muted small d-block fw-normal" [attr.aria-label]="percentage + '%'"
+                        >{{ percentage | number: '1.0-0' }}%</span
+                      >
+                    </dt>
+                    <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
+                      <div
+                        class="progress w-100 rounded-pill"
+                        role="progressbar"
+                        aria-labelledby="ticketAcceptanceLabel"
+                        [attr.aria-valuenow]="percentage"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      >
+                        <div class="progress-bar" [style.width]="percentage + '%'"></div>
+                      </div>
+                    </dd>
+                  }
+                  @if (d.subtaskCounts; as st) {
+                    @let stTotal = st.open + st.done;
+                    @if (stTotal > 0) {
+                      @let stPct = (st.done / stTotal) * 100;
+                      <dt
+                        class="col-sm-3 mt-2"
+                        id="ticketSubtaskProgressLabel"
+                        i18n="@@featureTicketsBoard-subtaskProgressLabel"
+                      >
+                        Subtasks
+                        <span class="text-muted small d-block fw-normal" [attr.aria-label]="stPct + '%'"
+                          >{{ stPct | number: '1.0-0' }}%</span
+                        >
+                      </dt>
+                      <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
+                        <div
+                          class="progress w-100 rounded-pill"
+                          role="progressbar"
+                          aria-label="Subtask progress"
+                          i18n-aria-label="@@featureTicketsBoard-subtaskProgressAria"
+                          [attr.aria-valuenow]="stPct"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        >
+                          <div class="progress-bar bg-secondary" [style.width]="stPct + '%'"></div>
+                        </div>
+                      </dd>
+                    }
+                  }
                 </dl>
 
                 <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
@@ -1273,6 +1334,27 @@
             placeholder="Optional details"
           ></framework-ticket-editor>
         </div>
+        @if (!createTicketParentId()) {
+          <div class="mb-2">
+            <label
+              class="form-label small fw-semibold"
+              for="createTicketCreationTemplate"
+              i18n="@@featureTicketsBoard-createTemplateLabel"
+              >Type</label
+            >
+            <select
+              id="createTicketCreationTemplate"
+              class="form-select form-select-sm"
+              [ngModel]="createTicketCreationTemplate()"
+              (ngModelChange)="createTicketCreationTemplate.set($event)"
+            >
+              <option [ngValue]="'empty'" i18n="@@featureTicketsBoard-createTemplateEmpty">Empty</option>
+              <option [ngValue]="'specification'" i18n="@@featureTicketsBoard-createTemplateSpecification">
+                Specification
+              </option>
+            </select>
+          </div>
+        }
         <div class="row g-2">
           <div class="col-sm-6">
             <label

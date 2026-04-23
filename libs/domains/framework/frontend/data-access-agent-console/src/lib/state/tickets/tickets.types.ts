@@ -2,6 +2,32 @@ export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TicketStatus = 'draft' | 'todo' | 'in_progress' | 'prototype' | 'done' | 'closed';
 export type TicketActorType = 'human' | 'ai' | 'system';
 
+/** Request-only on create; not stored on the ticket. */
+export type TicketCreationTemplate = 'empty' | 'specification';
+
+/** Markdown checkboxes in ticket `content`: `[ ]` open, `[x]` / `[X]` done. */
+export interface TicketTasksDto {
+  open: number;
+  done: number;
+  /** Counts from all descendant tickets only (not this ticket's body). */
+  children: {
+    open: number;
+    done: number;
+  };
+}
+
+export const EMPTY_TICKET_TASKS: TicketTasksDto = {
+  open: 0,
+  done: 0,
+  children: { open: 0, done: 0 },
+};
+
+/** Direct subtasks only; computed on the client from `parentId` / `children`. */
+export interface TicketSubtaskCountsDto {
+  open: number;
+  done: number;
+}
+
 export interface TicketResponseDto {
   id: string;
   clientId: string;
@@ -18,7 +44,10 @@ export interface TicketResponseDto {
   automationEligible: boolean;
   createdAt: string;
   updatedAt: string;
+  tasks: TicketTasksDto;
   children?: TicketResponseDto[];
+  /** Present after tickets are processed in the reducer (not from the API). */
+  subtaskCounts?: TicketSubtaskCountsDto;
 }
 
 export interface CreateTicketDto {
@@ -28,7 +57,13 @@ export interface CreateTicketDto {
   content?: string;
   priority?: TicketPriority;
   status?: TicketStatus;
+  creationTemplate?: TicketCreationTemplate;
 }
+
+/** POST /tickets response; includes subtasks when template was `specification`. */
+export type CreateTicketResultDto = TicketResponseDto & {
+  createdChildTickets?: TicketResponseDto[];
+};
 
 export interface UpdateTicketDto {
   clientId?: string;

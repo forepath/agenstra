@@ -1,7 +1,7 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
-import type { TicketResponseDto } from '../state/tickets/tickets.types';
+import { EMPTY_TICKET_TASKS, type TicketResponseDto } from '../state/tickets/tickets.types';
 import { TicketsService } from './tickets.service';
 
 describe('TicketsService', () => {
@@ -18,6 +18,7 @@ describe('TicketsService', () => {
     automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
+    tasks: EMPTY_TICKET_TASKS,
   };
 
   beforeEach(() => {
@@ -90,6 +91,20 @@ describe('TicketsService', () => {
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockTicket);
+    });
+
+    it('should accept CreateTicketResultDto with createdChildTickets', (done) => {
+      const dto = { clientId: 'c1', title: 'Epic', creationTemplate: 'specification' as const };
+      const child = { ...mockTicket, id: 'child-1', parentId: mockTicket.id, title: 'Proposal' };
+      const res = { ...mockTicket, createdChildTickets: [child] };
+      service.createTicket(dto).subscribe((t) => {
+        expect(t.createdChildTickets).toEqual([child]);
+        expect(t.id).toBe(mockTicket.id);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets`);
+      expect(req.request.body).toEqual(dto);
+      req.flush(res);
     });
   });
 
