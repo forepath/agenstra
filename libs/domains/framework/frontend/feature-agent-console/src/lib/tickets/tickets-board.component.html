@@ -231,7 +231,28 @@
             id="ticketDetailModalLabel"
           >
             @if (detail(); as det) {
-              <span class="text-truncate min-width-0" [attr.title]="det.title">{{ det.title }}</span>
+              @if (detailTitleEditing()) {
+                <input
+                  #detailTitleInput
+                  type="text"
+                  class="form-control form-control-sm flex-grow-1 min-width-0"
+                  [ngModel]="detailTitleDraft()"
+                  (ngModelChange)="detailTitleDraft.set($event)"
+                  [disabled]="ticketsSaving()"
+                  (blur)="onDetailTitleBlur()"
+                />
+              } @else {
+                <span
+                  class="text-truncate min-width-0 tickets-board__detail-title-clickable"
+                  role="button"
+                  tabindex="0"
+                  [attr.title]="det.title"
+                  (click)="onDetailTitleClick(det)"
+                  (keydown.enter)="onDetailTitleClick(det)"
+                  (keydown.space)="$event.preventDefault(); onDetailTitleClick(det)"
+                  >{{ det.title }}</span
+                >
+              }
               @if (det.automationEligible) {
                 <small class="flex-shrink-0">
                   <i
