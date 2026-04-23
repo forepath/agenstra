@@ -15,7 +15,12 @@ import {
   selectTicketsSelectedId,
   selectTicketsState,
 } from './tickets.selectors';
-import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
+import {
+  EMPTY_TICKET_TASKS,
+  type TicketActivityResponseDto,
+  type TicketCommentResponseDto,
+  type TicketResponseDto,
+} from './tickets.types';
 
 describe('tickets selectors', () => {
   const baseTicket = (overrides: Partial<TicketResponseDto> = {}): TicketResponseDto => ({
@@ -28,6 +33,7 @@ describe('tickets selectors', () => {
     automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
+    tasks: EMPTY_TICKET_TASKS,
     ...overrides,
   });
 

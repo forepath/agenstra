@@ -435,6 +435,9 @@ paths:
           description: Forbidden
     post:
       summary: Create ticket
+      description: |
+        Optional `creationTemplate` is request-only and not stored. Value `specification` creates four spec-driven subtasks
+        under the new root ticket in one transaction; invalid with `parentId` (400).
       operationId: createTicket
       requestBody:
         required: true
@@ -448,7 +451,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TicketResponseDto'
+                $ref: '#/components/schemas/CreateTicketResponseDto'
   /tickets/{id}:
     parameters:
       - in: path
@@ -4596,6 +4599,34 @@ components:
         - AUTOMATION_ELIGIBILITY_CHANGED
         - AUTOMATION_APPROVAL_REQUIREMENT_CHANGED
         - AUTOMATION_SETTINGS_UPDATED
+    TicketMarkdownCheckboxTaskCountsDto:
+      type: object
+      required: [open, done]
+      properties:
+        open:
+          type: integer
+          minimum: 0
+          description: Count of `[ ]` style open task checkboxes in the described scope.
+        done:
+          type: integer
+          minimum: 0
+          description: Count of `[x]` or `[X]` done checkboxes in the described scope.
+    TicketTasksDto:
+      type: object
+      required: [open, done, children]
+      properties:
+        open:
+          type: integer
+          minimum: 0
+          description: Open checkboxes in this ticket's `content`.
+        done:
+          type: integer
+          minimum: 0
+          description: Done checkboxes in this ticket's `content`.
+        children:
+          description: |
+            Sums of open/done checkboxes on all descendant tickets (direct and nested), excluding this ticket's body.
+          $ref: '#/components/schemas/TicketMarkdownCheckboxTaskCountsDto'
     TicketResponseDto:
       type: object
       required:
@@ -4608,6 +4639,7 @@ components:
           automationEligible,
           createdAt,
           updatedAt,
+          tasks,
         ]
       properties:
         id:
@@ -4645,6 +4677,8 @@ components:
         updatedAt:
           type: string
           format: date-time
+        tasks:
+          $ref: '#/components/schemas/TicketTasksDto'
         children:
           type: array
           items:
@@ -4667,6 +4701,22 @@ components:
           $ref: '#/components/schemas/TicketPriority'
         status:
           $ref: '#/components/schemas/TicketStatus'
+        creationTemplate:
+          type: string
+          enum: [empty, specification]
+          description: |
+            Not persisted. `specification` only allowed when creating a root ticket (omit `parentId`);
+            creates Proposal, Specifications, Technical design, and Implementation plan subtasks.
+    CreateTicketResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/TicketResponseDto'
+        - type: object
+          properties:
+            createdChildTickets:
+              type: array
+              description: Present when `creationTemplate` was `specification` (four subtasks).
+              items:
+                $ref: '#/components/schemas/TicketResponseDto'
     UpdateTicketDto:
       type: object
       properties:

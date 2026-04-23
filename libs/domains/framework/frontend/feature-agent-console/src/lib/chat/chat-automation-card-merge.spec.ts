@@ -44,6 +44,7 @@ describe('mergeTicketAutomationChatCardPayload', () => {
       preferredChatAgentId: null,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-02T00:00:00Z',
+      tasks: { open: 0, done: 0, children: { open: 0, done: 0 } },
     };
     const merged = mergeTicketAutomationChatCardPayload(basePayload(), live, undefined);
     expect(merged.ticket.title).toBe('New title');

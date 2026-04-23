@@ -43,6 +43,7 @@ import {
   type TicketAutomationRunResponseDto,
   type TicketAutomationRunStatus,
   type TicketBoardRow,
+  type TicketCreationTemplate,
   type TicketGlobalSearchHit,
   type TicketPriority,
   type TicketResponseDto,
@@ -373,6 +374,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   createTicketContent = signal('');
   createTicketStatus = signal<TicketStatus>('draft');
   createTicketPriority = signal<TicketPriority>('medium');
+  /** Root ticket only: adds spec-driven subtasks when `specification`. */
+  createTicketCreationTemplate = signal<TicketCreationTemplate>('empty');
   /** When set, new ticket is created as a subtask of this ticket (clientId inferred by API). */
   createTicketParentId = signal<string | null>(null);
   createTicketError = signal<string | null>(null);
@@ -960,6 +963,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.createTicketContent.set('');
     this.createTicketStatus.set('draft');
     this.createTicketPriority.set('medium');
+    this.createTicketCreationTemplate.set('empty');
     this.createTicketParentId.set(parentId);
     const createEl = this.createTicketModal?.nativeElement;
     if (createEl?.classList.contains('show')) {
@@ -1542,6 +1546,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.createTicketContent.set('');
     this.createTicketStatus.set('draft');
     this.createTicketPriority.set('medium');
+    this.createTicketCreationTemplate.set('empty');
     this.createTicketParentId.set(null);
     setTimeout(() => this.showCreateModalEl(), 0);
   }
@@ -1577,12 +1582,14 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         priority: this.createTicketPriority(),
       });
     } else {
+      const creationTemplate = this.createTicketCreationTemplate();
       this.ticketsFacade.create({
         clientId,
         title,
         ...(content ? { content } : {}),
         status: this.createTicketStatus(),
         priority: this.createTicketPriority(),
+        ...(creationTemplate === 'specification' ? { creationTemplate: 'specification' } : {}),
       });
     }
     this.hideCreateModalEl();

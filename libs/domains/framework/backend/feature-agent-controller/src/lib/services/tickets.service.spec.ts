@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ClientUsersRepository, UsersRepository } from '@forepath/identity/backend';
@@ -6,7 +7,7 @@ import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-gener
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
-import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
+import { TicketCreationTemplate, TicketPriority, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientsService } from './clients.service';
 import { TicketAutomationService } from './ticket-automation.service';
@@ -52,24 +53,27 @@ describe('TicketsService', () => {
     ]),
   };
 
+  async function defaultManagerTransaction(fn: (em: unknown) => Promise<unknown>): Promise<unknown> {
+    const em = {
+      getRepository: (entity: unknown) => {
+        if (entity === TicketEntity) {
+          return { save: jest.fn().mockResolvedValue(undefined) };
+        }
+        if (entity === TicketActivityEntity) {
+          return activityRepo;
+        }
+        throw new Error(`Unexpected repository for ${String(entity)}`);
+      },
+    };
+    return fn(em);
+  }
+
   const ticketRepo = {
     findOne: jest.fn(),
+    find: jest.fn().mockResolvedValue([]),
     count: jest.fn(),
     manager: {
-      transaction: jest.fn(async (fn: (em: unknown) => Promise<void>) => {
-        const em = {
-          getRepository: (entity: unknown) => {
-            if (entity === TicketEntity) {
-              return { save: jest.fn().mockResolvedValue(undefined) };
-            }
-            if (entity === TicketActivityEntity) {
-              return activityRepo;
-            }
-            throw new Error(`Unexpected repository for ${String(entity)}`);
-          },
-        };
-        await fn(em);
-      }),
+      transaction: jest.fn(defaultManagerTransaction),
     },
   };
 
@@ -104,6 +108,7 @@ describe('TicketsService', () => {
       updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     } as unknown as TicketEntity;
     ticketRepo.findOne.mockResolvedValue(ticket);
+    ticketRepo.find.mockResolvedValue([ticket]);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -152,15 +157,134 @@ describe('TicketsService', () => {
 
   describe('automationEligible on ticket response', () => {
     it('returns false when no ticket_automation row exists', async () => {
+      ticketAutomationRepo.find.mockResolvedValue([]);
       const dto = await service.update(ticketId, { preferredChatAgentId: agentB }, undefined);
       expect(dto.automationEligible).toBe(false);
-      expect(ticketAutomationRepo.findOne).toHaveBeenCalled();
+      expect(ticketAutomationRepo.find).toHaveBeenCalled();
     });
 
     it('returns eligible from ticket_automation when present', async () => {
-      ticketAutomationRepo.findOne.mockResolvedValueOnce({ eligible: true });
+      ticketAutomationRepo.find.mockResolvedValue([{ ticketId, eligible: true }]);
       const dto = await service.update(ticketId, { preferredChatAgentId: agentB }, undefined);
       expect(dto.automationEligible).toBe(true);
+    });
+  });
+
+  describe('create', () => {
+    let ticketSeq = 0;
+
+    beforeEach(() => {
+      ticketSeq = 0;
+      ticketAutomationRepo.find.mockResolvedValue([]);
+      activityRepo.find.mockImplementation(async (opts: { where: { ticketId: string } }) => {
+        const tid = opts.where.ticketId;
+        return [
+          {
+            id: '00000000-0000-4000-8000-00000000a099',
+            ticketId: tid,
+            occurredAt: new Date('2024-01-01T00:00:00.000Z'),
+            actorType: 'human' as const,
+            actorUserId: 'user-1',
+            actionType: 'CREATED',
+            payload: {},
+          },
+        ];
+      });
+      ticketRepo.manager.transaction.mockImplementation(async (fn: (em: unknown) => Promise<unknown>) => {
+        const em = {
+          getRepository: (entity: unknown) => {
+            if (entity === TicketEntity) {
+              return {
+                create: (fields: Partial<TicketEntity>) => ({ ...fields }) as TicketEntity,
+                save: jest.fn(async (entity: TicketEntity) => {
+                  ticketSeq += 1;
+                  const id = `00000000-0000-4000-8000-${String(ticketSeq).padStart(12, '0')}`;
+                  return {
+                    ...entity,
+                    id,
+                    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+                    updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+                  } as TicketEntity;
+                }),
+              };
+            }
+            if (entity === TicketActivityEntity) {
+              return activityRepo;
+            }
+            throw new Error(`Unexpected repository for ${String(entity)}`);
+          },
+        };
+        return fn(em);
+      });
+    });
+
+    afterEach(() => {
+      ticketRepo.manager.transaction.mockImplementation(defaultManagerTransaction);
+      activityRepo.find.mockResolvedValue([
+        {
+          id: '00000000-0000-4000-8000-00000000a099',
+          ticketId,
+          occurredAt: new Date('2024-01-02T00:00:00.000Z'),
+          actorType: 'human',
+          actorUserId: 'user-1',
+          actionType: 'FIELD_UPDATED',
+          payload: {},
+        },
+      ]);
+    });
+
+    it('creates a single ticket when creationTemplate is empty', async () => {
+      const result = await service.create({ clientId, title: 'Root', creationTemplate: undefined }, undefined);
+      expect(result.title).toBe('Root');
+      expect(result).not.toHaveProperty('createdChildTickets');
+      expect(activityRepo.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('creates parent and four children for specification template', async () => {
+      const result = await service.create(
+        {
+          clientId,
+          title: 'Feature',
+          content: 'desc',
+          creationTemplate: TicketCreationTemplate.SPECIFICATION,
+        },
+        undefined,
+      );
+      expect(result.title).toBe('Feature');
+      expect(result.createdChildTickets).toHaveLength(4);
+      expect(result.createdChildTickets?.map((c) => c.title)).toEqual([
+        'Proposal',
+        'Specifications',
+        'Technical design',
+        'Implementation plan',
+      ]);
+      expect(activityRepo.save).toHaveBeenCalledTimes(5);
+    });
+
+    it('rejects specification template with parentId', async () => {
+      ticketRepo.findOne.mockResolvedValueOnce({
+        id: '00000000-0000-4000-8000-00000000aaaa',
+        clientId,
+        parentId: null,
+        title: 'Parent',
+        content: null,
+        priority: TicketPriority.MEDIUM,
+        status: TicketStatus.DRAFT,
+        createdByUserId: null,
+        preferredChatAgentId: null,
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+      } as TicketEntity);
+      await expect(
+        service.create(
+          {
+            parentId: '00000000-0000-4000-8000-00000000aaaa',
+            title: 'Child',
+            creationTemplate: TicketCreationTemplate.SPECIFICATION,
+          },
+          undefined,
+        ),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
-import { TicketPriority, TicketStatus } from '../../entities/ticket.enums';
+import { TicketCreationTemplate, TicketPriority, TicketStatus } from '../../entities/ticket.enums';
 
 export class CreateTicketDto {
   @IsOptional()
@@ -26,4 +26,9 @@ export class CreateTicketDto {
   @IsOptional()
   @IsEnum(TicketStatus)
   status?: TicketStatus;
+
+  /** Not persisted. `specification` is only allowed for root tickets (no `parentId`). */
+  @IsOptional()
+  @IsEnum(TicketCreationTemplate)
+  creationTemplate?: TicketCreationTemplate;
 }

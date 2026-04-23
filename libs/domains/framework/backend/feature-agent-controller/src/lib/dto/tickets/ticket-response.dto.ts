@@ -1,6 +1,19 @@
 import { TicketPriority, TicketStatus } from '../../entities/ticket.enums';
 import { TicketActivityResponseDto } from './ticket-activity-response.dto';
 
+/** Checkbox counts aggregated from all descendant tickets' descriptions (not this ticket). */
+export class TicketTasksChildrenDto {
+  open!: number;
+  done!: number;
+}
+
+/** Markdown task checkboxes in `content`: `[ ]` open, `[x]` / `[X]` done; `children` sums descendants only. */
+export class TicketTasksDto {
+  open!: number;
+  done!: number;
+  children!: TicketTasksChildrenDto;
+}
+
 export class TicketResponseDto {
   id!: string;
   clientId!: string;
@@ -17,7 +30,13 @@ export class TicketResponseDto {
   automationEligible!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+  tasks!: TicketTasksDto;
   children?: TicketResponseDto[];
+}
+
+/** Response for `POST /tickets`; includes optional subtasks when `creationTemplate` was `specification`. */
+export class CreateTicketResponseDto extends TicketResponseDto {
+  createdChildTickets?: TicketResponseDto[];
 }
 
 export class PrototypePromptResponseDto {

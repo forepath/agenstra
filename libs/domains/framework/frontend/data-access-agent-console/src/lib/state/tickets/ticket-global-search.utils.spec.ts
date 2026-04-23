@@ -1,4 +1,4 @@
-import type { TicketResponseDto } from './tickets.types';
+import { EMPTY_TICKET_TASKS, type TicketResponseDto } from './tickets.types';
 import {
   buildTicketBreadcrumbTitles,
   filterTicketsForGlobalSearch,
@@ -16,6 +16,7 @@ describe('ticket-global-search.utils', () => {
     automationEligible: false,
     createdAt: '',
     updatedAt: '',
+    tasks: EMPTY_TICKET_TASKS,
     ...overrides,
   });
 

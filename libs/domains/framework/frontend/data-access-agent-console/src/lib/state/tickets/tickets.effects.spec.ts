@@ -29,7 +29,7 @@ import {
   openTicketDetail$,
   updateTicket$,
 } from './tickets.effects';
-import type { TicketResponseDto } from './tickets.types';
+import { EMPTY_TICKET_TASKS, type TicketResponseDto } from './tickets.types';
 
 describe('TicketsEffects', () => {
   let actions$: Actions;
@@ -44,6 +44,7 @@ describe('TicketsEffects', () => {
     automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
+    tasks: EMPTY_TICKET_TASKS,
   };
 
   beforeEach(() => {
@@ -111,6 +112,20 @@ describe('TicketsEffects', () => {
       const outcome = createTicketSuccess({ ticket: mockTicket });
       actions$ = of(action);
       ticketsService.createTicket.mockReturnValue(of(mockTicket));
+      createTicket$(actions$, ticketsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+
+    it('should strip createdChildTickets into createTicketSuccess payload', (done) => {
+      const dto = { clientId: 'client-1', title: 'New', creationTemplate: 'specification' as const };
+      const action = createTicket({ dto });
+      const child = { ...mockTicket, id: 'child-1', parentId: 'ticket-1', title: 'Proposal' };
+      const apiResponse = { ...mockTicket, createdChildTickets: [child] };
+      const outcome = createTicketSuccess({ ticket: mockTicket, createdChildTickets: [child] });
+      actions$ = of(action);
+      ticketsService.createTicket.mockReturnValue(of(apiResponse));
       createTicket$(actions$, ticketsService).subscribe((result) => {
         expect(result).toEqual(outcome);
         done();

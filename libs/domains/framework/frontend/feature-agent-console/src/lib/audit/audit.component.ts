@@ -122,6 +122,7 @@ export class AuditComponent implements OnInit {
         height: 280,
         toolbar: { show: false },
         background: 'transparent',
+        zoom: { enabled: false },
       },
       colors: ['var(--bs-primary)'],
       stroke: { colors: ['var(--bs-primary)'] },

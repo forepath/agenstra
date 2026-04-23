@@ -1,6 +1,12 @@
 import type { TicketResponseDto } from '@forepath/framework/frontend/data-access-agent-console';
 import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
 
+const emptyTasks = (): TicketResponseDto['tasks'] => ({
+  open: 0,
+  done: 0,
+  children: { open: 0, done: 0 },
+});
+
 describe('buildTicketBodyHierarchyContext', () => {
   const base = (overrides: Partial<TicketResponseDto>): TicketResponseDto => ({
     id: 'id',
@@ -11,6 +17,7 @@ describe('buildTicketBodyHierarchyContext', () => {
     automationEligible: false,
     createdAt: '',
     updatedAt: '',
+    tasks: emptyTasks(),
     ...overrides,
   });
 

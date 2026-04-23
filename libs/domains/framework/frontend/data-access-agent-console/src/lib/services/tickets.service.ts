@@ -5,6 +5,7 @@ import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
 import type {
   CreateTicketDto,
+  CreateTicketResultDto,
   ListTicketsParams,
   PrototypePromptResponseDto,
   StartBodyGenerationSessionResponseDto,
@@ -54,8 +55,8 @@ export class TicketsService {
     return this.http.get<TicketResponseDto>(`${this.apiUrl}/tickets/${id}`, { params });
   }
 
-  createTicket(dto: CreateTicketDto): Observable<TicketResponseDto> {
-    return this.http.post<TicketResponseDto>(`${this.apiUrl}/tickets`, dto);
+  createTicket(dto: CreateTicketDto): Observable<CreateTicketResultDto> {
+    return this.http.post<CreateTicketResultDto>(`${this.apiUrl}/tickets`, dto);
   }
 
   updateTicket(id: string, dto: UpdateTicketDto): Observable<TicketResponseDto> {

@@ -27,7 +27,12 @@ import {
   ticketBoardAutomationUpsert,
 } from '../ticket-automation/ticket-automation.actions';
 import { initialTicketsState, ticketsReducer, type TicketsState } from './tickets.reducer';
-import type { TicketActivityResponseDto, TicketCommentResponseDto, TicketResponseDto } from './tickets.types';
+import {
+  EMPTY_TICKET_TASKS,
+  type TicketActivityResponseDto,
+  type TicketCommentResponseDto,
+  type TicketResponseDto,
+} from './tickets.types';
 
 describe('ticketsReducer', () => {
   const mockTicket: TicketResponseDto = {
@@ -41,6 +46,7 @@ describe('ticketsReducer', () => {
     automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
+    tasks: EMPTY_TICKET_TASKS,
   };
 
   const mockComment: TicketCommentResponseDto = {
@@ -78,7 +84,7 @@ describe('ticketsReducer', () => {
       const prev: TicketsState = { ...initialTicketsState, loadingList: true };
       const next = ticketsReducer(prev, loadTicketsSuccess({ tickets: [mockTicket] }));
       expect(next.loadingList).toBe(false);
-      expect(next.list).toEqual([mockTicket]);
+      expect(next.list).toEqual([{ ...mockTicket, subtaskCounts: { open: 0, done: 0 } }]);
     });
   });
 
@@ -121,7 +127,7 @@ describe('ticketsReducer', () => {
         }),
       );
       expect(next.loadingDetail).toBe(false);
-      expect(next.detail).toEqual(mockTicket);
+      expect(next.detail).toEqual({ ...mockTicket, subtaskCounts: { open: 0, done: 0 } });
       expect(next.comments).toEqual([mockComment]);
     });
   });
@@ -185,6 +191,30 @@ describe('ticketsReducer', () => {
       const next = ticketsReducer(prev, createTicketSuccess({ ticket: subtask }));
       expect(next.detail?.children).toBeUndefined();
     });
+
+    it('should merge parent and createdChildTickets into list and detail.children', () => {
+      const prev: TicketsState = {
+        ...initialTicketsState,
+        saving: true,
+        list: [],
+        detail: null,
+        selectedTicketId: null,
+      };
+      const parent: TicketResponseDto = { ...mockTicket, id: 'root-1', title: 'Epic' };
+      const c1: TicketResponseDto = { ...mockTicket, id: 'c1', title: 'Proposal', parentId: 'root-1' };
+      const c2: TicketResponseDto = { ...mockTicket, id: 'c2', title: 'Specifications', parentId: 'root-1' };
+      const next = ticketsReducer(prev, createTicketSuccess({ ticket: parent, createdChildTickets: [c1, c2] }));
+      expect(next.list.map((t) => t.id).sort()).toEqual(['c1', 'c2', 'root-1']);
+      const openParent: TicketsState = {
+        ...initialTicketsState,
+        saving: true,
+        list: [],
+        detail: parent,
+        selectedTicketId: parent.id,
+      };
+      const next2 = ticketsReducer(openParent, createTicketSuccess({ ticket: parent, createdChildTickets: [c1, c2] }));
+      expect(next2.detail?.children?.map((c) => c.id).sort()).toEqual(['c1', 'c2']);
+    });
   });
 
   describe('createTicketFailure', () => {
@@ -246,7 +276,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, updateTicketSuccess({ ticket: patchResponse, activity: [] }));
-      expect(next.detail?.children).toEqual([child]);
+      expect(next.detail?.children).toEqual([{ ...child, subtaskCounts: { open: 0, done: 0 } }]);
       expect(next.detail?.status).toBe('done');
     });
   });

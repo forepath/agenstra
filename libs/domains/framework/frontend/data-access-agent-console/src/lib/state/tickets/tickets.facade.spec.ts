@@ -12,7 +12,12 @@ import {
   updateTicket,
 } from './tickets.actions';
 import { TicketsFacade } from './tickets.facade';
-import type { CreateTicketDto, TicketResponseDto, UpdateTicketDto } from './tickets.types';
+import {
+  EMPTY_TICKET_TASKS,
+  type CreateTicketDto,
+  type TicketResponseDto,
+  type UpdateTicketDto,
+} from './tickets.types';
 
 describe('TicketsFacade', () => {
   let facade: TicketsFacade;
@@ -27,6 +32,7 @@ describe('TicketsFacade', () => {
     automationEligible: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
+    tasks: EMPTY_TICKET_TASKS,
   };
 
   const mockBoardRows = {

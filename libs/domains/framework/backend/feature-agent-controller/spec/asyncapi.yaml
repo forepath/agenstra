@@ -175,7 +175,9 @@ channels:
     messages:
       ticketUpsertEvent:
         $ref: '#/components/messages/TicketBoardTicketPayload'
-    description: Full ticket row after create/update (aligns with OpenAPI TicketResponseDto)
+    description: |
+      Full ticket row after create/update (aligns with OpenAPI TicketResponseDto).
+      A single REST create with `creationTemplate: specification` emits one upsert per ticket (parent plus four subtasks).
   tickets/ticketRemoved:
     address: tickets/ticketRemoved
     messages:
@@ -457,7 +459,9 @@ components:
       name: TicketBoardTicketPayload
       title: Ticket upsert payload
       contentType: application/json
-      description: Same shape as OpenAPI `TicketResponseDto` (including optional `children` when loaded with descendants).
+      description: |
+        Same shape as OpenAPI `TicketResponseDto` (including `tasks` markdown checkbox counts and optional `children`
+        when loaded with descendants).
       payload:
         type: object
         additionalProperties: true

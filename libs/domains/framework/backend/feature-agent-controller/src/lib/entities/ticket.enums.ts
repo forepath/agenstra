@@ -14,6 +14,12 @@ export enum TicketStatus {
   CLOSED = 'closed',
 }
 
+/** Request-only; not stored on tickets. Used when creating a root ticket with spec-driven subtasks. */
+export enum TicketCreationTemplate {
+  EMPTY = 'empty',
+  SPECIFICATION = 'specification',
+}
+
 export enum TicketActorType {
   HUMAN = 'human',
   AI = 'ai',
