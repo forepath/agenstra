@@ -54,6 +54,12 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -66,8 +72,54 @@ jobs:
       - name: Setup environment
         uses: ./.github/actions/setup-env
 
+      - name: Detect affected projects with test target
+        id: affected
+        shell: bash
+        run: |
+          set -euo pipefail
+          RAW=$(npx nx show projects --affected --with-target=test 2>/dev/null | sed '/^\s*$/d' || true)
+          if [ -n "$RAW" ]; then
+            echo "has=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Collect base-branch coverage (for PR diff)
+        if: github.event_name == 'pull_request' && steps.affected.outputs.has == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          PR_SHA=$(git rev-parse HEAD)
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git checkout "${{ github.event.pull_request.base.sha }}"
+          rm -rf coverage coverage-base
+          npx nx affected --target=test --parallel=3 --configuration=ci --skip-nx-cache || true
+          if [ -d coverage ]; then
+            mv coverage coverage-base
+          else
+            mkdir -p coverage-base
+          fi
+          git checkout "$PR_SHA"
+
+      - name: Ensure coverage-base exists for diff comment
+        if: github.event_name == 'pull_request' && steps.affected.outputs.has != 'true'
+        run: mkdir -p coverage-base
+
       - name: Run unit tests
-        run: npx nx affected --target=test --parallel=3 || echo "No affected projects for test"
+        run: npx nx affected --target=test --parallel=3 --configuration=ci --skip-nx-cache || echo "No affected projects for test"
+
+      - name: Report Nx coverage on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: dkhunt27/action-nx-code-coverage@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          no-coverage-ran: ${{ steps.affected.outputs.has == 'false' }}
+          coverage-folder: coverage
+          coverage-base-folder: coverage-base
+          gist-processing: 'false'
+          hide-coverage-reports: 'false'
+          hide-unchanged: 'false'
 
       - name: Run end-to-end tests
         run: npx nx affected --target=e2e --parallel=3 || echo "No affected projects for e2e"
