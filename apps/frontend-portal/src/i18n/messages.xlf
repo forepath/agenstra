@@ -191,8 +191,11 @@
       <trans-unit id="featurePortalAgentctx-ctaSub" datatype="html">
         <source> Once your team feels the difference, you can roll out AgentCTX across repositories to standardize how AI coding tools understand your systems. </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-ctaSecondary" datatype="html">
+      <trans-unit id="featurePortalAgentctx-ctaPrimary" datatype="html">
         <source> View installation guide </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-ctaSecondary" datatype="html">
+        <source> Explore example context files </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-metaTitle" datatype="html">
         <source>AgentCTX - One Context For All Your AI Coding Tools</source>
@@ -440,7 +443,7 @@
       <trans-unit id="featurePortalDesktop-heroDescription" datatype="html">
         <source> Agenstra Desktop brings the power of the Agenstra platform to your workstation. Connect to your agent infrastructure, inspect activity, and work with context from a focused desktop experience that fits into your daily tools. </source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-downloadCta" datatype="html">
+      <trans-unit id="featurePortalDesktop-downloadCtaHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Download Agenstra Desktop </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-setupGuide" datatype="html">
@@ -587,6 +590,9 @@
       <trans-unit id="featurePortalDesktop-ctaSub" datatype="html">
         <source> Once the team is comfortable, you can add access to staging and production according to your organization&apos;s access policies. </source>
         </trans-unit>
+      <trans-unit id="featurePortalDesktop-downloadCta" datatype="html">
+        <source> Download Agenstra Desktop </source>
+        </trans-unit>
       <trans-unit id="featurePortalDesktop-talkToTeam" datatype="html">
         <source> Talk to the team </source>
         </trans-unit>
@@ -611,7 +617,31 @@
       <trans-unit id="featurePortalHome-heroCtaLine" datatype="html">
         <source> Keep agent-assisted work on the same bar as the rest of your practice: guardrails, observability, and controls that match how you review changes, manage access, and release software. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-getStarted" datatype="html">
+      <trans-unit id="featurePortalHome-heroFeatureBadge1" datatype="html">
+        <source>Unified Agent Management</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge2" datatype="html">
+        <source>Prompt Governance</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge3" datatype="html">
+        <source>Audit &amp; Observability</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge4" datatype="html">
+        <source>Web IDE</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge5" datatype="html">
+        <source>Git Version Control</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge6" datatype="html">
+        <source>CI/CD Deployment</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge7" datatype="html">
+        <source>Auth &amp; Access Control</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge8" datatype="html">
+        <source>Tickets &amp; Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-getStartedHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-productTour" datatype="html">
@@ -675,13 +705,13 @@
         <source>Plan and track</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem5Desc" datatype="html">
-        <source>Run tickets and priorities per workspace so agent work stays tied to outcomes, not lost in side channels</source>
+        <source> Run tickets and priorities per workspace so agent work stays tied to outcomes, not lost in side channels </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem6Title" datatype="html">
         <source>Run code</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem6Desc" datatype="html">
-        <source>Execute commands and code in connected workspaces and review output in context, so runs live next to the agents and repositories your team already uses</source>
+        <source> Execute commands and code in connected workspaces and review output in context, so runs live next to the agents and repositories your team already uses </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionClosing" datatype="html">
         <source> Instead of treating every agent as a one off experiment, you get an infrastructure layer that makes them part of your engineering system. </source>
@@ -874,6 +904,9 @@
         </trans-unit>
       <trans-unit id="featurePortalHome-ctaSub" datatype="html">
         <source> Agenstra gives you centralized control, governance, and observability for distributed AI agents. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-getStarted" datatype="html">
+        <source> Get started </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-talkToTeam" datatype="html">
         <source> Talk to the team </source>

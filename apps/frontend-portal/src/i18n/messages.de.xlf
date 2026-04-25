@@ -254,9 +254,13 @@
         <source> Once your team feels the difference, you can roll out AgentCTX across repositories to standardize how AI coding tools understand your systems. </source>
         <target> Sobald Ihr Team den Unterschied spürt, können Sie AgentCTX über Repositories hinweg ausrollen, um zu standardisieren, wie KI-Coding-Tools Ihre Systeme verstehen. </target>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-ctaSecondary" datatype="html">
+      <trans-unit id="featurePortalAgentctx-ctaPrimary" datatype="html">
         <source> View installation guide </source>
         <target> Installationsanleitung anzeigen </target>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-ctaSecondary" datatype="html">
+        <source> Explore example context files </source>
+        <target> Beispiel-Kontextdateien ansehen </target>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-metaTitle" datatype="html">
         <source>AgentCTX - One Context For All Your AI Coding Tools</source>
@@ -586,8 +590,12 @@
         <source> Agenstra Desktop brings the power of the Agenstra platform to your workstation. Connect to your agent infrastructure, inspect activity, and work with context from a focused desktop experience that fits into your daily tools. </source>
         <target> Agenstra Desktop bringt die Leistung der Agenstra-Plattform zu Ihrer Workstation. Verbinden Sie sich mit Ihrer Agenten-Infrastruktur, inspizieren Sie Aktivitäten und arbeiten Sie mit Kontext aus einer fokussierten Desktop-Erfahrung, die sich in Ihre täglichen Tools einfügt. </target>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-downloadCta" datatype="html">
+      <trans-unit id="featurePortalDesktop-downloadCtaHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Download Agenstra Desktop </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Agenstra Desktop herunterladen </target>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-downloadCta" datatype="html">
+        <source> Download Agenstra Desktop </source>
         <target> Agenstra Desktop herunterladen </target>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-setupGuide" datatype="html">
@@ -814,8 +822,44 @@
         <source> Keep agent-assisted work on the same bar as the rest of your practice: guardrails, observability, and controls that match how you review changes, manage access, and release software. </source>
         <target> Halten Sie agentisch unterstützte Arbeit auf dem gleichen Niveau wie den Rest Ihrer Praxis: Guardrails, Observability und Kontrollen, die zu Ihrer Art passen, Änderungen zu prüfen, Zugriffe zu verwalten und Software auszurollen. </target>
         </trans-unit>
-      <trans-unit id="featurePortalHome-getStarted" datatype="html">
+      <trans-unit id="featurePortalHome-heroFeatureBadge1" datatype="html">
+        <source>Unified Agent Management</source>
+        <target>Einheitliches Agentenmanagement</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge2" datatype="html">
+        <source>Prompt Governance</source>
+        <target>Prompt-Governance</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge3" datatype="html">
+        <source>Audit &amp; Observability</source>
+        <target>Audit &amp; Observability</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge4" datatype="html">
+        <source>Web IDE</source>
+        <target>Web-IDE</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge5" datatype="html">
+        <source>Git Version Control</source>
+        <target>Git-Versionskontrolle</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge6" datatype="html">
+        <source>CI/CD Deployment</source>
+        <target>CI/CD-Deployment</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge7" datatype="html">
+        <source>Auth &amp; Access Control</source>
+        <target>Auth &amp; Zugriffskontrolle</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge8" datatype="html">
+        <source>Tickets &amp; Workspaces</source>
+        <target>Tickets &amp; Workspaces</target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-getStartedHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Loslegen </target>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-getStarted" datatype="html">
+        <source> Get started </source>
         <target> Loslegen </target>
         </trans-unit>
       <trans-unit id="featurePortalHome-productTour" datatype="html">
