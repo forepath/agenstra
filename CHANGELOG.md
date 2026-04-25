@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.49.0](https://github.com/forepath/agenstra/compare/v1.48.0...v1.49.0) (2026-04-25)
+
+
+### Features
+
+* made in germany badge ([#294](https://github.com/forepath/agenstra/issues/294)) ([0bf3707](https://github.com/forepath/agenstra/commit/0bf370767dd5b7b6e5a12d0ff6d7342eb1ec75a7))
+* prototyping automation branch preservation ([#287](https://github.com/forepath/agenstra/issues/287)) ([9a9a472](https://github.com/forepath/agenstra/commit/9a9a472fb5f1bf94514f5363caac7b4cbd18c532))
+* spec-driven development ticket template ([#286](https://github.com/forepath/agenstra/issues/286)) ([b238295](https://github.com/forepath/agenstra/commit/b23829594700662f252ec8f0683696d612e0987a))
+* ticket cross-workspace migrations ([#290](https://github.com/forepath/agenstra/issues/290)) ([d1e4ae9](https://github.com/forepath/agenstra/commit/d1e4ae985f8b9557dbceed9f6bd7887f3325ea46))
+* ticket title updates ([#289](https://github.com/forepath/agenstra/issues/289)) ([d9b7446](https://github.com/forepath/agenstra/commit/d9b7446e21074ee77ef2ba1eb1b186b6e86b9360))
+
+
+### Bug Fixes
+
+* automation translation ([#288](https://github.com/forepath/agenstra/issues/288)) ([8ccb02a](https://github.com/forepath/agenstra/commit/8ccb02a70380d6f38cf63fec6259b859d7fc22b7))
+
+
+### Chores
+
+* messages over time graph styling ([#293](https://github.com/forepath/agenstra/issues/293)) ([caf5ea3](https://github.com/forepath/agenstra/commit/caf5ea37153ca9e2a62e1552e05fd376523418dd))
+* update public documentation ([#292](https://github.com/forepath/agenstra/issues/292)) ([7431324](https://github.com/forepath/agenstra/commit/743132498501d04d42f0849c42dedce06113ed23))
+
+
+### Continuous Integration
+
+* nx coverage report ([#291](https://github.com/forepath/agenstra/issues/291)) ([416e13c](https://github.com/forepath/agenstra/commit/416e13c9a288afb81f59dc8eadb7a6b0fa39a1ca))
+
 ## [1.48.0](https://github.com/forepath/agenstra/compare/v1.47.0...v1.48.0) (2026-04-22)
 
 
