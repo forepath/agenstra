@@ -163,8 +163,14 @@ The following components are sublicensed under the **GNU Affero General Public L
 
 - [`apps/backend-agent-manager`](./apps/backend-agent-manager/) - Backend application for agent management
 - [`libs/domains/framework/backend/feature-agent-manager`](./libs/domains/framework/backend/feature-agent-manager/) - Agent management feature library
+- [`apps/frontend-agent-console`](./apps/frontend-agent-console/) - Frontend application for agent console
+- [`libs/domains/framework/frontend/feature-agent-console`](./libs/domains/framework/frontend/feature-agent-console/) - Agent console feature library
+- [`libs/domains/framework/frontend/data-access-agent-console`](./libs/domains/framework/frontend/data-access-agent-console/) - Agent console data access library
+- [`libs/domains/framework/frontend/util-configuration`](./libs/domains/framework/frontend/util-configuration/) - Frontend configuration utility library
+- [`libs/domains/framework/frontend/util-cookie-consent`](./libs/domains/framework/frontend/util-cookie-consent/) - Cookie consent utility library
+- [`libs/domains/framework/frontend/util-docs-parser`](./libs/domains/framework/frontend/util-docs-parser/) - Documentation parser utility library
 
-These components are licensed under AGPL-3.0, which means that any modifications or derivative works must also be licensed under AGPL-3.0 and made available to users, including when accessed over a network. See the respective [backend-agent-manager application LICENSE](./apps/backend-agent-manager/LICENSE) and [feature-agent-manager library LICENSE](./libs/domains/framework/backend/feature-agent-manager/LICENSE) files for the full AGPL-3.0 license text.
+These components are licensed under AGPL-3.0, which means that any modifications or derivative works must also be licensed under AGPL-3.0 and made available to users, including when accessed over a network. See the respective [backend-agent-manager application LICENSE](./apps/backend-agent-manager/LICENSE), [feature-agent-manager library LICENSE](./libs/domains/framework/backend/feature-agent-manager/LICENSE), [frontend-agent-console application LICENSE](./apps/frontend-agent-console/LICENSE), [feature-agent-console library LICENSE](./libs/domains/framework/frontend/feature-agent-console/LICENSE), [data-access-agent-console library LICENSE](./libs/domains/framework/frontend/data-access-agent-console/LICENSE), [util-configuration library LICENSE](./libs/domains/framework/frontend/util-configuration/LICENSE), [util-cookie-consent library LICENSE](./libs/domains/framework/frontend/util-cookie-consent/LICENSE), and [util-docs-parser library LICENSE](./libs/domains/framework/frontend/util-docs-parser/LICENSE) files for the full AGPL-3.0 license text.
 
 The following components are sublicensed under the **Business Source License 1.1 (BUSL-1.1)**:
 
@@ -179,8 +185,14 @@ The following components are sublicensed under the **Source-Available License**:
 - [`libs/domains/framework/frontend/feature-portal`](./libs/domains/framework/frontend/feature-portal/) - Portal feature library
 - [`apps/frontend-docs`](./apps/frontend-docs/) - Frontend application for documentation
 - [`libs/domains/framework/frontend/feature-docs`](./libs/domains/framework/frontend/feature-docs/) - Documentation feature library
+- [`apps/frontend-billing-console`](./apps/frontend-billing-console/) - Frontend application for billing console
+- [`libs/domains/framework/frontend/feature-billing-console`](./libs/domains/framework/frontend/feature-billing-console/) - Billing console feature library
+- [`libs/domains/framework/frontend/data-access-billing-console`](./libs/domains/framework/frontend/data-access-billing-console/) - Billing console data access library
+- [`libs/domains/framework/frontend/data-access-portal`](./libs/domains/framework/frontend/data-access-portal/) - Portal data access library
+- [`apps/backend-billing-manager`](./apps/backend-billing-manager/) - Backend application for billing management
+- [`libs/domains/framework/backend/feature-billing-manager`](./libs/domains/framework/backend/feature-billing-manager/) - Billing management feature library
 
-These components are licensed under a source-available license that grants only the right to view the source code. No other rights are granted, including copying, modifying, distributing, or using the software for any purpose. See the respective [frontend-portal application LICENSE](./apps/frontend-portal/LICENSE), [feature-portal library LICENSE](./libs/domains/framework/frontend/feature-portal/LICENSE), [frontend-docs application LICENSE](./apps/frontend-docs/LICENSE), and [feature-docs library LICENSE](./libs/domains/framework/frontend/feature-docs/LICENSE) files for the full license text.
+These components are licensed under a source-available license that grants only the right to view the source code. No other rights are granted, including copying, modifying, distributing, or using the software for any purpose. See the respective [frontend-portal application LICENSE](./apps/frontend-portal/LICENSE), [feature-portal library LICENSE](./libs/domains/framework/frontend/feature-portal/LICENSE), [frontend-docs application LICENSE](./apps/frontend-docs/LICENSE), [feature-docs library LICENSE](./libs/domains/framework/frontend/feature-docs/LICENSE), [frontend-billing-console application LICENSE](./apps/frontend-billing-console/LICENSE), [feature-billing-console library LICENSE](./libs/domains/framework/frontend/feature-billing-console/LICENSE), [data-access-billing-console library LICENSE](./libs/domains/framework/frontend/data-access-billing-console/LICENSE), [data-access-portal library LICENSE](./libs/domains/framework/frontend/data-access-portal/LICENSE), [backend-billing-manager application LICENSE](./apps/backend-billing-manager/LICENSE), and [feature-billing-manager library LICENSE](./libs/domains/framework/backend/feature-billing-manager/LICENSE) files for the full license text.
 
 ## Contribution
 
