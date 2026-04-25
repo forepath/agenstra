@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.50.0](https://github.com/forepath/agenstra/compare/v1.49.0...v1.50.0) (2026-04-25)
+
+
+### Features
+
+* landingpage hero features ([#295](https://github.com/forepath/agenstra/issues/295)) ([501c6b5](https://github.com/forepath/agenstra/commit/501c6b57effaf42cf9eb2580f1987976baad87c0))
+
 ## [1.49.0](https://github.com/forepath/agenstra/compare/v1.48.0...v1.49.0) (2026-04-25)
 
 
