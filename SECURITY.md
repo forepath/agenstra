@@ -87,6 +87,14 @@ This framework includes several built-in security features:
 
 ## Security Resources
 
+## Software Bill of Materials (SBOM)
+
+We publish CycloneDX SBOM files for each release.
+
+- **Path**: `releases/<version>/sboms/`
+- **Example**: `releases/0.1.0/sboms/`
+- **How to find your version**: Check the release version in [Downloads](https://downloads.agenstra.com/), then replace `<version>` in the path above.
+
 ### Documentation
 
 - [Project overview and docs](./docs/agenstra/README.md) - Architecture, deployment, and setup

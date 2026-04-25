@@ -653,3 +653,13 @@ jobs:
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/frontend-portal.cdx.json'
+
+      - name: Upload SBOMs to Cloudflare R2 bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+        run: |
+          aws s3 cp dist/sboms/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/sboms/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
