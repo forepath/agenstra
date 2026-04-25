@@ -162,3 +162,40 @@
 .text-white {
   color: rgba(245, 245, 245, 0.85) !important;
 }
+
+.flag {
+  height: 35px;
+  width: calc(35px / 3);
+  position: relative;
+  border-radius: 0.25rem;
+
+  > .flag-color {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+
+    &:nth-child(1) {
+      background-color: black;
+      top: 0;
+    }
+
+    &:nth-child(2) {
+      background-color: red;
+      top: calc(100% / 3);
+    }
+
+    &:nth-child(3) {
+      background-color: yellow;
+      top: calc(100% / 3 * 2);
+    }
+  }
+}
+
+.made-in-container {
+  height: 72px;
+}
+
+.made-in {
+  padding-top: 0.125rem;
+}
