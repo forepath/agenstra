@@ -4,7 +4,7 @@ Angular web application providing a web-based IDE and chat interface for interac
 
 ## Purpose
 
-This application provides a comprehensive user interface for managing clients, agents, and interacting with AI agents in real-time. It includes a Monaco Editor-based code editor, chat interface, file management, and Git operations.
+This application provides a comprehensive user interface for managing clients, agents, tickets, deployments, and filter policies, and for interacting with AI agents in real time. It includes a Monaco Editor-based code editor, chat interface, file management, and Git operations. All workspace-scoped traffic goes to the **agent controller** API and WebSockets; the console does not talk directly to agent-manager instances.
 
 ## Features
 
@@ -16,10 +16,16 @@ This application provides:
 - **Version Control** - Full Git operations (status, branches, commit, push, pull, rebase)
 - **Container Statistics** - Real-time container resource monitoring (CPU, memory, network)
 - **Client Management** - Create, update, and delete clients (remote agent-manager instances)
-- **Agent Management** - Create, update, and delete agents
+- **Agent Management** - Create, update, delete, start, stop, and restart agents; environment variables; models list
+- **Tickets** - Workspace ticket board with comments, activity, migration, and automation runs ([Tickets and Workspaces](../features/tickets-and-workspaces.md))
+- **Deployments** - CI/CD configuration and runs per agent ([Deployment](../features/deployment.md))
+- **Usage statistics** - Controller-backed analytics slices for operators ([Usage Statistics](../features/usage-statistics.md))
+- **Message filter rules** - Global admin rule manager ([Message Filter Rules](../features/message-filter-rules.md))
+- **Agent autonomy** - Configure which agents may run autonomously per workspace
 - **Server Provisioning** - Provision cloud servers (Hetzner, DigitalOcean) with automated deployment
+- **Audit** - Audit views for administrators (`/audit`)
 - **State Management** - NgRx for predictable state management
-- **Authentication** - Keycloak-based authentication with automatic token refresh
+- **Authentication** - Keycloak or built-in users (JWT) via `@forepath/identity/frontend`, depending on deployment configuration
 
 ## Architecture
 
@@ -73,11 +79,41 @@ The application uses NgRx for state management with the following state slices:
 - File diffs
 - VCS operations (stage, commit, push, pull)
 
+### Environment state (`env`)
+
+- Environment variables for the selected agent
+- Batch load and count helpers
+
+### Deployments state (`deployments`)
+
+- Deployment configuration, repositories, branches, workflows
+- Runs, logs, job logs, cancel operations
+
+### Tickets state (`tickets`, `ticketAutomation`)
+
+- Ticket lists and detail, comments, automation configuration and runs
+
+### Client agent autonomy state (`clientAgentAutonomy`)
+
+- Enabled agent ids and per-agent autonomy payloads for the active workspace
+
+### Usage statistics state (`statistics`)
+
+- Summary, chat I/O, filter drops/flags, and entity events (controller API)
+
+### Filter rules state (`filterRules`)
+
+- Global filter rules for administrators
+
+### Tickets board socket state (`ticketsBoardSocket`)
+
+- Connection lifecycle for the controller **`tickets`** Socket.IO namespace
+
 ### Authentication State
 
 - Authentication status
 - User information
-- Token management
+- Token management (from identity frontend bundle)
 
 ### Stats State
 
@@ -86,13 +122,21 @@ The application uses NgRx for state management with the following state slices:
 
 ## Routing
 
-The application uses Angular routing with the following structure:
+Routes are defined in the framework library `libs/domains/framework/frontend/feature-agent-console/src/lib/agent-console.routes.ts`. Highlights:
 
-- `/login` - Login page
-- `/clients` - Client list and management
-- `/clients/:clientId` - Agent list for a client
-- `/clients/:clientId/agents/:agentId` - Chat interface for an agent
-- `/clients/:clientId/agents/:agentId/editor` - Code editor for an agent
+- ``(empty) → redirect to`clients`
+- **Identity** – `identityAuthRoutes` (login, register, password reset, email confirmation, user management) merged under the shell component
+- `/audit` – Audit (authenticated)
+- `/filters` – Global message filter rules (**admin** guard)
+- `/tickets`, `/tickets/:clientId` – Ticket board (**authenticated**; requires active client context)
+- `/clients` – Default **Manager** view: client and agent chat shell
+  - `/clients` – Landing list
+  - `/clients/:clientId` – Workspace selected
+  - `/clients/:clientId/agents/:agentId` – Agent chat
+  - `/clients/:clientId/agents/:agentId/editor` – Editor layout for the same shell
+  - `/clients/:clientId/agents/:agentId/config` – Agent configuration editor (guarded)
+  - `/clients/:clientId/agents/:agentId/deployments` – Deployments UI for the agent
+- `**` → redirect to `clients`
 
 ## Components
 
@@ -100,19 +144,30 @@ The application uses Angular routing with the following structure:
 
 Main container component that provides the layout and routing structure.
 
-### AgentConsoleLoginComponent
-
-Login page with Keycloak authentication integration.
-
 ### AgentConsoleChatComponent
 
-Main chat interface component that includes:
+Main workspace shell: chat, file tree, Git, environment variables, deployments entry, statistics, and modals for client and agent management.
 
-- Chat message display
-- Message input
-- File editor integration
-- Container statistics
-- Client and agent management modals
+### TicketsBoardComponent
+
+Ticket board and detail experience for the active workspace (`/tickets`).
+
+### RuleManagerComponent
+
+Administrative UI for global regex filter rules (`/filters`).
+
+### AuditComponent
+
+Administrative audit views (`/audit`).
+
+### FileEditorComponent
+
+Monaco Editor integration for code editing with:
+
+- Syntax highlighting
+- Code completion
+- File system browser
+- Save functionality
 
 ### FileEditorComponent
 
@@ -125,32 +180,31 @@ Monaco Editor integration for code editing with:
 
 ## WebSocket Communication
 
-The application connects to the agent-controller WebSocket gateway and:
+The application opens **two** Socket.IO connections to the controller **`WEBSOCKET_URL`** when needed:
 
-1. Sets client context using `setClient` event
-2. Forwards events to remote agent-managers using `forward` event
-3. Receives forwarded events from agent-managers
-4. Handles reconnection and state restoration
+1. **`clients` namespace** – Same port as today’s `WEBSOCKET_URL`; `setClient` selects the workspace, then `forward` sends agent-manager events (chat, login, terminals, etc.). Manager responses arrive as their native event names on this socket.
+2. **`tickets` namespace** – Optional second connection for ticket board realtime (`setClient` per workspace, then ticket and automation events). Chat-centric UIs may rely on controller events on `clients` instead; see [WebSocket Communication](../features/websocket-communication.md).
+
+Reconnection flows restore client context, agent login when applicable, and tickets board context.
 
 ### Reconnection Handling
 
 On reconnection:
 
-1. Automatically reconnects to the WebSocket
-2. Restores client context
+1. Automatically reconnects to the WebSocket(s)
+2. Restores client context (`setClient`)
 3. Restores agent login (if previously logged in)
-4. Clears old events to prevent duplicates
-5. Receives chat history from the backend
+4. Clears stale local buffers where required to avoid duplicates
+5. Receives chat history and ticket automation cards from the backend as implemented in NgRx effects
 
 ## Authentication
 
-The application uses Keycloak for authentication:
+Behavior depends on controller configuration:
 
-1. User is redirected to Keycloak login page
-2. After successful login, user is redirected back with authorization code
-3. Application exchanges code for access token
-4. Token is stored and included in HTTP requests
-5. Token is automatically refreshed before expiration
+- **Keycloak** – Authorization code flow, tokens attached to HTTP and WebSocket handshakes, refresh handled by the identity frontend layer.
+- **Users (JWT)** – Email/password login and registration routes from `identityAuthRoutes`; tokens are stored and sent as `Bearer` on HTTP and on WebSocket handshakes.
+
+See [Authentication](../features/authentication.md) for environment variables and operational notes.
 
 ## Environment Configuration
 
@@ -170,7 +224,7 @@ Configure the application via environment variables:
 - `API_URL` - Backend API endpoint (default: `http://localhost:3100`)
 - `WEBSOCKET_URL` - WebSocket endpoint (default: `http://localhost:8081`)
 
-### Keycloak Configuration
+### Keycloak Configuration (Keycloak mode)
 
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL
 - `KEYCLOAK_REALM` - Keycloak realm
@@ -207,9 +261,9 @@ docker compose up -d
 Before deploying to production:
 
 1. Configure environment variables
-2. Set `API_URL` to production backend endpoint
-3. Set `WEBSOCKET_URL` to production WebSocket endpoint
-4. Configure Keycloak client for production domain
+2. Set `API_URL` to production **agent controller** HTTP endpoint
+3. Set `WEBSOCKET_URL` to production controller WebSocket base (namespaces `clients` and `tickets` share this origin)
+4. Configure Keycloak client (or users auth) for the production domain
 5. (Optional) Set `CONFIG` environment variable to a remote JSON configuration URL for runtime configuration
 6. Build the application: `nx build frontend-agent-console --configuration=production`
 7. Serve the built files using a web server (nginx, Apache, etc.)
@@ -220,6 +274,12 @@ Before deploying to production:
 - **[Web IDE Feature](../features/web-ide.md)** - Code editor guide
 - **[File Management Feature](../features/file-management.md)** - File operations guide
 - **[Version Control Feature](../features/version-control.md)** - Git operations guide
+- **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** - Ticket board and automation
+- **[Deployment](../features/deployment.md)** - CI/CD from the console
+- **[Usage Statistics](../features/usage-statistics.md)** - Controller analytics
+- **[Message Filter Rules](../features/message-filter-rules.md)** - Global and per-agent filters
+- **[WebSocket Communication](../features/websocket-communication.md)** - Dual-namespace behavior
+- **[Backend Agent Controller](./backend-agent-controller.md)** - API and WebSocket surface
 
 ---
 

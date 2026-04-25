@@ -13,6 +13,9 @@ This application provides:
 - **HTTP REST API** - Full CRUD operations for client management and proxied agent operations
 - **WebSocket Gateway** - Real-time bidirectional event forwarding to remote agent-manager services
 - **Server Provisioning** - Automated cloud server provisioning (Hetzner Cloud, DigitalOcean) with Docker and agent-manager deployment
+- **Tickets and Automation** - Workspace tickets, migration, and automation APIs with optional ticket board WebSocket namespace
+- **Usage Statistics** - Aggregated chat, filter, and entity metrics for operators and admins
+- **Global Filter Rules** - Admin-managed regex policies synced to workspaces
 - **Per-Client Permissions** - Fine-grained access control with user roles per client (keycloak/users mode)
 - **Secure Authentication** - API key, Keycloak OAuth2/OIDC, or built-in users (JWT) for HTTP and WebSocket
 - **Database Support** - PostgreSQL with TypeORM for data persistence
@@ -30,7 +33,7 @@ This application is built using:
 - **Socket.IO** - WebSocket communication
 - **PostgreSQL** - Database for client and credential storage
 
-The application integrates the `@forepath/framework-backend-feature-agent-controller` library, which provides the core client management functionality.
+The thin Nest application composes **`ClientsModule`**, **`IdentityStatisticsBridgeModule`**, and **`MonitoringModule`** from `@forepath/framework/backend`, which bundle client management, ticket and proxy behavior, usage statistics bridging, and health endpoints from the framework agent-controller implementation.
 
 ## API Endpoints
 
@@ -59,6 +62,81 @@ In api-key mode, users do not play a role; these endpoints are not applicable.
 - `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials)
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent (also deletes stored credentials)
+- `GET /api/clients/:id/agents/:agentId/models` - List models for an agent (proxied)
+
+### Proxied agent lifecycle
+
+- `POST /api/clients/:id/agents/:agentId/start` - Start the agent container (proxied)
+- `POST /api/clients/:id/agents/:agentId/stop` - Stop the agent container (proxied)
+- `POST /api/clients/:id/agents/:agentId/restart` - Restart the agent container (proxied)
+
+### Proxied environment variables
+
+- `GET /api/clients/:id/agents/:agentId/environment` - List environment variables (proxied; supports `limit` and `offset`)
+- `GET /api/clients/:id/agents/:agentId/environment/count` - Count environment variables (proxied)
+- `POST /api/clients/:id/agents/:agentId/environment` - Create environment variable (proxied)
+- `PUT /api/clients/:id/agents/:agentId/environment/:envVarId` - Update environment variable (proxied)
+- `DELETE /api/clients/:id/agents/:agentId/environment/:envVarId` - Delete environment variable (proxied)
+- `DELETE /api/clients/:id/agents/:agentId/environment` - Delete all environment variables (proxied)
+
+### Proxied deployments (CI/CD)
+
+The console calls the controller; the controller proxies to each client’s agent-manager. Typical paths:
+
+- `GET/PUT/DELETE .../deployments/configuration` - Deployment configuration
+- `GET .../deployments/repositories` - List repositories
+- `GET .../deployments/repositories/:repositoryId/branches` - List branches
+- `GET .../deployments/repositories/:repositoryId/workflows` - List workflows
+- `POST .../deployments/workflows/trigger` - Trigger a workflow
+- `GET .../deployments/runs` - List runs
+- `GET .../deployments/runs/:runId` - Run status
+- `GET .../deployments/runs/:runId/logs` - Run logs
+- `GET .../deployments/runs/:runId/jobs` - Run jobs
+- `GET .../deployments/runs/:runId/jobs/:jobId/logs` - Job logs
+- `POST .../deployments/runs/:runId/cancel` - Cancel a run
+
+### Tickets and automation (controller-native)
+
+Tickets live on the controller database (not on the remote manager). See [Tickets and Workspaces](../features/tickets-and-workspaces.md).
+
+- `GET/POST /api/tickets` - List and create tickets
+- `GET/PATCH/DELETE /api/tickets/:id` - Read, update, delete
+- `GET/POST /api/tickets/:id/comments` - Comments
+- `GET /api/tickets/:id/activity` - Activity feed
+- `GET/POST /api/tickets/:id/prototype-prompt` - Prototype prompt helpers
+- `GET/POST /api/tickets/:id/body-generation-sessions` and related apply endpoint - Assisted body generation flow
+- `POST /api/tickets/:id/migrate` - Move ticket subtree to another workspace (`targetClientId`)
+- `GET/PATCH /api/tickets/:ticketId/automation` - Automation configuration
+- `POST .../automation/approve` and `POST .../automation/unapprove` - Approve or revoke approval
+- `GET .../automation/runs`, `GET .../automation/runs/:runId`, `POST .../automation/runs/:runId/cancel` - Runs and cancel
+
+### Usage statistics
+
+See [Usage Statistics](../features/usage-statistics.md).
+
+- `GET /api/clients/:id/statistics/summary` - Summary for one workspace
+- `GET /api/clients/:id/statistics/chat-io` - Chat I/O metrics
+- `GET /api/clients/:id/statistics/filter-drops` - Filter drop metrics
+- `GET /api/clients/:id/statistics/filter-flags` - Filter flag metrics
+- `GET /api/clients/:id/statistics/entity-events` - Entity event stream for statistics
+- `GET /api/statistics/summary` - Aggregate summary (access rules per OpenAPI)
+- `GET /api/statistics/chat-io`, `filter-drops`, `filter-flags`, `entity-events` - Global aggregates
+
+### Global message filter rules (admin)
+
+See [Message Filter Rules](../features/message-filter-rules.md).
+
+- `GET/POST /api/filter-rules` - List (paginated) and create rules
+- `GET/PUT/DELETE /api/filter-rules/:id` - Read, update, delete a rule
+
+### Agent autonomy (workspace configuration)
+
+- `GET/PUT /api/clients/:id/agent-autonomy/enabled-agent-ids` - Which agents may run with autonomy for this workspace
+- `GET/PUT /api/clients/:id/agents/:agentId/autonomy` - Per-agent autonomy configuration (workspace managers; see OpenAPI for `403` cases)
+
+### Users authentication HTTP (users mode only)
+
+When `AUTHENTICATION_METHOD=users`, public and authenticated user endpoints include registration, login, password flows, and admin user management. See [Authentication](../features/authentication.md) and OpenAPI paths `/auth/*` and `/users/*`.
 
 ### Proxied File Operations
 
@@ -85,6 +163,8 @@ In api-key mode, users do not play a role; these endpoints are not applicable.
 - `POST /api/clients/:id/agents/:agentId/vcs/branches` - Create a new branch
 - `DELETE /api/clients/:id/agents/:agentId/vcs/branches/:branch` - Delete a branch
 - `POST /api/clients/:id/agents/:agentId/vcs/conflicts/resolve` - Resolve merge conflicts
+- `POST /api/clients/:id/agents/:agentId/vcs/workspace/prepare-clean` - Prepare a clean workspace (proxied)
+- `POST /api/clients/:id/agents/:agentId/automation/verify-commands` - Verify automation command configuration (proxied)
 
 ### Server Provisioning
 
@@ -98,7 +178,12 @@ For complete API endpoint documentation, request/response schemas, and authentic
 
 ## WebSocket Gateway
 
-The Socket.IO WebSocket gateway is available at `http://localhost:8081/clients` (or configured `WEBSOCKET_PORT`).
+Socket.IO listens on **`WEBSOCKET_PORT`** (default `8081`). Two namespaces share the same port and CORS settings (`WEBSOCKET_CORS_ORIGIN`):
+
+- **`clients`** (default `WEBSOCKET_NAMESPACE` = `clients`) – proxy to the selected workspace’s agent-manager; chat, terminals, stats, and controller-originated ticket hints for the chat UI
+- **`tickets`** (default `TICKETS_WEBSOCKET_NAMESPACE` = `tickets`) – ticket board and automation realtime (see [Tickets and Workspaces](../features/tickets-and-workspaces.md))
+
+Connect to each namespace explicitly in the client library (e.g. `io(url + '/clients', options)` and `io(url + '/tickets', options)`).
 
 ### Authentication
 
@@ -110,18 +195,36 @@ WebSocket connections require authentication via the `Authorization` header (pol
 
 Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
 
-### Events
+### Namespace `clients` – events
 
 #### Client → Server
 
 - `setClient` - Set the client context for subsequent operations (requires access to the client)
-- `forward` - Forward an event to the remote agent-manager WebSocket
+- `forward` - Forward an event to the remote agent-manager WebSocket (same event names as on the manager, e.g. `chat`, `login`)
 
 #### Server → Client
 
-- `clientSet` - Confirmation that client context was set
-- `forwardedEvent` - Events forwarded from the remote agent-manager
+- `setClientSuccess` - Confirmation that client context was set (or already set)
+- `forwardAck` - Acknowledgement that a `forward` was accepted
+- **Proxied manager events** - Responses are re-emitted using their original event names (for example `chatMessage`, `containerStats`, `terminalOutput`) to the initiating socket only
+- `remoteDisconnected`, `remoteReconnecting`, `remoteReconnected`, `remoteReconnectError`, `remoteReconnectFailed` - Remote agent-manager link state
+- `ticketAutomationRunChatUpsert`, `ticketChatTicketUpsert` - Controller-originated ticket timeline and metadata for chat clients (see AsyncAPI)
 - `error` - Error messages
+
+### Namespace `tickets` – events
+
+Same handshake auth as `clients`. After `setClient` with a workspace id, the socket joins room `client:{clientId}`.
+
+#### Client → Server
+
+- `setClient` - Select workspace for board realtime
+
+#### Server → Client
+
+- `setClientSuccess` - Workspace context set
+- `ticketUpsert`, `ticketRemoved`, `ticketCommentCreated`, `ticketActivityCreated`
+- `ticketAutomationUpsert`, `ticketAutomationRunUpsert`, `ticketAutomationRunStepAppended`
+- `error` - Tickets namespace errors
 
 For complete WebSocket event specifications and usage examples, see the application and API reference docs linked below.
 
@@ -208,7 +311,10 @@ See the application docs and environment configuration for complete environment 
 **Application-specific:**
 
 - `PORT` - HTTP API port (default: `3100`)
-- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8081`)
+- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8081`; shared by `clients` and `tickets` namespaces)
+- `WEBSOCKET_NAMESPACE` - Socket.IO namespace for agent proxying (default: `clients`)
+- `TICKETS_WEBSOCKET_NAMESPACE` - Socket.IO namespace for ticket board realtime (default: `tickets`)
+- `WEBSOCKET_CORS_ORIGIN` - CORS origin(s) for WebSocket (see framework docs)
 - `NODE_ENV` - Environment mode (`development` or `production`)
 
 **CORS Configuration:**
@@ -293,6 +399,10 @@ Before deploying to production, ensure:
 - **[Client Management Feature](../features/client-management.md)** - Client management guide
 - **[Server Provisioning Feature](../features/server-provisioning.md)** - Server provisioning guide
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** - WebSocket communication guide
+- **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** - Tickets, migration, automation
+- **[Usage Statistics](../features/usage-statistics.md)** - Controller usage metrics
+- **[Message Filter Rules](../features/message-filter-rules.md)** - Global and per-agent filters
+- **[Deployment Feature](../features/deployment.md)** - CI/CD configuration (invoked via controller proxy from the console)
 - **[Deployment Guide](../deployment/production-checklist.md)** - Production deployment guide
 
 ## License

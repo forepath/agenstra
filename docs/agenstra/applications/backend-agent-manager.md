@@ -4,7 +4,7 @@ NestJS backend application for managing and interacting with AI agents through H
 
 ## Purpose
 
-This application provides a complete agent management system by integrating the `@forepath/framework-backend-feature-agent-manager` library. It enables the creation, management, and real-time interaction with AI agents through both synchronous HTTP requests and persistent WebSocket connections.
+This application provides a complete agent management system by importing **`AgentsModule`** and **`MonitoringModule`** from `@forepath/framework/backend`, which bundle the agent-manager HTTP API, WebSocket gateway, Docker integration, and health endpoints.
 
 ## Features
 
@@ -32,7 +32,7 @@ This application is built using:
 - **Docker** - Container management for agent execution
 - **PostgreSQL** - Database for agent storage
 
-The application integrates the `@forepath/framework-backend-feature-agent-manager` library, which provides the core agent management functionality.
+The Nest `AppModule` wires TypeORM, hybrid HTTP auth (Keycloak connect plus optional static API key), throttling, and the framework **`AgentsModule`** implementation.
 
 ## API Endpoints
 
@@ -45,6 +45,46 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 - `POST /api/agents` - Create a new agent (returns auto-generated password)
 - `POST /api/agents/:id` - Update an existing agent
 - `DELETE /api/agents/:id` - Delete an agent
+- `GET /api/agents/:id/models` - List models available for the agent (provider-specific)
+
+### Agent lifecycle
+
+- `POST /api/agents/:id/start` - Start the agent container
+- `POST /api/agents/:id/stop` - Stop the agent container
+- `POST /api/agents/:id/restart` - Restart the agent container
+
+### Environment variables
+
+Changes are persisted and synchronized to the agent’s Docker container (the container is restarted so new variables take effect).
+
+- `GET /api/agents/:agentId/environment` - List variables (`limit`, `offset`)
+- `GET /api/agents/:agentId/environment/count` - Count variables
+- `POST /api/agents/:agentId/environment` - Create variable (`201 Created`)
+- `PUT /api/agents/:agentId/environment/:id` - Update variable
+- `DELETE /api/agents/:agentId/environment/:id` - Delete one variable
+- `DELETE /api/agents/:agentId/environment` - Delete all variables
+
+### Per-agent message filter rules
+
+Regex rules scoped to this manager instance (distinct from controller global rules). See [Message Filter Rules](../features/message-filter-rules.md).
+
+- `GET/POST /api/agents-filters` - List (ordered by priority) and create
+- `GET /api/agents-filters/count` - Rule count
+- `GET/PUT/DELETE /api/agents-filters/:id` - Read, update, delete
+
+### Deployments (CI/CD)
+
+- `GET/PUT/DELETE /api/agents/:agentId/deployments/configuration` - Provider token and defaults (encrypted at rest)
+- `GET /api/agents/:agentId/deployments/repositories` - Repositories
+- `GET .../repositories/:repositoryId/branches` - Branches
+- `GET .../repositories/:repositoryId/workflows` - Workflows
+- `POST /api/agents/:agentId/deployments/workflows/trigger` - Trigger a run
+- `GET /api/agents/:agentId/deployments/runs` - List runs
+- `GET .../deployments/runs/:runId` - Run detail
+- `GET .../deployments/runs/:runId/logs` - Run logs
+- `GET .../deployments/runs/:runId/jobs` - Jobs
+- `GET .../deployments/runs/:runId/jobs/:jobId/logs` - Job logs
+- `POST .../deployments/runs/:runId/cancel` - Cancel run
 
 ### Configuration
 
@@ -75,6 +115,8 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 - `POST /api/agents/:agentId/vcs/branches` - Create a new branch
 - `DELETE /api/agents/:agentId/vcs/branches/:branch` - Delete a branch
 - `POST /api/agents/:agentId/vcs/conflicts/resolve` - Resolve merge conflicts
+- `POST /api/agents/:agentId/vcs/workspace/prepare-clean` - Prepare a clean Git workspace (automation / operator aid)
+- `POST /api/agents/:agentId/automation/verify-commands` - Validate automation-related command configuration
 
 For complete API endpoint documentation, request/response schemas, and authentication requirements, see the application and API reference docs linked below.
 
@@ -88,17 +130,21 @@ The Socket.IO WebSocket gateway is available at `http://localhost:8080/agents` (
 
 - `login` - Authenticate with agent ID (UUID or name) and password
 - `chat` - Send chat message (requires authentication)
+- Additional events for files, terminals, and tooling as described in the agent-manager AsyncAPI (for example `fileUpdate`, `createTerminal`, `terminalInput`, `closeTerminal`)
 
 #### Server → Client
 
 - `loginSuccess` - Emitted on successful authentication
 - `loginError` - Emitted on authentication failure
-- `chatMessage` - Broadcasted to all connected clients when a chat message is sent
+- `chatMessage` - Chat traffic (broadcast or unicast depending on message options)
+- `containerStats`, file and terminal notifications, and other provider-specific events per AsyncAPI
 - `error` - Emitted on authorization or processing errors
 
 For complete WebSocket event specifications, authentication flow, and usage examples, see the application and API reference docs linked below.
 
 ## Authentication
+
+Built-in **users** registration and JWT login live on the **agent controller** only. The agent manager application always uses **Keycloak** (JWT with `agent_management` role) or **static API key** as configured—there are no `/auth/*` endpoints on this service. Operators typically never call the manager HTTP API directly from a browser; the console uses the controller, which proxies requests with stored client credentials.
 
 ### HTTP Endpoints
 
@@ -235,6 +281,9 @@ Before deploying to production, ensure:
 - **[Agent Management Feature](../features/agent-management.md)** - Agent management guide
 - **[VNC Browser Access Feature](../features/vnc-browser-access.md)** - VNC browser access guide
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** - WebSocket communication guide
+- **[Deployment Feature](../features/deployment.md)** - CI/CD configuration and operations
+- **[Message Filter Rules](../features/message-filter-rules.md)** - Per-agent regex filters
+- **[Backend Agent Controller](./backend-agent-controller.md)** - Control plane and proxy paths used by the console
 - **[Deployment Guide](../deployment/production-checklist.md)** - Production deployment guide
 
 ## License

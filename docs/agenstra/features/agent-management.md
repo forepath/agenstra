@@ -160,6 +160,22 @@ Monitor container resource usage:
 - Memory usage
 - Network I/O
 
+These metrics come from the **agent-manager** via the proxied `clients` WebSocket (`containerStats`). For **usage statistics** (messages, filters, entity events) aggregated on the controller, see [Usage Statistics](./usage-statistics.md).
+
+### Start, stop, and restart
+
+From the console (through the controller) or via HTTP on the manager, you can start a stopped container, stop a running one, or restart it to pick up certain configuration changes. Exact paths are listed in [Backend Agent Manager Application](../applications/backend-agent-manager.md) and [Backend Agent Controller Application](../applications/backend-agent-controller.md) (proxied routes).
+
+### Environment variables
+
+Agent-scoped environment variables are stored on the **agent-manager** and applied to the agent’s Docker container. Creating, updating, or deleting a variable triggers a container restart so the process sees the new environment. Manage them from the console or via the HTTP API (manager paths, or controller-proxied paths per client).
+
+See also [Deployment](./deployment.md) for CI/CD tokens stored in deployment configuration.
+
+### Message filters
+
+Per-agent regex filters live on the manager (`/api/agents-filters`). Global policies live on the controller and are documented in [Message Filter Rules](./message-filter-rules.md).
+
 ## API Endpoints
 
 ### Agent Management
@@ -169,6 +185,9 @@ Monitor container resource usage:
 - `POST /api/clients/:id/agents` - Create a new agent
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent
+- `POST /api/clients/:id/agents/:agentId/start` - Start agent container (proxied)
+- `POST /api/clients/:id/agents/:agentId/stop` - Stop agent container (proxied)
+- `POST /api/clients/:id/agents/:agentId/restart` - Restart agent container (proxied)
 
 For detailed API documentation, see the application and API reference docs linked below.
 
@@ -179,6 +198,8 @@ For detailed API documentation, see the application and API reference docs linke
 - **[Version Control](./version-control.md)** - Git operations in containers
 - **[WebSocket Communication](./websocket-communication.md)** - Real-time communication
 - **[VNC Browser Access](./vnc-browser-access.md)** - Graphical browser access via VNC
+- **[Usage Statistics](./usage-statistics.md)** - Controller-side usage metrics
+- **[Message Filter Rules](./message-filter-rules.md)** - Regex filters
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** - Application details
 
 ---

@@ -6,9 +6,12 @@ Real-time bidirectional communication between frontend, controller, and manager 
 
 Agenstra uses WebSocket (Socket.IO) for real-time bidirectional communication. The architecture supports:
 
-- **Frontend ↔ Controller**: Event forwarding and client context management
+- **Frontend ↔ Controller (`clients` namespace)**: Workspace selection (`setClient`), `forward` to remote agent-managers, and controller-originated ticket hints for chat
+- **Frontend ↔ Controller (`tickets` namespace)**: Ticket board and automation realtime for subscribers
 - **Controller ↔ Manager**: Event forwarding to remote agent-managers
 - **Manager ↔ Agent Containers**: Real-time chat and container communication
+
+On the controller, **`clients`** and **`tickets`** share the same TCP port (`WEBSOCKET_PORT`); namespaces are selected in the Socket.IO client path.
 
 ## Authentication
 
@@ -41,7 +44,7 @@ sequenceDiagram
     F->>AC: setClient (clientId)
     AC->>AC: Check client access
     AC->>AC: Store Client Context
-    AC->>F: clientSet
+    AC->>F: setClientSuccess
 ```
 
 ### Controller to Manager
@@ -85,11 +88,11 @@ socket.emit('forward', {
 });
 ```
 
-### Controller → Frontend
+### Controller → Frontend (`clients` namespace)
 
-#### clientSet
+#### setClientSuccess
 
-Confirmation that client context was set:
+Confirmation that client context was set (or was already selected):
 
 ```typescript
 {
@@ -98,20 +101,17 @@ Confirmation that client context was set:
 }
 ```
 
-#### forwardedEvent
+#### forwardAck
 
-Events forwarded from the remote agent-manager:
+Acknowledgement that a `forward` command was accepted for dispatch to the manager.
 
-```typescript
-{
-  event: 'chatMessage',
-  payload: {
-    from: 'agent',
-    text: 'Hello, user!',
-    timestamp: '2024-01-01T00:00:00Z'
-  }
-}
-```
+#### Proxied manager events
+
+The controller re-emits manager events **using their original event names** to the initiating browser socket only (for example `chatMessage`, `containerStats`, `terminalOutput`). Shapes match the agent-manager AsyncAPI.
+
+#### Controller-originated ticket events (still on `clients`)
+
+To refresh ticket metadata in chat without subscribing to `tickets`, the controller may emit `ticketChatTicketUpsert` and automation timeline payloads such as `ticketAutomationRunChatUpsert` to room `client:{clientId}`. See the agent-controller AsyncAPI for fields.
 
 ### Manager → Controller
 
@@ -148,15 +148,44 @@ Chat messages (user or agent):
 }
 ```
 
+## Tickets board realtime (`tickets` namespace)
+
+Use a second Socket.IO connection to the same controller WebSocket origin with namespace **`tickets`** (override via `TICKETS_WEBSOCKET_NAMESPACE` on the server).
+
+### Flow
+
+```mermaid
+sequenceDiagram
+    participant UI as TicketsBoard
+    participant AC as AgentController
+
+    UI->>AC: connect /tickets (Authorization)
+    UI->>AC: setClient (clientId)
+    AC->>AC: ensureClientAccess
+    AC->>UI: setClientSuccess
+    Note over AC: REST mutation persists ticket
+    AC->>UI: ticketUpsert payload
+```
+
+### Client → Server
+
+- `setClient` with `{ clientId }` – joins Socket.IO room `client:{clientId}` when authorized
+
+### Server → Client
+
+Typical events include `ticketUpsert`, `ticketRemoved`, `ticketCommentCreated`, `ticketActivityCreated`, `ticketAutomationUpsert`, `ticketAutomationRunUpsert`, and `ticketAutomationRunStepAppended`. Errors use the `error` event on this namespace.
+
+See **[Tickets and Workspaces](./tickets-and-workspaces.md)** for product context and **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** for configuration.
+
 ## Reconnection Handling
 
 ### Frontend Reconnection
 
 When the frontend reconnects to the controller:
 
-1. WebSocket automatically reconnects
-2. Frontend sends `setClient` event to restore context
-3. Frontend sends `forward` event with `login` to restore agent login
+1. WebSocket automatically reconnects (repeat for `tickets` if used)
+2. Frontend sends `setClient` event to restore context on each namespace
+3. Frontend sends `forward` event with `login` to restore agent login (`clients` only)
 4. Controller forwards login to manager
 5. Manager restores chat history
 6. Frontend clears old events to prevent duplicates
@@ -225,10 +254,11 @@ sequenceDiagram
 ## Related Documentation
 
 - **[Chat Interface](./chat-interface.md)** - Chat functionality details
+- **[Tickets and Workspaces](./tickets-and-workspaces.md)** - Ticket board and automation
 - **[Agent Management](./agent-management.md)** - Agent authentication
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** - Controller WebSocket details
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** - Manager WebSocket details
 
 ---
 
-_For detailed WebSocket event specifications, see the application and API reference docs linked below._
+_For detailed WebSocket event specifications, see the [API Reference](../api-reference/README.md) and the published [Agent Controller AsyncAPI](/spec/agent-controller/asyncapi.yaml) and [Agent Manager AsyncAPI](/spec/agent-manager/asyncapi.yaml)._
