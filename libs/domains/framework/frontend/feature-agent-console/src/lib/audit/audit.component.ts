@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -8,11 +8,13 @@ import {
   ClientsFacade,
   StatisticsFacade,
   type ClientResponseDto,
+  type StatisticsSeriesPoint,
   type UserResponseDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import type {
   ApexAxisChartSeries,
   ApexChart,
+  ApexDataLabels,
   ApexNonAxisChartSeries,
   ApexTitleSubtitle,
   ApexXAxis,
@@ -48,6 +50,7 @@ const BS_CHART_COLORS = [
   selector: 'framework-audit',
   standalone: true,
   imports: [CommonModule, FormsModule, NgApexchartsModule, RouterLink],
+  providers: [DatePipe],
   templateUrl: './audit.component.html',
   styleUrls: ['./audit.component.scss'],
 })
@@ -55,6 +58,7 @@ export class AuditComponent implements OnInit {
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly statisticsFacade = inject(StatisticsFacade);
+  private readonly datePipe = inject(DatePipe);
 
   readonly filtersCollapsed = signal(true);
   readonly selectedClientId = signal<string | null>(null);
@@ -105,6 +109,7 @@ export class AuditComponent implements OnInit {
     colors: string[];
     stroke: { colors: string[] };
     fill: { colors: string[] };
+    dataLabels: ApexDataLabels;
     xaxis: ApexXAxis;
     yaxis: { labels: { style: { colors: string } } };
     grid: { borderColor: string };
@@ -113,8 +118,14 @@ export class AuditComponent implements OnInit {
     const s = this.summary();
     if (!s) return null;
     const seriesData = s.series ?? [];
-    const categories = seriesData.map((p) => p.period);
-    const data = seriesData.map((p) => p.count);
+    const groupBy = this.groupBy();
+    const { categories, data } = this.buildMessagesOverTimeCategoriesAndData(
+      seriesData,
+      this.fromDate(),
+      this.toDate(),
+      groupBy,
+    );
+    const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
     return {
       series: [{ name: 'Messages', data }],
       chart: {
@@ -127,9 +138,13 @@ export class AuditComponent implements OnInit {
       colors: ['var(--bs-primary)'],
       stroke: { colors: ['var(--bs-primary)'] },
       fill: { colors: ['var(--bs-primary)'] },
+      dataLabels: { enabled: false },
       xaxis: {
         categories,
-        labels: { style: { colors: 'var(--bs-body-color)' } },
+        labels: {
+          style: { colors: 'var(--bs-body-color)' },
+          formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
+        },
         axisBorder: { color: 'var(--bs-border-color)' },
       },
       yaxis: {
@@ -482,6 +497,86 @@ export class AuditComponent implements OnInit {
       limit: PAGE_SIZE,
       offset: this.entityEventsPage() * PAGE_SIZE,
     });
+  }
+
+  /**
+   * Aligns API series with every UTC bucket in the selected date range so gaps show as zero.
+   * Falls back to API-only points when from/to are not valid YYYY-MM-DD.
+   */
+  private buildMessagesOverTimeCategoriesAndData(
+    seriesData: StatisticsSeriesPoint[],
+    fromYmd: string,
+    toYmd: string,
+    groupBy: 'day' | 'hour',
+  ): { categories: string[]; data: number[] } {
+    const bucketKeys = this.generateUtcBucketKeysInclusive(fromYmd, toYmd, groupBy);
+    if (bucketKeys.length === 0) {
+      return {
+        categories: seriesData.map((p) => p.period),
+        data: seriesData.map((p) => p.count),
+      };
+    }
+    const countByBucket = new Map<string, number>();
+    for (const point of seriesData) {
+      const key = AuditComponent.normalizePeriodToUtcBucketKey(point.period, groupBy);
+      countByBucket.set(key, (countByBucket.get(key) ?? 0) + point.count);
+    }
+    return {
+      categories: bucketKeys,
+      data: bucketKeys.map((key) => countByBucket.get(key) ?? 0),
+    };
+  }
+
+  private generateUtcBucketKeysInclusive(fromYmd: string, toYmd: string, groupBy: 'day' | 'hour'): string[] {
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateOnly.test(fromYmd) || !dateOnly.test(toYmd)) {
+      return [];
+    }
+    const fromMs = Date.parse(`${fromYmd}T00:00:00.000Z`);
+    const toDayStartMs = Date.parse(`${toYmd}T00:00:00.000Z`);
+    if (Number.isNaN(fromMs) || Number.isNaN(toDayStartMs) || fromMs > toDayStartMs) {
+      return [];
+    }
+    const keys: string[] = [];
+    if (groupBy === 'day') {
+      for (let t = fromMs; t <= toDayStartMs; t += 86400000) {
+        keys.push(AuditComponent.utcDayStartIso(new Date(t)));
+      }
+      return keys;
+    }
+    const endMs = Date.parse(`${toYmd}T23:59:59.999Z`);
+    for (let t = fromMs; t <= endMs; t += 3600000) {
+      keys.push(AuditComponent.utcHourStartIso(new Date(t)));
+    }
+    return keys;
+  }
+
+  private static utcDayStartIso(d: Date): string {
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString();
+  }
+
+  private static utcHourStartIso(d: Date): string {
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours())).toISOString();
+  }
+
+  private static normalizePeriodToUtcBucketKey(period: string, groupBy: 'day' | 'hour'): string {
+    const d = new Date(period);
+    if (Number.isNaN(d.getTime())) {
+      return period;
+    }
+    return groupBy === 'day' ? AuditComponent.utcDayStartIso(d) : AuditComponent.utcHourStartIso(d);
+  }
+
+  /** Apex category axis values are ISO instants; render with locale via DatePipe. */
+  private formatAxisDateLabel(value: string, format: string): string {
+    if (!value) {
+      return '';
+    }
+    const ms = Date.parse(value);
+    if (Number.isNaN(ms)) {
+      return value;
+    }
+    return this.datePipe.transform(ms, format) ?? value;
   }
 
   formatDateTime(iso: string | undefined): string {
