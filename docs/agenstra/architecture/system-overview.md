@@ -108,6 +108,8 @@ sequenceDiagram
     AC-->>F: Response
 ```
 
+In addition to the **`clients`** namespace used to proxy chat and tooling to each workspace’s agent-manager, the agent controller exposes a **`tickets`** Socket.IO namespace on the same port for ticket board and automation realtime. See [WebSocket Communication](../features/websocket-communication.md) and [Tickets and Workspaces](../features/tickets-and-workspaces.md).
+
 ### WebSocket Event Flow
 
 ```mermaid

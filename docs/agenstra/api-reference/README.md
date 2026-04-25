@@ -15,10 +15,15 @@ The Agent Controller provides a centralized control plane for managing multiple 
 
 The Agent Controller HTTP API provides:
 
-- Client management (CRUD operations)
-- Proxied agent operations (create, update, delete agents)
-- Proxied file operations (read, write, create, delete files)
-- Proxied version control operations (git status, branches, commit, push, pull, rebase)
+- Client management (CRUD operations) and client user management (Keycloak/users modes)
+- Users authentication endpoints (`/auth/*`, `/users/*`) when `AUTHENTICATION_METHOD=users`
+- Tickets, comments, activity, migration, automation, and assisted body-generation flows (`/tickets/*`)
+- Usage statistics (`/clients/:id/statistics/*`, `/statistics/*`)
+- Global message filter rules for administrators (`/filter-rules`)
+- Agent autonomy configuration per workspace and per agent
+- Proxied agent operations (CRUD, models, start/stop/restart, environment variables, deployments)
+- Proxied file operations (read, write, create, delete, move)
+- Proxied version control operations (including workspace prepare-clean and automation verify-commands)
 - Server provisioning (Hetzner Cloud, DigitalOcean)
 
 ### WebSocket Gateway
@@ -30,9 +35,8 @@ The Agent Controller HTTP API provides:
 
 The Agent Controller WebSocket gateway provides:
 
-- Client context management (`setClient` event)
-- Event forwarding to remote agent-manager instances
-- Reconnection handling and status notifications
+- **`clients` namespace** – Client context (`setClient`), `forward` to remote agent-managers, proxied events by name, reconnection notifications, controller-originated ticket hints for chat
+- **`tickets` namespace** – Ticket board and automation realtime (`setClient`, upserts, comments, activity, run events)
 
 ## Agent Manager API
 
@@ -47,10 +51,13 @@ The Agent Manager provides agent lifecycle management and container execution.
 
 The Agent Manager HTTP API provides:
 
-- Agent management (CRUD operations)
-- File system operations (read, write, create, delete, move files)
-- Version control operations (git status, branches, commit, push, pull, rebase)
-- Configuration endpoints
+- Agent management (CRUD, models, start/stop/restart)
+- Per-agent regex filter rules (`/agents-filters`)
+- Environment variable CRUD with container restart semantics
+- File system operations (read, write, create, delete, move; optional `context` query)
+- Version control operations (git status, branches, commit, push, pull, rebase, workspace prepare-clean, automation verify-commands)
+- Deployment configuration and CI/CD run APIs (`/agents/:agentId/deployments/...`)
+- Configuration endpoint (`/config`)
 
 ### WebSocket Gateway
 

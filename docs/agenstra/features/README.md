@@ -17,6 +17,9 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **VNC Browser Access** - Graphical browser access via VNC and noVNC
 - **Deployment** - CI/CD pipeline management and deployment functionality
 - **Authentication** - Multiple authentication methods with configurable user registration
+- **Tickets and Workspaces** - Ticket boards, migration, and automation on the controller
+- **Usage Statistics** - Controller-backed usage and filter metrics (distinct from container stats)
+- **Message Filter Rules** - Global and per-agent regex policies for chat traffic
 
 ## Features
 
@@ -153,6 +156,37 @@ Multiple authentication methods with configurable user registration. Support for
 - Admin user management
 - Optional signup disable for controlled onboarding
 
+### [Tickets and Workspaces](./tickets-and-workspaces.md)
+
+Workspace-scoped tickets with collaboration, migration between clients, and ticket automation with realtime board updates.
+
+**Key Capabilities**:
+
+- Ticket CRUD, comments, and activity
+- Workspace migration with coherent realtime rooms
+- Automation configuration, approval, runs, and cancel
+- Optional assisted body generation flows (see OpenAPI)
+
+### [Usage Statistics](./usage-statistics.md)
+
+Aggregated usage and filter metrics on the agent controller for reporting and operations.
+
+**Key Capabilities**:
+
+- Per-workspace and global summaries
+- Chat I/O, filter drops, filter flags, and entity events
+- Complements live **container** statistics from the agent-manager
+
+### [Message Filter Rules](./message-filter-rules.md)
+
+Regex-based rules at controller (global, admin) and manager (per-agent) levels.
+
+**Key Capabilities**:
+
+- Organization-wide policies synced from the controller
+- Agent-specific tuning on each manager
+- Metrics integration with usage statistics
+
 ## Feature Relationships
 
 ```mermaid
@@ -168,6 +202,9 @@ graph TB
     VNC[VNC Browser Access]
     DEP[Deployment]
     AUTH[Authentication]
+    TK[Tickets and Workspaces]
+    ST[Usage Statistics]
+    FR[Message Filter Rules]
 
     SP --> CM
     CM --> AM
@@ -179,10 +216,16 @@ graph TB
     AM --> VNC
     AM --> DEP
     WS --> Chat
+    WS --> TK
     FM --> IDE
     VC --> IDE
     VC --> DEP
     AUTH --> AM
+    AUTH --> ST
+    TK --> WS
+    FR --> Chat
+    FR --> ST
+    TK --> AM
 ```
 
 ## Related Documentation

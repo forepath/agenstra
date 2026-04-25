@@ -259,6 +259,11 @@ You're now ready to:
 - Monitor container logs
 - See container health status
 
+### Tickets and usage statistics
+
+- Open **Tickets** from the navigation (`/tickets`) after selecting a workspace to manage tickets, automation, and migration between clients ([Tickets and Workspaces](./features/tickets-and-workspaces.md))
+- Use workspace-level **usage statistics** in the console where exposed to review chat volume and filter metrics ([Usage Statistics](./features/usage-statistics.md)); these differ from live **container** stats in the chat view
+
 ## Next Steps
 
 Now that you have Agenstra set up:
@@ -267,7 +272,8 @@ Now that you have Agenstra set up:
 2. **[Client Management](./features/client-management.md)** - Learn about managing clients
 3. **[Agent Management](./features/agent-management.md)** - Deep dive into agent lifecycle
 4. **[WebSocket Communication](./features/websocket-communication.md)** - Understand real-time communication
-5. **[Deployment Guide](./deployment/production-checklist.md)** - Prepare for production
+5. **[Tickets and Workspaces](./features/tickets-and-workspaces.md)** - Ticket board and automation
+6. **[Deployment Guide](./deployment/production-checklist.md)** - Prepare for production
 
 ## Troubleshooting
 

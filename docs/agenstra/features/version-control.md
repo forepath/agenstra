@@ -54,6 +54,15 @@ View the current Git status:
 - Resolve merge conflicts
 - Switch branches
 
+### Workspace and automation helpers
+
+The HTTP API also exposes operator-focused endpoints (on the manager and proxied through the controller):
+
+- **`POST .../vcs/workspace/prepare-clean`** – Prepare a clean Git workspace for automated or manual workflows (see OpenAPI for semantics).
+- **`POST .../automation/verify-commands`** – Validate command configuration used by ticket automation and related flows.
+
+These complement everyday commit/push operations documented above.
+
 ## Git Operation Flow
 
 ```mermaid
@@ -103,6 +112,8 @@ sequenceDiagram
 - `POST /api/clients/:id/agents/:agentId/vcs/branches` - Create a new branch
 - `DELETE /api/clients/:id/agents/:agentId/vcs/branches/:branch` - Delete a branch
 - `POST /api/clients/:id/agents/:agentId/vcs/conflicts/resolve` - Resolve merge conflicts
+- `POST /api/clients/:id/agents/:agentId/vcs/workspace/prepare-clean` - Prepare clean workspace (proxied)
+- `POST /api/clients/:id/agents/:agentId/automation/verify-commands` - Verify automation commands (proxied)
 
 For detailed API documentation, see the application and API reference docs linked below.
 
