@@ -1,0 +1,69 @@
+---
+id: feature
+name: Feature Prototyping Workflow
+description: End-to-end steps and guardrails for prototyping features in this Nx monorepo
+---
+# Feature Prototyping
+
+Use this skill when turning an idea into working code in the repository (spike, vertical slice, or MVP feature).
+
+## Guardrails (non-negotiable)
+
+- **Rulesets:** Follow `.agenstra/rules/` (and any transformed tool rules) for coding standards, security, errors, testing, accessibility, performance, and version control. Do not invent patterns that contradict them
+- **Repository patterns:** Mirror existing projects: layout under `apps/`, `libs/domains/`, `tools/`; Nx tags and module boundaries from `.eslintrc.json` / `project.json`; naming from custom generators (schemas under `tools/code`). Prefer extending existing modules over parallel conventions
+- **Scope:** Keep changes focused; avoid unrelated refactors, drive-by formatting outside touched files, and new dependencies unless justified
+- **Secrets and data:** No hardcoded secrets; validate on the server; do not log sensitive data (see `security-standards` rule)
+
+## Supporting skills and rules (use as needed)
+
+- **`solid-principles.skill.mdc`** – shape services and boundaries before deep implementation
+- **`design-patterns.skill.mdc`** – when behavior needs extensibility or clear structure
+- **`security-patterns.skill.mdc`** – auth, input handling, and sensitive flows
+- **Rules:** `typescript-javascript`, `accessibility` (UI), `testing-strategy`, `error-handling`, `version-control` for commits and PR shape
+
+## Workflow (exact order)
+
+### 1. Align
+
+- Restate the goal, acceptance signal, and out-of-scope items in one short paragraph
+- Locate similar features, APIs, or UI in the repo; list the Nx projects you expect to touch (`project.json` / `nx graph`)
+- If new libraries or apps are required, use workspace generators (e.g. `tools/code`) and their schemas instead of hand-rolling layout
+
+### 2. Design minimally
+
+- Sketch data flow and boundaries (who calls whom); keep public surfaces small
+- For UI work, plan keyboard flow, labels, and contrast early (`accessibility` rule)
+- For risky or cross-cutting design choices, pause for explicit human confirmation before locking APIs
+
+### 3. Implement
+
+- Implement the smallest vertical slice that proves the feature; add types and errors per repo conventions
+- Respect Nx module-boundary tags; do not wire forbidden imports to satisfy a shortcut
+- Add or update tests with the change (see `testing-strategy` rule), not as a later optional step
+
+### 4. Verify locally (run from repository root)
+
+Run these before considering the prototype done (fix failures or document intentional skips with owner approval):
+
+```bash
+nx affected --target=lint
+nx format:check
+nx affected --target=test
+```
+
+- If `affected` is empty or wrong for your branch, set an explicit base (example): `nx affected --target=lint --base=origin/main`
+- Optionally run builds for touched deployables, e.g. `nx affected --target=build`, when the feature changes compilation or packaging
+
+### 5. Close the loop
+
+- Summarize what changed, which projects were touched, and how to exercise the feature
+- Prepare commit messages per `version-control` (conventional commits, appropriate scopes)
+- Before merge-ready review, use the **`code-review.command.mdc`** mindset or a human review against `code-review` rule criteria
+
+## Stop and escalate
+
+- Generator or Nx graph does not match expectations
+- Required behavior conflicts with documented security or architecture rules
+- Tests or lint cannot pass without disabling rules or broad suppression
+
+In those cases, stop implementation, state the blocker, and propose options rather than shipping a workaround silently.
