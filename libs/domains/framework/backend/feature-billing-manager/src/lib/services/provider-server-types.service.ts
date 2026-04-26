@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import { ServerTypeDto } from '../dto/server-type.dto';
 
 const HETZNER_API_BASE = 'https://api.hetzner.cloud/v1';
@@ -42,14 +43,17 @@ export class ProviderServerTypesService {
     if (providerId === 'hetzner') {
       return this.getHetznerServerTypes();
     }
+
     if (providerId === 'digital-ocean') {
       return this.getDigitaloceanServerTypes();
     }
+
     return [];
   }
 
   private async getHetznerServerTypes(): Promise<ServerTypeDto[]> {
     const apiToken = process.env.HETZNER_API_TOKEN;
+
     if (!apiToken) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
@@ -58,12 +62,13 @@ export class ProviderServerTypesService {
       const response = await axios.get<{ server_types: HetznerServerType[] }>(`${HETZNER_API_BASE}/server_types`, {
         headers: { Authorization: `Bearer ${apiToken}` },
       });
-
       const serverTypes = response.data.server_types ?? [];
+
       return serverTypes
         .filter((st) => !st.deprecated)
         .map((st) => {
           const priceFsn1 = st.prices.find((p) => p.location === 'fsn1');
+
           return {
             id: st.name,
             name: st.description || st.name,
@@ -77,12 +82,14 @@ export class ProviderServerTypesService {
         });
     } catch (error) {
       const axiosError = error as AxiosError;
+
       throw new BadRequestException(`Failed to fetch server types: ${axiosError.message}`);
     }
   }
 
   private async getDigitaloceanServerTypes(): Promise<ServerTypeDto[]> {
     const apiToken = process.env.DIGITALOCEAN_API_TOKEN;
+
     if (!apiToken) {
       throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');
     }
@@ -91,8 +98,8 @@ export class ProviderServerTypesService {
       const response = await axios.get<{ sizes: DigitalOceanSize[] }>(`${DIGITALOCEAN_API_BASE}/sizes`, {
         headers: { Authorization: `Bearer ${apiToken}` },
       });
-
       const sizes = response.data.sizes ?? [];
+
       return sizes
         .filter((size) => size.available && !size.deprecated)
         .map((size) => ({
@@ -107,6 +114,7 @@ export class ProviderServerTypesService {
         }));
     } catch (error) {
       const axiosError = error as AxiosError;
+
       throw new BadRequestException(`Failed to fetch server types: ${axiosError.message}`);
     }
   }

@@ -1,8 +1,8 @@
 import { inject } from '@angular/core';
-import { type ActivatedRouteSnapshot, Router, type CanActivateFn } from '@angular/router';
+import { Router, type ActivatedRouteSnapshot, type CanActivateFn } from '@angular/router';
 // Avoid data-access barrel: it re-exports identity (Keycloak), which breaks lightweight Jest runs.
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { ClientsFacade } from '../../../../data-access-agent-console/src/lib/state/clients/clients.facade';
+import { ClientsFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import { filter, map, take } from 'rxjs';
 
 /**

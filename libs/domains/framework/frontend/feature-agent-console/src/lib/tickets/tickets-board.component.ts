@@ -76,6 +76,7 @@ import {
   take,
   tap,
 } from 'rxjs';
+
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
 import {
   ticketAutomationCancellationReasonLabel,
@@ -106,30 +107,40 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
   if (dto.eligible !== cfg.eligible) {
     return false;
   }
+
   if (dto.requiresApproval !== cfg.requiresApproval) {
     return false;
   }
+
   const dAgents = normalizeAllowedAgentIdList(dto.allowedAgentIds);
   const cAgents = normalizeAllowedAgentIdList(cfg.allowedAgentIds);
+
   if (dAgents.length !== cAgents.length || dAgents.some((id, i) => id !== cAgents[i])) {
     return false;
   }
+
   const dBranch = (dto.defaultBranchOverride ?? '').trim();
   const cBranch = (cfg.defaultBranchOverride ?? '').trim();
+
   if (dBranch !== cBranch) {
     return false;
   }
+
   if ((dto.automationBranchStrategy ?? 'reuse_per_ticket') !== cfg.automationBranchStrategy) {
     return false;
   }
+
   if ((dto.forceNewAutomationBranchNextRun ?? false) !== cfg.forceNewAutomationBranchNextRun) {
     return false;
   }
+
   const dVer = normalizeVerifierCommandsForCompare(dto.verifierProfile?.commands);
   const cVer = normalizeVerifierCommandsForCompare(cfg.verifierProfile?.commands);
+
   if (dVer.length !== cVer.length) {
     return false;
   }
+
   return dVer.every((row, i) => row.cmd === cVer[i].cmd && row.cwd === cVer[i].cwd);
 }
 
@@ -137,10 +148,13 @@ function isEditableDomTarget(target: EventTarget | null): boolean {
   if (!target || !(target instanceof HTMLElement)) {
     return false;
   }
+
   const tag = target.tagName;
+
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
     return true;
   }
+
   return target.isContentEditable;
 }
 
@@ -234,6 +248,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly effectiveClientId$ = combineLatest([this.route.paramMap, this.clientsFacade.activeClientId$]).pipe(
     map(([params, active]) => {
       const fromRoute = params.get('clientId')?.trim();
+
       return (fromRoute || active || null) as string | null;
     }),
     distinctUntilChanged(),
@@ -250,6 +265,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       if (!id) {
         return null;
       }
+
       return { id, client: clients.find((c) => c.id === id) ?? null };
     }),
     distinctUntilChanged(
@@ -266,6 +282,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   readonly migrationTargetChoices = computed((): ClientResponseDto[] => {
     const wsId = this.effectiveWorkspace()?.id ?? this.detail()?.clientId ?? null;
+
     return this.clientsList().filter((c) => c.canManageWorkspaceConfiguration && wsId !== null && c.id !== wsId);
   });
 
@@ -291,6 +308,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly detailSubtaskRows = computed((): TicketDetailSubtaskRow[] => {
     const children = this.detail()?.children ?? [];
     const sorted = [...children].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
     return sorted.map((ticket) => ({ ticket, depth: 1 }));
   });
 
@@ -314,6 +332,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   /** Workspace agents that may actually run autonomous prototyping for this client. */
   readonly automationTicketAutomationAgentChoices = computed(() => {
     const enabled = new Set(this.autonomyEnabledAgentIds());
+
     return this.automationAgentChoices().filter((a) => enabled.has(a.id));
   });
 
@@ -362,11 +381,14 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly ticketAutomationBranchBadge = computed(() => {
     const cfg = this.ticketAutomationConfig();
     const override = cfg?.defaultBranchOverride?.trim();
+
     if (override && override.length > 0) {
       return override;
     }
+
     const runs = this.automationSortedRuns();
     const fromRun = runs[0]?.branchName?.trim();
+
     return fromRun && fromRun.length > 0 ? fromRun : null;
   });
 
@@ -379,6 +401,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly automationOrphanAllowedAgentIds = computed(() => {
     const allowed = this.automationDraftAllowedAgentIds();
     const listed = new Set(this.automationTicketAutomationAgentChoices().map((a) => a.id));
+
     return allowed.filter((id) => !listed.has(id));
   });
 
@@ -444,9 +467,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   constructor() {
     effect(() => {
       const id = this.detail()?.id ?? null;
+
       if (id === this.detailTitleEditSyncDetailId) {
         return;
       }
+
       this.detailTitleEditSyncDetailId = id;
       this.detailTitleEditing.set(false);
       this.pendingDetailTitleRename.set(null);
@@ -457,18 +482,24 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       const pending = this.pendingDetailTitleRename();
       const editing = this.detailTitleEditing();
       const d = this.detail();
+
       if (saving || !pending || !editing) {
         return;
       }
+
       if (!d || d.id !== pending.ticketId) {
         this.pendingDetailTitleRename.set(null);
+
         return;
       }
+
       if (d.title.trim() === pending.sentTitle.trim()) {
         this.detailTitleEditing.set(false);
         this.pendingDetailTitleRename.set(null);
+
         return;
       }
+
       this.pendingDetailTitleRename.set(null);
       afterNextRender(
         () => {
@@ -480,20 +511,26 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
     effect(() => {
       const d = this.detail();
+
       if (!d) {
         this.descriptionDraftSyncTicketId = null;
         this.descriptionDraftLastSyncedUpdatedAt = null;
         this.descriptionDraft.set('');
+
         return;
       }
+
       if (this.descriptionDraftSyncTicketId !== d.id) {
         this.descriptionDraftSyncTicketId = d.id;
         this.descriptionDraftLastSyncedUpdatedAt = null;
       }
+
       const rev = d.updatedAt;
+
       if (rev === this.descriptionDraftLastSyncedUpdatedAt) {
         return;
       }
+
       this.descriptionDraftLastSyncedUpdatedAt = rev;
       this.descriptionDraft.set(d.content ?? '');
     });
@@ -502,60 +539,79 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       const d = this.detail();
       const chatAgents = this.chatCapableAgentsSignal();
       const socketAgentId = this.socketSelectedAgentIdSignal();
+
       if (!d) {
         this.chatAgentForAiSyncTicketId = null;
         this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
         this.selectedAgentForAi.set(null);
+
         return;
       }
+
       if (this.chatAgentForAiSyncTicketId !== d.id) {
         this.chatAgentForAiSyncTicketId = d.id;
         this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
         this.selectedAgentForAi.set(null);
       }
+
       if (chatAgents.length === 0 && this.chatAgentForAiLastSyncedDetailUpdatedAt === null) {
         return;
       }
+
       const pick = this.pickChatAgentForTicket(d, chatAgents, socketAgentId);
       const rev = d.updatedAt;
       const revBumped = rev !== this.chatAgentForAiLastSyncedDetailUpdatedAt;
       const prevPick = this.selectedAgentForAi();
+
       if (!revBumped && pick === prevPick) {
         return;
       }
+
       if (revBumped) {
         this.chatAgentForAiLastSyncedDetailUpdatedAt = rev;
       }
+
       this.selectedAgentForAi.set(pick);
       queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
     });
 
     effect(() => {
       const d = this.detail()?.id;
+
       if (!d) {
         this.automationDraftSyncTicketId = null;
         this.automationDraftLastSyncedConfigUpdatedAt = null;
         this.ticketAutomationAccordionExpanded.set(false);
+
         return;
       }
+
       const cfg = this.ticketAutomationConfig();
+
       if (!cfg || cfg.ticketId !== d) {
         return;
       }
+
       if (this.automationDraftSyncTicketId !== d) {
         this.automationDraftSyncTicketId = d;
         this.automationDraftLastSyncedConfigUpdatedAt = null;
       }
+
       const rev = cfg.updatedAt;
+
       if (rev === this.automationDraftLastSyncedConfigUpdatedAt) {
         return;
       }
+
       const applyAccordionDefaultFromEligible = this.automationDraftLastSyncedConfigUpdatedAt === null;
+
       this.automationDraftLastSyncedConfigUpdatedAt = rev;
       this.automationDraftEligible.set(cfg.eligible);
+
       if (applyAccordionDefaultFromEligible) {
         this.ticketAutomationAccordionExpanded.set(cfg.eligible);
       }
+
       this.automationDraftRequiresApproval.set(cfg.requiresApproval);
       this.automationDraftAllowedAgentIds.set(normalizeAllowedAgentIdList(cfg.allowedAgentIds));
       this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
@@ -564,6 +620,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       const cmds = cfg.verifierProfile?.commands?.length
         ? cfg.verifierProfile.commands.map((c) => ({ cmd: c.cmd, cwd: c.cwd ?? '' }))
         : [{ cmd: '', cwd: '' }];
+
       this.automationVerifierRows.set(cmds);
       queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
     });
@@ -571,15 +628,19 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     effect(() => {
       const d = this.detail()?.id;
       const cfg = this.ticketAutomationConfig();
+
       this.selectedAgentForAi();
       this.automationTicketAutomationAgentChoices();
       this.autonomyEnabledAgentIds();
+
       if (!d || !cfg || cfg.ticketId !== d) {
         return;
       }
+
       if (this.automationDraftSyncTicketId !== d) {
         return;
       }
+
       queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
     });
 
@@ -611,20 +672,27 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
           action.type === cancelTicketAutomationRunFailure.type
         ) {
           this.pendingAutomationAutosaveAfterBusy = false;
+
           return;
         }
+
         const tid = this.detail()?.id;
+
         if (!tid) {
           return;
         }
+
         const affectedTicketId =
           'config' in action ? action.config.ticketId : 'run' in action ? action.run.ticketId : null;
+
         if (!affectedTicketId || affectedTicketId !== tid) {
           return;
         }
+
         if (!this.pendingAutomationAutosaveAfterBusy) {
           return;
         }
+
         this.pendingAutomationAutosaveAfterBusy = false;
         queueMicrotask(() => this.tryAutosaveTicketAutomationSettings());
       });
@@ -635,6 +703,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       this.hideTicketMigrateModalEl();
       const targetId = a.rootTicket.clientId;
       const current = this.effectiveClientId();
+
       if (current && current !== targetId) {
         this.clientsFacade.setActiveClient(targetId);
         const parent = this.route.parent;
@@ -645,6 +714,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         const nav = parent
           ? this.router.navigate(['tickets', targetId], { relativeTo: parent, ...queryClear })
           : this.router.navigate(['/tickets', targetId], queryClear);
+
         void nav.then(() => {
           this.showTicketDetailModalAfterTicketListLoadForClient(targetId, a.requestedTicketId);
           this.ticketsFacade.loadTickets({ clientId: targetId });
@@ -665,8 +735,10 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         switchMap((clientId) => {
           if (!clientId) {
             this.ticketsBoardSocketFacade.disconnect();
+
             return EMPTY;
           }
+
           return this.ticketsBoardSocketFacade.ensureConnectedAndSetClient(clientId);
         }),
         takeUntilDestroyed(this.destroyRef),
@@ -686,9 +758,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
           if (!clientId) {
             return of({ agentIds: [] as string[] });
           }
+
           this.agentsFacade.loadClientAgents(clientId);
           this.ticketsFacade.loadTickets({ clientId });
           this.autonomyEnabledAgentIdsLoading.set(true);
+
           return this.clientsService.listEnabledAutonomyAgentIds(clientId).pipe(
             catchError(() => of({ agentIds: [] as string[] })),
             finalize(() => this.autonomyEnabledAgentIdsLoading.set(false)),
@@ -709,23 +783,30 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         if (!r) {
           return;
         }
+
         this.pendingBodyCorrelation.set(null);
         this.bodyGenInProgress.set(false);
         const generationId = this.activeGenerationId;
         const ticketId = this.detail()?.id;
         const clientId = this.effectiveClientId();
+
         if (!ticketId || !generationId || !clientId) {
           this.bodyGenError.set(
             $localize`:@@featureTicketsBoard-bodyGenMissingContext:Could not apply generated text (missing session).`,
           );
+
           return;
         }
+
         if (!r.success) {
           this.bodyGenError.set(r.errorMessage ?? $localize`:@@featureTicketsBoard-bodyGenFailed:Generation failed`);
           this.activeGenerationId = null;
+
           return;
         }
+
         const text = r.enhancedText ?? '';
+
         this.ticketsService.applyGeneratedBody(ticketId, generationId, text).subscribe({
           next: () => {
             this.activeGenerationId = null;
@@ -743,6 +824,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.route.queryParamMap.pipe(distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const ticketId = params.get('openTicketId')?.trim();
       const runId = params.get('openAutomationRunId')?.trim();
+
       if (ticketId && runId) {
         queueMicrotask(() => {
           this.openTicketDetailFlow(ticketId);
@@ -754,8 +836,10 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
           queryParamsHandling: 'merge',
           replaceUrl: true,
         });
+
         return;
       }
+
       if (ticketId) {
         queueMicrotask(() => this.openTicketDetailFlow(ticketId));
         void this.router.navigate([], {
@@ -787,10 +871,13 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   filteredLaneRows(lane: BoardLaneStatus, rows: TicketBoardRow[] | undefined): TicketBoardRow[] {
     const list = rows ?? [];
     const query = (this.laneSearchQueries()[lane] ?? '').trim();
+
     if (!query) {
       return list;
     }
+
     const needle = query.toLowerCase();
+
     return list.filter((row) => JSON.stringify(row.ticket).toLowerCase().includes(needle));
   }
 
@@ -961,18 +1048,23 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     if (!event.ctrlKey || (event.key !== 'f' && event.key !== 'F')) {
       return;
     }
+
     if (this.effectiveClientId() === null) {
       return;
     }
+
     const target = event.target;
     const modalEl = this.globalSearchModal?.nativeElement;
+
     if (isEditableDomTarget(target)) {
       if (modalEl && target instanceof Node && modalEl.contains(target)) {
         event.preventDefault();
         this.globalSearchInput?.nativeElement?.focus();
       }
+
       return;
     }
+
     event.preventDefault();
     this.openGlobalSearchModal();
   }
@@ -981,10 +1073,13 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.globalSearchQuery.set('');
     setTimeout(() => {
       const shell = this.globalSearchModal?.nativeElement;
+
       if (shell?.classList.contains('show')) {
         this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
+
         return;
       }
+
       this.showGlobalSearchModalEl();
     }, 0);
   }
@@ -1002,9 +1097,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   globalSearchPathDisplay(hit: TicketGlobalSearchHit): string {
     const titles = hit.pathTitles;
+
     if (titles.length <= 1) {
       return '';
     }
+
     return titles.slice(0, -1).join(' › ');
   }
 
@@ -1012,6 +1109,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     if (typeof performance !== 'undefined' && performance.now() < this.suppressCardClickUntil) {
       return;
     }
+
     this.openTicketDetailFlow(ticket.id);
   }
 
@@ -1025,6 +1123,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.ticketAutomationFacade.loadRuns(ticketId);
 
     const clientId = this.effectiveClientId();
+
     if (clientId) {
       this.agentsFacade.loadClientAgents(clientId);
     }
@@ -1044,30 +1143,38 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   ): string | null {
     const ids = new Set(chatAgents.map((a) => a.id));
     const preferred = detail.preferredChatAgentId ?? null;
+
     if (preferred && ids.has(preferred)) {
       return preferred;
     }
+
     if (socketAgentId && ids.has(socketAgentId)) {
       return socketAgentId;
     }
+
     return chatAgents[0]?.id ?? null;
   }
 
   onPreferredChatAgentChange(ticket: TicketResponseDto, raw: string): void {
     const agentId = raw === '' ? null : raw;
+
     this.selectedAgentForAi.set(agentId);
     const current = ticket.preferredChatAgentId ?? null;
+
     if (agentId === current) {
       return;
     }
+
     this.ticketsFacade.update(ticket.id, { preferredChatAgentId: agentId });
   }
 
   showCreateSubtaskModal(): void {
     const parentId = this.detail()?.id;
+
     if (!parentId) {
       return;
     }
+
     this.createTicketError.set(null);
     this.createTicketTitle.set('');
     this.createTicketContent.set('');
@@ -1076,32 +1183,41 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.createTicketCreationTemplate.set('empty');
     this.createTicketParentId.set(parentId);
     const createEl = this.createTicketModal?.nativeElement;
+
     if (createEl?.classList.contains('show')) {
       return;
     }
+
     if (this.ticketDetailSuspendedForCreateSubtask) {
       return;
     }
 
     const ticketEl = this.ticketDetailModal?.nativeElement;
+
     if (!ticketEl || !ticketEl.classList.contains('show')) {
       queueMicrotask(() => this.showCreateModalEl());
+
       return;
     }
 
     this.ticketDetailSuspendedForCreateSubtask = true;
+
     const onTicketHidden = (): void => {
       queueMicrotask(() => {
         const subtaskModalEl = this.createTicketModal?.nativeElement;
+
         if (!subtaskModalEl) {
           this.ticketDetailSuspendedForCreateSubtask = false;
           this.showModal();
+
           return;
         }
+
         this.showCreateModalEl();
         this.registerReopenTicketDetailAfterCreateTicketModal();
       });
     };
+
     ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
     this.hideModal();
   }
@@ -1138,27 +1254,36 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private tryAutosaveTicketAutomationSettings(): void {
     const tid = this.detail()?.id;
     const cfg = this.ticketAutomationConfig();
+
     if (!tid || !cfg || cfg.ticketId !== tid) {
       return;
     }
+
     if (this.automationDraftSyncTicketId !== tid) {
       return;
     }
+
     if (this.ticketAutomationLoadingConfig()) {
       return;
     }
+
     const dto = this.buildTicketAutomationPatchDto();
+
     if (automationDtoMatchesServerConfig(dto, cfg)) {
       return;
     }
+
     if (this.ticketAutomationSaving()) {
       this.pendingAutomationAutosaveAfterBusy = true;
+
       return;
     }
+
     this.pendingAutomationAutosaveAfterBusy = false;
     this.ticketAutomationFacade.clearError();
     this.ticketAutomationFacade.patchConfig(tid, dto);
     const clientId = this.effectiveClientId();
+
     if (clientId) {
       setTimeout(() => this.ticketAutomationFacade.loadRuns(tid), 400);
     }
@@ -1166,27 +1291,33 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   onApproveTicketAutomation(): void {
     const tid = this.detail()?.id;
+
     if (!tid) {
       return;
     }
+
     this.ticketAutomationFacade.clearError();
     this.ticketAutomationFacade.approve(tid);
   }
 
   onUnapproveTicketAutomation(): void {
     const tid = this.detail()?.id;
+
     if (!tid) {
       return;
     }
+
     this.ticketAutomationFacade.clearError();
     this.ticketAutomationFacade.unapprove(tid);
   }
 
   onRefreshTicketAutomationRuns(): void {
     const tid = this.detail()?.id;
+
     if (!tid) {
       return;
     }
+
     this.ticketAutomationFacade.loadRuns(tid);
   }
 
@@ -1197,56 +1328,72 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     if (attempt > 60) {
       return;
     }
+
     if (this.detail()?.id !== ticketId) {
       setTimeout(() => this.scheduleOpenAutomationRunWhenDetailReady(ticketId, runId, attempt + 1), 40);
+
       return;
     }
+
     this.openTicketAutomationRunDetailModal(runId);
   }
 
   openTicketAutomationRunDetailModal(runId: string): void {
     const tid = this.detail()?.id;
+
     if (!tid) {
       return;
     }
+
     this.ticketAutomationFacade.loadRunDetail(tid, runId);
 
     const automationEl = this.ticketAutomationRunModal?.nativeElement;
+
     if (automationEl?.classList.contains('show')) {
       return;
     }
+
     if (this.ticketDetailSuspendedForAutomationRun) {
       return;
     }
 
     const ticketEl = this.ticketDetailModal?.nativeElement;
+
     if (!ticketEl || !ticketEl.classList.contains('show')) {
       queueMicrotask(() => this.showAutomationRunDetailModal());
+
       return;
     }
 
     this.ticketDetailSuspendedForAutomationRun = true;
+
     const onTicketHidden = (): void => {
       queueMicrotask(() => {
         const runModalEl = this.ticketAutomationRunModal?.nativeElement;
+
         if (!runModalEl) {
           this.ticketDetailSuspendedForAutomationRun = false;
           this.showModal();
+
           return;
         }
+
         this.showAutomationRunDetailModal();
         this.registerReopenTicketDetailAfterAutomationRunModal();
       });
     };
+
     ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
     this.hideModal();
   }
 
   onCancelTicketAutomationRun(run: TicketAutomationRunResponseDto): void {
     const tid = this.detail()?.id;
+
     if (!tid || !this.ticketAutomationRunCanCancel(run)) {
       return;
     }
+
     this.ticketAutomationFacade.clearError();
     this.ticketAutomationFacade.cancelRun(tid, run.id);
   }
@@ -1260,6 +1407,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       if (rows.length <= 1) {
         return [{ cmd: '', cwd: '' }];
       }
+
       return rows.filter((_, i) => i !== index);
     });
   }
@@ -1322,6 +1470,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       }))
       .filter((r) => r.cmd.length > 0);
     const branch = this.automationDraftDefaultBranch().trim();
+
     return {
       eligible: this.automationDraftEligible(),
       requiresApproval: this.automationDraftRequiresApproval(),
@@ -1343,9 +1492,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
    */
   isAutomationAllowedAgentLockedToChat(agentId: string): boolean {
     const chatId = this.selectedAgentForAi();
+
     if (!chatId || chatId !== agentId) {
       return false;
     }
+
     return this.isAutomationAgentAllowed(agentId);
   }
 
@@ -1353,6 +1504,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   onAutomationBranchStrategyChange(strategy: TicketAutomationBranchStrategy): void {
     this.automationDraftBranchStrategy.set(strategy);
+
     if (strategy === 'new_per_run') {
       this.automationDraftForceNewBranchNextRun.set(false);
     }
@@ -1362,13 +1514,16 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     if (!checked && this.isAutomationAllowedAgentLockedToChat(agentId)) {
       return;
     }
+
     this.automationDraftAllowedAgentIds.update((ids) => {
       const next = new Set(ids);
+
       if (checked) {
         next.add(agentId);
       } else {
         next.delete(agentId);
       }
+
       return [...next].sort();
     });
     queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
@@ -1381,37 +1536,47 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
    */
   private ensureChatAgentInAutomationAllowedList(): void {
     const tid = this.detail()?.id;
+
     if (!tid || this.automationDraftSyncTicketId !== tid) {
       return;
     }
+
     const chatId = this.selectedAgentForAi();
+
     if (!chatId) {
       return;
     }
+
     if (!this.automationTicketAutomationAgentChoices().some((a) => a.id === chatId)) {
       return;
     }
+
     this.automationDraftAllowedAgentIds.update((ids) => {
       if (ids.includes(chatId)) {
         return ids;
       }
+
       return normalizeAllowedAgentIdList([...ids, chatId]);
     });
   }
 
   private showAutomationRunDetailModal(): void {
     const el = this.ticketAutomationRunModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: {
         Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
       };
     };
     const Modal = win.bootstrap?.Modal;
+
     if (Modal) {
       const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
       inst.show();
     }
   }
@@ -1422,79 +1587,103 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   private hideAutomationRunDetailModal(): void {
     const el = this.ticketAutomationRunModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
     };
+
     win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 
   /** One-time: after automation run modal hides, restore ticket detail if it was swapped out for this flow. */
   private registerReopenTicketDetailAfterAutomationRunModal(): void {
     const el = this.ticketAutomationRunModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const onAutomationHidden = (): void => {
       if (!this.ticketDetailSuspendedForAutomationRun) {
         return;
       }
+
       this.ticketDetailSuspendedForAutomationRun = false;
       queueMicrotask(() => this.showModal());
     };
+
     el.addEventListener('hidden.bs.modal', onAutomationHidden, { once: true });
   }
 
   /** One-time: after create modal hides, restore ticket detail if it was swapped out for subtask creation. */
   private registerReopenTicketDetailAfterCreateTicketModal(): void {
     const el = this.createTicketModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const onCreateHidden = (): void => {
       if (!this.ticketDetailSuspendedForCreateSubtask) {
         return;
       }
+
       this.ticketDetailSuspendedForCreateSubtask = false;
       queueMicrotask(() => this.showModal());
     };
+
     el.addEventListener('hidden.bs.modal', onCreateHidden, { once: true });
   }
 
   openTicketMigrationModal(): void {
     const choices = this.migrationTargetChoices();
+
     if (choices.length === 0) {
       return;
     }
+
     this.ticketsFacade.clearError();
     this.migrationTargetClientId.set(choices[0]?.id ?? '');
     const migrateEl = this.ticketMigrateModal?.nativeElement;
+
     if (migrateEl?.classList.contains('show')) {
       return;
     }
+
     if (this.ticketDetailSuspendedForMigration) {
       return;
     }
+
     const ticketEl = this.ticketDetailModal?.nativeElement;
+
     if (!ticketEl || !ticketEl.classList.contains('show')) {
       queueMicrotask(() => this.showTicketMigrateModalEl());
+
       return;
     }
+
     this.ticketDetailSuspendedForMigration = true;
+
     const onTicketHidden = (): void => {
       queueMicrotask(() => {
         const inner = this.ticketMigrateModal?.nativeElement;
+
         if (!inner) {
           this.ticketDetailSuspendedForMigration = false;
           this.showModal();
+
           return;
         }
+
         this.showTicketMigrateModalEl();
         this.registerReopenTicketDetailAfterMigrationModal();
       });
     };
+
     ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
     this.hideModal();
   }
@@ -1506,74 +1695,92 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   onConfirmTicketMigration(): void {
     const d = this.detail();
     const targetId = this.migrationTargetClientId().trim();
+
     if (!d || !targetId) {
       return;
     }
+
     this.ticketsFacade.migrateTicket(d.id, targetId);
   }
 
   private registerReopenTicketDetailAfterMigrationModal(): void {
     const el = this.ticketMigrateModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const onHidden = (): void => {
       if (!this.ticketDetailSuspendedForMigration) {
         return;
       }
+
       this.ticketDetailSuspendedForMigration = false;
       queueMicrotask(() => this.showModal());
     };
+
     el.addEventListener('hidden.bs.modal', onHidden, { once: true });
   }
 
   /** One-time: after delete confirmation modal hides, restore ticket detail if it was swapped out for this flow. */
   private registerReopenTicketDetailAfterDeleteConfirmModal(): void {
     const el = this.deleteTicketConfirmModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const onHidden = (): void => {
       if (!this.ticketDetailSuspendedForDeleteConfirm) {
         return;
       }
+
       this.ticketDetailSuspendedForDeleteConfirm = false;
       this.ticketPendingDelete.set(null);
       queueMicrotask(() => this.showModal());
     };
+
     el.addEventListener('hidden.bs.modal', onHidden, { once: true });
   }
 
   private showTicketMigrateModalEl(): void {
     const el = this.ticketMigrateModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: {
         Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
       };
     };
     const Modal = win.bootstrap?.Modal;
+
     if (Modal) {
       const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
       inst.show();
     }
   }
 
   private hideTicketMigrateModalEl(): void {
     const el = this.ticketMigrateModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
     };
+
     win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 
   effectiveWorkspaceTitle(ew: { id: string; client: ClientResponseDto | null }): string {
     const name = ew.client?.name?.trim();
+
     return name && name.length > 0 ? name : ew.id;
   }
 
@@ -1589,17 +1796,21 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   filteredClientsForWorkspaceSwitch(clients: ClientResponseDto[]): ClientResponseDto[] {
     const q = this.workspaceSwitchSearch().trim().toLowerCase();
+
     if (!q) {
       return clients;
     }
+
     return clients.filter((client) => JSON.stringify(client).toLowerCase().includes(q));
   }
 
   onSelectWorkspaceForTickets(client: ClientResponseDto): void {
     if (client.id === this.effectiveClientId()) {
       this.hideWorkspaceSwitchModal();
+
       return;
     }
+
     this.hideWorkspaceSwitchModal();
     this.ticketDetailSuspendedForAutomationRun = false;
     this.ticketDetailSuspendedForCreateSubtask = false;
@@ -1616,6 +1827,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.ticketAutomationFacade.clear();
     this.clientsFacade.setActiveClient(client.id);
     const parent = this.route.parent;
+
     if (parent) {
       void this.router.navigate(['tickets', client.id], { relativeTo: parent });
     } else {
@@ -1630,36 +1842,48 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   private openDeleteTicketConfirmFlow(): void {
     const deleteEl = this.deleteTicketConfirmModal?.nativeElement;
+
     if (deleteEl?.classList.contains('show')) {
       return;
     }
+
     if (this.ticketDetailSuspendedForDeleteConfirm) {
       return;
     }
+
     const ticketEl = this.ticketDetailModal?.nativeElement;
+
     if (!ticketEl || !ticketEl.classList.contains('show')) {
       queueMicrotask(() => this.showDeleteTicketConfirmModal());
+
       return;
     }
+
     this.ticketDetailSuspendedForDeleteConfirm = true;
+
     const onTicketHidden = (): void => {
       queueMicrotask(() => {
         const inner = this.deleteTicketConfirmModal?.nativeElement;
+
         if (!inner) {
           this.ticketDetailSuspendedForDeleteConfirm = false;
           this.showModal();
+
           return;
         }
+
         this.showDeleteTicketConfirmModal();
         this.registerReopenTicketDetailAfterDeleteConfirmModal();
       });
     };
+
     ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
     this.hideModal();
   }
 
   onCancelDeleteTicketConfirm(): void {
     this.hideDeleteTicketConfirmModal();
+
     if (!this.ticketDetailSuspendedForDeleteConfirm) {
       this.ticketPendingDelete.set(null);
     }
@@ -1667,10 +1891,13 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   onConfirmDeleteTicket(): void {
     const pending = this.ticketPendingDelete();
+
     if (!pending) {
       return;
     }
+
     const { id } = pending;
+
     this.ticketDetailSuspendedForDeleteConfirm = false;
     this.hideDeleteTicketConfirmModal();
     this.ticketPendingDelete.set(null);
@@ -1725,20 +1952,27 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   onDetailTitleBlur(): void {
     const d = this.detail();
+
     if (!d || !this.detailTitleEditing()) {
       return;
     }
+
     const trimmed = this.detailTitleDraft().trim();
     const current = d.title.trim();
+
     if (trimmed === current) {
       this.detailTitleEditing.set(false);
+
       return;
     }
+
     if (!trimmed.length) {
       this.detailTitleDraft.set(d.title);
       this.detailTitleEditing.set(false);
+
       return;
     }
+
     this.pendingDetailTitleRename.set({ ticketId: d.id, sentTitle: trimmed });
     this.ticketsFacade.update(d.id, { title: trimmed });
   }
@@ -1746,19 +1980,24 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   /** Persists description when the editor loses focus (if it changed). */
   onDescriptionDraftCommit(): void {
     const d = this.detail();
+
     if (!d) {
       return;
     }
+
     const draft = this.descriptionDraft();
     const current = d.content ?? '';
+
     if (draft === current) {
       return;
     }
+
     this.ticketsFacade.update(d.id, { content: draft });
   }
 
   isLaneDragHighlight(status: BoardLaneStatus): boolean {
     const dragged = this.draggedTicket();
+
     return this.dragOverLane() === status && dragged !== null && dragged.status !== status;
   }
 
@@ -1766,13 +2005,17 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     if (!event.dataTransfer) {
       return;
     }
+
     this.draggedTicket.set(ticket);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', ticket.id);
+
     if (event.currentTarget instanceof HTMLElement) {
       const card = event.currentTarget.querySelector('.tickets-board__card-content');
+
       if (card) {
         const dragImage = card.cloneNode(true) as HTMLElement;
+
         dragImage.style.position = 'absolute';
         dragImage.style.top = '-1000px';
         dragImage.style.opacity = '0.8';
@@ -1802,12 +2045,15 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     event.preventDefault();
     event.stopPropagation();
     const dragged = this.draggedTicket();
+
     if (!dragged || dragged.status === laneStatus) {
       return;
     }
+
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
     }
+
     this.dragOverLane.set(laneStatus);
   }
 
@@ -1815,9 +2061,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     event.preventDefault();
     event.stopPropagation();
     const dragged = this.draggedTicket();
+
     if (!dragged || dragged.status === laneStatus) {
       return;
     }
+
     this.dragOverLane.set(laneStatus);
   }
 
@@ -1825,9 +2073,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     event.preventDefault();
     event.stopPropagation();
     const related = event.relatedTarget as HTMLElement | null;
+
     if (related && event.currentTarget instanceof HTMLElement && event.currentTarget.contains(related)) {
       return;
     }
+
     if (this.dragOverLane() === laneStatus) {
       this.dragOverLane.set(null);
     }
@@ -1837,18 +2087,25 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     event.preventDefault();
     event.stopPropagation();
     const dragged = this.draggedTicket();
+
     this.dragOverLane.set(null);
+
     if (!dragged) {
       return;
     }
+
     if (!(BOARD_LANE_STATUSES as readonly string[]).includes(laneStatus)) {
       this.draggedTicket.set(null);
+
       return;
     }
+
     if (dragged.status === laneStatus) {
       this.draggedTicket.set(null);
+
       return;
     }
+
     this.ticketsFacade.update(dragged.id, { status: laneStatus });
     this.draggedTicket.set(null);
   }
@@ -1873,19 +2130,26 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   onSubmitCreateTicket(): void {
     const clientId = this.effectiveClientId();
     const title = this.createTicketTitle().trim();
+
     this.createTicketError.set(null);
+
     if (!clientId) {
       this.createTicketError.set(
         $localize`:@@featureTicketsBoard-createNeedClient:Select a space before creating a ticket.`,
       );
+
       return;
     }
+
     if (!title) {
       this.createTicketError.set($localize`:@@featureTicketsBoard-createNeedTitle:Title is required.`);
+
       return;
     }
+
     const content = this.createTicketContent().trim();
     const parentId = this.createTicketParentId();
+
     if (parentId) {
       this.ticketsFacade.create({
         parentId,
@@ -1896,6 +2160,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       });
     } else {
       const creationTemplate = this.createTicketCreationTemplate();
+
       this.ticketsFacade.create({
         clientId,
         title,
@@ -1905,6 +2170,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         ...(creationTemplate === 'specification' ? { creationTemplate: 'specification' } : {}),
       });
     }
+
     this.hideCreateModalEl();
     this.createTicketParentId.set(null);
   }
@@ -1912,9 +2178,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   onSubmitComment(): void {
     const ticketId = this.detail()?.id;
     const body = this.newCommentText().trim();
+
     if (!ticketId || !body) {
       return;
     }
+
     this.ticketsFacade.addComment(ticketId, body);
     this.newCommentText.set('');
   }
@@ -1923,13 +2191,17 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     const ticketId = this.detail()?.id;
     const agentId = this.selectedAgentForAi();
     const clientId = this.effectiveClientId();
+
     this.prototypeError.set(null);
+
     if (!ticketId || !agentId || !clientId) {
       this.prototypeError.set(
         $localize`:@@featureTicketsBoard-prototypeNeedAgent:Select an environment and agent for chat.`,
       );
+
       return;
     }
+
     this.ticketsService.getPrototypePrompt(ticketId).subscribe({
       next: ({ prompt }) => {
         storeAgentConsoleChatDraft(prompt);
@@ -1955,16 +2227,21 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     const d = this.detail();
     const agentId = this.selectedAgentForAi();
     const clientId = this.effectiveClientId();
+
     this.bodyGenError.set(null);
+
     if (!d || !agentId || !clientId) {
       this.bodyGenError.set(
         $localize`:@@featureTicketsBoard-bodyGenNeedAgent:Select an agent and ensure a ticket is open.`,
       );
+
       return;
     }
+
     if (this.bodyGenInProgress()) {
       return;
     }
+
     this.bodyGenInProgress.set(true);
     this.ticketsService.startBodyGenerationSession(d.id, agentId).subscribe({
       next: ({ generationId, activity }) => {
@@ -1972,11 +2249,13 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         this.activeGenerationId = generationId;
         const correlationId =
           typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+
         this.pendingBodyCorrelation.set(correlationId);
         this.ensureSocketAndClient(clientId)
           .pipe(
             tap(() => {
               const hierarchyContext = buildTicketBodyHierarchyContext(d, this.detailBreadcrumb());
+
               this.socketsFacade.forwardGenerateTicketBody(
                 d.title,
                 agentId,
@@ -1990,6 +2269,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
               this.pendingBodyCorrelation.set(null);
               this.activeGenerationId = null;
               this.bodyGenError.set(this.httpErrorMessage(err));
+
               return of(undefined);
             }),
           )
@@ -2008,13 +2288,16 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       switchMap((connected) => {
         if (connected) {
           this.socketsFacade.setClient(clientId);
+
           return this.socketsFacade.selectedClientId$.pipe(
             filter((id) => id === clientId),
             take(1),
             map(() => undefined),
           );
         }
+
         this.socketsFacade.connect();
+
         return this.socketsFacade.connected$.pipe(
           filter(Boolean),
           take(1),
@@ -2035,9 +2318,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     if (err instanceof HttpErrorResponse) {
       return (err.error as { message?: string })?.message ?? err.message ?? String(err.status);
     }
+
     if (err instanceof Error) {
       return err.message;
     }
+
     return $localize`:@@featureTicketsBoard-requestFailed:Request failed`;
   }
 
@@ -2067,6 +2352,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
           if (reopenTicketIdIfDetailMissing && !this.detail()) {
             this.ticketsFacade.openDetail(reopenTicketIdIfDetailMissing);
           }
+
           this.showModal();
         }),
       );
@@ -2074,146 +2360,183 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   private showModal(): void {
     const el = this.ticketDetailModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: {
         Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
       };
     };
     const Modal = win.bootstrap?.Modal;
+
     if (Modal) {
       const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
       inst.show();
     }
   }
 
   private hideModal(): void {
     const el = this.ticketDetailModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
     };
+
     win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 
   private showCreateModalEl(): void {
     const el = this.createTicketModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: {
         Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
       };
     };
     const Modal = win.bootstrap?.Modal;
+
     if (Modal) {
       const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
       inst.show();
     }
   }
 
   private hideCreateModalEl(): void {
     const el = this.createTicketModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
     };
+
     win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 
   private showDeleteTicketConfirmModal(): void {
     const el = this.deleteTicketConfirmModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: {
         Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
       };
     };
     const Modal = win.bootstrap?.Modal;
+
     if (Modal) {
       const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
       inst.show();
     }
   }
 
   private hideDeleteTicketConfirmModal(): void {
     const el = this.deleteTicketConfirmModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
     };
+
     win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 
   private showWorkspaceSwitchModal(): void {
     const el = this.workspaceSwitchModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: {
         Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
       };
     };
     const Modal = win.bootstrap?.Modal;
+
     if (Modal) {
       const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
       inst.show();
     }
   }
 
   private hideWorkspaceSwitchModal(): void {
     const el = this.workspaceSwitchModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
     };
+
     win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 
   private showGlobalSearchModalEl(): void {
     const el = this.globalSearchModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: {
         Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
       };
     };
     const Modal = win.bootstrap?.Modal;
+
     if (!Modal) {
       return;
     }
+
     const focusSearchInput = (): void => {
       this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
     };
+
     el.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
     const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
     inst.show();
   }
 
   private hideGlobalSearchModalEl(): void {
     const el = this.globalSearchModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const win = window as unknown as {
       bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
     };
+
     win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 }

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
+
 import type {
   CommitDto,
   CreateBranchDto,
@@ -48,6 +49,7 @@ export class VcsService {
    */
   getFileDiff(clientId: string, agentId: string, filePath: string): Observable<GitDiff> {
     const params = new HttpParams().set('path', filePath);
+
     return this.http.get<GitDiff>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/vcs/diff`, { params });
   }
 

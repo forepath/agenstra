@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
 import type { PublicServicePlanOffering } from '../../types/portal-service-plans.types';
+
 import {
   loadCheapestServicePlanOffering,
   loadCheapestServicePlanOfferingFailure,

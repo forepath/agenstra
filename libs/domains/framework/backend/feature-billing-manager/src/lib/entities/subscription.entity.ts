@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { ServicePlanEntity } from './service-plan.entity';
 
 export enum SubscriptionStatus {

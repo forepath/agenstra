@@ -1,11 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import type {
-  StatisticsChatIoListDto,
-  StatisticsEntityEventListDto,
-  StatisticsFilterDropListDto,
-  StatisticsFilterFlagListDto,
-  StatisticsSummaryDto,
-} from './statistics.types';
+
 import {
   loadClientStatisticsChatIo,
   loadClientStatisticsChatIoFailure,
@@ -38,6 +32,13 @@ import {
   loadStatisticsSummaryFailure,
   loadStatisticsSummarySuccess,
 } from './statistics.actions';
+import type {
+  StatisticsChatIoListDto,
+  StatisticsEntityEventListDto,
+  StatisticsFilterDropListDto,
+  StatisticsFilterFlagListDto,
+  StatisticsSummaryDto,
+} from './statistics.types';
 
 export interface StatisticsState {
   // Client-scoped (keyed by clientId)

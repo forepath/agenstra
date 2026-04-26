@@ -1,15 +1,14 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
+
 import { AgentEnvironmentVariablesRepository } from './agent-environment-variables.repository';
 
 describe('AgentEnvironmentVariablesRepository', () => {
   let repository: AgentEnvironmentVariablesRepository;
-  let typeOrmRepository: Repository<AgentEnvironmentVariableEntity>;
-
   const mockAgent: AgentEntity = {
     id: 'agent-uuid-123',
     name: 'Test Agent',
@@ -22,7 +21,6 @@ describe('AgentEnvironmentVariablesRepository', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockVariable: AgentEnvironmentVariableEntity = {
     id: 'variable-uuid-123',
     agentId: 'agent-uuid-123',
@@ -32,7 +30,6 @@ describe('AgentEnvironmentVariablesRepository', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockTypeOrmRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
@@ -55,9 +52,6 @@ describe('AgentEnvironmentVariablesRepository', () => {
     }).compile();
 
     repository = module.get<AgentEnvironmentVariablesRepository>(AgentEnvironmentVariablesRepository);
-    typeOrmRepository = module.get<Repository<AgentEnvironmentVariableEntity>>(
-      getRepositoryToken(AgentEnvironmentVariableEntity),
-    );
   });
 
   afterEach(() => {
@@ -104,6 +98,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
   describe('findByAgentId', () => {
     it('should return array of variables for agent with pagination', async () => {
       const variables = [mockVariable];
+
       mockTypeOrmRepository.find.mockResolvedValue(variables);
 
       const result = await repository.findByAgentId('agent-uuid-123', 50, 0);
@@ -119,6 +114,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
     });
     it('should use default pagination values', async () => {
       const variables = [mockVariable];
+
       mockTypeOrmRepository.find.mockResolvedValue(variables);
 
       await repository.findByAgentId('agent-uuid-123');
@@ -136,6 +132,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
   describe('findEnvironmentVariablesByAgentId', () => {
     it('should return array of variables for agent', async () => {
       const variables = [mockVariable];
+
       mockTypeOrmRepository.find.mockResolvedValue(variables);
 
       const result = await repository.findAllByAgentId('agent-uuid-123');
@@ -166,6 +163,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
   describe('findAll', () => {
     it('should return array of variables with pagination', async () => {
       const variables = [mockVariable];
+
       mockTypeOrmRepository.find.mockResolvedValue(variables);
 
       const result = await repository.findAll(50, 0);
@@ -181,6 +179,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
 
     it('should use default pagination values', async () => {
       const variables = [mockVariable];
+
       mockTypeOrmRepository.find.mockResolvedValue(variables);
 
       await repository.findAll();
@@ -225,6 +224,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
         content: 'New variable content',
       };
       const createdVariable = { ...mockVariable, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdVariable);
       mockTypeOrmRepository.save.mockResolvedValue(createdVariable);
 
@@ -240,6 +240,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
     it('should update existing variable', async () => {
       const updateData = { variable: 'UPDATED_VARIABLE', content: 'Updated variable content' };
       const updatedVariable = { ...mockVariable, ...updateData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(mockVariable);
       mockTypeOrmRepository.save.mockResolvedValue(updatedVariable);
 

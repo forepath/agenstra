@@ -1,4 +1,4 @@
-import { createFeatureSelector } from '@ngrx/store';
+import { initialVcsState, type VcsState } from './vcs.reducer';
 import {
   selectCommitting,
   selectCreatingBranch,
@@ -22,7 +22,6 @@ import {
   selectVcsError,
   selectVcsState,
 } from './vcs.selectors';
-import { initialVcsState, type VcsState } from './vcs.reducer';
 import type { GitBranch, GitDiff, GitStatus } from './vcs.types';
 
 describe('Vcs Selectors', () => {
@@ -40,7 +39,6 @@ describe('Vcs Selectors', () => {
       },
     ],
   };
-
   const mockBranches: GitBranch[] = [
     {
       name: 'main',
@@ -59,7 +57,6 @@ describe('Vcs Selectors', () => {
       message: 'Develop commit',
     },
   ];
-
   const mockGitDiff: GitDiff = {
     path: 'file1.txt',
     originalContent: Buffer.from('Old content', 'utf-8').toString('base64'),
@@ -67,7 +64,6 @@ describe('Vcs Selectors', () => {
     encoding: 'utf-8',
     isBinary: false,
   };
-
   const createState = (overrides?: Partial<VcsState>): VcsState => ({
     ...initialVcsState,
     ...overrides,

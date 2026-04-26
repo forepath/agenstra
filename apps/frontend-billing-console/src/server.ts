@@ -1,6 +1,8 @@
-import express from 'express';
 import { existsSync, readdirSync, statSync } from 'fs';
-import { join, resolve } from 'path';
+import { dirname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
+
+import express from 'express';
 
 const app = express();
 const port = parseInt(process.env['PORT'] || '4200', 10);
@@ -22,27 +24,25 @@ app.get('/config', async (req, res) => {
 
     if (!response.ok) {
       console.error(`Failed to fetch CONFIG from ${configUrl}: ${response.status} ${response.statusText}`);
+
       return res.status(500).json({});
     }
 
     const json = await response.json();
+
     return res.json(json);
   } catch (error) {
     console.error('Error fetching CONFIG URL:', error);
+
     return res.status(500).json({});
   }
 });
-
-// Base path for the Angular build output
-// When bundled (CommonJS), use the script's directory to find browser directory relative to server bundle
-// When running with ts-node (ES modules), use import.meta.url to find from workspace root
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 function getBaseDistPath(): string {
   // Method 1: Use require.main.filename (CommonJS - most reliable)
   // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const mainModule = typeof require !== 'undefined' ? require.main : null;
+
   if (mainModule?.filename) {
     return resolve(dirname(mainModule.filename), 'browser');
   }
@@ -64,6 +64,7 @@ function getBaseDistPath(): string {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - import.meta.url is available in ES modules
       const filePath = fileURLToPath(import.meta.url);
+
       return resolve(dirname(filePath), 'browser');
     }
   } catch {
@@ -79,7 +80,6 @@ function getBaseDistPath(): string {
 }
 
 const baseDistPath = getBaseDistPath();
-
 // Default locale - read from environment variable, fallback to 'en'
 const DEFAULT_LOCALE = process.env['DEFAULT_LOCALE'] || 'en';
 
@@ -90,6 +90,7 @@ const DEFAULT_LOCALE = process.env['DEFAULT_LOCALE'] || 'en';
 function getAvailableLocales(): string[] {
   if (!existsSync(baseDistPath)) {
     console.warn(`Build directory not found: ${baseDistPath}`);
+
     return [DEFAULT_LOCALE];
   }
 
@@ -97,19 +98,23 @@ function getAvailableLocales(): string[] {
     const entries = readdirSync(baseDistPath);
     const locales = entries.filter((entry) => {
       const entryPath = join(baseDistPath, entry);
+
       // Only include directories (not files) as potential locales
       return statSync(entryPath).isDirectory();
     });
 
     if (locales.length === 0) {
       console.warn(`No locale directories found in ${baseDistPath}, using default locale`);
+
       return [DEFAULT_LOCALE];
     }
 
     console.log(`Found ${locales.length} locale(s): ${locales.join(', ')}`);
+
     return locales;
   } catch (error) {
     console.error(`Error reading locales from ${baseDistPath}:`, error);
+
     return [DEFAULT_LOCALE];
   }
 }
@@ -132,6 +137,7 @@ function getLocaleFromRequest(req: express.Request): string {
 
   // Check Accept-Language header
   const acceptLanguage = req.headers['accept-language'];
+
   if (acceptLanguage) {
     for (const locale of AVAILABLE_LOCALES) {
       if (acceptLanguage.includes(locale)) {
@@ -162,10 +168,13 @@ function getLocaleFromPath(req: express.Request): string | undefined {
  */
 function getLocalePath(locale: string): string {
   const localePath = join(baseDistPath, locale);
+
   if (existsSync(localePath)) {
     return localePath;
   }
+
   console.warn(`Locale directory not found: ${localePath}, falling back to ${DEFAULT_LOCALE}`);
+
   return join(baseDistPath, DEFAULT_LOCALE);
 }
 
@@ -176,10 +185,12 @@ function getLocalePath(locale: string): string {
 app.use((req, res, next) => {
   // Check if this is a Monaco Editor CSS file request
   const monacoCssPattern = /\/assets\/monaco\/esm\/vs\/.*\.css$/;
+
   if (monacoCssPattern.test(req.path)) {
     // Determine locale from path
     let locale = DEFAULT_LOCALE;
     const pathSegments = req.path.split('/').filter(Boolean);
+
     if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
       locale = pathSegments[0];
       // Remove locale prefix from path for file lookup
@@ -190,6 +201,7 @@ app.use((req, res, next) => {
       if (existsSync(cssFilePath)) {
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
+
         return res.send(
           `
 // Dynamically load CSS file as stylesheet
@@ -200,6 +212,7 @@ document.head.appendChild(link);
         `.trim(),
         );
       }
+
       return next();
     } else {
       // Root path (no locale prefix)
@@ -209,6 +222,7 @@ document.head.appendChild(link);
       if (existsSync(cssFilePath)) {
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
+
         return res.send(
           `
 // Dynamically load CSS file as stylesheet
@@ -219,9 +233,11 @@ document.head.appendChild(link);
         `.trim(),
         );
       }
+
       return next();
     }
   }
+
   return next();
 });
 
@@ -230,11 +246,13 @@ document.head.appendChild(link);
 // This is after the CSS middleware so CSS files are intercepted first
 for (const locale of AVAILABLE_LOCALES) {
   const localePath = getLocalePath(locale);
+
   app.use(`/${locale}`, express.static(localePath, { index: false }));
 }
 
 // Also serve from root for default locale (backward compatibility and direct access)
 const defaultLocalePath = getLocalePath(DEFAULT_LOCALE);
+
 app.use(express.static(defaultLocalePath, { index: false }));
 
 // Middleware to handle extensionless Monaco Editor JavaScript imports
@@ -244,10 +262,12 @@ app.use((req, res, next) => {
   // Check if this is a Monaco Editor file request without extension
   // Match both locale-prefixed paths (/en/assets/monaco/...) and root paths (/assets/monaco/...)
   const monacoPattern = /\/assets\/monaco\/esm\/vs\/.*\/[^/]+$/;
+
   if (monacoPattern.test(req.path) && !req.path.endsWith('.js') && !req.path.endsWith('.css')) {
     // Determine locale from path or request
     let locale = DEFAULT_LOCALE;
     const pathSegments = req.path.split('/').filter(Boolean);
+
     if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
       locale = pathSegments[0];
       // Remove locale prefix from path for file lookup
@@ -268,6 +288,7 @@ app.use((req, res, next) => {
       }
     }
   }
+
   next();
 });
 
@@ -281,11 +302,13 @@ app.get('*', (req, res) => {
   if (!existsSync(indexPath)) {
     console.error(`Index file not found: ${indexPath}`);
     res.status(404).send('Locale build not found. Please build the application first.');
+
     return;
   }
 
   if (!getLocaleFromPath(req)) {
     res.redirect(302, `/${locale}${req.url}`);
+
     return;
   }
 

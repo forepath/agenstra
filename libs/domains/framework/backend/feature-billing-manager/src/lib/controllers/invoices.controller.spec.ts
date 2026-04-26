@@ -1,11 +1,13 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { InvoicesController } from './invoices.controller';
-import { InvoiceCreationService } from '../services/invoice-creation.service';
-import { InvoiceNinjaService } from '../services/invoice-ninja.service';
+
 import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
 import { UsersBillingDayRepository } from '../repositories/users-billing-day.repository';
+import { InvoiceCreationService } from '../services/invoice-creation.service';
+import { InvoiceNinjaService } from '../services/invoice-ninja.service';
 import { SubscriptionService } from '../services/subscription.service';
+
+import { InvoicesController } from './invoices.controller';
 
 describe('InvoicesController', () => {
   let controller: InvoicesController;
@@ -18,7 +20,6 @@ describe('InvoicesController', () => {
   let usersBillingDayRepository: jest.Mocked<Pick<UsersBillingDayRepository, 'getEffectiveBillingDayForUser'>>;
   let invoiceCreationService: jest.Mocked<Pick<InvoiceCreationService, 'getUnbilledTotalForUser'>>;
   let subscriptionService: jest.Mocked<Pick<SubscriptionService, 'getSubscription'>>;
-
   const subscriptionId = '11111111-1111-4111-8111-111111111111';
   const invoiceRefId = '22222222-2222-4222-8222-222222222222';
   const userId = 'user-1';
@@ -97,6 +98,7 @@ describe('InvoicesController', () => {
         preAuthUrl: 'https://old.example/link',
       };
       const newLink = 'https://new.example/link';
+
       invoiceRefsRepository.findByIdAndSubscriptionId.mockResolvedValue(ref as never);
       invoiceNinjaService.getInvoiceClientLink.mockResolvedValue(newLink);
 
@@ -149,6 +151,7 @@ describe('InvoicesController', () => {
         invoiceNinjaId: 'ninja-1',
         preAuthUrl: 'https://old.example/link',
       };
+
       invoiceRefsRepository.findByIdAndSubscriptionId.mockResolvedValue(ref as never);
       invoiceNinjaService.getInvoiceClientLink.mockResolvedValue(null);
 

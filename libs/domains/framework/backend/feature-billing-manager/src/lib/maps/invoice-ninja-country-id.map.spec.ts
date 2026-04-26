@@ -37,6 +37,7 @@ describe('invoice-ninja-country-id.map', () => {
   describe('INVOICE_NINJA_SUPPORTED_ALPHA2', () => {
     it('contains all keys of ALPHA2_TO_COUNTRY_ID', () => {
       const fromMap = Object.keys(ALPHA2_TO_COUNTRY_ID).sort();
+
       expect(INVOICE_NINJA_SUPPORTED_ALPHA2).toEqual(fromMap);
     });
 

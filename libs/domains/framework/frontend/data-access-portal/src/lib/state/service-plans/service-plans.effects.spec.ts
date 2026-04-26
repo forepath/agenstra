@@ -2,8 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { PublicServicePlanOfferingsService } from '../../services/public-service-plan-offerings.service';
 import type { PublicServicePlanOffering } from '../../types/portal-service-plans.types';
+
 import {
   loadCheapestServicePlanOffering,
   loadCheapestServicePlanOfferingFailure,
@@ -18,7 +20,6 @@ import { loadCheapestServicePlanOffering$, loadServicePlans$, loadServicePlansBa
 describe('Portal ServicePlansEffects', () => {
   let actions$: Actions;
   let offeringsService: jest.Mocked<PublicServicePlanOfferingsService>;
-
   const mockOffering: PublicServicePlanOffering = {
     id: 'sp-1',
     name: 'Basic',
@@ -72,6 +73,7 @@ describe('Portal ServicePlansEffects', () => {
   describe('loadServicePlansBatch$', () => {
     it('should return loadServicePlansSuccess when follow-up batch is empty', (done) => {
       const accumulated = [mockOffering];
+
       actions$ = of(loadServicePlansBatch({ offset: 10, accumulatedServicePlans: accumulated }));
       offeringsService.listOfferings.mockReturnValue(of([]));
 

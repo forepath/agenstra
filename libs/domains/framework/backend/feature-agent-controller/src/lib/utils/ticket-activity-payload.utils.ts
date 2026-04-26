@@ -17,20 +17,26 @@ export function buildFieldUpdatedPayload(changes: Record<string, FieldChange>): 
  */
 export function derivePatchActionType(changes: Record<string, FieldChange>): TicketActionType {
   const keys = Object.keys(changes);
+
   if (keys.length === 1) {
     const k = keys[0];
+
     if (k === 'status') {
       return TicketActionType.STATUS_CHANGED;
     }
+
     if (k === 'priority') {
       return TicketActionType.PRIORITY_CHANGED;
     }
+
     if (k === 'clientId') {
       return TicketActionType.WORKSPACE_MOVED;
     }
+
     if (k === 'parentId') {
       return TicketActionType.PARENT_CHANGED;
     }
   }
+
   return TicketActionType.FIELD_UPDATED;
 }

@@ -28,6 +28,7 @@ export class DeploymentRunDetailsComponent {
       if (!runId) {
         return of(null);
       }
+
       return this.deploymentsFacade.getRunById$(runId);
     }),
   );
@@ -62,9 +63,11 @@ export class DeploymentRunDetailsComponent {
 
   readonly selectedJob = computed(() => {
     const jobId = this.selectedJobId();
+
     if (!jobId) {
       return null;
     }
+
     return this.runJobs().find((job) => job.id === jobId) || null;
   });
 
@@ -76,12 +79,14 @@ export class DeploymentRunDetailsComponent {
     // Reset hasLoadedOnce and close logs when runId changes
     effect(() => {
       const runId = this.runId();
+
       if (runId) {
         this.hasLoadedOnce.set(false);
         // Close any open logs when run changes
         this.showRunLogs.set(false);
         this.showJobLogs.set(false);
         this.selectedJobId.set(null);
+
         // Clear polling interval when run changes
         if (this.pollingInterval) {
           clearInterval(this.pollingInterval);
@@ -93,6 +98,7 @@ export class DeploymentRunDetailsComponent {
     // Track when data is successfully loaded
     effect(() => {
       const runStatus = this.currentRunStatus();
+
       if (runStatus) {
         this.hasLoadedOnce.set(true);
       }
@@ -103,6 +109,7 @@ export class DeploymentRunDetailsComponent {
       const runId = this.runId();
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (runId && clientId && agentId) {
         this.deploymentsFacade.loadRunStatus(clientId, agentId, runId);
         this.deploymentsFacade.loadRunJobs(clientId, agentId, runId);
@@ -126,10 +133,12 @@ export class DeploymentRunDetailsComponent {
           agentId &&
           runId &&
           (status === 'in_progress' || status === 'queued' || status === 'running');
+
         if (!shouldPoll) {
           clearInterval(this.pollingInterval);
           this.pollingInterval = null;
         }
+
         // If we should still poll and interval exists, don't create a new one
         return;
       }
@@ -155,6 +164,7 @@ export class DeploymentRunDetailsComponent {
           }
         };
       }
+
       return undefined;
     });
   }
@@ -163,6 +173,7 @@ export class DeploymentRunDetailsComponent {
     const runId = this.runId();
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (runId && clientId && agentId) {
       this.deploymentsFacade.loadRunLogs(clientId, agentId, runId);
       this.showRunLogs.set(true);
@@ -175,6 +186,7 @@ export class DeploymentRunDetailsComponent {
     const runId = this.runId();
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (runId && clientId && agentId) {
       this.deploymentsFacade.loadJobLogs(clientId, agentId, runId, jobId);
       this.selectedJobId.set(jobId);
@@ -203,6 +215,7 @@ export class DeploymentRunDetailsComponent {
     const runId = this.runId();
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (runId && clientId && agentId) {
       this.deploymentsFacade.cancelRun(clientId, agentId, runId);
     }
@@ -210,25 +223,33 @@ export class DeploymentRunDetailsComponent {
 
   private showCancelRunConfirmModal(): void {
     const el = this.cancelRunConfirmModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Modal = (window as any).bootstrap?.Modal;
+
     if (!Modal) {
       return;
     }
+
     const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
     inst.show();
   }
 
   private hideCancelRunConfirmModal(): void {
     const el = this.cancelRunConfirmModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const modal = (window as any).bootstrap?.Modal?.getInstance(el);
+
     modal?.hide();
   }
 
@@ -290,6 +311,7 @@ export class DeploymentRunDetailsComponent {
 
   formatDate(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : date;
+
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
@@ -301,10 +323,13 @@ export class DeploymentRunDetailsComponent {
 
   canCancelRun(): boolean {
     const status = this.currentRunStatus();
+
     if (!status) {
       return false;
     }
+
     const statusLower = status.status.toLowerCase();
+
     return statusLower === 'in_progress' || statusLower === 'running' || statusLower === 'queued';
   }
 

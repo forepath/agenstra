@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import { AvailabilitySnapshotsRepository } from '../repositories/availability-snapshots.repository';
 
 export interface AvailabilityResult {
@@ -23,6 +24,7 @@ export class AvailabilityService {
         isAvailable: true,
         rawResponse: {},
       });
+
       return { isAvailable: true };
     }
 
@@ -41,6 +43,7 @@ export class AvailabilityService {
 
   private async checkHetznerAvailability(region: string, serverType: string) {
     const apiToken = process.env.HETZNER_API_TOKEN;
+
     if (!apiToken) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
@@ -52,13 +55,13 @@ export class AvailabilityService {
           headers: { Authorization: `Bearer ${apiToken}` },
         },
       );
-
       let limitsData: HetznerLimitsResponse | null = null;
 
       try {
         const limitsResponse = await axios.get<HetznerLimitsResponse>('https://api.hetzner.cloud/v1/limits', {
           headers: { Authorization: `Bearer ${apiToken}` },
         });
+
         limitsData = limitsResponse.data;
       } catch (error) {
         const axiosError = error as AxiosError;
@@ -106,6 +109,7 @@ export class AvailabilityService {
       if (limitsData?.limits != null && limitsData.limits.max_servers !== null) {
         const maxServers = limitsData.limits.max_servers;
         const currentServers = limitsData.limits.server_count ?? 0;
+
         if (maxServers !== undefined && currentServers >= maxServers) {
           return {
             isAvailable: false,
@@ -122,6 +126,7 @@ export class AvailabilityService {
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       throw new BadRequestException(`Failed to check availability: ${axiosError.message}`);
     }
   }

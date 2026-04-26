@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   clearClientAgentAutonomy,
   clearClientAgentAutonomyError,
@@ -38,6 +39,7 @@ describe('ClientAgentAutonomyFacade', () => {
       maxRuntimeMs: 3_600_000,
       maxIterations: 20,
     };
+
     facade.upsert('c1', 'a1', dto);
     expect(store.dispatch).toHaveBeenCalledWith(upsertClientAgentAutonomy({ clientId: 'c1', agentId: 'a1', dto }));
   });

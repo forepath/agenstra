@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import {
   Branch,
   Job,
@@ -46,14 +47,18 @@ export class GitLabProvider implements PipelineProvider {
     if (credentials.baseUrl) {
       // Ensure baseUrl includes /api/v4 if not already present
       const baseUrl = credentials.baseUrl.replace(/\/$/, '');
+
       if (baseUrl.endsWith('/api/v4')) {
         return baseUrl;
       }
+
       if (baseUrl.endsWith('/api')) {
         return `${baseUrl}/v4`;
       }
+
       return `${baseUrl}/api/v4`;
     }
+
     return GitLabProvider.API_BASE_URL;
   }
 
@@ -62,6 +67,7 @@ export class GitLabProvider implements PipelineProvider {
    */
   private createApiClient(credentials: PipelineProviderCredentials) {
     const baseURL = this.getApiBaseUrl(credentials);
+
     return axios.create({
       baseURL,
       headers: {
@@ -124,11 +130,9 @@ export class GitLabProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const encodedPath = this.encodeProjectPath(repositoryId);
-
       // Get project info to find default branch
       const projectResponse = await api.get<{ default_branch: string }>(`/projects/${encodedPath}`);
       const defaultBranch = projectResponse.data.default_branch || 'main';
-
       // Get all branches
       const branchesResponse = await api.get<Array<{ name: string; commit: { id: string } }>>(
         `/projects/${encodedPath}/repository/branches`,
@@ -163,11 +167,9 @@ export class GitLabProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const encodedPath = this.encodeProjectPath(repositoryId);
-
       // Get project info to determine default branch
       const projectResponse = await api.get<{ default_branch: string }>(`/projects/${encodedPath}`);
       const targetBranch = branch || projectResponse.data.default_branch || 'main';
-
       // Get recent pipelines to find pipeline configurations
       const pipelinesResponse = await api.get<
         Array<{
@@ -182,7 +184,6 @@ export class GitLabProvider implements PipelineProvider {
           ref: targetBranch,
         },
       });
-
       // GitLab doesn't have a direct "workflow" concept, so we create a synthetic workflow
       // based on the pipeline source and ref. For manual triggers, we use "manual" as the workflow.
       const workflows: Workflow[] = [];
@@ -198,6 +199,7 @@ export class GitLabProvider implements PipelineProvider {
 
       // If there are manual pipelines, add a manual workflow
       const hasManual = pipelinesResponse.data.some((p) => p.source === 'manual');
+
       if (hasManual) {
         workflows.push({
           id: 'manual',
@@ -229,7 +231,6 @@ export class GitLabProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const encodedPath = this.encodeProjectPath(repositoryId);
-
       // GitLab uses POST to create a new pipeline
       // The endpoint is POST /projects/:id/pipeline (singular, not plural)
       // Variables are optional and should be an array of {key, value} objects
@@ -290,7 +291,6 @@ export class GitLabProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const encodedPath = this.encodeProjectPath(repositoryId);
-
       const response = await api.get<{
         id: number;
         ref: string;
@@ -318,16 +318,14 @@ export class GitLabProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const encodedPath = this.encodeProjectPath(repositoryId);
-
       // Get jobs for the pipeline
       const jobsResponse = await api.get<Array<{ id: number }>>(`/projects/${encodedPath}/pipelines/${runId}/jobs`);
-
       // Fetch logs for each job
       const logPromises = jobsResponse.data.map((job) =>
         this.getJobLogs(credentials, repositoryId, runId, job.id.toString()),
       );
-
       const logs = await Promise.all(logPromises);
+
       return logs.join('\n\n---\n\n');
     } catch (error) {
       this.logger.error(`Failed to get pipeline logs: ${(error as AxiosError).message}`);
@@ -342,7 +340,6 @@ export class GitLabProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const encodedPath = this.encodeProjectPath(repositoryId);
-
       const response = await api.get<
         Array<{
           id: number;
@@ -379,7 +376,6 @@ export class GitLabProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const encodedPath = this.encodeProjectPath(repositoryId);
-
       // GitLab provides job logs via the trace endpoint
       const response = await api.get(`/projects/${encodedPath}/jobs/${jobId}/trace`, {
         responseType: 'text',
@@ -388,10 +384,12 @@ export class GitLabProvider implements PipelineProvider {
       return response.data;
     } catch (error) {
       this.logger.error(`Failed to get job logs: ${(error as AxiosError).message}`);
+
       // Return empty string if logs are not available yet
       if ((error as AxiosError).response?.status === 404) {
         return '';
       }
+
       throw new BadRequestException(`Failed to get job logs: ${(error as AxiosError).message}`);
     }
   }
@@ -425,6 +423,7 @@ export class GitLabProvider implements PipelineProvider {
       manual: 'queued',
       scheduled: 'queued',
     };
+
     return statusMap[status.toLowerCase()] || status;
   }
 
@@ -433,18 +432,23 @@ export class GitLabProvider implements PipelineProvider {
    */
   private mapConclusionFromStatus(status: string): string | undefined {
     const statusLower = status.toLowerCase();
+
     if (statusLower === 'success') {
       return 'success';
     }
+
     if (statusLower === 'failed') {
       return 'failure';
     }
+
     if (statusLower === 'canceled' || statusLower === 'cancelled') {
       return 'cancelled';
     }
+
     if (statusLower === 'skipped') {
       return 'skipped';
     }
+
     // For pending, running, manual, scheduled - no conclusion yet
     return undefined;
   }
@@ -465,7 +469,7 @@ export class GitLabProvider implements PipelineProvider {
       finished_at: string | null;
     },
     workflowId: string,
-    repositoryId: string,
+    _: string,
   ): PipelineRun {
     return {
       id: pipeline.id.toString(),

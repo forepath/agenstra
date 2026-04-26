@@ -1,4 +1,4 @@
-import { IsISO8601, IsObject, IsString, IsUUID } from 'class-validator';
+import { IsISO8601, IsObject, IsUUID } from 'class-validator';
 
 export class CreateUsageRecordDto {
   @IsUUID('4', { message: 'Subscription ID must be a UUID' })

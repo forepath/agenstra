@@ -1,3 +1,5 @@
+import type { ServiceTypeResponse } from '../../types/billing.types';
+
 import {
   clearSelectedServiceType,
   createServiceType,
@@ -21,7 +23,6 @@ import {
   updateServiceTypeSuccess,
 } from './service-types.actions';
 import { serviceTypesReducer, initialServiceTypesState, type ServiceTypesState } from './service-types.reducer';
-import type { ServiceTypeResponse } from '../../types/billing.types';
 
 describe('serviceTypesReducer', () => {
   const mockServiceType: ServiceTypeResponse = {
@@ -34,7 +35,6 @@ describe('serviceTypesReducer', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockServiceType2: ServiceTypeResponse = {
     id: 'st-2',
     key: 'opencode',
@@ -62,6 +62,7 @@ describe('serviceTypesReducer', () => {
         providerDetailsError: 'Previous error',
       };
       const newState = serviceTypesReducer(state, loadProviderDetails());
+
       expect(newState.providerDetailsLoading).toBe(true);
       expect(newState.providerDetailsError).toBeNull();
     });
@@ -72,6 +73,7 @@ describe('serviceTypesReducer', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, providerDetailsLoading: true };
       const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: {} }];
       const newState = serviceTypesReducer(state, loadProviderDetailsSuccess({ providerDetails }));
+
       expect(newState.providerDetails).toEqual(providerDetails);
       expect(newState.providerDetailsLoading).toBe(false);
       expect(newState.providerDetailsError).toBeNull();
@@ -82,6 +84,7 @@ describe('serviceTypesReducer', () => {
     it('should set providerDetailsError and set providerDetailsLoading to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, providerDetailsLoading: true };
       const newState = serviceTypesReducer(state, loadProviderDetailsFailure({ error: 'Load failed' }));
+
       expect(newState.providerDetailsError).toBe('Load failed');
       expect(newState.providerDetailsLoading).toBe(false);
     });
@@ -94,7 +97,6 @@ describe('serviceTypesReducer', () => {
         entities: [mockServiceType],
         error: 'Previous error',
       };
-
       const newState = serviceTypesReducer(state, loadServiceTypes({ params: {} }));
 
       expect(newState.loading).toBe(true);
@@ -106,7 +108,6 @@ describe('serviceTypesReducer', () => {
   describe('loadServiceTypesBatch', () => {
     it('should set accumulated service types and keep loading true', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, loading: true };
-
       const newState = serviceTypesReducer(
         state,
         loadServiceTypesBatch({ offset: 10, accumulatedServiceTypes: [mockServiceType, mockServiceType2] }),
@@ -120,7 +121,6 @@ describe('serviceTypesReducer', () => {
   describe('loadServiceTypesSuccess', () => {
     it('should set service types and set loading to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, loading: true };
-
       const newState = serviceTypesReducer(
         state,
         loadServiceTypesSuccess({ serviceTypes: [mockServiceType, mockServiceType2] }),
@@ -134,7 +134,6 @@ describe('serviceTypesReducer', () => {
   describe('loadServiceTypesFailure', () => {
     it('should set error and set loading to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, loading: true };
-
       const newState = serviceTypesReducer(state, loadServiceTypesFailure({ error: 'Load failed' }));
 
       expect(newState.error).toBe('Load failed');
@@ -145,7 +144,6 @@ describe('serviceTypesReducer', () => {
   describe('loadServiceType', () => {
     it('should set loadingServiceType to true and clear error', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, error: 'Previous error' };
-
       const newState = serviceTypesReducer(state, loadServiceType({ id: 'st-1' }));
 
       expect(newState.loadingServiceType).toBe(true);
@@ -161,7 +159,6 @@ describe('serviceTypesReducer', () => {
         loadingServiceType: true,
       };
       const updated = { ...mockServiceType, name: 'Updated Name' };
-
       const newState = serviceTypesReducer(state, loadServiceTypeSuccess({ serviceType: updated }));
 
       expect(newState.entities[0]).toEqual(updated);
@@ -173,7 +170,6 @@ describe('serviceTypesReducer', () => {
   describe('loadServiceTypeFailure', () => {
     it('should set error and set loadingServiceType to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, loadingServiceType: true };
-
       const newState = serviceTypesReducer(state, loadServiceTypeFailure({ error: 'Load failed' }));
 
       expect(newState.error).toBe('Load failed');
@@ -184,7 +180,6 @@ describe('serviceTypesReducer', () => {
   describe('createServiceType', () => {
     it('should set creating to true and clear error', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, error: 'Previous error' };
-
       const newState = serviceTypesReducer(state, createServiceType({ serviceType: {} as never }));
 
       expect(newState.creating).toBe(true);
@@ -199,7 +194,6 @@ describe('serviceTypesReducer', () => {
         entities: [mockServiceType],
         creating: true,
       };
-
       const newState = serviceTypesReducer(state, createServiceTypeSuccess({ serviceType: mockServiceType2 }));
 
       expect(newState.entities).toContainEqual(mockServiceType2);
@@ -211,7 +205,6 @@ describe('serviceTypesReducer', () => {
   describe('createServiceTypeFailure', () => {
     it('should set error and set creating to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, creating: true };
-
       const newState = serviceTypesReducer(state, createServiceTypeFailure({ error: 'Create failed' }));
 
       expect(newState.error).toBe('Create failed');
@@ -222,7 +215,6 @@ describe('serviceTypesReducer', () => {
   describe('updateServiceType', () => {
     it('should set updating to true and clear error', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, error: 'Previous error' };
-
       const newState = serviceTypesReducer(state, updateServiceType({ id: 'st-1', serviceType: {} }));
 
       expect(newState.updating).toBe(true);
@@ -239,7 +231,6 @@ describe('serviceTypesReducer', () => {
         updating: true,
       };
       const updated = { ...mockServiceType, name: 'Updated Name' };
-
       const newState = serviceTypesReducer(state, updateServiceTypeSuccess({ serviceType: updated }));
 
       expect(newState.entities[0]).toEqual(updated);
@@ -251,7 +242,6 @@ describe('serviceTypesReducer', () => {
   describe('updateServiceTypeFailure', () => {
     it('should set error and set updating to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, updating: true };
-
       const newState = serviceTypesReducer(state, updateServiceTypeFailure({ error: 'Update failed' }));
 
       expect(newState.error).toBe('Update failed');
@@ -262,7 +252,6 @@ describe('serviceTypesReducer', () => {
   describe('deleteServiceType', () => {
     it('should set deleting to true and clear error', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, error: 'Previous error' };
-
       const newState = serviceTypesReducer(state, deleteServiceType({ id: 'st-1' }));
 
       expect(newState.deleting).toBe(true);
@@ -278,7 +267,6 @@ describe('serviceTypesReducer', () => {
         selectedServiceType: mockServiceType,
         deleting: true,
       };
-
       const newState = serviceTypesReducer(state, deleteServiceTypeSuccess({ id: 'st-1' }));
 
       expect(newState.entities).not.toContainEqual(mockServiceType);
@@ -291,7 +279,6 @@ describe('serviceTypesReducer', () => {
   describe('deleteServiceTypeFailure', () => {
     it('should set error and set deleting to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, deleting: true };
-
       const newState = serviceTypesReducer(state, deleteServiceTypeFailure({ error: 'Delete failed' }));
 
       expect(newState.error).toBe('Delete failed');
@@ -306,7 +293,6 @@ describe('serviceTypesReducer', () => {
         entities: [mockServiceType],
         selectedServiceType: mockServiceType,
       };
-
       const newState = serviceTypesReducer(state, clearSelectedServiceType());
 
       expect(newState.selectedServiceType).toBeNull();

@@ -99,7 +99,9 @@ export class AuditComponent implements OnInit {
   readonly selectedClient = computed(() => {
     const id = this.selectedClientId();
     const list = this.clients();
+
     if (!id) return null;
+
     return list.find((c) => c.id === id) ?? null;
   });
 
@@ -116,7 +118,9 @@ export class AuditComponent implements OnInit {
     title: ApexTitleSubtitle;
   } | null>(() => {
     const s = this.summary();
+
     if (!s) return null;
+
     const seriesData = s.series ?? [];
     const groupBy = this.groupBy();
     const { categories, data } = this.buildMessagesOverTimeCategoriesAndData(
@@ -126,6 +130,7 @@ export class AuditComponent implements OnInit {
       groupBy,
     );
     const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
+
     return {
       series: [{ name: 'Messages', data }],
       chart: {
@@ -166,7 +171,9 @@ export class AuditComponent implements OnInit {
     title: ApexTitleSubtitle;
   } | null>(() => {
     const s = this.summary();
+
     if (!s) return null;
+
     const dropPrefix = $localize`:@@featureAudit-chartDropPrefix:Drop`;
     const flagPrefix = $localize`:@@featureAudit-chartFlagPrefix:Flag`;
     const drops = (s.filterTypesBreakdown ?? []).map((b) => ({
@@ -185,6 +192,7 @@ export class AuditComponent implements OnInit {
     const series = items.length > 0 ? items.map((i) => i.count) : [1];
     const colors =
       items.length > 0 ? items.map((_, i) => BS_CHART_COLORS[i % BS_CHART_COLORS.length]) : ['var(--bs-secondary)'];
+
     return {
       series,
       chart: { type: 'donut', height: 280, background: 'transparent' },
@@ -203,6 +211,7 @@ export class AuditComponent implements OnInit {
   readonly filtersAreDefault = computed(() => {
     const defaultFrom = this.formatDateForInput(this.getDefaultFromDate());
     const defaultTo = this.formatDateForInput(this.getDefaultToDate());
+
     return (
       this.selectedClientId() === null &&
       this.fromDate() === defaultFrom &&
@@ -218,19 +227,31 @@ export class AuditComponent implements OnInit {
 
   ngOnInit(): void {
     const stored = this.loadFilters();
+
     if (stored) {
       if (stored.selectedClientId !== undefined) this.selectedClientId.set(stored.selectedClientId);
+
       if (stored.fromDate) this.fromDate.set(stored.fromDate);
+
       if (stored.toDate) this.toDate.set(stored.toDate);
+
       if (stored.groupBy === 'day' || stored.groupBy === 'hour') this.groupBy.set(stored.groupBy);
+
       if (stored.chatIoSearch !== undefined) this.chatIoSearch.set(stored.chatIoSearch);
+
       if (stored.filterDropsSearch !== undefined) this.filterDropsSearch.set(stored.filterDropsSearch);
+
       if (stored.filterFlagsSearch !== undefined) this.filterFlagsSearch.set(stored.filterFlagsSearch);
+
       if (stored.entityEventsSearch !== undefined) this.entityEventsSearch.set(stored.entityEventsSearch);
+
       if (stored.filtersCollapsed !== undefined) this.filtersCollapsed.set(stored.filtersCollapsed);
     }
+
     if (!stored?.fromDate) this.fromDate.set(this.formatDateForInput(this.getDefaultFromDate()));
+
     if (!stored?.toDate) this.toDate.set(this.formatDateForInput(this.getDefaultToDate()));
+
     this.authFacade.loadUsers();
     this.clientsFacade.loadClients();
     this.applyFilters();
@@ -239,22 +260,29 @@ export class AuditComponent implements OnInit {
   /** Resolve originalUserId to email when user is loaded, otherwise show the ID. */
   resolveUserDisplay(originalUserId: string | undefined): string {
     if (!originalUserId) return '-';
+
     const user = this.users().find((u) => u.id === originalUserId);
+
     return user?.email ?? originalUserId;
   }
 
   /** Format agent display as "client name --> agent name" or fallback. */
   resolveAgentDisplay(row: { clientId?: string; agentId?: string; clientName?: string; agentName?: string }): string {
     const { clientName, agentName } = row;
+
     if (clientName && agentName) return `${clientName} <i class="bi bi-arrow-right"></i> ${agentName}`;
+
     if (agentName) return agentName;
+
     if (row.agentId) return row.agentId;
+
     return '-';
   }
 
   /** Chat route for agent link: /clients/{clientId}/agents/{agentId} */
   buildAgentChatRoute(clientId: string | undefined, agentId: string | undefined): string | null {
     if (!clientId || !agentId) return null;
+
     return `/clients/${clientId}/agents/${agentId}`;
   }
 
@@ -271,9 +299,11 @@ export class AuditComponent implements OnInit {
     if (row.entityType === 'client') {
       return row.originalEntityId ? `/clients/${row.originalEntityId}` : null;
     }
+
     if (row.entityType === 'agent' && row.clientId && row.originalEntityId) {
       return `/clients/${row.clientId}/agents/${row.originalEntityId}`;
     }
+
     return null;
   }
 
@@ -288,21 +318,27 @@ export class AuditComponent implements OnInit {
   }): string {
     if (row.entityType === 'client') {
       const client = this.clients().find((c) => c.id === row.originalEntityId);
+
       return client?.name ?? row.originalEntityId;
     }
+
     if (row.entityType === 'agent') {
       if (row.clientName && row.agentName) {
         return `${row.clientName} <i class="bi bi-arrow-right"></i> ${row.agentName}`;
       }
+
       if (row.agentName) return row.agentName;
     }
+
     return row.originalEntityId;
   }
 
   private getDefaultFromDate(): Date {
     const now = new Date();
     const sevenDaysAgo = new Date(now);
+
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     return sevenDaysAgo;
   }
 
@@ -327,18 +363,22 @@ export class AuditComponent implements OnInit {
       clearTimeout(this.chatIoSearchTimer);
       this.chatIoSearchTimer = null;
     }
+
     if (this.filterDropsSearchTimer) {
       clearTimeout(this.filterDropsSearchTimer);
       this.filterDropsSearchTimer = null;
     }
+
     if (this.filterFlagsSearchTimer) {
       clearTimeout(this.filterFlagsSearchTimer);
       this.filterFlagsSearchTimer = null;
     }
+
     if (this.entityEventsSearchTimer) {
       clearTimeout(this.entityEventsSearchTimer);
       this.entityEventsSearchTimer = null;
     }
+
     this.selectedClientId.set(null);
     this.fromDate.set(this.formatDateForInput(this.getDefaultFromDate()));
     this.toDate.set(this.formatDateForInput(this.getDefaultToDate()));
@@ -381,7 +421,9 @@ export class AuditComponent implements OnInit {
 
   onChatIoSearchChange(value: string): void {
     this.chatIoSearch.set(value);
+
     if (this.chatIoSearchTimer) clearTimeout(this.chatIoSearchTimer);
+
     this.chatIoSearchTimer = setTimeout(() => {
       this.chatIoPage.set(0);
       this.loadChatIo();
@@ -391,7 +433,9 @@ export class AuditComponent implements OnInit {
 
   onFilterDropsSearchChange(value: string): void {
     this.filterDropsSearch.set(value);
+
     if (this.filterDropsSearchTimer) clearTimeout(this.filterDropsSearchTimer);
+
     this.filterDropsSearchTimer = setTimeout(() => {
       this.filterDropsPage.set(0);
       this.loadFilterDrops();
@@ -401,7 +445,9 @@ export class AuditComponent implements OnInit {
 
   onFilterFlagsSearchChange(value: string): void {
     this.filterFlagsSearch.set(value);
+
     if (this.filterFlagsSearchTimer) clearTimeout(this.filterFlagsSearchTimer);
+
     this.filterFlagsSearchTimer = setTimeout(() => {
       this.filterFlagsPage.set(0);
       this.loadFilterFlags();
@@ -411,7 +457,9 @@ export class AuditComponent implements OnInit {
 
   onEntityEventsSearchChange(value: string): void {
     this.entityEventsSearch.set(value);
+
     if (this.entityEventsSearchTimer) clearTimeout(this.entityEventsSearchTimer);
+
     this.entityEventsSearchTimer = setTimeout(() => {
       this.entityEventsPage.set(0);
       this.loadEntityEvents();
@@ -421,6 +469,7 @@ export class AuditComponent implements OnInit {
 
   private applyFilters(): void {
     const baseParams = this.getBaseParams();
+
     this.statisticsFacade.loadSummary(baseParams);
     this.loadChatIo();
     this.loadFilterDrops();
@@ -448,16 +497,22 @@ export class AuditComponent implements OnInit {
     const from = this.fromDate();
     const to = this.toDate();
     const groupBy = this.groupBy();
+
     if (clientId) params.clientId = clientId;
+
     if (from) params.from = from;
+
     if (to) params.to = to;
+
     if (groupBy) params.groupBy = groupBy;
+
     return params;
   }
 
   private loadChatIo(): void {
     const base = this.getBaseParams();
     const search = this.chatIoSearch().trim() || undefined;
+
     this.statisticsFacade.loadChatIo({
       ...base,
       search,
@@ -469,6 +524,7 @@ export class AuditComponent implements OnInit {
   private loadFilterDrops(): void {
     const base = this.getBaseParams();
     const search = this.filterDropsSearch().trim() || undefined;
+
     this.statisticsFacade.loadFilterDrops({
       ...base,
       search,
@@ -480,6 +536,7 @@ export class AuditComponent implements OnInit {
   private loadFilterFlags(): void {
     const base = this.getBaseParams();
     const search = this.filterFlagsSearch().trim() || undefined;
+
     this.statisticsFacade.loadFilterFlags({
       ...base,
       search,
@@ -491,6 +548,7 @@ export class AuditComponent implements OnInit {
   private loadEntityEvents(): void {
     const base = this.getBaseParams();
     const search = this.entityEventsSearch().trim() || undefined;
+
     this.statisticsFacade.loadEntityEvents({
       ...base,
       search,
@@ -510,17 +568,22 @@ export class AuditComponent implements OnInit {
     groupBy: 'day' | 'hour',
   ): { categories: string[]; data: number[] } {
     const bucketKeys = this.generateUtcBucketKeysInclusive(fromYmd, toYmd, groupBy);
+
     if (bucketKeys.length === 0) {
       return {
         categories: seriesData.map((p) => p.period),
         data: seriesData.map((p) => p.count),
       };
     }
+
     const countByBucket = new Map<string, number>();
+
     for (const point of seriesData) {
       const key = AuditComponent.normalizePeriodToUtcBucketKey(point.period, groupBy);
+
       countByBucket.set(key, (countByBucket.get(key) ?? 0) + point.count);
     }
+
     return {
       categories: bucketKeys,
       data: bucketKeys.map((key) => countByBucket.get(key) ?? 0),
@@ -529,25 +592,34 @@ export class AuditComponent implements OnInit {
 
   private generateUtcBucketKeysInclusive(fromYmd: string, toYmd: string, groupBy: 'day' | 'hour'): string[] {
     const dateOnly = /^\d{4}-\d{2}-\d{2}$/;
+
     if (!dateOnly.test(fromYmd) || !dateOnly.test(toYmd)) {
       return [];
     }
+
     const fromMs = Date.parse(`${fromYmd}T00:00:00.000Z`);
     const toDayStartMs = Date.parse(`${toYmd}T00:00:00.000Z`);
+
     if (Number.isNaN(fromMs) || Number.isNaN(toDayStartMs) || fromMs > toDayStartMs) {
       return [];
     }
+
     const keys: string[] = [];
+
     if (groupBy === 'day') {
       for (let t = fromMs; t <= toDayStartMs; t += 86400000) {
         keys.push(AuditComponent.utcDayStartIso(new Date(t)));
       }
+
       return keys;
     }
+
     const endMs = Date.parse(`${toYmd}T23:59:59.999Z`);
+
     for (let t = fromMs; t <= endMs; t += 3600000) {
       keys.push(AuditComponent.utcHourStartIso(new Date(t)));
     }
+
     return keys;
   }
 
@@ -561,9 +633,11 @@ export class AuditComponent implements OnInit {
 
   private static normalizePeriodToUtcBucketKey(period: string, groupBy: 'day' | 'hour'): string {
     const d = new Date(period);
+
     if (Number.isNaN(d.getTime())) {
       return period;
     }
+
     return groupBy === 'day' ? AuditComponent.utcDayStartIso(d) : AuditComponent.utcHourStartIso(d);
   }
 
@@ -572,15 +646,19 @@ export class AuditComponent implements OnInit {
     if (!value) {
       return '';
     }
+
     const ms = Date.parse(value);
+
     if (Number.isNaN(ms)) {
       return value;
     }
+
     return this.datePipe.transform(ms, format) ?? value;
   }
 
   formatDateTime(iso: string | undefined): string {
     if (!iso) return '-';
+
     try {
       return new Date(iso).toLocaleString();
     } catch {
@@ -665,12 +743,18 @@ export class AuditComponent implements OnInit {
 
   private loadFilters(): Partial<AuditFiltersStorage> | null {
     if (typeof window === 'undefined' || !window.localStorage) return null;
+
     try {
       const raw = window.localStorage.getItem(AUDIT_FILTERS_STORAGE_KEY);
+
       if (!raw) return null;
+
       const parsed = JSON.parse(raw) as Partial<AuditFiltersStorage>;
+
       if (!parsed || typeof parsed !== 'object') return null;
+
       if (parsed.groupBy !== 'day' && parsed.groupBy !== 'hour') parsed.groupBy = undefined;
+
       return parsed;
     } catch {
       return null;
@@ -679,6 +763,7 @@ export class AuditComponent implements OnInit {
 
   private saveFilters(): void {
     if (typeof window === 'undefined' || !window.localStorage) return;
+
     try {
       const payload: AuditFiltersStorage = {
         selectedClientId: this.selectedClientId(),
@@ -691,6 +776,7 @@ export class AuditComponent implements OnInit {
         entityEventsSearch: this.entityEventsSearch(),
         filtersCollapsed: this.filtersCollapsed(),
       };
+
       window.localStorage.setItem(AUDIT_FILTERS_STORAGE_KEY, JSON.stringify(payload));
     } catch {
       /* ignore storage errors */

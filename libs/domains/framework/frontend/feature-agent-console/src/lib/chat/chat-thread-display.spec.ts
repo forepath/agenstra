@@ -1,4 +1,5 @@
 import type { TicketAutomationRunChatEventPayload } from '@forepath/framework/frontend/data-access-agent-console';
+
 import {
   buildAgentTurnView,
   buildChatDisplayThread,
@@ -9,6 +10,7 @@ import {
 
 function chatMsg(from: 'user' | 'agent', response: unknown, ts: number): ChatMessageWithFilter {
   const iso = new Date(ts).toISOString();
+
   return {
     event: 'chatMessage',
     timestamp: ts,
@@ -31,12 +33,15 @@ describe('buildChatDisplayThread', () => {
       chatMsg('agent', { type: 'tool_call', toolCallId: 'a', name: 'read', status: 'x' }, 2),
       chatMsg('agent', { type: 'result', result: 'ok' }, 3),
     ]);
+
     expect(items).toHaveLength(2);
     expect(items[0]?.kind).toBe('user');
     expect(items[1]?.kind).toBe('agentTurn');
+
     if (items[1]?.kind === 'agentTurn') {
       expect(items[1].msgs).toHaveLength(2);
       const rowCount = items[1].view.segments.filter((s) => s.kind === 'row').length;
+
       expect(rowCount).toBeGreaterThanOrEqual(1);
     }
   });
@@ -55,6 +60,7 @@ describe('buildAgentTurnView', () => {
         10,
       ),
     ]);
+
     expect(view.segments.some((s) => s.kind === 'row' && s.row.kind === 'toolResult')).toBe(true);
   });
 
@@ -73,9 +79,12 @@ describe('buildAgentTurnView', () => {
         10,
       ),
     ]);
+
     expect(view.segments.some((s) => s.kind === 'row' && s.row.kind === 'thinking')).toBe(true);
     const md = view.segments.find((s) => s.kind === 'markdown');
+
     expect(md?.kind).toBe('markdown');
+
     if (md?.kind === 'markdown') {
       expect(md.markdown).toBe('Done.');
     }
@@ -98,9 +107,12 @@ describe('buildAgentTurnView', () => {
       ),
     ]);
     const thinkingRows = view.segments.filter((s) => s.kind === 'row' && s.row.kind === 'thinking');
+
     expect(thinkingRows).toHaveLength(1);
     const first = thinkingRows[0];
+
     expect(first?.kind).toBe('row');
+
     if (first?.kind === 'row') {
       expect(first.row.summaryBody).toContain('Chunk one');
       expect(first.row.summaryBody).toContain('Chunk two');
@@ -123,9 +135,12 @@ describe('buildAgentTurnView', () => {
         10,
       ),
     ]);
+
     expect(view.segments.map((s) => s.kind)).toEqual(['row', 'markdown', 'row']);
     const mid = view.segments[1];
+
     expect(mid?.kind).toBe('markdown');
+
     if (mid?.kind === 'markdown') {
       expect(mid.markdown).toContain('Middle reply');
     }
@@ -183,6 +198,7 @@ describe('buildMergedChatDisplayThread', () => {
       { ...a, semanticTimestamp: 4 },
     ];
     const thread = buildMergedChatDisplayThread(ordered, [u, a]);
+
     expect(thread.map((i) => i.kind)).toEqual(['user', 'ticketAutomationRun', 'agentTurn']);
   });
 
@@ -199,6 +215,7 @@ describe('buildMergedChatDisplayThread', () => {
       },
     ];
     const thread = buildMergedChatDisplayThread(ordered, [u]);
+
     expect(thread[1]?.kind).toBe('ticketAutomationRun');
   });
 });

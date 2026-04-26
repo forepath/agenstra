@@ -4,11 +4,13 @@ import { TicketAutomationLeaseStatus } from './ticket-automation.enums';
 describe('TicketAutomationLeaseEntity', () => {
   it('should create an instance', () => {
     const entity = new TicketAutomationLeaseEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should map lease columns', () => {
     const entity = new TicketAutomationLeaseEntity();
+
     entity.ticketId = 'ticket-uuid';
     entity.holderAgentId = 'agent-uuid';
     entity.runId = 'run-uuid';

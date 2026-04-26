@@ -1,7 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import axios, { AxiosError } from 'axios';
+
 import { PipelineProviderCredentials } from '../pipeline-provider.interface';
+
 import { GitLabProvider } from './gitlab.provider';
 
 // Mock axios
@@ -14,11 +16,9 @@ describe('GitLabProvider', () => {
     get: jest.Mock;
     post: jest.Mock;
   };
-
   const mockCredentials: PipelineProviderCredentials = {
     token: 'glpat-test-token',
   };
-
   const mockCredentialsWithBaseUrl: PipelineProviderCredentials = {
     token: 'glpat-test-token',
     baseUrl: 'https://gitlab.example.com',
@@ -102,6 +102,7 @@ describe('GitLabProvider', () => {
 
     it('should handle errors', async () => {
       const error = new Error('API Error') as AxiosError;
+
       mockAxiosInstance.get.mockRejectedValue(error);
 
       await expect(provider.listRepositories(mockCredentials)).rejects.toThrow(BadRequestException);
@@ -217,6 +218,7 @@ describe('GitLabProvider', () => {
 
       jest.useFakeTimers();
       const resultPromise = provider.triggerWorkflow(mockCredentials, 'group/project', 'pipeline-main', 'main');
+
       jest.advanceTimersByTime(1000);
       jest.useRealTimers();
 
@@ -249,6 +251,7 @@ describe('GitLabProvider', () => {
       const resultPromise = provider.triggerWorkflow(mockCredentials, 'group/project', 'pipeline-main', 'main', {
         environment: 'production',
       });
+
       jest.advanceTimersByTime(1000);
       jest.useRealTimers();
 
@@ -288,6 +291,7 @@ describe('GitLabProvider', () => {
   describe('getRunLogs', () => {
     it('should get pipeline logs successfully', async () => {
       const mockJobs = [{ id: 1 }, { id: 2 }];
+
       mockAxiosInstance.get
         .mockResolvedValueOnce({ data: mockJobs })
         .mockResolvedValueOnce({ data: 'Job 1 logs' })
@@ -349,6 +353,7 @@ describe('GitLabProvider', () => {
 
     it('should return empty string for 404 errors', async () => {
       const error = { response: { status: 404 } } as AxiosError;
+
       mockAxiosInstance.get.mockRejectedValue(error);
 
       const result = await provider.getJobLogs(mockCredentials, 'group/project', '789', '1');

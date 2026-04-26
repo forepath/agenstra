@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { DockerService } from '../../services/docker.service';
+
 import { CursorAgentProvider } from './cursor-agent.provider';
 
 describe('CursorAgentProvider', () => {
   let provider: CursorAgentProvider;
   let dockerService: jest.Mocked<DockerService>;
-
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
     execCommandStream: jest.fn(),
@@ -140,6 +141,7 @@ no separator here
 
     it('should send message to container without model option', async () => {
       const expectedResponse = '{"type":"result","result":"Hello from agent!"}';
+
       dockerService.sendCommandToContainer.mockResolvedValue(expectedResponse);
 
       const response = await provider.sendMessage(agentId, containerId, message);
@@ -155,6 +157,7 @@ no separator here
     it('should send message to container with model option', async () => {
       const expectedResponse = '{"type":"result","result":"Hello from agent!"}';
       const model = 'gpt-4';
+
       dockerService.sendCommandToContainer.mockResolvedValue(expectedResponse);
 
       const response = await provider.sendMessage(agentId, containerId, message, { model });
@@ -181,6 +184,7 @@ no separator here
 
     it('should handle errors from docker service', async () => {
       const error = new Error('Container not found');
+
       dockerService.sendCommandToContainer.mockRejectedValue(error);
 
       await expect(provider.sendMessage(agentId, containerId, message)).rejects.toThrow('Container not found');
@@ -197,9 +201,11 @@ no separator here
         yield { stream: 'stdout', chunk: '{"type":"assistant"' };
         yield { stream: 'stdout', chunk: '}\n' };
       }
+
       dockerService.execCommandStream.mockImplementation(mockStream);
 
       const chunks: string[] = [];
+
       for await (const chunk of provider.sendMessageStream(agentId, containerId, message)) {
         chunks.push(chunk);
       }
@@ -216,6 +222,7 @@ no separator here
       async function* emptyStream(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
         // empty
       }
+
       dockerService.execCommandStream.mockImplementation(emptyStream);
       const model = 'gpt-4';
 
@@ -237,6 +244,7 @@ no separator here
 
     it('should send initialization message without model option', async () => {
       const loggerDebugSpy = jest.spyOn(provider['logger'], 'debug').mockImplementation();
+
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await provider.sendInitialization(agentId, containerId);
@@ -254,6 +262,7 @@ no separator here
     it('should send initialization message with model option', async () => {
       const loggerDebugSpy = jest.spyOn(provider['logger'], 'debug').mockImplementation();
       const model = 'gpt-4';
+
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await provider.sendInitialization(agentId, containerId, { model });
@@ -309,6 +318,7 @@ no separator here
     it('should log warning and re-throw error on failure', async () => {
       const loggerWarnSpy = jest.spyOn(provider['logger'], 'warn').mockImplementation();
       const error = new Error('Container error');
+
       dockerService.sendCommandToContainer.mockRejectedValue(error);
 
       await expect(provider.sendInitialization(agentId, containerId)).rejects.toThrow('Container error');
@@ -324,6 +334,7 @@ no separator here
     it('should log warning with stack trace when error has stack', async () => {
       const loggerWarnSpy = jest.spyOn(provider['logger'], 'warn').mockImplementation();
       const error = new Error('Container error');
+
       error.stack = 'Error stack trace';
       dockerService.sendCommandToContainer.mockRejectedValue(error);
 

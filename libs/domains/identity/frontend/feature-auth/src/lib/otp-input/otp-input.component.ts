@@ -49,6 +49,7 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, '')
       .slice(0, CODE_LENGTH);
+
     this._value = alphanumeric;
   }
 
@@ -60,7 +61,7 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
     this._onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
+  setDisabledState(_: boolean): void {
     // Handled via input()
   }
 
@@ -82,6 +83,7 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
       this._value = newValue;
       this._onChange(newValue);
       this.focusInput(CODE_LENGTH - 1);
+
       return;
     }
 
@@ -90,6 +92,7 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
       this._value = newValue.slice(0, CODE_LENGTH);
       this._onChange(this._value);
       input.value = raw;
+
       if (index < CODE_LENGTH - 1) {
         this.focusInput(index + 1);
       }
@@ -118,6 +121,7 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, '')
       .slice(0, CODE_LENGTH);
+
     if (pasted.length > 0) {
       this._value = pasted.padEnd(CODE_LENGTH, '').slice(0, CODE_LENGTH);
       this._onChange(this._value);
@@ -129,6 +133,7 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
   onBlur(event: FocusEvent): void {
     const container = event.currentTarget as HTMLElement;
     const relatedTarget = event.relatedTarget as HTMLElement | null;
+
     if (!relatedTarget || !container.contains(relatedTarget)) {
       this._onTouched();
     }
@@ -138,6 +143,7 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
     setTimeout(() => {
       const inputs = this.digitInputs?.toArray();
       const el = inputs?.[index]?.nativeElement;
+
       if (el) {
         el.focus();
       }
@@ -147,8 +153,10 @@ export class IdentityOtpInputComponent implements ControlValueAccessor {
   private updateInputsFromValue(): void {
     setTimeout(() => {
       const inputs = this.digitInputs?.toArray() ?? [];
+
       for (let i = 0; i < inputs.length; i++) {
         const el = inputs[i]?.nativeElement;
+
         if (el) {
           el.value = this.getDigit(i);
         }

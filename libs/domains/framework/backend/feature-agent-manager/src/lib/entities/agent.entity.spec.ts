@@ -3,11 +3,13 @@ import { AgentEntity } from './agent.entity';
 describe('AgentEntity', () => {
   it('should create an instance', () => {
     const agent = new AgentEntity();
+
     expect(agent).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const agent = new AgentEntity();
+
     agent.id = 'test-uuid';
     agent.name = 'Test Agent';
     agent.description = 'Test Description';
@@ -29,6 +31,7 @@ describe('AgentEntity', () => {
 
   it('should allow optional description and containerId', () => {
     const agent = new AgentEntity();
+
     agent.id = 'test-uuid';
     agent.name = 'Test Agent';
     agent.hashedPassword = 'hashed-password';
@@ -41,6 +44,7 @@ describe('AgentEntity', () => {
 
   it('should handle nullable containerId', () => {
     const agent = new AgentEntity();
+
     agent.id = 'test-uuid';
     agent.name = 'Test Agent';
     agent.hashedPassword = 'hashed-password';
@@ -53,6 +57,7 @@ describe('AgentEntity', () => {
 
   it('should allow nullable gitRepositoryUrl', () => {
     const agent = new AgentEntity();
+
     agent.id = 'test-uuid';
     agent.name = 'Test Agent';
     agent.hashedPassword = 'hashed-password';

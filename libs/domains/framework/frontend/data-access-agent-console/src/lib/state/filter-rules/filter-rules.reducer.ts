@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import type { FilterRuleResponseDto } from './filter-rules.types';
+
 import {
   clearFilterRulesError,
   createFilterRule,
@@ -16,6 +16,7 @@ import {
   updateFilterRuleFailure,
   updateFilterRuleSuccess,
 } from './filter-rules.actions';
+import type { FilterRuleResponseDto } from './filter-rules.types';
 
 export interface FilterRulesState {
   rules: FilterRuleResponseDto[];

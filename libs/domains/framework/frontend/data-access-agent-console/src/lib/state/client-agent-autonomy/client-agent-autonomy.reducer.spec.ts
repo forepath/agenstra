@@ -2,7 +2,6 @@ import {
   clearClientAgentAutonomy,
   loadClientAgentAutonomy,
   loadClientAgentAutonomyFailure,
-  loadClientAgentAutonomySuccess,
   upsertClientAgentAutonomy,
   upsertClientAgentAutonomyFailure,
   upsertClientAgentAutonomySuccess,
@@ -41,6 +40,7 @@ describe('clientAgentAutonomyReducer', () => {
       autonomy: mockAutonomy,
     };
     const next = clientAgentAutonomyReducer(prev, loadClientAgentAutonomy({ clientId: 'c2', agentId: 'a1' }));
+
     expect(next.loading).toBe(true);
     expect(next.autonomy).toBeNull();
   });
@@ -59,6 +59,7 @@ describe('clientAgentAutonomyReducer', () => {
         },
       }),
     );
+
     expect(state.saving).toBe(true);
     state = clientAgentAutonomyReducer(state, upsertClientAgentAutonomySuccess({ autonomy: mockAutonomy }));
     expect(state.saving).toBe(false);
@@ -79,6 +80,7 @@ describe('clientAgentAutonomyReducer', () => {
 
   it('clearClientAgentAutonomy resets', () => {
     const prev: ClientAgentAutonomyState = { ...initialClientAgentAutonomyState, autonomy: mockAutonomy };
+
     expect(clientAgentAutonomyReducer(prev, clearClientAgentAutonomy())).toEqual(initialClientAgentAutonomyState);
   });
 });

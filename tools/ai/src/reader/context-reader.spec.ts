@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { readContext } from './context-reader';
 
 describe('readContext', () => {
@@ -27,6 +28,7 @@ describe('readContext', () => {
 
   it('should read valid .agenstra and return context', () => {
     const agenstraDir = path.join(tmpDir, '.agenstra');
+
     fs.mkdirSync(agenstraDir, { recursive: true });
     fs.mkdirSync(path.join(agenstraDir, 'rules'), { recursive: true });
     fs.writeFileSync(
@@ -37,8 +39,11 @@ describe('readContext', () => {
     fs.writeFileSync(path.join(agenstraDir, 'rules', 'coding.mdc'), '---\n---\n\n# Coding\n', 'utf-8');
 
     const context = readContext(agenstraDir);
+
     expect(context.metadata.appName).toBe('test-app');
+
     const codingRule = context.rules['coding'];
+
     expect(typeof codingRule === 'string' ? codingRule : codingRule.content).toContain('# Coding');
     expect(Object.keys(context.commands)).toEqual([]);
     expect(Object.keys(context.skills)).toEqual([]);
@@ -48,6 +53,7 @@ describe('readContext', () => {
 
   it('should read agents and subagents from .agent.mdc and .subagent.mdc', () => {
     const agenstraDir = path.join(tmpDir, '.agenstra');
+
     fs.mkdirSync(agenstraDir, { recursive: true });
     fs.mkdirSync(path.join(agenstraDir, 'agents'), { recursive: true });
     fs.mkdirSync(path.join(agenstraDir, 'subagents'), { recursive: true });
@@ -85,6 +91,7 @@ General instructions here.
     );
 
     const context = readContext(agenstraDir);
+
     expect(context.agents['architect']).toBeDefined();
     expect(context.agents['architect'].name).toBe('Code Architect Agent');
     expect(context.agents['architect'].description).toBe('Designs architecture');

@@ -1,6 +1,8 @@
-import { Reflector } from '@nestjs/core';
 import { UserRole } from '@forepath/identity/backend';
+import { Reflector } from '@nestjs/core';
+
 import { UsersRepository } from '../repositories/users.repository';
+
 import { KeycloakAuthGuard } from './keycloak-auth.guard';
 
 describe('KeycloakAuthGuard', () => {
@@ -10,7 +12,6 @@ describe('KeycloakAuthGuard', () => {
     Pick<UsersRepository, 'findByKeycloakSub' | 'count' | 'findByEmail' | 'create' | 'update'>
   >;
   let originalAuthMethod: string | undefined;
-
   const createExecutionContext = (request: Record<string, unknown>) =>
     ({
       switchToHttp: () => ({
@@ -42,11 +43,13 @@ describe('KeycloakAuthGuard', () => {
     } else {
       delete process.env.AUTHENTICATION_METHOD;
     }
+
     jest.clearAllMocks();
   });
 
   it('allows request when synced user is not locked', async () => {
     const request = { user: { sub: 'kc-sub-1', email: 'a@b.com' } };
+
     usersRepository.findByKeycloakSub.mockResolvedValue({
       id: 'user-1',
       email: 'a@b.com',
@@ -66,6 +69,7 @@ describe('KeycloakAuthGuard', () => {
 
   it('rejects when synced user is locked', async () => {
     const request = { user: { sub: 'kc-sub-1', email: 'a@b.com' } };
+
     usersRepository.findByKeycloakSub.mockResolvedValue({
       id: 'user-1',
       email: 'a@b.com',
@@ -80,6 +84,7 @@ describe('KeycloakAuthGuard', () => {
 
   it('rejects when matching email user is locked before linking keycloak sub', async () => {
     const request = { user: { sub: 'kc-new', email: 'existing@b.com' } };
+
     usersRepository.findByKeycloakSub.mockResolvedValue(null);
     usersRepository.count.mockResolvedValue(1);
     usersRepository.findByEmail.mockResolvedValue({

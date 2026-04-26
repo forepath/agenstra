@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { Server } from 'socket.io';
+
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
 
 /**
@@ -23,9 +24,12 @@ export class TicketBoardRealtimeService {
   emitToClient(clientId: string, event: keyof typeof TICKETS_BOARD_EVENTS | string, payload: unknown): void {
     if (!this.server) {
       this.logger.debug(`Skip emit ${event}: server not attached yet`);
+
       return;
     }
+
     const room = TicketBoardRealtimeService.clientRoom(clientId);
+
     this.server.to(room).emit(event, payload);
   }
 }

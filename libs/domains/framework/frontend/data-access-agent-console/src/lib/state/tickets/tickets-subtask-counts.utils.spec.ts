@@ -1,5 +1,5 @@
-import { EMPTY_TICKET_TASKS, type TicketResponseDto } from './tickets.types';
 import { computeDirectSubtaskCounts, enrichTicketsWithSubtaskCounts } from './tickets-subtask-counts.utils';
+import { EMPTY_TICKET_TASKS, type TicketResponseDto } from './tickets.types';
 
 describe('tickets-subtask-counts.utils', () => {
   const base = (over: Partial<TicketResponseDto>): TicketResponseDto => ({
@@ -27,6 +27,7 @@ describe('tickets-subtask-counts.utils', () => {
         base({ id: 'c', parentId: 'p', status: 'closed' }),
         base({ id: 'other', parentId: null, status: 'todo' }),
       ];
+
       expect(computeDirectSubtaskCounts(parent, list)).toEqual({ open: 1, done: 2 });
     });
 
@@ -39,6 +40,7 @@ describe('tickets-subtask-counts.utils', () => {
         ],
       });
       const list: TicketResponseDto[] = [parent];
+
       expect(computeDirectSubtaskCounts(parent, list)).toEqual({ open: 1, done: 1 });
     });
   });
@@ -50,6 +52,7 @@ describe('tickets-subtask-counts.utils', () => {
       const list = [parent, c1];
       const detail: TicketResponseDto = { ...parent, children: [c1] };
       const { list: outList, detail: outDetail } = enrichTicketsWithSubtaskCounts(list, detail);
+
       expect(outList.find((t) => t.id === 'p')?.subtaskCounts).toEqual({ open: 1, done: 0 });
       expect(outList.find((t) => t.id === 'c1')?.subtaskCounts).toEqual({ open: 0, done: 0 });
       expect(outDetail?.subtaskCounts).toEqual({ open: 1, done: 0 });

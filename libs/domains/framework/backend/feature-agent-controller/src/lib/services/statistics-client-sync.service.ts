@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 
@@ -21,6 +22,7 @@ export class StatisticsClientSyncService {
     try {
       this.logger.log('🔄 Syncing clients to statistics mirror table...');
       const clients = await this.clientsRepository.findAllForStatisticsSync();
+
       for (const client of clients) {
         await this.statisticsRepository.upsertStatisticsClient(client.id, {
           name: client.name,
@@ -28,6 +30,7 @@ export class StatisticsClientSyncService {
           authenticationType: client.authenticationType as AuthenticationType,
         });
       }
+
       this.logger.log(`✅ Statistics client sync completed: ${clients.length} client(s) synced`);
     } catch (error) {
       this.logger.error('❌ Failed to sync clients to statistics mirror table:', error);

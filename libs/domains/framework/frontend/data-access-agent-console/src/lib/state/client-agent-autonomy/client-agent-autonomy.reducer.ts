@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import type { ClientAgentAutonomyResponseDto } from './client-agent-autonomy.types';
+
 import {
   clearClientAgentAutonomy,
   clearClientAgentAutonomyError,
@@ -10,6 +10,7 @@ import {
   upsertClientAgentAutonomyFailure,
   upsertClientAgentAutonomySuccess,
 } from './client-agent-autonomy.actions';
+import type { ClientAgentAutonomyResponseDto } from './client-agent-autonomy.types';
 
 export interface ClientAgentAutonomyState {
   clientId: string | null;

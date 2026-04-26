@@ -2,6 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { NgcCookieConsentService } from 'ngx-cookieconsent';
 import { Subscription } from 'rxjs';
+
 import { cookieConfig } from './cookie-consent.config';
 
 @Component({
@@ -35,6 +36,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
     const initializingSub = this.cookieConsentService.initializing$.subscribe((event) => {
       this.sendConsentEvent(event.status);
     });
+
     this.subscriptions.add(initializingSub);
 
     // Subscribe to initialized$ to send initial consent status when service is ready
@@ -43,6 +45,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
       // Service is now initialized, check current status and send event
       try {
         const status = this.cookieConsentService.getStatus();
+
         // Convert status object to string
         if (status.allow) {
           this.sendConsentEvent('allow');
@@ -55,12 +58,14 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
         // Service not fully ready yet, will be handled by initializing$ or status check
       }
     });
+
     this.subscriptions.add(initializedSub);
 
     // Subscribe to statusChange$ to trigger our onStatusChange callback
     const statusChangeSub = this.cookieConsentService.statusChange$.subscribe((event) => {
       this.sendConsentEvent(event.status);
     });
+
     this.subscriptions.add(statusChangeSub);
 
     // Subscribe to revokeChoice$ to trigger our onRevokeChoice callback
@@ -74,6 +79,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
 
       win.dataLayer.push({ event: 'consent_revoked' });
     });
+
     this.subscriptions.add(revokeChoiceSub);
 
     // Subscribe to noCookieLaw$ to trigger our onNoCookieLaw callback
@@ -87,6 +93,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
 
       win.dataLayer.push({ event: 'consent_no_cookie_law', countryCode: event.countryCode, country: event.country });
     });
+
     this.subscriptions.add(noCookieLawSub);
   }
 
@@ -128,6 +135,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
 
     if (typeof window !== 'undefined' && win.cookieconsent) {
       const cookieconsent = win.cookieconsent;
+
       // Manually initialize with our config that includes callbacks
       cookieconsent.initialise(cookieConfig);
 

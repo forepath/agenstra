@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   checkAuthentication,
   loadUsers,
@@ -15,7 +16,6 @@ import { AuthenticationFacade } from './authentication.facade';
 describe('AuthenticationFacade', () => {
   let facade: AuthenticationFacade;
   let store: jest.Mocked<Store>;
-
   const createFacadeWithMock = (mockSelectReturn: unknown): AuthenticationFacade => {
     const mockStore = {
       select: jest.fn().mockReturnValue(of(mockSelectReturn)),
@@ -68,7 +68,7 @@ describe('AuthenticationFacade', () => {
     it('should expose isNotAuthenticated$ observable', (done) => {
       // isNotAuthenticated$ is a derived selector, so we need to mock it directly
       const mockStore = {
-        select: jest.fn((selector) => {
+        select: jest.fn((_) => {
           // Mock selectIsNotAuthenticated to return false (since it's !isAuthenticated)
           return of(false);
         }),

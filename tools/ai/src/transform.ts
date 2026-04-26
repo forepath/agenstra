@@ -1,4 +1,5 @@
 import * as path from 'path';
+
 import { copyOverrides, emitToolOutput } from './emitter';
 import { readContext } from './reader';
 import { getTransformer, mergeComponentsForTransformer } from './transformers';
@@ -45,24 +46,27 @@ export function transform(options: TransformOptions): TransformResult {
     strictValidation = true,
     returnOutputs = false,
   } = options;
-
   const errors: string[] = [];
   const results: TransformResult['results'] = [];
   const agenstraPath = source.endsWith('.agenstra') ? source : path.join(source, '.agenstra');
-
   let context;
+
   try {
     context = readContext(agenstraPath);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+
     errors.push(msg);
+
     return { success: false, results: [], errors };
   }
 
   const validation = validateContext(context);
   const hasErrors = validation.some((v) => v.level === 'error');
+
   if (hasErrors && strictValidation) {
     validation.filter((v) => v.level === 'error').forEach((v) => errors.push(v.message));
+
     return { success: false, results: [], errors };
   }
 
@@ -74,7 +78,6 @@ export function transform(options: TransformOptions): TransformResult {
     const mergedContext = mergeComponentsForTransformer({ ...context }, transformer);
     const output = transformer.transform(mergedContext);
     const fileCount = output.size;
-
     const merged = transformer.needsFallbackMerge();
     const resultEntry: TransformResult['results'][0] = {
       tool: toolName,
@@ -82,9 +85,11 @@ export function transform(options: TransformOptions): TransformResult {
       fileCount,
       merged: merged.length > 0 ? merged : undefined,
     };
+
     if (returnOutputs) {
       resultEntry.output = output;
     }
+
     results.push(resultEntry);
 
     if (!dryRun && !returnOutputs && fileCount > 0) {
@@ -94,6 +99,7 @@ export function transform(options: TransformOptions): TransformResult {
         copyOverrides(agenstraPath, toolName, baseOut);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+
         errors.push(`Failed to write ${toolName} output: ${msg}`);
       }
     }

@@ -1,11 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { ProviderRegistryService } from '../services/provider-registry.service';
+
 import { ServicePlansController } from './service-plans.controller';
 
 describe('ServicePlansController', () => {
@@ -30,13 +32,11 @@ describe('ServicePlansController', () => {
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: new Date('2024-01-02T00:00:00.000Z'),
   };
-
   const schemaWithRegionEnum = {
     properties: {
       region: { type: 'string', enum: ['fsn1', 'nbg1'] },
     },
   };
-
   const serviceTypesRepoStub = {
     findByIdOrThrow: jest.fn().mockResolvedValue({
       id: basePlanRow.serviceTypeId,
@@ -44,7 +44,6 @@ describe('ServicePlansController', () => {
       configSchema: schemaWithRegionEnum,
     }),
   };
-
   const providerRegistryStub = {
     getProviders: jest.fn().mockReturnValue([]),
   };
@@ -82,6 +81,7 @@ describe('ServicePlansController', () => {
     });
     const controller = moduleRef.get(ServicePlansController);
     const result = await controller.list();
+
     expect(result[0].orderingHighlights).toEqual([{ icon: 'star', text: 'Feature A' }]);
     expect(result[0].allowCustomerLocationSelection).toBe(false);
   });
@@ -97,6 +97,7 @@ describe('ServicePlansController', () => {
     });
     const controller = moduleRef.get(ServicePlansController);
     const result = await controller.get('11111111-1111-4111-8111-111111111111');
+
     expect(result.orderingHighlights).toEqual([{ icon: 'star', text: 'Feature A' }]);
     expect(result.allowCustomerLocationSelection).toBe(false);
   });
@@ -115,6 +116,7 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
+
     await controller.create({
       serviceTypeId: basePlanRow.serviceTypeId,
       name: 'Basic',
@@ -139,6 +141,7 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
+
     await controller.create({
       serviceTypeId: basePlanRow.serviceTypeId,
       name: 'Basic',
@@ -159,6 +162,7 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
+
     await controller.update('11111111-1111-4111-8111-111111111111', { name: 'Renamed' } as UpdateServicePlanDto);
     expect(update).toHaveBeenCalledWith(
       '11111111-1111-4111-8111-111111111111',
@@ -177,6 +181,7 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
+
     await controller.update('11111111-1111-4111-8111-111111111111', { orderingHighlights: [] } as UpdateServicePlanDto);
     expect(update).toHaveBeenCalledWith(
       '11111111-1111-4111-8111-111111111111',
@@ -199,6 +204,7 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
+
     await expect(
       controller.create({
         serviceTypeId: basePlanRow.serviceTypeId,
@@ -226,6 +232,7 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
+
     await controller.create({
       serviceTypeId: basePlanRow.serviceTypeId,
       name: 'Basic',
@@ -264,6 +271,7 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
+
     await controller.create({
       serviceTypeId: basePlanRow.serviceTypeId,
       name: 'Basic',

@@ -1,4 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
+import type { CustomerProfileResponse } from '../../types/billing.types';
+
 import {
   clearCustomerProfile,
   loadCustomerProfile,
@@ -8,7 +11,6 @@ import {
   updateCustomerProfileFailure,
   updateCustomerProfileSuccess,
 } from './customer-profile.actions';
-import type { CustomerProfileResponse } from '../../types/billing.types';
 
 export interface CustomerProfileState {
   profile: CustomerProfileResponse | null;

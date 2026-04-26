@@ -1,8 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
+
 import { DockerService } from './docker.service';
 
 /**
@@ -40,6 +42,7 @@ export class AgentEnvironmentVariablesService {
 
     this.logger.debug(`Persisted environment variable for agent ${agentId}`);
     await this.reconcileEnvironmentVariables(agentId);
+
     return environmentVariableEntity;
   }
 
@@ -56,7 +59,9 @@ export class AgentEnvironmentVariablesService {
     content: string,
   ): Promise<AgentEnvironmentVariableEntity> {
     const updatedVariable = await this.agentEnvironmentVariablesRepository.update(id, { variable, content });
+
     await this.reconcileEnvironmentVariables(updatedVariable.agentId);
+
     return updatedVariable;
   }
 
@@ -102,8 +107,10 @@ export class AgentEnvironmentVariablesService {
    */
   async deleteAllEnvironmentVariables(agentId: string): Promise<number> {
     const deletedCount = await this.agentEnvironmentVariablesRepository.deleteByAgentId(agentId);
+
     this.logger.log(`Deleted ${deletedCount} environment variables for agent ${agentId}`);
     await this.reconcileEnvironmentVariables(agentId);
+
     return deletedCount;
   }
 
@@ -120,14 +127,15 @@ export class AgentEnvironmentVariablesService {
 
       if (!agent.containerId) {
         this.logger.warn(`Agent ${agentId} has no container ID, skipping environment variable reconciliation`);
+
         return;
       }
 
       // Get all environment variables for the agent
       const environmentVariables = await this.agentEnvironmentVariablesRepository.findAllByAgentId(agentId);
-
       // Build the environment object from the variables
       const env: Record<string, string> = {};
+
       for (const variable of environmentVariables) {
         env[variable.variable] = variable.content ?? '';
       }
@@ -148,7 +156,9 @@ export class AgentEnvironmentVariablesService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error reconciling environment variables for agent ${agentId}: ${err.message}`, err.stack);
       throw error;
     }

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PasswordService } from './password.service';
 import * as bcrypt from 'bcrypt';
+
+import { PasswordService } from './password.service';
 
 jest.mock('bcrypt');
 
@@ -24,6 +25,7 @@ describe('PasswordService', () => {
     it('should hash password with bcrypt', async () => {
       const password = 'test-password';
       const hashedPassword = 'hashed-password';
+
       mockedBcrypt.hash.mockResolvedValue(hashedPassword as never);
 
       const result = await service.hashPassword(password);
@@ -37,6 +39,7 @@ describe('PasswordService', () => {
     it('should return true when password matches', async () => {
       const password = 'test-password';
       const hash = 'hashed-password';
+
       mockedBcrypt.compare.mockResolvedValue(true as never);
 
       const result = await service.verifyPassword(password, hash);
@@ -48,6 +51,7 @@ describe('PasswordService', () => {
     it('should return false when password does not match', async () => {
       const password = 'wrong-password';
       const hash = 'hashed-password';
+
       mockedBcrypt.compare.mockResolvedValue(false as never);
 
       const result = await service.verifyPassword(password, hash);

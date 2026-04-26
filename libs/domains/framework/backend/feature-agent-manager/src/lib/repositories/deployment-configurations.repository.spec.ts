@@ -1,14 +1,13 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
+
 import { DeploymentConfigurationsRepository } from './deployment-configurations.repository';
 
 describe('DeploymentConfigurationsRepository', () => {
   let repository: DeploymentConfigurationsRepository;
-  let typeOrmRepository: Repository<DeploymentConfigurationEntity>;
-
   const mockConfiguration: DeploymentConfigurationEntity = {
     id: 'config-uuid',
     agentId: 'agent-uuid',
@@ -22,7 +21,6 @@ describe('DeploymentConfigurationsRepository', () => {
     updatedAt: new Date('2024-01-01'),
     agent: {} as any,
   };
-
   const mockTypeOrmRepository = {
     findOne: jest.fn(),
     create: jest.fn(),
@@ -42,9 +40,6 @@ describe('DeploymentConfigurationsRepository', () => {
     }).compile();
 
     repository = module.get<DeploymentConfigurationsRepository>(DeploymentConfigurationsRepository);
-    typeOrmRepository = module.get<Repository<DeploymentConfigurationEntity>>(
-      getRepositoryToken(DeploymentConfigurationEntity),
-    );
   });
 
   afterEach(() => {
@@ -113,6 +108,7 @@ describe('DeploymentConfigurationsRepository', () => {
         providerToken: 'token',
       };
       const createdConfig = { ...mockConfiguration, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdConfig);
       mockTypeOrmRepository.save.mockResolvedValue(createdConfig);
 
@@ -128,6 +124,7 @@ describe('DeploymentConfigurationsRepository', () => {
     it('should update existing configuration', async () => {
       const updateData = { repositoryId: 'owner/newrepo' };
       const updatedConfig = { ...mockConfiguration, ...updateData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(mockConfiguration);
       mockTypeOrmRepository.save.mockResolvedValue(updatedConfig);
 
@@ -147,6 +144,7 @@ describe('DeploymentConfigurationsRepository', () => {
         providerToken: 'token',
       };
       const createdConfig = { ...mockConfiguration, ...createData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(null);
       mockTypeOrmRepository.create.mockReturnValue(createdConfig);
       mockTypeOrmRepository.save.mockResolvedValue(createdConfig);
@@ -160,6 +158,7 @@ describe('DeploymentConfigurationsRepository', () => {
     it('should update existing configuration when exists', async () => {
       const updateData = { repositoryId: 'owner/newrepo' };
       const updatedConfig = { ...mockConfiguration, ...updateData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(mockConfiguration);
       mockTypeOrmRepository.save.mockResolvedValue(updatedConfig);
 

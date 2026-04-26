@@ -1,3 +1,4 @@
+import { UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -14,7 +15,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+
 import { CreateFilterRuleDto } from '../dto/filter-rules/create-filter-rule.dto';
 import { FilterRuleResponseDto } from '../dto/filter-rules/filter-rule-response.dto';
 import { UpdateFilterRuleDto } from '../dto/filter-rules/update-filter-rule.dto';
@@ -26,6 +27,7 @@ export class FilterRulesController {
 
   private assertAdmin(req?: RequestWithUser): void {
     const u = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!u.isApiKeyAuth && u.userRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Admin only');
     }
@@ -38,6 +40,7 @@ export class FilterRulesController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<FilterRuleResponseDto[]> {
     this.assertAdmin(req);
+
     return await this.filterRulesService.findAll(limit ?? 10, offset ?? 0);
   }
 
@@ -47,6 +50,7 @@ export class FilterRulesController {
     @Req() req: RequestWithUser,
   ): Promise<FilterRuleResponseDto> {
     this.assertAdmin(req);
+
     return await this.filterRulesService.findOne(id);
   }
 
@@ -54,6 +58,7 @@ export class FilterRulesController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateFilterRuleDto, @Req() req: RequestWithUser): Promise<FilterRuleResponseDto> {
     this.assertAdmin(req);
+
     return await this.filterRulesService.create(dto);
   }
 
@@ -64,6 +69,7 @@ export class FilterRulesController {
     @Req() req: RequestWithUser,
   ): Promise<FilterRuleResponseDto> {
     this.assertAdmin(req);
+
     return await this.filterRulesService.update(id, dto);
   }
 

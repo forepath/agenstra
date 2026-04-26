@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { provideLocale } from '@forepath/framework/frontend/util-configuration';
 import { cookieConfig } from '@forepath/framework/frontend/util-cookie-consent';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
+
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {

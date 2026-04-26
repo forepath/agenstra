@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { ChatFilter, FilterContext, FilterDirection, FilterResult } from '../chat-filter.interface';
 
 /**

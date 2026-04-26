@@ -1,3 +1,4 @@
+import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -9,10 +10,9 @@ import {
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
-import { KeycloakRoles, UsersRoles, UserRole } from '@forepath/identity/backend';
+
 import { CreateServiceTypeDto } from '../dto/create-service-type.dto';
 import { ProviderDetailDto } from '../dto/provider-detail.dto';
 import { ServerTypeDto } from '../dto/server-type.dto';
@@ -55,12 +55,14 @@ export class ServiceTypesController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<ServiceTypeResponseDto[]> {
     const rows = await this.serviceTypesRepository.findAll(limit ?? 10, offset ?? 0);
+
     return rows.map((row) => this.mapToResponse(row));
   }
 
   @Get(':id')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServiceTypeResponseDto> {
     const row = await this.serviceTypesRepository.findByIdOrThrow(id);
+
     return this.mapToResponse(row);
   }
 
@@ -76,6 +78,7 @@ export class ServiceTypesController {
       configSchema: dto.configSchema ?? {},
       isActive: dto.isActive ?? true,
     });
+
     return this.mapToResponse(row);
   }
 
@@ -93,6 +96,7 @@ export class ServiceTypesController {
       configSchema: dto.configSchema,
       isActive: dto.isActive,
     });
+
     return this.mapToResponse(row);
   }
 

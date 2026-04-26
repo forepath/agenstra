@@ -40,7 +40,6 @@ import type { AgentResponseDto, ContainerType } from './agents.types';
 describe('Agents Selectors', () => {
   const clientId = 'client-1';
   const clientId2 = 'client-2';
-
   const mockAgent: AgentResponseDto = {
     id: 'agent-1',
     name: 'Test Agent',
@@ -50,7 +49,6 @@ describe('Agents Selectors', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockAgent2: AgentResponseDto = {
     id: 'agent-2',
     name: 'Test Agent 2',
@@ -59,7 +57,6 @@ describe('Agents Selectors', () => {
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
   };
-
   const createState = (overrides?: Partial<AgentsState>): AgentsState => ({
     ...initialAgentsState,
     ...overrides,

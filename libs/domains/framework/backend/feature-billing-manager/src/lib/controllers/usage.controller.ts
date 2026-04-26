@@ -1,8 +1,9 @@
 import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
+
 import { CreateUsageRecordDto } from '../dto/create-usage-record.dto';
 import { UsageSummaryDto } from '../dto/usage-summary.dto';
-import { UsageService } from '../services/usage.service';
 import { SubscriptionService } from '../services/subscription.service';
+import { UsageService } from '../services/usage.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('usage')
@@ -18,11 +19,14 @@ export class UsageController {
     @Req() req?: RequestWithUser,
   ): Promise<UsageSummaryDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     await this.subscriptionService.getSubscription(subscriptionId, userInfo.userId);
     const usage = await this.usageService.getLatestUsage(subscriptionId);
+
     if (!usage) {
       return {
         subscriptionId,
@@ -31,6 +35,7 @@ export class UsageController {
         usagePayload: {},
       };
     }
+
     return {
       subscriptionId: usage.subscriptionId,
       periodStart: usage.periodStart,
@@ -42,9 +47,11 @@ export class UsageController {
   @Post('record')
   async record(@Body() body: CreateUsageRecordDto, @Req() req?: RequestWithUser) {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     await this.subscriptionService.getSubscription(body.subscriptionId, userInfo.userId);
     const record = await this.usageService.createUsage({
       subscriptionId: body.subscriptionId,
@@ -53,6 +60,7 @@ export class UsageController {
       usagePayload: body.usagePayload ?? {},
       usageSource: 'dataset',
     });
+
     return { id: record.id };
   }
 }

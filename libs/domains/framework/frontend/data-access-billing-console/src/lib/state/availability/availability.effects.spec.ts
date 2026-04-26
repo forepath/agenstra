@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { AvailabilityService } from '../../services/availability.service';
+import type { AvailabilityResponse, PricingPreviewResponse } from '../../types/billing.types';
+
 import {
   checkAvailability,
   checkAvailabilityAlternatives,
@@ -15,21 +18,17 @@ import {
   previewPricingSuccess,
 } from './availability.actions';
 import { checkAvailability$, checkAvailabilityAlternatives$, previewPricing$ } from './availability.effects';
-import type { AvailabilityResponse, PricingPreviewResponse } from '../../types/billing.types';
 
 describe('AvailabilityEffects', () => {
   let actions$: Actions;
   let availabilityService: jest.Mocked<AvailabilityService>;
-
   const mockAvailability: AvailabilityResponse = { isAvailable: true, reason: 'OK' };
-
   const mockPricing: PricingPreviewResponse = {
     basePrice: 100,
     marginPercent: 10,
     marginFixed: 5,
     totalPrice: 115,
   };
-
   const mockCheck = { serviceTypeId: 'st-1', region: 'eu', serverType: 'small' };
 
   beforeEach(() => {
@@ -96,6 +95,7 @@ describe('AvailabilityEffects', () => {
   describe('previewPricing$', () => {
     it('should return previewPricingSuccess on success', (done) => {
       const preview = { planId: 'plan-1' };
+
       actions$ = of(previewPricing({ preview }));
       availabilityService.previewPricing.mockReturnValue(of(mockPricing));
 

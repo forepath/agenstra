@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+
 import { OPEN_OVERDUE_INVOICE_STATUS_IDS } from '../constants/invoice-status.constants';
 import { InvoiceRefEntity } from '../entities/invoice-ref.entity';
 
@@ -61,9 +62,9 @@ export class InvoiceRefsRepository {
       .select('COUNT(ref.id)', 'count')
       .addSelect('COALESCE(SUM(ref.balance), 0)', 'total')
       .getRawOne<{ count: string; total: string }>();
-
     const count = result?.count != null ? parseInt(String(result.count), 10) : 0;
     const totalBalance = result?.total != null ? parseFloat(String(result.total)) : 0;
+
     return { count, totalBalance };
   }
 
@@ -72,15 +73,19 @@ export class InvoiceRefsRepository {
     dto: Partial<Pick<InvoiceRefEntity, 'status' | 'preAuthUrl' | 'invoiceNumber' | 'balance' | 'dueDate'>>,
   ): Promise<InvoiceRefEntity> {
     const entity = await this.repository.findOne({ where: { id } });
+
     if (!entity) {
       throw new NotFoundException(`Invoice ref ${id} not found`);
     }
+
     Object.assign(entity, dto);
+
     return await this.repository.save(entity);
   }
 
   async create(dto: Partial<InvoiceRefEntity>): Promise<InvoiceRefEntity> {
     const entity = this.repository.create(dto);
+
     return await this.repository.save(entity);
   }
 }

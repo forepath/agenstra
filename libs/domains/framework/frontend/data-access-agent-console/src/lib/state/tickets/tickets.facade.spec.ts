@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   addTicketComment,
   clearTicketsError,
@@ -23,7 +24,6 @@ import {
 describe('TicketsFacade', () => {
   let facade: TicketsFacade;
   let store: jest.Mocked<Store>;
-
   const mockTicket: TicketResponseDto = {
     id: 'ticket-1',
     clientId: 'client-1',
@@ -35,14 +35,12 @@ describe('TicketsFacade', () => {
     updatedAt: '2024-01-01T00:00:00Z',
     tasks: EMPTY_TICKET_TASKS,
   };
-
   const mockBoardRows = {
     draft: [{ ticket: mockTicket, depth: 0 }],
     todo: [] as { ticket: TicketResponseDto; depth: number }[],
     in_progress: [] as { ticket: TicketResponseDto; depth: number }[],
     prototype: [] as { ticket: TicketResponseDto; depth: number }[],
   };
-
   const createFacadeWithMock = <T>(mockSelectReturn: T): TicketsFacade => {
     const mockStore = {
       select: jest.fn().mockReturnValue(of(mockSelectReturn)),
@@ -73,6 +71,7 @@ describe('TicketsFacade', () => {
   describe('state observables', () => {
     it('exposes tickets$', (done) => {
       const list = [mockTicket];
+
       createFacadeWithMock(list).tickets$.subscribe((result) => {
         expect(result).toEqual(list);
         done();
@@ -116,6 +115,7 @@ describe('TicketsFacade', () => {
           createdAt: '2024-01-01T00:00:00Z',
         },
       ];
+
       createFacadeWithMock(comments).comments$.subscribe((result) => {
         expect(result).toEqual(comments);
         done();
@@ -133,6 +133,7 @@ describe('TicketsFacade', () => {
           payload: {},
         },
       ];
+
       createFacadeWithMock(activity).activity$.subscribe((result) => {
         expect(result).toEqual(activity);
         done();
@@ -164,6 +165,7 @@ describe('TicketsFacade', () => {
   describe('action methods', () => {
     it('dispatches loadTickets with params', () => {
       const params = { clientId: 'client-1', parentId: null };
+
       facade.loadTickets(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadTickets({ params }));
     });
@@ -185,12 +187,14 @@ describe('TicketsFacade', () => {
 
     it('dispatches createTicket', () => {
       const dto: CreateTicketDto = { clientId: 'c1', title: 'New', status: 'todo' };
+
       facade.create(dto);
       expect(store.dispatch).toHaveBeenCalledWith(createTicket({ dto }));
     });
 
     it('dispatches updateTicket', () => {
       const dto: UpdateTicketDto = { status: 'done' };
+
       facade.update('ticket-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(updateTicket({ id: 'ticket-1', dto }));
     });

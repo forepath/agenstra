@@ -7,11 +7,13 @@ import {
   CreateAgentResponseDto,
   UpdateAgentDto,
 } from '@forepath/framework/backend/feature-agent-manager';
-import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AuthenticationType, ClientAgentCredentialsService } from '@forepath/identity/backend';
-import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+
+import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
@@ -44,9 +46,11 @@ export class ClientAgentProxyService {
       if (!clientEntity.apiKey) {
         throw new BadRequestException('API key is not configured for this client');
       }
+
       return `Bearer ${clientEntity.apiKey}`;
     } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
       const token = await this.clientsService.getAccessToken(clientId);
+
       return `Bearer ${token}`;
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
@@ -61,6 +65,7 @@ export class ClientAgentProxyService {
   private buildAgentApiUrl(endpoint: string): string {
     // Remove trailing slash if present
     const baseUrl = endpoint.replace(/\/$/, '');
+
     // Ensure /api/agents path
     return `${baseUrl}/api/agents`;
   }
@@ -73,6 +78,7 @@ export class ClientAgentProxyService {
   private buildConfigApiUrl(endpoint: string): string {
     // Remove trailing slash if present
     const baseUrl = endpoint.replace(/\/$/, '');
+
     // Ensure /api/config path
     return `${baseUrl}/api/config`;
   }
@@ -113,6 +119,7 @@ export class ClientAgentProxyService {
       // Handle error responses
       if (response.status >= 400) {
         const errorMessage = (response.data as { message?: string })?.message || 'Request failed';
+
         this.logger.error(
           `Request to ${baseUrl}${config.url || ''} failed with status ${response.status}: ${errorMessage}`,
         );
@@ -133,9 +140,11 @@ export class ClientAgentProxyService {
       }
 
       const axiosError = error as AxiosError;
+
       if (axiosError.response) {
         const errorMessage =
           (axiosError.response.data as { message?: string })?.message || axiosError.message || 'Request failed';
+
         this.logger.error(`Request to ${baseUrl}${config.url || ''} failed: ${errorMessage}`, axiosError.response.data);
 
         if (axiosError.response.status === 404) {
@@ -155,6 +164,7 @@ export class ClientAgentProxyService {
             'Request timed out after 10 minutes. The operation may still be processing on the remote server.',
           );
         }
+
         this.logger.error(`No response received from ${baseUrl}${config.url || ''}: ${axiosError.message}`);
         throw new BadRequestException(`Failed to connect to client endpoint: ${axiosError.message}`);
       } else {
@@ -219,10 +229,12 @@ export class ClientAgentProxyService {
       method: 'POST',
       data: createAgentDto,
     });
+
     // Persist credentials for socket proxying
     if (result?.id && result?.password) {
       await this.clientAgentCredentialsService.saveCredentials(clientId, result.id, result.password);
     }
+
     if (result?.id) {
       this.statisticsService
         .recordEntityCreated(
@@ -239,6 +251,7 @@ export class ClientAgentProxyService {
         )
         .catch(() => undefined);
     }
+
     return result;
   }
 
@@ -260,6 +273,7 @@ export class ClientAgentProxyService {
       url: `/${agentId}`,
       data: updateAgentDto,
     });
+
     this.statisticsService
       .recordEntityUpdated(
         StatisticsEntityType.AGENT,
@@ -274,6 +288,7 @@ export class ClientAgentProxyService {
         userId,
       )
       .catch(() => undefined);
+
     return result;
   }
 
@@ -364,6 +379,7 @@ export class ClientAgentProxyService {
       // Handle error responses
       if (response.status >= 400) {
         this.logger.warn(`Failed to fetch config from ${baseUrl} for client ${clientId}: status ${response.status}`);
+
         return undefined;
       }
 
@@ -371,6 +387,7 @@ export class ClientAgentProxyService {
     } catch (error) {
       // Log but don't throw - config is optional
       const axiosError = error as AxiosError;
+
       if (axiosError.response) {
         this.logger.warn(
           `Failed to fetch config for client ${clientId}: ${axiosError.response.status} ${axiosError.message}`,
@@ -380,6 +397,7 @@ export class ClientAgentProxyService {
       } else {
         this.logger.warn(`Error setting up config request for client ${clientId}: ${axiosError.message}`);
       }
+
       return undefined;
     }
   }

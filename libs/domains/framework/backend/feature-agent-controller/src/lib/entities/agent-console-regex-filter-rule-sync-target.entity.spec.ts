@@ -1,5 +1,5 @@
-import { AgentConsoleRegexFilterRuleEntity } from './agent-console-regex-filter-rule.entity';
 import { AgentConsoleRegexFilterRuleSyncTargetEntity } from './agent-console-regex-filter-rule-sync-target.entity';
+import { AgentConsoleRegexFilterRuleEntity } from './agent-console-regex-filter-rule.entity';
 
 describe('AgentConsoleRegexFilterRuleSyncTargetEntity', () => {
   it('creates an instance', () => {
@@ -8,6 +8,7 @@ describe('AgentConsoleRegexFilterRuleSyncTargetEntity', () => {
 
   it('supports sync fields', () => {
     const t = new AgentConsoleRegexFilterRuleSyncTargetEntity();
+
     t.id = 'target-uuid';
     t.ruleId = 'rule-uuid';
     t.clientId = 'client-uuid';
@@ -19,6 +20,7 @@ describe('AgentConsoleRegexFilterRuleSyncTargetEntity', () => {
     t.updatedAt = new Date();
 
     const rule = new AgentConsoleRegexFilterRuleEntity();
+
     rule.id = 'rule-uuid';
     t.rule = rule;
 
@@ -29,6 +31,7 @@ describe('AgentConsoleRegexFilterRuleSyncTargetEntity', () => {
 
   it('supports failed status with error text', () => {
     const t = new AgentConsoleRegexFilterRuleSyncTargetEntity();
+
     t.syncStatus = 'failed';
     t.lastError = 'timeout';
     expect(t.lastError).toBe('timeout');

@@ -1,8 +1,10 @@
+import { PassThrough } from 'stream';
+
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DockerService } from './docker.service';
 import Docker = require('dockerode');
-import { PassThrough } from 'stream';
+
+import { DockerService } from './docker.service';
 
 // Mock dockerode
 jest.mock('dockerode');
@@ -46,6 +48,7 @@ describe('DockerService', () => {
         if (event === 'end') {
           setTimeout(() => callback(), 10);
         }
+
         return mockStream;
       }),
       once: jest.fn(),
@@ -132,6 +135,7 @@ describe('DockerService', () => {
       (mockDocker as any).pull = jest.fn((image: string, cb: (err: unknown, stream: any) => void) => {
         // Simulate immediate success
         const fakeStream = {} as any;
+
         cb(null, fakeStream);
         // Simulate followProgress callback
         (mockDocker as any).modem = {
@@ -183,9 +187,12 @@ describe('DockerService', () => {
     it('should use env default image when image not provided', async () => {
       (mockDocker as any).createContainer = jest.fn().mockResolvedValue(createdContainer);
       const original = process.env.AGENT_DEFAULT_IMAGE;
+
       process.env.AGENT_DEFAULT_IMAGE = 'env/image:latest';
+
       try {
         const result = await service.createContainer({ volumes: [], ports: [] });
+
         expect((mockDocker as any).pull).toHaveBeenCalledWith('env/image:latest', expect.any(Function));
         expect(result).toBe('abc123');
       } finally {
@@ -200,6 +207,7 @@ describe('DockerService', () => {
       (mockDocker as any).createContainer = jest.fn().mockResolvedValue(createdContainer);
 
       const result = await service.createContainer({ image: 'local/image:tag' });
+
       expect((mockDocker as any).createContainer).toHaveBeenCalled();
       expect(result).toBe('abc123');
     });
@@ -570,6 +578,7 @@ describe('DockerService', () => {
 
     it('should propagate stop errors that are not 304 or 404', async () => {
       const stopError = new Error('Stop failed');
+
       mockContainer.stop.mockRejectedValue(stopError);
 
       await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Stop failed');
@@ -577,6 +586,7 @@ describe('DockerService', () => {
 
     it('should handle createContainer errors', async () => {
       const createError = new Error('Create failed');
+
       (mockDocker as any).createContainer.mockRejectedValue(createError);
 
       await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Create failed');
@@ -584,6 +594,7 @@ describe('DockerService', () => {
 
     it('should handle start errors', async () => {
       const startError = new Error('Start failed');
+
       newContainer.start.mockRejectedValue(startError);
 
       await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Start failed');
@@ -599,14 +610,17 @@ describe('DockerService', () => {
   describe('execCommandStream', () => {
     it('should stream demuxed stdout and stderr chunks', async () => {
       const containerId = 'test-container-id';
+
       mockContainer.inspect.mockResolvedValue({ Id: containerId });
 
       const hijacked = new PassThrough() as unknown as NodeJS.ReadWriteStream;
+
       mockExec.start = jest.fn().mockResolvedValue(hijacked);
       mockContainer.exec = jest.fn().mockResolvedValue(mockExec);
 
       let capturedStdout: PassThrough | null = null;
       let capturedStderr: PassThrough | null = null;
+
       mockContainer.modem.demuxStream = jest.fn((_stream: unknown, stdout: PassThrough, stderr: PassThrough) => {
         capturedStdout = stdout;
         capturedStderr = stderr;
@@ -614,7 +628,6 @@ describe('DockerService', () => {
 
       const received: Array<{ stream: 'stdout' | 'stderr'; chunk: string }> = [];
       const iter = service.execCommandStream(containerId, 'echo hello', 'input');
-
       const consume = (async () => {
         for await (const item of iter) {
           received.push(item);
@@ -648,6 +661,7 @@ describe('DockerService', () => {
       mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
 
       const iter = service.execCommandStream('missing', 'echo hello');
+
       await expect(
         (async () => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -716,6 +730,7 @@ describe('DockerService', () => {
         State: { Running: true },
       });
       const stopError = new Error('Stop failed') as any;
+
       stopError.statusCode = 500;
       mockContainer.stop.mockRejectedValue(stopError);
       mockContainer.remove.mockResolvedValue(undefined);
@@ -731,6 +746,7 @@ describe('DockerService', () => {
         State: { Running: true },
       });
       const stopError = new Error('Container already stopped') as any;
+
       stopError.statusCode = 409;
       mockContainer.stop.mockRejectedValue(stopError);
       mockContainer.remove.mockResolvedValue(undefined);
@@ -746,6 +762,7 @@ describe('DockerService', () => {
         State: { Running: false },
       });
       const removeError = new Error('Container not found') as any;
+
       removeError.statusCode = 404;
       mockContainer.remove.mockRejectedValue(removeError);
 
@@ -759,6 +776,7 @@ describe('DockerService', () => {
       });
       mockContainer.stop.mockResolvedValue(undefined);
       const removeError = new Error('Container is running') as any;
+
       removeError.statusCode = 409;
       mockContainer.remove.mockRejectedValueOnce(removeError).mockResolvedValueOnce(undefined);
 
@@ -775,8 +793,10 @@ describe('DockerService', () => {
       });
       mockContainer.stop.mockResolvedValue(undefined);
       const removeError = new Error('Container is running') as any;
+
       removeError.statusCode = 409;
       const forceError = new Error('Force remove failed') as any;
+
       mockContainer.remove.mockRejectedValueOnce(removeError).mockRejectedValueOnce(forceError);
 
       await expect(service.deleteContainer(containerId)).rejects.toThrow('Force remove failed');
@@ -788,6 +808,7 @@ describe('DockerService', () => {
         State: { Running: false },
       });
       const removeError = new Error('Remove failed') as any;
+
       removeError.statusCode = 500;
       mockContainer.remove.mockRejectedValue(removeError);
 
@@ -796,6 +817,7 @@ describe('DockerService', () => {
 
     it('should handle container inspection errors other than 404', async () => {
       const error = new Error('Docker daemon error') as any;
+
       error.statusCode = 500;
       mockContainer.inspect.mockRejectedValue(error);
 
@@ -841,6 +863,7 @@ describe('DockerService', () => {
 
     it('should create a network and attach containers', async () => {
       const containerIds = ['container-1', 'container-2'];
+
       mockNetwork.connect.mockResolvedValue(undefined);
 
       const result = await service.createNetwork({ name: networkName, containerIds });
@@ -858,6 +881,7 @@ describe('DockerService', () => {
     it('should continue attaching containers if one fails', async () => {
       const containerIds = ['container-1', 'container-2', 'container-3'];
       const connectError = new Error('Connection failed') as any;
+
       connectError.statusCode = 500;
       mockNetwork.connect
         .mockResolvedValueOnce(undefined)
@@ -888,6 +912,7 @@ describe('DockerService', () => {
 
     it('should handle network creation errors', async () => {
       const createError = new Error('Network creation failed');
+
       (mockDocker as any).createNetwork.mockRejectedValue(createError);
 
       await expect(service.createNetwork({ name: networkName })).rejects.toThrow('Network creation failed');
@@ -984,6 +1009,7 @@ describe('DockerService', () => {
         },
       });
       const disconnectError = new Error('Disconnect failed') as any;
+
       disconnectError.statusCode = 500;
       mockNetwork.disconnect.mockResolvedValueOnce(undefined).mockRejectedValueOnce(disconnectError);
       mockNetwork.remove.mockResolvedValue(undefined);
@@ -1007,6 +1033,7 @@ describe('DockerService', () => {
         },
       });
       const disconnectError = new Error('Container not found') as any;
+
       disconnectError.statusCode = 404;
       mockNetwork.disconnect.mockRejectedValue(disconnectError);
       mockNetwork.remove.mockResolvedValue(undefined);
@@ -1022,6 +1049,7 @@ describe('DockerService', () => {
         Containers: {},
       });
       const removeError = new Error('Network not found') as any;
+
       removeError.statusCode = 404;
       mockNetwork.remove.mockRejectedValue(removeError);
 
@@ -1034,6 +1062,7 @@ describe('DockerService', () => {
         Containers: {},
       });
       const removeError = new Error('Remove failed') as any;
+
       removeError.statusCode = 500;
       mockNetwork.remove.mockRejectedValue(removeError);
 
@@ -1042,6 +1071,7 @@ describe('DockerService', () => {
 
     it('should handle network inspection errors other than 404', async () => {
       const error = new Error('Docker daemon error') as any;
+
       error.statusCode = 500;
       mockNetwork.inspect.mockRejectedValue(error);
 
@@ -1069,6 +1099,7 @@ describe('DockerService', () => {
       mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
 
       const logsGenerator = service.getContainerLogs(containerId);
+
       await expect(async () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of logsGenerator) {
@@ -1080,12 +1111,14 @@ describe('DockerService', () => {
 
     it('should yield historical logs first', async () => {
       const historicalLogs = Buffer.from('line1\nline2\nline3\n');
+
       mockContainer.inspect.mockResolvedValue({});
       mockContainer.logs
         .mockResolvedValueOnce(historicalLogs) // Historical logs
         .mockResolvedValueOnce(Buffer.from('')); // Live logs (empty buffer)
 
       const logs: string[] = [];
+
       for await (const line of service.getContainerLogs(containerId)) {
         logs.push(line);
       }
@@ -1112,6 +1145,7 @@ describe('DockerService', () => {
       mockContainer.logs.mockResolvedValueOnce(historicalLogs).mockReturnValueOnce(mockStream as any);
 
       const logs: string[] = [];
+
       for await (const line of service.getContainerLogs(containerId)) {
         logs.push(line);
       }
@@ -1139,6 +1173,7 @@ describe('DockerService', () => {
       mockContainer.logs.mockResolvedValueOnce(historicalLogs).mockReturnValueOnce(mockStream as any);
 
       const logs: string[] = [];
+
       for await (const line of service.getContainerLogs(containerId)) {
         logs.push(line);
       }
@@ -1161,6 +1196,7 @@ describe('DockerService', () => {
       mockContainer.logs.mockResolvedValueOnce(historicalLogs).mockReturnValueOnce(mockStream as any);
 
       const logs: string[] = [];
+
       for await (const line of service.getContainerLogs(containerId)) {
         logs.push(line);
       }
@@ -1181,6 +1217,7 @@ describe('DockerService', () => {
       mockContainer.logs.mockResolvedValueOnce(historicalLogs).mockReturnValueOnce(mockStream as any);
 
       const logs: string[] = [];
+
       for await (const line of service.getContainerLogs(containerId)) {
         logs.push(line);
       }
@@ -1197,6 +1234,7 @@ describe('DockerService', () => {
         [Symbol.asyncIterator]: async function* () {
           yield Buffer.from('line1\n');
           const error = new Error('Stream error') as any;
+
           error.code = 'ECONNRESET';
           throw error;
         },
@@ -1206,6 +1244,7 @@ describe('DockerService', () => {
       mockContainer.logs.mockResolvedValueOnce(historicalLogs).mockReturnValueOnce(mockStream as any);
 
       const logs: string[] = [];
+
       for await (const line of service.getContainerLogs(containerId)) {
         logs.push(line);
       }
@@ -1228,6 +1267,7 @@ describe('DockerService', () => {
       mockContainer.logs.mockResolvedValueOnce(historicalLogs).mockReturnValueOnce(mockStream as any);
 
       const logsGenerator = service.getContainerLogs(containerId);
+
       await expect(async () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of logsGenerator) {
@@ -1238,10 +1278,12 @@ describe('DockerService', () => {
 
     it('should handle container inspection errors', async () => {
       const error = new Error('Docker daemon error') as any;
+
       error.statusCode = 500;
       mockContainer.inspect.mockRejectedValue(error);
 
       const logsGenerator = service.getContainerLogs(containerId);
+
       await expect(async () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of logsGenerator) {
@@ -1261,6 +1303,7 @@ describe('DockerService', () => {
       mockContainer.logs.mockResolvedValueOnce(Buffer.from('')).mockReturnValueOnce(mockStream as any);
 
       const logsGenerator = service.getContainerLogs(containerId);
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for await (const _ of logsGenerator) {
         // Consume the generator
@@ -1276,15 +1319,18 @@ describe('DockerService', () => {
     beforeEach(() => {
       // Reset stream mock for each test
       const dataChunks: Buffer[] = [];
+
       mockStream.on = jest.fn((event: string, callback: (chunk?: Buffer) => void) => {
         if (event === 'data') {
           // Simulate data collection
           const testData = Buffer.from('test output\n');
+
           dataChunks.push(testData);
           setTimeout(() => callback(testData), 5);
         } else if (event === 'end' || event === 'close') {
           setTimeout(() => callback(), 10);
         }
+
         return mockStream;
       });
     });
@@ -1299,12 +1345,14 @@ describe('DockerService', () => {
     it('should execute a command without input and return output', async () => {
       mockContainer.inspect.mockResolvedValue({});
       const outputData = Buffer.from([1, 0, 0, 0, 12, 116, 101, 115, 116, 32, 111, 117, 116, 112, 117, 116]); // Docker format: stdout + "test output"
+
       mockStream.on = jest.fn((event: string, callback: (chunk?: Buffer) => void) => {
         if (event === 'data') {
           setTimeout(() => callback(outputData), 5);
         } else if (event === 'end') {
           setTimeout(() => callback(), 10);
         }
+
         return mockStream;
       });
 
@@ -1450,6 +1498,7 @@ describe('DockerService', () => {
 
     it('should handle container inspection errors', async () => {
       const error = new Error('Docker daemon error') as any;
+
       error.statusCode = 500;
       mockContainer.inspect.mockRejectedValue(error);
 
@@ -1479,6 +1528,7 @@ describe('DockerService', () => {
         if (!handlers[event]) {
           handlers[event] = [];
         }
+
         handlers[event].push(callback as (arg?: unknown) => void);
 
         // Simulate data event immediately if it's the data handler
@@ -1492,6 +1542,7 @@ describe('DockerService', () => {
         if (event === 'error') {
           setTimeout(() => {
             const error = new Error('EPIPE') as any;
+
             error.code = 'EPIPE';
             handlers['error']?.forEach((cb) => cb(error));
           }, 15);
@@ -1515,6 +1566,7 @@ describe('DockerService', () => {
       });
 
       const result = await service.sendCommandToContainer(containerId, 'ls');
+
       expect(result).toBeTruthy();
       expect(result).toContain('test output');
     });
@@ -1522,11 +1574,13 @@ describe('DockerService', () => {
     it('should propagate non-EPIPE stream errors', async () => {
       mockContainer.inspect.mockResolvedValue({});
       const streamError = new Error('Stream error') as any;
+
       streamError.code = 'ECONNREFUSED';
       mockStream.on = jest.fn((event: string, callback: (error?: unknown) => void) => {
         if (event === 'error') {
           setTimeout(() => callback(streamError), 10);
         }
+
         return mockStream;
       });
 
@@ -1714,6 +1768,7 @@ describe('DockerService', () => {
         } else if (event === 'close') {
           setTimeout(() => callback(), 15);
         }
+
         return mockStream;
       });
 
@@ -1760,12 +1815,14 @@ describe('DockerService', () => {
       mockContainer.inspect.mockResolvedValue({});
       let endCallback: (() => void) | undefined;
       let closeCallback: (() => void) | undefined;
+
       mockStream.on = jest.fn((event: string, callback: () => void) => {
         if (event === 'end') {
           endCallback = callback;
         } else if (event === 'close') {
           closeCallback = callback;
         }
+
         return mockStream;
       });
       mockContainer.modem.demuxStream = jest.fn((stream, stdout, stderr) => {
@@ -1773,9 +1830,11 @@ describe('DockerService', () => {
           stderr.write(Buffer.from('cat: /app/nonexistent.txt: No such file or directory'));
           stdout.end();
           stderr.end();
+
           if (endCallback) {
             endCallback();
           }
+
           if (closeCallback) {
             closeCallback();
           }
@@ -1790,12 +1849,14 @@ describe('DockerService', () => {
     it('should handle stderr output that is not an error', async () => {
       mockContainer.inspect.mockResolvedValue({});
       let endCallback: (() => void) | undefined;
+
       mockStream.on = jest.fn((event: string, callback: () => void) => {
         if (event === 'end') {
           endCallback = callback;
         } else if (event === 'close') {
           setTimeout(() => callback(), 15);
         }
+
         return mockStream;
       });
       mockContainer.modem.demuxStream = jest.fn((stream, stdout, stderr) => {
@@ -1847,7 +1908,7 @@ describe('DockerService', () => {
 
     beforeEach(() => {
       mockContainer.inspect.mockResolvedValue({});
-      mockStream.on = jest.fn((event: string, callback: () => void) => {
+      mockStream.on = jest.fn((_: string, __: () => void) => {
         return mockStream;
       });
     });
@@ -1918,6 +1979,7 @@ describe('DockerService', () => {
         } else if (event === 'error') {
           // error callback
         }
+
         return mockStream;
       });
 
@@ -1935,6 +1997,7 @@ describe('DockerService', () => {
 
       // Recreate for close test
       await service.createTerminalSession(containerId, sessionId);
+
       if (closeCallback) {
         closeCallback();
         expect(service.hasTerminalSession(sessionId)).toBe(false);
@@ -1964,6 +2027,7 @@ describe('DockerService', () => {
 
     it('should send Buffer input to terminal session', async () => {
       const buffer = Buffer.from('test buffer', 'utf-8');
+
       await service.sendTerminalInput(sessionId, buffer);
 
       expect(mockStream.write).toHaveBeenCalledWith(buffer);
@@ -2019,6 +2083,7 @@ describe('DockerService', () => {
 
     it('should return terminal session stream', () => {
       const stream = service.getTerminalSession(sessionId);
+
       expect(stream).toBe(mockStream);
     });
   });
@@ -2060,9 +2125,12 @@ describe('DockerService', () => {
       // Mock getContainer to return different containers
       const mockContainer1 = { ...mockContainer };
       const mockContainer2 = { ...mockContainer };
+
       (mockDocker.getContainer as jest.Mock).mockImplementation((id: string) => {
         if (id === containerId1) return mockContainer1;
+
         if (id === containerId2) return mockContainer2;
+
         return mockContainer;
       });
 
@@ -2124,6 +2192,7 @@ describe('DockerService', () => {
 
     it('should propagate non-404 inspection errors', async () => {
       const error = new Error('Docker daemon error') as Error & { statusCode?: number };
+
       error.statusCode = 500;
       mockContainer.inspect.mockRejectedValue(error);
 
@@ -2247,6 +2316,7 @@ describe('DockerService', () => {
 
     it('should handle stats errors', async () => {
       const statsError = new Error('Stats error');
+
       (mockContainer.stats as jest.Mock) = jest.fn((options, callback) => {
         callback(statsError, null);
       });
@@ -2257,6 +2327,7 @@ describe('DockerService', () => {
 
     it('should handle container inspection errors other than 404', async () => {
       const error = new Error('Docker daemon error') as any;
+
       error.statusCode = 500;
       mockContainer.inspect.mockRejectedValue(error);
 

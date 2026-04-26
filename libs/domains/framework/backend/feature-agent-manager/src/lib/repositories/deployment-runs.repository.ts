@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 
 /**
@@ -60,6 +61,7 @@ export class DeploymentRunsRepository {
    */
   async create(dto: Partial<DeploymentRunEntity>): Promise<DeploymentRunEntity> {
     const run = this.repository.create(dto);
+
     return await this.repository.save(run);
   }
 
@@ -71,10 +73,13 @@ export class DeploymentRunsRepository {
    */
   async update(id: string, dto: Partial<DeploymentRunEntity>): Promise<DeploymentRunEntity> {
     const run = await this.repository.findOne({ where: { id } });
+
     if (!run) {
       throw new Error(`Deployment run with ID ${id} not found`);
     }
+
     Object.assign(run, dto);
+
     return await this.repository.save(run);
   }
 
@@ -91,11 +96,14 @@ export class DeploymentRunsRepository {
     dto: Partial<DeploymentRunEntity>,
   ): Promise<DeploymentRunEntity> {
     const existing = await this.findByProviderRunId(configurationId, providerRunId);
+
     if (existing) {
       Object.assign(existing, dto);
+
       return await this.repository.save(existing);
     } else {
       const run = this.repository.create({ ...dto, configurationId, providerRunId });
+
       return await this.repository.save(run);
     }
   }

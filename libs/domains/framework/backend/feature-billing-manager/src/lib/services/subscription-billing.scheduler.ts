@@ -1,10 +1,12 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionEntity } from '../entities/subscription.entity';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+
 import { BillingScheduleService } from './billing-schedule.service';
 
 @Injectable()

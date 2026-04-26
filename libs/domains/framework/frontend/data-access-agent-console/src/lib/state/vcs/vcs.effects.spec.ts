@@ -1,52 +1,41 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { provideMockActions } from '@ngrx/effects/testing';
+import { TestBed } from '@angular/core/testing';
+import type { Environment } from '@forepath/framework/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
-import { of, throwError } from 'rxjs';
+import { provideMockActions } from '@ngrx/effects/testing';
+import { of } from 'rxjs';
+
 import { VcsService } from '../../services/vcs.service';
+
 import {
   commit,
-  commitFailure,
   commitSuccess,
   createBranch,
-  createBranchFailure,
   createBranchSuccess,
   deleteBranch,
-  deleteBranchFailure,
   deleteBranchSuccess,
   fetch,
-  fetchFailure,
   fetchSuccess,
   loadGitBranches,
-  loadGitBranchesFailure,
   loadGitBranchesSuccess,
   loadGitDiff,
-  loadGitDiffFailure,
   loadGitDiffSuccess,
   loadGitStatus,
   loadGitStatusFailure,
   loadGitStatusSuccess,
   pull,
-  pullFailure,
   pullSuccess,
   push,
-  pushFailure,
   pushSuccess,
   rebase,
-  rebaseFailure,
   rebaseSuccess,
   resolveConflict,
-  resolveConflictFailure,
   resolveConflictSuccess,
   stageFiles,
-  stageFilesFailure,
   stageFilesSuccess,
   switchBranch,
-  switchBranchFailure,
   switchBranchSuccess,
-  unstageFiles,
-  unstageFilesFailure,
-  unstageFilesSuccess,
 } from './vcs.actions';
 import {
   commit$,
@@ -64,8 +53,6 @@ import {
   switchBranch$,
   unstageFiles$,
 } from './vcs.effects';
-import type { Environment } from '@forepath/framework/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import type { GitDiff } from './vcs.types';
 
 describe('VcsEffects', () => {
@@ -88,7 +75,6 @@ describe('VcsEffects', () => {
   };
   let vcsService: VcsService;
   let httpMock: HttpTestingController;
-
   const mockEnvironment: Environment = {
     controller: {
       restApiUrl: 'https://api.example.com',
@@ -111,6 +97,7 @@ describe('VcsEffects', () => {
     vcsService = TestBed.inject(VcsService);
     httpMock = TestBed.inject(HttpTestingController);
     const actions = TestBed.inject(Actions);
+
     effects = {
       loadGitStatus$: loadGitStatus$(actions, vcsService),
       loadGitBranches$: loadGitBranches$(actions, vcsService),
@@ -152,6 +139,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/status');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockStatus);
     });
@@ -165,6 +153,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/status');
+
       req.error(new ErrorEvent('Network error'));
     });
   });
@@ -190,6 +179,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/branches');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockBranches);
     });
@@ -217,6 +207,7 @@ describe('VcsEffects', () => {
           request.url === 'https://api.example.com/clients/client-1/agents/agent-1/vcs/diff' &&
           request.params.get('path') === 'file1.txt',
       );
+
       expect(req.request.method).toBe('GET');
       req.flush(mockDiff);
     });
@@ -232,6 +223,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/stage');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -247,6 +239,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/commit');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -262,6 +255,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/push');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -277,6 +271,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/pull');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -292,6 +287,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/fetch');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -307,6 +303,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/rebase');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -324,6 +321,7 @@ describe('VcsEffects', () => {
       const req = httpMock.expectOne(
         'https://api.example.com/clients/client-1/agents/agent-1/vcs/branches/develop/switch',
       );
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -339,6 +337,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/branches');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -356,6 +355,7 @@ describe('VcsEffects', () => {
       const req = httpMock.expectOne(
         'https://api.example.com/clients/client-1/agents/agent-1/vcs/branches/feature-branch',
       );
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -377,6 +377,7 @@ describe('VcsEffects', () => {
       });
 
       const req = httpMock.expectOne('https://api.example.com/clients/client-1/agents/agent-1/vcs/conflicts/resolve');
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });

@@ -2,7 +2,6 @@ import {
   approveTicketAutomation,
   approveTicketAutomationFailure,
   approveTicketAutomationSuccess,
-  cancelTicketAutomationRun,
   cancelTicketAutomationRunFailure,
   cancelTicketAutomationRunSuccess,
   clearTicketAutomation,
@@ -11,10 +10,8 @@ import {
   loadTicketAutomationRunDetail,
   loadTicketAutomationRunDetailFailure,
   loadTicketAutomationRunDetailSuccess,
-  loadTicketAutomationRuns,
   loadTicketAutomationRunsFailure,
   loadTicketAutomationRunsSuccess,
-  loadTicketAutomationSuccess,
   patchTicketAutomation,
   patchTicketAutomationFailure,
   patchTicketAutomationSuccess,
@@ -50,7 +47,6 @@ describe('ticketAutomationReducer', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockRun: TicketAutomationRunResponseDto = {
     id: 'r1',
     ticketId: 't1',
@@ -77,6 +73,7 @@ describe('ticketAutomationReducer', () => {
 
   it('returns initial state for unknown action', () => {
     const state = ticketAutomationReducer(undefined, { type: 'UNKNOWN' } as never);
+
     expect(state).toEqual(initialTicketAutomationState);
   });
 
@@ -88,6 +85,7 @@ describe('ticketAutomationReducer', () => {
       runs: [mockRun],
     };
     const next = ticketAutomationReducer(prev, loadTicketAutomation({ ticketId: 't2' }));
+
     expect(next.activeTicketId).toBe('t2');
     expect(next.loadingConfig).toBe(true);
     expect(next.runs).toEqual([]);
@@ -101,6 +99,7 @@ describe('ticketAutomationReducer', () => {
       loadTicketAutomationRunsSuccess({ runs: [{ ...mockRun, id: 'r-old' }] }),
     );
     const updated = { ...mockRun, id: 'r-old', status: 'cancelled' as const };
+
     state = ticketAutomationReducer(state, cancelTicketAutomationRunSuccess({ run: updated }));
     expect(state.runs).toEqual([updated]);
     expect(state.saving).toBe(false);
@@ -111,6 +110,7 @@ describe('ticketAutomationReducer', () => {
       initialTicketAutomationState,
       patchTicketAutomation({ ticketId: 't1', dto: {} }),
     );
+
     expect(state.saving).toBe(true);
     state = ticketAutomationReducer(state, patchTicketAutomationSuccess({ config: mockConfig }));
     expect(state.saving).toBe(false);
@@ -136,6 +136,7 @@ describe('ticketAutomationReducer', () => {
       error: 'x',
     };
     const next = ticketAutomationReducer(prev, clearTicketAutomation());
+
     expect(next).toEqual(initialTicketAutomationState);
   });
 
@@ -180,6 +181,7 @@ describe('ticketAutomationReducer', () => {
       initialTicketAutomationState,
       loadTicketAutomationRunDetail({ ticketId: 't1', runId: 'r1' }),
     );
+
     expect(state.loadingRunDetail).toBe(true);
     state = ticketAutomationReducer(state, loadTicketAutomationRunDetailSuccess({ run: mockRun }));
     expect(state.loadingRunDetail).toBe(false);
@@ -196,6 +198,7 @@ describe('ticketAutomationReducer', () => {
       prev,
       ticketBoardAutomationUpsert({ config: { ...mockConfig, eligible: true } }),
     );
+
     expect(next.config?.eligible).toBe(true);
   });
 
@@ -211,6 +214,7 @@ describe('ticketAutomationReducer', () => {
         config: { ...mockConfig, ticketId: 'other' },
       }),
     );
+
     expect(next.config?.ticketId).toBe('t1');
   });
 
@@ -223,6 +227,7 @@ describe('ticketAutomationReducer', () => {
     };
     const updated = { ...mockRun, phase: 'verify' as const };
     const next = ticketAutomationReducer(prev, ticketBoardAutomationRunUpsert({ run: updated }));
+
     expect(next.runs[0].phase).toBe('verify');
     expect(next.runDetail?.phase).toBe('verify');
     expect(next.runCacheByRunId[mockRun.id]?.phase).toBe('verify');
@@ -235,6 +240,7 @@ describe('ticketAutomationReducer', () => {
       runs: [],
     };
     const next = ticketAutomationReducer(prev, ticketBoardAutomationRunUpsert({ run: mockRun }));
+
     expect(next.runs).toEqual([]);
     expect(next.runCacheByRunId[mockRun.id]?.id).toBe(mockRun.id);
   });
@@ -256,6 +262,7 @@ describe('ticketAutomationReducer', () => {
       createdAt: '2024-01-01T00:01:00Z',
     };
     const next = ticketAutomationReducer(prev, ticketBoardAutomationRunStepAppended({ runId: 'r1', step }));
+
     expect(next.runDetail?.steps).toEqual([step]);
   });
 });

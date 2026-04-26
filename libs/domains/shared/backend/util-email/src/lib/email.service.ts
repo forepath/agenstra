@@ -26,6 +26,7 @@ export class EmailService {
     const port = parseInt(process.env.SMTP_PORT || '1025', 10);
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASSWORD;
+
     this.from = process.env.EMAIL_FROM || 'noreply@localhost';
     this.enabled = !!(host && port);
 
@@ -50,6 +51,7 @@ export class EmailService {
   async send(options: EmailOptions): Promise<boolean> {
     if (!this.transporter) {
       this.logger.debug('Email not sent (SMTP not configured):', options.subject, 'to', options.to);
+
       return false;
     }
 
@@ -62,9 +64,11 @@ export class EmailService {
         html: options.html ?? options.text.replace(/\n/g, '<br>'),
       });
       this.logger.debug(`Email sent: ${options.subject} to ${options.to}`);
+
       return true;
     } catch (error) {
       this.logger.error(`Failed to send email to ${options.to}:`, error);
+
       return false;
     }
   }

@@ -5,7 +5,6 @@ import {
   selectForwardedEvents,
   selectForwardedEventsByEvent,
   selectIsRemoteReconnecting,
-  selectMessageFilterResults,
   selectMostRecentForwardedEvent,
   selectMostRecentForwardedEventByEvent,
   selectRemoteConnectionError,
@@ -34,7 +33,6 @@ describe('Sockets Selectors', () => {
     },
     timestamp: '2024-01-01T00:00:00Z',
   };
-
   const mockForwardedPayload2: ForwardedEventPayload = {
     success: true,
     data: {
@@ -44,7 +42,6 @@ describe('Sockets Selectors', () => {
     },
     timestamp: '2024-01-01T01:00:00Z',
   };
-
   const createState = (overrides?: Partial<SocketsState>): SocketsState => ({
     ...initialSocketsState,
     ...overrides,
@@ -138,12 +135,14 @@ describe('Sockets Selectors', () => {
     it('should select chatResponseMode', () => {
       const state = createState({ chatResponseMode: 'single' });
       const rootState = { sockets: state };
+
       expect(selectChatResponseMode(rootState as any)).toBe('single');
     });
 
     it('should default to stream from initial state', () => {
       const state = createState();
       const rootState = { sockets: state };
+
       expect(selectChatResponseMode(rootState as any)).toBe('stream');
     });
   });

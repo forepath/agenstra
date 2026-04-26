@@ -1,12 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import type { AgenstraContext, AgenstraMetadata, RuleEntry, SkillEntry } from '../types';
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const matter = require('gray-matter') as (input: string) => { data: Record<string, unknown>; content: string };
 
 function readFileSafe(dir: string, file: string): string | null {
   const full = path.join(dir, file);
+
   try {
     return fs.readFileSync(full, 'utf-8');
   } catch {
@@ -16,7 +19,9 @@ function readFileSafe(dir: string, file: string): string | null {
 
 function readJsonSafe<T>(dir: string, file: string): T | null {
   const content = readFileSafe(dir, file);
+
   if (content == null) return null;
+
   try {
     return JSON.parse(content) as T;
   } catch {
@@ -29,10 +34,13 @@ function readJsonSafe<T>(dir: string, file: string): T | null {
  */
 function parseMdcSafe(dir: string, file: string): { data: Record<string, unknown>; content: string } | null {
   const raw = readFileSafe(dir, file);
+
   if (raw == null) return null;
+
   try {
     const parsed = matter(raw);
     const data = (parsed.data as Record<string, unknown>) ?? {};
+
     return { data, content: (parsed.content ?? '').trim() };
   } catch {
     return null;
@@ -45,37 +53,48 @@ function parseMdcSafe(dir: string, file: string): { data: Record<string, unknown
  */
 export function readContext(agenstraDir: string): AgenstraContext {
   const root = path.isAbsolute(agenstraDir) ? agenstraDir : path.resolve(process.cwd(), agenstraDir);
+
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
     throw new Error(`Not a directory: ${root}`);
   }
 
   const metadataRaw = readJsonSafe<Record<string, unknown>>(root, 'metadata.json');
+
   if (!metadataRaw || !metadataRaw.version || !metadataRaw.appName) {
     throw new Error(`${root}/metadata.json must exist and contain version and appName`);
   }
+
   const metadata: AgenstraMetadata = {
     appName: String(metadataRaw.appName),
   };
-
   const rules: Record<string, import('../types').RuleEntry> = {};
   const rulesDir = path.join(root, 'rules');
+
   if (fs.existsSync(rulesDir) && fs.statSync(rulesDir).isDirectory()) {
     for (const f of fs.readdirSync(rulesDir)) {
       if (f.endsWith('.mdc')) {
         const parsed = parseMdcSafe(rulesDir, f);
+
         if (parsed != null) {
           const key = f.replace(/\.mdc$/, '');
           const entry: RuleEntry = { content: parsed.content };
+
           if (parsed.data.id != null) entry.id = String(parsed.data.id);
+
           if (parsed.data.name != null) entry.name = String(parsed.data.name);
+
           if (parsed.data.description != null) entry.description = String(parsed.data.description);
+
           if (parsed.data.globs != null) {
             entry.globs = Array.isArray(parsed.data.globs)
               ? parsed.data.globs.map(String)
               : [String(parsed.data.globs)];
           }
+
           if (parsed.data.alwaysApply != null) entry.alwaysApply = Boolean(parsed.data.alwaysApply);
+
           if (entry.alwaysApply === true) entry.globs = ['**'];
+
           rules[key] = entry;
         }
       }
@@ -84,10 +103,12 @@ export function readContext(agenstraDir: string): AgenstraContext {
 
   const commands: Record<string, Record<string, unknown>> = {};
   const commandsDir = path.join(root, 'commands');
+
   if (fs.existsSync(commandsDir) && fs.statSync(commandsDir).isDirectory()) {
     for (const f of fs.readdirSync(commandsDir)) {
       if (f.endsWith('.command.mdc')) {
         const parsed = parseMdcSafe(commandsDir, f);
+
         if (parsed != null) {
           const key = f.replace(/\.command\.mdc$/, '');
           const d = parsed.data;
@@ -99,6 +120,7 @@ export function readContext(agenstraDir: string): AgenstraContext {
             agent: d.agent,
             model: d.model,
           };
+
           commands[key] = cmd;
         }
       }
@@ -107,16 +129,22 @@ export function readContext(agenstraDir: string): AgenstraContext {
 
   const skills: Record<string, SkillEntry> = {};
   const skillsDir = path.join(root, 'skills');
+
   if (fs.existsSync(skillsDir) && fs.statSync(skillsDir).isDirectory()) {
     for (const f of fs.readdirSync(skillsDir)) {
       if (f.endsWith('.skill.mdc')) {
         const parsed = parseMdcSafe(skillsDir, f);
+
         if (parsed != null) {
           const key = f.replace(/\.skill\.mdc$/, '');
           const entry: SkillEntry = { content: parsed.content };
+
           if (parsed.data.id != null) entry.id = String(parsed.data.id);
+
           if (parsed.data.name != null) entry.name = String(parsed.data.name);
+
           if (parsed.data.description != null) entry.description = String(parsed.data.description);
+
           skills[key] = entry;
         }
       }
@@ -126,10 +154,12 @@ export function readContext(agenstraDir: string): AgenstraContext {
   // Key by filename stem so architect.agent.mdc → architect
   const agents: Record<string, import('../types').AgenstraAgent> = {};
   const agentsDir = path.join(root, 'agents');
+
   if (fs.existsSync(agentsDir) && fs.statSync(agentsDir).isDirectory()) {
     for (const f of fs.readdirSync(agentsDir)) {
       if (f.endsWith('.agent.mdc')) {
         const parsed = parseMdcSafe(agentsDir, f);
+
         if (parsed != null) {
           const key = f.replace(/\.agent\.mdc$/, '');
           const d = parsed.data;
@@ -146,6 +176,7 @@ export function readContext(agenstraDir: string): AgenstraContext {
                 ? (d.tools as Record<string, unknown>)
                 : undefined,
           };
+
           agents[key] = agent;
         }
       }
@@ -154,10 +185,12 @@ export function readContext(agenstraDir: string): AgenstraContext {
 
   const subagents: Record<string, import('../types').AgenstraSubagent> = {};
   const subagentsDir = path.join(root, 'subagents');
+
   if (fs.existsSync(subagentsDir) && fs.statSync(subagentsDir).isDirectory()) {
     for (const f of fs.readdirSync(subagentsDir)) {
       if (f.endsWith('.subagent.mdc')) {
         const parsed = parseMdcSafe(subagentsDir, f);
+
         if (parsed != null) {
           const key = f.replace(/\.subagent\.mdc$/, '');
           const d = parsed.data;
@@ -174,6 +207,7 @@ export function readContext(agenstraDir: string): AgenstraContext {
                 ? (d.tools as Record<string, unknown>)
                 : undefined,
           };
+
           subagents[key] = subagent;
         }
       }
@@ -182,10 +216,12 @@ export function readContext(agenstraDir: string): AgenstraContext {
 
   const mcpDefinitions: Record<string, Record<string, unknown>> = {};
   const mcpDir = path.join(root, 'mcp-definitions');
+
   if (fs.existsSync(mcpDir) && fs.statSync(mcpDir).isDirectory()) {
     for (const f of fs.readdirSync(mcpDir)) {
       if (f.endsWith('.mcp.json')) {
         const raw = readJsonSafe<Record<string, unknown>>(mcpDir, f);
+
         if (raw != null) {
           const id = (raw.id as string) ?? f.replace(/\.mcp\.json$/, '');
           const def: Record<string, unknown> = {
@@ -201,6 +237,7 @@ export function readContext(agenstraDir: string): AgenstraContext {
             headers: raw.headers,
             enabled: raw.enabled,
           };
+
           mcpDefinitions[id] = def;
         }
       }

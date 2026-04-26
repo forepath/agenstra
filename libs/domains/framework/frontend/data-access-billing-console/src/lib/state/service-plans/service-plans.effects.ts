@@ -1,7 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
+
 import { ServicePlansService } from '../../services/service-plans.service';
+
 import {
   createServicePlan,
   createServicePlanFailure,
@@ -25,12 +27,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -42,14 +47,17 @@ export const loadServicePlans$ = createEffect(
       ofType(loadServicePlans),
       switchMap(({ params }) => {
         const batchParams = { limit: BATCH_SIZE, offset: 0, ...params };
+
         return servicePlansService.listServicePlans(batchParams).pipe(
           switchMap((servicePlans) => {
             if (servicePlans.length === 0) {
               return of(loadServicePlansSuccess({ servicePlans: [] }));
             }
+
             if (servicePlans.length < BATCH_SIZE) {
               return of(loadServicePlansSuccess({ servicePlans }));
             }
+
             return of(loadServicePlansBatch({ offset: BATCH_SIZE, accumulatedServicePlans: servicePlans }));
           }),
           catchError((error) => of(loadServicePlansFailure({ error: normalizeError(error) }))),
@@ -66,15 +74,19 @@ export const loadServicePlansBatch$ = createEffect(
       ofType(loadServicePlansBatch),
       switchMap(({ offset, accumulatedServicePlans }) => {
         const batchParams = { limit: BATCH_SIZE, offset };
+
         return servicePlansService.listServicePlans(batchParams).pipe(
           switchMap((servicePlans) => {
             const newAccumulated = [...accumulatedServicePlans, ...servicePlans];
+
             if (servicePlans.length === 0) {
               return of(loadServicePlansSuccess({ servicePlans: newAccumulated }));
             }
+
             if (servicePlans.length < BATCH_SIZE) {
               return of(loadServicePlansSuccess({ servicePlans: newAccumulated }));
             }
+
             return of(
               loadServicePlansBatch({
                 offset: offset + BATCH_SIZE,

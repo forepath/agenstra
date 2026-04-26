@@ -5,6 +5,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { DocMetadata, NavigationNode } from '@forepath/framework/frontend/util-docs-parser';
 import { catchError, filter, map, Observable, of, startWith, switchMap } from 'rxjs';
+
 import { DocsBreadcrumbsComponent, DocsContentComponent, DocsTableOfContentsComponent } from '../../components';
 import { DocsContentService, DocsNavigationService } from '../../services';
 
@@ -28,6 +29,7 @@ export class DocsPageComponent implements OnInit {
     // Update active path whenever currentPath changes
     effect(() => {
       const path = this.currentPath();
+
       this.navigationService.setActivePath(path || '/docs');
     });
   }
@@ -64,10 +66,8 @@ export class DocsPageComponent implements OnInit {
       map(() => {
         // Get current URL from router
         const url = this.router.url;
-
         // Remove query params and hash
         const path = url.split('?')[0].split('#')[0];
-
         // Normalize the path to match navigation.json format
         let normalizedPath = path;
 
@@ -94,6 +94,7 @@ export class DocsPageComponent implements OnInit {
         (() => {
           // Initial value based on current router URL
           const url = this.router.url.split('?')[0].split('#')[0];
+
           if (url.startsWith('/agenstra/')) {
             return url.replace('/agenstra/', '/docs/');
           } else if (url === '/agenstra') {
@@ -103,6 +104,7 @@ export class DocsPageComponent implements OnInit {
           } else if (url === '/framework') {
             return '/docs';
           }
+
           return url.startsWith('/docs') ? url : '/docs';
         })(),
       ),
@@ -115,6 +117,7 @@ export class DocsPageComponent implements OnInit {
   ngOnInit(): void {
     const metadataTitle = this.metadata()?.title;
     const titleFallback = $localize`:@@featureDocsPage-metaTitleFallback:Centralized Control for Distributed AI Agent Infrastructure`;
+
     this.titleService.setTitle(`Agenstra - ${metadataTitle || titleFallback}`);
     this.metaService.addTags([
       {
@@ -137,6 +140,7 @@ export class DocsPageComponent implements OnInit {
     if (!isPlatformBrowser(this.platformId)) {
       this.loading.set(false);
       this.error.set(null);
+
       // Don't set metadata during SSR - let client-side hydration handle it
       return;
     }
@@ -164,6 +168,7 @@ export class DocsPageComponent implements OnInit {
           if (path.startsWith('agenstra/')) {
             path = path.substring('agenstra/'.length);
           }
+
           path = path.replace(/^agenstra\//, '').replace(/\/agenstra\//g, '/');
 
           // Remove duplicate slashes
@@ -180,6 +185,7 @@ export class DocsPageComponent implements OnInit {
             catchError((err) => {
               this.error.set('Failed to load documentation');
               console.error('Error loading content:', err);
+
               return of(null);
             }),
           );
@@ -193,6 +199,7 @@ export class DocsPageComponent implements OnInit {
           // During SSR, don't perform redirects to avoid loops
           if (!isPlatformBrowser(this.platformId)) {
             this.error.set('Documentation page not found');
+
             return;
           }
 
@@ -208,6 +215,7 @@ export class DocsPageComponent implements OnInit {
             console.error('Detected malformed URL pattern, redirecting to home:', currentUrl);
             this.router.navigate(['/docs'], { replaceUrl: true });
             this.error.set('Invalid documentation path. Redirected to home.');
+
             return;
           }
 
@@ -218,8 +226,10 @@ export class DocsPageComponent implements OnInit {
               .replace('/docs/agenstra/', '/docs/')
               .replace(/\/README\.md$/, '')
               .replace(/\/README$/, '');
+
             console.warn('URL incorrectly includes "agenstra", fixing:', currentUrl, '->', fixedPath);
             this.router.navigate([fixedPath], { replaceUrl: true });
+
             return;
           }
 
@@ -253,6 +263,7 @@ export class DocsPageComponent implements OnInit {
     if (cleanPath.startsWith('agenstra/')) {
       cleanPath = cleanPath.substring('agenstra/'.length);
     }
+
     cleanPath = cleanPath.replace(/^agenstra\//, '').replace(/\/agenstra\//g, '/');
 
     // Remove any .md extensions that might have been incorrectly added
@@ -292,6 +303,7 @@ export class DocsPageComponent implements OnInit {
         if (metadata) {
           return of(metadata);
         }
+
         // If README.md returned null (not found), try the direct file
         return this.contentService.loadContent(directPath);
       }),
@@ -301,6 +313,7 @@ export class DocsPageComponent implements OnInit {
           catchError(() => {
             // If both fail, return null to prevent infinite loops
             console.warn(`Failed to load documentation for path: ${routePath} (tried both README.md and direct file)`);
+
             return of(null);
           }),
         );

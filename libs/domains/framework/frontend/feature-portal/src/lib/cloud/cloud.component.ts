@@ -117,33 +117,42 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
     if (plan.billingIntervalType === 'month' && plan.billingIntervalValue === 1) {
       return $localize`:@@featurePortalCloud-planPriceMonth:/month`;
     }
+
     if (plan.billingIntervalType === 'hour') {
       return $localize`:@@featurePortalCloud-planPriceHour:/hour`;
     }
+
     if (plan.billingIntervalType === 'day') {
       return $localize`:@@featurePortalCloud-planPriceDay:/day`;
     }
+
     return ` / ${plan.billingIntervalValue} ${plan.billingIntervalType}`;
   }
 
   syncPlansScrollState(): void {
     const el = this.plansCarousel?.nativeElement;
+
     if (!el) {
       return;
     }
+
     const epsilon = 8;
+
     this.plansScrollAtStart.set(el.scrollLeft <= epsilon);
     this.plansScrollAtEnd.set(el.scrollLeft + el.clientWidth >= el.scrollWidth - epsilon);
   }
 
   scrollCloudPlans(direction: 'left' | 'right'): void {
     const row = this.plansCarousel?.nativeElement;
+
     if (!row) {
       return;
     }
+
     const col = row.querySelector('.cloud-plan-col') as HTMLElement | null;
     const gap = 24;
     const delta = (col?.offsetWidth ?? Math.floor(row.clientWidth * 0.33)) + gap;
+
     row.scrollBy({
       left: direction === 'right' ? delta : -delta,
       behavior: 'smooth',

@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { StatisticsService } from '../../services/statistics.service';
+
 import {
   loadClientStatisticsChatIo,
   loadClientStatisticsChatIoFailure,
@@ -49,7 +51,6 @@ import type {
 describe('StatisticsEffects', () => {
   let actions$: Actions;
   let statisticsService: jest.Mocked<StatisticsService>;
-
   const mockSummary: StatisticsSummaryDto = {
     totalMessages: 100,
     totalWords: 500,
@@ -60,21 +61,18 @@ describe('StatisticsEffects', () => {
     filterFlagCount: 0,
     filterFlagsBreakdown: [],
   };
-
   const mockChatIoList: StatisticsChatIoListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockFilterDropList: StatisticsFilterDropListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockEntityEventList: StatisticsEntityEventListDto = {
     data: [],
     total: 0,

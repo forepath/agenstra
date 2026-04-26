@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import { ServerInfo } from '../utils/provisioning.utils';
 
 /** DigitalOcean caps user_data at 64KiB (plain text UTF-8). */
@@ -12,6 +13,7 @@ export class DigitaloceanProvisioningService {
 
   constructor() {
     this.apiToken = process.env.DIGITALOCEAN_API_TOKEN || '';
+
     if (!this.apiToken) {
       this.logger.warn(
         'DIGITALOCEAN_API_TOKEN environment variable is not set. DigitalOcean provisioning will not function.',
@@ -25,16 +27,21 @@ export class DigitaloceanProvisioningService {
    */
   private resolvePlainTextUserData(userData: string): string {
     const trimmed = userData?.trim() ?? '';
+
     if (!trimmed) {
       return userData ?? '';
     }
+
     if (trimmed.startsWith('#!/bin/bash') || trimmed.startsWith('#!/bin/sh') || trimmed.startsWith('#cloud-config')) {
       return userData;
     }
+
     const decoded = Buffer.from(trimmed, 'base64').toString('utf8');
+
     if (decoded.startsWith('#!/bin/bash') || decoded.startsWith('#!/bin/sh') || decoded.startsWith('#cloud-config')) {
       return decoded;
     }
+
     return userData;
   }
 
@@ -45,6 +52,7 @@ export class DigitaloceanProvisioningService {
 
     const userDataPlain = this.resolvePlainTextUserData(config.userData);
     const userDataBytes = Buffer.byteLength(userDataPlain, 'utf8');
+
     if (userDataBytes > MAX_USER_DATA_BYTES) {
       throw new BadRequestException(
         `User data size (${userDataBytes} bytes) exceeds DigitalOcean limit of ${MAX_USER_DATA_BYTES} bytes`,
@@ -68,8 +76,8 @@ export class DigitaloceanProvisioningService {
           },
         },
       );
-
       const serverId = response.data?.droplet?.id;
+
       if (!serverId) {
         throw new BadRequestException('Failed to provision server');
       }
@@ -77,6 +85,7 @@ export class DigitaloceanProvisioningService {
       return { serverId: serverId.toString() };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to provision DigitalOcean droplet: ${axiosError.message}`);
       throw new BadRequestException(`Failed to provision server: ${axiosError.message}`);
     }
@@ -85,6 +94,7 @@ export class DigitaloceanProvisioningService {
   async deprovisionServer(serverId: string): Promise<void> {
     if (!this.apiToken) {
       this.logger.warn('DIGITALOCEAN_API_TOKEN not set, skipping deprovisioning');
+
       return;
     }
 
@@ -95,6 +105,7 @@ export class DigitaloceanProvisioningService {
       this.logger.log(`Successfully deprovisioned DigitalOcean droplet ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to deprovision DigitalOcean droplet ${serverId}: ${axiosError.message}`);
       throw new BadRequestException(`Failed to deprovision server: ${axiosError.message}`);
     }
@@ -110,8 +121,8 @@ export class DigitaloceanProvisioningService {
         `https://api.digitalocean.com/v2/droplets/${serverId}`,
         { headers: { Authorization: `Bearer ${this.apiToken}` } },
       );
-
       const droplet = response.data?.droplet;
+
       if (!droplet) {
         throw new BadRequestException('Invalid response from DigitalOcean API');
       }
@@ -132,10 +143,13 @@ export class DigitaloceanProvisioningService {
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to get DigitalOcean droplet info ${serverId}: ${axiosError.message}`);
+
       if (axiosError.response?.status === 404) {
         throw new BadRequestException(`Server ${serverId} not found`);
       }
+
       throw new BadRequestException(`Failed to get server info: ${axiosError.message}`);
     }
   }
@@ -175,6 +189,7 @@ export class DigitaloceanProvisioningService {
       this.logger.log(`${actionLabel} DigitalOcean droplet ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to ${actionLabel} DigitalOcean droplet ${serverId}: ${axiosError.message}`);
       throw new BadRequestException(`Failed to ${actionLabel.replace('ed', '')} server: ${axiosError.message}`);
     }

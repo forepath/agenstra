@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { DeploymentConfigurationResponseDto } from '../dto/deployment-configuration.dto';
 import { DeploymentsService } from '../services/deployments.service';
+
 import { AgentsDeploymentsController } from './agents-deployments.controller';
 
 describe('AgentsDeploymentsController', () => {
   let controller: AgentsDeploymentsController;
   let service: jest.Mocked<DeploymentsService>;
-
   const mockConfiguration: DeploymentConfigurationResponseDto = {
     id: 'config-uuid',
     agentId: 'agent-uuid',
@@ -17,7 +18,6 @@ describe('AgentsDeploymentsController', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockService = {
     getConfiguration: jest.fn(),
     upsertConfiguration: jest.fn(),
@@ -157,7 +157,6 @@ describe('AgentsDeploymentsController', () => {
         ref: 'main',
         inputs: { environment: 'production' },
       };
-
       const mockRun = {
         id: 'run-uuid',
         configurationId: 'config-uuid',

@@ -1,8 +1,10 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { HostnameReservationService } from './hostname-reservation.service';
 import { ProvisioningService } from './provisioning.service';
@@ -58,6 +60,7 @@ export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDe
 
   private async processSubscriptionCancellation(subscription: SubscriptionEntity): Promise<void> {
     const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
+
     this.logger.log(`Found ${items.length} items for subscription ${subscription.id}`);
 
     for (const item of items) {
@@ -69,14 +72,17 @@ export class SubscriptionExpirationScheduler implements OnModuleInit, OnModuleDe
             `Failed to remove DNS record for ${item.hostname} (subscription ${subscription.id}): ${(error as Error).message}`,
           );
         }
+
         try {
           await this.hostnameReservationService.releaseHostname(item.id);
         } catch (error) {
           this.logger.warn(`Failed to release hostname for item ${item.id}: ${(error as Error).message}`);
         }
       }
+
       if (item.providerReference && item.serviceType?.provider) {
         this.logger.log(`Deprovisioning resource ${item.providerReference} for subscription ${subscription.id}`);
+
         try {
           await this.provisioningService.deprovision(item.serviceType.provider, item.providerReference);
           this.logger.log(`Deprovisioned resource ${item.providerReference} for subscription ${subscription.id}`);

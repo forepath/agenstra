@@ -8,6 +8,7 @@ import {
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import {
   ClientAgentAutonomyResponseDto,
   EnabledAutonomyAgentIdsResponseDto,
@@ -50,9 +51,11 @@ export class ClientAgentAutonomyService {
   async get(clientId: string, agentId: string, req?: RequestWithUser): Promise<ClientAgentAutonomyResponseDto> {
     await this.assertAccess(clientId, req);
     const row = await this.repo.findOne({ where: { clientId, agentId } });
+
     if (!row) {
       throw new NotFoundException('Autonomy settings not found for this client and agent');
     }
+
     return this.map(row);
   }
 
@@ -67,6 +70,7 @@ export class ClientAgentAutonomyService {
       select: ['agentId'],
       order: { agentId: 'ASC' },
     });
+
     return { agentIds: rows.map((r) => r.agentId) };
   }
 
@@ -78,9 +82,11 @@ export class ClientAgentAutonomyService {
   ): Promise<ClientAgentAutonomyResponseDto> {
     await this.assertWorkspaceManagement(clientId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!info.userId) {
       throw new BadRequestException('Interactive user required to edit autonomy settings');
     }
+
     const row = await this.repo.save(
       this.repo.create({
         clientId,
@@ -92,6 +98,7 @@ export class ClientAgentAutonomyService {
         tokenBudgetLimit: dto.tokenBudgetLimit ?? null,
       }),
     );
+
     return this.map(row);
   }
 }

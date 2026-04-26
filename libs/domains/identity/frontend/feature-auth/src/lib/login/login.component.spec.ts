@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthenticationFacade } from '@forepath/identity/frontend';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
+import { AuthenticationFacade } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Actions } from '@ngrx/effects';
 import { of } from 'rxjs';
+
 import { IdentityLoginComponent } from './login.component';
 
 describe('IdentityLoginComponent', () => {
@@ -97,6 +98,7 @@ describe('IdentityLoginComponent', () => {
 
       const f = TestBed.createComponent(IdentityLoginComponent);
       const c = f.componentInstance;
+
       f.detectChanges();
 
       expect(c.showApiBaseHostname).toBe(false);

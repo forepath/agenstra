@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
+
 import type {
   CreateEnvironmentVariableDto,
   EnvironmentVariableResponseDto,
@@ -33,9 +34,11 @@ export class EnvService {
     params?: ListEnvironmentVariablesParams,
   ): Observable<EnvironmentVariableResponseDto[]> {
     let httpParams = new HttpParams();
+
     if (params?.limit !== undefined) {
       httpParams = httpParams.set('limit', params.limit.toString());
     }
+
     if (params?.offset !== undefined) {
       httpParams = httpParams.set('offset', params.offset.toString());
     }

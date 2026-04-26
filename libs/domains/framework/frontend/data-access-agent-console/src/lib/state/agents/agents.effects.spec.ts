@@ -3,9 +3,11 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { of, throwError } from 'rxjs';
+
 import { AgentsService } from '../../services/agents.service';
 import { listDirectory, listDirectoryFailure, listDirectorySuccess } from '../files/files.actions';
 import type { FileNodeDto } from '../files/files.types';
+
 import {
   createClientAgent,
   createClientAgentFailure,
@@ -65,7 +67,6 @@ describe('AgentsEffects', () => {
   let actions$: Actions;
   let agentsService: jest.Mocked<AgentsService>;
   const clientId = 'client-1';
-
   const mockAgent: AgentResponseDto = {
     id: 'agent-1',
     name: 'Test Agent',
@@ -75,7 +76,6 @@ describe('AgentsEffects', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockCreateAgentResponse: CreateAgentResponseDto = {
     ...mockAgent,
     password: 'generated-password',

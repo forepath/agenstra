@@ -3,7 +3,6 @@ import { Component, DestroyRef, ElementRef, OnInit, ViewChild, inject } from '@a
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { Actions, ofType } from '@ngrx/effects';
 import {
   ClientsFacade,
   FilterRulesFacade,
@@ -16,6 +15,8 @@ import {
   type FilterRuleWorkspaceSyncDto,
   type UpdateFilterRuleDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
+import { Actions, ofType } from '@ngrx/effects';
+
 import {
   filterRuleDirectionLabel,
   filterRuleTesterNoContentChange,
@@ -100,9 +101,11 @@ export class RuleManagerComponent implements OnInit {
   filteredRules(): FilterRuleResponseDto[] {
     const q = this.searchQuery.trim().toLowerCase();
     const list = this.rules();
+
     if (!q) {
       return list;
     }
+
     return list.filter((r) => JSON.stringify(r).toLowerCase().includes(q));
   }
 
@@ -116,17 +119,21 @@ export class RuleManagerComponent implements OnInit {
 
   sortedWorkspaceSync(rule: FilterRuleResponseDto): FilterRuleWorkspaceSyncDto[] {
     const rows = rule.workspaceSync ?? [];
+
     return [...rows].sort((a, b) => this.clientName(a.clientId).localeCompare(this.clientName(b.clientId)));
   }
 
   syncWorkspaceIconClass(row: FilterRuleWorkspaceSyncDto | undefined): string {
     const s = row?.syncStatus ?? 'pending';
+
     if (s === 'synced') {
       return 'bi bi-check-circle text-success';
     }
+
     if (s === 'failed') {
       return 'bi bi-x-circle text-danger';
     }
+
     return 'bi bi-clock text-warning';
   }
 
@@ -134,9 +141,11 @@ export class RuleManagerComponent implements OnInit {
     if (!rule.enabled) {
       return 'inactive';
     }
+
     if (rule.sync.pending > 0 || rule.sync.failed > 0) {
       return 'active';
     }
+
     return 'synced';
   }
 
@@ -151,9 +160,11 @@ export class RuleManagerComponent implements OnInit {
       enabled: true,
     };
     const sel: Record<string, boolean> = {};
+
     for (const c of this.clients()) {
       sel[c.id] = false;
     }
+
     this.createWorkspaceSelection = sel;
     this.showModal(this.createModal);
   }
@@ -169,18 +180,22 @@ export class RuleManagerComponent implements OnInit {
       isGlobal: this.createForm.isGlobal,
       replaceContent: this.createForm.filterType === 'filter' ? this.createForm.replaceContent : undefined,
     };
+
     if (!dto.isGlobal) {
       dto.workspaceIds = this.selectedIdsFromMap(this.createWorkspaceSelection);
     }
+
     this.filterRulesFacade.create(dto);
   }
 
   onEdit(rule: FilterRuleResponseDto): void {
     this.editRule = rule;
     const selected: Record<string, boolean> = {};
+
     for (const c of this.clients()) {
       selected[c.id] = rule.workspaceIds.includes(c.id);
     }
+
     this.editForm = {
       pattern: rule.pattern,
       regexFlags: rule.regexFlags,
@@ -200,6 +215,7 @@ export class RuleManagerComponent implements OnInit {
     if (!this.editRule) {
       return;
     }
+
     const dto: UpdateFilterRuleDto = {
       pattern: this.editForm.pattern?.trim(),
       regexFlags: this.editForm.regexFlags?.trim(),
@@ -210,11 +226,13 @@ export class RuleManagerComponent implements OnInit {
       enabled: this.editForm.enabled,
       isGlobal: this.editForm.isGlobal,
     };
+
     if (this.editForm.isGlobal) {
       delete dto.workspaceIds;
     } else {
       dto.workspaceIds = this.selectedIdsFromMap(this.editForm.workspaceIdsSelected);
     }
+
     this.filterRulesFacade.update(this.editRule.id, dto);
   }
 
@@ -238,28 +256,39 @@ export class RuleManagerComponent implements OnInit {
 
   runTester(): void {
     const rule = this.ruleToTest;
+
     if (!rule) {
       return;
     }
+
     try {
       const re = new RegExp(rule.pattern, rule.regexFlags || 'g');
       const text = this.testerInput;
       const matched = re.test(text);
+
       re.lastIndex = 0;
+
       if (!matched) {
         this.testerResult = { ok: true, message: filterRuleTesterNoMatch() };
+
         return;
       }
+
       if (rule.filterType === 'drop') {
         this.testerResult = { ok: true, message: filterRuleTesterWouldDrop() };
+
         return;
       }
+
       if (rule.filterType === 'none') {
         this.testerResult = { ok: true, message: filterRuleTesterNoContentChange() };
+
         return;
       }
+
       re.lastIndex = 0;
       const replaced = text.replace(re, rule.replaceContent ?? '');
+
       this.testerResult = { ok: true, message: filterRuleTesterReplacedMessage(replaced) };
     } catch (e) {
       this.testerResult = { ok: false, message: e instanceof Error ? e.message : String(e) };
@@ -303,11 +332,13 @@ export class RuleManagerComponent implements OnInit {
     if (modalElement?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.show();
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Modal = (window as any).bootstrap?.Modal;
+
         if (Modal) {
           new Modal(modalElement.nativeElement).show();
         }
@@ -319,6 +350,7 @@ export class RuleManagerComponent implements OnInit {
     if (modalElement?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.hide();
       }

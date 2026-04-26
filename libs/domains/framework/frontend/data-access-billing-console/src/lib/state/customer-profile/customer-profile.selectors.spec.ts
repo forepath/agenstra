@@ -1,3 +1,5 @@
+import type { CustomerProfileResponse } from '../../types/billing.types';
+
 import { initialCustomerProfileState, type CustomerProfileState } from './customer-profile.reducer';
 import {
   selectCustomerProfile,
@@ -9,7 +11,6 @@ import {
   selectHasCustomerProfile,
   selectIsCustomerProfileComplete,
 } from './customer-profile.selectors';
-import type { CustomerProfileResponse } from '../../types/billing.types';
 
 describe('Customer Profile Selectors', () => {
   const mockProfile: CustomerProfileResponse = {
@@ -24,7 +25,6 @@ describe('Customer Profile Selectors', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const createState = (overrides?: Partial<CustomerProfileState>): CustomerProfileState => ({
     ...initialCustomerProfileState,
     ...overrides,
@@ -34,6 +34,7 @@ describe('Customer Profile Selectors', () => {
     it('should select the customer profile feature state', () => {
       const state = createState();
       const rootState = { customerProfile: state };
+
       expect(selectCustomerProfileState(rootState as never)).toEqual(state);
     });
   });
@@ -42,6 +43,7 @@ describe('Customer Profile Selectors', () => {
     it('should select profile', () => {
       const state = createState({ profile: mockProfile });
       const rootState = { customerProfile: state };
+
       expect(selectCustomerProfile(rootState as never)).toEqual(mockProfile);
     });
   });
@@ -50,6 +52,7 @@ describe('Customer Profile Selectors', () => {
     it('should return loading state', () => {
       const state = createState({ loading: true });
       const rootState = { customerProfile: state };
+
       expect(selectCustomerProfileLoading(rootState as never)).toBe(true);
     });
   });
@@ -58,6 +61,7 @@ describe('Customer Profile Selectors', () => {
     it('should return updating state', () => {
       const state = createState({ updating: true });
       const rootState = { customerProfile: state };
+
       expect(selectCustomerProfileUpdating(rootState as never)).toBe(true);
     });
   });
@@ -66,6 +70,7 @@ describe('Customer Profile Selectors', () => {
     it('should return error', () => {
       const state = createState({ error: 'Test error' });
       const rootState = { customerProfile: state };
+
       expect(selectCustomerProfileError(rootState as never)).toBe('Test error');
     });
   });
@@ -74,6 +79,7 @@ describe('Customer Profile Selectors', () => {
     it('should return true when loading or updating', () => {
       const state = createState({ loading: true });
       const rootState = { customerProfile: state };
+
       expect(selectCustomerProfileLoadingAny(rootState as never)).toBe(true);
     });
   });
@@ -82,11 +88,13 @@ describe('Customer Profile Selectors', () => {
     it('should return true when profile exists', () => {
       const state = createState({ profile: mockProfile });
       const rootState = { customerProfile: state };
+
       expect(selectHasCustomerProfile(rootState as never)).toBe(true);
     });
     it('should return false when profile is null', () => {
       const state = createState({ profile: null });
       const rootState = { customerProfile: state };
+
       expect(selectHasCustomerProfile(rootState as never)).toBe(false);
     });
   });
@@ -95,17 +103,20 @@ describe('Customer Profile Selectors', () => {
     it('should return true when profile has required fields', () => {
       const state = createState({ profile: mockProfile });
       const rootState = { customerProfile: state };
+
       expect(selectIsCustomerProfileComplete(rootState as never)).toBe(true);
     });
     it('should return false when profile is null', () => {
       const state = createState({ profile: null });
       const rootState = { customerProfile: state };
+
       expect(selectIsCustomerProfileComplete(rootState as never)).toBe(false);
     });
     it('should return false when required field is null', () => {
       const incomplete = { ...mockProfile, firstName: null };
       const state = createState({ profile: incomplete });
       const rootState = { customerProfile: state };
+
       expect(selectIsCustomerProfileComplete(rootState as never)).toBe(false);
     });
   });

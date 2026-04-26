@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { ProviderDetailDto } from '../dto/provider-detail.dto';
 
 /**

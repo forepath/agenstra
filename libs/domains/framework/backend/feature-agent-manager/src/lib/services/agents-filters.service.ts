@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
+
 import { CreateRegexFilterRuleDto } from '../dto/create-regex-filter-rule.dto';
 import { UpdateRegexFilterRuleDto } from '../dto/update-regex-filter-rule.dto';
+import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.repository';
-import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';
 import {
   assertReplaceContentForFilterType,
   compileRegexOrThrow,
   normalizeRegexFlags,
 } from '../utils/regex-filter-rule.utils';
+
+import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';
 
 /**
  * CRUD for regex filter rules (HTTP API + cache invalidation).
@@ -35,6 +37,7 @@ export class AgentsFiltersService {
   async create(dto: CreateRegexFilterRuleDto): Promise<RegexFilterRuleEntity> {
     assertReplaceContentForFilterType(dto.filterType, dto.replaceContent);
     const flags = normalizeRegexFlags(dto.regexFlags);
+
     compileRegexOrThrow(dto.pattern, flags);
     const row = await this.repository.create({
       pattern: dto.pattern,
@@ -44,7 +47,9 @@ export class AgentsFiltersService {
       replaceContent: dto.filterType === 'filter' ? dto.replaceContent : null,
       priority: dto.priority ?? 0,
     });
+
     this.cache.invalidate();
+
     return row;
   }
 
@@ -52,12 +57,15 @@ export class AgentsFiltersService {
     const existing = await this.repository.findByIdOrThrow(id);
     const filterType = dto.filterType ?? existing.filterType;
     let replaceContent = dto.replaceContent !== undefined ? dto.replaceContent : existing.replaceContent;
+
     if (filterType !== 'filter') {
       replaceContent = null;
     }
+
     assertReplaceContentForFilterType(filterType, replaceContent);
     const pattern = dto.pattern ?? existing.pattern;
     const regexFlags = dto.regexFlags !== undefined ? normalizeRegexFlags(dto.regexFlags) : existing.regexFlags;
+
     compileRegexOrThrow(pattern, regexFlags);
     const updated = await this.repository.update(id, {
       pattern,
@@ -67,7 +75,9 @@ export class AgentsFiltersService {
       replaceContent: filterType === 'filter' ? replaceContent : null,
       priority: dto.priority ?? existing.priority,
     });
+
     this.cache.invalidate();
+
     return updated;
   }
 

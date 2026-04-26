@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import { ServerInfo } from '../utils/provisioning.utils';
 
 @Injectable()
@@ -9,6 +10,7 @@ export class HetznerProvisioningService {
 
   constructor() {
     this.apiToken = process.env.HETZNER_API_TOKEN || '';
+
     if (!this.apiToken) {
       this.logger.warn('HETZNER_API_TOKEN environment variable is not set. Hetzner provisioning will not function.');
     }
@@ -39,8 +41,8 @@ export class HetznerProvisioningService {
           headers: { Authorization: `Bearer ${this.apiToken}` },
         },
       );
-
       const serverId = response.data?.server?.id as number | undefined;
+
       if (!serverId) {
         throw new BadRequestException('Failed to provision server');
       }
@@ -56,6 +58,7 @@ export class HetznerProvisioningService {
       return { serverId: serverId.toString() };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to provision Hetzner server: ${axiosError.message}`);
       throw new BadRequestException(`Failed to provision server: ${axiosError.message}`);
     }
@@ -64,6 +67,7 @@ export class HetznerProvisioningService {
   async deprovisionServer(serverId: string): Promise<void> {
     if (!this.apiToken) {
       this.logger.warn('HETZNER_API_TOKEN not set, skipping deprovisioning');
+
       return;
     }
 
@@ -74,6 +78,7 @@ export class HetznerProvisioningService {
       this.logger.log(`Successfully deprovisioned Hetzner server ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to deprovision Hetzner server ${serverId}: ${axiosError.message}`);
       throw new BadRequestException(`Failed to deprovision server: ${axiosError.message}`);
     }
@@ -94,8 +99,8 @@ export class HetznerProvisioningService {
         `https://api.hetzner.cloud/v1/servers/${serverId}`,
         { headers: { Authorization: `Bearer ${this.apiToken}` } },
       );
-
       const server = response.data?.server;
+
       if (!server) {
         throw new BadRequestException('Invalid response from Hetzner API');
       }
@@ -116,10 +121,13 @@ export class HetznerProvisioningService {
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to get Hetzner server info ${serverId}: ${axiosError.message}`);
+
       if (axiosError.response?.status === 404) {
         throw new BadRequestException(`Server ${serverId} not found`);
       }
+
       throw new BadRequestException(`Failed to get server info: ${axiosError.message}`);
     }
   }
@@ -138,6 +146,7 @@ export class HetznerProvisioningService {
       this.logger.log(`Started Hetzner server ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to start Hetzner server ${serverId}: ${axiosError.message}`);
       throw new BadRequestException(`Failed to start server: ${axiosError.message}`);
     }
@@ -157,6 +166,7 @@ export class HetznerProvisioningService {
       this.logger.log(`Stopped Hetzner server ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to stop Hetzner server ${serverId}: ${axiosError.message}`);
       throw new BadRequestException(`Failed to stop server: ${axiosError.message}`);
     }
@@ -176,6 +186,7 @@ export class HetznerProvisioningService {
       this.logger.log(`Restarted Hetzner server ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to restart Hetzner server ${serverId}: ${axiosError.message}`);
       throw new BadRequestException(`Failed to restart server: ${axiosError.message}`);
     }

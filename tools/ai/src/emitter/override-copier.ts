@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import type { ToolName } from '../types';
 
 /**
@@ -21,31 +22,34 @@ import type { ToolName } from '../types';
  */
 export function copyOverrides(agenstraDir: string, toolName: ToolName, outputDir: string): void {
   const overridesDir = path.join(agenstraDir, 'overrides');
+
   if (!fs.existsSync(overridesDir) || !fs.statSync(overridesDir).isDirectory()) {
     return;
   }
 
   const root = path.isAbsolute(outputDir) ? outputDir : path.resolve(process.cwd(), outputDir);
-
   // Map tool names to override source paths (mirrors transformer output paths)
   const overridePaths: Record<ToolName, string[]> = {
     cursor: ['.cursor'],
     opencode: ['.opencode', 'AGENTS.md', 'opencode.json'],
     'github-copilot': ['.github'],
   };
-
   const pathsToCopy = overridePaths[toolName] || [];
+
   for (const overridePath of pathsToCopy) {
     const sourcePath = path.join(overridesDir, overridePath);
+
     if (!fs.existsSync(sourcePath)) continue;
 
     if (fs.statSync(sourcePath).isFile()) {
       // Single file override (e.g. AGENTS.md, opencode.json)
       const targetPath = path.join(root, overridePath);
       const targetDir = path.dirname(targetPath);
+
       if (!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir, { recursive: true });
       }
+
       fs.copyFileSync(sourcePath, targetPath);
     } else if (fs.statSync(sourcePath).isDirectory()) {
       // Directory override (e.g. .cursor/, .opencode/, .github/)
@@ -63,6 +67,7 @@ function copyDirectoryRecursive(source: string, target: string): void {
   }
 
   const entries = fs.readdirSync(source, { withFileTypes: true });
+
   for (const entry of entries) {
     const sourcePath = path.join(source, entry.name);
     const targetPath = path.join(target, entry.name);

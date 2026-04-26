@@ -33,8 +33,10 @@ export class SshExecutorService {
             if (err) {
               conn.end();
               reject(err);
+
               return;
             }
+
             stream
               .on('close', (code: number | null) => {
                 conn.end();

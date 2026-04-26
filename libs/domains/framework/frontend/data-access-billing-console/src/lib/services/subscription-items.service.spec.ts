@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { ServerInfoResponse, SubscriptionItemResponse } from '../types/billing.types';
+
 import { SubscriptionItemsService } from './subscription-items.service';
 
 describe('SubscriptionItemsService', () => {
   let service: SubscriptionItemsService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockItems: SubscriptionItemResponse[] = [
     {
       id: 'item-1',
@@ -17,7 +18,6 @@ describe('SubscriptionItemsService', () => {
       provisioningStatus: 'active',
     },
   ];
-
   const mockServerInfo: ServerInfoResponse = {
     name: 'server-1',
     publicIp: '1.2.3.4',
@@ -55,6 +55,7 @@ describe('SubscriptionItemsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/sub-1/items`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockItems);
     });
@@ -68,6 +69,7 @@ describe('SubscriptionItemsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/sub-1/items/item-1/server-info`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockServerInfo);
     });
@@ -81,6 +83,7 @@ describe('SubscriptionItemsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/sub-1/items/item-1/actions/start`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({});
       req.flush({ success: true });
@@ -95,6 +98,7 @@ describe('SubscriptionItemsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/sub-1/items/item-1/actions/stop`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({});
       req.flush({ success: true });
@@ -109,6 +113,7 @@ describe('SubscriptionItemsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/sub-1/items/item-1/actions/restart`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({});
       req.flush({ success: true });

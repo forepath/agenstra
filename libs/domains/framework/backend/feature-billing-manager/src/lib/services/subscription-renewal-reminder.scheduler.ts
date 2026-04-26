@@ -1,9 +1,10 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { SubscriptionEntity } from '../entities/subscription.entity';
-import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { ServicePlansRepository } from '../repositories/service-plans.repository';
-import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { EmailService } from '@forepath/shared/backend';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+
+import { SubscriptionEntity } from '../entities/subscription.entity';
+import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
+import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
 @Injectable()
 export class SubscriptionRenewalReminderScheduler implements OnModuleInit, OnModuleDestroy {
@@ -79,12 +80,12 @@ export class SubscriptionRenewalReminderScheduler implements OnModuleInit, OnMod
 
     if (!email) {
       this.logger.debug(`No email found for user ${subscription.userId}, skipping reminder`);
+
       return;
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const renewalDate = subscription.nextBillingAt?.toLocaleDateString() ?? 'soon';
-
     const sent = await this.emailService.send({
       to: email,
       subject: `Upcoming subscription renewal: ${plan.name}`,
@@ -100,6 +101,7 @@ export class SubscriptionRenewalReminderScheduler implements OnModuleInit, OnMod
 
   private cleanupOldReminders(now: Date): void {
     const maxAge = 30 * 24 * 60 * 60 * 1000;
+
     for (const [key, timestamp] of this.sentReminders.entries()) {
       if (now.getTime() - timestamp.getTime() > maxAge) {
         this.sentReminders.delete(key);

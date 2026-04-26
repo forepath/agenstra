@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { SubscriptionsState } from './subscriptions.reducer';
 
 export const selectSubscriptionsState = createFeatureSelector<SubscriptionsState>('subscriptions');

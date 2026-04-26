@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { TicketsService } from '../../services/tickets.service';
+
 import {
   addTicketComment,
   addTicketCommentSuccess,
@@ -38,7 +40,6 @@ import { EMPTY_TICKET_TASKS, type TicketResponseDto } from './tickets.types';
 describe('TicketsEffects', () => {
   let actions$: Actions;
   let ticketsService: jest.Mocked<TicketsService>;
-
   const mockTicket: TicketResponseDto = {
     id: 'ticket-1',
     clientId: 'client-1',
@@ -75,6 +76,7 @@ describe('TicketsEffects', () => {
       const params = { clientId: 'client-1', parentId: null };
       const action = loadTickets({ params });
       const outcome = loadTicketsSuccess({ tickets: [mockTicket] });
+
       actions$ = of(action);
       ticketsService.listTickets.mockReturnValue(of([mockTicket]));
       loadTickets$(actions$, ticketsService).subscribe((result) => {
@@ -86,6 +88,7 @@ describe('TicketsEffects', () => {
     it('should return loadTicketsFailure on error', (done) => {
       const action = loadTickets({ params: {} });
       const outcome = loadTicketsFailure({ error: 'list failed' });
+
       actions$ = of(action);
       ticketsService.listTickets.mockReturnValue(throwError(() => new Error('list failed')));
       loadTickets$(actions$, ticketsService).subscribe((result) => {
@@ -102,6 +105,7 @@ describe('TicketsEffects', () => {
       ticketsService.listActivity.mockReturnValue(of([]));
       const action = openTicketDetail({ id: 'ticket-1' });
       const outcome = loadTicketDetailBundleSuccess({ ticket: mockTicket, comments: [], activity: [] });
+
       actions$ = of(action);
       openTicketDetail$(actions$, ticketsService).subscribe((result) => {
         expect(result).toEqual(outcome);
@@ -115,6 +119,7 @@ describe('TicketsEffects', () => {
       const dto = { clientId: 'client-1', title: 'New' };
       const action = createTicket({ dto });
       const outcome = createTicketSuccess({ ticket: mockTicket });
+
       actions$ = of(action);
       ticketsService.createTicket.mockReturnValue(of(mockTicket));
       createTicket$(actions$, ticketsService).subscribe((result) => {
@@ -129,6 +134,7 @@ describe('TicketsEffects', () => {
       const child = { ...mockTicket, id: 'child-1', parentId: 'ticket-1', title: 'Proposal' };
       const apiResponse = { ...mockTicket, createdChildTickets: [child] };
       const outcome = createTicketSuccess({ ticket: mockTicket, createdChildTickets: [child] });
+
       actions$ = of(action);
       ticketsService.createTicket.mockReturnValue(of(apiResponse));
       createTicket$(actions$, ticketsService).subscribe((result) => {
@@ -140,6 +146,7 @@ describe('TicketsEffects', () => {
     it('should return createTicketFailure on error', (done) => {
       const action = createTicket({ dto: { title: 'x' } });
       const outcome = createTicketFailure({ error: 'x' });
+
       actions$ = of(action);
       ticketsService.createTicket.mockReturnValue(throwError(() => new Error('x')));
       createTicket$(actions$, ticketsService).subscribe((result) => {
@@ -164,6 +171,7 @@ describe('TicketsEffects', () => {
       ];
       const action = updateTicket({ id: 'ticket-1', dto: { status: 'done' } });
       const outcome = updateTicketSuccess({ ticket: updated, activity });
+
       actions$ = of(action);
       ticketsService.updateTicket.mockReturnValue(of(updated));
       ticketsService.listActivity.mockReturnValue(of(activity));
@@ -177,6 +185,7 @@ describe('TicketsEffects', () => {
     it('should return updateTicketFailure on error', (done) => {
       const action = updateTicket({ id: '1', dto: {} });
       const outcome = updateTicketFailure({ error: 'patch failed' });
+
       actions$ = of(action);
       ticketsService.updateTicket.mockReturnValue(throwError(() => new Error('patch failed')));
       updateTicket$(actions$, ticketsService).subscribe((result) => {
@@ -190,6 +199,7 @@ describe('TicketsEffects', () => {
     it('should return deleteTicketSuccess', (done) => {
       const action = deleteTicket({ id: 'ticket-1' });
       const outcome = deleteTicketSuccess({ id: 'ticket-1' });
+
       actions$ = of(action);
       ticketsService.deleteTicket.mockReturnValue(of(undefined));
       deleteTicket$(actions$, ticketsService).subscribe((result) => {
@@ -201,6 +211,7 @@ describe('TicketsEffects', () => {
     it('should return deleteTicketFailure on error', (done) => {
       const action = deleteTicket({ id: 'ticket-1' });
       const outcome = deleteTicketFailure({ error: 'gone' });
+
       actions$ = of(action);
       ticketsService.deleteTicket.mockReturnValue(throwError(() => new Error('gone')));
       deleteTicket$(actions$, ticketsService).subscribe((result) => {
@@ -220,6 +231,7 @@ describe('TicketsEffects', () => {
         migratedTicketIds: ['ticket-1', 'child-1'],
         requestedTicketId: 'child-1',
       });
+
       actions$ = of(action);
       ticketsService.migrateTicket.mockReturnValue(of({ ticket: root }));
       migrateTicket$(actions$, ticketsService).subscribe((result) => {
@@ -232,6 +244,7 @@ describe('TicketsEffects', () => {
     it('should return migrateTicketFailure on error', (done) => {
       const action = migrateTicket({ id: 'ticket-1', targetClientId: 'client-2' });
       const outcome = migrateTicketFailure({ error: 'forbidden' });
+
       actions$ = of(action);
       ticketsService.migrateTicket.mockReturnValue(throwError(() => new Error('forbidden')));
       migrateTicket$(actions$, ticketsService).subscribe((result) => {
@@ -261,6 +274,7 @@ describe('TicketsEffects', () => {
       ];
       const action = addTicketComment({ ticketId: 'ticket-1', body: 'hello' });
       const outcome = addTicketCommentSuccess({ comment, activity });
+
       actions$ = of(action);
       ticketsService.addComment.mockReturnValue(of(comment));
       ticketsService.listActivity.mockReturnValue(of(activity));

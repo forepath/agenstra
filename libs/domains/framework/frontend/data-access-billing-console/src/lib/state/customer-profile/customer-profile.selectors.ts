@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { CustomerProfileState } from './customer-profile.reducer';
 
 export const selectCustomerProfileState = createFeatureSelector<CustomerProfileState>('customerProfile');

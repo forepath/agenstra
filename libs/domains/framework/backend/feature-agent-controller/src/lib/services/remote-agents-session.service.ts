@@ -1,9 +1,11 @@
 import { ClientAgentCredentialsRepository } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import type { Socket as ClientSocket } from 'socket.io-client';
+
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
@@ -40,21 +42,27 @@ export class RemoteAgentsSessionService {
     const effectivePort = (overridePort && String(overridePort)) || process.env.CLIENTS_REMOTE_WS_PORT || '8080';
     const protocol = url.protocol === 'https:' ? 'https' : 'http';
     const host = url.hostname;
+
     return `${protocol}://${host}:${effectivePort}/agents`;
   }
 
   private async getAuthHeader(clientId: string): Promise<string> {
     const client = await this.clientsRepository.findByIdOrThrow(clientId);
+
     if (client.authenticationType === AuthenticationType.API_KEY) {
       if (!client.apiKey) {
         throw new BadRequestException('API key not configured for client');
       }
+
       return `Bearer ${client.apiKey}`;
     }
+
     if (client.authenticationType === AuthenticationType.KEYCLOAK) {
       const token = await this.clientsService.getAccessToken(clientId);
+
       return `Bearer ${token}`;
     }
+
     throw new BadRequestException('Unsupported authentication type');
   }
 
@@ -62,18 +70,25 @@ export class RemoteAgentsSessionService {
     if (!payload || typeof payload !== 'object') {
       return '';
     }
+
     const envelope = payload as { success?: boolean; data?: { from?: string; response?: unknown } };
+
     if (!envelope.success || !envelope.data || envelope.data.from !== 'agent') {
       return '';
     }
+
     const r = envelope.data.response;
+
     if (typeof r === 'string') {
       return r;
     }
+
     if (r && typeof r === 'object' && 'result' in (r as object)) {
       const res = (r as { result?: unknown }).result;
+
       return typeof res === 'string' ? res : JSON.stringify(res);
     }
+
     return JSON.stringify(r);
   }
 
@@ -92,8 +107,8 @@ export class RemoteAgentsSessionService {
       rejectUnauthorized: false,
       reconnection: false,
     });
-
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
+
     if (!creds?.password) {
       throw new BadRequestException('No stored credentials for this agent');
     }
@@ -103,6 +118,7 @@ export class RemoteAgentsSessionService {
     try {
       await new Promise<void>((resolve, reject) => {
         const t = setTimeout(() => reject(new BadRequestException('Remote socket connect timeout')), 15000);
+
         remote.once('connect', () => {
           clearTimeout(t);
           resolve();
@@ -115,6 +131,7 @@ export class RemoteAgentsSessionService {
 
       await new Promise<void>((resolve, reject) => {
         const t = setTimeout(() => reject(new BadRequestException('Remote login timeout')), 10000);
+
         remote.once('loginSuccess', () => {
           clearTimeout(t);
           resolve();
@@ -122,6 +139,7 @@ export class RemoteAgentsSessionService {
         remote.once('loginError', (err: unknown) => {
           clearTimeout(t);
           const msg = (err as { error?: { message?: string } })?.error?.message ?? 'login failed';
+
           reject(new BadRequestException(msg));
         });
         remote.emit('login', { agentId: params.agentId, password: creds.password });
@@ -130,6 +148,7 @@ export class RemoteAgentsSessionService {
       const wordCount = params.message.trim().split(/\s+/).filter(Boolean).length;
       const charCount = params.message.length;
       const kind = params.statisticsInteractionKind ?? StatisticsInteractionKind.CHAT;
+
       await this.statisticsService.recordChatInput(
         params.clientId,
         params.agentId,
@@ -148,9 +167,9 @@ export class RemoteAgentsSessionService {
             reject(new BadRequestException('Timed out waiting for agent chat response'));
           }
         }, chatTimeoutMs);
-
         const onChatMessage = (msg: unknown) => {
           const text = this.extractAgentText(msg);
+
           if (text && !settled) {
             settled = true;
             clearTimeout(t);
@@ -169,8 +188,8 @@ export class RemoteAgentsSessionService {
           resumeSessionSuffix: params.resumeSessionSuffix,
         });
       });
-
       const outWords = output.trim().split(/\s+/).filter(Boolean).length;
+
       await this.statisticsService.recordChatOutput(
         params.clientId,
         params.agentId,

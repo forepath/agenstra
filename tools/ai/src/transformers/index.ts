@@ -1,4 +1,5 @@
 import type { ToolName } from '../types';
+
 import type { BaseTransformer } from './base.transformer';
 import { CursorTransformer } from './cursor.transformer';
 import { GithubCopilotTransformer } from './github-copilot.transformer';
@@ -18,7 +19,9 @@ const transformers: Record<ToolName, BaseTransformer> = {
 
 export function getTransformer(name: ToolName): BaseTransformer {
   const t = transformers[name];
+
   if (!t) throw new Error(`Unknown tool: ${name}. Supported: ${listToolNames().join(', ')}`);
+
   return t;
 }
 

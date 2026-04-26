@@ -49,6 +49,7 @@ export class ThemeService {
   private getInitialTheme(): boolean {
     // Check localStorage first
     const stored = this.document.defaultView?.localStorage.getItem(this.storageKey);
+
     if (stored !== null) {
       return stored === 'dark';
     }

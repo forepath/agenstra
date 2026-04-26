@@ -8,7 +8,6 @@ describe('InvoiceSyncScheduler', () => {
   const invoiceNinjaService = {
     getInvoiceDetailsForSync: jest.fn(),
   } as any;
-
   const scheduler = new InvoiceSyncScheduler(invoiceRefsRepository, invoiceNinjaService);
 
   beforeEach(() => {
@@ -25,6 +24,7 @@ describe('InvoiceSyncScheduler', () => {
         invoiceNumber: 'INV-001',
       },
     ];
+
     invoiceRefsRepository.findBatchForSync.mockResolvedValue(refs);
     invoiceNinjaService.getInvoiceDetailsForSync.mockResolvedValue({
       status: '2',
@@ -50,6 +50,7 @@ describe('InvoiceSyncScheduler', () => {
         balance: 50,
       },
     ];
+
     invoiceRefsRepository.findBatchForSync.mockResolvedValue(refs);
     invoiceNinjaService.getInvoiceDetailsForSync.mockResolvedValue({
       status: '2',
@@ -74,6 +75,7 @@ describe('InvoiceSyncScheduler', () => {
         invoiceNumber: 'INV-002',
       },
     ];
+
     invoiceRefsRepository.findBatchForSync.mockResolvedValue(refs);
     invoiceNinjaService.getInvoiceDetailsForSync.mockResolvedValue({
       status: '2',
@@ -104,6 +106,7 @@ describe('InvoiceSyncScheduler', () => {
         invoiceNumber: 'INV-003',
       },
     ];
+
     invoiceRefsRepository.findBatchForSync.mockResolvedValue(refs);
     invoiceNinjaService.getInvoiceDetailsForSync.mockResolvedValue(null);
 
@@ -130,6 +133,7 @@ describe('InvoiceSyncScheduler', () => {
         invoiceNumber: 'INV-005',
       },
     ];
+
     invoiceRefsRepository.findBatchForSync.mockResolvedValue(refs);
     invoiceNinjaService.getInvoiceDetailsForSync
       .mockRejectedValueOnce(new Error('Network error'))
@@ -160,6 +164,7 @@ describe('InvoiceSyncScheduler', () => {
         invoiceNumber: 'INV-B2',
       },
     ];
+
     invoiceRefsRepository.findBatchForSync
       .mockResolvedValueOnce(fullBatch)
       .mockResolvedValueOnce(secondBatch)

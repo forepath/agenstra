@@ -1,4 +1,5 @@
 import { TicketActionType } from '../entities/ticket.enums';
+
 import { derivePatchActionType } from './ticket-activity-payload.utils';
 
 describe('ticket-activity-payload.utils', () => {

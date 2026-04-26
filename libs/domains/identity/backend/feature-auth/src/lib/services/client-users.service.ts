@@ -1,4 +1,3 @@
-import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
 import {
   ClientUserEntity,
   ClientUserRole,
@@ -6,6 +5,8 @@ import {
   IIdentityStatisticsService,
   UserRole,
 } from '@forepath/identity/backend';
+import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
+
 import { AddClientUserDto } from '../dto/add-client-user.dto';
 import { ClientUserResponseDto } from '../dto/client-user-response.dto';
 import { ClientUsersRepository } from '../repositories/client-users.repository';
@@ -46,12 +47,14 @@ export class ClientUsersService {
   ): Promise<ClientUserResponseDto> {
     // Find user by email
     const user = await this.usersRepository.findByEmail(addClientUserDto.email);
+
     if (!user) {
       throw new BadRequestException(`User with email '${addClientUserDto.email}' not found`);
     }
 
     // Check if relationship already exists
     const existingRelationship = await this.clientUsersRepository.findByUserAndClient(user.id, clientId);
+
     if (existingRelationship) {
       throw new BadRequestException(`User '${addClientUserDto.email}' is already associated with this client`);
     }
@@ -156,9 +159,11 @@ export class ClientUsersService {
    */
   async getClientUsers(clientId: string): Promise<ClientUserResponseDto[]> {
     const clientUsers = await this.clientUsersRepository.findByClientId(clientId);
+
     return Promise.all(
       clientUsers.map(async (cu) => {
         const user = cu.user || (await this.usersRepository.findById(cu.userId));
+
         return this.mapToResponseDto(cu, user?.email);
       }),
     );

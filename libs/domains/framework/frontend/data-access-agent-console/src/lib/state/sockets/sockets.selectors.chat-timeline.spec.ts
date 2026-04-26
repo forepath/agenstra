@@ -1,6 +1,6 @@
 import { CLIENT_CHAT_AUTOMATION_SOCKET_EVENT } from './client-chat-automation.constants';
-import type { ForwardedEventPayload } from './sockets.types';
 import { selectChatTimelineOrdered } from './sockets.selectors';
+import type { ForwardedEventPayload } from './sockets.types';
 
 describe('selectChatTimelineOrdered', () => {
   it('orders chat and automation by semantic timestamp and dedupes automation by run id', () => {
@@ -50,6 +50,7 @@ describe('selectChatTimelineOrdered', () => {
       selectedAgentId: 'a1',
     } as never;
     const out = selectChatTimelineOrdered.projector(state.forwardedEvents as never, state.selectedAgentId);
+
     expect(out.map((r) => r.event)).toEqual([CLIENT_CHAT_AUTOMATION_SOCKET_EVENT, 'chatMessage']);
     expect((out[0]?.payload as typeof autoPayload2).run.status).toBe('succeeded');
   });
@@ -88,6 +89,7 @@ describe('selectChatTimelineOrdered', () => {
       ] as never,
       'a1',
     );
+
     expect(out).toHaveLength(0);
   });
 });

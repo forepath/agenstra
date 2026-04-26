@@ -1,7 +1,7 @@
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 
 /**
  * Repository for client database operations.
@@ -22,9 +22,11 @@ export class ClientsRepository {
    */
   async findByIdOrThrow(id: string): Promise<ClientEntity> {
     const client = await this.repository.findOne({ where: { id } });
+
     if (!client) {
       throw new NotFoundException(`Client with ID ${id} not found`);
     }
+
     return client;
   }
 
@@ -74,6 +76,7 @@ export class ClientsRepository {
    */
   async findAllIds(): Promise<string[]> {
     const rows = await this.repository.find({ select: ['id'] });
+
     return rows.map((r) => r.id);
   }
 
@@ -87,6 +90,7 @@ export class ClientsRepository {
     const rows = await this.repository.find({
       select: ['id', 'name', 'endpoint', 'authenticationType'],
     });
+
     return rows.map((r) => ({
       id: r.id,
       name: r.name,
@@ -105,6 +109,7 @@ export class ClientsRepository {
       where: { userId },
       select: ['id'],
     });
+
     return rows.map((r) => r.id);
   }
 
@@ -115,6 +120,7 @@ export class ClientsRepository {
    */
   async create(dto: Partial<ClientEntity>): Promise<ClientEntity> {
     const client = this.repository.create(dto);
+
     return await this.repository.save(client);
   }
 
@@ -127,7 +133,9 @@ export class ClientsRepository {
    */
   async update(id: string, dto: Partial<ClientEntity>): Promise<ClientEntity> {
     const client = await this.findByIdOrThrow(id);
+
     Object.assign(client, dto);
+
     return await this.repository.save(client);
   }
 
@@ -138,6 +146,7 @@ export class ClientsRepository {
    */
   async delete(id: string): Promise<void> {
     const client = await this.findByIdOrThrow(id);
+
     await this.repository.remove(client);
   }
 }

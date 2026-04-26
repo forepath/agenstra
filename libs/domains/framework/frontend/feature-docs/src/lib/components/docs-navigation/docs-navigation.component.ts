@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { NavigationNode } from '@forepath/framework/frontend/util-docs-parser';
+
 import { DocsNavigationService } from '../../services';
 
 @Component({
@@ -35,11 +36,13 @@ export class DocsNavigationComponent {
    */
   toggleSection(path: string): void {
     const expanded = new Set(this.expandedSections());
+
     if (expanded.has(path)) {
       expanded.delete(path);
     } else {
       expanded.add(path);
     }
+
     this.expandedSections.set(expanded);
   }
 

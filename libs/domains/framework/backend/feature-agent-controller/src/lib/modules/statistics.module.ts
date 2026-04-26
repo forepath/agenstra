@@ -1,6 +1,7 @@
 import { ClientEntity, UserEntity, UsersRepository } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';

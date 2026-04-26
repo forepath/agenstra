@@ -1,4 +1,5 @@
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
+
 import { AGENSTRA_AUTOMATION_COMPLETE } from './automation-completion.constants';
 import { buildAutonomousTicketRunPreamble, buildPrototypePrompt } from './tickets-prototype-prompt.utils';
 
@@ -22,6 +23,7 @@ describe('tickets-prototype-prompt.utils', () => {
       ],
     };
     const out = buildPrototypePrompt(tree);
+
     expect(out).toContain('[root]');
     expect(out).toContain('[c1]');
     expect(out).toContain('Child');
@@ -29,6 +31,7 @@ describe('tickets-prototype-prompt.utils', () => {
 
   it('includes automation completion marker in autonomous preamble', () => {
     const preamble = buildAutonomousTicketRunPreamble();
+
     expect(preamble).toContain(AGENSTRA_AUTOMATION_COMPLETE);
   });
 });

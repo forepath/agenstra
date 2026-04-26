@@ -1,6 +1,15 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+
+import type {
+  CreateServiceTypeDto,
+  ListParams,
+  ProviderDetail,
+  ServiceTypeResponse,
+  UpdateServiceTypeDto,
+} from '../../types/billing.types';
+
 import {
   clearSelectedServiceType,
   createServiceType,
@@ -29,13 +38,6 @@ import {
   selectServiceTypesLoadingAny,
   selectServiceTypesUpdating,
 } from './service-types.selectors';
-import type {
-  CreateServiceTypeDto,
-  ListParams,
-  ProviderDetail,
-  ServiceTypeResponse,
-  UpdateServiceTypeDto,
-} from '../../types/billing.types';
 
 /**
  * Facade for service types state management.

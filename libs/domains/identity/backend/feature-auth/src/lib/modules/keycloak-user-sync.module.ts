@@ -1,9 +1,10 @@
+import { UserEntity } from '@forepath/identity/backend';
+import { EmailService } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@forepath/identity/backend';
-import { EmailService } from '@forepath/shared/backend';
+
 import { UsersController } from '../controllers/users.controller';
 import { KeycloakAuthGuard } from '../guards/keycloak-auth.guard';
 import { KeycloakRolesGuard } from '../guards/keycloak-roles.guard';

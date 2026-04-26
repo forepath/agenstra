@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { transform } from './transform';
 import { listToolNames } from './transformers';
 import type { ToolName } from './types';
@@ -18,14 +19,16 @@ function parseArgv(argv: string[]): {
   let outputDir = '.';
   let dryRun = false;
   let help = false;
-
   const validTargets = listToolNames();
+
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
+
     if (arg === '--path' || arg === '-p') {
       pathOpt = argv[++i] ?? pathOpt;
     } else if (arg === '--target' || arg === '-t') {
       const raw = argv[++i];
+
       if (raw) targetOpt = raw.split(',').map((s) => s.trim() as ToolName);
     } else if (arg === '--outputDir' || arg === '-o') {
       outputDir = argv[++i] ?? outputDir;
@@ -37,6 +40,7 @@ function parseArgv(argv: string[]): {
   }
 
   const invalid = targetOpt.filter((t) => !validTargets.includes(t));
+
   if (invalid.length > 0) {
     console.error(`Invalid target(s): ${invalid.join(', ')}. Valid: ${validTargets.join(', ')}`);
     process.exit(1);
@@ -68,6 +72,7 @@ Examples:
 
 function main(): void {
   const args = parseArgv(process.argv.slice(2));
+
   if (args.help) {
     printHelp();
     process.exit(0);
@@ -110,11 +115,13 @@ function main(): void {
     opencode: '.opencode',
     'github-copilot': '.github',
   };
+
   for (const r of result.results) {
     console.log(
       `[agenstra:context] ${r.tool}: ${r.fileCount} file(s) -> ${path.join(outputDir, toolOutputDir[r.tool])}`,
     );
   }
+
   process.exit(0);
 }
 

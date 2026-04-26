@@ -7,11 +7,13 @@ import {
 describe('StatisticsEntityEventEntity', () => {
   it('should create an instance', () => {
     const entity = new StatisticsEntityEventEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const entity = new StatisticsEntityEventEntity();
+
     entity.id = 'event-uuid';
     entity.eventType = StatisticsEntityEventType.CREATED;
     entity.entityType = StatisticsEntityType.CLIENT;
@@ -27,6 +29,7 @@ describe('StatisticsEntityEventEntity', () => {
 
   it('should allow optional shadow entity IDs', () => {
     const entity = new StatisticsEntityEventEntity();
+
     entity.statisticsUserId = 'stats-user-uuid';
     entity.statisticsClientsId = 'stats-client-uuid';
     entity.statisticsAgentsId = 'stats-agent-uuid';
@@ -38,14 +41,17 @@ describe('StatisticsEntityEventEntity', () => {
 
   it('should support CREATED, UPDATED, and DELETED event types', () => {
     const createdEntity = new StatisticsEntityEventEntity();
+
     createdEntity.eventType = StatisticsEntityEventType.CREATED;
     expect(createdEntity.eventType).toBe('created');
 
     const updatedEntity = new StatisticsEntityEventEntity();
+
     updatedEntity.eventType = StatisticsEntityEventType.UPDATED;
     expect(updatedEntity.eventType).toBe('updated');
 
     const deletedEntity = new StatisticsEntityEventEntity();
+
     deletedEntity.eventType = StatisticsEntityEventType.DELETED;
     expect(deletedEntity.eventType).toBe('deleted');
   });
@@ -61,6 +67,7 @@ describe('StatisticsEntityEventEntity', () => {
 
     types.forEach((entityType, index) => {
       const entity = new StatisticsEntityEventEntity();
+
       entity.entityType = entityType;
       expect(entity.entityType).toBe(types[index]);
     });

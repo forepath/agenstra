@@ -2,6 +2,7 @@ import { libraryGenerator as angularLibraryGenerator } from '@nx/angular/generat
 import { formatFiles, GeneratorCallback, Tree, updateJson } from '@nx/devkit';
 import { libraryGenerator as jsLibraryGenerator } from '@nx/js';
 import { libraryGenerator as nodeLibraryGenerator } from '@nx/node';
+
 import { LibGeneratorSchema } from './schema';
 
 export async function libGenerator(tree: Tree, options: LibGeneratorSchema) {

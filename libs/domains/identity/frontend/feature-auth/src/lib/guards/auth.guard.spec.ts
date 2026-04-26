@@ -1,10 +1,12 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IdentityAuthEnvironment } from '../../../../util-auth/src';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { IDENTITY_AUTH_ENVIRONMENT, isAuthenticated } from '../../../../util-auth/src';
+
 import { authGuard } from './auth.guard';
 
 // Mock keycloak-angular to avoid ES module import issues with keycloak-js in Jest.
@@ -26,7 +28,6 @@ describe('authGuard', () => {
   let mockState: RouterStateSnapshot;
   let mockEnvironment: IdentityAuthEnvironment;
   let mockIsAuthenticated: jest.MockedFunction<typeof isAuthenticated>;
-
   const setupTestBed = (environmentOverrides?: Partial<IdentityAuthEnvironment>): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -41,6 +42,7 @@ describe('authGuard', () => {
         },
       ],
     });
+
     return TestBed.inject(Injector);
   };
 
@@ -95,6 +97,7 @@ describe('authGuard', () => {
 
     it('should delegate to isAuthenticated guard', () => {
       const injector = setupTestBed();
+
       mockIsAuthenticated.mockReturnValue(true);
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -106,6 +109,7 @@ describe('authGuard', () => {
     it('should return the result from isAuthenticated guard', () => {
       const injector = setupTestBed();
       const mockUrlTree = {} as UrlTree;
+
       mockIsAuthenticated.mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -131,7 +135,6 @@ describe('authGuard', () => {
           apiKey: 'test-api-key',
         },
       });
-
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
 
       expect(result).toBe(true);
@@ -144,6 +147,7 @@ describe('authGuard', () => {
           type: 'api-key',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue('stored-api-key');
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -160,6 +164,7 @@ describe('authGuard', () => {
           apiKey: 'env-api-key',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue('stored-api-key');
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -174,8 +179,10 @@ describe('authGuard', () => {
           type: 'api-key',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -192,8 +199,10 @@ describe('authGuard', () => {
           apiKey: '',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue('');
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -222,6 +231,7 @@ describe('authGuard', () => {
       const exp = Math.floor((Date.now() + 3600000) / 1000);
       const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
       const jwt = `header.${payload}.signature`;
+
       (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
         key === 'agent-controller-users-jwt' ? jwt : null,
       );
@@ -238,8 +248,10 @@ describe('authGuard', () => {
           type: 'users',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -257,10 +269,12 @@ describe('authGuard', () => {
       const exp = Math.floor((Date.now() - 3600000) / 1000);
       const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
       const jwt = `header.${payload}.signature`;
+
       (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
         key === 'agent-controller-users-jwt' ? jwt : null,
       );
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
@@ -278,6 +292,7 @@ describe('authGuard', () => {
         } as IdentityAuthEnvironment['authentication'],
       });
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));

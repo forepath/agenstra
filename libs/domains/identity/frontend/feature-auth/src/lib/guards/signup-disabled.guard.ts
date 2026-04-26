@@ -16,6 +16,7 @@ export const signupDisabledGuard: CanActivateFn = () => {
   }
 
   const usersAuth = environment.authentication as UsersAuthenticationConfig;
+
   if (usersAuth.disableSignup === true) {
     return router.createUrlTree(['/login']);
   }

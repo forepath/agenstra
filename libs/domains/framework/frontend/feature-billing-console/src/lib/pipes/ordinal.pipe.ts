@@ -9,10 +9,13 @@ export class OrdinalPipe implements PipeTransform {
     if (value == null || typeof value !== 'number') {
       return '';
     }
+
     const n = Math.floor(value);
+
     if (n < 1 || n > 31) {
       return String(n);
     }
+
     const mod10 = n % 10;
     const mod100 = n % 100;
     const suffix =
@@ -23,6 +26,7 @@ export class OrdinalPipe implements PipeTransform {
           : mod10 === 3 && mod100 !== 13
             ? 'rd'
             : 'th';
+
     return `${n}${suffix}`;
   }
 }

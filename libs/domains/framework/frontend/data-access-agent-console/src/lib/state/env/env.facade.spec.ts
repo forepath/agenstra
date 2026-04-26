@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   clearEnvironmentVariables,
   createEnvironmentVariable,
@@ -20,11 +21,9 @@ import type {
 describe('EnvFacade', () => {
   let facade: EnvFacade;
   let store: jest.Mocked<Store>;
-
   const clientId = 'client-1';
   const agentId = 'agent-1';
   const envVarId = 'env-var-1';
-
   const mockEnvironmentVariable: EnvironmentVariableResponseDto = {
     id: envVarId,
     agentId: agentId,
@@ -100,6 +99,7 @@ describe('EnvFacade', () => {
 
     it('should dispatch loadEnvironmentVariables with params', () => {
       const params = { limit: 10, offset: 20 };
+
       facade.loadEnvironmentVariables(clientId, agentId, params);
       expect(store.dispatch).toHaveBeenCalledWith(loadEnvironmentVariables({ clientId, agentId, params }));
     });
@@ -114,6 +114,7 @@ describe('EnvFacade', () => {
         variable: 'NEW_VAR',
         content: 'new-value',
       };
+
       facade.createEnvironmentVariable(clientId, agentId, createDto);
       expect(store.dispatch).toHaveBeenCalledWith(createEnvironmentVariable({ clientId, agentId, createDto }));
     });
@@ -123,6 +124,7 @@ describe('EnvFacade', () => {
         variable: 'UPDATED_VAR',
         content: 'updated-value',
       };
+
       facade.updateEnvironmentVariable(clientId, agentId, envVarId, updateDto);
       expect(store.dispatch).toHaveBeenCalledWith(
         updateEnvironmentVariable({ clientId, agentId, envVarId, updateDto }),

@@ -11,10 +11,10 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { VcsFacade, type GitBranch } from '@forepath/framework/frontend/data-access-agent-console';
-import { combineLatest, filter, map, Observable, of, switchMap } from 'rxjs';
+import { combineLatest, filter, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'framework-git-branch-modal',
@@ -73,8 +73,10 @@ export class GitBranchModalComponent {
     if (!this.useConventionalPrefix()) {
       return this.customBranchName();
     }
+
     const prefix = `${this.conventionalType()}/`;
     const name = this.customBranchName() || '';
+
     return name.startsWith(prefix) ? name : `${prefix}${name}`;
   });
 
@@ -82,6 +84,7 @@ export class GitBranchModalComponent {
     // Watch for modal open/close
     effect(() => {
       const open = this.isOpen();
+
       if (open) {
         this.loadBranches();
         setTimeout(() => this.showModal(), 100);
@@ -148,6 +151,7 @@ export class GitBranchModalComponent {
     // For remote branches, use the format "remote/branch-name" to create a local tracking branch
     if (branch.isRemote && branch.remote) {
       const remoteBranchRef = `${branch.remote}/${branch.name}`;
+
       this.vcsFacade.switchBranch(this.clientId(), this.agentId(), remoteBranchRef);
     } else {
       this.vcsFacade.switchBranch(this.clientId(), this.agentId(), branch.name);
@@ -156,6 +160,7 @@ export class GitBranchModalComponent {
 
   onManualSwitchBranch(): void {
     const targetBranch = this.manualSwitchBranchName().trim();
+
     if (!targetBranch) {
       return;
     }
@@ -168,6 +173,7 @@ export class GitBranchModalComponent {
 
   onCreateBranch(): void {
     const name = this.branchName().trim();
+
     if (!name) {
       return;
     }
@@ -189,6 +195,7 @@ export class GitBranchModalComponent {
     if (branch.isCurrent || branch.isRemote) {
       return;
     }
+
     this.deletingBranch.set(branch.name);
     this.vcsFacade.deleteBranch(this.clientId(), this.agentId(), branch.name);
   }
@@ -202,11 +209,13 @@ export class GitBranchModalComponent {
     if (this.branchModal?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(this.branchModal.nativeElement);
+
       if (modal) {
         modal.show();
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Modal = (window as any).bootstrap?.Modal;
+
         if (Modal) {
           new Modal(this.branchModal.nativeElement).show();
         }
@@ -218,6 +227,7 @@ export class GitBranchModalComponent {
     if (this.branchModal?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getInstance(this.branchModal.nativeElement);
+
       if (modal) {
         modal.hide();
       }

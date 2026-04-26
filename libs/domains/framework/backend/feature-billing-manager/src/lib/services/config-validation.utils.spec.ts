@@ -3,6 +3,7 @@ import { validateConfigSchema } from '../utils/config-validation.utils';
 describe('validateConfigSchema', () => {
   it('returns errors for missing required fields', () => {
     const errors = validateConfigSchema({ required: ['region'] }, {});
+
     expect(errors.length).toBe(1);
   });
 
@@ -11,6 +12,7 @@ describe('validateConfigSchema', () => {
       { properties: { region: { type: 'string' }, count: { type: 'number' } } },
       { region: 123, count: 'test' },
     );
+
     expect(errors.length).toBe(2);
   });
 
@@ -22,6 +24,7 @@ describe('validateConfigSchema', () => {
       },
       { region: 'fsn1', count: 2, enabled: false },
     );
+
     expect(errors.length).toBe(0);
   });
 
@@ -32,6 +35,7 @@ describe('validateConfigSchema', () => {
       },
       { region: 'invalid' },
     );
+
     expect(errors.some((e) => e.includes('region'))).toBe(true);
   });
 
@@ -42,6 +46,7 @@ describe('validateConfigSchema', () => {
       },
       { region: 'nbg1' },
     );
+
     expect(errors.length).toBe(0);
   });
 });

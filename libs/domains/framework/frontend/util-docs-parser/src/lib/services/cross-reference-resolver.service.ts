@@ -83,6 +83,7 @@ export class CrossReferenceResolverService {
     // Check if file exists in available files
     return availableFiles.some((file) => {
       const filePath = file.replace(/\.md$/, '');
+
       return filePath === pathWithoutAnchor || filePath.endsWith(`/${pathWithoutAnchor}`);
     });
   }

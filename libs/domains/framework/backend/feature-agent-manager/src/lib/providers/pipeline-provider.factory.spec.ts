@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PipelineProvider, PipelineProviderCredentials } from './pipeline-provider.interface';
+
 import { PipelineProviderFactory } from './pipeline-provider.factory';
+import { PipelineProvider } from './pipeline-provider.interface';
 
 describe('PipelineProviderFactory', () => {
   let factory: PipelineProviderFactory;

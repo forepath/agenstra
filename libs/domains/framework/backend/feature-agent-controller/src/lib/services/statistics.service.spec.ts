@@ -1,16 +1,17 @@
 import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
+
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
+
 import { StatisticsService } from './statistics.service';
 
 describe('StatisticsService', () => {
   let service: StatisticsService;
   let statisticsRepository: jest.Mocked<Pick<StatisticsRepository, keyof StatisticsRepository>>;
   let clientsRepository: jest.Mocked<Pick<ClientsRepository, keyof ClientsRepository>>;
-
   const mockClient: ClientEntity = {
     id: 'client-uuid',
     name: 'Test Client',
@@ -19,7 +20,6 @@ describe('StatisticsService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockStatisticsClient = { id: 'stats-client-uuid', originalClientId: 'client-uuid' };
   const mockStatisticsAgent = { id: 'stats-agent-uuid', originalAgentId: 'agent-uuid' };
   const mockStatisticsUser = {
@@ -57,6 +57,7 @@ describe('StatisticsService', () => {
       ],
     });
     const compiled = await module.compile();
+
     service = compiled.get(StatisticsService);
   });
 
@@ -293,8 +294,10 @@ describe('StatisticsService', () => {
       );
       const providerMetadata = (statisticsRepository.createStatisticsProvisioningReference as jest.Mock).mock
         .calls[0][0].providerMetadata;
+
       expect(providerMetadata).toBeDefined();
       const parsed = JSON.parse(providerMetadata);
+
       expect(parsed).not.toHaveProperty('gitToken');
       expect(parsed).toHaveProperty('location', 'fsn1');
     });

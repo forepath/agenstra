@@ -12,6 +12,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+
 import { CreateEnvironmentVariableDto } from '../dto/create-environment-variable.dto';
 import { EnvironmentVariableResponseDto } from '../dto/environment-variable-response.dto';
 import { UpdateEnvironmentVariableDto } from '../dto/update-environment-variable.dto';
@@ -43,6 +44,7 @@ export class AgentsEnvironmentVariablesController {
       limit ?? 50,
       offset ?? 0,
     );
+
     return variables.map(this.mapToResponseDto);
   }
 
@@ -56,6 +58,7 @@ export class AgentsEnvironmentVariablesController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
   ): Promise<{ count: number }> {
     const count = await this.agentEnvironmentVariablesService.countEnvironmentVariables(agentId);
+
     return { count };
   }
 
@@ -76,6 +79,7 @@ export class AgentsEnvironmentVariablesController {
       createDto.variable,
       createDto.content,
     );
+
     return this.mapToResponseDto(variable);
   }
 
@@ -97,6 +101,7 @@ export class AgentsEnvironmentVariablesController {
       updateDto.variable,
       updateDto.content,
     );
+
     return this.mapToResponseDto(variable);
   }
 
@@ -125,6 +130,7 @@ export class AgentsEnvironmentVariablesController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
   ): Promise<{ deletedCount: number }> {
     const deletedCount = await this.agentEnvironmentVariablesService.deleteAllEnvironmentVariables(agentId);
+
     return { deletedCount };
   }
 

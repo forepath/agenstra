@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CreateBranchDto } from '../dto/create-branch.dto';
-import { PrepareCleanWorkspaceDto } from '../dto/prepare-clean-workspace.dto';
 import { GitBranchDto } from '../dto/git-branch.dto';
 import { GitDiffDto } from '../dto/git-diff.dto';
 import { GitStatusDto } from '../dto/git-status.dto';
+import { PrepareCleanWorkspaceDto } from '../dto/prepare-clean-workspace.dto';
 import { AgentsVcsService } from '../services/agents-vcs.service';
+
 import { AgentsVcsController } from './agents-vcs.controller';
 
 describe('AgentsVcsController', () => {
   let controller: AgentsVcsController;
   let service: jest.Mocked<AgentsVcsService>;
-
   const mockAgentId = 'test-agent-uuid';
-
   const mockGitStatus: GitStatusDto = {
     currentBranch: 'main',
     isClean: false,
@@ -27,7 +27,6 @@ describe('AgentsVcsController', () => {
       },
     ],
   };
-
   const mockBranches: GitBranchDto[] = [
     {
       name: 'main',
@@ -40,7 +39,6 @@ describe('AgentsVcsController', () => {
       behindCount: 0,
     },
   ];
-
   const mockGitDiff: GitDiffDto = {
     path: 'file1.txt',
     originalContent: Buffer.from('Old content', 'utf-8').toString('base64'),
@@ -48,7 +46,6 @@ describe('AgentsVcsController', () => {
     encoding: 'utf-8',
     isBinary: false,
   };
-
   const mockService = {
     getStatus: jest.fn(),
     getBranches: jest.fn(),
@@ -111,6 +108,7 @@ describe('AgentsVcsController', () => {
   describe('getFileDiff', () => {
     it('should return file diff', async () => {
       const filePath = 'file1.txt';
+
       service.getFileDiff.mockResolvedValue(mockGitDiff);
 
       const result = await controller.getFileDiff(mockAgentId, filePath);
@@ -127,6 +125,7 @@ describe('AgentsVcsController', () => {
   describe('stageFiles', () => {
     it('should stage files', async () => {
       const dto = { files: ['file1.txt'] };
+
       service.stageFiles.mockResolvedValue(undefined);
 
       await controller.stageFiles(mockAgentId, dto);
@@ -138,6 +137,7 @@ describe('AgentsVcsController', () => {
   describe('unstageFiles', () => {
     it('should unstage files', async () => {
       const dto = { files: ['file1.txt'] };
+
       service.unstageFiles.mockResolvedValue(undefined);
 
       await controller.unstageFiles(mockAgentId, dto);
@@ -149,6 +149,7 @@ describe('AgentsVcsController', () => {
   describe('commit', () => {
     it('should commit changes', async () => {
       const dto = { message: 'Test commit' };
+
       service.commit.mockResolvedValue(undefined);
 
       await controller.commit(mockAgentId, dto);
@@ -198,6 +199,7 @@ describe('AgentsVcsController', () => {
   describe('prepareCleanWorkspace', () => {
     it('should delegate to service with base branch', async () => {
       const body: PrepareCleanWorkspaceDto = { baseBranch: 'main' };
+
       service.prepareCleanWorkspace.mockResolvedValue(undefined);
 
       await controller.prepareCleanWorkspace(mockAgentId, body);
@@ -209,6 +211,7 @@ describe('AgentsVcsController', () => {
   describe('rebase', () => {
     it('should rebase branch', async () => {
       const dto = { branch: 'main' };
+
       service.rebase.mockResolvedValue(undefined);
 
       await controller.rebase(mockAgentId, dto);
@@ -224,6 +227,7 @@ describe('AgentsVcsController', () => {
         useConventionalPrefix: true,
         conventionalType: 'feat',
       };
+
       service.createBranch.mockResolvedValue(undefined);
 
       await controller.createBranch(mockAgentId, dto);
@@ -235,6 +239,7 @@ describe('AgentsVcsController', () => {
   describe('switchBranch', () => {
     it('should switch branch', async () => {
       const branchName = 'feature/test';
+
       service.switchBranch.mockResolvedValue(undefined);
 
       await controller.switchBranch(mockAgentId, branchName);
@@ -246,6 +251,7 @@ describe('AgentsVcsController', () => {
   describe('deleteBranch', () => {
     it('should delete branch', async () => {
       const branchName = 'feature/old';
+
       service.deleteBranch.mockResolvedValue(undefined);
 
       await controller.deleteBranch(mockAgentId, branchName);
@@ -260,6 +266,7 @@ describe('AgentsVcsController', () => {
         path: 'conflict-file.txt',
         strategy: 'yours' as const,
       };
+
       service.resolveConflict.mockResolvedValue(undefined);
 
       await controller.resolveConflict(mockAgentId, dto);

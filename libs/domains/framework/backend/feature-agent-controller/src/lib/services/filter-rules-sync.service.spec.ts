@@ -1,7 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import { AgentConsoleRegexFilterRuleSyncTargetEntity } from '../entities/agent-console-regex-filter-rule-sync-target.entity';
 import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
+
 import { AgentManagerFilterRulesClientService } from './agent-manager-filter-rules-client.service';
 import { FilterRulesSyncService } from './filter-rules-sync.service';
 
@@ -25,6 +27,7 @@ describe('FilterRulesSyncService', () => {
       ],
     }).compile();
     const svc = moduleRef.get(FilterRulesSyncService);
+
     expect(await svc.processBatch(5)).toBe(0);
   });
 });

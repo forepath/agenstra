@@ -1,5 +1,4 @@
-import { spawn, ChildProcess } from 'node:child_process';
-import { createInterface } from 'node:readline';
+import { ChildProcess, spawn } from 'node:child_process';
 import * as path from 'node:path';
 
 interface ProxyConfig {
@@ -39,14 +38,10 @@ class McpProxy {
         `[MCP Proxy] Starting target process: ${this.config.targetCommand} ${this.config.targetArgs.join(' ')}`,
       );
 
-      this.childProcess = spawn(
-        this.config.targetCommand,
-        this.config.targetArgs,
-        {
-          stdio: ['pipe', 'pipe', 'pipe'],
-          cwd: process.cwd(),
-        },
-      );
+      this.childProcess = spawn(this.config.targetCommand, this.config.targetArgs, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: process.cwd(),
+      });
 
       this.childProcess.stdout?.on('data', (data) => {
         process.stdout.write(data);
@@ -59,9 +54,7 @@ class McpProxy {
       process.stdin.pipe(this.childProcess.stdin!);
 
       this.childProcess.on('exit', (code, signal) => {
-        console.error(
-          `[MCP Proxy] Target process exited with code ${code}, signal ${signal}`,
-        );
+        console.error(`[MCP Proxy] Target process exited with code ${code}, signal ${signal}`);
         this.childProcess = null;
 
         if (!this.isShuttingDown && this.shouldRestart) {
@@ -82,6 +75,7 @@ class McpProxy {
       console.error('[MCP Proxy] Target process started successfully');
     } catch (error) {
       console.error(`[MCP Proxy] Failed to start target process:`, error);
+
       if (!this.isShuttingDown && this.shouldRestart) {
         this.scheduleRestart();
       }
@@ -94,9 +88,7 @@ class McpProxy {
     this.restartAttempts++;
 
     if (this.restartAttempts > this.config.maxRestartAttempts) {
-      console.error(
-        `[MCP Proxy] Max restart attempts (${this.config.maxRestartAttempts}) reached. Exiting.`,
-      );
+      console.error(`[MCP Proxy] Max restart attempts (${this.config.maxRestartAttempts}) reached. Exiting.`);
       process.exit(1);
     }
 
@@ -115,17 +107,15 @@ class McpProxy {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require('node:fs');
     const targetPath = this.config.targetArgs[0];
-
     let watchPath: string;
+
     if (path.isAbsolute(targetPath)) {
       watchPath = path.dirname(targetPath);
     } else {
       const pathParts = targetPath.split(path.sep);
+
       if (pathParts.length >= 3) {
-        watchPath = path.resolve(
-          process.cwd(),
-          pathParts.slice(0, -1).join(path.sep),
-        );
+        watchPath = path.resolve(process.cwd(), pathParts.slice(0, -1).join(path.sep));
       } else {
         watchPath = path.resolve(process.cwd(), path.dirname(targetPath));
       }
@@ -135,25 +125,14 @@ class McpProxy {
       if (fs.existsSync(watchPath)) {
         console.error(`[MCP Proxy] Watching for changes in: ${watchPath}`);
 
-        fs.watch(
-          watchPath,
-          { recursive: true },
-          (eventType: string, filename: string) => {
-            if (
-              filename &&
-              (filename.endsWith('.js') || filename.endsWith('.json'))
-            ) {
-              console.error(
-                `[MCP Proxy] File change detected: ${filename}, restarting target process...`,
-              );
-              this.restartTargetProcess();
-            }
-          },
-        );
+        fs.watch(watchPath, { recursive: true }, (eventType: string, filename: string) => {
+          if (filename && (filename.endsWith('.js') || filename.endsWith('.json'))) {
+            console.error(`[MCP Proxy] File change detected: ${filename}, restarting target process...`);
+            this.restartTargetProcess();
+          }
+        });
       } else {
-        console.error(
-          `[MCP Proxy] Warning: watch directory not found at ${watchPath}, file watching disabled`,
-        );
+        console.error(`[MCP Proxy] Warning: watch directory not found at ${watchPath}, file watching disabled`);
       }
     } catch (error) {
       console.error(`[MCP Proxy] Error setting up file watcher:`, error);
@@ -190,6 +169,7 @@ class McpProxy {
             if (this.childProcess && !this.childProcess.killed) {
               this.childProcess.kill('SIGKILL');
             }
+
             resolve();
           }, 5000);
         } else {
@@ -204,26 +184,27 @@ class McpProxy {
 
 const getTargetPath = (): string => {
   const envPath = process.env.MCP_DEVKIT_PATH;
+
   if (envPath) {
-    console.error(
-      `[MCP Proxy] Using MCP_DEVKIT_PATH from environment: ${envPath}`,
-    );
+    console.error(`[MCP Proxy] Using MCP_DEVKIT_PATH from environment: ${envPath}`);
+
     return envPath;
   }
 
   const defaultPath = 'dist/apps/mcp-devkit/main.js';
+
   console.error(`[MCP Proxy] Using default MCP_DEVKIT_PATH: ${defaultPath}`);
+
   return defaultPath;
 };
-
 const config: ProxyConfig = {
   targetCommand: 'node',
   targetArgs: [getTargetPath()],
   restartDelay: 1000,
   maxRestartAttempts: 10,
 };
-
 const proxy = new McpProxy(config);
+
 proxy.start().catch((error) => {
   console.error('[MCP Proxy] Fatal error:', error);
   process.exit(1);

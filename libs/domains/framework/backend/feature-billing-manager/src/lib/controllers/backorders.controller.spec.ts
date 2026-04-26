@@ -1,21 +1,21 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { BackordersController } from './backorders.controller';
-import { BackorderService } from '../services/backorder.service';
-import { BackordersRepository } from '../repositories/backorders.repository';
+
 import { BackorderStatus } from '../entities/backorder.entity';
+import { BackordersRepository } from '../repositories/backorders.repository';
+import { BackorderService } from '../services/backorder.service';
+
+import { BackordersController } from './backorders.controller';
 
 describe('BackordersController', () => {
   let controller: BackordersController;
   let backorderService: jest.Mocked<Pick<BackorderService, 'listForUser' | 'retry' | 'cancel'>>;
   let backordersRepository: jest.Mocked<Pick<BackordersRepository, 'findByIdOrThrow'>>;
-
   const backorderId = '22222222-2222-4222-8222-222222222222';
   const userId = 'user-1';
   const otherUserId = 'user-2';
   const reqWithUser = { user: { id: userId, roles: ['user'] } };
   const reqWithAdmin = { user: { id: 'admin-1', roles: ['admin'] } };
-
   const backorderOwnedByUser = {
     id: backorderId,
     userId,
@@ -28,7 +28,6 @@ describe('BackordersController', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const backorderOwnedByOther = {
     ...backorderOwnedByUser,
     userId: otherUserId,
@@ -59,6 +58,7 @@ describe('BackordersController', () => {
     it('returns backorders for authenticated user', async () => {
       backorderService.listForUser.mockResolvedValue([backorderOwnedByUser] as never);
       const result = await controller.list(10, 0, reqWithUser as never);
+
       expect(backorderService.listForUser).toHaveBeenCalledWith(userId, 10, 0);
       expect(result).toHaveLength(1);
     });
@@ -72,6 +72,7 @@ describe('BackordersController', () => {
   describe('retry', () => {
     it('retries when backorder belongs to user', async () => {
       const result = await controller.retry(backorderId, {} as never, reqWithUser as never);
+
       expect(backordersRepository.findByIdOrThrow).toHaveBeenCalledWith(backorderId);
       expect(backorderService.retry).toHaveBeenCalledWith(backorderId);
       expect(result.userId).toBe(userId);
@@ -96,6 +97,7 @@ describe('BackordersController', () => {
       backorderService.retry.mockResolvedValue(backorderOwnedByOther as never);
 
       const result = await controller.retry(backorderId, {} as never, reqWithAdmin as never);
+
       expect(backorderService.retry).toHaveBeenCalledWith(backorderId);
       expect(result.userId).toBe(otherUserId);
     });
@@ -110,6 +112,7 @@ describe('BackordersController', () => {
   describe('cancel', () => {
     it('cancels when backorder belongs to user', async () => {
       const result = await controller.cancel(backorderId, {} as never, reqWithUser as never);
+
       expect(backordersRepository.findByIdOrThrow).toHaveBeenCalledWith(backorderId);
       expect(backorderService.cancel).toHaveBeenCalledWith(backorderId);
       expect(result.status).toBe(BackorderStatus.CANCELLED);
@@ -137,6 +140,7 @@ describe('BackordersController', () => {
       } as never);
 
       const result = await controller.cancel(backorderId, {} as never, reqWithAdmin as never);
+
       expect(backorderService.cancel).toHaveBeenCalledWith(backorderId);
       expect(result.status).toBe(BackorderStatus.CANCELLED);
     });

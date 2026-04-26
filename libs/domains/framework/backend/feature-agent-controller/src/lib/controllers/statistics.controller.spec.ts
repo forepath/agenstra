@@ -1,18 +1,18 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ClientsService } from '../services/clients.service';
 import { StatisticsQueryService } from '../services/statistics-query.service';
+
 import { StatisticsController } from './statistics.controller';
 
 describe('StatisticsController', () => {
   let controller: StatisticsController;
   let clientsService: jest.Mocked<ClientsService>;
   let statisticsQueryService: jest.Mocked<StatisticsQueryService>;
-
   const mockClientsService = {
     getAccessibleClientIds: jest.fn(),
   };
-
   const mockStatisticsQueryService = {
     getSummary: jest.fn(),
     getChatIo: jest.fn(),

@@ -2,6 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { KeycloakService } from 'keycloak-angular';
 import { from, switchMap } from 'rxjs';
+
 import { IDENTITY_AUTH_ENVIRONMENT } from './auth-environment';
 
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
@@ -18,20 +19,22 @@ export const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authEnv = inject(IDENTITY_AUTH_ENVIRONMENT);
   const keycloakService = inject(KeycloakService, { optional: true });
-
   const apiUrl = authEnv.apiUrl;
   const additionalUrls = authEnv.additionalApiUrls ?? [];
   const urlMatches =
     (apiUrl && req.url.startsWith(apiUrl)) || additionalUrls.some((base) => base && req.url.startsWith(base));
+
   if (!urlMatches) {
     return next(req);
   }
 
   if (authEnv.authentication.type === 'api-key') {
     const apiKey = authEnv.authentication.apiKey ?? localStorage.getItem(API_KEY_STORAGE_KEY);
+
     if (apiKey) {
       return next(req.clone({ setHeaders: { Authorization: `Bearer ${apiKey}` } }));
     }
+
     return next(req);
   }
 
@@ -43,6 +46,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (authEnv.authentication.type === 'users') {
     const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
+
     if (jwt) {
       return next(req.clone({ setHeaders: { Authorization: `Bearer ${jwt}` } }));
     }

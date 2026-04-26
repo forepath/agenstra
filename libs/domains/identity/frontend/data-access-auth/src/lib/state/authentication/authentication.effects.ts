@@ -6,7 +6,9 @@ import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
 import { catchError, from, map, of, switchMap, tap } from 'rxjs';
+
 import { AuthService, LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
+
 import {
   changePassword,
   changePasswordFailure,
@@ -100,6 +102,7 @@ function getRolesFromKeycloakToken(token: unknown): string[] {
   }
 
   collectRoles(tokenPayload.realm_access?.roles);
+
   if (tokenPayload.resource_access && typeof tokenPayload.resource_access === 'object') {
     for (const resource of Object.values(tokenPayload.resource_access)) {
       if (resource !== null && typeof resource === 'object' && 'roles' in resource) {
@@ -115,18 +118,23 @@ function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse && error.error?.message) {
     return error.error.message;
   }
+
   if (error instanceof HttpErrorResponse && error.error?.error) {
     return typeof error.error.error === 'string' ? error.error.error : String(error.error.error);
   }
+
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected authentication error occurred';
 }
 
@@ -142,22 +150,28 @@ export const login$ = createEffect(
       switchMap(({ apiKey, email, password }) => {
         if (authEnvironment.authentication.type === 'api-key') {
           const keyToStore = apiKey || authEnvironment.authentication.apiKey;
+
           if (keyToStore) {
             localStorage.setItem(API_KEY_STORAGE_KEY, keyToStore);
+
             return of(loginSuccess({ authenticationType: 'api-key' }));
           }
+
           return of(loginFailure({ error: 'API key is required for authentication' }));
         }
+
         if (authEnvironment.authentication.type === 'keycloak' && keycloakService) {
           return from(keycloakService.login()).pipe(
             map(() => loginSuccess({ authenticationType: 'keycloak' })),
             catchError((error) => of(loginFailure({ error: normalizeError(error) }))),
           );
         }
+
         if (authEnvironment.authentication.type === 'users' && authService && email && password) {
           return authService.login(email, password).pipe(
             map((res) => {
               localStorage.setItem(USERS_JWT_STORAGE_KEY, res.access_token);
+
               return loginSuccess({
                 authenticationType: 'users',
                 user: res.user,
@@ -166,6 +180,7 @@ export const login$ = createEffect(
             catchError((error) => of(loginFailure({ error: normalizeError(error) }))),
           );
         }
+
         return of(loginFailure({ error: 'Authentication service not available' }));
       }),
     );
@@ -196,18 +211,23 @@ export const logout$ = createEffect(
       switchMap(() => {
         if (authEnvironment.authentication.type === 'api-key') {
           localStorage.removeItem(API_KEY_STORAGE_KEY);
+
           return of(logoutSuccess());
         }
+
         if (authEnvironment.authentication.type === 'keycloak' && keycloakService) {
           return from(keycloakService.logout()).pipe(
             map(() => logoutSuccess()),
             catchError((error) => of(logoutFailure({ error: normalizeError(error) }))),
           );
         }
+
         if (authEnvironment.authentication.type === 'users') {
           localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+
           return of(logoutSuccess());
         }
+
         return of(logoutSuccess());
       }),
     );
@@ -240,6 +260,7 @@ export const checkAuthentication$ = createEffect(
           const envApiKey = authEnvironment.authentication.apiKey;
           const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
           const isAuthenticated = !!(envApiKey || storedApiKey);
+
           return of(
             checkAuthenticationSuccess({
               isAuthenticated,
@@ -247,6 +268,7 @@ export const checkAuthentication$ = createEffect(
             }),
           );
         }
+
         if (authEnvironment.authentication.type === 'keycloak' && keycloakService) {
           try {
             const isAuthenticated = keycloakService.isLoggedIn();
@@ -271,8 +293,10 @@ export const checkAuthentication$ = createEffect(
             return of(checkAuthenticationFailure({ error: normalizeError(error) }));
           }
         }
+
         if (authEnvironment.authentication.type === 'users') {
           const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
+
           if (jwt) {
             try {
               const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
@@ -281,6 +305,7 @@ export const checkAuthentication$ = createEffect(
               const role = payload.roles?.find((role: string) => role === 'admin') ? 'admin' : 'user';
               const user =
                 payload.sub && payload.email ? { id: payload.sub, email: payload.email, role: role } : undefined;
+
               return of(
                 checkAuthenticationSuccess({
                   isAuthenticated,
@@ -290,11 +315,14 @@ export const checkAuthentication$ = createEffect(
               );
             } catch {
               localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+
               return of(checkAuthenticationSuccess({ isAuthenticated: false }));
             }
           }
+
           return of(checkAuthenticationSuccess({ isAuthenticated: false }));
         }
+
         return of(checkAuthenticationSuccess({ isAuthenticated: false }));
       }),
     );
@@ -441,14 +469,17 @@ export const loadUsers$ = createEffect(
       ofType(loadUsers),
       switchMap(() => {
         const batchParams = { limit: USERS_BATCH_SIZE, offset: 0 };
+
         return authService.listUsers(batchParams).pipe(
           switchMap((users) => {
             if (users.length === 0) {
               return of(loadUsersSuccess({ users: [] }));
             }
+
             if (users.length < USERS_BATCH_SIZE) {
               return of(loadUsersSuccess({ users }));
             }
+
             return of(loadUsersBatch({ offset: USERS_BATCH_SIZE, accumulatedUsers: users }));
           }),
           catchError((error) => of(loadUsersFailure({ error: normalizeError(error) }))),
@@ -465,15 +496,19 @@ export const loadUsersBatch$ = createEffect(
       ofType(loadUsersBatch),
       switchMap(({ offset, accumulatedUsers }) => {
         const batchParams = { limit: USERS_BATCH_SIZE, offset };
+
         return authService.listUsers(batchParams).pipe(
           switchMap((users) => {
             const newAccumulated = [...accumulatedUsers, ...users];
+
             if (users.length === 0) {
               return of(loadUsersSuccess({ users: newAccumulated }));
             }
+
             if (users.length < USERS_BATCH_SIZE) {
               return of(loadUsersSuccess({ users: newAccumulated }));
             }
+
             return of(loadUsersBatch({ offset: offset + USERS_BATCH_SIZE, accumulatedUsers: newAccumulated }));
           }),
           catchError((error) => of(loadUsersFailure({ error: normalizeError(error) }))),

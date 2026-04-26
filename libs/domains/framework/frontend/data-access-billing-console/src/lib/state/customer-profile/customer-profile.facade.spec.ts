@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
+import type { CustomerProfileDto, CustomerProfileResponse } from '../../types/billing.types';
+
 import { clearCustomerProfile, loadCustomerProfile, updateCustomerProfile } from './customer-profile.actions';
 import { CustomerProfileFacade } from './customer-profile.facade';
-import type { CustomerProfileDto, CustomerProfileResponse } from '../../types/billing.types';
 
 describe('CustomerProfileFacade', () => {
   let facade: CustomerProfileFacade;
   let store: jest.Mocked<Store>;
-
   const mockProfile: CustomerProfileResponse = {
     id: 'cp-1',
     userId: 'user-1',
@@ -55,6 +56,7 @@ describe('CustomerProfileFacade', () => {
 
     it('should dispatch updateCustomerProfile', () => {
       const profile: CustomerProfileDto = { firstName: 'Jane' };
+
       facade.updateCustomerProfile(profile);
       expect(store.dispatch).toHaveBeenCalledWith(updateCustomerProfile({ profile }));
     });

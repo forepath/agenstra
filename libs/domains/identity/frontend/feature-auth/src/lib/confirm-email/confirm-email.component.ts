@@ -8,6 +8,7 @@ import { AuthenticationFacade, confirmEmailSuccess, IDENTITY_AUTH_ENVIRONMENT } 
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
+
 import { IdentityOtpInputComponent } from '../otp-input/otp-input.component';
 
 @Component({
@@ -38,6 +39,7 @@ export class IdentityConfirmEmailComponent implements OnInit {
   ngOnInit(): void {
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
     const codeFromQuery = (this.route.snapshot.queryParamMap.get('code') ?? '').toUpperCase();
+
     this.form = this.fb.group({
       email: [emailFromQuery, [Validators.required, Validators.email]],
       code: [codeFromQuery, [Validators.required, Validators.pattern(/^[A-Z0-9]{6}$/)]],
@@ -65,9 +67,11 @@ export class IdentityConfirmEmailComponent implements OnInit {
 
   onSubmit(): void {
     this.formSubmitted = true;
+
     if (this.form.valid) {
       const email = this.form.get('email')?.value;
       const code = this.form.get('code')?.value;
+
       this.authFacade.confirmEmail(email, code);
     } else {
       Object.keys(this.form.controls).forEach((key) => {

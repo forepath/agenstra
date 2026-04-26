@@ -14,7 +14,9 @@ function excerptParentContext(content: string | null | undefined): string {
   if (!content?.trim()) {
     return '_No description on the parent ticket yet—fill the parent body or paste context here._';
   }
+
   const t = content.trim();
+
   return t.length <= PARENT_CONTENT_MAX ? t : `${t.slice(0, PARENT_CONTENT_MAX)}…`;
 }
 
@@ -23,6 +25,7 @@ export function buildSpecificationSubtaskSeeds(
   parentContent: string | null | undefined,
 ): SpecificationSubtaskSeed[] {
   const ctx = excerptParentContext(parentContent);
+
   return [
     {
       title: 'Proposal',

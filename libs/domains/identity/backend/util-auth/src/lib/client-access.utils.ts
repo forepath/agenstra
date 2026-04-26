@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
+
 import type { ClientUserEntity } from './entities/client-user.entity';
 import { ClientUserRole } from './entities/client-user.entity';
 import type { ClientEntityLike } from './entities/client.entity.types';
@@ -61,18 +62,23 @@ export function canManageWorkspaceConfiguration(userInfo: UserInfoFromRequest, a
   if (userInfo.isApiKeyAuth) {
     return true;
   }
+
   if (userInfo.userRole === UserRole.ADMIN) {
     return true;
   }
+
   if (!access.hasAccess) {
     return false;
   }
+
   if (access.isClientCreator) {
     return true;
   }
+
   if (access.clientUserRole === ClientUserRole.ADMIN) {
     return true;
   }
+
   return false;
 }
 
@@ -94,9 +100,11 @@ export async function ensureWorkspaceManagementAccess(
     userInfo.userRole,
     userInfo.isApiKeyAuth,
   );
+
   if (!access.hasAccess) {
     throw new ForbiddenException('You do not have access to this client');
   }
+
   if (!canManageWorkspaceConfiguration(userInfo, access)) {
     throw new ForbiddenException(WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE);
   }
@@ -121,12 +129,15 @@ export async function assertWorkspaceManagementAccessForUser(
     userRole,
     isApiKeyAuth,
   );
+
   if (!access.hasAccess) {
     throw new ForbiddenException('You do not have access to this client');
   }
+
   const userInfo: UserInfoFromRequest = isApiKeyAuth
     ? { isApiKeyAuth: true }
     : { userId, userRole, isApiKeyAuth: false };
+
   if (!canManageWorkspaceConfiguration(userInfo, access)) {
     throw new ForbiddenException(WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE);
   }
@@ -139,16 +150,19 @@ export async function assertWorkspaceManagementAccessForUser(
  */
 export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
   const isApiKeyAuth = !!req.apiKeyAuthenticated;
+
   if (isApiKeyAuth) {
     return { isApiKeyAuth: true };
   }
 
   const user = req.user;
+
   if (!user?.id) {
     return { isApiKeyAuth: false };
   }
 
   let userRole: UserRole = UserRole.USER;
+
   if (user.roles?.includes('admin') || user.roles?.includes(UserRole.ADMIN)) {
     userRole = UserRole.ADMIN;
   }
@@ -191,13 +205,14 @@ export async function checkClientAccess(
   }
 
   const client = await clientsRepository.findById(clientId);
+
   if (!client) {
     return { hasAccess: false, isClientCreator: false };
   }
 
   const isClientCreator = client.userId === userId;
-
   const clientUser = await clientUsersRepository.findUserClientAccess(userId, clientId);
+
   if (clientUser) {
     return { hasAccess: true, isClientCreator, clientUserRole: clientUser.role };
   }
@@ -232,8 +247,10 @@ export async function ensureClientAccess(
     userInfo.userRole,
     userInfo.isApiKeyAuth,
   );
+
   if (!access.hasAccess) {
     throw new ForbiddenException('You do not have access to this client');
   }
+
   return { isClientCreator: access.isClientCreator, clientUserRole: access.clientUserRole };
 }

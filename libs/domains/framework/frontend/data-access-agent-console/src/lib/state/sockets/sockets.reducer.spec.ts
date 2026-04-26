@@ -1,6 +1,5 @@
 import {
   chatEnhancementStarted,
-  ticketBodyGenerationStarted,
   clearChatHistory,
   connectSocket,
   connectSocketFailure,
@@ -27,9 +26,10 @@ import {
   socketReconnectError,
   socketReconnectFailed,
   socketReconnecting,
+  ticketBodyGenerationStarted,
 } from './sockets.actions';
 import { initialSocketsState, socketsReducer, type SocketsState } from './sockets.reducer';
-import { ChatActor, ForwardableEvent, type ForwardedEventPayload, type MessageFilterResultData } from './sockets.types';
+import { ChatActor, ForwardableEvent, type ForwardedEventPayload } from './sockets.types';
 
 describe('socketsReducer', () => {
   const mockForwardedPayload: ForwardedEventPayload = {
@@ -57,7 +57,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         error: 'Previous error',
       };
-
       const newState = socketsReducer(state, connectSocket());
 
       expect(newState.connecting).toBe(true);
@@ -71,7 +70,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         connecting: true,
       };
-
       const newState = socketsReducer(state, connectSocketSuccess());
 
       expect(newState.connected).toBe(true);
@@ -86,7 +84,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         connecting: true,
       };
-
       const newState = socketsReducer(state, connectSocketFailure({ error: 'Connection failed' }));
 
       expect(newState.error).toBe('Connection failed');
@@ -101,7 +98,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         error: 'Previous error',
       };
-
       const newState = socketsReducer(state, disconnectSocket());
 
       expect(newState.disconnecting).toBe(true);
@@ -119,7 +115,6 @@ describe('socketsReducer', () => {
         forwardedEvents: [{ event: 'chatMessage', payload: mockForwardedPayload, timestamp: Date.now() }],
         disconnecting: true,
       };
-
       const newState = socketsReducer(state, disconnectSocketSuccess());
 
       expect(newState.connected).toBe(false);
@@ -137,7 +132,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         error: 'Previous error',
       };
-
       const newState = socketsReducer(state, setClient({ clientId: 'client-1' }));
 
       expect(newState.error).toBeNull();
@@ -153,7 +147,6 @@ describe('socketsReducer', () => {
         settingClient: true,
         settingClientId: 'client-1',
       };
-
       const newState = socketsReducer(state, setClientSuccess({ message: 'Client set', clientId: 'client-1' }));
 
       expect(newState.selectedClientId).toBe('client-1');
@@ -181,7 +174,6 @@ describe('socketsReducer', () => {
           },
         ],
       };
-
       const newState = socketsReducer(state, setClientSuccess({ message: 'Client set', clientId: 'client-1' }));
 
       expect(newState.forwardedEvents).toEqual([]);
@@ -194,7 +186,6 @@ describe('socketsReducer', () => {
         selectedClientId: 'client-1',
         forwardedEvents: [{ event: 'chatMessage', payload: mockForwardedPayload, timestamp: 1000 }],
       };
-
       const newState = socketsReducer(state, setClientSuccess({ message: 'Client set', clientId: 'client-2' }));
 
       expect(newState.forwardedEvents).toEqual([
@@ -208,7 +199,6 @@ describe('socketsReducer', () => {
         selectedClientId: 'client-1',
         forwardedEvents: [],
       };
-
       const newState = socketsReducer(state, setClientSuccess({ message: 'Client set', clientId: 'client-1' }));
 
       expect(newState.forwardedEvents).toEqual([]);
@@ -222,7 +212,6 @@ describe('socketsReducer', () => {
         settingClient: true,
         settingClientId: 'client-1',
       };
-
       const newState = socketsReducer(state, setClientFailure({ error: 'Set client failed' }));
 
       expect(newState.error).toBe('Set client failed');
@@ -237,7 +226,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         chatModel: null,
       };
-
       const newState = socketsReducer(state, setChatModel({ model: 'gpt-4o' }));
 
       expect(newState.chatModel).toBe('gpt-4o');
@@ -248,6 +236,7 @@ describe('socketsReducer', () => {
     it('should update chatResponseMode', () => {
       const state = { ...initialSocketsState, chatResponseMode: 'stream' as const };
       const newState = socketsReducer(state, setChatResponseMode({ mode: 'single' }));
+
       expect(newState.chatResponseMode).toBe('single');
     });
   });
@@ -258,7 +247,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         error: 'Previous error',
       };
-
       const newState = socketsReducer(
         state,
         forwardEvent({ event: ForwardableEvent.CHAT, payload: { message: 'test' } }),
@@ -276,7 +264,6 @@ describe('socketsReducer', () => {
         forwarding: true,
         forwardingEvent: ForwardableEvent.CHAT,
       };
-
       const newState = socketsReducer(state, forwardEventSuccess({ received: true, event: ForwardableEvent.CHAT }));
 
       expect(newState.forwarding).toBe(false);
@@ -290,7 +277,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         forwarding: true,
       };
-
       const newState = socketsReducer(state, forwardEventFailure({ error: 'Forward failed' }));
 
       expect(newState.error).toBe('Forward failed');
@@ -304,7 +290,6 @@ describe('socketsReducer', () => {
         forwardingEvent: ForwardableEvent.ENHANCE_CHAT,
         chatEnhancementPendingCorrelationId: 'corr-1',
       };
-
       const newState = socketsReducer(state, forwardEventFailure({ error: 'Network error' }));
 
       expect(newState.chatEnhancementPendingCorrelationId).toBeNull();
@@ -322,7 +307,6 @@ describe('socketsReducer', () => {
         forwardingEvent: ForwardableEvent.GENERATE_TICKET_BODY,
         ticketBodyPendingCorrelationId: 'tb-1',
       };
-
       const newState = socketsReducer(state, forwardEventFailure({ error: 'Network error' }));
 
       expect(newState.ticketBodyPendingCorrelationId).toBeNull();
@@ -344,7 +328,6 @@ describe('socketsReducer', () => {
           enhancedText: 'x',
         },
       };
-
       const newState = socketsReducer(state, ticketBodyGenerationStarted({ correlationId: 'tb-2' }));
 
       expect(newState.ticketBodyPendingCorrelationId).toBe('tb-2');
@@ -362,7 +345,6 @@ describe('socketsReducer', () => {
           enhancedText: 'x',
         },
       };
-
       const newState = socketsReducer(state, chatEnhancementStarted({ correlationId: 'corr-2' }));
 
       expect(newState.chatEnhancementPendingCorrelationId).toBe('corr-2');
@@ -375,7 +357,6 @@ describe('socketsReducer', () => {
       const state: SocketsState = {
         ...initialSocketsState,
       };
-
       const newState = socketsReducer(state, socketError({ message: 'Socket error' }));
 
       expect(newState.error).toBe('Socket error');
@@ -386,7 +367,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         chatEnhancementPendingCorrelationId: 'corr-9',
       };
-
       const newState = socketsReducer(state, socketError({ message: 'boom' }));
 
       expect(newState.chatEnhancementPendingCorrelationId).toBeNull();
@@ -399,7 +379,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         ticketBodyPendingCorrelationId: 'tb-9',
       };
-
       const newState = socketsReducer(state, socketError({ message: 'boom' }));
 
       expect(newState.ticketBodyPendingCorrelationId).toBeNull();
@@ -414,8 +393,8 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         forwardedEvents: [],
       };
-
       const timestamp = Date.now();
+
       jest.spyOn(Date, 'now').mockReturnValue(timestamp);
 
       const newState = socketsReducer(
@@ -465,11 +444,13 @@ describe('socketsReducer', () => {
         state,
         forwardedEventReceived({ event: 'ticketAutomationRunChatUpsert', payload: payload as never }),
       );
+
       expect(newState.forwardedEvents[0]?.timestamp).toBe(timelineMs);
     });
 
     it('should handle chatEnhanceResult without appending to forwardedEvents', () => {
       const timestamp = Date.now();
+
       jest.spyOn(Date, 'now').mockReturnValue(timestamp);
 
       const enhancePayload: ForwardedEventPayload = {
@@ -481,13 +462,11 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         forwardedEvents: [{ event: 'chatMessage', payload: mockForwardedPayload, timestamp: 1 }],
         chatEnhancementPendingCorrelationId: 'c1',
       };
-
       const newState = socketsReducer(
         state,
         forwardedEventReceived({ event: 'chatEnhanceResult', payload: enhancePayload }),
@@ -506,6 +485,7 @@ describe('socketsReducer', () => {
 
     it('should handle ticketBodyResult without appending to forwardedEvents', () => {
       const timestamp = Date.now();
+
       jest.spyOn(Date, 'now').mockReturnValue(timestamp);
 
       const bodyPayload: ForwardedEventPayload = {
@@ -517,13 +497,11 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         forwardedEvents: [{ event: 'chatMessage', payload: mockForwardedPayload, timestamp: 1 }],
         ticketBodyPendingCorrelationId: 't1',
       };
-
       const newState = socketsReducer(
         state,
         forwardedEventReceived({ event: 'ticketBodyResult', payload: bodyPayload }),
@@ -550,12 +528,10 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         selectedAgentId: null,
       };
-
       const newState = socketsReducer(
         state,
         forwardedEventReceived({ event: 'loginSuccess', payload: loginSuccessPayload }),
@@ -574,12 +550,10 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         selectedAgentId: 'agent-123',
       };
-
       const newState = socketsReducer(
         state,
         forwardedEventReceived({ event: 'logoutSuccess', payload: logoutSuccessPayload }),
@@ -593,7 +567,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         selectedAgentId: 'agent-123',
       };
-
       const newState = socketsReducer(
         state,
         forwardedEventReceived({ event: 'chatMessage', payload: mockForwardedPayload }),
@@ -628,13 +601,12 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         messageFilterResults: [],
       };
-
       const receivedAt = Date.now();
+
       jest.spyOn(Date, 'now').mockReturnValue(receivedAt);
 
       const newState = socketsReducer(
@@ -695,13 +667,12 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         messageFilterResults: [],
       };
-
       const receivedAt = Date.now();
+
       jest.spyOn(Date, 'now').mockReturnValue(receivedAt);
 
       const newState = socketsReducer(
@@ -735,13 +706,12 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         messageFilterResults: [],
       };
-
       const receivedAt = Date.now();
+
       jest.spyOn(Date, 'now').mockReturnValue(receivedAt);
 
       const newState = socketsReducer(
@@ -768,14 +738,13 @@ describe('socketsReducer', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
-
       const state: SocketsState = {
         ...initialSocketsState,
         forwardedEvents: [],
         messageFilterResults: [],
       };
-
       const timestamp = Date.now();
+
       jest.spyOn(Date, 'now').mockReturnValue(timestamp);
 
       const newState = socketsReducer(
@@ -797,7 +766,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         selectedAgentId: null,
       };
-
       const newState = socketsReducer(state, setAgent({ agentId: 'agent-123' }));
 
       expect(newState.selectedAgentId).toBe('agent-123');
@@ -808,7 +776,6 @@ describe('socketsReducer', () => {
         ...initialSocketsState,
         selectedAgentId: 'agent-123',
       };
-
       const newState = socketsReducer(state, setAgent({ agentId: null }));
 
       expect(newState.selectedAgentId).toBeNull();
@@ -837,7 +804,6 @@ describe('socketsReducer', () => {
           },
         ],
       };
-
       const newState = socketsReducer(state, clearChatHistory());
 
       expect(newState.forwardedEvents).toEqual([]);
@@ -868,7 +834,6 @@ describe('socketsReducer', () => {
           },
         ],
       };
-
       const newState = socketsReducer(state, clearChatHistory());
 
       expect(newState.connected).toBe(true);
@@ -886,7 +851,6 @@ describe('socketsReducer', () => {
           ...initialSocketsState,
           connected: true,
         };
-
         const newState = socketsReducer(state, socketReconnecting({ attempt: 2 }));
 
         expect(newState.reconnecting).toBe(true);
@@ -902,7 +866,6 @@ describe('socketsReducer', () => {
           reconnecting: true,
           reconnectAttempts: 3,
         };
-
         const newState = socketsReducer(state, socketReconnected());
 
         expect(newState.connected).toBe(true);
@@ -921,7 +884,6 @@ describe('socketsReducer', () => {
             { event: 'loginSuccess', payload: mockForwardedPayload, timestamp: 2000 },
           ],
         };
-
         const newState = socketsReducer(state, socketReconnected());
 
         expect(newState.forwardedEvents).toEqual([]);
@@ -935,7 +897,6 @@ describe('socketsReducer', () => {
           reconnecting: true,
           reconnectAttempts: 2,
         };
-
         const newState = socketsReducer(state, socketReconnectError({ error: 'Reconnection error' }));
 
         expect(newState.reconnecting).toBe(true);
@@ -950,7 +911,6 @@ describe('socketsReducer', () => {
           reconnecting: true,
           reconnectAttempts: 5,
         };
-
         const newState = socketsReducer(state, socketReconnectFailed({ error: 'Reconnection failed' }));
 
         expect(newState.connected).toBe(false);
@@ -967,7 +927,6 @@ describe('socketsReducer', () => {
         const state: SocketsState = {
           ...initialSocketsState,
         };
-
         const newState = socketsReducer(state, remoteDisconnected({ clientId: 'client-1' }));
 
         expect(newState.remoteConnections['client-1']).toEqual({
@@ -992,7 +951,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteDisconnected({ clientId: 'client-1' }));
 
         expect(newState.remoteConnections['client-1']).toEqual({
@@ -1010,7 +968,6 @@ describe('socketsReducer', () => {
         const state: SocketsState = {
           ...initialSocketsState,
         };
-
         const newState = socketsReducer(state, remoteReconnecting({ clientId: 'client-1', attempt: 1 }));
 
         expect(newState.remoteConnections['client-1']).toEqual({
@@ -1035,7 +992,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteReconnecting({ clientId: 'client-1', attempt: 2 }));
 
         expect(newState.remoteConnections['client-1']).toEqual({
@@ -1062,7 +1018,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteReconnected({ clientId: 'client-1' }));
 
         expect(newState.remoteConnections['client-1']).toEqual({
@@ -1102,7 +1057,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteReconnected({ clientId: 'client-1' }));
 
         expect(newState.forwardedEvents).toEqual([]);
@@ -1134,7 +1088,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteReconnected({ clientId: 'client-2' }));
 
         expect(newState.forwardedEvents).toEqual([
@@ -1165,7 +1118,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteReconnected({ clientId: 'client-1' }));
 
         expect(newState.forwardedEvents).toEqual([]);
@@ -1193,7 +1145,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteReconnectError({ clientId: 'client-1', error: 'Timeout' }));
 
         expect(newState.remoteConnections['client-1']).toEqual({
@@ -1220,7 +1171,6 @@ describe('socketsReducer', () => {
             },
           },
         };
-
         const newState = socketsReducer(state, remoteReconnectFailed({ clientId: 'client-1', error: 'Failed' }));
 
         expect(newState.remoteConnections['client-1']).toEqual({
@@ -1238,7 +1188,6 @@ describe('socketsReducer', () => {
         const state: SocketsState = {
           ...initialSocketsState,
         };
-
         const newState = socketsReducer(state, setClientSuccess({ message: 'Success', clientId: 'client-1' }));
 
         expect(newState.remoteConnections['client-1']).toEqual({

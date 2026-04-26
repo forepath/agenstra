@@ -7,6 +7,7 @@ export function getSubscriptionStatusLabel(status: string | null | undefined): s
   if (status == null || status === '') {
     return $localize`:@@featureBilling-subscriptionStatusEmpty:Unknown`;
   }
+
   switch (status) {
     case 'active':
       return $localize`:@@featureBilling-subscriptionStatusActive:Active`;
@@ -25,6 +26,7 @@ export function getBackorderStatusLabel(status: string | null | undefined): stri
   if (status == null || status === '') {
     return $localize`:@@featureBilling-backorderStatusEmpty:Unknown`;
   }
+
   switch (status) {
     case 'pending':
       return $localize`:@@featureBilling-backorderStatusPending:Pending`;

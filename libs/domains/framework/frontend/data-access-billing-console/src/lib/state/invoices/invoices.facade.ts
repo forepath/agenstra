@@ -2,6 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+
+import { InvoicesService } from '../../services/invoices.service';
+import type { CreateInvoiceDto, InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
+
 import {
   clearInvoices,
   createInvoice,
@@ -28,8 +32,6 @@ import {
   selectOpenOverdueListLoading,
   selectRefreshingInvoiceRefId,
 } from './invoices.selectors';
-import type { CreateInvoiceDto, InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
-import { InvoicesService } from '../../services/invoices.service';
 
 @Injectable({
   providedIn: 'root',
@@ -116,6 +118,7 @@ export class InvoicesFacade {
    */
   refreshInvoiceLink(subscriptionId: string, invoiceRefId: string): Observable<string> {
     this.store.dispatch(refreshInvoiceLinkAction({ subscriptionId, invoiceRefId }));
+
     return this.invoicesService.refreshInvoiceLink(subscriptionId, invoiceRefId).pipe(
       tap((response) =>
         this.store.dispatch(
@@ -129,6 +132,7 @@ export class InvoicesFacade {
       map((response) => response.preAuthUrl),
       catchError((error) => {
         const message = error?.error?.message ?? error?.message ?? 'Failed to refresh invoice link';
+
         this.store.dispatch(refreshInvoiceLinkFailure({ error: message }));
         throw error;
       }),

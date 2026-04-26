@@ -41,6 +41,7 @@ describe('Environment interfaces', () => {
           termsUrl: 'https://example.com/terms',
         },
       };
+
       expect(validEnv.production).toBe(true);
     });
 
@@ -78,6 +79,7 @@ describe('Environment interfaces', () => {
           termsUrl: 'https://example.com/terms',
         },
       };
+
       expect(validEnv.authentication).toBeDefined();
       expect(validEnv.authentication.type).toBe('api-key');
     });
@@ -116,6 +118,7 @@ describe('Environment interfaces', () => {
           termsUrl: 'https://example.com/terms',
         },
       };
+
       expect(envWithController.controller).toBeDefined();
       expect(envWithController.controller?.restApiUrl).toBe('http://localhost:3100/api');
       expect(envWithController.controller?.websocketUrl).toBe('ws://localhost:8081/clients');
@@ -155,6 +158,7 @@ describe('Environment interfaces', () => {
           termsUrl: 'https://example.com/terms',
         },
       };
+
       expect(env.chatModelOptions).toBeDefined();
       Object.entries(env.chatModelOptions).forEach(([key, value]) => {
         expect(typeof key).toBe('string');
@@ -174,6 +178,7 @@ describe('Environment interfaces', () => {
       const config: ApiKeyAuthenticationConfig = {
         type: 'api-key',
       };
+
       expect(config.type).toBe('api-key');
     });
 
@@ -181,12 +186,14 @@ describe('Environment interfaces', () => {
       const configWithoutKey: ApiKeyAuthenticationConfig = {
         type: 'api-key',
       };
+
       expect(configWithoutKey.apiKey).toBeUndefined();
 
       const configWithKey: ApiKeyAuthenticationConfig = {
         type: 'api-key',
         apiKey: 'test-api-key',
       };
+
       expect(configWithKey.apiKey).toBe('test-api-key');
     });
   });
@@ -199,6 +206,7 @@ describe('Environment interfaces', () => {
         realm: 'test-realm',
         clientId: 'test-client',
       };
+
       expect(config.type).toBe('keycloak');
     });
 
@@ -209,6 +217,7 @@ describe('Environment interfaces', () => {
         realm: 'test-realm',
         clientId: 'test-client',
       };
+
       expect(config.authServerUrl).toBe('https://keycloak.example.com');
     });
 
@@ -219,6 +228,7 @@ describe('Environment interfaces', () => {
         realm: 'test-realm',
         clientId: 'test-client',
       };
+
       expect(config.realm).toBe('test-realm');
     });
 
@@ -229,6 +239,7 @@ describe('Environment interfaces', () => {
         realm: 'test-realm',
         clientId: 'test-client',
       };
+
       expect(config.clientId).toBe('test-client');
     });
   });
@@ -238,6 +249,7 @@ describe('Environment interfaces', () => {
       const apiKeyConfig: AuthenticationConfig = {
         type: 'api-key',
       };
+
       expect(apiKeyConfig.type).toBe('api-key');
     });
 
@@ -248,6 +260,7 @@ describe('Environment interfaces', () => {
         realm: 'test-realm',
         clientId: 'test-client',
       };
+
       expect(keycloakConfig.type).toBe('keycloak');
     });
 
@@ -261,6 +274,7 @@ describe('Environment interfaces', () => {
         expect(config.type).toBe('api-key');
         // apiKey is optional, so this should compile
         const apiKey = config.apiKey;
+
         expect(apiKey).toBeUndefined();
       }
     });

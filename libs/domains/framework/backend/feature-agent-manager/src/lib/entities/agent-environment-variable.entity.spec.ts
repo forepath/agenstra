@@ -4,11 +4,13 @@ import { AgentEntity } from './agent.entity';
 describe('AgentEnvironmentVariableEntity', () => {
   it('should create an instance', () => {
     const variable = new AgentEnvironmentVariableEntity();
+
     expect(variable).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const variable = new AgentEnvironmentVariableEntity();
+
     variable.id = 'test-uuid';
     variable.agentId = 'agent-uuid-123';
     variable.variable = 'TEST_VARIABLE';
@@ -26,6 +28,7 @@ describe('AgentEnvironmentVariableEntity', () => {
 
   it('should support relationship to AgentEntity', () => {
     const agent = new AgentEntity();
+
     agent.id = 'agent-uuid-123';
     agent.name = 'Test Agent';
     agent.hashedPassword = 'hashed-password';
@@ -33,6 +36,7 @@ describe('AgentEnvironmentVariableEntity', () => {
     agent.updatedAt = new Date();
 
     const variable = new AgentEnvironmentVariableEntity();
+
     variable.id = 'test-uuid';
     variable.agentId = 'agent-uuid-123';
     variable.agent = agent;
@@ -49,6 +53,7 @@ describe('AgentEnvironmentVariableEntity', () => {
   it('should handle long variable content', () => {
     const longMessage = 'A'.repeat(1000);
     const variable = new AgentEnvironmentVariableEntity();
+
     variable.id = 'test-uuid';
     variable.agentId = 'agent-uuid-123';
     variable.variable = 'TEST_VARIABLE';

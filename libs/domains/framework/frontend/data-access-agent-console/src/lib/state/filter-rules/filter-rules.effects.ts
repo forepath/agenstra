@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
+
 import { FilterRulesService } from '../../services/filter-rules.service';
+
 import {
   createFilterRule,
   createFilterRuleFailure,
@@ -23,12 +25,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     return error.error?.message ?? error.message ?? String(error.status);
   }
+
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -40,14 +45,17 @@ export const loadFilterRules$ = createEffect(
       ofType(loadFilterRules),
       switchMap(() => {
         const batchParams = { limit: FILTER_RULES_BATCH_SIZE, offset: 0 };
+
         return svc.list(batchParams).pipe(
           switchMap((rules) => {
             if (rules.length === 0) {
               return of(loadFilterRulesSuccess({ rules: [] }));
             }
+
             if (rules.length < FILTER_RULES_BATCH_SIZE) {
               return of(loadFilterRulesSuccess({ rules }));
             }
+
             return of(loadFilterRulesBatch({ offset: FILTER_RULES_BATCH_SIZE, accumulatedRules: rules }));
           }),
           catchError((error) => of(loadFilterRulesFailure({ error: normalizeError(error) }))),
@@ -64,15 +72,19 @@ export const loadFilterRulesBatch$ = createEffect(
       ofType(loadFilterRulesBatch),
       switchMap(({ offset, accumulatedRules }) => {
         const batchParams = { limit: FILTER_RULES_BATCH_SIZE, offset };
+
         return svc.list(batchParams).pipe(
           switchMap((rules) => {
             const newAccumulated = [...accumulatedRules, ...rules];
+
             if (rules.length === 0) {
               return of(loadFilterRulesSuccess({ rules: newAccumulated }));
             }
+
             if (rules.length < FILTER_RULES_BATCH_SIZE) {
               return of(loadFilterRulesSuccess({ rules: newAccumulated }));
             }
+
             return of(
               loadFilterRulesBatch({
                 offset: offset + FILTER_RULES_BATCH_SIZE,

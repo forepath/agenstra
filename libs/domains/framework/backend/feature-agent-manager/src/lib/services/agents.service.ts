@@ -1,8 +1,10 @@
+import { randomBytes } from 'crypto';
+
 import { PasswordService } from '@forepath/identity/backend';
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { randomBytes } from 'crypto';
 import * as sshpk from 'sshpk';
 import { v4 as uuidv4 } from 'uuid';
+
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
@@ -12,6 +14,7 @@ import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
+
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
 
@@ -58,10 +61,12 @@ export class AgentsService implements OnApplicationBootstrap {
   private extractGitDomain(url: string): string {
     try {
       const urlObj = new URL(url);
+
       return urlObj.hostname;
     } catch {
       // Fallback: try to extract domain from common git URL patterns
       const match = url.match(/@([^/:]+)|:\/\/([^/:]+)/);
+
       return match ? match[1] || match[2] : 'github.com';
     }
   }
@@ -81,17 +86,22 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   private async ensureProviderConfigBaseDirectoryExists(containerId: string, agentType: string): Promise<void> {
     const provider = this.agentProviderFactory.getProvider(agentType);
+
     if (!provider.getConfigBasePath) {
       return;
     }
+
     const raw = provider.getConfigBasePath()?.trim();
+
     if (!raw) {
       return;
     }
+
     const expanded = await expandProviderPathTildeInContainer(raw, containerId, (id) =>
       this.dockerService.getContainerHomeDirectory(id),
     );
     const escaped = this.escapeForShell(expanded);
+
     await this.dockerService.sendCommandToContainer(containerId, `sh -c "mkdir -p -- ${escaped}"`, undefined, true);
   }
 
@@ -102,6 +112,7 @@ export class AgentsService implements OnApplicationBootstrap {
     if (!url) {
       return false;
     }
+
     return url.startsWith('git@') || url.startsWith('ssh://');
   }
 
@@ -111,10 +122,12 @@ export class AgentsService implements OnApplicationBootstrap {
   private getSshHostInfo(url: string): { host: string; port?: number } {
     if (url.startsWith('ssh://')) {
       const parsed = new URL(url);
+
       return { host: parsed.hostname, port: parsed.port ? Number(parsed.port) : undefined };
     }
 
     const scpLikeMatch = url.match(/^[^@]+@([^:]+):/);
+
     if (scpLikeMatch?.[1]) {
       return { host: scpLikeMatch[1] };
     }
@@ -133,8 +146,8 @@ export class AgentsService implements OnApplicationBootstrap {
       ecdsa: 'id_ecdsa',
       dsa: 'id_dsa',
     };
-
     const normalizedType = keyType.toLowerCase();
+
     return typeMap[normalizedType] || 'id_rsa'; // Default to RSA if unknown
   }
 
@@ -180,6 +193,7 @@ export class AgentsService implements OnApplicationBootstrap {
   private async writeFileToContainer(containerId: string, filePath: string, contents: string): Promise<void> {
     const base64Content = Buffer.from(contents, 'utf-8').toString('base64');
     const escapedBase64 = this.escapeForShell(base64Content);
+
     await this.dockerService.sendCommandToContainer(containerId, `echo ${escapedBase64} | base64 -d > ${filePath}`);
   }
 
@@ -203,6 +217,7 @@ export class AgentsService implements OnApplicationBootstrap {
     const sshKeyscanCommand = ['ssh-keyscan', port ? `-p ${port}` : '', host, '>> /root/.ssh/known_hosts', '|| true']
       .filter(Boolean)
       .join(' ');
+
     await this.dockerService.sendCommandToContainer(containerId, sshKeyscanCommand);
     await this.dockerService.sendCommandToContainer(containerId, 'chmod 600 /root/.ssh/known_hosts || true');
 
@@ -229,13 +244,11 @@ export class AgentsService implements OnApplicationBootstrap {
     }
 
     const gitDomain = this.extractGitDomain(repositoryUrl);
-
     // Construct the entire .netrc file content
     const netrcContent = `machine ${gitDomain}
   login ${gitUsername}
   password ${gitToken}
 `;
-
     // Encode content to base64
     const base64Content = Buffer.from(netrcContent, 'utf-8').toString('base64');
     const escapedPath = this.escapeForShell('/root/.netrc');
@@ -258,20 +271,19 @@ export class AgentsService implements OnApplicationBootstrap {
   async create(createAgentDto: CreateAgentDto): Promise<CreateAgentResponseDto> {
     // Check if agent with the same name already exists
     const existingAgent = await this.agentsRepository.findByName(createAgentDto.name);
+
     if (existingAgent) {
       throw new BadRequestException(`Agent with name '${createAgentDto.name}' already exists`);
     }
 
     // Generate a random password
     const generatedPassword = this.generateRandomPassword();
-
     // Hash the password
     const hashedPassword = await this.passwordService.hashPassword(generatedPassword);
-
     // Define a folder name for the agent
     const agentVolumePath = `/opt/agents/${uuidv4()}`;
-
     const repositoryUrl = createAgentDto.gitRepositoryUrl || process.env.GIT_REPOSITORY_URL;
+
     if (!repositoryUrl) {
       throw new BadRequestException(
         'Git repository URL not configured. Please set GIT_REPOSITORY_URL or provide a gitRepositoryUrl in the createAgentDto.',
@@ -279,17 +291,14 @@ export class AgentsService implements OnApplicationBootstrap {
     }
 
     const sshRepository = this.isSshRepository(repositoryUrl);
-
     // Determine agent type (default to 'cursor' for backward compatibility)
     const agentType = createAgentDto.agentType || 'cursor';
-
     // Get the provider for this agent type to retrieve the Docker image
     const provider = this.agentProviderFactory.getProvider(agentType);
     const dockerImage = provider.getDockerImage();
     const virtualWorkspaceDockerImage = provider.getVirtualWorkspaceDockerImage();
     const sshConnectionDockerImage = provider.getSshConnectionDockerImage();
     const basePath = provider.getBasePath?.() || '/app';
-
     // Create a docker container
     const containerId = await this.dockerService.createContainer({
       image: dockerImage,
@@ -340,6 +349,7 @@ export class AgentsService implements OnApplicationBootstrap {
             password: string;
           }
         | undefined;
+
       if (createAgentDto.createSshConnection && sshConnectionDockerImage) {
         const sshConnectionHostPort = await this.generateRandomSSHPort();
         const sshConnectionPassword = this.generateRandomPassword();
@@ -363,6 +373,7 @@ export class AgentsService implements OnApplicationBootstrap {
             },
           ],
         });
+
         sshConnection = {
           containerId: sshConnectionContainerId,
           hostPort: sshConnectionHostPort,
@@ -378,6 +389,7 @@ export class AgentsService implements OnApplicationBootstrap {
             password: string;
           }
         | undefined;
+
       if (createAgentDto.createVirtualWorkspace && virtualWorkspaceDockerImage) {
         const virtualWorkspaceHostPort = await this.generateRandomVNCPort();
         const virtualWorkspacePassword = this.generateRandomPassword();
@@ -417,6 +429,7 @@ export class AgentsService implements OnApplicationBootstrap {
 
       try {
         let networkId: string | undefined;
+
         if (createAgentDto.createVirtualWorkspace && virtualWorkspace) {
           networkId = await this.dockerService.createNetwork({
             name: uuidv4(),
@@ -482,6 +495,7 @@ export class AgentsService implements OnApplicationBootstrap {
           if (createAgentDto.createVirtualWorkspace && virtualWorkspace) {
             await this.dockerService.deleteContainer(virtualWorkspace.containerId);
           }
+
           if (createAgentDto.createSshConnection && sshConnection) {
             await this.dockerService.deleteContainer(sshConnection.containerId);
           }
@@ -489,11 +503,13 @@ export class AgentsService implements OnApplicationBootstrap {
           // Log cleanup error but don't mask the original error
           // The original error is more important for debugging
           const err = cleanupError as { message?: string; stack?: string };
+
           this.logger.error(
             `Failed to clean up container ${containerId} after agent creation failure: ${err.message}`,
             err.stack,
           );
         }
+
         // Re-throw the original error
         throw error;
       }
@@ -505,11 +521,13 @@ export class AgentsService implements OnApplicationBootstrap {
         // Log cleanup error but don't mask the original error
         // The original error is more important for debugging
         const err = cleanupError as { message?: string; stack?: string };
+
         this.logger.error(
           `Failed to clean up container ${containerId} after agent creation failure: ${err.message}`,
           err.stack,
         );
       }
+
       // Re-throw the original error
       throw error;
     }
@@ -523,6 +541,7 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   async findAll(limit = 10, offset = 0): Promise<AgentResponseDto[]> {
     const agents = await this.agentsRepository.findAll(limit, offset);
+
     return agents.map((agent) => this.mapToResponseDto(agent));
   }
 
@@ -534,6 +553,7 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   async findOne(id: string): Promise<AgentResponseDto> {
     const agent = await this.agentsRepository.findByIdOrThrow(id);
+
     return this.mapToResponseDto(agent);
   }
 
@@ -550,6 +570,7 @@ export class AgentsService implements OnApplicationBootstrap {
     // If name is being updated, check for conflicts
     if (updateAgentDto.name) {
       const existingAgent = await this.agentsRepository.findByName(updateAgentDto.name);
+
       if (existingAgent && existingAgent.id !== id) {
         throw new BadRequestException(`Agent with name '${updateAgentDto.name}' already exists`);
       }
@@ -647,6 +668,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.startContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.error(
           `Failed to start agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
           err.stack,
@@ -660,6 +682,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.startContainer(agent.vncContainerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(
           `Failed to start VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
         );
@@ -671,6 +694,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.startContainer(agent.sshContainerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(
           `Failed to start SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
         );
@@ -694,6 +718,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.stopContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.error(
           `Failed to stop agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
           err.stack,
@@ -707,6 +732,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.stopContainer(agent.vncContainerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(
           `Failed to stop VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
         );
@@ -718,6 +744,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.stopContainer(agent.sshContainerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(
           `Failed to stop SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
         );
@@ -741,6 +768,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.restartContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.error(
           `Failed to restart agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
           err.stack,
@@ -754,6 +782,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.restartContainer(agent.vncContainerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(
           `Failed to restart VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
         );
@@ -765,6 +794,7 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.dockerService.restartContainer(agent.sshContainerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(
           `Failed to restart SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
         );
@@ -782,9 +812,11 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   async verifyCredentials(id: string, password: string): Promise<boolean> {
     const agent = await this.agentsRepository.findById(id);
+
     if (!agent) {
       return false;
     }
+
     return await this.passwordService.verifyPassword(password, agent.hashedPassword);
   }
 
@@ -830,7 +862,6 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   private async generateRandomVNCPort(): Promise<number> {
     const range = process.env.VNC_SERVER_PUBLIC_PORTS || '49152-57343';
-
     const [start, end] = range.split('-').map(Number);
     const prosedPort = Math.floor(Math.random() * (end - start + 1)) + start;
 
@@ -848,7 +879,6 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   private async generateRandomSSHPort(): Promise<number> {
     const range = process.env.SSH_SERVER_PUBLIC_PORTS || '57344-65535';
-
     const [start, end] = range.split('-').map(Number);
     const prosedPort = Math.floor(Math.random() * (end - start + 1)) + start;
 
@@ -873,6 +903,7 @@ export class AgentsService implements OnApplicationBootstrap {
 
       if (agents.length === 0) {
         this.logger.log('ℹ️  No agents with containers found, skipping container restart');
+
         return;
       }
 
@@ -892,6 +923,7 @@ export class AgentsService implements OnApplicationBootstrap {
             this.logger.log(`✅ Successfully restarted agent container ${agent.containerId}`);
           } catch (error: unknown) {
             const err = error as { message?: string; stack?: string };
+
             this.logger.error(
               `Failed to restart agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
               err.stack,
@@ -909,6 +941,7 @@ export class AgentsService implements OnApplicationBootstrap {
             this.logger.log(`✅ Successfully restarted VNC container ${agent.vncContainerId}`);
           } catch (error: unknown) {
             const err = error as { message?: string; stack?: string };
+
             this.logger.error(
               `Failed to restart VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
               err.stack,
@@ -926,6 +959,7 @@ export class AgentsService implements OnApplicationBootstrap {
             this.logger.log(`✅ Successfully restarted SSH container ${agent.sshContainerId}`);
           } catch (error: unknown) {
             const err = error as { message?: string; stack?: string };
+
             this.logger.error(
               `Failed to restart SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
               err.stack,
@@ -938,6 +972,7 @@ export class AgentsService implements OnApplicationBootstrap {
       this.logger.log(`✅ Container restart process completed. Restarted ${restartedContainers.size} container(s)`);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error during container restart process: ${err.message}`, err.stack);
       // Don't throw - we don't want to prevent service startup if container restart fails
     }
@@ -951,9 +986,11 @@ export class AgentsService implements OnApplicationBootstrap {
   async listModels(id: string): Promise<AgentProviderModels> {
     const agent = await this.agentsRepository.findByIdOrThrow(id);
     const provider = this.agentProviderFactory.getProvider(agent.agentType);
+
     if (!provider.getModelsListCommand || !provider.toModelsList) {
       throw new BadRequestException('Provider does not support listing models');
     }
+
     if (agent.containerId) {
       try {
         const result = await this.dockerService.sendCommandToContainer(
@@ -964,6 +1001,7 @@ export class AgentsService implements OnApplicationBootstrap {
         return provider.toModelsList(result) || {};
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.error(`Failed to list models for agent ${agent.name}: ${err.message}`, err.stack);
         // Don't throw - we don't want to prevent the user from listing models if the container is not running
       }

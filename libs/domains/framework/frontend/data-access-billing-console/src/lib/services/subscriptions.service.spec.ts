@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { CreateSubscriptionDto, SubscriptionResponse } from '../types/billing.types';
+
 import { SubscriptionsService } from './subscriptions.service';
 
 describe('SubscriptionsService', () => {
   let service: SubscriptionsService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockSubscription: SubscriptionResponse = {
     id: 'sub-1',
     planId: 'plan-1',
@@ -55,6 +56,7 @@ describe('SubscriptionsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockSubscriptions);
     });
@@ -69,6 +71,7 @@ describe('SubscriptionsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions?limit=10&offset=20`);
+
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
@@ -86,6 +89,7 @@ describe('SubscriptionsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/${id}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockSubscription);
     });
@@ -101,6 +105,7 @@ describe('SubscriptionsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(mockSubscription);
@@ -118,6 +123,7 @@ describe('SubscriptionsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/${id}/cancel`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush({ ...mockSubscription, status: 'canceled' });
@@ -129,6 +135,7 @@ describe('SubscriptionsService', () => {
       service.cancelSubscription(id).subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/${id}/cancel`);
+
       expect(req.request.body).toEqual({});
       req.flush(mockSubscription);
     });
@@ -145,6 +152,7 @@ describe('SubscriptionsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/${id}/resume`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockSubscription);

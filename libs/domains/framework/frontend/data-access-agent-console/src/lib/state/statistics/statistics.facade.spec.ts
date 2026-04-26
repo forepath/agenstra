@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   loadClientStatisticsChatIo,
   loadClientStatisticsEntityEvents,
@@ -24,7 +25,6 @@ import type {
 describe('StatisticsFacade', () => {
   let facade: StatisticsFacade;
   let store: jest.Mocked<Store>;
-
   const mockSummary: StatisticsSummaryDto = {
     totalMessages: 100,
     totalWords: 500,
@@ -35,28 +35,24 @@ describe('StatisticsFacade', () => {
     filterFlagCount: 0,
     filterFlagsBreakdown: [],
   };
-
   const mockChatIoList: StatisticsChatIoListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockFilterDropList: StatisticsFilterDropListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockEntityEventList: StatisticsEntityEventListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const createFacadeWithMock = (mockSelectReturn: unknown): StatisticsFacade => {
     const mockStore = {
       select: jest.fn().mockReturnValue(of(mockSelectReturn)),
@@ -154,30 +150,35 @@ describe('StatisticsFacade', () => {
 
     it('should dispatch loadClientStatisticsSummary with params', () => {
       const params = { from: '2024-01-01', to: '2024-01-31', groupBy: 'day' as const };
+
       facade.loadClientSummary('client-1', params);
       expect(store.dispatch).toHaveBeenCalledWith(loadClientStatisticsSummary({ clientId: 'client-1', params }));
     });
 
     it('should dispatch loadClientStatisticsChatIo', () => {
       const params: StatisticsClientScopeParams = { clientId: 'client-1', limit: 10, offset: 0 };
+
       facade.loadClientChatIo(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadClientStatisticsChatIo({ params }));
     });
 
     it('should dispatch loadClientStatisticsChatIo with search param', () => {
       const params: StatisticsClientScopeParams = { clientId: 'client-1', search: 'input', limit: 10, offset: 0 };
+
       facade.loadClientChatIo(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadClientStatisticsChatIo({ params }));
     });
 
     it('should dispatch loadClientStatisticsFilterDrops', () => {
       const params: StatisticsClientScopeParams = { clientId: 'client-1' };
+
       facade.loadClientFilterDrops(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadClientStatisticsFilterDrops({ params }));
     });
 
     it('should dispatch loadClientStatisticsEntityEvents', () => {
       const params: StatisticsClientScopeParams = { clientId: 'client-1' };
+
       facade.loadClientEntityEvents(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadClientStatisticsEntityEvents({ params }));
     });
@@ -191,6 +192,7 @@ describe('StatisticsFacade', () => {
 
     it('should dispatch loadStatisticsSummary with params', () => {
       const params: StatisticsAggregateParams = { clientId: 'client-1' };
+
       facade.loadSummary(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadStatisticsSummary({ params }));
     });
@@ -202,6 +204,7 @@ describe('StatisticsFacade', () => {
 
     it('should dispatch loadStatisticsChatIo with search param', () => {
       const params: StatisticsAggregateParams = { search: 'query', limit: 10, offset: 0 };
+
       facade.loadChatIo(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadStatisticsChatIo({ params }));
     });

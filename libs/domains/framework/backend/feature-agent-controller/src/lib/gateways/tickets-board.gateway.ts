@@ -16,6 +16,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 
@@ -49,11 +50,14 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
     server.use(async (socket, next) => {
       const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
       const userInfo = await this.socketAuthService.validateAndGetUser(authHeader);
+
       if (!userInfo) {
         this.logger.warn(`Tickets WS rejected: missing or invalid authorization for socket ${socket.id}`);
         next(new Error('Unauthorized'));
+
         return;
       }
+
       (socket as Socket & { data: { userInfo: typeof userInfo } }).data = { userInfo };
       next();
     });
@@ -65,9 +69,11 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
 
   handleDisconnect(socket: Socket): void {
     const prev = this.selectedClientBySocket.get(socket.id);
+
     if (prev) {
       void socket.leave(TicketBoardRealtimeService.clientRoom(prev));
     }
+
     this.selectedClientBySocket.delete(socket.id);
     this.settingClientBySocket.delete(socket.id);
   }
@@ -75,8 +81,10 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
   @SubscribeMessage('setClient')
   async handleSetClient(@MessageBody() data: SetClientPayload, @ConnectedSocket() socket: Socket): Promise<void> {
     const clientId = data?.clientId;
+
     if (!clientId) {
       socket.emit('error', { message: 'clientId is required' });
+
       return;
     }
 
@@ -85,12 +93,14 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
 
     if (currentSetting === clientId) {
       this.logger.debug(`setClient already in progress for socket ${socket.id} and clientId ${clientId}`);
+
       return;
     }
 
     if (currentSelected === clientId && !currentSetting) {
       this.logger.debug(`Client ${clientId} already selected for tickets socket ${socket.id}`);
       socket.emit('setClientSuccess', { message: 'Client context already set', clientId });
+
       return;
     }
 
@@ -99,9 +109,11 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
     try {
       const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
         .data?.userInfo;
+
       if (!userInfo) {
         this.settingClientBySocket.delete(socket.id);
         socket.emit('error', { message: 'Unauthorized' });
+
         return;
       }
 
@@ -121,6 +133,7 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
       socket.emit('setClientSuccess', { message: 'Client context set', clientId });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
+
       this.logger.warn(`setClient failed for socket ${socket.id}: ${message}`);
       socket.emit('error', {
         message:

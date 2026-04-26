@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { BackorderCancelDto, BackorderResponse, BackorderRetryDto } from '../types/billing.types';
+
 import { BackordersService } from './backorders.service';
 
 describe('BackordersService', () => {
   let service: BackordersService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockBackorder: BackorderResponse = {
     id: 'bo-1',
     userId: 'user-1',
@@ -59,6 +60,7 @@ describe('BackordersService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/backorders`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockList);
     });
@@ -72,6 +74,7 @@ describe('BackordersService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/backorders?limit=10&offset=20`);
+
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
       req.flush([mockBackorder]);
@@ -89,6 +92,7 @@ describe('BackordersService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/backorders/${id}/retry`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush({ ...mockBackorder, status: 'retrying' });
@@ -100,6 +104,7 @@ describe('BackordersService', () => {
       service.retryBackorder(id).subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/backorders/${id}/retry`);
+
       expect(req.request.body).toEqual({});
       req.flush(mockBackorder);
     });
@@ -116,6 +121,7 @@ describe('BackordersService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/backorders/${id}/cancel`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush({ ...mockBackorder, status: 'cancelled' });

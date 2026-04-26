@@ -25,6 +25,7 @@ export class ViewportScrollerOffset extends ViewportScroller {
     if (!isPlatformBrowser(this.platformId)) {
       return [0, 0];
     }
+
     return [window.scrollX, window.scrollY];
   }
 
@@ -32,6 +33,7 @@ export class ViewportScrollerOffset extends ViewportScroller {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+
     window.scrollTo({
       top: position[1] - this.offsetPosition[1],
       left: position[0] - this.offsetPosition[0],
@@ -43,7 +45,9 @@ export class ViewportScrollerOffset extends ViewportScroller {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+
     const element = this.document.getElementById(anchor) || this.document.querySelector(`[name="${anchor}"]`);
+
     if (element) {
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - this.offsetPosition[1];
@@ -60,6 +64,7 @@ export class ViewportScrollerOffset extends ViewportScroller {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+
     if (window.history && window.history.scrollRestoration) {
       window.history.scrollRestoration = scrollRestoration;
     }

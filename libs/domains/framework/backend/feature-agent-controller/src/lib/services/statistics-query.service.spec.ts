@@ -1,14 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { StatisticsRepository } from '../repositories/statistics.repository';
+
 import { StatisticsQueryService } from './statistics-query.service';
 
 describe('StatisticsQueryService', () => {
   let service: StatisticsQueryService;
   let repository: jest.Mocked<StatisticsRepository>;
-
   const mockRepository = {
     findStatisticsClientIdsByOriginalIds: jest.fn(),
     queryChatIo: jest.fn(),

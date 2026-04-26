@@ -36,7 +36,6 @@ describe('Clients Selectors', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockClient2: ClientResponseDto = {
     id: 'client-2',
     name: 'Test Client 2',
@@ -51,7 +50,6 @@ describe('Clients Selectors', () => {
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
   };
-
   const createState = (overrides?: Partial<ClientsState>): ClientsState => ({
     ...initialClientsState,
     ...overrides,

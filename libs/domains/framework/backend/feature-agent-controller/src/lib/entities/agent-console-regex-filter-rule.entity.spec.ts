@@ -9,6 +9,7 @@ describe('AgentConsoleRegexFilterRuleEntity', () => {
 
   it('supports core columns', () => {
     const rule = new AgentConsoleRegexFilterRuleEntity();
+
     rule.id = 'rule-uuid';
     rule.pattern = 'foo+';
     rule.regexFlags = 'gi';
@@ -35,6 +36,7 @@ describe('AgentConsoleRegexFilterRuleEntity', () => {
     const rule = new AgentConsoleRegexFilterRuleEntity();
     const link = new AgentConsoleRegexFilterRuleClientEntity();
     const target = new AgentConsoleRegexFilterRuleSyncTargetEntity();
+
     rule.clientLinks = [link];
     rule.syncTargets = [target];
     expect(rule.clientLinks).toEqual([link]);

@@ -1,4 +1,5 @@
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
+
 import { AGENSTRA_AUTOMATION_COMPLETE } from './automation-completion.constants';
 
 export interface TicketPromptNode {
@@ -16,12 +17,15 @@ export interface TicketPromptNode {
 export function buildPrototypePrompt(root: TicketPromptNode, depth = 0): string {
   const indent = '  '.repeat(depth);
   const lines: string[] = [`${indent}- [${root.id}] ${root.title} (${root.status}, ${root.priority})`];
+
   if (root.content?.trim()) {
     lines.push(`${indent}  Content:\n${indent}  ${root.content.trim().split('\n').join(`\n${indent}  `)}`);
   }
+
   for (const child of root.children) {
     lines.push(buildPrototypePrompt(child, depth + 1));
   }
+
   return lines.join('\n');
 }
 

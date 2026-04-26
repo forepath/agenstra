@@ -1,6 +1,7 @@
 import { ApplicationConfig, mergeApplicationConfig } from '@angular/core';
 import { provideServerRendering } from '@angular/platform-server';
 import { ENVIRONMENT, environment } from '@forepath/framework/frontend/util-configuration';
+
 import { appConfig } from './app.config';
 
 const serverConfig: ApplicationConfig = {

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 
 export interface PricingResult {
@@ -28,7 +29,9 @@ export class PricingService {
     if (!value) {
       return 0;
     }
+
     const parsed = Number(value);
+
     return Number.isFinite(parsed) ? parsed : 0;
   }
 }

@@ -520,10 +520,16 @@ export const INVOICE_NINJA_SUPPORTED_ALPHA2: readonly string[] = Object.keys(ALP
  */
 export function getInvoiceNinjaCountryId(code: string | null | undefined): number | undefined {
   if (code == null || typeof code !== 'string') return undefined;
+
   const trimmed = code.trim();
+
   if (trimmed.length === 0) return undefined;
+
   const upper = trimmed.toUpperCase();
+
   if (upper.length === 2) return ALPHA2_TO_COUNTRY_ID[upper];
+
   if (upper.length === 3) return ALPHA3_TO_COUNTRY_ID[upper];
+
   return undefined;
 }

@@ -1,3 +1,5 @@
+import type { ServerInfoResponse } from '../../types/billing.types';
+
 import {
   billingDashboardStatusPush,
   loadOverviewServerInfo,
@@ -17,7 +19,6 @@ import {
   subscriptionServerInfoReducer,
   type SubscriptionServerInfoState,
 } from './subscription-server-info.reducer';
-import type { ServerInfoResponse } from '../../types/billing.types';
 
 describe('subscriptionServerInfoReducer', () => {
   const mockServerInfo: ServerInfoResponse = {
@@ -30,6 +31,7 @@ describe('subscriptionServerInfoReducer', () => {
   describe('initial state', () => {
     it('should return the initial state for unknown action', () => {
       const action = { type: 'UNKNOWN' };
+
       expect(subscriptionServerInfoReducer(undefined, action as never)).toEqual(initialSubscriptionServerInfoState);
     });
   });
@@ -41,6 +43,7 @@ describe('subscriptionServerInfoReducer', () => {
         error: 'Previous error',
       };
       const newState = subscriptionServerInfoReducer(state, loadOverviewServerInfo());
+
       expect(newState.loading).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -58,6 +61,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         loadOverviewServerInfoSuccess({ serverInfoBySubscriptionId, activeItemIdBySubscriptionId }),
       );
+
       expect(newState.serverInfoBySubscriptionId).toEqual(serverInfoBySubscriptionId);
       expect(newState.activeItemIdBySubscriptionId).toEqual(activeItemIdBySubscriptionId);
       expect(newState.loading).toBe(false);
@@ -72,6 +76,7 @@ describe('subscriptionServerInfoReducer', () => {
         loading: true,
       };
       const newState = subscriptionServerInfoReducer(state, loadOverviewServerInfoFailure({ error: 'Load failed' }));
+
       expect(newState.error).toBe('Load failed');
       expect(newState.loading).toBe(false);
     });
@@ -88,6 +93,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         refreshSubscriptionServerInfoSuccess({ subscriptionId: 'sub-1', serverInfo: updated }),
       );
+
       expect(newState.serverInfoBySubscriptionId['sub-1']).toEqual(updated);
     });
 
@@ -104,6 +110,7 @@ describe('subscriptionServerInfoReducer', () => {
           clearActionInProgress: true,
         }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBeUndefined();
     });
 
@@ -120,6 +127,7 @@ describe('subscriptionServerInfoReducer', () => {
           clearActionInProgress: false,
         }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('start');
     });
   });
@@ -150,6 +158,7 @@ describe('subscriptionServerInfoReducer', () => {
           ],
         }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBeUndefined();
       expect(newState.actionInProgress['sub-2']).toBe('stop');
     });
@@ -161,6 +170,7 @@ describe('subscriptionServerInfoReducer', () => {
         initialSubscriptionServerInfoState,
         startServer({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('start');
     });
   });
@@ -178,6 +188,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         startServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('start');
       expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('running');
     });
@@ -199,6 +210,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         startServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('active');
     });
 
@@ -211,6 +223,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         startServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('start');
       expect(newState.serverInfoBySubscriptionId).toEqual({});
     });
@@ -226,6 +239,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         startServerFailure({ subscriptionId: 'sub-1', error: 'Failed' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBeUndefined();
     });
   });
@@ -236,6 +250,7 @@ describe('subscriptionServerInfoReducer', () => {
         initialSubscriptionServerInfoState,
         stopServer({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('stop');
     });
   });
@@ -253,6 +268,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         stopServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('stop');
       expect(newState.serverInfoBySubscriptionId['sub-1'].status).toBe('off');
     });
@@ -266,6 +282,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         stopServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('stop');
       expect(newState.serverInfoBySubscriptionId).toEqual({});
     });
@@ -277,6 +294,7 @@ describe('subscriptionServerInfoReducer', () => {
         initialSubscriptionServerInfoState,
         restartServer({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('restart');
     });
   });
@@ -291,6 +309,7 @@ describe('subscriptionServerInfoReducer', () => {
         state,
         restartServerSuccess({ subscriptionId: 'sub-1', itemId: 'item-1' }),
       );
+
       expect(newState.actionInProgress['sub-1']).toBe('restart');
     });
   });

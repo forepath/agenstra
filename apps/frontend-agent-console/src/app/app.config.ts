@@ -9,6 +9,7 @@ import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+
 import { ComponentReuseStrategy } from './strategies/component-reuse.strategy';
 
 export const appConfig: ApplicationConfig = {

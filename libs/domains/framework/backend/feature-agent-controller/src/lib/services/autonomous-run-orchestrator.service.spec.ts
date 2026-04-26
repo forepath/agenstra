@@ -1,24 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { TicketActivityEntity } from '../entities/ticket-activity.entity';
+
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease.entity';
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
 import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
-import { TicketEntity } from '../entities/ticket.entity';
 import { TicketAutomationFailureCode } from '../entities/ticket-automation.enums';
+import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketStatus } from '../entities/ticket.enums';
 import { AGENSTRA_AUTOMATION_COMPLETE } from '../utils/automation-completion.constants';
 import {
   ephemeralAutomationBranchNameForRun,
   stableAutomationBranchNameForTicket,
 } from '../utils/ticket-automation-branch.constants';
+
 import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.service';
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
-import { TicketAutomationService } from './ticket-automation.service';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
+import { TicketAutomationService } from './ticket-automation.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
 
@@ -57,7 +59,6 @@ describe('AutonomousRunOrchestratorService', () => {
   const clientId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   const agentId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
   const runId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
-
   const defaultGitStatusDirty = {
     isClean: false,
     currentBranch: 'automation/test',
@@ -78,15 +79,18 @@ describe('AutonomousRunOrchestratorService', () => {
               create: (x: unknown) => x,
             };
           }
+
           if (entity === TicketAutomationRunEntity) {
             return {
               save: jest.fn().mockImplementation((row: { id?: string }) => Promise.resolve({ ...row, id: runId })),
               create: (x: unknown) => x,
             };
           }
+
           return {};
         },
       };
+
       return fn(em);
     });
   }
@@ -111,6 +115,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
     expect(ticketRepo.manager.query).toHaveBeenCalled();
     await module.close();
@@ -161,7 +166,6 @@ describe('AutonomousRunOrchestratorService', () => {
     const leaseRepo = {
       update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -180,7 +184,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -197,6 +200,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(vcsProxy.fetch).toHaveBeenCalledWith(clientId, agentId);
@@ -235,6 +239,7 @@ describe('AutonomousRunOrchestratorService', () => {
         if (opts?.select?.length === 1 && opts.select[0] === 'updatedAt') {
           return Promise.resolve({ updatedAt: postSaveUpdatedAt });
         }
+
         return Promise.resolve({
           id: ticketId,
           clientId,
@@ -244,6 +249,7 @@ describe('AutonomousRunOrchestratorService', () => {
       }),
       save: jest.fn().mockImplementation((t: { updatedAt?: Date }) => {
         t.updatedAt = postSaveUpdatedAt;
+
         return Promise.resolve(t);
       }),
     };
@@ -299,7 +305,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -316,6 +321,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(automationRepo.update).toHaveBeenCalledWith(
@@ -374,7 +380,6 @@ describe('AutonomousRunOrchestratorService', () => {
     const leaseRepo = {
       update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -393,7 +398,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -410,6 +414,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(remoteChat.sendChatSync).toHaveBeenCalledTimes(2);
@@ -448,7 +453,6 @@ describe('AutonomousRunOrchestratorService', () => {
     const runRepo = {
       manager: { transaction },
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -465,6 +469,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(transaction).not.toHaveBeenCalled();
@@ -518,7 +523,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest.fn().mockResolvedValue('still working, no marker yet'),
     };
@@ -529,7 +533,6 @@ describe('AutonomousRunOrchestratorService', () => {
       createBranch: jest.fn().mockResolvedValue(undefined),
       switchBranch: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -546,6 +549,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(remoteChat.sendChatSync).toHaveBeenCalledTimes(2);
@@ -606,7 +610,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest.fn().mockResolvedValue(`ok\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
     };
@@ -620,7 +623,6 @@ describe('AutonomousRunOrchestratorService', () => {
         results: [{ cmd: 'npm test', exitCode: 1, output: 'fail' }],
       }),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -637,6 +639,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(vcsProxy.runVerifierCommands).toHaveBeenCalled();
@@ -660,10 +663,12 @@ describe('AutonomousRunOrchestratorService', () => {
         if (opts?.select?.length === 1 && opts.select[0] === 'updatedAt') {
           return Promise.resolve({ updatedAt: postFailSaveUpdatedAt });
         }
+
         return Promise.resolve({ id: ticketId, clientId, status: TicketStatus.TODO });
       }),
       save: jest.fn().mockImplementation((t: { updatedAt?: Date }) => {
         t.updatedAt = postFailSaveUpdatedAt;
+
         return Promise.resolve(t);
       }),
     };
@@ -709,7 +714,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest.fn().mockResolvedValue(`ok\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
     };
@@ -723,7 +727,6 @@ describe('AutonomousRunOrchestratorService', () => {
         results: [{ cmd: 'npm test', exitCode: 1, output: 'fail' }],
       }),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -740,6 +743,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(automationRepo.update).toHaveBeenCalledWith(
@@ -800,12 +804,10 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = { sendChatSync: jest.fn() };
     const vcsProxy = {
       getBranches: jest.fn().mockRejectedValue(new Error('remote VCS down')),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -822,6 +824,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(remoteChat.sendChatSync).not.toHaveBeenCalled();
@@ -882,7 +885,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest.fn().mockResolvedValue(`done\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
     };
@@ -901,7 +903,6 @@ describe('AutonomousRunOrchestratorService', () => {
         files: [],
       }),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -918,6 +919,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(activityRepo.save).toHaveBeenCalledWith(
@@ -974,7 +976,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -994,7 +995,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -1011,6 +1011,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(remoteChat.sendChatSync).toHaveBeenCalledTimes(3);
@@ -1063,7 +1064,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest.fn().mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
     };
@@ -1086,7 +1086,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn(),
       push: jest.fn(),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -1103,6 +1102,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(remoteChat.sendChatSync).toHaveBeenCalledTimes(1);
@@ -1164,7 +1164,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -1183,7 +1182,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockRejectedValue(new Error('commit rejected')),
       push: jest.fn(),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -1200,6 +1198,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(vcsProxy.push).not.toHaveBeenCalled();
@@ -1264,7 +1263,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -1283,7 +1281,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockRejectedValue(new Error('push rejected')),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -1300,6 +1297,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(vcsProxy.push).toHaveBeenCalledWith(clientId, agentId, {});
@@ -1358,7 +1356,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -1379,7 +1376,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -1396,6 +1392,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(vcsProxy.switchBranch).toHaveBeenCalledWith(clientId, agentId, stable);
@@ -1448,7 +1445,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -1467,7 +1463,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -1484,6 +1479,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(vcsProxy.createBranch).toHaveBeenCalledWith(clientId, agentId, {
@@ -1539,7 +1535,6 @@ describe('AutonomousRunOrchestratorService', () => {
       create: (x: unknown) => x,
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
-
     const remoteChat = {
       sendChatSync: jest
         .fn()
@@ -1558,7 +1553,6 @@ describe('AutonomousRunOrchestratorService', () => {
       commit: jest.fn().mockResolvedValue(undefined),
       push: jest.fn().mockResolvedValue(undefined),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AutonomousRunOrchestratorService,
@@ -1575,6 +1569,7 @@ describe('AutonomousRunOrchestratorService', () => {
       ],
     }).compile();
     const orchestrator = module.get(AutonomousRunOrchestratorService);
+
     await orchestrator.processBatch(3);
 
     expect(automationRepo.update).toHaveBeenCalledWith(

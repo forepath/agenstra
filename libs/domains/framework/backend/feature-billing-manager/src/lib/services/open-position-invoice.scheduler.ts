@@ -1,8 +1,10 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { InvoiceCreationService } from './invoice-creation.service';
+
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { UsersBillingDayRepository } from '../repositories/users-billing-day.repository';
 import { getTodayBillingDay } from '../utils/billing-day.utils';
+
+import { InvoiceCreationService } from './invoice-creation.service';
 
 @Injectable()
 export class OpenPositionInvoiceScheduler implements OnModuleInit, OnModuleDestroy {

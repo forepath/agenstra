@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex, TableUnique } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
 /**
  * Migration to create statistics shadow tables and event tables.
@@ -504,10 +504,12 @@ export class CreateStatisticsTables1766000000000 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop statistics_entity_events (and its FKs)
     const entityEventsTable = await queryRunner.getTable('statistics_entity_events');
+
     if (entityEventsTable) {
       for (const fk of entityEventsTable.foreignKeys) {
         await queryRunner.dropForeignKey('statistics_entity_events', fk);
       }
+
       await queryRunner.dropIndex('statistics_entity_events', 'IDX_statistics_entity_events_original_entity_id');
       await queryRunner.dropIndex('statistics_entity_events', 'IDX_statistics_entity_events_entity_type_occurred_at');
       await queryRunner.dropTable('statistics_entity_events');
@@ -517,10 +519,12 @@ export class CreateStatisticsTables1766000000000 implements MigrationInterface {
 
     // Drop statistics_chat_filter_drops
     const filterDropsTable = await queryRunner.getTable('statistics_chat_filter_drops');
+
     if (filterDropsTable) {
       for (const fk of filterDropsTable.foreignKeys) {
         await queryRunner.dropForeignKey('statistics_chat_filter_drops', fk);
       }
+
       await queryRunner.dropIndex(
         'statistics_chat_filter_drops',
         'IDX_statistics_chat_filter_drops_filter_type_occurred_at',
@@ -535,10 +539,12 @@ export class CreateStatisticsTables1766000000000 implements MigrationInterface {
 
     // Drop statistics_chat_io
     const chatIoTable = await queryRunner.getTable('statistics_chat_io');
+
     if (chatIoTable) {
       for (const fk of chatIoTable.foreignKeys) {
         await queryRunner.dropForeignKey('statistics_chat_io', fk);
       }
+
       await queryRunner.dropIndex('statistics_chat_io', 'IDX_statistics_chat_io_statistics_client_id_occurred_at');
       await queryRunner.dropIndex('statistics_chat_io', 'IDX_statistics_chat_io_statistics_agent_id_occurred_at');
       await queryRunner.dropTable('statistics_chat_io');
@@ -547,10 +553,12 @@ export class CreateStatisticsTables1766000000000 implements MigrationInterface {
 
     // Drop statistics_client_users
     const clientUsersTable = await queryRunner.getTable('statistics_client_users');
+
     if (clientUsersTable) {
       for (const fk of clientUsersTable.foreignKeys) {
         await queryRunner.dropForeignKey('statistics_client_users', fk);
       }
+
       await queryRunner.dropIndex('statistics_client_users', 'IDX_statistics_client_users_statistics_client_id');
       await queryRunner.dropIndex('statistics_client_users', 'IDX_statistics_client_users_original_id');
       await queryRunner.dropTable('statistics_client_users');
@@ -559,10 +567,12 @@ export class CreateStatisticsTables1766000000000 implements MigrationInterface {
 
     // Drop statistics_provisioning_references
     const provRefsTable = await queryRunner.getTable('statistics_provisioning_references');
+
     if (provRefsTable) {
       for (const fk of provRefsTable.foreignKeys) {
         await queryRunner.dropForeignKey('statistics_provisioning_references', fk);
       }
+
       await queryRunner.dropIndex(
         'statistics_provisioning_references',
         'IDX_statistics_provisioning_refs_statistics_client_id',
@@ -573,10 +583,12 @@ export class CreateStatisticsTables1766000000000 implements MigrationInterface {
 
     // Drop statistics_agents
     const agentsTable = await queryRunner.getTable('statistics_agents');
+
     if (agentsTable) {
       for (const fk of agentsTable.foreignKeys) {
         await queryRunner.dropForeignKey('statistics_agents', fk);
       }
+
       await queryRunner.dropIndex('statistics_agents', 'IDX_statistics_agents_statistics_client_id');
       await queryRunner.dropIndex('statistics_agents', 'IDX_statistics_agents_original_agent_id');
       await queryRunner.dropTable('statistics_agents');

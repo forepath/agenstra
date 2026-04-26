@@ -1,5 +1,6 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
@@ -12,17 +13,14 @@ describe('UsersService', () => {
     create: jest.fn(),
     remove: jest.fn(),
   };
-
   const mockEmailService = {
     sendConfirmationEmail: jest.fn(),
   };
-
   const mockStatisticsService = {
     recordEntityCreated: jest.fn().mockResolvedValue(undefined),
     recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
     recordEntityDeleted: jest.fn().mockResolvedValue(undefined),
   };
-
   let service: UsersService;
 
   beforeEach(() => {

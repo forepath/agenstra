@@ -10,8 +10,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthenticationFacade, registerSuccess } from '@forepath/identity/frontend';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
+import { AuthenticationFacade, registerSuccess } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
@@ -69,9 +69,11 @@ export class IdentityRegisterComponent implements OnInit {
   private passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
     const password = group.get('password')?.value;
     const passwordConfirmation = group.get('passwordConfirmation')?.value;
+
     if (password && passwordConfirmation && password !== passwordConfirmation) {
       return { passwordMismatch: true };
     }
+
     return null;
   }
 
@@ -79,6 +81,7 @@ export class IdentityRegisterComponent implements OnInit {
     if (this.registerForm.valid) {
       const email = this.registerForm.get('email')?.value;
       const password = this.registerForm.get('password')?.value;
+
       this.authFacade.register(email, password);
     } else {
       Object.keys(this.registerForm.controls).forEach((key) => {

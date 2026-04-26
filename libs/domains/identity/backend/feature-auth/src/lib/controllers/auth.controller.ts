@@ -1,6 +1,7 @@
+import { Public } from '@forepath/identity/backend';
 import { BadRequestException, Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
-import { Public } from '@forepath/identity/backend';
+
 import { ChangePasswordDto } from '../dto/auth/change-password.dto';
 import { ConfirmEmailDto } from '../dto/auth/confirm-email.dto';
 import { LoginDto } from '../dto/auth/login.dto';
@@ -57,12 +58,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async changePassword(@Body() dto: ChangePasswordDto, @Req() req: RequestWithUser) {
     const userId = req.user?.id;
+
     if (!userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     if (dto.newPassword !== dto.newPasswordConfirmation) {
       throw new BadRequestException('New password and confirmation do not match');
     }
+
     return this.authService.changePassword(userId, dto.currentPassword, dto.newPassword, dto.newPasswordConfirmation);
   }
 }

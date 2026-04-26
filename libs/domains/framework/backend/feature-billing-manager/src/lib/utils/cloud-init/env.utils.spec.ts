@@ -8,16 +8,19 @@ describe('env.utils', () => {
 
     it('prefixes each line with 6 spaces and joins with newline', () => {
       const lines = ['FOO=bar', 'BAZ=qux'];
+
       expect(formatEnvLines(lines)).toBe('      FOO=bar\n      BAZ=qux');
     });
 
     it('trims leading and trailing whitespace from each line', () => {
       const lines = ['  FOO=bar  ', '  BAZ=qux'];
+
       expect(formatEnvLines(lines)).toBe('      FOO=bar\n      BAZ=qux');
     });
 
     it('skips empty lines after trim', () => {
       const lines = ['FOO=bar', '', '   ', 'BAZ=qux'];
+
       expect(formatEnvLines(lines)).toBe('      FOO=bar\n      BAZ=qux');
     });
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ChatFilter, FilterContext, FilterDirection, FilterResult } from '../chat-filter.interface';
+
 import { RegexFilterRulesEvaluateService } from '../../services/regex-filter-rules-evaluate.service';
+import { ChatFilter, FilterContext, FilterDirection, FilterResult } from '../chat-filter.interface';
 
 @Injectable()
 export class DatabaseRegexIncomingChatFilter implements ChatFilter {

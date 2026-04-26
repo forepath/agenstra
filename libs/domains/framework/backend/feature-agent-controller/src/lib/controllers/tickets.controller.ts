@@ -1,3 +1,4 @@
+import { type RequestWithUser } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -14,7 +15,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { type RequestWithUser } from '@forepath/identity/backend';
+
 import {
   ApplyGeneratedBodyDto,
   CreateTicketCommentDto,
@@ -38,11 +39,13 @@ export class TicketsController {
     @Req() req?: RequestWithUser,
   ) {
     let parentId: string | null | undefined;
+
     if (parentIdRaw === 'null') {
       parentId = null;
     } else if (parentIdRaw !== undefined) {
       parentId = parentIdRaw;
     }
+
     return await this.ticketsService.listTickets({ clientId, status, parentId }, req);
   }
 
@@ -111,6 +114,7 @@ export class TicketsController {
     @Req() req?: RequestWithUser,
   ) {
     const include = includeDescendants === 'true' || includeDescendants === '1';
+
     return await this.ticketsService.findOne(id, include, req);
   }
 

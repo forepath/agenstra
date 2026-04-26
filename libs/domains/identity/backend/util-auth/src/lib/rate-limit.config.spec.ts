@@ -28,6 +28,7 @@ describe('getRateLimitConfig', () => {
     const config = getRateLimitConfig();
 
     expect(isThrottlerConfigObject(config)).toBe(true);
+
     if (isThrottlerConfigObject(config)) {
       expect(Array.isArray(config.throttlers)).toBe(true);
       expect(config.throttlers).toHaveLength(1);
@@ -44,6 +45,7 @@ describe('getRateLimitConfig', () => {
     const config = getRateLimitConfig();
 
     expect(isThrottlerConfigObject(config)).toBe(true);
+
     if (isThrottlerConfigObject(config)) {
       expect(Array.isArray(config.throttlers)).toBe(true);
       expect(config.throttlers).toHaveLength(1);
@@ -62,6 +64,7 @@ describe('getRateLimitConfig', () => {
     const config = getRateLimitConfig();
 
     expect(isThrottlerConfigObject(config)).toBe(true);
+
     if (isThrottlerConfigObject(config)) {
       expect(Array.isArray(config.throttlers)).toBe(true);
       expect(config.throttlers).toHaveLength(1);
@@ -79,6 +82,7 @@ describe('getRateLimitConfig', () => {
     const config = getRateLimitConfig();
 
     expect(isThrottlerConfigObject(config)).toBe(true);
+
     if (isThrottlerConfigObject(config)) {
       expect(Array.isArray(config.throttlers)).toBe(true);
       expect(config.throttlers).toHaveLength(1);
@@ -94,6 +98,7 @@ describe('getRateLimitConfig', () => {
     const config = getRateLimitConfig();
 
     expect(isThrottlerConfigObject(config)).toBe(true);
+
     if (isThrottlerConfigObject(config)) {
       expect(Array.isArray(config.throttlers)).toBe(true);
       expect(config.throttlers).toHaveLength(1);

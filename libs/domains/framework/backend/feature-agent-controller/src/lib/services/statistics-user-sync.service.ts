@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { UsersRepository } from '@forepath/identity/backend';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { StatisticsRepository } from '../repositories/statistics.repository';
 
 /**
@@ -20,9 +21,11 @@ export class StatisticsUserSyncService {
     try {
       this.logger.log('🔄 Syncing users to statistics mirror table...');
       const users = await this.usersRepository.findAllIdsAndRoles();
+
       for (const user of users) {
         await this.statisticsRepository.upsertStatisticsUser(user.id, user.role);
       }
+
       this.logger.log(`✅ Statistics user sync completed: ${users.length} user(s) synced`);
     } catch (error) {
       this.logger.error('❌ Failed to sync users to statistics mirror table:', error);

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { NavigationNode } from '../interfaces';
 
 /**
@@ -15,7 +16,6 @@ export class NavigationBuilderService {
   buildNavigationTree(files: string[], basePath = '/docs'): NavigationNode[] {
     const tree: NavigationNode[] = [];
     const nodeMap = new Map<string, NavigationNode>();
-
     // Sort files to ensure consistent ordering
     const sortedFiles = [...files].sort();
 
@@ -23,22 +23,23 @@ export class NavigationBuilderService {
       const parts = file.split('/');
       const fileName = parts[parts.length - 1];
       const isReadme = fileName.toLowerCase() === 'readme.md';
-
       // Build path segments
       const pathSegments = parts.slice(0, -1);
       const routePath = this.buildRoutePath(basePath, file, isReadme);
-
       // Create or get parent node
       let parent: NavigationNode[] = tree;
       let currentPath = '';
 
       for (let i = 0; i < pathSegments.length; i++) {
         const segment = pathSegments[i];
+
         currentPath = currentPath ? `${currentPath}/${segment}` : segment;
 
         let folderNode = nodeMap.get(currentPath);
+
         if (!folderNode) {
           const folderRoutePath = this.buildRoutePath(basePath, `${currentPath}/README.md`, true);
+
           folderNode = {
             title: this.formatTitle(segment),
             path: folderRoutePath,
@@ -56,7 +57,6 @@ export class NavigationBuilderService {
       const fileTitle = isReadme
         ? this.formatTitle(pathSegments[pathSegments.length - 1] || 'Documentation')
         : this.formatTitle(fileName.replace(/\.md$/, ''));
-
       const fileNode: NavigationNode = {
         title: fileTitle,
         path: routePath,
@@ -67,6 +67,7 @@ export class NavigationBuilderService {
       if (isReadme && pathSegments.length > 0) {
         const folderPath = pathSegments.join('/');
         const folderNode = nodeMap.get(folderPath);
+
         if (folderNode) {
           // Update folder node with README info
           folderNode.file = file;
@@ -75,11 +76,14 @@ export class NavigationBuilderService {
       } else {
         // Add as child of parent folder
         const parentPath = pathSegments.join('/');
+
         if (parentPath && nodeMap.has(parentPath)) {
           const parentNode = nodeMap.get(parentPath)!;
+
           if (!parentNode.children) {
             parentNode.children = [];
           }
+
           parentNode.children.push(fileNode);
         } else {
           // Root level file
@@ -103,8 +107,10 @@ export class NavigationBuilderService {
     if (isReadme) {
       // For README files, use the directory path
       const parts = pathWithoutExt.split('/');
+
       parts.pop(); // Remove 'README'
       const dirPath = parts.join('/');
+
       return dirPath ? `${basePath}/${dirPath}` : basePath;
     }
 
@@ -131,6 +137,7 @@ export class NavigationBuilderService {
       const bIsReadme = b.file.toLowerCase().endsWith('readme.md');
 
       if (aIsReadme && !bIsReadme) return -1;
+
       if (!aIsReadme && bIsReadme) return 1;
 
       // Then by title

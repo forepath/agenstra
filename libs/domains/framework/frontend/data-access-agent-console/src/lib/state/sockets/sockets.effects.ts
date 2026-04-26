@@ -20,8 +20,16 @@ import {
   withLatestFrom,
 } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+
+import { ticketAutomationRunChatSummaryToResponseDto } from '../../utils/ticket-automation-chat-run-mapper';
 import { ticketBoardAutomationRunUpsert } from '../ticket-automation/ticket-automation.actions';
 import { ticketBoardTicketUpsert } from '../tickets/tickets.actions';
+import type { TicketResponseDto } from '../tickets/tickets.types';
+
+import {
+  CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
+  CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
+} from './client-chat-automation.constants';
 import {
   connectSocket,
   connectSocketFailure,
@@ -44,18 +52,12 @@ import {
   socketReconnectFailed,
   socketReconnecting,
 } from './sockets.actions';
-import {
-  CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
-  CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
-} from './client-chat-automation.constants';
 import { selectSelectedAgentId, selectSelectedClientId, selectSettingClient } from './sockets.selectors';
 import {
   ForwardableEvent,
   type ForwardedEventPayload,
   type TicketAutomationRunChatEventPayload,
 } from './sockets.types';
-import type { TicketResponseDto } from '../tickets/tickets.types';
-import { ticketAutomationRunChatSummaryToResponseDto } from '../../utils/ticket-automation-chat-run-mapper';
 
 /**
  * Socket.IO internal events that should not be forwarded or handled as application events
@@ -72,7 +74,6 @@ const INTERNAL_EVENTS = new Set([
   'ping',
   'pong',
 ]);
-
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
@@ -85,27 +86,35 @@ function getAuthHeader(environment: Environment, keycloakService: KeycloakServic
     const apiKey =
       environment.authentication.apiKey ??
       (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
+
     if (apiKey) {
       return of(`Bearer ${apiKey}`);
     }
+
     return of(null);
   }
+
   if (environment.authentication.type === 'keycloak' && keycloakService) {
     return from(keycloakService.getToken()).pipe(
       map((token) => (token ? `Bearer ${token}` : null)),
       catchError((error) => {
         console.warn('Failed to get Keycloak token:', error);
+
         return of(null);
       }),
     );
   }
+
   if (environment.authentication.type === 'users') {
     const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
+
     if (jwt) {
       return of(`Bearer ${jwt}`);
     }
+
     return of(null);
   }
+
   return of(null);
 }
 
@@ -135,6 +144,7 @@ export const connectSocket$ = createEffect(
       ofType(connectSocket),
       switchMap(() => {
         const websocketUrl = environment.controller.websocketUrl;
+
         if (!websocketUrl) {
           return of(connectSocketFailure({ error: 'WebSocket URL not configured' }));
         }
@@ -165,7 +175,6 @@ export const connectSocket$ = createEffect(
 
             // Handle connection success
             const connectSuccess$ = fromEvent(socketInstance, 'connect').pipe(map(() => connectSocketSuccess()));
-
             // Handle connection errors
             // Note: connect_error fires on initial connection failure
             // Reconnection attempts are handled by reconnect_attempt/reconnect_error events
@@ -177,69 +186,56 @@ export const connectSocket$ = createEffect(
                 return socketReconnectError({ error: error.message || 'Connection error' });
               }),
             );
-
             // Handle main socket reconnection events
             const reconnectAttempt$ = fromEvent<number>(socketInstance, 'reconnect_attempt').pipe(
               map((attempt) => socketReconnecting({ attempt })),
             );
-
             const reconnecting$ = fromEvent<number>(socketInstance, 'reconnecting').pipe(
               map((attempt) => socketReconnecting({ attempt })),
             );
-
             const reconnect$ = fromEvent(socketInstance, 'reconnect').pipe(map(() => socketReconnected()));
-
             const reconnectError$ = fromEvent<Error>(socketInstance, 'reconnect_error').pipe(
               map((error) => socketReconnectError({ error: error.message || 'Reconnection error' })),
             );
-
             const reconnectFailed$ = fromEvent(socketInstance, 'reconnect_failed').pipe(
               map(() => {
                 socketInstance = null;
+
                 return socketReconnectFailed({ error: 'Reconnection failed after all attempts' });
               }),
             );
-
             // Handle setClientSuccess event
             const setClientSuccess$ = fromEvent<{ message: string; clientId: string }>(
               socketInstance,
               'setClientSuccess',
             ).pipe(map((data) => setClientSuccess({ message: data.message, clientId: data.clientId })));
-
             // Handle forwardAck event
             const forwardAck$ = fromEvent<{ received: boolean; event: string }>(socketInstance, 'forwardAck').pipe(
               map((data) => forwardEventSuccess({ received: data.received, event: data.event })),
             );
-
             // Handle error events (application-level errors, not Socket.IO internal errors)
             const error$ = fromEvent<{ message: string }>(socketInstance, 'error').pipe(
               map((data) => socketError({ message: data.message })),
             );
-
             // Handle remote disconnection/reconnection events (from backend, per clientId)
             const remoteDisconnected$ = fromEvent<{ clientId: string }>(socketInstance, 'remoteDisconnected').pipe(
               map((data) => remoteDisconnected({ clientId: data.clientId })),
             );
-
             const remoteReconnecting$ = fromEvent<{ clientId: string; attempt: number }>(
               socketInstance,
               'remoteReconnecting',
             ).pipe(map((data) => remoteReconnecting({ clientId: data.clientId, attempt: data.attempt })));
-
             const remoteReconnected$ = fromEvent<{ clientId: string }>(socketInstance, 'remoteReconnected').pipe(
               map((data) => remoteReconnected({ clientId: data.clientId })),
             );
-
             const remoteReconnectError$ = fromEvent<{ clientId: string; error: string }>(
               socketInstance,
               'remoteReconnectError',
             ).pipe(map((data) => remoteReconnectError({ clientId: data.clientId, error: data.error })));
-
             const remoteReconnectFailed$ = fromEvent<{ clientId: string; error: string }>(
               socketInstance,
               'remoteReconnectFailed',
             ).pipe(map((data) => remoteReconnectFailed({ clientId: data.clientId, error: data.error })));
-
             // Handle forwarded events from remote agents namespace
             // Listen to all events and filter out internal Socket.IO events
             const forwardedEvents$ = new Observable<{ event: string; payload: ForwardedEventPayload }>((subscriber) => {
@@ -250,11 +246,14 @@ export const connectSocket$ = createEffect(
                   if (event === 'error' && args.length > 0 && args[0] instanceof Error) {
                     return; // Don't forward internal Socket.IO errors
                   }
+
                   // Type assertion: the payload should match ForwardedEventPayload based on event type
                   subscriber.next({ event, payload: (args[0] ?? {}) as ForwardedEventPayload });
                 }
               };
+
               socketInstance?.onAny(handler);
+
               return () => {
                 socketInstance?.offAny(handler);
               };
@@ -281,6 +280,7 @@ export const connectSocket$ = createEffect(
             ).pipe(
               catchError((error) => {
                 socketInstance = null;
+
                 return of(connectSocketFailure({ error: error.message || 'Connection error' }));
               }),
             );
@@ -332,10 +332,12 @@ export const restoreClientContext$ = createEffect(
         if (settingClient) {
           return of();
         }
+
         // Only restore if we have a selected client (indicates this is a reconnection, not initial connection)
         if (!selectedClientId) {
           return of();
         }
+
         // Small delay to ensure the backend socket connection is fully established
         // This is important because on reconnection, the backend might not be ready immediately
         return of(null).pipe(
@@ -343,14 +345,17 @@ export const restoreClientContext$ = createEffect(
           switchMap(() => {
             // Re-check socket instance after delay to ensure we have the latest reference
             const socket = getSocketInstance();
+
             // Only restore if the socket is connected
             if (socket && socket.connected) {
               // Emit setClient to restore the client context on the backend
               // This will create a new remote socket connection and update selectedClientBySocket
               socket.emit('setClient', { clientId: selectedClientId });
+
               // Return setClient action to update the state (this will trigger settingClient flag)
               return of(setClient({ clientId: selectedClientId }));
             }
+
             return of();
           }),
         );
@@ -384,6 +389,7 @@ export const restoreAgentLogin$ = createEffect(
         if (!selectedAgentId || !selectedClientId) {
           return of();
         }
+
         // Race between remoteReconnected (for reconnections) and a timeout (for initial connections)
         // This ensures we wait for the remote socket to be ready in both cases
         return merge(
@@ -401,14 +407,17 @@ export const restoreAgentLogin$ = createEffect(
           switchMap(() => {
             // Re-check socket instance to ensure it's still connected
             const socket = getSocketInstance();
+
             if (!socket || !socket.connected) {
               // Socket disconnected, don't send login
               return of();
             }
+
             // Emit login event directly to the socket
             // We need to emit directly because forwardEvent action only dispatches to store,
             // but the actual socket emission happens in SocketsFacade.forwardEvent()
             socket.emit('forward', { event: ForwardableEvent.LOGIN, agentId: selectedAgentId });
+
             // Also dispatch the action to update the store state
             return of(forwardEvent({ event: ForwardableEvent.LOGIN, agentId: selectedAgentId }));
           }),
@@ -433,7 +442,9 @@ export const syncTicketAutomationRunFromClientsChat$ = createEffect(
         if (a.event !== CLIENT_CHAT_AUTOMATION_SOCKET_EVENT) {
           return false;
         }
+
         const p = a.payload as TicketAutomationRunChatEventPayload;
+
         return !!p?.run?.id;
       }),
       map((a) =>

@@ -1,14 +1,17 @@
 import { ClientUserRole } from '@forepath/identity/backend';
+
 import { StatisticsClientUserEntity } from './statistics-client-user.entity';
 
 describe('StatisticsClientUserEntity', () => {
   it('should create an instance', () => {
     const entity = new StatisticsClientUserEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const entity = new StatisticsClientUserEntity();
+
     entity.id = 'stats-cu-uuid';
     entity.originalClientUserId = 'cu-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
@@ -28,10 +31,12 @@ describe('StatisticsClientUserEntity', () => {
 
   it('should support USER and ADMIN roles', () => {
     const userEntity = new StatisticsClientUserEntity();
+
     userEntity.role = ClientUserRole.USER;
     expect(userEntity.role).toBe(ClientUserRole.USER);
 
     const adminEntity = new StatisticsClientUserEntity();
+
     adminEntity.role = ClientUserRole.ADMIN;
     expect(adminEntity.role).toBe(ClientUserRole.ADMIN);
   });

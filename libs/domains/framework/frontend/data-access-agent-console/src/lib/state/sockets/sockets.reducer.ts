@@ -1,9 +1,9 @@
 import { createReducer, on } from '@ngrx/store';
+
 import {
   CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
   CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
 } from './client-chat-automation.constants';
-import { ForwardableEvent, type AgentResponseMode } from './sockets.types';
 import {
   chatEnhancementStarted,
   ticketBodyGenerationStarted,
@@ -34,6 +34,7 @@ import {
   socketReconnectFailed,
   socketReconnecting,
 } from './sockets.actions';
+import { ForwardableEvent, type AgentResponseMode } from './sockets.types';
 
 export interface RemoteConnectionState {
   clientId: string;
@@ -227,6 +228,7 @@ export const socketsReducer = createReducer(
   on(setClientSuccess, (state, { clientId }) => {
     // Initialize remote connection state for this clientId if not exists
     const remoteConnections = { ...state.remoteConnections };
+
     if (!remoteConnections[clientId]) {
       remoteConnections[clientId] = {
         clientId,
@@ -245,10 +247,12 @@ export const socketsReducer = createReducer(
         lastError: null,
       };
     }
+
     // If this is a reconnection (clientId matches the previously selected client),
     // clear forwardedEvents to prevent duplicates when chat history is restored
     // This ensures old messages are cleared before restored messages are loaded
     const isReconnection = state.selectedClientId === clientId && state.forwardedEvents.length > 0;
+
     return {
       ...state,
       selectedClientId: clientId,
@@ -304,6 +308,7 @@ export const socketsReducer = createReducer(
         error: null,
       };
     }
+
     return state;
   }),
   on(forwardEventFailure, (state, { error }) => {
@@ -311,6 +316,7 @@ export const socketsReducer = createReducer(
       state.forwardingEvent === ForwardableEvent.ENHANCE_CHAT && state.chatEnhancementPendingCorrelationId;
     const wasTicketBody =
       state.forwardingEvent === ForwardableEvent.GENERATE_TICKET_BODY && state.ticketBodyPendingCorrelationId;
+
     return {
       ...state,
       forwarding: false,
@@ -372,6 +378,7 @@ export const socketsReducer = createReducer(
 
     let chatEnhancementPendingCorrelationId = state.chatEnhancementPendingCorrelationId;
     let chatEnhancementLastResult = state.chatEnhancementLastResult;
+
     if (
       event === 'chatEnhanceResult' &&
       'data' in payload &&
@@ -379,8 +386,10 @@ export const socketsReducer = createReducer(
       state.chatEnhancementPendingCorrelationId
     ) {
       const data = payload.data as import('./sockets.types').ChatEnhanceResultPayload;
+
       if (data.correlationId === state.chatEnhancementPendingCorrelationId) {
         chatEnhancementPendingCorrelationId = null;
+
         if (data.success === true) {
           chatEnhancementLastResult = {
             correlationId: data.correlationId,
@@ -399,10 +408,13 @@ export const socketsReducer = createReducer(
 
     let ticketBodyPendingCorrelationId = state.ticketBodyPendingCorrelationId;
     let ticketBodyLastResult = state.ticketBodyLastResult;
+
     if (event === 'ticketBodyResult' && 'data' in payload && payload.success && state.ticketBodyPendingCorrelationId) {
       const data = payload.data as import('./sockets.types').TicketBodyResultPayload;
+
       if (data.correlationId === state.ticketBodyPendingCorrelationId) {
         ticketBodyPendingCorrelationId = null;
+
         if (data.success === true) {
           ticketBodyLastResult = {
             correlationId: data.correlationId,
@@ -421,11 +433,14 @@ export const socketsReducer = createReducer(
 
     // Extract agentId from loginSuccess payload to track selected agent
     let selectedAgentId = state.selectedAgentId;
+
     if (event === 'loginSuccess' && 'data' in payload && payload.success) {
       const loginData = payload.data as import('./sockets.types').LoginSuccessData;
+
       selectedAgentId = loginData.agentId;
     } else if (event === 'logoutSuccess' && 'data' in payload && payload.success) {
       const logoutData = payload.data as import('./sockets.types').LogoutSuccessData;
+
       // Clear selected agent if logged out
       if (logoutData.agentId === null || logoutData.agentId === state.selectedAgentId) {
         selectedAgentId = null;
@@ -434,6 +449,7 @@ export const socketsReducer = createReducer(
 
     // Handle messageFilterResult events separately
     let messageFilterResults = state.messageFilterResults;
+
     if (event === 'messageFilterResult' && 'data' in payload && payload.success) {
       const filterResult = payload.data as import('./sockets.types').MessageFilterResultData;
       const updatedFilterResults = [
@@ -449,6 +465,7 @@ export const socketsReducer = createReducer(
           receivedAt: Date.now(),
         },
       ];
+
       messageFilterResults =
         updatedFilterResults.length > state.maxMessageFilterResults
           ? updatedFilterResults.slice(-state.maxMessageFilterResults)
@@ -458,15 +475,19 @@ export const socketsReducer = createReducer(
     const skipForwardedAppend =
       event === 'chatEnhanceResult' || event === 'ticketBodyResult' || event === CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT;
     let eventRowTimestamp = Date.now();
+
     if (event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT && payload && typeof payload === 'object') {
       const tl = (payload as { timelineAt?: unknown }).timelineAt;
+
       if (typeof tl === 'string') {
         const parsed = Date.parse(tl);
+
         if (!Number.isNaN(parsed)) {
           eventRowTimestamp = parsed;
         }
       }
     }
+
     const updatedForwardedEvents = skipForwardedAppend
       ? state.forwardedEvents
       : [...state.forwardedEvents, { event, payload, timestamp: eventRowTimestamp }];
@@ -504,6 +525,7 @@ export const socketsReducer = createReducer(
   // Remote Connection Disconnection (per clientId)
   on(remoteDisconnected, (state, { clientId }) => {
     const remoteConnections = { ...state.remoteConnections };
+
     if (!remoteConnections[clientId]) {
       remoteConnections[clientId] = {
         clientId,
@@ -520,6 +542,7 @@ export const socketsReducer = createReducer(
         reconnectAttempts: 0,
       };
     }
+
     return {
       ...state,
       remoteConnections,
@@ -528,6 +551,7 @@ export const socketsReducer = createReducer(
   // Remote Connection Reconnection (per clientId)
   on(remoteReconnecting, (state, { clientId, attempt }) => {
     const remoteConnections = { ...state.remoteConnections };
+
     if (!remoteConnections[clientId]) {
       remoteConnections[clientId] = {
         clientId,
@@ -543,6 +567,7 @@ export const socketsReducer = createReducer(
         reconnectAttempts: attempt,
       };
     }
+
     return {
       ...state,
       remoteConnections,
@@ -550,6 +575,7 @@ export const socketsReducer = createReducer(
   }),
   on(remoteReconnected, (state, { clientId }) => {
     const remoteConnections = { ...state.remoteConnections };
+
     if (remoteConnections[clientId]) {
       remoteConnections[clientId] = {
         ...remoteConnections[clientId],
@@ -559,9 +585,11 @@ export const socketsReducer = createReducer(
         lastError: null,
       };
     }
+
     // If this is a reconnection for the selected client, clear forwardedEvents to prevent duplicates
     // The backend will restore chat history when agent logins are restored after remote reconnection
     const isReconnection = state.selectedClientId === clientId && state.forwardedEvents.length > 0;
+
     return {
       ...state,
       remoteConnections,
@@ -573,6 +601,7 @@ export const socketsReducer = createReducer(
   }),
   on(remoteReconnectError, (state, { clientId, error }) => {
     const remoteConnections = { ...state.remoteConnections };
+
     if (remoteConnections[clientId]) {
       remoteConnections[clientId] = {
         ...remoteConnections[clientId],
@@ -580,6 +609,7 @@ export const socketsReducer = createReducer(
         lastError: error,
       };
     }
+
     return {
       ...state,
       remoteConnections,
@@ -587,6 +617,7 @@ export const socketsReducer = createReducer(
   }),
   on(remoteReconnectFailed, (state, { clientId, error }) => {
     const remoteConnections = { ...state.remoteConnections };
+
     if (remoteConnections[clientId]) {
       remoteConnections[clientId] = {
         ...remoteConnections[clientId],
@@ -595,6 +626,7 @@ export const socketsReducer = createReducer(
         lastError: error,
       };
     }
+
     return {
       ...state,
       remoteConnections,

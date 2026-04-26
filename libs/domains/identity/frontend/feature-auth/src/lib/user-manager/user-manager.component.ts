@@ -46,6 +46,7 @@ export class IdentityUserManagerComponent implements OnInit {
       if (!searchQuery) {
         return users;
       }
+
       return users.filter((user) => JSON.stringify(user).toLowerCase().includes(searchQuery.toLowerCase()));
     }),
   );
@@ -63,7 +64,9 @@ export class IdentityUserManagerComponent implements OnInit {
   readonly usersExcludingSelf = computed(() => {
     const all = this.users();
     const self = this.currentUser();
+
     if (!self?.id) return all;
+
     return all.filter((u) => u.id !== self.id);
   });
   readonly usersError = toSignal(this.usersError$, { initialValue: null as string | null });
@@ -88,6 +91,7 @@ export class IdentityUserManagerComponent implements OnInit {
 
     // Clear standalone loading overlay when user manager is shown (e.g. opened in new window)
     const isStandalone = !!this.route.snapshot.queryParams['standalone'];
+
     if (isStandalone) {
       this.standaloneLoadingService.setLoading(false);
     }
@@ -113,6 +117,7 @@ export class IdentityUserManagerComponent implements OnInit {
       password: this.createForm.password,
       role: this.createForm.role,
     };
+
     this.authFacade.createUser(dto);
   }
 
@@ -128,13 +133,16 @@ export class IdentityUserManagerComponent implements OnInit {
 
   onSubmitEditUser(): void {
     if (!this.userToEdit) return;
+
     const dto: UpdateUserDto = {
       email: this.editForm.email.trim(),
       role: this.editForm.role,
     };
+
     if (this.editForm.password.trim()) {
       dto.password = this.editForm.password;
     }
+
     this.authFacade.updateUser(this.userToEdit.id, dto);
   }
 
@@ -176,6 +184,7 @@ export class IdentityUserManagerComponent implements OnInit {
 
   formatDate(iso: string | undefined): string {
     if (!iso) return '-';
+
     try {
       return new Date(iso).toLocaleString();
     } catch {
@@ -187,11 +196,13 @@ export class IdentityUserManagerComponent implements OnInit {
     if (modalElement?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.show();
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Modal = (window as any).bootstrap?.Modal;
+
         if (Modal) {
           new Modal(modalElement.nativeElement).show();
         }
@@ -203,6 +214,7 @@ export class IdentityUserManagerComponent implements OnInit {
     if (modalElement?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.hide();
       }

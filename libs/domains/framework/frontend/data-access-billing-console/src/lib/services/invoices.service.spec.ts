@@ -1,7 +1,9 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { CreateInvoiceDto, CreateInvoiceResponse, InvoiceResponse } from '../types/billing.types';
+
 import { InvoicesService } from './invoices.service';
 
 describe('InvoicesService', () => {
@@ -9,7 +11,6 @@ describe('InvoicesService', () => {
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
   const subscriptionId = 'sub-1';
-
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
     subscriptionId: 'sub-1',
@@ -49,11 +50,13 @@ describe('InvoicesService', () => {
   describe('getInvoicesSummary', () => {
     it('should return open and overdue summary', (done) => {
       const response = { openOverdueCount: 2, openOverdueTotal: 150.5, billingDayOfMonth: 28, unbilledTotal: 42.1 };
+
       service.getInvoicesSummary().subscribe((res) => {
         expect(res).toEqual(response);
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/invoices/summary`);
+
       expect(req.request.method).toBe('GET');
       req.flush(response);
     });
@@ -69,6 +72,7 @@ describe('InvoicesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockInvoices);
     });
@@ -88,6 +92,7 @@ describe('InvoicesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(response);
@@ -100,6 +105,7 @@ describe('InvoicesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}`);
+
       expect(req.request.body).toEqual({});
       req.flush({ invoiceId: 'inv-1', preAuthUrl: 'https://example.com' });
     });
@@ -116,6 +122,7 @@ describe('InvoicesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/refresh-link`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({});
       req.flush(response);

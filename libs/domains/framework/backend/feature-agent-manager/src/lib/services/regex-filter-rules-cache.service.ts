@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.repository';
 
@@ -19,7 +20,9 @@ export class RegexFilterRulesCacheService {
     if (this.cached) {
       return this.cached;
     }
+
     this.cached = await this.repository.findAllOrdered();
+
     return this.cached;
   }
 }

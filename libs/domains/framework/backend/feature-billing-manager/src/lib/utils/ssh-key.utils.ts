@@ -13,5 +13,6 @@ export function generateSshKeyPair(): SshKeyPair {
   const privateKeyObj = sshpk.generatePrivateKey('ed25519');
   const publicKey = privateKeyObj.toPublic().toString('ssh');
   const privateKey = privateKeyObj.toString('openssh');
+
   return { publicKey, privateKey };
 }

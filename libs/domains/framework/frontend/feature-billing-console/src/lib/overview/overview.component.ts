@@ -78,6 +78,7 @@ export class OverviewComponent implements OnInit {
     this.invoicesFacade.loadInvoicesSummary();
 
     const useBillingSocket = !!this.environment.billing.websocketUrl?.trim();
+
     if (useBillingSocket) {
       this.billingDashboardSocketFacade.connect();
       this.destroyRef.onDestroy(() => this.billingDashboardSocketFacade.disconnect());

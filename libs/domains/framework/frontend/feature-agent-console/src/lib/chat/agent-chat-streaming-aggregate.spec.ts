@@ -26,8 +26,10 @@ describe('accumulateStreamingTurnFromEvents', () => {
       ],
       baseline,
     );
+
     expect(result.segments).toHaveLength(1);
     expect(result.segments[0]?.kind).toBe('markdown');
+
     if (result.segments[0]?.kind === 'markdown') {
       expect(result.segments[0].markdown).toBe('c');
     }
@@ -42,8 +44,10 @@ describe('accumulateStreamingTurnFromEvents', () => {
       ],
       0,
     );
+
     expect(result.segments).toHaveLength(1);
     expect(result.segments[0]?.kind).toBe('markdown');
+
     if (result.segments[0]?.kind === 'markdown') {
       expect(result.segments[0].markdown).toBe('Hello world');
     }
@@ -57,9 +61,11 @@ describe('accumulateStreamingTurnFromEvents', () => {
       ],
       0,
     );
+
     expect(result.segments).toHaveLength(2);
     expect(result.segments[0]?.kind).toBe('row');
     expect(result.segments[1]?.kind).toBe('row');
+
     if (result.segments[0]?.kind === 'row' && result.segments[1]?.kind === 'row') {
       expect(result.segments[0].row.kind).toBe('status');
       expect(result.segments[1].row.kind).toBe('toolCall');
@@ -75,6 +81,7 @@ describe('accumulateStreamingTurnFromEvents', () => {
       ],
       0,
     );
+
     expect(result.segments.map((s) => s.kind)).toEqual(['row', 'markdown', 'row']);
   });
 
@@ -86,11 +93,15 @@ describe('accumulateStreamingTurnFromEvents', () => {
       ],
       0,
     );
+
     expect(result.segments[0]?.kind).toBe('row');
+
     if (result.segments[0]?.kind === 'row') {
       expect(result.segments[0].row.kind).toBe('thinking');
     }
+
     expect(result.segments[1]?.kind).toBe('markdown');
+
     if (result.segments[1]?.kind === 'markdown') {
       expect(result.segments[1].markdown).toBe('Hi');
     }
@@ -106,9 +117,12 @@ describe('accumulateStreamingTurnFromEvents', () => {
       0,
     );
     const thinking = result.segments.filter((s) => s.kind === 'row' && s.row.kind === 'thinking');
+
     expect(thinking).toHaveLength(1);
     const first = thinking[0];
+
     expect(first?.kind).toBe('row');
+
     if (first?.kind === 'row') {
       expect(first.row.summaryBody).toContain('Part A');
       expect(first.row.summaryBody).toContain('Part B');

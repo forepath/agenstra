@@ -1,14 +1,14 @@
-import { SubscriptionItemUpdateScheduler } from './subscription-item-update.scheduler';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
+
 import { ProvisioningService } from './provisioning.service';
 import { SshExecutorService } from './ssh-executor.service';
+import { SubscriptionItemUpdateScheduler } from './subscription-item-update.scheduler';
 
 describe('SubscriptionItemUpdateScheduler', () => {
   let scheduler: SubscriptionItemUpdateScheduler;
   let subscriptionItemsRepository: jest.Mocked<Pick<SubscriptionItemsRepository, 'findProvisionedWithSshKey'>>;
   let provisioningService: jest.Mocked<Pick<ProvisioningService, 'getServerInfo'>>;
   let sshExecutor: jest.Mocked<Pick<SshExecutorService, 'exec'>>;
-
   const mockItem = {
     id: 'item-1',
     subscriptionId: 'sub-1',
@@ -76,6 +76,7 @@ describe('SubscriptionItemUpdateScheduler', () => {
 
   it('uses agent-manager update command when service is manager', async () => {
     const managerItem = { ...mockItem, configSnapshot: { service: 'manager' } };
+
     subscriptionItemsRepository.findProvisionedWithSshKey.mockResolvedValue([managerItem as never]);
     provisioningService.getServerInfo.mockResolvedValue({
       publicIp: '1.2.3.4',
@@ -118,6 +119,7 @@ describe('SubscriptionItemUpdateScheduler', () => {
 
   it('continues to next item when one fails', async () => {
     const item2 = { ...mockItem, id: 'item-2', subscriptionId: 'sub-1', providerReference: 'srv-456' };
+
     subscriptionItemsRepository.findProvisionedWithSshKey.mockResolvedValue([mockItem as never, item2 as never]);
     provisioningService.getServerInfo
       .mockResolvedValueOnce({ publicIp: '1.2.3.4' } as never)

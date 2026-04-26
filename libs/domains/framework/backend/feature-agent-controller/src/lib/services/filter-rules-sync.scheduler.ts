@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { FilterRulesService } from './filter-rules.service';
+
 import { FilterRulesSyncService } from './filter-rules-sync.service';
+import { FilterRulesService } from './filter-rules.service';
 
 @Injectable()
 export class FilterRulesSyncScheduler implements OnModuleInit, OnModuleDestroy {
@@ -33,16 +34,21 @@ export class FilterRulesSyncScheduler implements OnModuleInit, OnModuleDestroy {
     if (this.tickInFlight) {
       return;
     }
+
     this.tickInFlight = true;
+
     try {
       const n = await this.syncService.processBatch(this.batchSize);
+
       if (n > 0) {
         this.logger.debug(`Processed ${n} filter-rule sync targets`);
       }
+
       await this.filterRulesService.reconcileAllGlobalRules();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       const stack = error instanceof Error ? error.stack : undefined;
+
       this.logger.error(`Filter rules sync tick failed: ${message}`, stack);
     } finally {
       this.tickInFlight = false;

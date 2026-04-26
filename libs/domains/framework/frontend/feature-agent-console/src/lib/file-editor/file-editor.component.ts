@@ -32,6 +32,7 @@ import {
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, filter, map, Observable, of, Subject, switchMap, take } from 'rxjs';
+
 import { ContainerStatsStatusBarComponent } from './container-stats-status-bar/container-stats-status-bar.component';
 import { FileTreeComponent } from './file-tree/file-tree.component';
 import { GitDiffViewerComponent } from './git-diff-viewer/git-diff-viewer.component';
@@ -142,6 +143,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       if (!filePath || !clientId || !agentId) {
         return of(null);
       }
+
       return this.filesFacade.getFileContent$(clientId, agentId, filePath, fileCtx);
     }),
   );
@@ -174,12 +176,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       if (!filePath || !clientId || !agentId) {
         return of(false);
       }
+
       return this.filesFacade.isWritingFile$(clientId, agentId, filePath, fileCtx);
     }),
   );
 
   readonly isDirty = computed(() => {
     const filePath = this.selectedFilePath();
+
     return filePath ? this.dirtyFiles().has(filePath) : false;
   });
 
@@ -198,6 +202,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       if (!clientId || !agentId) {
         return of([]);
       }
+
       return this.filesFacade.getOpenTabs$(clientId, agentId, fileCtx);
     }),
   );
@@ -206,12 +211,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
   private listParams(path: string): ListDirectoryParams {
     const c = this.fileManagerContext();
+
     return c === 'app' ? { path } : { path, context: c };
   }
 
   constructor() {
     effect(() => {
       const ctx = this.fileManagerContext();
+
       if (this.previousFileManagerContext !== null && this.previousFileManagerContext !== ctx) {
         this.selectedFilePath.set(null);
         this.lastLoadedFilePath.set(null);
@@ -221,12 +228,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         this.gitDiffViewerVisible.set(false);
         this.gitDiffFilePath.set(null);
       }
+
       this.previousFileManagerContext = ctx;
     });
 
     // Load file when selected
     effect(() => {
       const filePath = this.selectedFilePath();
+
       if (filePath && this.clientId() && this.agentId()) {
         this.filesFacade.readFile(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
       }
@@ -259,9 +268,11 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
             this.calculateVisibleTabs();
             // If the selected file is in overflowed tabs, move it to front
             const selectedPath = this.selectedFilePath();
+
             if (selectedPath && this.clientId() && this.agentId()) {
               const overflowed = this.overflowedTabs();
               const isOverflowed = overflowed.some((tab) => tab.filePath === selectedPath);
+
               if (isOverflowed) {
                 this.filesFacade.moveTabToFront(
                   this.clientId(),
@@ -282,6 +293,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     effect(() => {
       // Access the signal to create dependency
       this.fileTreeVisible();
+
       // Recalculate after DOM updates - use longer delay to ensure layout is complete
       if (this.tabsContainerRef?.nativeElement) {
         requestAnimationFrame(() => {
@@ -300,6 +312,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       const clientId = this.clientId();
       const agentId = this.agentId();
       const actionCtx = action.context ?? 'app';
+
       if (actionCtx !== this.fileManagerContext()) {
         return;
       }
@@ -318,11 +331,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
         // Move dirty state from old path to new path if file was dirty
         const wasDirty = this.dirtyFiles().has(action.sourcePath);
+
         if (wasDirty) {
           this.dirtyFiles.update((dirty) => {
             const newDirty = new Set(dirty);
+
             newDirty.delete(action.sourcePath);
             newDirty.add(action.destinationPath);
+
             return newDirty;
           });
         }
@@ -357,6 +373,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Save immediately when autosave is enabled if file is already dirty
     let previousAutosaveEnabled = false;
+
     effect(() => {
       const autosaveEnabled = this.autosaveEnabled();
       const isDirty = this.isDirty();
@@ -391,6 +408,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         // Check if it's a success response with FileUpdateNotificationData
         if ('success' in payload && payload.success && 'data' in payload) {
           const notificationData = payload.data as FileUpdateNotificationData;
+
           this.handleFileUpdateNotification(notificationData);
         }
       });
@@ -420,6 +438,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       this.resizeObserver.observe(this.tabsContainerRef.nativeElement);
       this.resizeObserver.observe(this.tabsWrapperRef.nativeElement);
     }
+
     // Initial calculation after view init
     setTimeout(() => this.calculateVisibleTabs(), 100);
 
@@ -447,6 +466,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   onFileSelect(filePath: string): void {
     // Check if current file is dirty
     const currentPath = this.selectedFilePath();
+
     if (currentPath && this.dirtyFiles().has(currentPath)) {
       // TODO: Show confirmation dialog
     }
@@ -454,7 +474,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     this.selectedFilePath.set(filePath);
     this.dirtyFiles.update((dirty) => {
       const newDirty = new Set(dirty);
+
       newDirty.delete(currentPath || '');
+
       return newDirty;
     });
 
@@ -468,22 +490,27 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   onContentChange(content: string | Event): void {
     // Handle both string and Event types (defensive programming)
     let contentValue: string;
+
     if (typeof content === 'string') {
       contentValue = content;
     } else if (content instanceof Event) {
       // If it's an Event, try to get the value from the target
       const target = content.target as HTMLInputElement | HTMLTextAreaElement;
+
       contentValue = target?.value || '';
     } else {
       return;
     }
 
     const filePath = this.selectedFilePath();
+
     if (filePath) {
       this.editorContent.set(contentValue);
       this.dirtyFiles.update((dirty) => {
         const newDirty = new Set(dirty);
+
         newDirty.add(filePath);
+
         return newDirty;
       });
 
@@ -498,23 +525,27 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     const filePath = this.selectedFilePath();
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (!filePath || !clientId || !agentId) {
       return;
     }
 
     // Get content from editorContent signal (updated by contentChange events)
     const contentToSave = this.editorContent();
+
     if (!contentToSave) {
       return;
     }
 
     // Check if there are rejected file updates for this file
     const rejectedTimestamp = this.rejectedFileUpdates().get(filePath);
+
     if (rejectedTimestamp) {
       // Show confirmation modal before overriding newer changes
       if (this.saveOverrideModalRef) {
         this.showModal(this.saveOverrideModalRef);
       }
+
       return;
     }
 
@@ -528,6 +559,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private performSave(filePath: string, contentToSave: string): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (!clientId || !agentId) {
       return;
     }
@@ -552,23 +584,30 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         if (savedContent) {
           this.editorContent.set(savedContent.content);
         }
+
         // Mark as not dirty
         this.dirtyFiles.update((dirty) => {
           const newDirty = new Set(dirty);
+
           newDirty.delete(filePath);
+
           return newDirty;
         });
         // Clear rejected update tracking for this file (save was successful)
         this.rejectedFileUpdates.update((rejected) => {
           const newRejected = new Map(rejected);
+
           newRejected.delete(filePath);
+
           return newRejected;
         });
 
         // Track that we just saved this file to ignore our own notification
         this.recentlySavedFiles.update((saved) => {
           const newSaved = new Map(saved);
+
           newSaved.set(filePath, Date.now());
+
           return newSaved;
         });
 
@@ -582,6 +621,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         // Emit file update notification to other clients after successful save
         // agentId is required for routing the event to the correct agent
         const agentId = this.agentId();
+
         if (!agentId) {
           // Cannot forward file update notification without an agent selected
           return;
@@ -594,7 +634,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         setTimeout(() => {
           this.recentlySavedFiles.update((saved) => {
             const newSaved = new Map(saved);
+
             newSaved.delete(filePath);
+
             return newSaved;
           });
         }, 5000);
@@ -606,6 +648,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
    */
   onConfirmSaveOverride(): void {
     const filePath = this.selectedFilePath();
+
     if (!filePath) {
       return;
     }
@@ -617,6 +660,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Get content and perform save
     const contentToSave = this.editorContent();
+
     if (contentToSave) {
       this.performSave(filePath, contentToSave);
     }
@@ -636,8 +680,8 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     const createDto: CreateFileDto = {
       type: event.type,
     };
-
     const fullPath = event.path === '.' ? event.name : `${event.path}/${event.name}`;
+
     this.filesFacade.createFileOrDirectory(
       this.clientId(),
       this.agentId(),
@@ -665,7 +709,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       // If it's a directory, expand it
       this.expandedPaths.update((expanded) => {
         const newExpanded = new Set(expanded);
+
         newExpanded.add(fullPath);
+
         return newExpanded;
       });
     }
@@ -680,7 +726,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       this.selectedFilePath.set(null);
       this.dirtyFiles.update((dirty) => {
         const newDirty = new Set(dirty);
+
         newDirty.delete(filePath);
+
         return newDirty;
       });
     }
@@ -699,12 +747,16 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   onDirectoryExpand(path: string | Event): void {
     // Handle both string and Event types (defensive programming)
     const pathValue = typeof path === 'string' ? path : '';
+
     if (!pathValue) {
       return;
     }
+
     this.expandedPaths.update((expanded) => {
       const newExpanded = new Set(expanded);
+
       newExpanded.add(pathValue);
+
       return newExpanded;
     });
   }
@@ -712,12 +764,16 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   onDirectoryCollapse(path: string | Event): void {
     // Handle both string and Event types (defensive programming)
     const pathValue = typeof path === 'string' ? path : '';
+
     if (!pathValue) {
       return;
     }
+
     this.expandedPaths.update((expanded) => {
       const newExpanded = new Set(expanded);
+
       newExpanded.delete(pathValue);
+
       return newExpanded;
     });
   }
@@ -745,6 +801,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (!clientId || !agentId) {
       return;
     }
@@ -754,12 +811,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     // Save current state
     const currentSelectedFile = this.selectedFilePath();
     const currentExpandedPaths = new Set(this.expandedPaths());
-
-    // Count how many directories we need to reload
-    let directoriesToReload = currentExpandedPaths.size;
-    if (!currentExpandedPaths.has('.')) {
-      directoriesToReload += 1; // Root needs to be reloaded
-    }
 
     // Reload all expanded directories (including root)
     // Use a small delay for root to avoid immediate cancellation from the file tree component's effect
@@ -814,12 +865,15 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Close Bootstrap dropdown
     const dropdownElement = (event.target as HTMLElement).closest('.dropdown');
+
     if (dropdownElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bootstrap = (window as any).bootstrap;
       const toggleButton = dropdownElement.querySelector('[data-bs-toggle="dropdown"]');
+
       if (bootstrap?.Dropdown && toggleButton) {
         const dropdown = bootstrap.Dropdown.getInstance(toggleButton);
+
         if (dropdown) {
           dropdown.hide();
         }
@@ -833,6 +887,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   onTabDoubleClick(filePath: string, event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
+
     if (this.clientId() && this.agentId()) {
       this.filesFacade.pinFileTab(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
     }
@@ -841,12 +896,15 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   onTabClose(filePath: string, event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
+
     if (this.clientId() && this.agentId()) {
       this.filesFacade.closeFileTab(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
+
       // If the closed tab was selected, select the first remaining tab or clear selection
       if (this.selectedFilePath() === filePath) {
         this.openTabs$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((tabs) => {
           const remainingTabs = tabs.filter((tab) => tab.filePath !== filePath);
+
           if (remainingTabs.length > 0) {
             this.selectedFilePath.set(remainingTabs[0].filePath);
           } else {
@@ -877,16 +935,15 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
     const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
     const queryParams = new URLSearchParams();
+
     queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(filePath));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
-
     // Open new window with minimal controls and maximize if possible
     // Note: Modern browsers have restrictions on window features, but we try to minimize what's possible
     // Use screen dimensions to maximize the window
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
-
     const windowFeatures = [
       'menubar=no',
       'toolbar=no',
@@ -899,7 +956,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       `left=0`,
       `top=0`,
     ].join(',');
-
     const newWindow = window.open(url, '_blank', windowFeatures);
 
     // Try to maximize after window opens (may be blocked by browser security)
@@ -909,10 +965,12 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         try {
           newWindow.moveTo(0, 0);
           newWindow.resizeTo(screenWidth, screenHeight);
+
           // Try to maximize if the browser supports it
           if (newWindow.screen && 'availWidth' in newWindow.screen) {
             const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
             const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+
             if (availWidth && availHeight) {
               newWindow.resizeTo(availWidth, availHeight);
             }
@@ -929,10 +987,12 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     setTimeout(() => {
       if (this.clientId() && this.agentId()) {
         this.filesFacade.closeFileTab(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
+
         // If the closed tab was selected, select the first remaining tab or clear selection
         if (this.selectedFilePath() === filePath) {
           this.openTabs$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((tabs) => {
             const remainingTabs = tabs.filter((tab) => tab.filePath !== filePath);
+
             if (remainingTabs.length > 0) {
               this.selectedFilePath.set(remainingTabs[0].filePath);
             } else {
@@ -947,15 +1007,18 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private calculateVisibleTabs(): void {
     const container = this.tabsContainerRef?.nativeElement;
     const wrapper = this.tabsWrapperRef?.nativeElement;
+
     if (!container || !wrapper) {
       return;
     }
 
     const tabs = this.allTabs();
+
     if (tabs.length === 0) {
       this.visibleTabs.set([]);
       this.overflowedTabs.set([]);
       this.showMoreFilesDropdown.set(false);
+
       return;
     }
 
@@ -970,19 +1033,20 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     const containerWidth = container.clientWidth;
     const moreButtonWidth = 60; // Approximate width of "more files" button
     const availableWidth = containerWidth - moreButtonWidth;
-
     // Get all currently rendered tab elements (should be all tabs now)
     const tabElements = Array.from(wrapper.querySelectorAll<HTMLElement>('.file-editor-tab'));
 
     if (tabElements.length === 0) {
       // No tabs rendered yet, wait a bit more
       setTimeout(() => this.calculateVisibleTabs(), 50);
+
       return;
     }
 
     // If we don't have all tabs rendered yet, wait a bit more
     if (tabElements.length < tabs.length) {
       setTimeout(() => this.calculateVisibleTabs(), 50);
+
       return;
     }
 
@@ -994,6 +1058,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     for (let i = 0; i < tabs.length; i++) {
       const tabElement = tabElements[i];
       const tab = tabs[i];
+
       if (!tabElement) {
         // Tab element not found, skip it
         overflowed.push(tab);
@@ -1019,14 +1084,17 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Check if the selected file is in overflowed tabs - if so, move it to front
     const selectedPath = this.selectedFilePath();
+
     if (selectedPath && this.clientId() && this.agentId()) {
       const isOverflowed = overflowed.some((tab) => tab.filePath === selectedPath);
+
       if (isOverflowed) {
         // Move selected tab to front and recalculate
         this.filesFacade.moveTabToFront(this.clientId(), this.agentId(), selectedPath, this.fileManagerContext());
         // The tab order change will trigger a recalculation via the effect
         // But we also need to recalculate immediately to show the change
         setTimeout(() => this.calculateVisibleTabs(), 50);
+
         return;
       }
     }
@@ -1060,7 +1128,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     if (this.fileManagerContext() !== 'app') {
       return;
     }
+
     const wasVisible = this.gitManagerVisible();
+
     this.gitManagerVisible.update((visible) => !visible);
 
     // On mobile, hide file tree when opening git manager
@@ -1081,6 +1151,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     if (this.fileManagerContext() !== 'app') {
       return;
     }
+
     this.gitDiffFilePath.set(filePath);
     this.gitDiffViewerVisible.set(true);
   }
@@ -1108,17 +1179,20 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     const currentSocketId = getSocketInstance()?.id;
     const clientId = this.clientId();
     const agentId = this.agentId();
-
     // Check if we just saved this file ourselves (ignore our own notifications)
     const recentlySaved = this.recentlySavedFiles().get(notification.filePath);
+
     if (recentlySaved && Date.now() - recentlySaved < 5000) {
       // We just saved this file within the last 5 seconds, ignore the notification
       // Clear the tracking since we've received our own notification
       this.recentlySavedFiles.update((saved) => {
         const newSaved = new Map(saved);
+
         newSaved.delete(notification.filePath);
+
         return newSaved;
       });
+
       return;
     }
 
@@ -1139,6 +1213,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         this.autosaveEnabled.set(false);
         this.fileUpdateNotification.set(notification);
         this.showFileUpdateModal.set(true);
+
         if (this.fileUpdateModalRef) {
           this.showModal(this.fileUpdateModalRef);
         }
@@ -1158,11 +1233,13 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bootstrap = (window as any).bootstrap;
       const modal = bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.show();
       } else {
         // Fallback: create new modal instance
         const Modal = bootstrap?.Modal;
+
         if (Modal) {
           new Modal(modalElement.nativeElement).show();
         }
@@ -1178,6 +1255,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bootstrap = (window as any).bootstrap;
       const modal = bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.hide();
       }
@@ -1189,6 +1267,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
    */
   onAcceptFileUpdate(): void {
     const notification = this.fileUpdateNotification();
+
     if (!notification) {
       return;
     }
@@ -1211,14 +1290,18 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     // Clear dirty state for this file
     this.dirtyFiles.update((dirty) => {
       const newDirty = new Set(dirty);
+
       newDirty.delete(filePath);
+
       return newDirty;
     });
 
     // Clear rejected update tracking (user accepted the changes)
     this.rejectedFileUpdates.update((rejected) => {
       const newRejected = new Map(rejected);
+
       newRejected.delete(filePath);
+
       return newRejected;
     });
 
@@ -1226,6 +1309,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     if (this.fileUpdateModalRef) {
       this.hideModal(this.fileUpdateModalRef);
     }
+
     this.showFileUpdateModal.set(false);
     this.fileUpdateNotification.set(null);
 
@@ -1242,11 +1326,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
    */
   onRejectFileUpdate(): void {
     const notification = this.fileUpdateNotification();
+
     if (notification) {
       // Track that this file update was rejected (store timestamp for reference)
       this.rejectedFileUpdates.update((rejected) => {
         const newRejected = new Map(rejected);
+
         newRejected.set(notification.filePath, notification.timestamp);
+
         return newRejected;
       });
     }
@@ -1255,6 +1342,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     if (this.fileUpdateModalRef) {
       this.hideModal(this.fileUpdateModalRef);
     }
+
     this.showFileUpdateModal.set(false);
     this.fileUpdateNotification.set(null);
   }
@@ -1267,18 +1355,22 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private updateQueryParameter(filePath: string | null): void {
     queueMicrotask(() => {
       const url = new URL(window.location.href);
+
       if (filePath) {
         url.searchParams.set('file', encodeURIComponent(filePath));
       } else {
         url.searchParams.delete('file');
       }
+
       let pathname = url.pathname;
       const availableLocales = this.localeService.getAvailableLocales().map((loc) => loc.code);
       const pathSegments = pathname.split('/').filter(Boolean);
       const firstSegment = pathSegments[0] ?? '';
+
       if (availableLocales.includes(firstSegment) && pathSegments.length > 1) {
         pathname = '/' + pathSegments.slice(1).join('/');
       }
+
       this.location.replaceState(pathname + url.search + url.hash);
     });
   }
@@ -1289,9 +1381,11 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private restoreFileFromQueryParameter(): void {
     const url = new URL(window.location.href);
     const fileParam = url.searchParams.get('file');
+
     if (fileParam && this.clientId() && this.agentId()) {
       try {
         const decodedPath = decodeURIComponent(fileParam);
+
         // Only restore if no file is currently selected
         if (!this.selectedFilePath()) {
           this.onFileSelect(decodedPath);
@@ -1323,13 +1417,16 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     if (!this.isResizing) return;
 
     const sidebarEl = this.fileTreeSidebarRef?.nativeElement;
+
     if (!sidebarEl) return;
 
     const containerRect = sidebarEl.parentElement?.getBoundingClientRect();
+
     if (!containerRect) return;
 
     const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
     let newWidth = clientX - containerRect.left;
+
     newWidth = Math.max(this.SIDEBAR_MIN_WIDTH, Math.min(this.SIDEBAR_MAX_WIDTH, newWidth));
 
     // Apply width directly on the element for smooth dragging
@@ -1341,6 +1438,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
   private onResizeEnd(): void {
     if (!this.isResizing) return;
+
     this.isResizing = false;
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
@@ -1359,10 +1457,12 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     if (this.clientId() && this.agentId()) {
       this.filesFacade.clearOpenTabs(this.clientId(), this.agentId(), this.fileManagerContext());
     }
+
     // Clean up ResizeObserver
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+
     // Clean up resize listeners in case component is destroyed mid-drag
     document.removeEventListener('mousemove', this.boundOnResizeMove);
     document.removeEventListener('mouseup', this.boundOnResizeEnd);

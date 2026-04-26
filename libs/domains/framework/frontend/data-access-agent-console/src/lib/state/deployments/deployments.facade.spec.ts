@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { DeploymentsFacade } from './deployments.facade';
+
 import {
   cancelRun,
   createDeploymentConfiguration,
@@ -17,6 +17,7 @@ import {
   triggerWorkflow,
   updateDeploymentConfiguration,
 } from './deployments.actions';
+import { DeploymentsFacade } from './deployments.facade';
 import type { DeploymentsState } from './deployments.reducer';
 
 describe('DeploymentsFacade', () => {
@@ -66,6 +67,7 @@ describe('DeploymentsFacade', () => {
   describe('loadConfiguration', () => {
     it('should dispatch loadDeploymentConfiguration action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadConfiguration('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(loadDeploymentConfiguration({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -76,6 +78,7 @@ describe('DeploymentsFacade', () => {
     it('should dispatch createDeploymentConfiguration action', () => {
       const spy = jest.spyOn(store, 'dispatch');
       const dto = { providerType: 'github', repositoryId: 'owner/repo', providerToken: 'token' };
+
       facade.createConfiguration('client-1', 'agent-1', dto);
 
       expect(spy).toHaveBeenCalledWith(
@@ -88,6 +91,7 @@ describe('DeploymentsFacade', () => {
     it('should dispatch updateDeploymentConfiguration action', () => {
       const spy = jest.spyOn(store, 'dispatch');
       const dto = { repositoryId: 'owner/new-repo' };
+
       facade.updateConfiguration('client-1', 'agent-1', dto);
 
       expect(spy).toHaveBeenCalledWith(
@@ -99,6 +103,7 @@ describe('DeploymentsFacade', () => {
   describe('deleteConfiguration', () => {
     it('should dispatch deleteDeploymentConfiguration action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.deleteConfiguration('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(deleteDeploymentConfiguration({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -108,6 +113,7 @@ describe('DeploymentsFacade', () => {
   describe('loadRepositories', () => {
     it('should dispatch loadRepositories action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadRepositories('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(loadRepositories({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -117,6 +123,7 @@ describe('DeploymentsFacade', () => {
   describe('loadBranches', () => {
     it('should dispatch loadBranches action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadBranches('client-1', 'agent-1', 'owner/repo');
 
       expect(spy).toHaveBeenCalledWith(
@@ -128,6 +135,7 @@ describe('DeploymentsFacade', () => {
   describe('loadWorkflows', () => {
     it('should dispatch loadWorkflows action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadWorkflows('client-1', 'agent-1', 'owner/repo', 'main');
 
       expect(spy).toHaveBeenCalledWith(
@@ -139,6 +147,7 @@ describe('DeploymentsFacade', () => {
   describe('loadRuns', () => {
     it('should dispatch loadRuns action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadRuns('client-1', 'agent-1', 10, 0);
 
       expect(spy).toHaveBeenCalledWith(loadRuns({ clientId: 'client-1', agentId: 'agent-1', limit: 10, offset: 0 }));
@@ -149,6 +158,7 @@ describe('DeploymentsFacade', () => {
     it('should dispatch triggerWorkflow action', () => {
       const spy = jest.spyOn(store, 'dispatch');
       const dto = { workflowId: 'workflow-1', ref: 'main' };
+
       facade.triggerWorkflow('client-1', 'agent-1', dto);
 
       expect(spy).toHaveBeenCalledWith(triggerWorkflow({ clientId: 'client-1', agentId: 'agent-1', dto }));
@@ -158,6 +168,7 @@ describe('DeploymentsFacade', () => {
   describe('loadRunStatus', () => {
     it('should dispatch loadRunStatus action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadRunStatus('client-1', 'agent-1', 'run-1');
 
       expect(spy).toHaveBeenCalledWith(loadRunStatus({ clientId: 'client-1', agentId: 'agent-1', runId: 'run-1' }));
@@ -167,6 +178,7 @@ describe('DeploymentsFacade', () => {
   describe('loadRunLogs', () => {
     it('should dispatch loadRunLogs action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadRunLogs('client-1', 'agent-1', 'run-1');
 
       expect(spy).toHaveBeenCalledWith(loadRunLogs({ clientId: 'client-1', agentId: 'agent-1', runId: 'run-1' }));
@@ -176,6 +188,7 @@ describe('DeploymentsFacade', () => {
   describe('cancelRun', () => {
     it('should dispatch cancelRun action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.cancelRun('client-1', 'agent-1', 'run-1');
 
       expect(spy).toHaveBeenCalledWith(cancelRun({ clientId: 'client-1', agentId: 'agent-1', runId: 'run-1' }));
@@ -185,6 +198,7 @@ describe('DeploymentsFacade', () => {
   describe('loadRunJobs', () => {
     it('should dispatch loadRunJobs action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadRunJobs('client-1', 'agent-1', 'run-1');
 
       expect(spy).toHaveBeenCalledWith(loadRunJobs({ clientId: 'client-1', agentId: 'agent-1', runId: 'run-1' }));
@@ -194,6 +208,7 @@ describe('DeploymentsFacade', () => {
   describe('loadJobLogs', () => {
     it('should dispatch loadJobLogs action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadJobLogs('client-1', 'agent-1', 'run-1', 'job-1');
 
       expect(spy).toHaveBeenCalledWith(

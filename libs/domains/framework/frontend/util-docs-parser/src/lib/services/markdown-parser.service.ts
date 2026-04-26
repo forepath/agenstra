@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { marked } from 'marked';
+
 import { DocHeading, DocMetadata } from '../interfaces';
 
 /**
@@ -21,6 +22,7 @@ export class MarkdownParserService {
 
     // Dynamic import for marked
     const markedModule = await import('marked');
+
     this.markedInstance = markedModule.marked;
 
     // Configure marked with GitHub Flavored Markdown
@@ -37,17 +39,13 @@ export class MarkdownParserService {
    */
   async parseMarkdown(content: string, filePath: string): Promise<DocMetadata> {
     const marked = await this.initMarked();
-
     // Extract title from first H1 heading
     const titleMatch = content.match(/^#\s+(.+)$/m);
     const title = titleMatch?.[1]?.trim() || this.extractTitleFromPath(filePath);
-
     // Extract summary from first paragraph (after frontmatter if present)
     const summary = this.extractSummary(content);
-
     // Extract headings
     const headings = this.extractHeadings(content);
-
     // Parse markdown to HTML
     const html = marked.parse(content) as string;
 
@@ -81,7 +79,6 @@ export class MarkdownParserService {
   private extractSummary(content: string): string {
     // Remove frontmatter if present
     const withoutFrontmatter = content.replace(/^---[\s\S]*?---\s*/m, '');
-
     // Find first paragraph (non-empty line that's not a heading)
     const lines = withoutFrontmatter.split(/\n\n+/).map((s) => s.trim());
     const firstPara = lines.find((p) => p && !p.startsWith('#') && p.length > 20);
@@ -107,7 +104,6 @@ export class MarkdownParserService {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-
       // Match headings (H1-H6)
       const h1Match = line.match(/^#\s+(.+)/);
       const h2Match = line.match(/^##\s+(.+)/);
@@ -115,7 +111,6 @@ export class MarkdownParserService {
       const h4Match = line.match(/^####\s+(.+)/);
       const h5Match = line.match(/^#####\s+(.+)/);
       const h6Match = line.match(/^######\s+(.+)/);
-
       let level: number | null = null;
       let text: string | null = null;
 

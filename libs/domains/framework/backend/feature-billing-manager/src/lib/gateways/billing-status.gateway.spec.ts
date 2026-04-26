@@ -1,9 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { SocketAuthService, UserRole } from '@forepath/identity/backend';
+import { Test, TestingModule } from '@nestjs/testing';
 import type { Socket } from 'socket.io';
+
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { SubscriptionItemServerService } from '../services/subscription-item-server.service';
 import { SubscriptionService } from '../services/subscription.service';
+
 import { BillingStatusGateway } from './billing-status.gateway';
 
 function createMockSocket(overrides: Partial<Socket> & { data?: { userInfo?: unknown } } = {}): Socket {
@@ -20,7 +22,6 @@ describe('BillingStatusGateway', () => {
   let socketAuth: jest.Mocked<Pick<SocketAuthService, 'validateAndGetUser'>>;
   let subscriptionService: jest.Mocked<Pick<SubscriptionService, 'listSubscriptions'>>;
   let itemServerService: jest.Mocked<Pick<SubscriptionItemServerService, 'listItems' | 'getServerInfo'>>;
-
   const userSocketInfo = {
     isApiKeyAuth: false,
     userId: 'user-1',
@@ -67,6 +68,7 @@ describe('BillingStatusGateway', () => {
           useCallbacks.push(cb);
         }),
       };
+
       gateway.afterInit(server as never);
       await useCallbacks[0](mockSocket, next);
       expect(next).toHaveBeenCalledWith(expect.any(Error));
@@ -87,6 +89,7 @@ describe('BillingStatusGateway', () => {
           useCallbacks.push(cb);
         }),
       };
+
       gateway.afterInit(server as never);
       await useCallbacks[0](mockSocket, next);
       expect(next).toHaveBeenCalledWith();
@@ -107,6 +110,7 @@ describe('BillingStatusGateway', () => {
       const socket = createMockSocket({
         data: { userInfo: { isApiKeyAuth: true, user: { id: 'api-key-user', roles: [] } } },
       });
+
       await gateway.handleSubscribe({}, socket);
       expect(socket.emit).toHaveBeenCalledWith('error', { message: 'User not authenticated' });
       expect(subscriptionService.listSubscriptions).not.toHaveBeenCalled();
@@ -163,11 +167,13 @@ describe('BillingStatusGateway', () => {
       );
 
       const otherSocket = createMockSocket({ id: 'socket-2', data: { userInfo: userSocketInfo } });
+
       expect(otherSocket.emit).not.toHaveBeenCalled();
     });
 
     it('unsubscribeDashboardStatus clears polling', async () => {
       const socket = createMockSocket({ data: { userInfo: userSocketInfo } });
+
       subscriptionService.listSubscriptions.mockResolvedValue([]);
 
       await gateway.handleSubscribe({ pollIntervalMs: 30_000 }, socket);
@@ -181,6 +187,7 @@ describe('BillingStatusGateway', () => {
 
     it('handleDisconnect clears polling', async () => {
       const socket = createMockSocket({ data: { userInfo: userSocketInfo } });
+
       subscriptionService.listSubscriptions.mockResolvedValue([]);
 
       await gateway.handleSubscribe({ pollIntervalMs: 30_000 }, socket);

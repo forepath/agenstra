@@ -1,4 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
+
+import type { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
+
 import {
   applyReplace,
   assertReplaceContentForFilterType,
@@ -6,7 +9,6 @@ import {
   normalizeRegexFlags,
   ruleMatchesMessage,
 } from './regex-filter-rule.utils';
-import type { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 
 describe('regex-filter-rule.utils', () => {
   it('normalizeRegexFlags dedupes and orders conservatively', () => {
@@ -34,6 +36,7 @@ describe('regex-filter-rule.utils', () => {
       replaceContent: 'bar',
       priority: 0,
     } as RegexFilterRuleEntity;
+
     expect(ruleMatchesMessage(rule, 'hello foo')).toBe(true);
     expect(applyReplace(rule, 'hello foo')).toBe('hello bar');
   });

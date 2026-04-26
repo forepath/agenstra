@@ -1,9 +1,10 @@
+import { getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
 import { Controller, ForbiddenException, Get, ParseIntPipe, Query, Req } from '@nestjs/common';
+
 import { ChatDirection } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsService } from '../services/clients.service';
 import { StatisticsQueryService } from '../services/statistics-query.service';
-import { getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
 
 /**
  * Controller for aggregate statistics endpoints.
@@ -24,12 +25,15 @@ export class StatisticsController {
       userInfo.userRole,
       userInfo.isApiKeyAuth,
     );
+
     if (clientId) {
       if (!ids.includes(clientId)) {
         throw new ForbiddenException('You do not have access to this client');
       }
+
       return [clientId];
     }
+
     return ids;
   }
 
@@ -46,6 +50,7 @@ export class StatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     const ids = await this.resolveClientIds(clientId, req);
+
     return await this.statisticsQueryService.getSummary(ids, { from, to, groupBy });
   }
 
@@ -67,6 +72,7 @@ export class StatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     const ids = await this.resolveClientIds(clientId, req);
+
     return await this.statisticsQueryService.getChatIo(ids, {
       agentId,
       from,
@@ -96,6 +102,7 @@ export class StatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     const ids = await this.resolveClientIds(clientId, req);
+
     return await this.statisticsQueryService.getFilterDrops(ids, {
       agentId,
       filterType,
@@ -124,6 +131,7 @@ export class StatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     const ids = await this.resolveClientIds(clientId, req);
+
     return await this.statisticsQueryService.getFilterFlags(ids, {
       agentId,
       filterType,
@@ -152,6 +160,7 @@ export class StatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     const ids = await this.resolveClientIds(clientId, req);
+
     return await this.statisticsQueryService.getEntityEvents(ids, {
       entityType,
       eventType,

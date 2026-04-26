@@ -1,4 +1,5 @@
 import type { PublicServicePlanOffering } from '../../types/portal-service-plans.types';
+
 import {
   loadCheapestServicePlanOffering,
   loadCheapestServicePlanOfferingFailure,
@@ -35,6 +36,7 @@ describe('servicePlansReducer', () => {
         loading: false,
       };
       const newState = servicePlansReducer(state, loadServicePlans({ params: {} }));
+
       expect(newState.loading).toBe(true);
       expect(newState.entities).toEqual([]);
       expect(newState.error).toBeNull();
@@ -48,6 +50,7 @@ describe('servicePlansReducer', () => {
         initialServicePlansState,
         loadServicePlansBatch({ offset: 10, accumulatedServicePlans: accumulated }),
       );
+
       expect(newState.entities).toEqual(accumulated);
       expect(newState.loading).toBe(true);
     });
@@ -59,6 +62,7 @@ describe('servicePlansReducer', () => {
         { ...initialServicePlansState, loading: true },
         loadServicePlansSuccess({ servicePlans: [mockOffering] }),
       );
+
       expect(newState.entities).toEqual([mockOffering]);
       expect(newState.loading).toBe(false);
       expect(newState.error).toBeNull();
@@ -71,6 +75,7 @@ describe('servicePlansReducer', () => {
         { ...initialServicePlansState, loading: true },
         loadServicePlansFailure({ error: 'failed' }),
       );
+
       expect(newState.loading).toBe(false);
       expect(newState.error).toBe('failed');
     });
@@ -79,6 +84,7 @@ describe('servicePlansReducer', () => {
   describe('loadCheapestServicePlanOffering', () => {
     it('should set loadingCheapest', () => {
       const newState = servicePlansReducer(initialServicePlansState, loadCheapestServicePlanOffering({}));
+
       expect(newState.loadingCheapest).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -90,6 +96,7 @@ describe('servicePlansReducer', () => {
         { ...initialServicePlansState, loadingCheapest: true },
         loadCheapestServicePlanOfferingSuccess({ offering: mockOffering }),
       );
+
       expect(newState.cheapestOffering).toEqual(mockOffering);
       expect(newState.loadingCheapest).toBe(false);
     });
@@ -101,6 +108,7 @@ describe('servicePlansReducer', () => {
         { ...initialServicePlansState, loadingCheapest: true },
         loadCheapestServicePlanOfferingFailure({ error: 'not found' }),
       );
+
       expect(newState.loadingCheapest).toBe(false);
       expect(newState.error).toBe('not found');
     });

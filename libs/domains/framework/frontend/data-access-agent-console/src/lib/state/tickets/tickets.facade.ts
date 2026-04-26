@@ -1,14 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import type {
-  CreateTicketDto,
-  ListTicketsParams,
-  TicketActivityResponseDto,
-  TicketCommentResponseDto,
-  TicketResponseDto,
-  UpdateTicketDto,
-} from './tickets.types';
+
 import {
   addTicketComment,
   clearTicketsError,
@@ -34,6 +27,14 @@ import {
   selectTicketsSaving,
   selectTicketsSelectedId,
 } from './tickets.selectors';
+import type {
+  CreateTicketDto,
+  ListTicketsParams,
+  TicketActivityResponseDto,
+  TicketCommentResponseDto,
+  TicketResponseDto,
+  UpdateTicketDto,
+} from './tickets.types';
 
 @Injectable({
   providedIn: 'root',

@@ -1,6 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
-import { SubscriptionsRepository } from './subscriptions.repository';
+
 import { SubscriptionStatus } from '../entities/subscription.entity';
+
+import { SubscriptionsRepository } from './subscriptions.repository';
 
 const createMockQueryBuilder = () => ({
   where: jest.fn().mockReturnThis(),
@@ -30,6 +32,7 @@ describe('SubscriptionsRepository', () => {
 
   it('finds subscription by id or throws', async () => {
     const subscription = { id: 'sub-1', status: SubscriptionStatus.ACTIVE };
+
     mockRepository.findOne.mockResolvedValue(subscription);
 
     const result = await repository.findByIdOrThrow('sub-1');
@@ -45,6 +48,7 @@ describe('SubscriptionsRepository', () => {
 
   it('finds subscription by id without throwing', async () => {
     const subscription = { id: 'sub-1', status: SubscriptionStatus.ACTIVE };
+
     mockRepository.findOne.mockResolvedValue(subscription);
 
     const result = await repository.findById('sub-1');
@@ -62,6 +66,7 @@ describe('SubscriptionsRepository', () => {
 
   it('finds all by user with pagination', async () => {
     const subscriptions = [{ id: 'sub-1' }, { id: 'sub-2' }];
+
     mockRepository.find.mockResolvedValue(subscriptions);
 
     const result = await repository.findAllByUser('user-1', 10, 0);
@@ -78,6 +83,7 @@ describe('SubscriptionsRepository', () => {
 
   it('creates subscription', async () => {
     const dto = { userId: 'user-1', planId: 'plan-1', status: SubscriptionStatus.ACTIVE };
+
     mockRepository.create.mockReturnValue(dto);
     mockRepository.save.mockResolvedValue({ id: 'sub-1', ...dto });
 
@@ -88,6 +94,7 @@ describe('SubscriptionsRepository', () => {
 
   it('updates subscription', async () => {
     const existing = { id: 'sub-1', status: SubscriptionStatus.ACTIVE };
+
     mockRepository.findOne.mockResolvedValue(existing);
     mockRepository.save.mockResolvedValue({ ...existing, status: SubscriptionStatus.PENDING_CANCEL });
 
@@ -98,6 +105,7 @@ describe('SubscriptionsRepository', () => {
 
   it('finds subscriptions due for billing', async () => {
     const subscriptions = [{ id: 'sub-1', status: SubscriptionStatus.ACTIVE }];
+
     mockQueryBuilder.getMany.mockResolvedValue(subscriptions);
 
     const now = new Date();
@@ -114,6 +122,7 @@ describe('SubscriptionsRepository', () => {
 
   it('finds subscriptions due for cancellation', async () => {
     const subscriptions = [{ id: 'sub-1', status: SubscriptionStatus.PENDING_CANCEL }];
+
     mockQueryBuilder.getMany.mockResolvedValue(subscriptions);
 
     const now = new Date();
@@ -128,6 +137,7 @@ describe('SubscriptionsRepository', () => {
 
   it('finds upcoming renewals within days', async () => {
     const subscriptions = [{ id: 'sub-1', status: SubscriptionStatus.ACTIVE }];
+
     mockQueryBuilder.getMany.mockResolvedValue(subscriptions);
 
     const now = new Date('2024-01-01');

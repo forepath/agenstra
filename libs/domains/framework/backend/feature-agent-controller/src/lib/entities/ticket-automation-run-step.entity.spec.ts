@@ -3,11 +3,13 @@ import { TicketAutomationRunStepEntity } from './ticket-automation-run-step.enti
 describe('TicketAutomationRunStepEntity', () => {
   it('should create an instance', () => {
     const entity = new TicketAutomationRunStepEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should map step audit fields', () => {
     const entity = new TicketAutomationRunStepEntity();
+
     entity.id = 'step-uuid';
     entity.runId = 'run-uuid';
     entity.stepIndex = 0;

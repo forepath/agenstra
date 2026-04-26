@@ -1,6 +1,8 @@
+import * as path from 'path';
+
 import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
 import { applicationGenerator as generatorFn } from '@nx/node';
-import * as path from 'path';
+
 import { McpGeneratorSchema } from './schema';
 
 export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {

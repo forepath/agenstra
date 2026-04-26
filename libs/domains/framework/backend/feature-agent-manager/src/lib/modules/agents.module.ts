@@ -1,12 +1,14 @@
+import { PasswordService } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
 import { AgentsEnvironmentVariablesController } from '../controllers/agents-environment-variables.controller';
 import { AgentsFilesController } from '../controllers/agents-files.controller';
-import { AgentsVerificationController } from '../controllers/agents-verification.controller';
-import { AgentsVcsController } from '../controllers/agents-vcs.controller';
-import { AgentsController } from '../controllers/agents.controller';
 import { AgentsFiltersController } from '../controllers/agents-filters.controller';
+import { AgentsVcsController } from '../controllers/agents-vcs.controller';
+import { AgentsVerificationController } from '../controllers/agents-verification.controller';
+import { AgentsController } from '../controllers/agents.controller';
 import { ConfigController } from '../controllers/config.controller';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
@@ -22,11 +24,11 @@ import { OpenClawAgentProvider } from '../providers/agents/openclaw-agent.provid
 import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat-filter';
+import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
+import { DatabaseRegexOutgoingChatFilter } from '../providers/filters/database-regex-outgoing-chat-filter';
 import { IncomingChatFilter } from '../providers/filters/incoming-chat-filter';
 import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
 import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
-import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
-import { DatabaseRegexOutgoingChatFilter } from '../providers/filters/database-regex-outgoing-chat-filter';
 import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
 import { GitHubProvider } from '../providers/pipelines/github.provider';
 import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
@@ -41,16 +43,15 @@ import { AgentEnvironmentVariablesService } from '../services/agent-environment-
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
-import { AgentsVerificationService } from '../services/agents-verification.service';
-import { AgentsVcsService } from '../services/agents-vcs.service';
-import { AgentsService } from '../services/agents.service';
 import { AgentsFiltersService } from '../services/agents-filters.service';
+import { AgentsVcsService } from '../services/agents-vcs.service';
+import { AgentsVerificationService } from '../services/agents-verification.service';
+import { AgentsService } from '../services/agents.service';
 import { ConfigService } from '../services/config.service';
-import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
-import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
 import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
-import { PasswordService } from '@forepath/identity/backend';
+import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
+import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
 
 /**
  * Module for agent management feature.
@@ -126,6 +127,7 @@ import { PasswordService } from '@forepath/identity/backend';
         factory.registerProvider(cursorProvider);
         factory.registerProvider(opencodeProvider);
         factory.registerProvider(openclawProvider);
+
         return true;
       },
       inject: [AgentProviderFactory, CursorAgentProvider, OpenCodeAgentProvider, OpenClawAgentProvider],
@@ -139,6 +141,7 @@ import { PasswordService } from '@forepath/identity/backend';
       ) => {
         factory.registerProvider(githubProvider);
         factory.registerProvider(gitlabProvider);
+
         return true;
       },
       inject: [PipelineProviderFactory, GitHubProvider, GitLabProvider],
@@ -160,6 +163,7 @@ import { PasswordService } from '@forepath/identity/backend';
         factory.registerFilter(bidirectionalFilter);
         factory.registerFilter(dbIncoming);
         factory.registerFilter(dbOutgoing);
+
         return true;
       },
       inject: [

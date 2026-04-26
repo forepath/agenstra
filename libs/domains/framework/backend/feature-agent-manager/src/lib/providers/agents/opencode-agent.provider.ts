@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { DockerService } from '../../services/docker.service';
 import {
   AgentProvider,
@@ -102,12 +103,14 @@ export class OpenCodeAgentProvider implements AgentProvider {
    */
   toModelsList(result: string): AgentProviderModels {
     const models: AgentProviderModels = {};
+
     if (!result?.trim()) {
       return models;
     }
 
     for (const line of result.split(/\r?\n/)) {
       const trimmed = line.trim();
+
       if (trimmed) {
         models[trimmed] = trimmed;
       }
@@ -126,12 +129,15 @@ export class OpenCodeAgentProvider implements AgentProvider {
    */
   private buildRunCommand(options?: AgentProviderOptions): string {
     let command = `opencode run --format json`;
+
     if (options?.continue === undefined || options?.continue === true) {
       command += ` --continue`;
     }
+
     if (options?.model && options.model !== 'auto') {
       command += ` --model ${options.model}`;
     }
+
     return command;
   }
 
@@ -166,8 +172,8 @@ export class OpenCodeAgentProvider implements AgentProvider {
   ): AsyncIterable<string> {
     const streamOnce = (opts?: AgentProviderOptions): AsyncIterable<{ stream: 'stdout' | 'stderr'; chunk: string }> =>
       this.dockerService.execCommandStream(containerId, this.buildRunCommand(opts), message);
-
     const chunks: string[] = [];
+
     for await (const { stream, chunk } of streamOnce(options)) {
       if (stream === 'stdout') {
         chunks.push(chunk);
@@ -176,6 +182,7 @@ export class OpenCodeAgentProvider implements AgentProvider {
     }
 
     const combined = chunks.join('');
+
     if (combined.includes('Session not found') && this.wantsSessionContinue(options)) {
       for await (const { stream, chunk } of streamOnce({ ...options, continue: false })) {
         if (stream === 'stdout') {
@@ -205,18 +212,23 @@ export class OpenCodeAgentProvider implements AgentProvider {
    */
   toParseableStrings(response: string): string[] {
     const lines = response.split('\n');
+
     if (lines.length === 0) {
       return [];
     }
 
     const result: string[] = [];
+
     for (const line of lines) {
       let toParse = line.trim();
       const firstBrace = toParse.indexOf('{');
+
       if (firstBrace !== -1) {
         toParse = toParse.slice(firstBrace);
       }
+
       const lastBrace = toParse.lastIndexOf('}');
+
       if (lastBrace !== -1) {
         toParse = toParse.slice(0, lastBrace + 1);
       }
@@ -236,15 +248,18 @@ export class OpenCodeAgentProvider implements AgentProvider {
             state?: { status?: string; input?: unknown };
           };
         };
+
         if (!parsed.type) {
           continue;
         }
+
         if (parsed.type === 'text') {
           if (parsed.part?.type === 'text' && typeof parsed.part.text === 'string' && parsed.part.text !== '') {
             result.push(toParse);
           }
         } else if (parsed.type === 'tool_use') {
           const part = parsed.part;
+
           if (
             part?.type === 'tool' &&
             typeof part.callID === 'string' &&
@@ -259,8 +274,10 @@ export class OpenCodeAgentProvider implements AgentProvider {
               args: part.state?.input,
               status: OpenCodeAgentProvider.mapOpenCodeToolLifecycleStatus(part.state?.status),
             };
+
             result.push(JSON.stringify(toolCallFrame));
           }
+
           result.push(toParse);
         } else if (parsed.type === 'error') {
           result.push(toParse);
@@ -275,15 +292,19 @@ export class OpenCodeAgentProvider implements AgentProvider {
 
   private static mapOpenCodeToolLifecycleStatus(status: unknown): 'started' | 'inProgress' | 'succeeded' | 'failed' {
     const s = typeof status === 'string' ? status.toLowerCase() : '';
+
     if (s === 'completed' || s === 'success' || s === 'succeeded') {
       return 'succeeded';
     }
+
     if (s === 'failed' || s === 'error') {
       return 'failed';
     }
+
     if (s === 'started' || s === 'running' || s === 'pending') {
       return 'inProgress';
     }
+
     return 'inProgress';
   }
 
@@ -338,12 +359,15 @@ export class OpenCodeAgentProvider implements AgentProvider {
         args?: unknown;
         status?: unknown;
       };
+
       if (typeof o.toolCallId !== 'string' || typeof o.name !== 'string') {
         return undefined;
       }
+
       const st = o.status;
       const status =
         st === 'started' || st === 'inProgress' || st === 'succeeded' || st === 'failed' ? st : 'inProgress';
+
       return {
         type: 'tool_call',
         toolCallId: o.toolCallId,
@@ -355,11 +379,14 @@ export class OpenCodeAgentProvider implements AgentProvider {
 
     if (responseObject.type === 'tool_use' && responseObject.part?.type === 'tool') {
       const part = responseObject.part;
+
       if (typeof part.callID !== 'string' || typeof part.tool !== 'string') {
         return undefined;
       }
+
       const exit = part.state?.metadata?.exit;
       const isError = typeof exit === 'number' && exit !== 0;
+
       return {
         type: 'tool_result',
         toolCallId: part.callID,
@@ -381,6 +408,7 @@ export class OpenCodeAgentProvider implements AgentProvider {
           : typeof responseObject.error?.name === 'string'
             ? responseObject.error.name
             : 'OpenCode error';
+
       return {
         type: 'error',
         is_error: true,

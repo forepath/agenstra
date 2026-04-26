@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { ClientEntity } from '@forepath/identity/backend';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
 import { AgentConsoleRegexFilterRuleEntity } from './agent-console-regex-filter-rule.entity';
 
 export type FilterRuleSyncStatus = 'pending' | 'synced' | 'failed';

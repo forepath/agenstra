@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class AgentMessageEventsRepository {
     entity: Omit<AgentMessageEventEntity, 'id' | 'agent' | 'createdAt' | 'updatedAt'>,
   ): Promise<AgentMessageEventEntity> {
     const created = this.repository.create(entity);
+
     return await this.repository.save(created);
   }
 }

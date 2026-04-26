@@ -14,7 +14,9 @@ export interface JsonSchemaLike {
 
 function isNonEmptyStringEnum(prop: JsonSchemaLikeProperty | undefined): boolean {
   if (!prop || prop.type !== 'string') return false;
+
   const e = prop.enum;
+
   return Array.isArray(e) && e.length > 0 && e.every((x) => typeof x === 'string');
 }
 
@@ -23,9 +25,11 @@ function isNonEmptyStringEnum(prop: JsonSchemaLikeProperty | undefined): boolean
  */
 export function providerConfigSchemaSupportsLocationSelection(schema: unknown): boolean {
   if (!schema || typeof schema !== 'object') return false;
+
   const props = (schema as JsonSchemaLike).properties ?? {};
   const region = props['region'];
   const location = props['location'];
+
   return isNonEmptyStringEnum(region) || isNonEmptyStringEnum(location);
 }
 
@@ -40,6 +44,7 @@ export function effectiveSchemaSupportsLocationSelection(
   if (providerConfigSchemaSupportsLocationSelection(serviceTypeConfigSchema)) {
     return true;
   }
+
   return providerConfigSchemaSupportsLocationSelection(providerRegisteredConfigSchema);
 }
 
@@ -48,9 +53,13 @@ export function effectiveSchemaSupportsLocationSelection(
  */
 export function getGeographyFieldKeyFromSchema(schema: unknown): 'region' | 'location' | null {
   if (!schema || typeof schema !== 'object') return null;
+
   const props = (schema as JsonSchemaLike).properties ?? {};
+
   if (isNonEmptyStringEnum(props['region'])) return 'region';
+
   if (isNonEmptyStringEnum(props['location'])) return 'location';
+
   return null;
 }
 
@@ -59,11 +68,15 @@ export function getGeographyFieldKeyFromSchema(schema: unknown): 'region' | 'loc
  */
 export function getGeographyEnumFromSchema(schema: unknown): string[] | null {
   const key = getGeographyFieldKeyFromSchema(schema);
+
   if (!key) return null;
+
   const props = (schema as JsonSchemaLike).properties ?? {};
   const prop = props[key];
   const e = prop?.enum;
+
   if (!Array.isArray(e)) return null;
+
   return e.filter((x): x is string => typeof x === 'string');
 }
 
@@ -75,7 +88,9 @@ const DEFAULT_REGION_DIGITALOCEAN = 'fra1';
  */
 export function resolveProvisioningRegion(config: Record<string, unknown>, provider: string): string {
   const fromConfig = (config['region'] as string | undefined) ?? (config['location'] as string | undefined);
+
   if (fromConfig?.trim()) return fromConfig.trim();
+
   return provider === 'digital-ocean' ? DEFAULT_REGION_DIGITALOCEAN : DEFAULT_REGION_HETZNER;
 }
 
@@ -95,7 +110,9 @@ export function stripGeographyFromRequestedConfig(
 ): Record<string, unknown> {
   const src = requestedConfig ?? {};
   const out: Record<string, unknown> = { ...src };
+
   delete out['region'];
   delete out['location'];
+
   return out;
 }

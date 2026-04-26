@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
+
 import { clearAllStatsHistory, clearStatsHistory } from './stats.actions';
 import { StatsFacade } from './stats.facade';
 import type { StatsState } from './stats.reducer';
@@ -15,7 +16,6 @@ describe('StatsFacade', () => {
       maxEntriesPerContainer: 1000,
     },
   };
-
   const mockStats = {
     read: '2024-01-01T00:00:00.000000000Z',
     preread: '2024-01-01T00:00:00.000000000Z',
@@ -52,7 +52,6 @@ describe('StatsFacade', () => {
     },
     networks: {},
   };
-
   const createEntry = (
     clientId: string,
     agentId: string,
@@ -80,6 +79,7 @@ describe('StatsFacade', () => {
     it('should return stats for a container', (done) => {
       const entry1 = createEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
+
       store.setState({
         stats: {
           runningOverrides: {},
@@ -108,6 +108,7 @@ describe('StatsFacade', () => {
     it('should return the most recent stats for a container', (done) => {
       const entry1 = createEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
+
       store.setState({
         stats: {
           runningOverrides: {},
@@ -137,6 +138,7 @@ describe('StatsFacade', () => {
       const entry1 = createEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
       const entry3 = createEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000);
+
       store.setState({
         stats: {
           runningOverrides: {},
@@ -162,6 +164,7 @@ describe('StatsFacade', () => {
       const entry1 = createEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
       const entry3 = createEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000);
+
       store.setState({
         stats: {
           runningOverrides: {},
@@ -174,6 +177,7 @@ describe('StatsFacade', () => {
 
       const startTime = new Date('2024-01-01T00:05:00.000Z').getTime();
       const originalNow = Date.now;
+
       Date.now = jest.fn(() => new Date('2024-01-01T00:20:00.000Z').getTime());
 
       facade.getContainerStatsFromTime$('client-1', 'agent-1', startTime).subscribe((stats) => {
@@ -235,6 +239,7 @@ describe('StatsFacade', () => {
         createEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000),
         createEntry('client-1', 'agent-1', '2024-01-01T00:15:00.000Z', 4000),
       ];
+
       store.setState({
         stats: {
           runningOverrides: {},
@@ -259,6 +264,7 @@ describe('StatsFacade', () => {
         createEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000),
         createEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000),
       ];
+
       store.setState({
         stats: {
           runningOverrides: {},
@@ -281,6 +287,7 @@ describe('StatsFacade', () => {
   describe('clearStatsHistory', () => {
     it('should dispatch clearStatsHistory action', () => {
       const dispatchSpy = jest.spyOn(store, 'dispatch');
+
       facade.clearStatsHistory('client-1', 'agent-1');
 
       expect(dispatchSpy).toHaveBeenCalledWith(clearStatsHistory({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -290,6 +297,7 @@ describe('StatsFacade', () => {
   describe('clearAllStatsHistory', () => {
     it('should dispatch clearAllStatsHistory action', () => {
       const dispatchSpy = jest.spyOn(store, 'dispatch');
+
       facade.clearAllStatsHistory();
 
       expect(dispatchSpy).toHaveBeenCalledWith(clearAllStatsHistory());

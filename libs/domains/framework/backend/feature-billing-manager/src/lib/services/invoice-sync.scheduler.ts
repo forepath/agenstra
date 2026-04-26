@@ -1,6 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+
 import { InvoiceRefEntity } from '../entities/invoice-ref.entity';
 import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
+
 import { InvoiceNinjaService } from './invoice-ninja.service';
 
 @Injectable()
@@ -36,6 +38,7 @@ export class InvoiceSyncScheduler implements OnModuleInit, OnModuleDestroy {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const refs = await this.invoiceRefsRepository.findBatchForSync(this.batchSize, offset);
+
       if (refs.length === 0) {
         break;
       }
@@ -52,6 +55,7 @@ export class InvoiceSyncScheduler implements OnModuleInit, OnModuleDestroy {
       }
 
       offset += refs.length;
+
       if (refs.length < this.batchSize) {
         break;
       }
@@ -64,23 +68,29 @@ export class InvoiceSyncScheduler implements OnModuleInit, OnModuleDestroy {
 
   private async syncOneInvoiceRef(ref: InvoiceRefEntity): Promise<void> {
     const details = await this.invoiceNinjaService.getInvoiceDetailsForSync(ref.invoiceNinjaId);
+
     if (!details) {
       return;
     }
 
     const updates: Partial<Pick<InvoiceRefEntity, 'status' | 'invoiceNumber' | 'balance' | 'dueDate'>> = {};
+
     if (details.status !== undefined && details.status !== ref.status) {
       updates.status = details.status;
     }
+
     if (details.invoiceNumber !== undefined && details.invoiceNumber !== ref.invoiceNumber) {
       updates.invoiceNumber = details.invoiceNumber;
     }
+
     if (details.balance !== undefined && details.balance !== ref.balance) {
       updates.balance = details.balance;
     }
+
     if (details.dueDate !== undefined) {
       const same =
         ref.dueDate != null && details.dueDate != null && ref.dueDate.getTime() === details.dueDate.getTime();
+
       if (!same) {
         updates.dueDate = details.dueDate;
       }

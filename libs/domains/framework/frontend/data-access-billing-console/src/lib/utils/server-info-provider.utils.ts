@@ -7,12 +7,15 @@ export type BillingServerInfoProvider = 'hetzner' | 'digital-ocean';
  */
 export function resolveServerInfoProvider(metadata?: Record<string, unknown>): BillingServerInfoProvider | undefined {
   const raw = metadata?.['provider'];
+
   if (raw === 'digital-ocean' || raw === 'digitalocean') {
     return 'digital-ocean';
   }
+
   if (raw === 'hetzner') {
     return 'hetzner';
   }
+
   return undefined;
 }
 
@@ -23,12 +26,15 @@ export function resolveServerInfoProvider(metadata?: Record<string, unknown>): B
  */
 export function isBillingServerOnline(serverInfo: Pick<ServerInfoResponse, 'status' | 'metadata'>): boolean {
   const provider = resolveServerInfoProvider(serverInfo.metadata);
+
   if (provider === 'digital-ocean') {
     return serverInfo.status === 'active';
   }
+
   if (provider === 'hetzner') {
     return serverInfo.status === 'running';
   }
+
   return serverInfo.status === 'running' || serverInfo.status === 'active';
 }
 
@@ -38,9 +44,11 @@ export function isBillingServerOnline(serverInfo: Pick<ServerInfoResponse, 'stat
  */
 export function isBillingServerOff(serverInfo: Pick<ServerInfoResponse, 'status' | 'metadata'>): boolean {
   const provider = resolveServerInfoProvider(serverInfo.metadata);
+
   if (provider === 'digital-ocean') {
     return serverInfo.status === 'off' || serverInfo.status === 'archive';
   }
+
   return serverInfo.status === 'off';
 }
 
@@ -67,28 +75,37 @@ export function isBillingServerStartable(serverInfo: Pick<ServerInfoResponse, 's
  */
 export function getBillingServerLocationLabel(metadata?: Record<string, unknown>): string | undefined {
   const provider = resolveServerInfoProvider(metadata);
+
   if (provider === 'digital-ocean') {
     const regionName = metadata?.['regionName'];
     const region = metadata?.['region'];
+
     if (typeof regionName === 'string' && regionName.trim()) {
       if (typeof region === 'string' && region.trim()) {
         return `${regionName} (${region})`;
       }
+
       return regionName;
     }
+
     if (typeof region === 'string' && region.trim()) {
       return region;
     }
+
     return undefined;
   }
+
   const datacenter = metadata?.['datacenter'];
   const location = metadata?.['location'];
+
   if (typeof datacenter === 'string' && datacenter.trim()) {
     return datacenter;
   }
+
   if (typeof location === 'string' && location.trim()) {
     return location;
   }
+
   return undefined;
 }
 

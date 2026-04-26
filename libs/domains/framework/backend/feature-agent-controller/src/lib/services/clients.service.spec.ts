@@ -1,6 +1,4 @@
 import { ConfigResponseDto } from '@forepath/framework/backend/feature-agent-manager';
-import { BadRequestException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import {
   AuthenticationType,
   ClientEntity,
@@ -9,11 +7,15 @@ import {
   KeycloakTokenService,
   UserRole,
 } from '@forepath/identity/backend';
+import { BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
+
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -25,7 +27,6 @@ describe('ClientsService', () => {
   let clientAgentProxyService: jest.Mocked<ClientAgentProxyService>;
   let provisioningReferencesRepository: jest.Mocked<ProvisioningReferencesRepository>;
   let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
-
   const mockClient: ClientEntity = {
     id: 'test-uuid',
     name: 'Test Client',
@@ -36,7 +37,6 @@ describe('ClientsService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockKeycloakClient: ClientEntity = {
     id: 'keycloak-client-uuid',
     name: 'Keycloak Client',
@@ -49,7 +49,6 @@ describe('ClientsService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockRepository = {
     findByIdOrThrow: jest.fn(),
     findById: jest.fn(),
@@ -61,26 +60,21 @@ describe('ClientsService', () => {
     update: jest.fn(),
     delete: jest.fn(),
   };
-
   const mockKeycloakTokenService = {
     getAccessToken: jest.fn(),
     clearCache: jest.fn(),
     clearAllCache: jest.fn(),
   };
-
   const mockClientAgentProxyService = {
     getClientConfig: jest.fn(),
   };
-
   const mockProvisioningReferencesRepository = {
     findByClientId: jest.fn(),
   };
-
   const mockClientUsersRepository = {
     findUserClientAccess: jest.fn(),
     findByUserId: jest.fn(),
   };
-
   const mockStatisticsService = {
     recordEntityCreated: jest.fn().mockResolvedValue(undefined),
     recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
@@ -351,6 +345,7 @@ describe('ClientsService', () => {
 
     it('should set isAutoProvisioned to false when no provisioning reference exists', async () => {
       const clients = [mockClient];
+
       mockRepository.findAll.mockResolvedValue(clients);
       clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
@@ -364,6 +359,7 @@ describe('ClientsService', () => {
 
     it('should return clients without config if fetch fails', async () => {
       const clients = [mockClient];
+
       mockRepository.findAll.mockResolvedValue(clients);
       clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
@@ -379,6 +375,7 @@ describe('ClientsService', () => {
 
     it('should use default pagination values', async () => {
       const clients = [mockClient];
+
       mockRepository.findAll.mockResolvedValue(clients);
       clientAgentProxyService.getClientConfig.mockResolvedValue(undefined);
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
@@ -390,6 +387,7 @@ describe('ClientsService', () => {
 
     it('should set canManageWorkspaceConfiguration to false for plain client_users user', async () => {
       const clientForList: ClientEntity = { ...mockClient, userId: 'other-creator' };
+
       mockRepository.findAll.mockResolvedValue([clientForList]);
       mockRepository.findById.mockResolvedValue(clientForList);
       clientUsersRepository.findByUserId.mockResolvedValue([
@@ -695,6 +693,7 @@ describe('ClientsService', () => {
 
     it('should get access token for Keycloak client', async () => {
       const expectedToken = 'jwt-access-token-123';
+
       mockRepository.findByIdOrThrow.mockResolvedValue(mockKeycloakClient);
       keycloakTokenService.getAccessToken.mockResolvedValue(expectedToken);
 
@@ -715,6 +714,7 @@ describe('ClientsService', () => {
         keycloakRealm: undefined,
       };
       const expectedToken = 'jwt-access-token-123';
+
       mockRepository.findByIdOrThrow.mockResolvedValue(clientWithoutRealm);
       keycloakTokenService.getAccessToken.mockResolvedValue(expectedToken);
 
@@ -744,6 +744,7 @@ describe('ClientsService', () => {
         keycloakClientId: undefined,
         keycloakClientSecret: undefined,
       };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(clientWithoutCredentials);
 
       await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(BadRequestException);
@@ -768,6 +769,7 @@ describe('ClientsService', () => {
         ...mockKeycloakClient,
         keycloakRealm: undefined,
       };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(clientWithoutRealm);
 
       await expect(service.getAccessToken('keycloak-client-uuid')).rejects.toThrow(BadRequestException);

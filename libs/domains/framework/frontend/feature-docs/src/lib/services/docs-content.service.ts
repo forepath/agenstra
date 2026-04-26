@@ -24,12 +24,14 @@ export class DocsContentService {
   loadContent(filePath: string): Observable<DocMetadata | null> {
     // Check cache first
     const cached = this.cache.get(filePath);
+
     if (cached) {
       return of(cached);
     }
 
     // Check if already loading
     const loading = this.loadingCache.get(filePath);
+
     if (loading) {
       return loading;
     }
@@ -50,8 +52,10 @@ export class DocsContentService {
           if (isHtml) {
             console.warn(`Received HTML response instead of markdown for: ${filePath} (likely file doesn't exist)`);
           }
+
           return of(null);
         }
+
         // Parse markdown asynchronously
         return from(this.markdownParser.parseMarkdown(response.body, filePath));
       }),
@@ -66,6 +70,7 @@ export class DocsContentService {
           // Log other errors
           console.error(`Failed to load documentation: ${filePath}`, error);
         }
+
         return of(null);
       }),
       shareReplay(1),

@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.repository';
+
 import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';
 
 describe('RegexFilterRulesCacheService', () => {
   let cache: RegexFilterRulesCacheService;
   const repository = { findAllOrdered: jest.fn() };
-
   const sampleRows: RegexFilterRuleEntity[] = [
     Object.assign(new RegexFilterRuleEntity(), {
       id: 'a',
@@ -26,11 +27,13 @@ describe('RegexFilterRulesCacheService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [RegexFilterRulesCacheService, { provide: RegexFilterRulesRepository, useValue: repository }],
     }).compile();
+
     cache = module.get(RegexFilterRulesCacheService);
   });
 
   it('loads from repository when cache is empty', async () => {
     const first = await cache.getAllOrdered();
+
     expect(first).toEqual(sampleRows);
     expect(repository.findAllOrdered).toHaveBeenCalledTimes(1);
   });

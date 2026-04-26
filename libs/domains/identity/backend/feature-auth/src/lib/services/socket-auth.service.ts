@@ -3,6 +3,7 @@ import type { SocketUserInfo } from '@forepath/identity/backend';
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE, TokenValidation } from 'nest-keycloak-connect';
+
 import { UsersRepository } from '../repositories/users.repository';
 
 /** Minimal Keycloak interface for token validation */
@@ -45,6 +46,7 @@ export class SocketAuthService {
     }
 
     const [scheme, token] = authHeader.split(' ');
+
     if (scheme?.toLowerCase() !== 'bearer' || !token) {
       return null;
     }
@@ -62,16 +64,19 @@ export class SocketAuthService {
 
   private validateApiKey(authHeader: string): SocketUserInfo | null {
     const staticApiKey = process.env.STATIC_API_KEY;
+
     if (!staticApiKey) {
       return null;
     }
 
     const parts = authHeader.split(' ');
+
     if (parts.length !== 2) {
       return null;
     }
 
     const [scheme, providedKey] = parts;
+
     if ((scheme === 'Bearer' || scheme === 'ApiKey') && providedKey === staticApiKey) {
       return {
         isApiKeyAuth: true,
@@ -107,17 +112,21 @@ export class SocketAuthService {
       switch (tokenValidation) {
         case TokenValidation.ONLINE:
           result = await gm.validateAccessToken(accessToken);
+
           // validateAccessToken returns the token if valid, or false if invalid
           if (result !== accessToken) {
             return null;
           }
+
           break;
         case TokenValidation.OFFLINE:
           result = await gm.validateToken(accessToken, 'Bearer');
+
           // validateToken returns the token if valid
           if (result !== accessToken) {
             return null;
           }
+
           break;
         case TokenValidation.NONE:
           // No validation, just trust the token
@@ -128,20 +137,22 @@ export class SocketAuthService {
 
       // Token is valid, parse payload
       const payload = this.parseJwtPayload(token);
+
       if (!payload.sub) {
         return null;
       }
 
       const roles = payload.realm_access?.roles ?? [];
       const isAdmin = roles.includes('admin') || roles.includes('realm-admin');
-
       // Resolve Keycloak sub to our users table id for client_users lookups
       let userId = payload.sub;
       const syncedUser = await this.usersRepository.findByKeycloakSub(payload.sub);
+
       if (syncedUser) {
         if (syncedUser.lockedAt) {
           return null;
         }
+
         userId = syncedUser.id;
       }
 
@@ -163,9 +174,11 @@ export class SocketAuthService {
     try {
       const payload = await this.jwtService!.verifyAsync<{ sub: string; email?: string; roles?: string[] }>(token);
       const entity = await this.usersRepository.findById(payload.sub);
+
       if (!entity || entity.lockedAt) {
         return null;
       }
+
       const roles = payload.roles ?? ['user'];
       const isAdmin = roles.includes('admin');
 
@@ -186,9 +199,11 @@ export class SocketAuthService {
 
   private parseJwtPayload(token: string): { sub: string; realm_access?: { roles?: string[] } } {
     const parts = token.split('.');
+
     if (parts.length < 2) {
       return { sub: '' };
     }
+
     return JSON.parse(Buffer.from(parts[1], 'base64').toString());
   }
 }

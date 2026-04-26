@@ -1,19 +1,20 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type {
   StatisticsChatIoListDto,
   StatisticsEntityEventListDto,
   StatisticsFilterDropListDto,
   StatisticsSummaryDto,
 } from '../state/statistics/statistics.types';
+
 import { StatisticsService } from './statistics.service';
 
 describe('StatisticsService', () => {
   let service: StatisticsService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3100/api';
-
   const mockSummary: StatisticsSummaryDto = {
     totalMessages: 100,
     totalWords: 500,
@@ -24,21 +25,18 @@ describe('StatisticsService', () => {
     filterFlagCount: 0,
     filterFlagsBreakdown: [],
   };
-
   const mockChatIoList: StatisticsChatIoListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockFilterDropList: StatisticsFilterDropListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockEntityEventList: StatisticsEntityEventListDto = {
     data: [],
     total: 0,
@@ -83,6 +81,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/statistics/summary`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockSummary);
     });
@@ -99,6 +98,7 @@ describe('StatisticsService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/statistics/summary?from=2024-01-01&to=2024-01-31&groupBy=day`,
       );
+
       expect(req.request.method).toBe('GET');
       req.flush(mockSummary);
     });
@@ -115,6 +115,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/statistics/chat-io?limit=10&offset=0`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockChatIoList);
     });
@@ -129,6 +130,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.params.get('search') === 'input');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockChatIoList);
     });
@@ -145,6 +147,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.url.startsWith(`${apiUrl}/clients/${clientId}/statistics/filter-drops`));
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFilterDropList);
     });
@@ -159,6 +162,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.params.get('search') === 'profanity');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFilterDropList);
     });
@@ -175,6 +179,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.url.startsWith(`${apiUrl}/clients/${clientId}/statistics/entity-events`));
+
       expect(req.request.method).toBe('GET');
       req.flush(mockEntityEventList);
     });
@@ -189,6 +194,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.params.get('search') === 'agent');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockEntityEventList);
     });
@@ -202,6 +208,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/statistics/summary`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockSummary);
     });
@@ -213,6 +220,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/statistics/summary?clientId=client-1`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockSummary);
     });
@@ -226,6 +234,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.url.startsWith(`${apiUrl}/statistics/chat-io`));
+
       expect(req.request.method).toBe('GET');
       req.flush(mockChatIoList);
     });
@@ -237,6 +246,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.params.get('search') === 'output');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockChatIoList);
     });
@@ -250,6 +260,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.url.startsWith(`${apiUrl}/statistics/filter-drops`));
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFilterDropList);
     });
@@ -261,6 +272,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.params.get('search') === 'spam');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFilterDropList);
     });
@@ -274,6 +286,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.url.startsWith(`${apiUrl}/statistics/entity-events`));
+
       expect(req.request.method).toBe('GET');
       req.flush(mockEntityEventList);
     });
@@ -285,6 +298,7 @@ describe('StatisticsService', () => {
       });
 
       const req = httpMock.expectOne((r) => r.params.get('search') === 'created');
+
       expect(req.request.method).toBe('GET');
       req.flush(mockEntityEventList);
     });

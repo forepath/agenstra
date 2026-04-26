@@ -1,4 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+
 import { TicketCreationTemplate, TicketPriority, TicketStatus } from '../../entities/ticket.enums';
 
 export class CreateTicketDto {

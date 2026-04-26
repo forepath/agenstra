@@ -1,7 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+
+import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { buildAgentControllerUpdateCommand } from '../utils/cloud-init/agent-controller.utils';
 import { buildAgentManagerUpdateCommand } from '../utils/cloud-init/agent-manager.utils';
-import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
+
 import { ProvisioningService } from './provisioning.service';
 import { SshExecutorService } from './ssh-executor.service';
 
@@ -40,6 +42,7 @@ export class SubscriptionItemUpdateScheduler implements OnModuleInit, OnModuleDe
 
   async runUpdateCycle(): Promise<void> {
     const items = await this.subscriptionItemsRepository.findProvisionedWithSshKey();
+
     if (items.length === 0) {
       return;
     }
@@ -66,19 +69,21 @@ export class SubscriptionItemUpdateScheduler implements OnModuleInit, OnModuleDe
     configSnapshot?: Record<string, unknown>;
   }): Promise<void> {
     const provider = item.serviceType?.provider;
+
     if (!provider || !item.providerReference || !item.sshPrivateKey) {
       return;
     }
 
     const serverInfo = await this.provisioningService.getServerInfo(provider, item.providerReference);
+
     if (!serverInfo?.publicIp) {
       this.logger.warn(`No public IP for item ${item.id}, skipping update`);
+
       return;
     }
 
     const service = (item.configSnapshot?.service as string) ?? 'controller';
     const command = service === 'manager' ? buildAgentManagerUpdateCommand() : buildAgentControllerUpdateCommand();
-
     const result = await this.sshExecutor.exec(serverInfo.publicIp, SSH_PORT, SSH_USER, item.sshPrivateKey, command);
 
     if (result.code !== 0) {

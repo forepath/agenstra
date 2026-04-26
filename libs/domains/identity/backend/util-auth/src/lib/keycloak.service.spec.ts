@@ -1,5 +1,6 @@
+import { PolicyEnforcementMode } from 'nest-keycloak-connect';
+
 import { KeycloakService } from './keycloak.service';
-import { PolicyEnforcementMode, TokenValidation } from 'nest-keycloak-connect';
 
 describe('KeycloakService', () => {
   let service: KeycloakService;
@@ -98,6 +99,7 @@ describe('KeycloakService', () => {
       // We should handle both cases
       if (result instanceof Promise) {
         const resolved = await result;
+
         expect(resolved).toBeDefined();
       } else {
         expect(result).toBeDefined();

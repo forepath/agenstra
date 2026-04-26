@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { AvailabilityService } from './availability.service';
 
 jest.mock('axios');
@@ -20,6 +21,7 @@ describe('AvailabilityService', () => {
     const repository = { create: jest.fn().mockResolvedValue({}) } as any;
     const service = new AvailabilityService(repository);
     const result = await service.checkAvailability('other', 'region', 'type');
+
     expect(result.isAvailable).toBe(true);
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({

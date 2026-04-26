@@ -1,47 +1,25 @@
 import {
   clearGitDiff,
   commit,
-  commitFailure,
   commitSuccess,
   createBranch,
-  createBranchFailure,
-  createBranchSuccess,
   deleteBranch,
-  deleteBranchFailure,
-  deleteBranchSuccess,
   fetch,
-  fetchFailure,
-  fetchSuccess,
   loadGitBranches,
-  loadGitBranchesFailure,
   loadGitBranchesSuccess,
   loadGitDiff,
-  loadGitDiffFailure,
   loadGitDiffSuccess,
   loadGitStatus,
   loadGitStatusFailure,
   loadGitStatusSuccess,
   pull,
-  pullFailure,
-  pullSuccess,
   push,
-  pushFailure,
   pushSuccess,
   rebase,
-  rebaseFailure,
-  rebaseSuccess,
   resolveConflict,
-  resolveConflictFailure,
-  resolveConflictSuccess,
   stageFiles,
-  stageFilesFailure,
   stageFilesSuccess,
   switchBranch,
-  switchBranchFailure,
-  switchBranchSuccess,
-  unstageFiles,
-  unstageFilesFailure,
-  unstageFilesSuccess,
 } from './vcs.actions';
 import { initialVcsState, vcsReducer, type VcsState } from './vcs.reducer';
 import type { GitBranch, GitDiff, GitStatus } from './vcs.types';
@@ -61,7 +39,6 @@ describe('vcsReducer', () => {
       },
     ],
   };
-
   const mockBranches: GitBranch[] = [
     {
       name: 'main',
@@ -72,7 +49,6 @@ describe('vcsReducer', () => {
       message: 'Test commit',
     },
   ];
-
   const mockGitDiff: GitDiff = {
     path: 'file1.txt',
     originalContent: Buffer.from('Old content', 'utf-8').toString('base64'),
@@ -96,7 +72,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         error: 'Previous error',
       };
-
       const newState = vcsReducer(state, loadGitStatus({ clientId: 'client-1', agentId: 'agent-1' }));
 
       expect(newState.loadingStatus).toBe(true);
@@ -110,7 +85,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         loadingStatus: true,
       };
-
       const newState = vcsReducer(state, loadGitStatusSuccess({ status: mockGitStatus }));
 
       expect(newState.status).toEqual(mockGitStatus);
@@ -125,7 +99,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         loadingStatus: true,
       };
-
       const newState = vcsReducer(state, loadGitStatusFailure({ error: 'Failed to load status' }));
 
       expect(newState.loadingStatus).toBe(false);
@@ -147,7 +120,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         loadingBranches: true,
       };
-
       const newState = vcsReducer(state, loadGitBranchesSuccess({ branches: mockBranches }));
 
       expect(newState.branches).toEqual(mockBranches);
@@ -172,7 +144,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         loadingDiff: true,
       };
-
       const newState = vcsReducer(state, loadGitDiffSuccess({ diff: mockGitDiff }));
 
       expect(newState.diff).toEqual(mockGitDiff);
@@ -186,7 +157,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         diff: mockGitDiff,
       };
-
       const newState = vcsReducer(state, clearGitDiff());
 
       expect(newState.diff).toBeNull();
@@ -210,7 +180,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         staging: true,
       };
-
       const newState = vcsReducer(state, stageFilesSuccess());
 
       expect(newState.staging).toBe(false);
@@ -234,7 +203,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         committing: true,
       };
-
       const newState = vcsReducer(state, commitSuccess());
 
       expect(newState.committing).toBe(false);
@@ -255,7 +223,6 @@ describe('vcsReducer', () => {
         ...initialVcsState,
         pushing: true,
       };
-
       const newState = vcsReducer(state, pushSuccess());
 
       expect(newState.pushing).toBe(false);

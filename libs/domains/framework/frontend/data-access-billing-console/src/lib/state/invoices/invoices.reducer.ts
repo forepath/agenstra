@@ -1,4 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
+import type { InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
+
 import {
   clearInvoices,
   createInvoice,
@@ -17,7 +20,6 @@ import {
   refreshInvoiceLinkFailure,
   refreshInvoiceLinkSuccess,
 } from './invoices.actions';
-import type { InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
 
 export interface InvoicesState {
   entities: Record<string, InvoiceResponse[]>;
@@ -126,6 +128,7 @@ export const invoicesReducer = createReducer(
     const openOverdueList = state.openOverdueList.map((inv) =>
       inv.id === invoiceRefId ? { ...inv, preAuthUrl } : inv,
     );
+
     return {
       ...state,
       entities,

@@ -16,6 +16,7 @@ import {
 import { DomSanitizer } from '@angular/platform-browser';
 import { DocMetadata } from '@forepath/framework/frontend/util-docs-parser';
 import { catchError, map, of } from 'rxjs';
+
 import { MermaidDiagramComponent } from '../mermaid-diagram/mermaid-diagram.component';
 
 /**
@@ -50,13 +51,13 @@ export class DocsContentComponent implements AfterViewInit {
    */
   readonly htmlContent = computed(() => {
     const meta = this.metadata();
+
     if (!meta?.html) {
       return '';
     }
 
     // Process HTML to replace mermaid code blocks with placeholders
     let html = meta.html;
-
     // Replace mermaid code blocks with placeholders (diagrams are handled separately via effect)
     const mermaidRegex = /<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi;
     let match;
@@ -64,6 +65,7 @@ export class DocsContentComponent implements AfterViewInit {
 
     while ((match = mermaidRegex.exec(html)) !== null) {
       const diagramId = `mermaid-${diagramIndex++}`;
+
       html = html.replace(match[0], `<div class="mermaid-placeholder" data-diagram-id="${diagramId}"></div>`);
     }
 
@@ -80,8 +82,10 @@ export class DocsContentComponent implements AfterViewInit {
     // Extract mermaid diagrams when metadata changes
     effect(() => {
       const meta = this.metadata();
+
       if (!meta) {
         this.mermaidDiagrams.set([]);
+
         return;
       }
 
@@ -119,6 +123,7 @@ export class DocsContentComponent implements AfterViewInit {
           // Decode HTML entities that might have been encoded by marked
           if (isPlatformBrowser(this.platformId)) {
             const tempDiv = this.document.createElement('div');
+
             tempDiv.innerHTML = code;
             code = tempDiv.textContent || tempDiv.innerText || code;
           } else {
@@ -147,14 +152,17 @@ export class DocsContentComponent implements AfterViewInit {
     effect(() => {
       const meta = this.metadata();
       const diagrams = this.mermaidDiagrams();
+
       if (meta && this.contentContainer) {
         // Use setTimeout to ensure DOM is ready
         setTimeout(() => {
           this.addHeadingIds(meta.headings);
+
           // Replace placeholders if diagrams are ready
           if (diagrams.length > 0) {
             this.replaceMermaidPlaceholders();
           }
+
           // Remove links to non-existent files
           this.removeInvalidLinks();
         }, 0);
@@ -167,9 +175,11 @@ export class DocsContentComponent implements AfterViewInit {
     // This handles the case where metadata was set before the view was initialized
     const meta = this.metadata();
     const diagrams = this.mermaidDiagrams();
+
     if (meta && this.contentContainer) {
       setTimeout(() => {
         this.addHeadingIds(meta.headings);
+
         // Only replace if diagrams are ready
         if (diagrams.length > 0) {
           this.replaceMermaidPlaceholders();
@@ -203,6 +213,7 @@ export class DocsContentComponent implements AfterViewInit {
     for (const pre of preElements) {
       const codeElement = pre.querySelector('code.language-mermaid');
       const placeholder = pre.querySelector('.mermaid-placeholder');
+
       if (codeElement || placeholder) {
         mermaidPreElements.push(pre);
       }
@@ -212,7 +223,6 @@ export class DocsContentComponent implements AfterViewInit {
     const standalonePlaceholders = Array.from(container.querySelectorAll('.mermaid-placeholder')).filter(
       (p) => !p.closest('pre'),
     );
-
     // Combine both: pre elements first, then standalone placeholders
     // This matches the order they appear in the HTML
     const allElementsToReplace = [...mermaidPreElements, ...standalonePlaceholders];
@@ -241,11 +251,13 @@ export class DocsContentComponent implements AfterViewInit {
 
       // Create a wrapper div for the mermaid diagram
       const wrapper = this.document.createElement('div');
+
       wrapper.className = 'mermaid-diagram-wrapper';
 
       // Create the mermaid diagram component dynamically
       // First create it in the view container (for Angular change detection)
       const componentRef = this.viewContainer.createComponent(MermaidDiagramComponent);
+
       componentRef.setInput('diagramCode', diagram.code);
 
       // Get the component's host element
@@ -270,19 +282,19 @@ export class DocsContentComponent implements AfterViewInit {
    */
   private processLinks(html: string): string {
     const metadata = this.metadata();
+
     if (!metadata) {
       return html;
     }
 
     // Get the current file path
     const currentFilePath = metadata.path;
-
     // Check if this is a README.md file
     const isReadme = currentFilePath.toLowerCase().endsWith('readme.md');
-
     // For README.md files, use the folder path as the base (one level up from the file)
     // For other files, use the file's folder path
     let basePath: string;
+
     if (isReadme) {
       // For README.md, the base is the folder containing it
       // e.g., "api-reference/README.md" -> base is "api-reference"
@@ -295,6 +307,7 @@ export class DocsContentComponent implements AfterViewInit {
 
     // Process all links, but handle different types differently
     const linkRegex = /<a href="([^"]+)">/gi;
+
     return html.replace(linkRegex, (match, path) => {
       // Skip external links (http://, https://, mailto:, etc.)
       if (/^(https?:\/\/|mailto:)/i.test(path)) {
@@ -327,13 +340,14 @@ export class DocsContentComponent implements AfterViewInit {
         // Handle going up directories
         const parts = basePath.split('/').filter((p: string) => p);
         const relativeParts = routePath.split('/').filter((p: string) => p);
-
         // Remove ../ parts and corresponding base parts
         let i = 0;
+
         while (i < relativeParts.length && relativeParts[i] === '..') {
           if (parts.length > 0) {
             parts.pop();
           }
+
           i++;
         }
 
@@ -345,6 +359,7 @@ export class DocsContentComponent implements AfterViewInit {
       } else if (routePath.startsWith('./')) {
         // Remove ./ prefix and resolve relative to base
         routePath = routePath.replace(/^\.\//, '');
+
         if (basePath) {
           routePath = `${basePath}/${routePath}`;
         }
@@ -381,6 +396,7 @@ export class DocsContentComponent implements AfterViewInit {
     }
 
     const metadata = this.metadata();
+
     if (!metadata) {
       return;
     }
@@ -390,24 +406,27 @@ export class DocsContentComponent implements AfterViewInit {
     const currentFileFolder = currentFilePath.includes('/')
       ? currentFilePath.substring(0, currentFilePath.lastIndexOf('/'))
       : '';
-
     const container = this.contentContainer.nativeElement;
     const links = Array.from(container.querySelectorAll<HTMLAnchorElement>('a[data-md-link]'));
 
     // Process all links to check if they exist
     links.forEach((link) => {
       const originalPath = link.getAttribute('data-md-link');
+
       if (!originalPath) {
         return;
       }
 
       // Get the href from the link to check if it starts with /agenstra or /framework
       const href = link.getAttribute('href');
+
       if (!href || (!href.startsWith('/agenstra') && !href.startsWith('/framework'))) {
         // Link doesn't start with /agenstra or /framework, mark as invalid
         const text = link.textContent || link.innerText;
         const textNode = this.document.createTextNode(text);
+
         link.parentNode?.replaceChild(textNode, link);
+
         return;
       }
 
@@ -424,7 +443,6 @@ export class DocsContentComponent implements AfterViewInit {
 
       // Add .md extension back for file checking
       const fullFilePath = `${filePath}.md`;
-
       // Check if file exists by trying to load it with HEAD request
       // Files are served from /agenstra/ route, so we need to prepend "agenstra/"
       const assetPath = `/agenstra/${fullFilePath}`;
@@ -440,6 +458,7 @@ export class DocsContentComponent implements AfterViewInit {
             // File doesn't exist, remove the link but keep the text
             const text = link.textContent || link.innerText;
             const textNode = this.document.createTextNode(text);
+
             link.parentNode?.replaceChild(textNode, link);
           } else {
             // File exists, remove the data attribute as it's no longer needed
@@ -472,6 +491,7 @@ export class DocsContentComponent implements AfterViewInit {
    */
   getMermaidCode(diagramId: string): string | null {
     const diagram = this.mermaidDiagrams().find((d) => d.id === diagramId);
+
     return diagram?.code || null;
   }
 }
