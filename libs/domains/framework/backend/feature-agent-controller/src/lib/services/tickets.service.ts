@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, type EntityManager } from 'typeorm';
+
 import {
   ApplyGeneratedBodyDto,
   CreateTicketCommentDto,
@@ -32,9 +33,9 @@ import {
   UpdateTicketDto,
 } from '../dto/tickets';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
+import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
-import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import {
   TicketActionType,
@@ -44,21 +45,22 @@ import {
   TicketStatus,
 } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { buildSpecificationSubtaskSeeds } from '../utils/specification-ticket-subtasks.utils';
 import { derivePatchActionType, type FieldChange } from '../utils/ticket-activity-payload.utils';
 import {
   buildDescendantCheckboxTaskTotalsByTicketId,
   countMarkdownCheckboxTasks,
 } from '../utils/ticket-content-checkbox-tasks.utils';
-import { buildSpecificationSubtaskSeeds } from '../utils/specification-ticket-subtasks.utils';
 import {
   buildPrototypePrompt,
   buildPrototypePromptPreamble,
   type TicketPromptNode,
 } from '../utils/tickets-prototype-prompt.utils';
+
+import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { ClientsService } from './clients.service';
 import { TicketAutomationService, TICKET_APPROVAL_INVALIDATION_FIELDS } from './ticket-automation.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
-import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 
 const DEFAULT_SESSION_TTL_MS = 15 * 60 * 1000;
@@ -97,12 +99,14 @@ export class TicketsService {
    */
   async emitBoardTicketAndActivity(ticketId: string, req?: RequestWithUser): Promise<void> {
     const dto = await this.findOne(ticketId, false, req);
+
     this.ticketBoardRealtime.emitToClient(dto.clientId, TICKETS_BOARD_EVENTS.ticketUpsert, dto);
     const rows = await this.activityRepo.find({
       where: { ticketId },
       order: { occurredAt: 'DESC' },
       take: 1,
     });
+
     if (rows[0]) {
       this.ticketBoardRealtime.emitToClient(
         dto.clientId,
@@ -115,6 +119,7 @@ export class TicketsService {
   /** Realtime ticket list/detail only (activity emitted separately). */
   async emitBoardTicketSnapshot(ticketId: string, req?: RequestWithUser): Promise<void> {
     const dto = await this.findOne(ticketId, false, req);
+
     this.boardEmitTicketUpsert(dto.clientId, dto);
   }
 
@@ -125,6 +130,7 @@ export class TicketsService {
   async emitBoardTicketSnapshotInternal(ticketId: string): Promise<void> {
     const ticket = await this.loadTicketOrThrow(ticketId);
     const dto = await this.mapTicketInWorkspace(ticket);
+
     this.boardEmitTicketUpsert(dto.clientId, dto);
   }
 
@@ -151,22 +157,27 @@ export class TicketsService {
 
   private isApiKeyMode(): boolean {
     const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
+
     return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
   }
 
   private resolveActor(req?: RequestWithUser): { actorType: TicketActorType; actorUserId?: string } {
     const info = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (info.isApiKeyAuth || this.isApiKeyMode()) {
       return { actorType: TicketActorType.SYSTEM };
     }
+
     if (info.userId) {
       return { actorType: TicketActorType.HUMAN, actorUserId: info.userId };
     }
+
     return { actorType: TicketActorType.SYSTEM };
   }
 
   private async getAccessibleClientIds(req?: RequestWithUser): Promise<string[] | null> {
     const info = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.clientsService.getAccessibleClientIds(info.userId, info.userRole, info.isApiKeyAuth);
   }
 
@@ -176,27 +187,35 @@ export class TicketsService {
 
   private async loadTicketOrThrow(id: string): Promise<TicketEntity> {
     const ticket = await this.ticketRepo.findOne({ where: { id } });
+
     if (!ticket) {
       throw new NotFoundException(`Ticket with ID ${id} not found`);
     }
+
     return ticket;
   }
 
   private async assertTicketReadable(id: string, req?: RequestWithUser): Promise<TicketEntity> {
     const ticket = await this.loadTicketOrThrow(id);
+
     await this.assertClientAccess(ticket.clientId, req);
+
     return ticket;
   }
 
   private async resolveRootTicket(ticket: TicketEntity): Promise<TicketEntity> {
     let current = ticket;
+
     while (current.parentId) {
       const parent = await this.loadTicketOrThrow(current.parentId);
+
       if (parent.clientId !== ticket.clientId) {
         throw new BadRequestException('Ticket hierarchy spans multiple workspaces');
       }
+
       current = parent;
     }
+
     return current;
   }
 
@@ -209,58 +228,76 @@ export class TicketsService {
       select: ['id', 'parentId'],
     });
     const byParent = new Map<string | null, string[]>();
+
     for (const t of all) {
       const p = t.parentId ?? null;
+
       if (!byParent.has(p)) {
         byParent.set(p, []);
       }
+
       byParent.get(p)!.push(t.id);
     }
+
     const out: string[] = [];
     const stack = [rootId];
     const visited = new Set<string>();
+
     while (stack.length > 0) {
       const id = stack.pop()!;
+
       if (visited.has(id)) {
         continue;
       }
+
       visited.add(id);
       out.push(id);
+
       for (const childId of byParent.get(id) ?? []) {
         stack.push(childId);
       }
     }
+
     return out;
   }
 
   async listTickets(query: TicketListQuery, req?: RequestWithUser): Promise<TicketResponseDto[]> {
     const accessible = await this.getAccessibleClientIds(req);
     const qb = this.ticketRepo.createQueryBuilder('t');
+
     if (accessible !== null && accessible.length === 0) {
       return [];
     }
+
     if (accessible !== null) {
       qb.andWhere('t.client_id IN (:...ids)', { ids: accessible });
     }
+
     if (query.clientId) {
       if (accessible !== null && !accessible.includes(query.clientId)) {
         throw new ForbiddenException('You do not have access to this client');
       }
+
       qb.andWhere('t.client_id = :clientId', { clientId: query.clientId });
     }
+
     if (query.status) {
       qb.andWhere('t.status = :status', { status: query.status });
     }
+
     if (query.parentId === null) {
       qb.andWhere('t.parent_id IS NULL');
     } else if (query.parentId !== undefined) {
       qb.andWhere('t.parent_id = :parentId', { parentId: query.parentId });
     }
+
     qb.orderBy('t.updated_at', 'DESC');
     const rows = await qb.getMany();
+
     if (rows.length === 0) {
       return [];
     }
+
     const clientIds = [...new Set(rows.map((r) => r.clientId))];
     const allForAgg = await this.ticketRepo.find({
       where: { clientId: In(clientIds) },
@@ -268,6 +305,7 @@ export class TicketsService {
     });
     const descMap = buildDescendantCheckboxTaskTotalsByTicketId(allForAgg);
     const eligMap = await this.loadAutomationEligibleByTicketIds(allForAgg.map((t) => t.id));
+
     return Promise.all(rows.map((row) => this.mapTicket(row, eligMap.get(row.id) ?? false, descMap)));
   }
 
@@ -280,9 +318,11 @@ export class TicketsService {
     const eligMap = await this.loadAutomationEligibleByTicketIds(all.map((t) => t.id));
     const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
     const dto = await this.mapTicket(ticket, eligMap.get(ticket.id) ?? false, descMap);
+
     if (includeDescendants) {
       dto.children = await this.buildChildTicketDtos(ticket.id, all, eligMap, descMap);
     }
+
     return dto;
   }
 
@@ -293,23 +333,31 @@ export class TicketsService {
     descMap: Map<string, { open: number; done: number }>,
   ): Promise<TicketResponseDto[]> {
     const byParent = new Map<string | null, TicketEntity[]>();
+
     for (const t of all) {
       const p = t.parentId ?? null;
+
       if (!byParent.has(p)) {
         byParent.set(p, []);
       }
+
       byParent.get(p)!.push(t);
     }
+
     const build = async (parentId: string): Promise<TicketResponseDto[]> => {
       const kids = byParent.get(parentId) ?? [];
       const out: TicketResponseDto[] = [];
+
       for (const k of kids) {
         const d = await this.mapTicket(k, eligMap.get(k.id) ?? false, descMap);
+
         d.children = await build(k.id);
         out.push(d);
       }
+
       return out;
     };
+
     return build(parentTicketId);
   }
 
@@ -330,6 +378,7 @@ export class TicketsService {
     const aRepo = em.getRepository(TicketActivityEntity);
     const ticket = tRepo.create(fields);
     const inserted = await tRepo.save(ticket);
+
     await aRepo.save(
       aRepo.create({
         ticketId: inserted.id,
@@ -343,13 +392,13 @@ export class TicketsService {
         },
       }),
     );
+
     return inserted;
   }
 
   async create(dto: CreateTicketDto, req?: RequestWithUser): Promise<CreateTicketResponseDto> {
     const actor = this.resolveActor(req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
-
     let clientId = dto.clientId;
     const parentId = dto.parentId ?? null;
     const template = dto.creationTemplate ?? TicketCreationTemplate.EMPTY;
@@ -360,24 +409,24 @@ export class TicketsService {
 
     if (parentId) {
       const parentTicket = await this.loadTicketOrThrow(parentId);
+
       await this.assertClientAccess(parentTicket.clientId, req);
       clientId = parentTicket.clientId;
     } else {
       if (!clientId) {
         throw new BadRequestException('clientId is required when parentId is not set');
       }
+
       await this.assertClientAccess(clientId, req);
     }
 
     const priority = dto.priority ?? TicketPriority.MEDIUM;
     const status = dto.status ?? TicketStatus.DRAFT;
     const createdByUserId = info.userId ?? null;
-
     const childSeeds =
       !parentId && template === TicketCreationTemplate.SPECIFICATION
         ? buildSpecificationSubtaskSeeds(dto.title.trim(), dto.content)
         : [];
-
     const { parent, children } = await this.ticketRepo.manager.transaction(async (em) => {
       const p = await this.saveNewTicketWithCreatedActivity(em, actor, {
         clientId: clientId!,
@@ -389,6 +438,7 @@ export class TicketsService {
         createdByUserId,
       });
       const kids: TicketEntity[] = [];
+
       for (const seed of childSeeds) {
         kids.push(
           await this.saveNewTicketWithCreatedActivity(em, actor, {
@@ -402,9 +452,9 @@ export class TicketsService {
           }),
         );
       }
+
       return { parent: p, children: kids };
     });
-
     const all = await this.ticketRepo.find({
       where: { clientId: parent.clientId },
       order: { createdAt: 'ASC' },
@@ -416,17 +466,19 @@ export class TicketsService {
       children.length > 0
         ? await Promise.all(children.map((c) => this.mapTicket(c, eligMap.get(c.id) ?? false, descMap)))
         : [];
-
     const allRows = [parent, ...children];
     const allDtos = [parentDto, ...childDtos];
+
     for (let i = 0; i < allDtos.length; i++) {
       const ticketDto = allDtos[i];
+
       this.boardEmitTicketUpsert(ticketDto.clientId, ticketDto);
       const activityRows = await this.activityRepo.find({
         where: { ticketId: allRows[i].id },
         order: { occurredAt: 'DESC' },
         take: 1,
       });
+
       if (activityRows[0]) {
         await this.boardEmitTicketActivityMapped(ticketDto.clientId, activityRows[0]);
       }
@@ -435,6 +487,7 @@ export class TicketsService {
     if (childDtos.length === 0) {
       return parentDto;
     }
+
     return { ...parentDto, createdChildTickets: childDtos };
   }
 
@@ -447,14 +500,17 @@ export class TicketsService {
       changes.title = { old: ticket.title, new: dto.title.trim() };
       ticket.title = dto.title.trim();
     }
+
     if (dto.content !== undefined && dto.content !== ticket.content) {
       changes.content = { old: ticket.content, new: dto.content };
       ticket.content = dto.content;
     }
+
     if (dto.priority !== undefined && dto.priority !== ticket.priority) {
       changes.priority = { old: ticket.priority, new: dto.priority };
       ticket.priority = dto.priority;
     }
+
     if (dto.status !== undefined && dto.status !== ticket.status) {
       changes.status = { old: ticket.status, new: dto.status };
       ticket.status = dto.status;
@@ -464,10 +520,13 @@ export class TicketsService {
       if (ticket.parentId) {
         throw new BadRequestException('Cannot change workspace when ticket has a parent');
       }
+
       const childCount = await this.ticketRepo.count({ where: { parentId: id } });
+
       if (childCount > 0) {
         throw new BadRequestException('Cannot change workspace when ticket has subtasks');
       }
+
       await this.assertClientAccess(dto.clientId, req);
       await this.assertClientAccess(ticket.clientId, req);
       changes.clientId = { old: ticket.clientId, new: dto.clientId };
@@ -477,6 +536,7 @@ export class TicketsService {
     if (dto.preferredChatAgentId !== undefined) {
       const newPref = dto.preferredChatAgentId;
       const oldPref = ticket.preferredChatAgentId ?? null;
+
       if (newPref !== oldPref) {
         changes.preferredChatAgentId = { old: oldPref, new: newPref };
         ticket.preferredChatAgentId = newPref;
@@ -485,19 +545,25 @@ export class TicketsService {
 
     if (dto.parentId !== undefined) {
       const newParentId = dto.parentId;
+
       if (newParentId === ticket.id) {
         throw new BadRequestException('Ticket cannot be its own parent');
       }
+
       if (newParentId) {
         const parent = await this.loadTicketOrThrow(newParentId);
+
         if (parent.clientId !== ticket.clientId) {
           throw new BadRequestException('Parent must belong to the same workspace');
         }
+
         if (await this.wouldCreateCycle(id, newParentId)) {
           throw new BadRequestException('Invalid parent: would create a cycle');
         }
       }
+
       const oldP = ticket.parentId;
+
       if (oldP !== newParentId) {
         changes.parentId = { old: oldP, new: newParentId };
         ticket.parentId = newParentId;
@@ -513,6 +579,7 @@ export class TicketsService {
     await this.ticketRepo.manager.transaction(async (em) => {
       const tRepo = em.getRepository(TicketEntity);
       const aRepo = em.getRepository(TicketActivityEntity);
+
       await tRepo.save(ticket);
       await aRepo.save(
         aRepo.create({
@@ -526,25 +593,31 @@ export class TicketsService {
     });
 
     const changedKeys = Object.keys(changes);
+
     if (changedKeys.some((k) => TICKET_APPROVAL_INVALIDATION_FIELDS.has(k))) {
       await this.ticketAutomationService.invalidateAfterTicketFieldChanges(id, changedKeys, req);
     }
 
     const refreshed = await this.loadTicketOrThrow(id);
     const mapped = await this.mapTicketInWorkspace(refreshed);
+
     if (changes.clientId) {
       const oldCid = changes.clientId.old as string;
+
       this.boardEmitTicketRemoved(oldCid, id);
     }
+
     this.boardEmitTicketUpsert(mapped.clientId, mapped);
     const activityRows = await this.activityRepo.find({
       where: { ticketId: id },
       order: { occurredAt: 'DESC' },
       take: 1,
     });
+
     if (activityRows[0]) {
       await this.boardEmitTicketActivityMapped(mapped.clientId, activityRows[0]);
     }
+
     return mapped;
   }
 
@@ -561,9 +634,11 @@ export class TicketsService {
     const targetClientId = dto.targetClientId;
     const seed = await this.assertTicketReadable(ticketId, req);
     const sourceClientId = seed.clientId;
+
     if (targetClientId === sourceClientId) {
       throw new BadRequestException('Target workspace must differ from the ticket workspace');
     }
+
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, sourceClientId, req);
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, targetClientId, req);
     const root = await this.resolveRootTicket(seed);
@@ -573,6 +648,7 @@ export class TicketsService {
     await this.ticketRepo.manager.transaction(async (em: EntityManager) => {
       const tRepo = em.getRepository(TicketEntity);
       const aRepo = em.getRepository(TicketActivityEntity);
+
       await tRepo.update({ id: In(idsToMigrate) }, { clientId: targetClientId });
       await aRepo.save(
         aRepo.create({
@@ -601,8 +677,10 @@ export class TicketsService {
       where: { id: In(idsToMigrate) },
       order: { createdAt: 'ASC' },
     });
+
     for (const row of rowsAfter) {
       const mapped = await this.mapTicketInWorkspace(row);
+
       this.boardEmitTicketUpsert(targetClientId, mapped);
       this.clientAutomationChatRealtime.emitTicketChatUpsert(targetClientId, mapped);
     }
@@ -612,28 +690,35 @@ export class TicketsService {
       order: { occurredAt: 'DESC' },
       take: 1,
     });
+
     if (activityRows[0]) {
       await this.boardEmitTicketActivityMapped(targetClientId, activityRows[0]);
     }
 
     const ticket = await this.findOne(root.id, true, req);
+
     return { ticket };
   }
 
   private async wouldCreateCycle(ticketId: string, newParentId: string): Promise<boolean> {
     let current: string | null | undefined = newParentId;
     const visited = new Set<string>();
+
     while (current) {
       if (current === ticketId) {
         return true;
       }
+
       if (visited.has(current)) {
         return true;
       }
+
       visited.add(current);
       const row = await this.ticketRepo.findOne({ where: { id: current }, select: ['parentId'] });
+
       current = row?.parentId ?? null;
     }
+
     return false;
   }
 
@@ -641,13 +726,17 @@ export class TicketsService {
     const actor = this.resolveActor(req);
     const ticket = await this.assertTicketReadable(id, req);
     const childCount = await this.ticketRepo.count({ where: { parentId: id } });
+
     if (childCount > 0) {
       throw new ConflictException('Cannot delete ticket with subtasks');
     }
+
     const clientId = ticket.clientId;
+
     await this.ticketRepo.manager.transaction(async (em) => {
       const aRepo = em.getRepository(TicketActivityEntity);
       const tRepo = em.getRepository(TicketEntity);
+
       await aRepo.save(
         aRepo.create({
           ticketId: id,
@@ -668,6 +757,7 @@ export class TicketsService {
       where: { ticketId },
       order: { createdAt: 'ASC' },
     });
+
     return Promise.all(rows.map((c) => this.mapComment(c)));
   }
 
@@ -677,9 +767,9 @@ export class TicketsService {
     req?: RequestWithUser,
   ): Promise<TicketCommentResponseDto> {
     const actor = this.resolveActor(req);
+
     await this.assertTicketReadable(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
-
     const { comment: saved, activityRow } = await this.ticketRepo.manager.transaction(async (em) => {
       const cRepo = em.getRepository(TicketCommentEntity);
       const aRepo = em.getRepository(TicketActivityEntity);
@@ -699,13 +789,15 @@ export class TicketsService {
           payload: { commentId: comment.id },
         }),
       );
+
       return { comment, activityRow };
     });
-
     const ticketRow = await this.loadTicketOrThrow(ticketId);
     const mappedComment = await this.mapComment(saved);
+
     this.boardEmitTicketComment(ticketRow.clientId, mappedComment);
     await this.boardEmitTicketActivityMapped(ticketRow.clientId, activityRow);
+
     return mappedComment;
   }
 
@@ -722,6 +814,7 @@ export class TicketsService {
       take: limit,
       skip: offset,
     });
+
     return Promise.all(rows.map((a) => this.mapActivity(a)));
   }
 
@@ -730,8 +823,10 @@ export class TicketsService {
     const parentChain = await this.loadParentChainEntities(ticket);
     const tree = await this.buildPromptNode(ticket);
     let body = buildPrototypePromptPreamble();
+
     if (parentChain.length > 0) {
       body += "Parent tickets (root → this ticket's parent):\n";
+
       for (const p of parentChain) {
         const shallow: TicketPromptNode = {
           id: p.id,
@@ -741,10 +836,13 @@ export class TicketsService {
           status: p.status,
           children: [],
         };
+
         body += `${buildPrototypePrompt(shallow)}\n`;
       }
+
       body += '\nThis ticket and its subtasks:\n';
     }
+
     body += buildPrototypePrompt(tree);
     const actor = this.resolveActor(req);
     const activityRow = await this.activityRepo.save(
@@ -756,7 +854,9 @@ export class TicketsService {
         payload: { rootTicketId: ticketId },
       }),
     );
+
     await this.boardEmitTicketActivityMapped(ticket.clientId, activityRow);
+
     return { prompt: body };
   }
 
@@ -764,12 +864,16 @@ export class TicketsService {
   private async loadParentChainEntities(ticket: TicketEntity): Promise<TicketEntity[]> {
     const ascending: TicketEntity[] = [];
     let parentId: string | null | undefined = ticket.parentId;
+
     while (parentId) {
       const p = await this.loadTicketOrThrow(parentId);
+
       ascending.push(p);
       parentId = p.parentId ?? null;
     }
+
     ascending.reverse();
+
     return ascending;
   }
 
@@ -779,9 +883,11 @@ export class TicketsService {
       order: { createdAt: 'ASC' },
     });
     const children: TicketPromptNode[] = [];
+
     for (const c of childrenRows) {
       children.push(await this.buildPromptNode(c));
     }
+
     return {
       id: ticket.id,
       title: ticket.title,
@@ -798,11 +904,11 @@ export class TicketsService {
     req?: RequestWithUser,
   ): Promise<StartBodyGenerationSessionResponseDto> {
     const actor = this.resolveActor(req);
+
     await this.assertTicketReadable(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
     const ttl = parseInt(process.env.TICKET_BODY_SESSION_TTL_MS || String(DEFAULT_SESSION_TTL_MS), 10);
     const expiresAt = new Date(Date.now() + ttl);
-
     const { session, activityDto } = await this.ticketRepo.manager.transaction(async (em) => {
       const sRepo = em.getRepository(TicketBodyGenerationSessionEntity);
       const aRepo = em.getRepository(TicketActivityEntity);
@@ -824,10 +930,11 @@ export class TicketsService {
         }),
       );
       const mapped = await this.mapActivity(activityRow);
+
       return { session: s, activityDto: mapped };
     });
-
     const ticketRow = await this.loadTicketOrThrow(ticketId);
+
     this.ticketBoardRealtime.emitToClient(ticketRow.clientId, TICKETS_BOARD_EVENTS.ticketActivityCreated, activityDto);
 
     return {
@@ -843,33 +950,41 @@ export class TicketsService {
     req?: RequestWithUser,
   ): Promise<TicketResponseDto> {
     const info = getUserFromRequest(req || ({} as RequestWithUser));
+
     await this.assertTicketReadable(ticketId, req);
 
     const session = await this.bodySessionRepo.findOne({ where: { id: dto.generationId } });
+
     if (!session || session.ticketId !== ticketId) {
       throw new BadRequestException('Invalid or expired generation session');
     }
+
     if (session.consumedAt) {
       throw new BadRequestException('Generation session already used');
     }
+
     if (session.expiresAt.getTime() < Date.now()) {
       throw new BadRequestException('Generation session expired');
     }
+
     if (!info.isApiKeyAuth && !this.isApiKeyMode() && session.userId && info.userId !== session.userId) {
       throw new ForbiddenException('Generation session belongs to another user');
     }
 
     const ticket = await this.loadTicketOrThrow(ticketId);
     const oldContent = ticket.content;
+
     ticket.content = dto.content;
 
     await this.ticketRepo.manager.transaction(async (em) => {
       const tRepo = em.getRepository(TicketEntity);
       const aRepo = em.getRepository(TicketActivityEntity);
       const sRepo = em.getRepository(TicketBodyGenerationSessionEntity);
+
       await tRepo.save(ticket);
       session.consumedAt = new Date();
       await sRepo.save(session);
+
       return await aRepo.save(
         aRepo.create({
           ticketId,
@@ -888,30 +1003,37 @@ export class TicketsService {
 
     const refreshed = await this.loadTicketOrThrow(ticketId);
     const mappedTicket = await this.mapTicketInWorkspace(refreshed);
+
     this.boardEmitTicketUpsert(mappedTicket.clientId, mappedTicket);
     const activityRows = await this.activityRepo.find({
       where: { ticketId },
       order: { occurredAt: 'DESC' },
       take: 1,
     });
+
     if (activityRows[0]) {
       await this.boardEmitTicketActivityMapped(mappedTicket.clientId, activityRows[0]);
     }
+
     return mappedTicket;
   }
 
   private async loadAutomationEligibleByTicketIds(ticketIds: string[]): Promise<Map<string, boolean>> {
     const map = new Map<string, boolean>();
+
     if (ticketIds.length === 0) {
       return map;
     }
+
     const rows = await this.ticketAutomationRepo.find({
       where: { ticketId: In(ticketIds) },
       select: ['ticketId', 'eligible'],
     });
+
     for (const r of rows) {
       map.set(r.ticketId, r.eligible);
     }
+
     return map;
   }
 
@@ -922,6 +1044,7 @@ export class TicketsService {
     });
     const eligMap = await this.loadAutomationEligibleByTicketIds(all.map((t) => t.id));
     const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
+
     return this.mapTicket(row, eligMap.get(row.id) ?? false, descMap);
   }
 
@@ -931,12 +1054,16 @@ export class TicketsService {
     descendantTotals: Map<string, { open: number; done: number }>,
   ): Promise<TicketResponseDto> {
     let createdByEmail: string | null = null;
+
     if (row.createdByUserId) {
       const u = await this.usersRepository.findById(row.createdByUserId);
+
       createdByEmail = u?.email ?? null;
     }
+
     const own = countMarkdownCheckboxTasks(row.content);
     const child = descendantTotals.get(row.id) ?? { open: 0, done: 0 };
+
     return {
       id: row.id,
       clientId: row.clientId,
@@ -961,10 +1088,13 @@ export class TicketsService {
 
   private async mapComment(row: TicketCommentEntity): Promise<TicketCommentResponseDto> {
     let authorEmail: string | null = null;
+
     if (row.authorUserId) {
       const u = await this.usersRepository.findById(row.authorUserId);
+
       authorEmail = u?.email ?? null;
     }
+
     return {
       id: row.id,
       ticketId: row.ticketId,
@@ -977,10 +1107,13 @@ export class TicketsService {
 
   private async mapActivity(row: TicketActivityEntity): Promise<TicketActivityResponseDto> {
     let actorEmail: string | null = null;
+
     if (row.actorUserId) {
       const u = await this.usersRepository.findById(row.actorUserId);
+
       actorEmail = u?.email ?? null;
     }
+
     return {
       id: row.id,
       ticketId: row.ticketId,

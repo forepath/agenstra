@@ -9,6 +9,7 @@ export function buildAutonomousCommitMessagePrompt(
   branchName: string,
 ): string {
   const title = (ticket.title ?? '').replace(/\s+/g, ' ').trim();
+
   return [
     'You help write git commit messages.',
     'Reply with exactly ONE line only: a Conventional Commits subject (format: type(scope): description, or type: description).',
@@ -38,20 +39,25 @@ export function sanitizeConventionalCommitSubject(raw: string): string | null {
     .filter((l) => l.length > 0);
   const first = lines[0] ?? '';
   const s = first.replace(/^[`"'“”]+|[`"'“”]+$/g, '').trim();
+
   if (s.startsWith('```')) {
     return null;
   }
+
   if (s.length < 5 || s.length > 200) {
     return null;
   }
+
   if (!isPlausibleConventionalSubject(s)) {
     return null;
   }
+
   return s;
 }
 
 export function buildFallbackAutonomousCommitMessage(ticket: Pick<TicketEntity, 'title'>): string {
   const t = (ticket.title ?? '').replace(/\s+/g, ' ').trim();
   const truncated = t.length > 100 ? `${t.slice(0, 97)}...` : t;
+
   return `feat(automation): ${truncated || 'prototype run'}`;
 }

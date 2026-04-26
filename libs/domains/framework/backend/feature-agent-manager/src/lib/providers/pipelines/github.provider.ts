@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import {
   Branch,
   Job,
@@ -49,6 +50,7 @@ export class GitHubProvider implements PipelineProvider {
    */
   private createApiClient(credentials: PipelineProviderCredentials) {
     const baseURL = this.getApiBaseUrl(credentials);
+
     return axios.create({
       baseURL,
       headers: {
@@ -96,6 +98,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -103,7 +106,6 @@ export class GitHubProvider implements PipelineProvider {
       // Get default branch first
       const repoResponse = await api.get<{ default_branch: string }>(`/repos/${owner}/${repo}`);
       const defaultBranch = repoResponse.data.default_branch;
-
       // Get all branches
       const branchesResponse = await api.get<Array<{ name: string; commit: { sha: string } }>>(
         `/repos/${owner}/${repo}/branches`,
@@ -137,6 +139,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -171,6 +174,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -180,6 +184,7 @@ export class GitHubProvider implements PipelineProvider {
         await api.get(`/repos/${owner}/${repo}/git/ref/heads/${ref}`);
       } catch (branchError) {
         const branchAxiosError = branchError as AxiosError;
+
         if (branchAxiosError.response?.status === 404) {
           throw new BadRequestException(`Branch '${ref}' does not exist in the repository`);
         }
@@ -201,7 +206,6 @@ export class GitHubProvider implements PipelineProvider {
         `/repos/${owner}/${repo}/actions/workflows/${workflowId}`,
       );
       const workflowName = workflowResponse.data?.name || 'Unknown Workflow';
-
       const runsResponse = await api.get<{
         workflow_runs: Array<{
           id: number;
@@ -227,6 +231,7 @@ export class GitHubProvider implements PipelineProvider {
       }
 
       const run = runsResponse.data.workflow_runs[0];
+
       return this.mapRunToPipelineRun(run, workflowId, workflowName, repositoryId);
     } catch (error) {
       // If it's already a BadRequestException (e.g., from branch validation), re-throw it
@@ -241,6 +246,7 @@ export class GitHubProvider implements PipelineProvider {
       if (axiosError.response) {
         // Safely access response.data, handling cases where it might be undefined or not an object
         const responseData = axiosError.response.data;
+
         if (responseData && typeof responseData === 'object' && !Array.isArray(responseData)) {
           const errorResponse = responseData as { message?: string; errors?: Array<{ message?: string }> };
 
@@ -254,6 +260,7 @@ export class GitHubProvider implements PipelineProvider {
         // Provide user-friendly error messages for common issues
         if (axiosError.response.status === 422) {
           const userMessage = `Workflow cannot be triggered. This usually means the workflow does not support manual triggers (workflow_dispatch). Please ensure the workflow file includes 'workflow_dispatch' in its 'on:' triggers.`;
+
           this.logger.error(`Failed to trigger workflow ${workflowId}: ${detailedMessage}`);
           throw new BadRequestException(userMessage);
         }
@@ -275,6 +282,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -293,7 +301,6 @@ export class GitHubProvider implements PipelineProvider {
         workflow_id: number;
         html_url: string;
       }>(`/repos/${owner}/${repo}/actions/runs/${runId}`);
-
       // Get workflow name
       const workflowResponse = await api.get<{ name: string }>(
         `/repos/${owner}/${repo}/actions/workflows/${response.data.workflow_id}`,
@@ -314,6 +321,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -322,13 +330,12 @@ export class GitHubProvider implements PipelineProvider {
       const jobsResponse = await api.get<{ jobs: Array<{ id: number }> }>(
         `/repos/${owner}/${repo}/actions/runs/${runId}/jobs`,
       );
-
       // Fetch logs for each job
       const logPromises = jobsResponse.data.jobs.map((job) =>
         this.getJobLogs(credentials, repositoryId, runId, job.id.toString()),
       );
-
       const logs = await Promise.all(logPromises);
+
       return logs.join('\n\n---\n\n');
     } catch (error) {
       this.logger.error(`Failed to get run logs: ${(error as AxiosError).message}`);
@@ -343,6 +350,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -384,6 +392,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -401,16 +410,19 @@ export class GitHubProvider implements PipelineProvider {
         const logResponse = await axios.get(response.headers.location, {
           responseType: 'text',
         });
+
         return logResponse.data;
       }
 
       return response.data;
     } catch (error) {
       this.logger.error(`Failed to get job logs: ${(error as AxiosError).message}`);
+
       // Return empty string if logs are not available yet
       if ((error as AxiosError).response?.status === 404) {
         return '';
       }
+
       throw new BadRequestException(`Failed to get job logs: ${(error as AxiosError).message}`);
     }
   }
@@ -422,6 +434,7 @@ export class GitHubProvider implements PipelineProvider {
     try {
       const api = this.createApiClient(credentials);
       const [owner, repo] = repositoryId.split('/');
+
       if (!owner || !repo) {
         throw new BadRequestException(`Invalid repository ID format: ${repositoryId}. Expected format: owner/repo`);
       }
@@ -443,6 +456,7 @@ export class GitHubProvider implements PipelineProvider {
       completed: 'completed',
       cancelled: 'cancelled',
     };
+
     return statusMap[status] || status;
   }
 
@@ -458,6 +472,7 @@ export class GitHubProvider implements PipelineProvider {
       neutral: 'skipped',
       timed_out: 'failure',
     };
+
     return conclusionMap[conclusion] || conclusion;
   }
 

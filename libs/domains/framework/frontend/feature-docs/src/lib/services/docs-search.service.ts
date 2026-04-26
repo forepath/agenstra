@@ -41,6 +41,7 @@ export class DocsSearchService {
     this.searchIndexCache = this.http.get<SearchIndex>('/assets/docs/index.json').pipe(
       catchError((error) => {
         console.error('Failed to load search index', error);
+
         return of(null);
       }),
       shareReplay(1),
@@ -55,6 +56,7 @@ export class DocsSearchService {
   search(query: string, index: SearchIndex): SearchResult[] {
     if (!query || query.trim().length === 0) {
       this.searchResults.set([]);
+
       return [];
     }
 
@@ -62,15 +64,14 @@ export class DocsSearchService {
       .toLowerCase()
       .split(/\s+/)
       .filter((term) => term.length > 0);
-
     const results: SearchResult[] = [];
 
     for (const entry of index.entries) {
       let score = 0;
       const highlights: string[] = [];
-
       // Search in title (highest weight)
       const titleLower = entry.title.toLowerCase();
+
       for (const term of searchTerms) {
         if (titleLower.includes(term)) {
           score += 10;
@@ -81,6 +82,7 @@ export class DocsSearchService {
       // Search in headings
       for (const heading of entry.headings) {
         const headingLower = heading.toLowerCase();
+
         for (const term of searchTerms) {
           if (headingLower.includes(term)) {
             score += 5;
@@ -91,16 +93,19 @@ export class DocsSearchService {
 
       // Search in content
       const contentLower = entry.content.toLowerCase();
+
       for (const term of searchTerms) {
         if (contentLower.includes(term)) {
           score += 1;
           const contentSnippet = this.extractSnippet(entry.content, term, 100);
+
           highlights.push(`Content: ${this.highlightTerm(contentSnippet, term)}`);
         }
       }
 
       // Search in summary
       const summaryLower = entry.summary.toLowerCase();
+
       for (const term of searchTerms) {
         if (summaryLower.includes(term)) {
           score += 3;
@@ -122,7 +127,9 @@ export class DocsSearchService {
 
     // Limit results
     const limitedResults = results.slice(0, 20);
+
     this.searchResults.set(limitedResults);
+
     return limitedResults;
   }
 
@@ -131,6 +138,7 @@ export class DocsSearchService {
    */
   private highlightTerm(text: string, term: string): string {
     const regex = new RegExp(`(${term})`, 'gi');
+
     return text.replace(regex, '<mark>$1</mark>');
   }
 
@@ -139,6 +147,7 @@ export class DocsSearchService {
    */
   private extractSnippet(content: string, term: string, maxLength: number): string {
     const index = content.toLowerCase().indexOf(term.toLowerCase());
+
     if (index === -1) {
       return content.substring(0, maxLength);
     }
@@ -150,6 +159,7 @@ export class DocsSearchService {
     if (start > 0) {
       snippet = '...' + snippet;
     }
+
     if (end < content.length) {
       snippet = snippet + '...';
     }

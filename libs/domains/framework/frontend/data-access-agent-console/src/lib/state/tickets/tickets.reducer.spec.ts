@@ -1,4 +1,9 @@
 import {
+  patchTicketAutomationSuccess,
+  ticketBoardAutomationUpsert,
+} from '../ticket-automation/ticket-automation.actions';
+
+import {
   addTicketComment,
   addTicketCommentFailure,
   addTicketCommentSuccess,
@@ -25,10 +30,6 @@ import {
   updateTicketFailure,
   updateTicketSuccess,
 } from './tickets.actions';
-import {
-  patchTicketAutomationSuccess,
-  ticketBoardAutomationUpsert,
-} from '../ticket-automation/ticket-automation.actions';
 import { initialTicketsState, ticketsReducer, type TicketsState } from './tickets.reducer';
 import {
   EMPTY_TICKET_TASKS,
@@ -51,14 +52,12 @@ describe('ticketsReducer', () => {
     updatedAt: '2024-01-01T00:00:00Z',
     tasks: EMPTY_TICKET_TASKS,
   };
-
   const mockComment: TicketCommentResponseDto = {
     id: 'comment-1',
     ticketId: 'ticket-1',
     body: 'Hi',
     createdAt: '2024-01-02T00:00:00Z',
   };
-
   const mockActivity: TicketActivityResponseDto = {
     id: 'act-1',
     ticketId: 'ticket-1',
@@ -70,6 +69,7 @@ describe('ticketsReducer', () => {
 
   it('should return initial state for unknown action', () => {
     const state = ticketsReducer(undefined, { type: 'UNKNOWN' } as never);
+
     expect(state).toEqual(initialTicketsState);
   });
 
@@ -77,6 +77,7 @@ describe('ticketsReducer', () => {
     it('should set loadingList and clear error', () => {
       const prev: TicketsState = { ...initialTicketsState, error: 'oops' };
       const next = ticketsReducer(prev, loadTickets({ params: { clientId: 'client-1', parentId: null } }));
+
       expect(next.loadingList).toBe(true);
       expect(next.error).toBeNull();
     });
@@ -86,6 +87,7 @@ describe('ticketsReducer', () => {
     it('should store tickets and clear loading', () => {
       const prev: TicketsState = { ...initialTicketsState, loadingList: true };
       const next = ticketsReducer(prev, loadTicketsSuccess({ tickets: [mockTicket] }));
+
       expect(next.loadingList).toBe(false);
       expect(next.list).toEqual([{ ...mockTicket, subtaskCounts: { open: 0, done: 0 } }]);
     });
@@ -95,6 +97,7 @@ describe('ticketsReducer', () => {
     it('should set error and stop loading', () => {
       const prev: TicketsState = { ...initialTicketsState, loadingList: true };
       const next = ticketsReducer(prev, loadTicketsFailure({ error: 'failed' }));
+
       expect(next.loadingList).toBe(false);
       expect(next.error).toBe('failed');
     });
@@ -109,6 +112,7 @@ describe('ticketsReducer', () => {
         error: 'x',
       };
       const next = ticketsReducer(prev, openTicketDetail({ id: 'ticket-2' }));
+
       expect(next.selectedTicketId).toBe('ticket-2');
       expect(next.loadingDetail).toBe(true);
       expect(next.detail).toBeNull();
@@ -129,6 +133,7 @@ describe('ticketsReducer', () => {
           activity: [],
         }),
       );
+
       expect(next.loadingDetail).toBe(false);
       expect(next.detail).toEqual({ ...mockTicket, subtaskCounts: { open: 0, done: 0 } });
       expect(next.comments).toEqual([mockComment]);
@@ -143,6 +148,7 @@ describe('ticketsReducer', () => {
         loadingDetail: true,
       };
       const next = ticketsReducer(prev, loadTicketDetailFailure({ error: 'nf' }));
+
       expect(next.loadingDetail).toBe(false);
       expect(next.error).toBe('nf');
       expect(next.selectedTicketId).toBeNull();
@@ -154,6 +160,7 @@ describe('ticketsReducer', () => {
       const prev: TicketsState = { ...initialTicketsState, saving: true, list: [mockTicket] };
       const created: TicketResponseDto = { ...mockTicket, id: 'ticket-2', title: 'New' };
       const next = ticketsReducer(prev, createTicketSuccess({ ticket: created }));
+
       expect(next.saving).toBe(false);
       expect(next.list.map((t) => t.id)).toEqual(['ticket-1', 'ticket-2']);
     });
@@ -173,6 +180,7 @@ describe('ticketsReducer', () => {
         parentId: mockTicket.id,
       };
       const next = ticketsReducer(prev, createTicketSuccess({ ticket: subtask }));
+
       expect(next.detail?.children?.map((c) => c.id)).toEqual(['sub-1']);
     });
 
@@ -192,6 +200,7 @@ describe('ticketsReducer', () => {
         parentId: otherParent.id,
       };
       const next = ticketsReducer(prev, createTicketSuccess({ ticket: subtask }));
+
       expect(next.detail?.children).toBeUndefined();
     });
 
@@ -207,6 +216,7 @@ describe('ticketsReducer', () => {
       const c1: TicketResponseDto = { ...mockTicket, id: 'c1', title: 'Proposal', parentId: 'root-1' };
       const c2: TicketResponseDto = { ...mockTicket, id: 'c2', title: 'Specifications', parentId: 'root-1' };
       const next = ticketsReducer(prev, createTicketSuccess({ ticket: parent, createdChildTickets: [c1, c2] }));
+
       expect(next.list.map((t) => t.id).sort()).toEqual(['c1', 'c2', 'root-1']);
       const openParent: TicketsState = {
         ...initialTicketsState,
@@ -216,6 +226,7 @@ describe('ticketsReducer', () => {
         selectedTicketId: parent.id,
       };
       const next2 = ticketsReducer(openParent, createTicketSuccess({ ticket: parent, createdChildTickets: [c1, c2] }));
+
       expect(next2.detail?.children?.map((c) => c.id).sort()).toEqual(['c1', 'c2']);
     });
   });
@@ -224,6 +235,7 @@ describe('ticketsReducer', () => {
     it('should set saving false and error', () => {
       const prev: TicketsState = { ...initialTicketsState, saving: true };
       const next = ticketsReducer(prev, createTicketFailure({ error: 'bad' }));
+
       expect(next.saving).toBe(false);
       expect(next.error).toBe('bad');
     });
@@ -241,6 +253,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, updateTicketSuccess({ ticket: updated, activity: [mockActivity] }));
+
       expect(next.saving).toBe(false);
       expect(next.list[0].status).toBe('done');
       expect(next.detail?.status).toBe('done');
@@ -258,6 +271,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, updateTicketSuccess({ ticket: updated, activity: [mockActivity] }));
+
       expect(next.activity).toEqual([]);
     });
 
@@ -279,6 +293,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, updateTicketSuccess({ ticket: patchResponse, activity: [] }));
+
       expect(next.detail?.children).toEqual([{ ...child, subtaskCounts: { open: 0, done: 0 } }]);
       expect(next.detail?.status).toBe('done');
     });
@@ -288,6 +303,7 @@ describe('ticketsReducer', () => {
     it('should clear saving and set error', () => {
       const prev: TicketsState = { ...initialTicketsState, saving: true };
       const next = ticketsReducer(prev, updateTicketFailure({ error: 'nope' }));
+
       expect(next.saving).toBe(false);
       expect(next.error).toBe('nope');
     });
@@ -303,6 +319,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, addTicketCommentSuccess({ comment: mockComment, activity: [mockActivity] }));
+
       expect(next.saving).toBe(false);
       expect(next.comments).toEqual([mockComment]);
       expect(next.activity).toEqual([mockActivity]);
@@ -317,6 +334,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, addTicketCommentSuccess({ comment: mockComment, activity: [mockActivity] }));
+
       expect(next.saving).toBe(false);
       expect(next.comments).toEqual([mockComment]);
       expect(next.activity).toEqual([mockActivity]);
@@ -327,6 +345,7 @@ describe('ticketsReducer', () => {
     it('should set error', () => {
       const prev: TicketsState = { ...initialTicketsState, saving: true };
       const next = ticketsReducer(prev, addTicketCommentFailure({ error: 'fail' }));
+
       expect(next.saving).toBe(false);
       expect(next.error).toBe('fail');
     });
@@ -349,6 +368,7 @@ describe('ticketsReducer', () => {
         activity: [mockActivity],
       };
       const next = ticketsReducer(prev, prependTicketDetailActivity({ activity: bodyGenActivity }));
+
       expect(next.activity).toEqual([bodyGenActivity, mockActivity]);
     });
 
@@ -359,6 +379,7 @@ describe('ticketsReducer', () => {
         activity: [mockActivity],
       };
       const next = ticketsReducer(prev, prependTicketDetailActivity({ activity: bodyGenActivity }));
+
       expect(next.activity).toEqual([mockActivity]);
     });
 
@@ -372,6 +393,7 @@ describe('ticketsReducer', () => {
         prev,
         prependTicketDetailActivity({ activity: { ...mockActivity, id: mockActivity.id } }),
       );
+
       expect(next.activity).toEqual([mockActivity]);
     });
   });
@@ -394,6 +416,7 @@ describe('ticketsReducer', () => {
         activity: [mockActivity],
       };
       const next = ticketsReducer(prev, replaceTicketDetailActivity({ ticketId: mockTicket.id, activity: fresh }));
+
       expect(next.activity).toEqual(fresh);
     });
 
@@ -404,6 +427,7 @@ describe('ticketsReducer', () => {
         activity: [mockActivity],
       };
       const next = ticketsReducer(prev, replaceTicketDetailActivity({ ticketId: mockTicket.id, activity: [] }));
+
       expect(next.activity).toEqual([mockActivity]);
     });
   });
@@ -418,6 +442,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, closeTicketDetail());
+
       expect(next.selectedTicketId).toBeNull();
       expect(next.detail).toBeNull();
       expect(next.comments).toEqual([]);
@@ -428,6 +453,7 @@ describe('ticketsReducer', () => {
   describe('createTicket', () => {
     it('should set saving', () => {
       const next = ticketsReducer(initialTicketsState, createTicket({ dto: { title: 'x', clientId: 'c' } }));
+
       expect(next.saving).toBe(true);
       expect(next.error).toBeNull();
     });
@@ -436,6 +462,7 @@ describe('ticketsReducer', () => {
   describe('updateTicket', () => {
     it('should set saving', () => {
       const next = ticketsReducer(initialTicketsState, updateTicket({ id: '1', dto: { status: 'done' } }));
+
       expect(next.saving).toBe(true);
     });
   });
@@ -443,6 +470,7 @@ describe('ticketsReducer', () => {
   describe('addTicketComment', () => {
     it('should set saving', () => {
       const next = ticketsReducer(initialTicketsState, addTicketComment({ ticketId: '1', body: 'a' }));
+
       expect(next.saving).toBe(true);
     });
   });
@@ -474,6 +502,7 @@ describe('ticketsReducer', () => {
         selectedTicketId: mockTicket.id,
       };
       const next = ticketsReducer(prev, patchTicketAutomationSuccess({ config: automationConfig }));
+
       expect(next.list[0].automationEligible).toBe(true);
       expect(next.detail?.automationEligible).toBe(true);
     });
@@ -491,6 +520,7 @@ describe('ticketsReducer', () => {
           config: { ...automationConfig, eligible: true },
         }),
       );
+
       expect(next.list[0].automationEligible).toBe(true);
       expect(next.detail?.automationEligible).toBe(true);
     });
@@ -506,6 +536,7 @@ describe('ticketsReducer', () => {
         selectedTicketId: mockTicket.id,
       };
       const next = ticketsReducer(prev, ticketBoardTicketUpsert({ ticket: updated }));
+
       expect(next.list[0].title).toBe('Renamed');
       expect(next.detail?.title).toBe('Renamed');
     });
@@ -520,6 +551,7 @@ describe('ticketsReducer', () => {
         selectedTicketId: mockTicket.id,
       };
       const next = ticketsReducer(prev, ticketBoardTicketRemoved({ id: mockTicket.id, clientId: mockTicket.clientId }));
+
       expect(next.list).toEqual([]);
       expect(next.detail).toBeNull();
       expect(next.selectedTicketId).toBeNull();
@@ -534,6 +566,7 @@ describe('ticketsReducer', () => {
         selectedTicketId: mockTicket.id,
       };
       const next = ticketsReducer(prev, ticketBoardTicketRemoved({ id: mockTicket.id, clientId: mockTicket.clientId }));
+
       expect(next.list).toHaveLength(1);
       expect(next.list[0]).toMatchObject(migrated);
       expect(next.detail).toMatchObject(migrated);
@@ -549,6 +582,7 @@ describe('ticketsReducer', () => {
         comments: [],
       };
       const next = ticketsReducer(prev, ticketBoardCommentCreated({ comment: mockComment }));
+
       expect(next.comments).toEqual([mockComment]);
     });
   });
@@ -561,6 +595,7 @@ describe('ticketsReducer', () => {
         activity: [],
       };
       const next = ticketsReducer(prev, ticketBoardActivityCreated({ activity: mockActivity }));
+
       expect(next.activity).toEqual([mockActivity]);
     });
   });
@@ -583,6 +618,7 @@ describe('ticketsReducer', () => {
         initialTicketsState,
         migrateTicket({ id: 'ticket-child', targetClientId: 'client-2' }),
       );
+
       expect(next.saving).toBe(true);
       expect(next.error).toBeNull();
     });
@@ -603,6 +639,7 @@ describe('ticketsReducer', () => {
           requestedTicketId: child.id,
         }),
       );
+
       expect(next.saving).toBe(false);
       expect(next.list.map((t) => t.id).sort()).toEqual([mockTicket.id, child.id].sort());
       expect(next.list.every((t) => t.clientId === 'client-2')).toBe(true);
@@ -626,6 +663,7 @@ describe('ticketsReducer', () => {
           requestedTicketId: child.id,
         }),
       );
+
       expect(next.detail?.id).toBe(child.id);
       expect(next.detail?.clientId).toBe('client-2');
     });
@@ -633,6 +671,7 @@ describe('ticketsReducer', () => {
     it('clears saving on migrateTicketFailure', () => {
       const prev = { ...initialTicketsState, saving: true };
       const next = ticketsReducer(prev, migrateTicketFailure({ error: 'x' }));
+
       expect(next.saving).toBe(false);
       expect(next.error).toBe('x');
     });

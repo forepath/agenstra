@@ -40,7 +40,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         error: 'Previous error',
       };
-
       const newState = authenticationReducer(state, login({}));
 
       expect(newState.loading).toBe(true);
@@ -51,7 +50,6 @@ describe('authenticationReducer', () => {
       const state: AuthenticationState = {
         ...initialAuthenticationState,
       };
-
       const newState = authenticationReducer(state, login({ apiKey: 'test-key' }));
 
       expect(newState.loading).toBe(true);
@@ -65,7 +63,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(state, loginSuccess({ authenticationType: 'api-key' }));
 
       expect(newState.isAuthenticated).toBe(true);
@@ -79,7 +76,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(state, loginSuccess({ authenticationType: 'keycloak' }));
 
       expect(newState.isAuthenticated).toBe(true);
@@ -92,7 +88,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(
         state,
         loginSuccess({
@@ -111,7 +106,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(state, loginFailure({ error: 'Login failed' }));
 
       expect(newState.error).toBe('Login failed');
@@ -128,7 +122,6 @@ describe('authenticationReducer', () => {
         authenticationType: 'api-key',
         error: 'Previous error',
       };
-
       const newState = authenticationReducer(state, logout());
 
       expect(newState.loading).toBe(true);
@@ -144,7 +137,6 @@ describe('authenticationReducer', () => {
         authenticationType: 'api-key',
         loading: true,
       };
-
       const newState = authenticationReducer(state, logoutSuccess());
 
       expect(newState.isAuthenticated).toBe(false);
@@ -162,7 +154,6 @@ describe('authenticationReducer', () => {
         authenticationType: 'keycloak',
         loading: true,
       };
-
       const newState = authenticationReducer(state, logoutFailure({ error: 'Logout failed' }));
 
       expect(newState.error).toBe('Logout failed');
@@ -178,7 +169,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         error: 'Previous error',
       };
-
       const newState = authenticationReducer(state, checkAuthentication());
 
       expect(newState.loading).toBe(true);
@@ -192,7 +182,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(
         state,
         checkAuthenticationSuccess({ isAuthenticated: true, authenticationType: 'api-key' }),
@@ -211,7 +200,6 @@ describe('authenticationReducer', () => {
         authenticationType: 'api-key',
         loading: true,
       };
-
       const newState = authenticationReducer(state, checkAuthenticationSuccess({ isAuthenticated: false }));
 
       expect(newState.isAuthenticated).toBe(false);
@@ -226,7 +214,6 @@ describe('authenticationReducer', () => {
         authenticationType: 'keycloak',
         loading: true,
       };
-
       const newState = authenticationReducer(state, checkAuthenticationSuccess({ isAuthenticated: true }));
 
       expect(newState.isAuthenticated).toBe(true);
@@ -239,7 +226,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(
         state,
         checkAuthenticationSuccess({ isAuthenticated: true, authenticationType: 'keycloak' }),
@@ -255,7 +241,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(
         state,
         checkAuthenticationSuccess({
@@ -275,7 +260,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         loading: true,
       };
-
       const newState = authenticationReducer(state, checkAuthenticationFailure({ error: 'Check failed' }));
 
       expect(newState.error).toBe('Check failed');
@@ -289,7 +273,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         error: 'Previous error',
       };
-
       const newState = authenticationReducer(state, clearError());
 
       expect(newState.error).toBeNull();
@@ -302,7 +285,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         successMessage: 'Registration successful',
       };
-
       const newState = authenticationReducer(state, clearSuccessMessage());
 
       expect(newState.successMessage).toBeNull();
@@ -316,7 +298,6 @@ describe('authenticationReducer', () => {
         users: [{ id: 'u1', email: 'a@b.com', role: 'user', createdAt: '', updatedAt: '' }],
         usersError: 'Previous error',
       };
-
       const newState = authenticationReducer(state, loadUsers({}));
 
       expect(newState.users).toEqual([]);
@@ -333,7 +314,6 @@ describe('authenticationReducer', () => {
         users: [],
         usersLoading: true,
       };
-
       const newState = authenticationReducer(state, loadUsersBatch({ offset: 10, accumulatedUsers }));
 
       expect(newState.users).toEqual(accumulatedUsers);
@@ -350,7 +330,6 @@ describe('authenticationReducer', () => {
         users: [],
         usersLoading: true,
       };
-
       const newState = authenticationReducer(state, loadUsersSuccess({ users }));
 
       expect(newState.users).toEqual(users);
@@ -365,7 +344,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         usersLoading: true,
       };
-
       const newState = authenticationReducer(state, loadUsersFailure({ error: 'Load failed' }));
 
       expect(newState.usersError).toBe('Load failed');
@@ -379,7 +357,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         usersError: 'Previous error',
       };
-
       const newState = authenticationReducer(state, lockUser({ id: 'u1' }));
 
       expect(newState.lockingUser).toBe(true);
@@ -402,7 +379,6 @@ describe('authenticationReducer', () => {
         createdAt: '',
         updatedAt: '',
       };
-
       const newState = authenticationReducer(state, lockUserSuccess({ user: updatedUser }));
 
       expect(newState.users).toEqual([updatedUser]);
@@ -417,7 +393,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         lockingUser: true,
       };
-
       const newState = authenticationReducer(state, lockUserFailure({ error: 'Lock failed' }));
 
       expect(newState.lockingUser).toBe(false);
@@ -431,7 +406,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         usersError: 'Previous error',
       };
-
       const newState = authenticationReducer(state, unlockUser({ id: 'u1' }));
 
       expect(newState.unlockingUser).toBe(true);
@@ -463,7 +437,6 @@ describe('authenticationReducer', () => {
         createdAt: '',
         updatedAt: '',
       };
-
       const newState = authenticationReducer(state, unlockUserSuccess({ user: updatedUser }));
 
       expect(newState.users).toEqual([updatedUser]);
@@ -478,7 +451,6 @@ describe('authenticationReducer', () => {
         ...initialAuthenticationState,
         unlockingUser: true,
       };
-
       const newState = authenticationReducer(state, unlockUserFailure({ error: 'Unlock failed' }));
 
       expect(newState.unlockingUser).toBe(false);

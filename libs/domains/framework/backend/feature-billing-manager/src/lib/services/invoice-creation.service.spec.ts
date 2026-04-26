@@ -1,5 +1,5 @@
-import { InvoiceCreationService } from './invoice-creation.service';
 import { BillingScheduleService } from './billing-schedule.service';
+import { InvoiceCreationService } from './invoice-creation.service';
 
 describe('InvoiceCreationService', () => {
   it('creates invoice for subscription', async () => {
@@ -46,8 +46,8 @@ describe('InvoiceCreationService', () => {
       invoiceRefsRepository,
       openPositionsRepository,
     );
-
     const result = await service.createInvoice('sub-1', 'user-1', 'Test');
+
     expect(invoiceNinjaService.createInvoiceForSubscription).toHaveBeenCalled();
     expect(result).toEqual({
       invoiceId: 'inv-1',
@@ -59,7 +59,6 @@ describe('InvoiceCreationService', () => {
   it('calculates partial base amount since last invoice for manual billing', async () => {
     const lastInvoiceAt = new Date('2024-01-01T00:00:00Z');
     const billUntil = new Date('2024-01-02T12:00:00Z'); // 1.5 days
-
     const subscriptionsRepository = {
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'sub-1',
@@ -112,7 +111,6 @@ describe('InvoiceCreationService', () => {
   it('does not bill beyond subscription end when cancelEffectiveAt is in the past', async () => {
     const lastInvoiceAt = new Date('2024-01-01T00:00:00Z');
     const billUntil = new Date('2024-01-20T00:00:00Z');
-
     const subscriptionsRepository = {
       findByIdOrThrow: jest.fn().mockResolvedValue({
         id: 'sub-1',
@@ -314,7 +312,6 @@ describe('InvoiceCreationService', () => {
       const billingScheduleService = new BillingScheduleService();
       const invoiceRefsRepository = { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any;
       const openPositionsRepository = { markBilled: jest.fn().mockResolvedValue({}) } as any;
-
       const service = new InvoiceCreationService(
         subscriptionsRepository,
         plansRepository,
@@ -325,7 +322,6 @@ describe('InvoiceCreationService', () => {
         invoiceRefsRepository,
         openPositionsRepository,
       );
-
       const result = await service.createAccumulatedInvoice('user-1', positions);
 
       expect(result).toEqual({ invoiceRefId: 'ref-1' });
@@ -354,7 +350,6 @@ describe('InvoiceCreationService', () => {
         {} as any,
         openPositionsRepository,
       );
-
       const result = await service.createAccumulatedInvoice('user-1', []);
 
       expect(result).toBeUndefined();
@@ -380,7 +375,6 @@ describe('InvoiceCreationService', () => {
       const billingScheduleService = new BillingScheduleService();
       const invoiceRefsRepository = { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any;
       const openPositionsRepository = { markBilled: jest.fn() } as any;
-
       const service = new InvoiceCreationService(
         subscriptionsRepository,
         plansRepository,
@@ -391,6 +385,7 @@ describe('InvoiceCreationService', () => {
         invoiceRefsRepository,
         openPositionsRepository,
       );
+
       (service as any).calculateBaseAmountSinceLastBilling = jest.fn().mockResolvedValue(0.005);
 
       const result = await service.createAccumulatedInvoice('user-1', positions);
@@ -416,7 +411,6 @@ describe('InvoiceCreationService', () => {
         {} as any,
         openPositionsRepository,
       );
-
       const result = await service.getUnbilledTotalForUser('user-1');
 
       expect(result).toBe(0);

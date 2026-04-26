@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
+
 import type {
   CreateFileDto,
   FileContentDto,
@@ -58,6 +59,7 @@ export class FilesService {
     const encodedPath = this.encodePath(filePath);
     const url = `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`;
     const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
+
     return this.http.get<FileContentDto>(url, httpParams ? { params: httpParams } : {});
   }
 
@@ -78,6 +80,7 @@ export class FilesService {
   ): Observable<void> {
     const encodedPath = this.encodePath(filePath);
     const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
+
     return this.http.put<void>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
       writeFileDto,
@@ -94,9 +97,11 @@ export class FilesService {
    */
   listDirectory(clientId: string, agentId: string, params?: ListDirectoryParams): Observable<FileNodeDto[]> {
     let httpParams = new HttpParams();
+
     if (params?.path !== undefined) {
       httpParams = httpParams.set('path', params.path);
     }
+
     if (params?.context === 'config') {
       httpParams = httpParams.set('context', 'config');
     }
@@ -123,6 +128,7 @@ export class FilesService {
   ): Observable<void> {
     const encodedPath = this.encodePath(filePath);
     const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
+
     return this.http.post<void>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
       createFileDto,
@@ -145,6 +151,7 @@ export class FilesService {
   ): Observable<void> {
     const encodedPath = this.encodePath(filePath);
     const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
+
     return this.http.delete<void>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
       httpParams ? { params: httpParams } : {},
@@ -168,6 +175,7 @@ export class FilesService {
   ): Observable<void> {
     const encodedPath = this.encodePath(sourcePath);
     const httpParams = context === 'config' ? new HttpParams().set('context', 'config') : undefined;
+
     return this.http.patch<void>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${encodedPath}`,
       moveFileDto,

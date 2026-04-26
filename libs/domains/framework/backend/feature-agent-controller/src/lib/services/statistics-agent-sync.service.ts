@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { AuthenticationType } from '@forepath/identity/backend';
-import { ClientAgentProxyService } from './client-agent-proxy.service';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
+
+import { ClientAgentProxyService } from './client-agent-proxy.service';
 
 const AGENTS_BATCH_SIZE = 50;
 
@@ -26,6 +28,7 @@ export class StatisticsAgentSyncService {
       this.logger.log('🔄 Syncing agents to statistics mirror table...');
       const clients = await this.clientsRepository.findAllForStatisticsSync();
       let totalAgents = 0;
+
       for (const client of clients) {
         try {
           const statsClient = await this.statisticsRepository.upsertStatisticsClient(client.id, {
@@ -34,6 +37,7 @@ export class StatisticsAgentSyncService {
             authenticationType: client.authenticationType as AuthenticationType,
           });
           const count = await this.syncAgentsForClient(client.id, statsClient.id);
+
           totalAgents += count;
         } catch (error) {
           this.logger.warn(
@@ -41,6 +45,7 @@ export class StatisticsAgentSyncService {
           );
         }
       }
+
       this.logger.log(
         `✅ Statistics agent sync completed: ${totalAgents} agent(s) synced across ${clients.length} client(s)`,
       );
@@ -54,8 +59,10 @@ export class StatisticsAgentSyncService {
     let offset = 0;
     let total = 0;
     let batch: Awaited<ReturnType<ClientAgentProxyService['getClientAgents']>>;
+
     do {
       batch = await this.clientAgentProxyService.getClientAgents(clientId, AGENTS_BATCH_SIZE, offset);
+
       for (const agent of batch) {
         await this.statisticsRepository.upsertStatisticsAgent(agent.id, statisticsClientId, {
           agentType: agent.agentType ?? 'cursor',
@@ -65,8 +72,10 @@ export class StatisticsAgentSyncService {
         });
         total++;
       }
+
       offset += AGENTS_BATCH_SIZE;
     } while (batch.length === AGENTS_BATCH_SIZE);
+
     return total;
   }
 }

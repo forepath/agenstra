@@ -70,6 +70,7 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
       // Decode any HTML entities that might be present
       if (isPlatformBrowser(this.platformId)) {
         const tempDiv = this.document.createElement('div');
+
         tempDiv.innerHTML = code;
         code = tempDiv.textContent || tempDiv.innerText || code;
       } else {
@@ -81,6 +82,7 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
           .replace(/&quot;/g, '"')
           .replace(/&#39;/g, "'");
       }
+
       code = code.trim();
 
       // Validate that code is not empty
@@ -98,6 +100,7 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
       // Render diagram using mermaid.render()
       // Note: mermaid.render() expects the code without the ```mermaid wrapper
       const { svg } = await mermaid.render(this.diagramId, code);
+
       if (this.mermaidContainer) {
         this.mermaidContainer.nativeElement.innerHTML = svg;
         this.isRendered = true;
@@ -106,6 +109,7 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
     } catch (error) {
       console.error('Error rendering Mermaid diagram:', error);
       console.error('Diagram code that failed:', this.diagramCode());
+
       if (this.mermaidContainer) {
         this.mermaidContainer.nativeElement.innerHTML = `
           <div class="alert alert-warning">
@@ -137,6 +141,7 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
     this.mermaidLoadPromise = (async () => {
       try {
         const mermaidModule = await import('mermaid');
+
         this.mermaidInstance = mermaidModule.default;
 
         // Initialize Mermaid with proper configuration

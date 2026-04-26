@@ -1,3 +1,5 @@
+import type { CustomerProfileResponse } from '../../types/billing.types';
+
 import {
   clearCustomerProfile,
   loadCustomerProfile,
@@ -12,7 +14,6 @@ import {
   initialCustomerProfileState,
   type CustomerProfileState,
 } from './customer-profile.reducer';
-import type { CustomerProfileResponse } from '../../types/billing.types';
 
 describe('customerProfileReducer', () => {
   const mockProfile: CustomerProfileResponse = {
@@ -28,6 +29,7 @@ describe('customerProfileReducer', () => {
   describe('initial state', () => {
     it('should return the initial state', () => {
       const action = { type: 'UNKNOWN' };
+
       expect(customerProfileReducer(undefined, action as never)).toEqual(initialCustomerProfileState);
     });
   });
@@ -36,6 +38,7 @@ describe('customerProfileReducer', () => {
     it('should set loading to true and clear error', () => {
       const state: CustomerProfileState = { ...initialCustomerProfileState, error: 'Previous error' };
       const newState = customerProfileReducer(state, loadCustomerProfile());
+
       expect(newState.loading).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -45,6 +48,7 @@ describe('customerProfileReducer', () => {
     it('should set profile and set loading to false', () => {
       const state: CustomerProfileState = { ...initialCustomerProfileState, loading: true };
       const newState = customerProfileReducer(state, loadCustomerProfileSuccess({ profile: mockProfile }));
+
       expect(newState.profile).toEqual(mockProfile);
       expect(newState.loading).toBe(false);
       expect(newState.error).toBeNull();
@@ -55,6 +59,7 @@ describe('customerProfileReducer', () => {
     it('should set error and set loading to false', () => {
       const state: CustomerProfileState = { ...initialCustomerProfileState, loading: true };
       const newState = customerProfileReducer(state, loadCustomerProfileFailure({ error: 'Load failed' }));
+
       expect(newState.error).toBe('Load failed');
       expect(newState.loading).toBe(false);
     });
@@ -64,6 +69,7 @@ describe('customerProfileReducer', () => {
     it('should set updating to true and clear error', () => {
       const state: CustomerProfileState = { ...initialCustomerProfileState, error: 'Previous error' };
       const newState = customerProfileReducer(state, updateCustomerProfile({ profile: {} }));
+
       expect(newState.updating).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -78,6 +84,7 @@ describe('customerProfileReducer', () => {
       };
       const updated = { ...mockProfile, firstName: 'Jane' };
       const newState = customerProfileReducer(state, updateCustomerProfileSuccess({ profile: updated }));
+
       expect(newState.profile).toEqual(updated);
       expect(newState.updating).toBe(false);
       expect(newState.error).toBeNull();
@@ -88,6 +95,7 @@ describe('customerProfileReducer', () => {
     it('should set error and set updating to false', () => {
       const state: CustomerProfileState = { ...initialCustomerProfileState, updating: true };
       const newState = customerProfileReducer(state, updateCustomerProfileFailure({ error: 'Update failed' }));
+
       expect(newState.error).toBe('Update failed');
       expect(newState.updating).toBe(false);
     });
@@ -100,6 +108,7 @@ describe('customerProfileReducer', () => {
         profile: mockProfile,
       };
       const newState = customerProfileReducer(state, clearCustomerProfile());
+
       expect(newState).toEqual(initialCustomerProfileState);
     });
   });

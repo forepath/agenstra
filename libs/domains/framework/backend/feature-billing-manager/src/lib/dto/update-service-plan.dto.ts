@@ -13,7 +13,9 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+
 import { BillingIntervalType } from '../entities/service-plan.entity';
+
 import { ServicePlanOrderingHighlightDto } from './service-plan-ordering-highlight.dto';
 
 export class UpdateServicePlanDto {

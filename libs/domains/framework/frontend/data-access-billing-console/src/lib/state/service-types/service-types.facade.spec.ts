@@ -1,6 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
+import type {
+  CreateServiceTypeDto,
+  ListParams,
+  ServiceTypeResponse,
+  UpdateServiceTypeDto,
+} from '../../types/billing.types';
+
 import {
   clearSelectedServiceType,
   createServiceType,
@@ -11,17 +19,10 @@ import {
   updateServiceType,
 } from './service-types.actions';
 import { ServiceTypesFacade } from './service-types.facade';
-import type {
-  CreateServiceTypeDto,
-  ListParams,
-  ServiceTypeResponse,
-  UpdateServiceTypeDto,
-} from '../../types/billing.types';
 
 describe('ServiceTypesFacade', () => {
   let facade: ServiceTypesFacade;
   let store: jest.Mocked<Store>;
-
   const mockServiceType: ServiceTypeResponse = {
     id: 'st-1',
     key: 'cursor',
@@ -62,6 +63,7 @@ describe('ServiceTypesFacade', () => {
 
     it('should return provider details observable', (done) => {
       const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: {} }];
+
       store.select.mockReturnValue(of(providerDetails));
       facade.getProviderDetails$().subscribe((result) => {
         expect(result).toEqual(providerDetails);
@@ -78,6 +80,7 @@ describe('ServiceTypesFacade', () => {
 
     it('should dispatch loadServiceTypes', () => {
       const params: ListParams = { limit: 10 };
+
       facade.loadServiceTypes(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadServiceTypes({ params }));
     });
@@ -89,12 +92,14 @@ describe('ServiceTypesFacade', () => {
 
     it('should dispatch createServiceType', () => {
       const dto: CreateServiceTypeDto = { key: 'new', name: 'New', provider: 'p' };
+
       facade.createServiceType(dto);
       expect(store.dispatch).toHaveBeenCalledWith(createServiceType({ serviceType: dto }));
     });
 
     it('should dispatch updateServiceType', () => {
       const dto: UpdateServiceTypeDto = { name: 'Updated' };
+
       facade.updateServiceType('st-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(updateServiceType({ id: 'st-1', serviceType: dto }));
     });

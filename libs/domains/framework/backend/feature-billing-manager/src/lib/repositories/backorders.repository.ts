@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { BackorderEntity, BackorderStatus } from '../entities/backorder.entity';
 
 @Injectable()
@@ -12,9 +13,11 @@ export class BackordersRepository {
 
   async findByIdOrThrow(id: string): Promise<BackorderEntity> {
     const entity = await this.repository.findOne({ where: { id } });
+
     if (!entity) {
       throw new NotFoundException(`Backorder with ID ${id} not found`);
     }
+
     return entity;
   }
 
@@ -38,12 +41,15 @@ export class BackordersRepository {
 
   async create(dto: Partial<BackorderEntity>): Promise<BackorderEntity> {
     const entity = this.repository.create(dto);
+
     return await this.repository.save(entity);
   }
 
   async update(id: string, dto: Partial<BackorderEntity>): Promise<BackorderEntity> {
     const entity = await this.findByIdOrThrow(id);
+
     Object.assign(entity, dto);
+
     return await this.repository.save(entity);
   }
 }

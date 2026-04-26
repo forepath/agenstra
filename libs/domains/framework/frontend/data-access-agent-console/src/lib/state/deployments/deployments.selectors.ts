@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { DeploymentsState } from './deployments.reducer';
 
 export const selectDeploymentsState = createFeatureSelector<DeploymentsState>('deployments');

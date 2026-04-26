@@ -1,7 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, map, mergeMap, of, switchMap } from 'rxjs';
+
 import { FilesService } from '../../services/files.service';
+
 import {
   createFileOrDirectory,
   createFileOrDirectoryFailure,
@@ -30,12 +32,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -45,6 +50,7 @@ export const readFile$ = createEffect(
       ofType(readFile),
       switchMap(({ clientId, agentId, filePath, context }) => {
         const c = context ?? 'app';
+
         return filesService.readFile(clientId, agentId, filePath, c).pipe(
           map((content) => readFileSuccess({ clientId, agentId, filePath, content, context: c })),
           catchError((error) =>
@@ -63,6 +69,7 @@ export const writeFile$ = createEffect(
       ofType(writeFile),
       exhaustMap(({ clientId, agentId, filePath, writeFileDto, context }) => {
         const c = context ?? 'app';
+
         return filesService.writeFile(clientId, agentId, filePath, writeFileDto, c).pipe(
           map(() => writeFileSuccess({ clientId, agentId, filePath, context: c })),
           catchError((error) =>
@@ -82,6 +89,7 @@ export const listDirectory$ = createEffect(
       mergeMap(({ clientId, agentId, params }) => {
         const directoryPath = params?.path || '.';
         const c = params?.context ?? 'app';
+
         return filesService.listDirectory(clientId, agentId, params).pipe(
           map((files) => listDirectorySuccess({ clientId, agentId, directoryPath, files, context: c })),
           catchError((error) =>
@@ -108,6 +116,7 @@ export const createFileOrDirectory$ = createEffect(
       ofType(createFileOrDirectory),
       exhaustMap(({ clientId, agentId, filePath, createFileDto, context }) => {
         const c = context ?? 'app';
+
         return filesService.createFileOrDirectory(clientId, agentId, filePath, createFileDto, c).pipe(
           map(() =>
             createFileOrDirectorySuccess({
@@ -134,6 +143,7 @@ export const deleteFileOrDirectory$ = createEffect(
       ofType(deleteFileOrDirectory),
       exhaustMap(({ clientId, agentId, filePath, context }) => {
         const c = context ?? 'app';
+
         return filesService.deleteFileOrDirectory(clientId, agentId, filePath, c).pipe(
           map(() => deleteFileOrDirectorySuccess({ clientId, agentId, filePath, context: c })),
           catchError((error) =>
@@ -152,6 +162,7 @@ export const moveFileOrDirectory$ = createEffect(
       ofType(moveFileOrDirectory),
       exhaustMap(({ clientId, agentId, sourcePath, moveFileDto, context }) => {
         const c = context ?? 'app';
+
         return filesService.moveFileOrDirectory(clientId, agentId, sourcePath, moveFileDto, c).pipe(
           map(() =>
             moveFileOrDirectorySuccess({

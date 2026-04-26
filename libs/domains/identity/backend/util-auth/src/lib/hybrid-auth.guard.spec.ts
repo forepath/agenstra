@@ -1,6 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
+
 import { getAuthenticationMethod, getHybridAuthGuards, HybridAuthGuard } from './hybrid-auth.guard';
 
 describe('HybridAuthGuard', () => {
@@ -36,6 +37,7 @@ describe('HybridAuthGuard', () => {
     } else {
       delete process.env.STATIC_API_KEY;
     }
+
     jest.clearAllMocks();
   });
 
@@ -324,6 +326,7 @@ describe('getAuthenticationMethod', () => {
   afterEach(() => {
     if (originalStaticApiKey !== undefined) process.env.STATIC_API_KEY = originalStaticApiKey;
     else delete process.env.STATIC_API_KEY;
+
     if (originalAuthMethod !== undefined) process.env.AUTHENTICATION_METHOD = originalAuthMethod;
     else delete process.env.AUTHENTICATION_METHOD;
   });
@@ -368,6 +371,7 @@ describe('getHybridAuthGuards', () => {
   afterEach(() => {
     if (originalStaticApiKey !== undefined) process.env.STATIC_API_KEY = originalStaticApiKey;
     else delete process.env.STATIC_API_KEY;
+
     if (originalAuthMethod !== undefined) process.env.AUTHENTICATION_METHOD = originalAuthMethod;
     else delete process.env.AUTHENTICATION_METHOD;
   });

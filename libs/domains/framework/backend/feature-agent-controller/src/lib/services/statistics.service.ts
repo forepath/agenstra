@@ -1,11 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { ClientUserRole, UserRole } from '@forepath/identity/backend';
-import { StatisticsRepository } from '../repositories/statistics.repository';
-import { ClientsRepository } from '../repositories/clients.repository';
-import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
+import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
+import { ClientsRepository } from '../repositories/clients.repository';
+import { StatisticsRepository } from '../repositories/statistics.repository';
 import { sanitizeProviderMetadata } from '../utils/statistics-metadata-sanitizer';
 
 /**
@@ -38,6 +39,7 @@ export class StatisticsService {
         agentId,
         userId,
       );
+
       await this.statisticsRepository.createStatisticsChatIo({
         statisticsAgentId,
         statisticsClientId,
@@ -70,6 +72,7 @@ export class StatisticsService {
         agentId,
         userId,
       );
+
       await this.statisticsRepository.createStatisticsChatIo({
         statisticsAgentId,
         statisticsClientId,
@@ -106,6 +109,7 @@ export class StatisticsService {
         agentId,
         userId,
       );
+
       await this.statisticsRepository.createStatisticsChatFilterDrop({
         statisticsAgentId,
         statisticsClientId,
@@ -144,6 +148,7 @@ export class StatisticsService {
         agentId,
         userId,
       );
+
       await this.statisticsRepository.createStatisticsChatFilterFlag({
         statisticsAgentId,
         statisticsClientId,
@@ -173,11 +178,13 @@ export class StatisticsService {
     try {
       const now = new Date();
       let statisticsUserId: string | undefined;
+
       if (userId) {
         const shadowUser = await this.statisticsRepository.upsertStatisticsUser(
           userId,
           (metadata.role as string) ?? UserRole.USER,
         );
+
         statisticsUserId = shadowUser.id;
       }
 
@@ -187,6 +194,7 @@ export class StatisticsService {
             originalEntityId,
             (metadata.role as string) ?? UserRole.USER,
           );
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.CREATED,
             entityType: StatisticsEntityType.USER,
@@ -197,17 +205,22 @@ export class StatisticsService {
           });
           break;
         }
+
         case StatisticsEntityType.CLIENT: {
           const client = await this.clientsRepository.findById(originalEntityId);
+
           if (!client) {
             this.logger.warn(`Cannot record client created: client ${originalEntityId} not found`);
+
             return;
           }
+
           const shadowClient = await this.statisticsRepository.upsertStatisticsClient(originalEntityId, {
             name: client.name,
             endpoint: client.endpoint,
             authenticationType: client.authenticationType,
           });
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.CREATED,
             entityType: StatisticsEntityType.CLIENT,
@@ -218,14 +231,18 @@ export class StatisticsService {
           });
           break;
         }
+
         case StatisticsEntityType.AGENT: {
           const statisticsClient = await this.statisticsRepository.findStatisticsClientByOriginalId(
             metadata.clientId as string,
           );
+
           if (!statisticsClient) {
             this.logger.warn(`Cannot record agent created: statistics client for ${metadata.clientId} not found`);
+
             return;
           }
+
           const shadowAgent = await this.statisticsRepository.upsertStatisticsAgent(
             originalEntityId,
             statisticsClient.id,
@@ -236,6 +253,7 @@ export class StatisticsService {
               description: metadata.description as string,
             },
           );
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.CREATED,
             entityType: StatisticsEntityType.AGENT,
@@ -246,6 +264,7 @@ export class StatisticsService {
           });
           break;
         }
+
         case StatisticsEntityType.CLIENT_USER: {
           const statisticsClient = await this.statisticsRepository.findStatisticsClientByOriginalId(
             metadata.clientId as string,
@@ -253,18 +272,22 @@ export class StatisticsService {
           const statisticsUser = await this.statisticsRepository.findStatisticsUserByOriginalId(
             metadata.userId as string,
           );
+
           if (!statisticsClient || !statisticsUser) {
             this.logger.warn(
               `Cannot record client-user created: shadow client or user not found (clientId=${metadata.clientId}, userId=${metadata.userId})`,
             );
+
             return;
           }
+
           const shadowClientUser = await this.statisticsRepository.createStatisticsClientUser({
             originalClientUserId: originalEntityId,
             statisticsClientId: statisticsClient.id,
             statisticsUserId: statisticsUser.id,
             role: (metadata.role as string) ?? ClientUserRole.USER,
           });
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.CREATED,
             entityType: StatisticsEntityType.CLIENT_USER,
@@ -275,16 +298,20 @@ export class StatisticsService {
           });
           break;
         }
+
         case StatisticsEntityType.PROVISIONING_REFERENCE: {
           const statisticsClient = await this.statisticsRepository.findStatisticsClientByOriginalId(
             metadata.clientId as string,
           );
+
           if (!statisticsClient) {
             this.logger.warn(
               `Cannot record provisioning reference created: statistics client for ${metadata.clientId} not found`,
             );
+
             return;
           }
+
           const sanitizedMetadata = sanitizeProviderMetadata(metadata.providerMetadata as string);
           const shadowProv = await this.statisticsRepository.createStatisticsProvisioningReference({
             originalProvisioningReferenceId: originalEntityId,
@@ -296,6 +323,7 @@ export class StatisticsService {
             privateIp: metadata.privateIp as string,
             providerMetadata: sanitizedMetadata !== '{}' ? sanitizedMetadata : undefined,
           });
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.CREATED,
             entityType: StatisticsEntityType.PROVISIONING_REFERENCE,
@@ -324,8 +352,10 @@ export class StatisticsService {
     try {
       const now = new Date();
       let statisticsUserId: string | undefined;
+
       if (userId) {
         const shadowUser = await this.statisticsRepository.findStatisticsUserByOriginalId(userId);
+
         if (shadowUser) statisticsUserId = shadowUser.id;
       }
 
@@ -335,6 +365,7 @@ export class StatisticsService {
             originalEntityId,
             (metadata.role as string) ?? UserRole.USER,
           );
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.UPDATED,
             entityType: StatisticsEntityType.USER,
@@ -345,17 +376,22 @@ export class StatisticsService {
           });
           break;
         }
+
         case StatisticsEntityType.CLIENT: {
           const client = await this.clientsRepository.findById(originalEntityId);
+
           if (!client) {
             this.logger.warn(`Cannot record client updated: client ${originalEntityId} not found`);
+
             return;
           }
+
           const shadowClient = await this.statisticsRepository.upsertStatisticsClient(originalEntityId, {
             name: client.name,
             endpoint: client.endpoint,
             authenticationType: client.authenticationType,
           });
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.UPDATED,
             entityType: StatisticsEntityType.CLIENT,
@@ -366,14 +402,18 @@ export class StatisticsService {
           });
           break;
         }
+
         case StatisticsEntityType.AGENT: {
           const statisticsClient = await this.statisticsRepository.findStatisticsClientByOriginalId(
             metadata.clientId as string,
           );
+
           if (!statisticsClient) {
             this.logger.warn(`Cannot record agent updated: statistics client for ${metadata.clientId} not found`);
+
             return;
           }
+
           const shadowAgent = await this.statisticsRepository.upsertStatisticsAgent(
             originalEntityId,
             statisticsClient.id,
@@ -384,6 +424,7 @@ export class StatisticsService {
               description: metadata.description as string,
             },
           );
+
           await this.statisticsRepository.createStatisticsEntityEvent({
             eventType: StatisticsEntityEventType.UPDATED,
             entityType: StatisticsEntityType.AGENT,
@@ -394,6 +435,7 @@ export class StatisticsService {
           });
           break;
         }
+
         case StatisticsEntityType.CLIENT_USER:
         case StatisticsEntityType.PROVISIONING_REFERENCE:
           this.logger.debug(`Entity update events not implemented for ${entityType}`);
@@ -415,8 +457,10 @@ export class StatisticsService {
     try {
       const now = new Date();
       let statisticsUserId: string | undefined;
+
       if (userId) {
         const shadowUser = await this.statisticsRepository.findStatisticsUserByOriginalId(userId);
+
         if (shadowUser) statisticsUserId = shadowUser.id;
       }
 
@@ -428,9 +472,11 @@ export class StatisticsService {
 
       if (entityType === StatisticsEntityType.USER) {
         const shadow = await this.statisticsRepository.findStatisticsUserByOriginalId(originalEntityId);
+
         if (shadow) statisticsUsersId = shadow.id;
       } else if (entityType === StatisticsEntityType.CLIENT) {
         const shadow = await this.statisticsRepository.findStatisticsClientByOriginalId(originalEntityId);
+
         if (shadow) statisticsClientsId = shadow.id;
       }
       // For agent, client_user, provisioning_reference - we don't resolve shadow by originalEntityId
@@ -467,6 +513,7 @@ export class StatisticsService {
     statisticsUserId?: string;
   }> {
     const client = await this.clientsRepository.findById(clientId);
+
     if (!client) {
       throw new Error(`Client ${clientId} not found`);
     }
@@ -476,12 +523,12 @@ export class StatisticsService {
       endpoint: client.endpoint,
       authenticationType: client.authenticationType,
     });
-
     const statisticsAgent = await this.statisticsRepository.upsertStatisticsAgent(agentId, statisticsClient.id, {});
-
     let statisticsUserId: string | undefined;
+
     if (userId) {
       const shadowUser = await this.statisticsRepository.findStatisticsUserByOriginalId(userId);
+
       if (shadowUser) statisticsUserId = shadowUser.id;
     }
 

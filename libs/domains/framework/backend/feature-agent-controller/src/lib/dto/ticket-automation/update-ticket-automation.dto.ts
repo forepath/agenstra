@@ -10,6 +10,7 @@ import {
   MaxLength,
   ValidateNested,
 } from 'class-validator';
+
 import { TICKET_AUTOMATION_BRANCH_STRATEGIES } from '../../utils/ticket-automation-branch.constants';
 
 /** Single verifier command; mirrors {@link parseAndValidateVerifierProfile} bounds. */

@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
+import type { BackorderCancelDto, BackorderRetryDto, BackorderResponse, ListParams } from '../../types/billing.types';
+
 import { cancelBackorder, clearSelectedBackorder, loadBackorders, retryBackorder } from './backorders.actions';
 import { BackordersFacade } from './backorders.facade';
-import type { BackorderCancelDto, BackorderRetryDto, BackorderResponse, ListParams } from '../../types/billing.types';
 
 describe('BackordersFacade', () => {
   let facade: BackordersFacade;
   let store: jest.Mocked<Store>;
-
   const mockBackorder: BackorderResponse = {
     id: 'bo-1',
     userId: 'user-1',
@@ -53,18 +54,21 @@ describe('BackordersFacade', () => {
   describe('Action Methods', () => {
     it('should dispatch loadBackorders', () => {
       const params: ListParams = { limit: 10 };
+
       facade.loadBackorders(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadBackorders({ params }));
     });
 
     it('should dispatch retryBackorder', () => {
       const dto: BackorderRetryDto = { reason: 'test' };
+
       facade.retryBackorder('bo-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(retryBackorder({ id: 'bo-1', dto }));
     });
 
     it('should dispatch cancelBackorder', () => {
       const dto: BackorderCancelDto = { reason: 'test' };
+
       facade.cancelBackorder('bo-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(cancelBackorder({ id: 'bo-1', dto }));
     });

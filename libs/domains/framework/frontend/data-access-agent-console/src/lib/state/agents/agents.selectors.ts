@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { AgentsState } from './agents.reducer';
 
 export const selectAgentsState = createFeatureSelector<AgentsState>('agents');
@@ -99,12 +100,14 @@ export const selectHasClientAgents = (clientId: string) =>
 export const selectClientAgentCommands = (clientId: string, agentId: string, agentType: string) =>
   createSelector(selectAgentsCommands, (commands) => {
     const key = `${clientId}:${agentId}`;
+
     return commands[key]?.[agentType] ?? [];
   });
 
 export const selectClientAgentLoadingCommands = (clientId: string, agentId: string) =>
   createSelector(selectAgentsLoadingCommands, (loadingCommands) => {
     const key = `${clientId}:${agentId}`;
+
     return loadingCommands[key] ?? false;
   });
 
@@ -112,17 +115,20 @@ export const selectClientAgentLoadingCommands = (clientId: string, agentId: stri
 export const selectClientAgentModels = (clientId: string, agentId: string) =>
   createSelector(selectAgentsAgentModels, (modelsByKey) => {
     const key = `${clientId}:${agentId}`;
+
     return modelsByKey[key] ?? null;
   });
 
 export const selectClientAgentModelsLoading = (clientId: string, agentId: string) =>
   createSelector(selectAgentsLoadingAgentModels, (loadingByKey) => {
     const key = `${clientId}:${agentId}`;
+
     return loadingByKey[key] ?? false;
   });
 
 export const selectClientAgentModelsError = (clientId: string, agentId: string) =>
   createSelector(selectAgentsAgentModelsErrors, (errorsByKey) => {
     const key = `${clientId}:${agentId}`;
+
     return errorsByKey[key] ?? null;
   });

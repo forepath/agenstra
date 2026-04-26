@@ -44,6 +44,7 @@ export class DeploymentRunsListComponent {
       if (!searchQuery) {
         return runs;
       }
+
       return runs.filter((run: DeploymentRun) => JSON.stringify(run).toLowerCase().includes(searchQuery.toLowerCase()));
     }),
   );
@@ -56,14 +57,18 @@ export class DeploymentRunsListComponent {
   // Filter out 404 errors (not found) since empty state is handled by hasRuns check
   readonly filteredError = computed(() => {
     const error = this.error();
+
     if (!error) {
       return null;
     }
+
     // Hide 404-related errors (not found)
     const lowerError = error.toLowerCase();
+
     if (lowerError.includes('not found') || lowerError.includes('404') || lowerError.includes('workflow_dispatch')) {
       return null;
     }
+
     return error;
   });
 
@@ -76,6 +81,7 @@ export class DeploymentRunsListComponent {
     effect(() => {
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (clientId && agentId) {
         this.deploymentsFacade.loadRuns(clientId, agentId);
       }
@@ -131,6 +137,7 @@ export class DeploymentRunsListComponent {
 
   formatDate(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : date;
+
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',

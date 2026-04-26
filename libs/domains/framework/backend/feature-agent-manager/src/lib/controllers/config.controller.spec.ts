@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ConfigService } from '../services/config.service';
+
 import { ConfigController } from './config.controller';
 
 describe('ConfigController', () => {
   let controller: ConfigController;
   let service: jest.Mocked<ConfigService>;
-
   const mockConfigService = {
     getGitRepositoryUrl: jest.fn(),
     getAvailableAgentTypes: jest.fn(),
@@ -34,6 +35,7 @@ describe('ConfigController', () => {
     it('should return configuration with git repository URL and agent types when set', async () => {
       const gitRepositoryUrl = 'https://github.com/user/repo.git';
       const agentTypes = [{ type: 'cursor', displayName: 'Cursor' }];
+
       service.getGitRepositoryUrl.mockReturnValue(gitRepositoryUrl);
       service.getAvailableAgentTypes.mockReturnValue(agentTypes);
 
@@ -49,6 +51,7 @@ describe('ConfigController', () => {
 
     it('should return configuration with undefined git repository URL when not set', async () => {
       const agentTypes = [{ type: 'cursor', displayName: 'Cursor' }];
+
       service.getGitRepositoryUrl.mockReturnValue(undefined);
       service.getAvailableAgentTypes.mockReturnValue(agentTypes);
 
@@ -68,6 +71,7 @@ describe('ConfigController', () => {
         { type: 'openai', displayName: 'OpenAI' },
         { type: 'anthropic', displayName: 'Anthropic Claude' },
       ];
+
       service.getGitRepositoryUrl.mockReturnValue(undefined);
       service.getAvailableAgentTypes.mockReturnValue(agentTypes);
 

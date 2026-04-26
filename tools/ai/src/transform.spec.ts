@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { transform } from './transform';
 
 describe('transform', () => {
@@ -9,6 +10,7 @@ describe('transform', () => {
 
   beforeEach(() => {
     const base = path.join(process.cwd(), 'tmp-transform-test-' + Date.now());
+
     tmpDir = base;
     agenstraDir = path.join(base, '.agenstra');
     outputDir = path.join(base, 'out');
@@ -35,11 +37,14 @@ describe('transform', () => {
       outputDir,
       dryRun: false,
     });
+
     expect(result.success).toBe(true);
     expect(result.results).toHaveLength(1);
     expect(result.results[0].tool).toBe('cursor');
     expect(result.results[0].fileCount).toBeGreaterThan(0);
+
     const cursorRules = path.join(outputDir, '.cursor', 'rules', 'main.mdc');
+
     expect(fs.existsSync(cursorRules)).toBe(true);
     expect(fs.readFileSync(cursorRules, 'utf-8')).toContain('# Main');
   });
@@ -51,6 +56,7 @@ describe('transform', () => {
       outputDir,
       dryRun: true,
     });
+
     expect(result.success).toBe(true);
     expect(result.results[0].fileCount).toBeGreaterThan(0);
     expect(fs.existsSync(path.join(outputDir, '.cursor'))).toBe(false);
@@ -62,6 +68,7 @@ describe('transform', () => {
       target: 'cursor',
       outputDir,
     });
+
     expect(result.success).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });

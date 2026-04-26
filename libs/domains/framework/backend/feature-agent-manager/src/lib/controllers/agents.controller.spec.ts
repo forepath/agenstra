@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { AgentModelsResponseDto } from '../dto/agent-models-response.dto';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
@@ -6,12 +7,12 @@ import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { ContainerType } from '../entities/agent.entity';
 import { AgentsService } from '../services/agents.service';
+
 import { AgentsController } from './agents.controller';
 
 describe('AgentsController', () => {
   let controller: AgentsController;
   let service: jest.Mocked<AgentsService>;
-
   const mockAgentResponse: AgentResponseDto = {
     id: 'test-uuid',
     name: 'Test Agent',
@@ -21,12 +22,10 @@ describe('AgentsController', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockCreateAgentResponse: CreateAgentResponseDto = {
     ...mockAgentResponse,
     password: 'generated-password-123',
   };
-
   const mockService = {
     create: jest.fn(),
     findAll: jest.fn(),
@@ -61,6 +60,7 @@ describe('AgentsController', () => {
   describe('getAgents', () => {
     it('should return array of agents', async () => {
       const agents = [mockAgentResponse];
+
       service.findAll.mockResolvedValue(agents);
 
       const result = await controller.getAgents(10, 0);
@@ -71,6 +71,7 @@ describe('AgentsController', () => {
 
     it('should use default pagination values', async () => {
       const agents = [mockAgentResponse];
+
       service.findAll.mockResolvedValue(agents);
 
       const result = await controller.getAgents();
@@ -94,6 +95,7 @@ describe('AgentsController', () => {
   describe('listAgentModels', () => {
     it('should return models map from service', async () => {
       const models: AgentModelsResponseDto = { 'model-a': 'Model A', 'model-b': 'Model B' };
+
       service.listModels.mockResolvedValue(models);
 
       const result = await controller.listAgentModels('test-uuid');

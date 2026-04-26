@@ -26,6 +26,7 @@ import {
 } from '@forepath/identity/frontend';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
+
 import { IdentityConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
@@ -33,8 +34,8 @@ import { loginGuard } from './guards/login.guard';
 import { signupDisabledGuard } from './guards/signup-disabled.guard';
 import { IdentityLoginComponent } from './login/login.component';
 import { IdentityRegisterComponent } from './register/register.component';
-import { IdentityRequestPasswordResetConfirmationComponent } from './request-password-reset-confirmation/request-password-reset-confirmation.component';
 import { IdentityRequestPasswordResetComponent } from './request-password-reset/request-password-reset.component';
+import { IdentityRequestPasswordResetConfirmationComponent } from './request-password-reset-confirmation/request-password-reset-confirmation.component';
 import { IdentityResetPasswordComponent } from './reset-password/reset-password.component';
 import { IdentityUserManagerComponent } from './user-manager/user-manager.component';
 

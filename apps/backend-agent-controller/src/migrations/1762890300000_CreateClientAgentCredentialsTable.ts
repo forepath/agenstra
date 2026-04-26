@@ -97,9 +97,11 @@ export class CreateClientAgentCredentialsTable1762890300000 implements Migration
     // Drop FK
     const table = await queryRunner.getTable('client_agent_credentials');
     const foreignKey = table?.foreignKeys.find((fk) => fk.columnNames.indexOf('client_id') !== -1);
+
     if (foreignKey) {
       await queryRunner.dropForeignKey('client_agent_credentials', foreignKey);
     }
+
     // Drop unique
     await queryRunner.dropUniqueConstraint('client_agent_credentials', 'uq_client_agent');
     // Drop table

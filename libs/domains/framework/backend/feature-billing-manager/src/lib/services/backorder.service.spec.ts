@@ -3,6 +3,7 @@ import {
   buildBillingCloudInitUserData,
   buildCloudInitConfigFromRequest,
 } from '../utils/cloud-init/agent-controller.utils';
+
 import { BackorderService } from './backorder.service';
 
 jest.mock('../utils/cloud-init/agent-controller.utils', () => ({
@@ -59,6 +60,7 @@ describe('BackorderService', () => {
       planId: 'p1',
       requestedConfigSnapshot: {},
     });
+
     expect(result.id).toBe('b1');
   });
 

@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientsService } from './clients.service';
 
 /**
@@ -32,9 +34,11 @@ export class ClientAgentDeploymentsProxyService {
       if (!clientEntity.apiKey) {
         throw new BadRequestException('API key is not configured for this client');
       }
+
       return `Bearer ${clientEntity.apiKey}`;
     } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
       const token = await this.clientsService.getAccessToken(clientId);
+
       return `Bearer ${token}`;
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
@@ -50,6 +54,7 @@ export class ClientAgentDeploymentsProxyService {
   private buildAgentDeploymentsApiUrl(endpoint: string, agentId: string): string {
     // Remove trailing slash if present
     const baseUrl = endpoint.replace(/\/$/, '');
+
     // Ensure /api/agents/:agentId/deployments path
     return `${baseUrl}/api/agents/${agentId}/deployments`;
   }
@@ -94,10 +99,13 @@ export class ClientAgentDeploymentsProxyService {
       if (response.status >= 400) {
         const error = response.data as { message?: string; error?: string };
         const errorMessage = error?.message || error?.error || `Request failed with status ${response.status}`;
+
         this.logger.error(`Deployment request failed: ${errorMessage}`);
+
         if (response.status === 404) {
           throw new NotFoundException(errorMessage);
         }
+
         throw new BadRequestException(errorMessage);
       }
 
@@ -108,13 +116,17 @@ export class ClientAgentDeploymentsProxyService {
       }
 
       const axiosError = error as AxiosError;
+
       if (axiosError.response) {
         const errorData = axiosError.response.data as { message?: string; error?: string };
         const errorMessage = errorData?.message || errorData?.error || axiosError.message;
+
         this.logger.error(`Deployment request failed: ${errorMessage}`);
+
         if (axiosError.response.status === 404) {
           throw new NotFoundException(errorMessage);
         }
+
         throw new BadRequestException(errorMessage);
       }
 
@@ -179,6 +191,7 @@ export class ClientAgentDeploymentsProxyService {
    */
   async listWorkflows(clientId: string, agentId: string, repositoryId: string, branch?: string): Promise<unknown[]> {
     const url = `/repositories/${encodeURIComponent(repositoryId)}/workflows${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`;
+
     return await this.makeRequest<unknown[]>(clientId, agentId, {
       method: 'GET',
       url,
@@ -201,9 +214,13 @@ export class ClientAgentDeploymentsProxyService {
    */
   async listRuns(clientId: string, agentId: string, limit?: number, offset?: number): Promise<unknown[]> {
     const params = new URLSearchParams();
+
     if (limit !== undefined) params.append('limit', limit.toString());
+
     if (offset !== undefined) params.append('offset', offset.toString());
+
     const queryString = params.toString();
+
     return await this.makeRequest<unknown[]>(clientId, agentId, {
       method: 'GET',
       url: `/runs${queryString ? `?${queryString}` : ''}`,

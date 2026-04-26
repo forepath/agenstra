@@ -1,14 +1,15 @@
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import express from 'express';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+
 import bootstrap from './main.server';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(serverDistFolder, 'index.server.html');
-
 const app = express();
 const commonEngine = new CommonEngine();
 
@@ -29,13 +30,16 @@ app.get('/config', async (req, res) => {
 
     if (!response.ok) {
       console.error(`Failed to fetch CONFIG from ${configUrl}: ${response.status} ${response.statusText}`);
+
       return res.status(500).json({});
     }
 
     const json = await response.json();
+
     return res.json(json);
   } catch (error) {
     console.error('Error fetching CONFIG URL:', error);
+
     return res.status(500).json({});
   }
 });
@@ -75,6 +79,7 @@ app.get('**', (req, res, next) => {
  */
 if (isMainModule(import.meta.url)) {
   const port = parseInt(process.env['PORT'] || '4000', 10);
+
   app.listen(port, '0.0.0.0', () => {
     console.log(`Node Express server listening on http://localhost:${port}`);
   });

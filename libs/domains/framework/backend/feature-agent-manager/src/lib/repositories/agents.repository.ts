@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
+
 import { AgentEntity } from '../entities/agent.entity';
 
 /**
@@ -22,9 +23,11 @@ export class AgentsRepository {
    */
   async findByIdOrThrow(id: string): Promise<AgentEntity> {
     const agent = await this.repository.findOne({ where: { id } });
+
     if (!agent) {
       throw new NotFoundException(`Agent with ID ${id} not found`);
     }
+
     return agent;
   }
 
@@ -78,6 +81,7 @@ export class AgentsRepository {
    */
   async findPortInUse(port: number): Promise<boolean> {
     const agent = await this.repository.findOne({ where: [{ vncHostPort: port }, { sshHostPort: port }] });
+
     return agent !== null;
   }
 
@@ -96,6 +100,7 @@ export class AgentsRepository {
    */
   async create(dto: Partial<AgentEntity>): Promise<AgentEntity> {
     const agent = this.repository.create(dto);
+
     return await this.repository.save(agent);
   }
 
@@ -108,7 +113,9 @@ export class AgentsRepository {
    */
   async update(id: string, dto: Partial<AgentEntity>): Promise<AgentEntity> {
     const agent = await this.findByIdOrThrow(id);
+
     Object.assign(agent, dto);
+
     return await this.repository.save(agent);
   }
 
@@ -119,6 +126,7 @@ export class AgentsRepository {
    */
   async delete(id: string): Promise<void> {
     const agent = await this.findByIdOrThrow(id);
+
     await this.repository.remove(agent);
   }
 }

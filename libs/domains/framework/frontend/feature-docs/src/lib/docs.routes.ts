@@ -1,4 +1,5 @@
 import { Route } from '@angular/router';
+
 import { DocsLayoutComponent } from './components/docs-layout/docs-layout.component';
 import { DocsPageComponent } from './pages/docs-page/docs-page.component';
 import { DocsSearchPageComponent } from './pages/docs-search-page/docs-search-page.component';

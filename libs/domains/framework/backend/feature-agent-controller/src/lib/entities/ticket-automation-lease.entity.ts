@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import { TicketAutomationLeaseStatus } from './ticket-automation.enums';
+
 import { TicketAutomationRunEntity } from './ticket-automation-run.entity';
+import { TicketAutomationLeaseStatus } from './ticket-automation.enums';
 import { TicketEntity } from './ticket.entity';
 
 @Entity('ticket_automation_lease')

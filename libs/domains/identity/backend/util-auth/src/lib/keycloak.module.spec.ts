@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { KeycloakModule } from './keycloak.module';
 import { KeycloakService } from './keycloak.service';
 
@@ -21,12 +22,14 @@ describe('KeycloakModule', () => {
 
   it('should provide KeycloakService', () => {
     const service = module.get<KeycloakService>(KeycloakService);
+
     expect(service).toBeDefined();
     expect(service).toBeInstanceOf(KeycloakService);
   });
 
   it('should export KeycloakService', () => {
     const service = module.get<KeycloakService>(KeycloakService);
+
     expect(service).toBeDefined();
   });
 
@@ -34,6 +37,7 @@ describe('KeycloakModule', () => {
     // The module is decorated with @Global(), so it should be available globally
     // We can verify this by checking that the module is properly configured
     const moduleRef = module.get(KeycloakModule);
+
     expect(moduleRef).toBeDefined();
   });
 
@@ -53,8 +57,8 @@ describe('KeycloakModule', () => {
         },
       ],
     }).compile();
-
     const testService = testModule.get('TestService');
+
     expect(testService.getKeycloakService()).toBeInstanceOf(KeycloakService);
 
     await testModule.close();

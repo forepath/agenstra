@@ -1,12 +1,13 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
+
 import { ProvisioningReferencesRepository } from './provisioning-references.repository';
 
 describe('ProvisioningReferencesRepository', () => {
   let repository: ProvisioningReferencesRepository;
-
   const mockProvisioningReference: ProvisioningReferenceEntity = {
     id: 'ref-uuid',
     clientId: 'client-uuid',
@@ -20,7 +21,6 @@ describe('ProvisioningReferencesRepository', () => {
     updatedAt: new Date(),
     client: {} as any,
   };
-
   const mockTypeOrmRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
@@ -136,6 +136,7 @@ describe('ProvisioningReferencesRepository', () => {
   describe('findAll', () => {
     it('should return array of provisioning references with pagination', async () => {
       const references = [mockProvisioningReference];
+
       mockTypeOrmRepository.find.mockResolvedValue(references);
 
       const result = await repository.findAll(10, 0);
@@ -150,6 +151,7 @@ describe('ProvisioningReferencesRepository', () => {
 
     it('should use default pagination values', async () => {
       const references = [mockProvisioningReference];
+
       mockTypeOrmRepository.find.mockResolvedValue(references);
 
       await repository.findAll();
@@ -163,6 +165,7 @@ describe('ProvisioningReferencesRepository', () => {
 
     it('should handle custom pagination values', async () => {
       const references = [mockProvisioningReference];
+
       mockTypeOrmRepository.find.mockResolvedValue(references);
 
       await repository.findAll(20, 5);
@@ -178,6 +181,7 @@ describe('ProvisioningReferencesRepository', () => {
   describe('findByProviderType', () => {
     it('should return array of provisioning references for provider type with pagination', async () => {
       const references = [mockProvisioningReference];
+
       mockTypeOrmRepository.find.mockResolvedValue(references);
 
       const result = await repository.findByProviderType('hetzner', 10, 0);
@@ -193,6 +197,7 @@ describe('ProvisioningReferencesRepository', () => {
 
     it('should use default pagination values', async () => {
       const references = [mockProvisioningReference];
+
       mockTypeOrmRepository.find.mockResolvedValue(references);
 
       await repository.findByProviderType('hetzner');
@@ -207,6 +212,7 @@ describe('ProvisioningReferencesRepository', () => {
 
     it('should handle different provider types', async () => {
       const references = [mockProvisioningReference];
+
       mockTypeOrmRepository.find.mockResolvedValue(references);
 
       await repository.findByProviderType('aws', 5, 10);
@@ -232,6 +238,7 @@ describe('ProvisioningReferencesRepository', () => {
         providerMetadata: '{"location":"nbg1"}',
       };
       const createdReference = { ...mockProvisioningReference, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdReference);
       mockTypeOrmRepository.save.mockResolvedValue(createdReference);
 
@@ -249,6 +256,7 @@ describe('ProvisioningReferencesRepository', () => {
         serverId: '123456',
       };
       const createdReference = { ...mockProvisioningReference, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdReference);
       mockTypeOrmRepository.save.mockResolvedValue(createdReference);
 
@@ -267,6 +275,7 @@ describe('ProvisioningReferencesRepository', () => {
         publicIp: '9.10.11.12',
       };
       const updatedReference = { ...mockProvisioningReference, ...updateData };
+
       // First call: findByIdOrThrow check, second call: return updated entity
       mockTypeOrmRepository.findOne
         .mockResolvedValueOnce(mockProvisioningReference)

@@ -6,6 +6,7 @@ import {
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { CreateFilterRuleDto } from '../dto/filter-rules/create-filter-rule.dto';
 import {
   FilterRuleResponseDto,
@@ -17,6 +18,7 @@ import { AgentConsoleRegexFilterRuleClientEntity } from '../entities/agent-conso
 import { AgentConsoleRegexFilterRuleSyncTargetEntity } from '../entities/agent-console-regex-filter-rule-sync-target.entity';
 import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { AgentManagerFilterRulesClientService } from './agent-manager-filter-rules-client.service';
 
 @Injectable()
@@ -42,23 +44,28 @@ export class FilterRulesService {
       skip: offset,
     });
     const out: FilterRuleResponseDto[] = [];
+
     for (const r of rules) {
       out.push(await this.toResponse(r));
     }
+
     return out;
   }
 
   async findOne(id: string): Promise<FilterRuleResponseDto> {
     const rule = await this.rulesRepo.findOne({ where: { id }, relations: { clientLinks: true } });
+
     if (!rule) {
       throw new NotFoundException(`Filter rule ${id} not found`);
     }
+
     return await this.toResponse(rule);
   }
 
   async create(dto: CreateFilterRuleDto): Promise<FilterRuleResponseDto> {
     this.validateWorkspaceIds(dto);
     const flags = normalizeRegexFlags(dto.regexFlags);
+
     compileRegexOrThrow(dto.pattern, flags);
     assertReplaceContentForFilterType(dto.filterType, dto.replaceContent);
 
@@ -82,11 +89,13 @@ export class FilterRulesService {
     }
 
     await this.reconcileSyncTargets(saved.id, true);
+
     return this.findOne(saved.id);
   }
 
   async update(id: string, dto: UpdateFilterRuleDto): Promise<FilterRuleResponseDto> {
     const rule = await this.rulesRepo.findOne({ where: { id }, relations: { clientLinks: true } });
+
     if (!rule) {
       throw new NotFoundException(`Filter rule ${id} not found`);
     }
@@ -94,24 +103,31 @@ export class FilterRulesService {
     if (dto.pattern !== undefined) {
       rule.pattern = dto.pattern;
     }
+
     if (dto.regexFlags !== undefined) {
       rule.regexFlags = normalizeRegexFlags(dto.regexFlags);
     }
+
     if (dto.direction !== undefined) {
       rule.direction = dto.direction;
     }
+
     if (dto.filterType !== undefined) {
       rule.filterType = dto.filterType;
     }
+
     if (dto.replaceContent !== undefined) {
       rule.replaceContent = dto.replaceContent;
     }
+
     if (dto.priority !== undefined) {
       rule.priority = dto.priority;
     }
+
     if (dto.enabled !== undefined) {
       rule.enabled = dto.enabled;
     }
+
     if (dto.isGlobal !== undefined) {
       rule.isGlobal = dto.isGlobal;
     }
@@ -119,6 +135,7 @@ export class FilterRulesService {
     if (rule.filterType !== 'filter') {
       rule.replaceContent = null;
     }
+
     assertReplaceContentForFilterType(rule.filterType, rule.replaceContent);
     compileRegexOrThrow(rule.pattern, rule.regexFlags);
 
@@ -130,7 +147,9 @@ export class FilterRulesService {
       if (!dto.workspaceIds?.length) {
         throw new BadRequestException('workspaceIds required when isGlobal is false');
       }
+
       await this.linksRepo.delete({ ruleId: id });
+
       for (const clientId of dto.workspaceIds) {
         await this.clientsRepository.findByIdOrThrow(clientId);
         await this.linksRepo.save(this.linksRepo.create({ ruleId: id, clientId }));
@@ -139,6 +158,7 @@ export class FilterRulesService {
       throw new BadRequestException('Set isGlobal to false before assigning workspaceIds');
     } else if (dto.workspaceIds !== undefined && !rule.isGlobal) {
       await this.linksRepo.delete({ ruleId: id });
+
       for (const clientId of dto.workspaceIds) {
         await this.clientsRepository.findByIdOrThrow(clientId);
         await this.linksRepo.save(this.linksRepo.create({ ruleId: id, clientId }));
@@ -146,25 +166,31 @@ export class FilterRulesService {
     }
 
     await this.reconcileSyncTargets(id, true);
+
     return this.findOne(id);
   }
 
   async delete(id: string): Promise<void> {
     const rule = await this.rulesRepo.findOne({ where: { id } });
+
     if (!rule) {
       throw new NotFoundException(`Filter rule ${id} not found`);
     }
+
     const targets = await this.targetsRepo.find({ where: { ruleId: id } });
+
     for (const t of targets) {
       if (t.managerRuleId) {
         try {
           await this.agentManagerFilterRulesClient.deleteRule(t.clientId, t.managerRuleId);
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);
+
           this.logger.warn(`Could not delete remote filter ${t.managerRuleId} for client ${t.clientId}: ${msg}`);
         }
       }
     }
+
     await this.rulesRepo.remove(rule);
   }
 
@@ -179,6 +205,7 @@ export class FilterRulesService {
       where: { id: ruleId },
       relations: { clientLinks: true },
     });
+
     if (!rule) {
       return;
     }
@@ -186,19 +213,22 @@ export class FilterRulesService {
     const scopeIds = new Set(
       rule.isGlobal ? await this.clientsRepository.findAllIds() : (rule.clientLinks ?? []).map((l) => l.clientId),
     );
-
     const existing = await this.targetsRepo.find({ where: { ruleId } });
     const byClient = new Map(existing.map((t) => [t.clientId, t]));
 
     for (const cid of scopeIds) {
       const want = rule.enabled;
       const row = byClient.get(cid);
+
       if (row) {
         const desiredChanged = row.desiredOnManager !== want;
+
         row.desiredOnManager = want;
+
         if (bump || desiredChanged) {
           row.syncStatus = 'pending';
         }
+
         await this.targetsRepo.save(row);
         byClient.delete(cid);
       } else {
@@ -235,6 +265,7 @@ export class FilterRulesService {
     });
     const sync: FilterRuleSyncSummaryDto = { pending: 0, synced: 0, failed: 0 };
     const workspaceSync: FilterRuleWorkspaceSyncDto[] = [];
+
     for (const t of targets) {
       if (t.syncStatus === 'pending') {
         sync.pending += 1;
@@ -243,18 +274,21 @@ export class FilterRulesService {
       } else if (t.syncStatus === 'failed') {
         sync.failed += 1;
       }
+
       workspaceSync.push({
         clientId: t.clientId,
         syncStatus: t.syncStatus,
         lastError: t.lastError ?? undefined,
       });
     }
+
     return { sync, workspaceSync };
   }
 
   /** Ensures new clients get sync rows for global rules (no bump). */
   async reconcileAllGlobalRules(): Promise<void> {
     const globals = await this.rulesRepo.find({ where: { isGlobal: true }, select: ['id'] });
+
     for (const g of globals) {
       await this.reconcileSyncTargets(g.id, false);
     }
@@ -263,6 +297,7 @@ export class FilterRulesService {
   private async toResponse(rule: AgentConsoleRegexFilterRuleEntity): Promise<FilterRuleResponseDto> {
     const workspaceIds = rule.isGlobal ? [] : (rule.clientLinks ?? []).map((l) => l.clientId);
     const { sync, workspaceSync } = await this.loadSyncState(rule.id);
+
     return {
       id: rule.id,
       pattern: rule.pattern,

@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { CreateServicePlanDto, ServicePlanResponse, UpdateServicePlanDto } from '../types/billing.types';
+
 import { ServicePlansService } from './service-plans.service';
 
 describe('ServicePlansService', () => {
   let service: ServicePlansService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockPlan: ServicePlanResponse = {
     id: 'sp-1',
     serviceTypeId: 'st-1',
@@ -62,6 +63,7 @@ describe('ServicePlansService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-plans`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockList);
     });
@@ -75,6 +77,7 @@ describe('ServicePlansService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-plans?limit=10&offset=20`);
+
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
       req.flush([mockPlan]);
@@ -91,6 +94,7 @@ describe('ServicePlansService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-plans/${id}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockPlan);
     });
@@ -111,6 +115,7 @@ describe('ServicePlansService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-plans`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(mockPlan);
@@ -128,6 +133,7 @@ describe('ServicePlansService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-plans/${id}`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(updateDto);
       req.flush({ ...mockPlan, name: 'Updated Name' });
@@ -141,6 +147,7 @@ describe('ServicePlansService', () => {
       service.deleteServicePlan(id).subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/service-plans/${id}`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });

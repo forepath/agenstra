@@ -8,6 +8,7 @@ function directDescendantTickets(
   if (ticket.children && ticket.children.length > 0) {
     return ticket.children;
   }
+
   return list.filter((t) => (t.parentId ?? null) === ticket.id);
 }
 
@@ -17,6 +18,7 @@ export function computeDirectSubtaskCounts(
 ): TicketSubtaskCountsDto {
   let open = 0;
   let done = 0;
+
   for (const c of directDescendantTickets(ticket, list)) {
     if (isTerminalTicketStatus(c.status)) {
       done += 1;
@@ -24,6 +26,7 @@ export function computeDirectSubtaskCounts(
       open += 1;
     }
   }
+
   return { open, done };
 }
 
@@ -37,11 +40,14 @@ export function enrichTicketsWithSubtaskCounts(
   detail: TicketResponseDto | null,
 ): { list: TicketResponseDto[]; detail: TicketResponseDto | null } {
   const listWithCounts = list.map((t) => withSubtaskCounts(t, list));
+
   if (!detail) {
     return { list: listWithCounts, detail: null };
   }
+
   const detailWithCounts = withSubtaskCounts(detail, list);
   const children = detail.children?.map((c) => withSubtaskCounts(c, list));
+
   return {
     list: listWithCounts,
     detail: children ? { ...detailWithCounts, children } : detailWithCounts,

@@ -1,3 +1,5 @@
+import type { SubscriptionResponse } from '../../types/billing.types';
+
 import { initialSubscriptionsState, type SubscriptionsState } from './subscriptions.reducer';
 import {
   selectActiveSubscriptions,
@@ -18,7 +20,6 @@ import {
   selectSubscriptionsState,
   selectSubscriptionLoading,
 } from './subscriptions.selectors';
-import type { SubscriptionResponse } from '../../types/billing.types';
 
 describe('Subscriptions Selectors', () => {
   const mockSubscription: SubscriptionResponse = {
@@ -29,7 +30,6 @@ describe('Subscriptions Selectors', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockSubscription2: SubscriptionResponse = {
     id: 'sub-2',
     planId: 'plan-1',
@@ -38,7 +38,6 @@ describe('Subscriptions Selectors', () => {
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
   };
-
   const createState = (overrides?: Partial<SubscriptionsState>): SubscriptionsState => ({
     ...initialSubscriptionsState,
     ...overrides,

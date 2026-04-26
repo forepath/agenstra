@@ -13,6 +13,7 @@ describe('materializeDeltaPartsIntoInterleavedResults', () => {
       { type: 'tool_call', tool: 'read', path: '/a' },
       { type: 'delta', delta: 'Done.\n' },
     ]);
+
     expect(parts).toEqual([
       { type: 'result', subtype: 'success', result: 'Exploring…\n' },
       { type: 'tool_call', tool: 'read', path: '/a' },
@@ -27,6 +28,7 @@ describe('materializeDeltaPartsIntoInterleavedResults', () => {
       { type: 'tool_call', id: '1' },
       { type: 'result', subtype: 'success', result: 'Final' },
     ]);
+
     expect(parts).toEqual([
       { type: 'thinking', thinking: 'plan' },
       { type: 'result', subtype: 'success', result: 'A' },
@@ -50,6 +52,7 @@ describe('dropRedundantTrailingStreamResultParts', () => {
       { type: 'delta', delta: 'world' },
       { type: 'result', subtype: 'success', result: 'Hello world' },
     ]);
+
     expect(dropRedundantTrailingStreamResultParts(materialized)).toEqual([
       { type: 'result', subtype: 'success', result: 'Hello ' },
       { type: 'tool_call', id: 't' },
@@ -63,6 +66,7 @@ describe('dropRedundantTrailingStreamResultParts', () => {
       { type: 'tool_call', id: 't' },
       { type: 'result', subtype: 'success', result: 'Part one.\n\nPart two.' },
     ];
+
     expect(dropRedundantTrailingStreamResultParts(parts)).toEqual(parts);
   });
 
@@ -71,6 +75,7 @@ describe('dropRedundantTrailingStreamResultParts', () => {
       { type: 'tool_call', id: 'x' },
       { type: 'result', subtype: 'success', result: 'Done' },
     ];
+
     expect(dropRedundantTrailingStreamResultParts(parts)).toEqual(parts);
   });
 });
@@ -79,6 +84,7 @@ describe('collapseRepeatedWholeCopiesInString', () => {
   it('collapses k identical concatenated segments when each segment is long enough', () => {
     const unit = 'x'.repeat(40);
     const triple = unit + unit + unit;
+
     expect(collapseRepeatedWholeCopiesInString(triple)).toBe(unit);
   });
 
@@ -96,6 +102,7 @@ describe('collapseConsecutiveIdenticalResultParts', () => {
       { type: 'result', subtype: 'success', result: essay, duration_ms: 12 },
       { type: 'result', subtype: 'success', result: essay, usage: { outputTokens: 1 } },
     ]);
+
     expect(merged).toEqual([
       { type: 'tool_call', id: 't' },
       { type: 'result', subtype: 'success', result: essay, duration_ms: 12, usage: { outputTokens: 1 } },
@@ -112,6 +119,7 @@ describe('finalizeStreamingTranscriptParts', () => {
       { type: 'result', subtype: 'success', result: doubledInFrame },
       { type: 'result', subtype: 'success', result: unit, duration_ms: 99 },
     ]);
+
     expect(finalized).toEqual([
       { type: 'tool_call', id: 'c' },
       { type: 'result', subtype: 'success', result: unit, duration_ms: 99 },

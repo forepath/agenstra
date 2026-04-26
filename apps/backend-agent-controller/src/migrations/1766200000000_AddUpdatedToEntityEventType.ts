@@ -13,7 +13,7 @@ export class AddUpdatedToEntityEventType1766200000000 implements MigrationInterf
     `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(_: QueryRunner): Promise<void> {
     // PostgreSQL does not support removing enum values directly.
     // Reverting would require recreating the type and column, which is complex.
     // Leaving the migration as additive only.

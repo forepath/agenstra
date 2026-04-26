@@ -1,4 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
+import type { AvailabilityResponse, PricingPreviewResponse } from '../../types/billing.types';
+
 import {
   checkAvailability,
   checkAvailabilityAlternatives,
@@ -11,7 +14,6 @@ import {
   previewPricingFailure,
   previewPricingSuccess,
 } from './availability.actions';
-import type { AvailabilityResponse, PricingPreviewResponse } from '../../types/billing.types';
 
 export interface AvailabilityState {
   availability: AvailabilityResponse | null;

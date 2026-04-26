@@ -1,15 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import type {
-  StatisticsAggregateParams,
-  StatisticsChatIoListDto,
-  StatisticsClientScopeParams,
-  StatisticsEntityEventListDto,
-  StatisticsFilterDropListDto,
-  StatisticsFilterFlagListDto,
-  StatisticsSummaryDto,
-} from './statistics.types';
+
 import {
   loadClientStatisticsChatIo,
   loadClientStatisticsEntityEvents,
@@ -45,6 +37,15 @@ import {
   selectStatisticsError,
   selectSummary,
 } from './statistics.selectors';
+import type {
+  StatisticsAggregateParams,
+  StatisticsChatIoListDto,
+  StatisticsClientScopeParams,
+  StatisticsEntityEventListDto,
+  StatisticsFilterDropListDto,
+  StatisticsFilterFlagListDto,
+  StatisticsSummaryDto,
+} from './statistics.types';
 
 /**
  * Facade for statistics state management (API statistics).

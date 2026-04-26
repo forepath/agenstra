@@ -1,9 +1,11 @@
+import { UserEntity, UserRole, createConfirmationCode, validateConfirmationCode } from '@forepath/identity/backend';
+import { EmailService } from '@forepath/shared/backend';
 import { BadRequestException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserEntity, UserRole, createConfirmationCode, validateConfirmationCode } from '@forepath/identity/backend';
-import { EmailService } from '@forepath/shared/backend';
+
 import { UsersRepository } from '../repositories/users.repository';
+
 import { UsersService } from './users.service';
 
 const JWT_EXPIRES_IN = '7d';
@@ -30,6 +32,7 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<LoginResponse> {
     const user = await this.usersRepository.findByEmail(email);
+
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -47,11 +50,13 @@ export class AuthService {
     }
 
     const valid = await this.usersService.validatePassword(password, user.passwordHash);
+
     if (!valid) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const accessToken = this.generateToken(user);
+
     return {
       access_token: accessToken,
       user: { id: user.id, email: user.email, role: user.role },
@@ -65,7 +70,6 @@ export class AuthService {
 
     const count = await this.usersRepository.count();
     const isFirstUser = count === 0;
-
     const created = await this.usersService.create(
       { email, password, role: isFirstUser ? UserRole.ADMIN : UserRole.USER },
       isFirstUser,
@@ -87,11 +91,13 @@ export class AuthService {
 
   async confirmEmail(email: string, code: string): Promise<{ message: string }> {
     const user = await this.usersRepository.findByEmail(email);
+
     if (!user?.emailConfirmationToken) {
       throw new BadRequestException('Invalid or expired confirmation code');
     }
 
     const valid = await validateConfirmationCode(code, user.emailConfirmationToken);
+
     if (!valid) {
       throw new BadRequestException('Invalid or expired confirmation code');
     }
@@ -106,6 +112,7 @@ export class AuthService {
 
   async requestPasswordReset(email: string): Promise<{ message: string }> {
     const user = await this.usersRepository.findByEmail(email);
+
     if (!user || !user.passwordHash) {
       return {
         message: 'If an account exists with this email, you will receive a password reset code.',
@@ -135,6 +142,7 @@ export class AuthService {
 
   async resetPassword(email: string, code: string, newPassword: string): Promise<{ message: string }> {
     const user = await this.usersRepository.findByEmail(email);
+
     if (!user?.passwordResetToken) {
       throw new BadRequestException('Invalid or expired reset code');
     }
@@ -144,11 +152,13 @@ export class AuthService {
     }
 
     const valid = await validateConfirmationCode(code, user.passwordResetToken);
+
     if (!valid) {
       throw new BadRequestException('Invalid or expired reset code');
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
+
     await this.usersRepository.update(user.id, {
       passwordHash,
       passwordResetToken: undefined,
@@ -169,16 +179,19 @@ export class AuthService {
     }
 
     const user = await this.usersRepository.findByIdOrThrow(userId);
+
     if (!user.passwordHash) {
       throw new BadRequestException('This account uses external authentication. Cannot change password here.');
     }
 
     const valid = await this.usersService.validatePassword(currentPassword, user.passwordHash);
+
     if (!valid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
+
     await this.usersRepository.update(userId, { passwordHash });
 
     return { message: 'Password changed successfully.' };

@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
+
 import type { TicketResponseDto } from '../dto/tickets';
+
 import { CLIENT_CHAT_AUTOMATION_EVENTS } from './client-chat-automation.constants';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 
@@ -21,9 +23,12 @@ export class ClientAutomationChatRealtimeService {
   private emitToClientRoom(clientId: string, event: string, payload: unknown): void {
     if (!this.server) {
       this.logger.debug(`Skip ${event}: server not attached`);
+
       return;
     }
+
     const room = TicketBoardRealtimeService.clientRoom(clientId);
+
     this.server.to(room).emit(event, payload);
   }
 
@@ -39,6 +44,7 @@ export class ClientAutomationChatRealtimeService {
     if (!socket.connected) {
       return;
     }
+
     try {
       socket.emit(CLIENT_CHAT_AUTOMATION_EVENTS.ticketAutomationRunChatUpsert, payload);
     } catch (err) {

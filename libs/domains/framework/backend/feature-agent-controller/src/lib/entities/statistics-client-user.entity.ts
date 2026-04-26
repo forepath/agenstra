@@ -1,3 +1,4 @@
+import { ClientUserRole } from '@forepath/identity/backend';
 import {
   Column,
   CreateDateColumn,
@@ -8,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ClientUserRole } from '@forepath/identity/backend';
+
 import { StatisticsClientEntity } from './statistics-client.entity';
 import { StatisticsUserEntity } from './statistics-user.entity';
 

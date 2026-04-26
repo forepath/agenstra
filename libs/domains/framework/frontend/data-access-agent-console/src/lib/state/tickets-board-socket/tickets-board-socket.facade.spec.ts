@@ -1,19 +1,19 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, of } from 'rxjs';
+
 import {
   connectTicketsBoardSocket,
   disconnectTicketsBoardSocket,
   setTicketsBoardSocketClient,
 } from './tickets-board-socket.actions';
+import { getTicketsBoardSocketInstance } from './tickets-board-socket.effects';
 import { TicketsBoardSocketFacade } from './tickets-board-socket.facade';
 import { selectTicketsBoardSocketConnected, selectTicketsBoardSocketState } from './tickets-board-socket.selectors';
 
 jest.mock('./tickets-board-socket.effects', () => ({
   getTicketsBoardSocketInstance: jest.fn(),
 }));
-
-import { getTicketsBoardSocketInstance } from './tickets-board-socket.effects';
 
 describe('TicketsBoardSocketFacade', () => {
   let facade: TicketsBoardSocketFacade;
@@ -37,9 +37,11 @@ describe('TicketsBoardSocketFacade', () => {
             settingClientId: null,
           });
         }
+
         if (selector === selectTicketsBoardSocketConnected) {
           return of(true);
         }
+
         return of(null);
       }),
     };
@@ -80,9 +82,11 @@ describe('TicketsBoardSocketFacade', () => {
           settingClientId: null,
         });
       }
+
       if (selector === selectTicketsBoardSocketConnected) {
         return of(true);
       }
+
       return of(null);
     });
     TestBed.resetTestingModule();
@@ -103,9 +107,11 @@ describe('TicketsBoardSocketFacade', () => {
           settingClientId: 'pending',
         });
       }
+
       if (selector === selectTicketsBoardSocketConnected) {
         return of(true);
       }
+
       return of(null);
     });
     TestBed.resetTestingModule();
@@ -118,10 +124,12 @@ describe('TicketsBoardSocketFacade', () => {
 
   it('ensureConnectedAndSetClient dispatches connect when initially disconnected', (done) => {
     const connected$ = new BehaviorSubject(false);
+
     store.select = jest.fn().mockImplementation((selector: unknown) => {
       if (selector === selectTicketsBoardSocketConnected) {
         return connected$.asObservable();
       }
+
       if (selector === selectTicketsBoardSocketState) {
         return of({
           selectedClientId: null,
@@ -129,6 +137,7 @@ describe('TicketsBoardSocketFacade', () => {
           settingClientId: null,
         });
       }
+
       return of(null);
     });
     TestBed.resetTestingModule();
@@ -136,6 +145,7 @@ describe('TicketsBoardSocketFacade', () => {
       providers: [TicketsBoardSocketFacade, { provide: Store, useValue: store }],
     });
     const f = TestBed.inject(TicketsBoardSocketFacade);
+
     f.ensureConnectedAndSetClient('c1').subscribe(() => {
       expect(store.dispatch).toHaveBeenCalledWith(connectTicketsBoardSocket());
       expect(mockSocket.emit).toHaveBeenCalledWith('setClient', { clientId: 'c1' });

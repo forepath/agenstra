@@ -1,15 +1,14 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
+
 import { AgentMessagesRepository } from './agent-messages.repository';
 
 describe('AgentMessagesRepository', () => {
   let repository: AgentMessagesRepository;
-  let typeOrmRepository: Repository<AgentMessageEntity>;
-
   const mockAgent: AgentEntity = {
     id: 'agent-uuid-123',
     name: 'Test Agent',
@@ -22,7 +21,6 @@ describe('AgentMessagesRepository', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockMessage: AgentMessageEntity = {
     id: 'message-uuid-123',
     agentId: 'agent-uuid-123',
@@ -33,7 +31,6 @@ describe('AgentMessagesRepository', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockTypeOrmRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
@@ -56,7 +53,6 @@ describe('AgentMessagesRepository', () => {
     }).compile();
 
     repository = module.get<AgentMessagesRepository>(AgentMessagesRepository);
-    typeOrmRepository = module.get<Repository<AgentMessageEntity>>(getRepositoryToken(AgentMessageEntity));
   });
 
   afterEach(() => {
@@ -103,6 +99,7 @@ describe('AgentMessagesRepository', () => {
   describe('findByAgentId', () => {
     it('should return array of messages for agent with pagination', async () => {
       const messages = [mockMessage];
+
       mockTypeOrmRepository.find.mockResolvedValue(messages);
 
       const result = await repository.findByAgentId('agent-uuid-123', 50, 0);
@@ -119,6 +116,7 @@ describe('AgentMessagesRepository', () => {
 
     it('should use default pagination values', async () => {
       const messages = [mockMessage];
+
       mockTypeOrmRepository.find.mockResolvedValue(messages);
 
       await repository.findByAgentId('agent-uuid-123');
@@ -136,6 +134,7 @@ describe('AgentMessagesRepository', () => {
   describe('findAll', () => {
     it('should return array of messages with pagination', async () => {
       const messages = [mockMessage];
+
       mockTypeOrmRepository.find.mockResolvedValue(messages);
 
       const result = await repository.findAll(50, 0);
@@ -151,6 +150,7 @@ describe('AgentMessagesRepository', () => {
 
     it('should use default pagination values', async () => {
       const messages = [mockMessage];
+
       mockTypeOrmRepository.find.mockResolvedValue(messages);
 
       await repository.findAll();
@@ -195,6 +195,7 @@ describe('AgentMessagesRepository', () => {
         message: 'New message content',
       };
       const createdMessage = { ...mockMessage, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdMessage);
       mockTypeOrmRepository.save.mockResolvedValue(createdMessage);
 

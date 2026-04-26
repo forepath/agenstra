@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+
 import { parseAndValidateVerifierProfile } from './verifier-profile.validation';
 
 describe('parseAndValidateVerifierProfile', () => {
@@ -47,11 +48,13 @@ describe('parseAndValidateVerifierProfile', () => {
 
   it('rejects more than 32 commands', () => {
     const commands = Array.from({ length: 33 }, (_, i) => ({ cmd: `echo ${i}` }));
+
     expect(() => parseAndValidateVerifierProfile({ commands })).toThrow(BadRequestException);
   });
 
   it('rejects cmd longer than 2048 characters', () => {
     const cmd = `echo ${'x'.repeat(2048)}`;
+
     expect(() => parseAndValidateVerifierProfile({ commands: [{ cmd }] })).toThrow(BadRequestException);
   });
 

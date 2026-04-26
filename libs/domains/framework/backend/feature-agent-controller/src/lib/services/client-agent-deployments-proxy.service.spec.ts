@@ -6,11 +6,13 @@ import {
   RepositoryResponseDto,
   TriggerWorkflowDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentDeploymentsProxyService } from './client-agent-deployments-proxy.service';
 import { ClientsService } from './clients.service';
 
@@ -22,7 +24,6 @@ describe('ClientAgentDeploymentsProxyService', () => {
   let service: ClientAgentDeploymentsProxyService;
   let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
-
   const mockClientEntity: ClientEntity = {
     id: 'client-uuid',
     name: 'Test Client',
@@ -36,7 +37,6 @@ describe('ClientAgentDeploymentsProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockKeycloakClientEntity: ClientEntity = {
     ...mockClientEntity,
     authenticationType: AuthenticationType.KEYCLOAK,
@@ -45,7 +45,6 @@ describe('ClientAgentDeploymentsProxyService', () => {
     keycloakClientSecret: 'keycloak-client-secret',
     keycloakRealm: 'test-realm',
   };
-
   const mockConfiguration: DeploymentConfigurationResponseDto = {
     id: 'config-uuid',
     agentId: 'agent-uuid',
@@ -56,11 +55,9 @@ describe('ClientAgentDeploymentsProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockClientsService = {
     getAccessToken: jest.fn(),
   };
-
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
@@ -208,7 +205,6 @@ describe('ClientAgentDeploymentsProxyService', () => {
         ref: 'main',
         inputs: { environment: 'production' },
       };
-
       const mockRun: DeploymentRunResponseDto = {
         id: 'run-uuid',
         configurationId: 'config-uuid',
@@ -336,6 +332,7 @@ describe('ClientAgentDeploymentsProxyService', () => {
     it('should handle axios errors', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       const error = new Error('Network error') as AxiosError;
+
       mockedAxios.request.mockRejectedValue(error);
 
       await expect(service.getConfiguration('client-uuid', 'agent-uuid')).rejects.toThrow(BadRequestException);

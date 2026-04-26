@@ -1,3 +1,5 @@
+import type { SubscriptionResponse } from '../../types/billing.types';
+
 import {
   cancelSubscription,
   cancelSubscriptionFailure,
@@ -18,7 +20,6 @@ import {
   resumeSubscriptionSuccess,
 } from './subscriptions.actions';
 import { subscriptionsReducer, initialSubscriptionsState, type SubscriptionsState } from './subscriptions.reducer';
-import type { SubscriptionResponse } from '../../types/billing.types';
 
 describe('subscriptionsReducer', () => {
   const mockSubscription: SubscriptionResponse = {
@@ -31,7 +32,6 @@ describe('subscriptionsReducer', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockSubscription2: SubscriptionResponse = {
     id: 'sub-2',
     planId: 'plan-2',
@@ -57,7 +57,6 @@ describe('subscriptionsReducer', () => {
         entities: [mockSubscription],
         error: 'Previous error',
       };
-
       const newState = subscriptionsReducer(state, loadSubscriptions({ params: {} }));
 
       expect(newState.loading).toBe(true);
@@ -72,7 +71,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         loading: true,
       };
-
       const newState = subscriptionsReducer(
         state,
         loadSubscriptionsBatch({ offset: 10, accumulatedSubscriptions: [mockSubscription, mockSubscription2] }),
@@ -90,7 +88,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         loading: true,
       };
-
       const newState = subscriptionsReducer(
         state,
         loadSubscriptionsSuccess({ subscriptions: [mockSubscription, mockSubscription2] }),
@@ -108,7 +105,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         loading: true,
       };
-
       const newState = subscriptionsReducer(state, loadSubscriptionsFailure({ error: 'Load failed' }));
 
       expect(newState.error).toBe('Load failed');
@@ -122,7 +118,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         error: 'Previous error',
       };
-
       const newState = subscriptionsReducer(state, loadSubscription({ id: 'sub-1' }));
 
       expect(newState.loadingSubscription).toBe(true);
@@ -137,7 +132,6 @@ describe('subscriptionsReducer', () => {
         entities: [mockSubscription],
         loadingSubscription: true,
       };
-
       const updatedSubscription = { ...mockSubscription, status: 'canceled' as const };
       const newState = subscriptionsReducer(state, loadSubscriptionSuccess({ subscription: updatedSubscription }));
 
@@ -152,7 +146,6 @@ describe('subscriptionsReducer', () => {
         entities: [],
         loadingSubscription: true,
       };
-
       const newState = subscriptionsReducer(state, loadSubscriptionSuccess({ subscription: mockSubscription }));
 
       expect(newState.entities).toContainEqual(mockSubscription);
@@ -166,7 +159,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         loadingSubscription: true,
       };
-
       const newState = subscriptionsReducer(state, loadSubscriptionFailure({ error: 'Load failed' }));
 
       expect(newState.error).toBe('Load failed');
@@ -180,7 +172,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         error: 'Previous error',
       };
-
       const newState = subscriptionsReducer(state, createSubscription({ subscription: {} as never }));
 
       expect(newState.creating).toBe(true);
@@ -195,7 +186,6 @@ describe('subscriptionsReducer', () => {
         entities: [mockSubscription],
         creating: true,
       };
-
       const newState = subscriptionsReducer(state, createSubscriptionSuccess({ subscription: mockSubscription2 }));
 
       expect(newState.entities).toContainEqual(mockSubscription2);
@@ -210,7 +200,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         creating: true,
       };
-
       const newState = subscriptionsReducer(state, createSubscriptionFailure({ error: 'Create failed' }));
 
       expect(newState.error).toBe('Create failed');
@@ -224,7 +213,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         error: 'Previous error',
       };
-
       const newState = subscriptionsReducer(state, cancelSubscription({ id: 'sub-1' }));
 
       expect(newState.canceling).toBe(true);
@@ -240,7 +228,6 @@ describe('subscriptionsReducer', () => {
         selectedSubscription: mockSubscription,
         canceling: true,
       };
-
       const updatedSubscription = { ...mockSubscription, status: 'canceled' as const };
       const newState = subscriptionsReducer(state, cancelSubscriptionSuccess({ subscription: updatedSubscription }));
 
@@ -256,7 +243,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         canceling: true,
       };
-
       const newState = subscriptionsReducer(state, cancelSubscriptionFailure({ error: 'Cancel failed' }));
 
       expect(newState.error).toBe('Cancel failed');
@@ -270,7 +256,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         error: 'Previous error',
       };
-
       const newState = subscriptionsReducer(state, resumeSubscription({ id: 'sub-1' }));
 
       expect(newState.resuming).toBe(true);
@@ -286,7 +271,6 @@ describe('subscriptionsReducer', () => {
         selectedSubscription: mockSubscription2,
         resuming: true,
       };
-
       const updatedSubscription = { ...mockSubscription2, status: 'active' as const };
       const newState = subscriptionsReducer(state, resumeSubscriptionSuccess({ subscription: updatedSubscription }));
 
@@ -302,7 +286,6 @@ describe('subscriptionsReducer', () => {
         ...initialSubscriptionsState,
         resuming: true,
       };
-
       const newState = subscriptionsReducer(state, resumeSubscriptionFailure({ error: 'Resume failed' }));
 
       expect(newState.error).toBe('Resume failed');
@@ -317,7 +300,6 @@ describe('subscriptionsReducer', () => {
         entities: [mockSubscription],
         selectedSubscription: mockSubscription,
       };
-
       const newState = subscriptionsReducer(state, clearSelectedSubscription());
 
       expect(newState.selectedSubscription).toBeNull();

@@ -7,7 +7,6 @@ describe('BackorderRetryService', () => {
   const backorderService = {
     retry: jest.fn(),
   } as any;
-
   let service: BackorderRetryService;
 
   beforeEach(() => {

@@ -8,7 +8,6 @@ import { KeycloakService } from 'keycloak-angular';
  * LocalStorage key for storing the API key
  */
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
-
 /**
  * LocalStorage key for storing the JWT (users authentication)
  */
@@ -27,9 +26,11 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
 
   if (environment.authentication.type === 'keycloak') {
     const keycloakService = inject(KeycloakService, { optional: true });
+
     if (keycloakService) {
       // Check if user is authenticated
       const isAuthenticated = keycloakService.isLoggedIn();
+
       if (isAuthenticated) {
         // User is already authenticated, redirect to dashboard
         return router.createUrlTree(['/clients']);
@@ -38,6 +39,7 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
         keycloakService.login();
       }
     }
+
     // User is not authenticated, allow access to login
     return true;
   }
@@ -45,6 +47,7 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
   if (environment.authentication.type === 'api-key') {
     // Check if API key exists in environment
     const envApiKey = environment.authentication.apiKey;
+
     if (envApiKey) {
       // API key found in environment, user is "logged in", redirect to dashboard
       return router.createUrlTree(['/clients']);
@@ -52,6 +55,7 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
 
     // Check if API key exists in localStorage
     const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+
     if (storedApiKey) {
       // API key found in localStorage, user is "logged in", redirect to dashboard
       return router.createUrlTree(['/clients']);
@@ -63,10 +67,12 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
 
   if (environment.authentication.type === 'users') {
     const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
+
     if (jwt) {
       try {
         const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
         const exp = payload.exp ? payload.exp * 1000 : 0;
+
         if (exp > Date.now()) {
           return router.createUrlTree(['/clients']);
         }
@@ -74,6 +80,7 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
         // Invalid JWT, allow access to login
       }
     }
+
     return true;
   }
 

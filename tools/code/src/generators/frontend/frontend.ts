@@ -1,7 +1,9 @@
+import * as path from 'path';
+
 import { applicationGenerator as generatorFn } from '@nx/angular/generators';
 import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
 import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
-import * as path from 'path';
+
 import { FrontendGeneratorSchema } from './schema';
 
 export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSchema) {

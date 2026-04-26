@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+
 import { environment } from './environment';
 import { Environment } from './environment.interface';
 
@@ -20,10 +21,13 @@ function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environ
 export async function loadRuntimeEnvironment(): Promise<Environment> {
   try {
     const response: Response = await fetch('/config');
+
     if (!response.ok) {
       return environment;
     }
+
     const overrides: Partial<Environment> = await response.json();
+
     return mergeEnvironmentOverrides(environment, overrides);
   } catch {
     return environment;

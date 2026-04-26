@@ -4,9 +4,12 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
+import { KeycloakService } from 'keycloak-angular';
 import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+
 import { ticketBoardTicketUpsert } from '../tickets/tickets.actions';
+
 import {
   connectTicketsBoardSocket,
   connectTicketsBoardSocketFailure,
@@ -31,8 +34,6 @@ jest.mock('keycloak-angular', () => ({
   KeycloakService: jest.fn(),
 }));
 
-import { KeycloakService } from 'keycloak-angular';
-
 describe('resolveTicketsBoardWebsocketUrl', () => {
   const mockEnvironment = {
     controller: {
@@ -46,6 +47,7 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
 
   it('derives /tickets from /clients websocket URL', () => {
     const url = resolveTicketsBoardWebsocketUrl(mockEnvironment as never);
+
     expect(url).toBe('http://localhost:8081/tickets');
   });
 
@@ -54,6 +56,7 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
       ...mockEnvironment,
       controller: { ...mockEnvironment.controller, ticketsWebsocketUrl: 'http://example/ws' },
     } as never);
+
     expect(url).toBe('http://example/ws');
   });
 
@@ -62,6 +65,7 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
       ...mockEnvironment,
       controller: { websocketUrl: 'http://localhost:8081/custom-ns' },
     } as never);
+
     expect(url).toBe('http://localhost:8081/tickets');
   });
 
@@ -133,6 +137,7 @@ describe('TicketsBoardSocketEffects', () => {
 
   afterEach(() => {
     const d = new Subject<ReturnType<typeof disconnectTicketsBoardSocket>>();
+
     disconnectTicketsBoardSocket$(d as never).subscribe();
     d.next(disconnectTicketsBoardSocket());
     d.complete();
@@ -142,6 +147,7 @@ describe('TicketsBoardSocketEffects', () => {
   describe('connectTicketsBoardSocket$', () => {
     it('should return connectTicketsBoardSocketFailure when URL cannot be resolved', (done) => {
       const env = { ...mockEnvironment, controller: { websocketUrl: '' } };
+
       connectTicketsBoardSocket$(actions$ as never, env as never, null).subscribe((result) => {
         expect(result).toEqual(connectTicketsBoardSocketFailure({ error: 'Tickets WebSocket URL not configured' }));
         done();
@@ -154,6 +160,7 @@ describe('TicketsBoardSocketEffects', () => {
         if (event === 'connect') {
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as Socket;
       });
 
@@ -186,8 +193,10 @@ describe('TicketsBoardSocketEffects', () => {
 
     it('should disconnect underlying socket when connect had run', (done) => {
       const listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
         (listeners[event] ??= []).push(handler);
+
         return mockSocket as Socket;
       });
 
@@ -206,17 +215,21 @@ describe('TicketsBoardSocketEffects', () => {
   describe('server ticketUpsert event', () => {
     it('maps to ticketBoardTicketUpsert', (done) => {
       const listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: (...args: unknown[]) => void) => {
         (listeners[event] ??= []).push(handler);
+
         return mockSocket as Socket;
       });
 
       const out: unknown[] = [];
+
       connectTicketsBoardSocket$(actions$ as never, TestBed.inject(ENVIRONMENT), null).subscribe((a) => out.push(a));
       actions$.next(connectTicketsBoardSocket());
       listeners['connect']?.[0]?.();
 
       const ticket = { id: 't1', clientId: 'c1', title: 'Hi' };
+
       listeners[TICKETS_BOARD_SOCKET_EVENTS.ticketUpsert]?.[0]?.(ticket);
 
       const match = out.find(
@@ -226,6 +239,7 @@ describe('TicketsBoardSocketEffects', () => {
           'type' in a &&
           (a as { type: string }).type === ticketBoardTicketUpsert.type,
       ) as ReturnType<typeof ticketBoardTicketUpsert> | undefined;
+
       expect(match?.ticket).toEqual(ticket);
       done();
     });
@@ -237,6 +251,7 @@ describe('TicketsBoardSocketEffects', () => {
         if (event === 'connect') {
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as Socket;
       });
 

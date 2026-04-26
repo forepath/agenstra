@@ -1,5 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+
 import { ENVIRONMENT } from './environment.token';
 
 export interface LocaleOption {
@@ -34,9 +35,11 @@ export class LocaleService {
     if (!isPlatformBrowser(this.platformId)) {
       return AVAILABLE_LOCALES[0].code;
     }
+
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
     const firstSegment = pathSegments[0] ?? '';
     const isLocale = AVAILABLE_LOCALES.some((loc) => loc.code === firstSegment);
+
     return isLocale ? firstSegment : AVAILABLE_LOCALES[0].code;
   }
 
@@ -49,6 +52,7 @@ export class LocaleService {
     if (!isPlatformBrowser(this.platformId)) {
       return '/';
     }
+
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
     const firstSegment = pathSegments[0] ?? '';
     const isFirstSegmentLocale = AVAILABLE_LOCALES.some((loc) => loc.code === firstSegment);
@@ -56,6 +60,7 @@ export class LocaleService {
     const queryString = window.location.search ? window.location.search : '';
     const hash = window.location.hash ? window.location.hash : '';
     const path = currentRoute ? `/${langCode}/${currentRoute}` : `/${langCode}`;
+
     return `${window.location.origin}${path}${queryString}${hash}`;
   }
 }

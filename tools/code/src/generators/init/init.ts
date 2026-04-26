@@ -1,6 +1,8 @@
-import { Tree, runTasksInSerial } from '@nx/devkit';
-import { InitGeneratorSchema } from './schema';
 import { spawnSync } from 'child_process';
+
+import { Tree, runTasksInSerial } from '@nx/devkit';
+
+import { InitGeneratorSchema } from './schema';
 
 export async function initGenerator(_: Tree, __: InitGeneratorSchema) {
   const runMcpProxyBuild = () => {

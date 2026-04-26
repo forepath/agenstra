@@ -11,6 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+
 import {
   CreateDeploymentConfigurationDto,
   DeploymentConfigurationResponseDto,
@@ -140,6 +141,7 @@ export class AgentsDeploymentsController {
     @Param('runId') runId: string,
   ): Promise<{ logs: string }> {
     const logs = await this.deploymentsService.getRunLogs(agentId, runId);
+
     return { logs };
   }
 
@@ -164,6 +166,7 @@ export class AgentsDeploymentsController {
     @Param('jobId') jobId: string,
   ): Promise<{ logs: string }> {
     const logs = await this.deploymentsService.getJobLogs(agentId, runId, jobId);
+
     return { logs };
   }
 

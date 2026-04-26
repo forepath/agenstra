@@ -18,6 +18,7 @@ Output ONLY the body text for the ticket. No preamble, no "Here is", no code fen
 <<<TITLE>>>
 ${trimmedTitle}
 <<<END_TITLE>>>`;
+
   if (ctx) {
     message += `
 
@@ -25,5 +26,6 @@ ${trimmedTitle}
 ${ctx}
 <<<END_TICKET_TREE>>>`;
   }
+
   return message;
 }

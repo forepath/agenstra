@@ -1,5 +1,6 @@
 import { TicketAutomationFailureCode } from '../entities/ticket-automation.enums';
 import { TicketStatus } from '../entities/ticket.enums';
+
 import { AutomationFailureRoute, routeAutomationFailure } from './automation-failure-routing';
 
 describe('routeAutomationFailure', () => {
@@ -73,7 +74,9 @@ describe('routeAutomationFailure', () => {
 
   it('maps every TicketAutomationFailureCode to the policy table', () => {
     const codes = Object.values(TicketAutomationFailureCode);
+
     expect(codes.length).toBeGreaterThan(0);
+
     for (const code of codes) {
       expect(routeAutomationFailure(code)).toEqual(expectedByCode[code]);
     }

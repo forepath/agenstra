@@ -1,4 +1,5 @@
 import type { TicketResponseDto } from '@forepath/framework/frontend/data-access-agent-console';
+
 import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
 
 const emptyTasks = (): TicketResponseDto['tasks'] => ({
@@ -23,6 +24,7 @@ describe('buildTicketBodyHierarchyContext', () => {
 
   it('returns empty string when there are no parents or subtasks', () => {
     const detail = base({ id: 'a', title: 'Only' });
+
     expect(buildTicketBodyHierarchyContext(detail, [detail])).toBe('');
   });
 
@@ -39,6 +41,7 @@ describe('buildTicketBodyHierarchyContext', () => {
       ],
     });
     const out = buildTicketBodyHierarchyContext(detail, [detail]);
+
     expect(out).toContain('Subtasks under this ticket');
     expect(out).toContain('[c1]');
     expect(out).toContain('[g1]');
@@ -49,6 +52,7 @@ describe('buildTicketBodyHierarchyContext', () => {
     const parent = base({ id: 'p', title: 'Parent', status: 'todo' });
     const detail = base({ id: 'leaf', title: 'Leaf', parentId: 'p' });
     const out = buildTicketBodyHierarchyContext(detail, [parent, detail]);
+
     expect(out).toContain('Parent tickets');
     expect(out).toContain('[p]');
     expect(out).toContain('Parent');

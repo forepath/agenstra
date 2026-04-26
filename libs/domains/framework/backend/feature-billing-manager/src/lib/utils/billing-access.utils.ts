@@ -1,6 +1,6 @@
+import { UserRole } from '@forepath/identity/backend';
 import { ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
-import { UserRole } from '@forepath/identity/backend';
 
 export interface RequestWithUser extends Request {
   user?: { id: string; email?: string; roles?: string[]; username?: string };
@@ -15,16 +15,19 @@ export interface UserInfoFromRequest {
 
 export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
   const isApiKeyAuth = !!req.apiKeyAuthenticated;
+
   if (isApiKeyAuth) {
     return { isApiKeyAuth: true };
   }
 
   const user = req.user;
+
   if (!user?.id) {
     return { isApiKeyAuth: false };
   }
 
   let userRole: UserRole = UserRole.USER;
+
   if (user.roles?.includes('admin') || user.roles?.includes(UserRole.ADMIN)) {
     userRole = UserRole.ADMIN;
   }

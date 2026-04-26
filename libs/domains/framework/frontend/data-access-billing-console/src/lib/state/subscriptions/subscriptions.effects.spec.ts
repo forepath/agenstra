@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { SubscriptionsService } from '../../services/subscriptions.service';
+import type { SubscriptionResponse } from '../../types/billing.types';
+
 import {
   cancelSubscription,
   cancelSubscriptionFailure,
@@ -29,12 +32,10 @@ import {
   loadSubscriptionsBatch$,
   resumeSubscription$,
 } from './subscriptions.effects';
-import type { SubscriptionResponse } from '../../types/billing.types';
 
 describe('SubscriptionsEffects', () => {
   let actions$: Actions;
   let subscriptionsService: jest.Mocked<SubscriptionsService>;
-
   const mockSubscription: SubscriptionResponse = {
     id: 'sub-1',
     planId: 'plan-1',

@@ -1,11 +1,14 @@
-import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AuthenticationType, UserRole } from '@forepath/identity/backend';
-import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { randomBytes } from 'crypto';
+
+import { AuthenticationType, UserRole } from '@forepath/identity/backend';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
+import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
+
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
@@ -63,17 +66,21 @@ export class ProvisioningService {
   ): string {
     // Build authentication environment variables
     const authEnvVars: string[] = [];
+
     if (authenticationType === AuthenticationType.API_KEY) {
       if (!apiKey) {
         throw new BadRequestException('API key is required for API_KEY authentication type');
       }
+
       authEnvVars.push(`STATIC_API_KEY: ${apiKey}`);
     } else if (authenticationType === AuthenticationType.KEYCLOAK) {
       if (!keycloakConfig?.clientId || !keycloakConfig?.clientSecret) {
         throw new BadRequestException('Keycloak client ID and secret are required for KEYCLOAK authentication type');
       }
+
       const authServerUrl = keycloakConfig.authServerUrl || process.env.KEYCLOAK_AUTH_SERVER_URL || '';
       const realm = keycloakConfig.realm || process.env.KEYCLOAK_REALM || '';
+
       authEnvVars.push(`KEYCLOAK_AUTH_SERVER_URL: ${authServerUrl}`);
       authEnvVars.push(`KEYCLOAK_REALM: ${realm}`);
       authEnvVars.push(`KEYCLOAK_CLIENT_ID: ${keycloakConfig.clientId}`);
@@ -82,27 +89,34 @@ export class ProvisioningService {
 
     // Build GIT environment variables
     const gitEnvVars: string[] = [];
+
     if (gitConfig?.repositoryUrl) {
       gitEnvVars.push(`GIT_REPOSITORY_URL: ${gitConfig.repositoryUrl}`);
     }
+
     if (gitConfig?.username) {
       gitEnvVars.push(`GIT_USERNAME: ${gitConfig.username}`);
     }
+
     if (gitConfig?.token) {
       gitEnvVars.push(`GIT_TOKEN: ${gitConfig.token}`);
     }
+
     if (gitConfig?.password) {
       gitEnvVars.push(`GIT_PASSWORD: ${gitConfig.password}`);
     }
+
     if (gitConfig?.privateKey) {
       gitEnvVars.push(`GIT_PRIVATE_KEY: ${gitConfig.privateKey}`);
     }
 
     // Build cursor agent environment variables (only add if provided)
     const cursorEnvVars: string[] = [];
+
     if (cursorApiKey) {
       cursorEnvVars.push(`CURSOR_API_KEY: ${cursorApiKey}`);
     }
+
     if (agentDefaultImage) {
       cursorEnvVars.push(`AGENT_DEFAULT_IMAGE: ${agentDefaultImage}`);
     }
@@ -312,9 +326,9 @@ DOCKER_COMPOSE_EOF
     }
 
     const provider = this.provisioningProviderFactory.getProvider(provisionServerDto.providerType);
-
     // Generate API key if needed
     let apiKey: string | undefined;
+
     if (provisionServerDto.authenticationType === AuthenticationType.API_KEY) {
       apiKey = provisionServerDto.apiKey || this.generateRandomApiKey();
     }
@@ -347,7 +361,6 @@ DOCKER_COMPOSE_EOF
       provisionServerDto.cursorApiKey,
       provisionServerDto.agentDefaultImage,
     );
-
     // Encode user data as base64 for passing to provider
     const encodedUserData = Buffer.from(authUserData).toString('base64');
 
@@ -380,7 +393,6 @@ DOCKER_COMPOSE_EOF
       userRole,
       isApiKeyAuth,
     );
-
     // Create provisioning reference
     const reference = await this.provisioningReferencesRepository.create({
       clientId: client.id,
@@ -431,6 +443,7 @@ DOCKER_COMPOSE_EOF
   async deleteProvisionedServer(clientId: string, userId?: string): Promise<void> {
     // Find provisioning reference
     const reference = await this.provisioningReferencesRepository.findByClientId(clientId);
+
     if (!reference) {
       throw new BadRequestException(`No provisioning reference found for client ${clientId}`);
     }
@@ -447,6 +460,7 @@ DOCKER_COMPOSE_EOF
     } else {
       // Delete server from provider
       const provider = this.provisioningProviderFactory.getProvider(reference.providerType);
+
       try {
         await provider.deleteServer(reference.serverId);
         this.logger.log(`Deleted server ${reference.serverId} from ${reference.providerType}`);
@@ -476,6 +490,7 @@ DOCKER_COMPOSE_EOF
     providerType: string;
   }> {
     const reference = await this.provisioningReferencesRepository.findByClientId(clientId);
+
     if (!reference) {
       throw new NotFoundException(`No provisioning reference found for client ${clientId}`);
     }

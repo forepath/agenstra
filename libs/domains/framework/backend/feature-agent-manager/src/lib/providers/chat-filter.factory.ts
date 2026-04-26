@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { ChatFilter, FilterDirection } from './chat-filter.interface';
 
 /**
@@ -16,9 +17,11 @@ export class ChatFilterFactory {
    */
   registerFilter(filter: ChatFilter): void {
     const type = filter.getType();
+
     if (this.filters.has(type)) {
       this.logger.warn(`Filter with type '${type}' is already registered. Overwriting existing filter.`);
     }
+
     this.filters.set(type, filter);
     this.logger.log(`Registered chat filter: ${type} (${filter.getDirection()})`);
   }
@@ -30,12 +33,15 @@ export class ChatFilterFactory {
    */
   getFiltersByDirection(direction: FilterDirection): ChatFilter[] {
     const filters: ChatFilter[] = [];
+
     for (const filter of this.filters.values()) {
       const filterDirection = filter.getDirection();
+
       if (filterDirection === direction || filterDirection === FilterDirection.BIDIRECTIONAL) {
         filters.push(filter);
       }
     }
+
     return filters;
   }
 
@@ -55,10 +61,13 @@ export class ChatFilterFactory {
    */
   getFilter(type: string): ChatFilter {
     const filter = this.filters.get(type);
+
     if (!filter) {
       const availableTypes = Array.from(this.filters.keys()).join(', ');
+
       throw new Error(`Chat filter with type '${type}' not found. Available types: ${availableTypes || 'none'}`);
     }
+
     return filter;
   }
 

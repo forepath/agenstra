@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
+
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentResponseObject } from '../providers/agent-provider.interface';
@@ -10,6 +11,7 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
+
 import { AgentsGateway } from './agents.gateway';
 
 interface ChatPayload {
@@ -30,7 +32,6 @@ describe('AgentsGateway', () => {
   let chatFilterFactory: jest.Mocked<ChatFilterFactory>;
   let mockServer: Partial<Server>;
   let mockSocket: Partial<Socket>;
-
   const mockAgent: AgentEntity = {
     id: 'test-uuid-123',
     name: 'Test Agent',
@@ -42,7 +43,6 @@ describe('AgentsGateway', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockAgentResponse = {
     id: mockAgent.id,
     name: mockAgent.name,
@@ -52,32 +52,26 @@ describe('AgentsGateway', () => {
     createdAt: mockAgent.createdAt,
     updatedAt: mockAgent.updatedAt,
   };
-
   const mockAgentsService = {
     verifyCredentials: jest.fn(),
     findOne: jest.fn(),
   };
-
   const mockAgentsRepository = {
     findById: jest.fn(),
     findByName: jest.fn(),
   };
-
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
   } as unknown as jest.Mocked<DockerService>;
-
   const mockAgentMessagesService = {
     createUserMessage: jest.fn(),
     createAgentMessage: jest.fn(),
     getChatHistory: jest.fn(),
     countMessages: jest.fn(),
   };
-
   const mockAgentMessageEventsService = {
     persistEvent: jest.fn(),
   };
-
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
     getType: jest.fn().mockReturnValue('cursor'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
@@ -97,14 +91,12 @@ describe('AgentsGateway', () => {
     getModelsListCommand: jest.fn().mockReturnValue('cursor-agent --list-models'),
     toModelsList: jest.fn().mockReturnValue({}),
   };
-
   const mockAgentProviderFactory = {
     getProvider: jest.fn().mockReturnValue(mockAgentProvider),
     registerProvider: jest.fn(),
     hasProvider: jest.fn(),
     getRegisteredTypes: jest.fn(),
   } as unknown as jest.Mocked<AgentProviderFactory>;
-
   const mockChatFilterFactory = {
     getFiltersByDirection: jest.fn().mockReturnValue([]),
     getAllFilters: jest.fn().mockReturnValue([]),
@@ -191,12 +183,15 @@ describe('AgentsGateway', () => {
     // Clear stats intervals
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const statsIntervals = (gateway as any).statsIntervalsByAgent;
+
     if (statsIntervals) {
       for (const interval of statsIntervals.values()) {
         clearInterval(interval);
       }
+
       statsIntervals.clear();
     }
+
     // Reset default mocks
     agentMessagesService.getChatHistory.mockResolvedValue([]);
     agentMessagesService.countMessages.mockResolvedValue(0);
@@ -205,6 +200,7 @@ describe('AgentsGateway', () => {
   describe('handleConnection', () => {
     it('should log connection and store socket reference', () => {
       const loggerSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
+
       gateway.handleConnection(mockSocket as Socket);
       expect(loggerSpy).toHaveBeenCalledWith(`Client connected: ${mockSocket.id}`);
       // Verify socket is stored
@@ -219,6 +215,7 @@ describe('AgentsGateway', () => {
       const loggerSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
       // Add authenticated session and socket reference
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -236,6 +233,7 @@ describe('AgentsGateway', () => {
       const loggerSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
       // Store socket reference
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       gateway.handleDisconnect(mockSocket as Socket);
@@ -569,6 +567,7 @@ describe('AgentsGateway', () => {
       const filterResultCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
         (call) => call[0] === 'messageFilterResult',
       );
+
       expect(filterResultCalls).toHaveLength(1); // Only one filter result for the filtered message
     });
 
@@ -655,6 +654,7 @@ describe('AgentsGateway', () => {
       const filterResultCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
         (call) => call[0] === 'messageFilterResult',
       );
+
       expect(filterResultCalls).toHaveLength(1); // Only one filter result for the filtered message
     });
 
@@ -720,6 +720,7 @@ describe('AgentsGateway', () => {
       // Find positions of filter results and messages
       const filterResultIndices: number[] = [];
       const chatMessageIndices: number[] = [];
+
       emitCalls.forEach((call, index) => {
         if (call[0] === 'messageFilterResult') {
           filterResultIndices.push(index);
@@ -740,6 +741,7 @@ describe('AgentsGateway', () => {
       const incomingFilterResultIndex = emitCalls.findIndex(
         (call) => call[0] === 'messageFilterResult' && call[1]?.data?.direction === 'incoming',
       );
+
       expect(incomingFilterResultIndex).toBeLessThan(filteredUserMessageIndex);
 
       // Verify filter result for agent message comes before its chat message
@@ -752,6 +754,7 @@ describe('AgentsGateway', () => {
       const outgoingFilterResultIndex = emitCalls.findIndex(
         (call) => call[0] === 'messageFilterResult' && call[1]?.data?.direction === 'outgoing',
       );
+
       expect(outgoingFilterResultIndex).toBeLessThan(filteredAgentMessageIndex);
 
       // Verify total calls: 1 loginSuccess + 4 messages + 2 filter results = 7
@@ -859,6 +862,7 @@ describe('AgentsGateway', () => {
   describe('handleChat', () => {
     it('should broadcast chat message for authenticated user and emit agent response', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -891,6 +895,7 @@ describe('AgentsGateway', () => {
         is_error: false,
         result: 'Hello from agent!',
       };
+
       mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);
       mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
       mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
@@ -938,6 +943,7 @@ describe('AgentsGateway', () => {
 
     it('should include model flag in container command when provided', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -988,6 +994,7 @@ describe('AgentsGateway', () => {
 
     it('should ignore empty messages', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
@@ -999,6 +1006,7 @@ describe('AgentsGateway', () => {
 
     it('should ignore messages with only whitespace', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
@@ -1010,6 +1018,7 @@ describe('AgentsGateway', () => {
 
     it('should handle missing message property', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
@@ -1021,6 +1030,7 @@ describe('AgentsGateway', () => {
 
     it('should handle errors when fetching agent details', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       agentsService.findOne.mockRejectedValue(new Error('Database error'));
@@ -1045,6 +1055,7 @@ describe('AgentsGateway', () => {
 
     it('should not emit agent response if response is empty', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -1087,12 +1098,14 @@ describe('AgentsGateway', () => {
       const agentResponseCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
         (call) => call[0] === 'chatMessage' && call[1].data?.from === 'agent',
       );
+
       expect(agentResponseCalls.length).toBe(0);
       loggerLogSpy.mockRestore();
     });
 
     it('should drop incoming message when filter returns drop action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1169,6 +1182,7 @@ describe('AgentsGateway', () => {
 
     it('should flag incoming message when filter returns flag action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1246,6 +1260,7 @@ describe('AgentsGateway', () => {
 
     it('should modify incoming message when filter returns modifiedMessage', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1334,6 +1349,7 @@ describe('AgentsGateway', () => {
 
     it('should modify outgoing message when filter returns modifiedMessage', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1356,6 +1372,7 @@ describe('AgentsGateway', () => {
       const originalResponse = { type: 'response', result: 'Original response' };
       const modifiedResponseString = JSON.stringify({ type: 'response', result: 'Modified response' });
       const originalResponseString = JSON.stringify(originalResponse);
+
       mockAgentProvider.sendMessage.mockResolvedValue(originalResponseString);
       mockAgentProvider.toParseableStrings.mockReturnValue([originalResponseString]);
       mockAgentProvider.toUnifiedResponse.mockReturnValue(originalResponse);
@@ -1366,7 +1383,6 @@ describe('AgentsGateway', () => {
         getDirection: jest.fn().mockReturnValue(FilterDirection.INCOMING),
         filter: jest.fn().mockResolvedValue({ filtered: false }),
       };
-
       const mockOutgoingFilter: jest.Mocked<ChatFilter> = {
         getType: jest.fn().mockReturnValue('modify-filter'),
         getDisplayName: jest.fn().mockReturnValue('Modify Filter'),
@@ -1444,6 +1460,7 @@ describe('AgentsGateway', () => {
 
     it('should not allow modifiedMessage when action is drop', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1489,6 +1506,7 @@ describe('AgentsGateway', () => {
 
     it('should allow multiple filters to modify message sequentially', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1521,7 +1539,6 @@ describe('AgentsGateway', () => {
           modifiedMessage: 'This is a *** word',
         }),
       };
-
       // Second filter: modifies "word" to "term" (receives already modified message)
       const mockFilter2: jest.Mocked<ChatFilter> = {
         getType: jest.fn().mockReturnValue('filter2'),
@@ -1592,6 +1609,7 @@ describe('AgentsGateway', () => {
 
     it('should drop outgoing message when filter returns drop action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1617,7 +1635,6 @@ describe('AgentsGateway', () => {
         getDirection: jest.fn().mockReturnValue(FilterDirection.INCOMING),
         filter: jest.fn().mockResolvedValue({ filtered: false }),
       };
-
       const mockOutgoingFilter: jest.Mocked<ChatFilter> = {
         getType: jest.fn().mockReturnValue('outgoing-filter'),
         getDisplayName: jest.fn().mockReturnValue('Outgoing Filter'),
@@ -1633,11 +1650,13 @@ describe('AgentsGateway', () => {
         if (direction === FilterDirection.INCOMING) {
           return [mockIncomingFilter];
         }
+
         return [mockOutgoingFilter];
       });
 
       const agentResponseJson = JSON.stringify({ type: 'result', result: 'test-filter response' });
       const agentResponseParsed = { type: 'result', result: 'test-filter response' };
+
       mockAgentProvider.sendMessage.mockResolvedValue(agentResponseJson);
       mockAgentProvider.toParseableStrings.mockReturnValue([agentResponseJson]);
       mockAgentProvider.toUnifiedResponse.mockReturnValue(agentResponseParsed);
@@ -1707,6 +1726,7 @@ describe('AgentsGateway', () => {
       // Should not persist the actual agent message, only the fake response
       const createAgentMessageCalls = (agentMessagesService.createAgentMessage as jest.Mock).mock.calls;
       const actualMessageCalls = createAgentMessageCalls.filter((call) => call[1]?.result !== 'MESSAGE_DROPPED');
+
       expect(actualMessageCalls.length).toBe(0);
       expect(mockOutgoingFilter.filter).toHaveBeenCalledWith(
         agentResponseJson,
@@ -1716,6 +1736,7 @@ describe('AgentsGateway', () => {
 
     it('should flag outgoing message when filter returns flag action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1750,11 +1771,13 @@ describe('AgentsGateway', () => {
         if (direction === FilterDirection.INCOMING) {
           return [];
         }
+
         return [mockOutgoingFilter];
       });
 
       const agentResponseJson = JSON.stringify({ type: 'result', result: 'test-filter response' });
       const agentResponseParsed = { type: 'result', result: 'test-filter response' };
+
       mockAgentProvider.sendMessage.mockResolvedValue(agentResponseJson);
       mockAgentProvider.toParseableStrings.mockReturnValue([agentResponseJson]);
       mockAgentProvider.toUnifiedResponse.mockReturnValue(agentResponseParsed);
@@ -1773,6 +1796,7 @@ describe('AgentsGateway', () => {
         if (direction === FilterDirection.INCOMING) {
           return [];
         }
+
         return [mockOutgoingFilter];
       });
 
@@ -1848,6 +1872,7 @@ describe('AgentsGateway', () => {
 
     it('should fall back to text if JSON parsing fails', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -1869,6 +1894,7 @@ describe('AgentsGateway', () => {
         },
       ]);
       const invalidJsonResponse = 'Invalid JSON response';
+
       mockAgentProvider.sendMessage.mockResolvedValue(invalidJsonResponse);
       mockAgentProvider.toParseableStrings.mockReturnValue([invalidJsonResponse]);
       mockAgentProvider.toUnifiedResponse.mockImplementation(() => {
@@ -1913,6 +1939,7 @@ describe('AgentsGateway', () => {
 
     it('should handle errors when getting agent response gracefully', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -1963,6 +1990,7 @@ describe('AgentsGateway', () => {
 
     it('should trim message whitespace', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -2050,6 +2078,7 @@ describe('AgentsGateway', () => {
           is_error: false,
           result: 'Automation reply',
         };
+
         mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);
         mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
         mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
@@ -2080,6 +2109,7 @@ describe('AgentsGateway', () => {
         );
 
         const otherEmits = (otherViewerSocket.emit as jest.Mock).mock.calls;
+
         expect(otherEmits.filter(([event]) => event === 'chatMessage')).toHaveLength(0);
         expect(otherEmits.filter(([event]) => event === 'chatEvent')).toHaveLength(0);
         expect(otherEmits.filter(([event]) => event === 'messageFilterResult')).toHaveLength(0);
@@ -2135,6 +2165,7 @@ describe('AgentsGateway', () => {
           is_error: false,
           result: 'Hello from agent!',
         };
+
         mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);
         mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
         mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
@@ -2178,10 +2209,12 @@ describe('AgentsGateway', () => {
           subtype?: string;
           parts: Array<Record<string, unknown>>;
         };
+
         expect(built).not.toBeNull();
         expect(built.type).toBe('agenstra_turn');
         expect(built.subtype).toBe('success');
         const resultParts = built.parts.filter((p) => p.type === 'result');
+
         expect(resultParts).toHaveLength(1);
         expect(resultParts[0].result).toBe(essay);
         expect(resultParts[0].duration_ms).toBe(42);
@@ -2200,6 +2233,7 @@ describe('AgentsGateway', () => {
           type: string;
           parts: Array<Record<string, unknown>>;
         };
+
         expect(built.type).toBe('agenstra_turn');
         expect(built.parts.filter((p) => p.type === 'result')).toEqual([
           { type: 'result', subtype: 'success', result: 'Hello ' },
@@ -2210,6 +2244,7 @@ describe('AgentsGateway', () => {
 
       it('persists deduped agenstra_turn when handleChat uses sendMessageStream with doubled Cursor result text', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2271,14 +2306,17 @@ describe('AgentsGateway', () => {
         const payload = createCalls.find(
           (c) => typeof c[1] === 'object' && c[1] !== null && (c[1] as { type?: string }).type === 'agenstra_turn',
         )?.[1] as { type: string; parts: Array<{ type?: string; result?: unknown }> } | undefined;
+
         expect(payload).toBeDefined();
         const results = payload!.parts.filter((p) => p.type === 'result');
+
         expect(results).toHaveLength(1);
         expect(results[0].result).toBe(essay);
       });
 
       it('streaming persist does not triple assistant prose when deltas plus repeated result NDJSON lines', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2324,9 +2362,11 @@ describe('AgentsGateway', () => {
         const agentCalls = agentMessagesService.createAgentMessage.mock.calls.filter(
           (c) => c[0] === mockAgent.id && typeof c[1] === 'object' && c[1] !== null,
         );
+
         expect(agentCalls.length).toBeGreaterThanOrEqual(1);
         const payload = agentCalls[agentCalls.length - 1][1] as Record<string, unknown>;
         const asJson = JSON.stringify(payload);
+
         expect(asJson.split(prose).length - 1).toBe(1);
       });
     });
@@ -2334,6 +2374,7 @@ describe('AgentsGateway', () => {
     describe('initialization message', () => {
       it('should send initialization message on first user message when no chat history exists', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2373,6 +2414,7 @@ describe('AgentsGateway', () => {
 
       it('should not send initialization message if chat history exists', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2415,6 +2457,7 @@ describe('AgentsGateway', () => {
 
       it('should not send initialization message if already sent for this agent', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2446,6 +2489,7 @@ describe('AgentsGateway', () => {
 
       it('should handle initialization message send failure gracefully', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2488,6 +2532,7 @@ describe('AgentsGateway', () => {
 
       it('should include model flag in initialization message when provided', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2512,6 +2557,7 @@ describe('AgentsGateway', () => {
   describe('handleFileUpdate', () => {
     it('should broadcast file update notification for authenticated user', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -2519,7 +2565,6 @@ describe('AgentsGateway', () => {
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
-
       const filePath = '/path/to/file.ts';
 
       await gateway.handleFileUpdate({ filePath }, mockSocket as Socket);
@@ -2564,6 +2609,7 @@ describe('AgentsGateway', () => {
 
     it('should reject file update with missing filePath', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
@@ -2586,6 +2632,7 @@ describe('AgentsGateway', () => {
 
     it('should trim filePath whitespace', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -2593,7 +2640,6 @@ describe('AgentsGateway', () => {
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
-
       const filePath = '  /path/to/file.ts  ';
       const trimmedPath = '/path/to/file.ts';
 
@@ -2619,6 +2665,7 @@ describe('AgentsGateway', () => {
 
     it('should handle errors when fetching agent details gracefully', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
@@ -2663,7 +2710,6 @@ describe('AgentsGateway', () => {
 
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
-
       const filePath = '/path/to/file.ts';
 
       await gateway.handleFileUpdate({ filePath }, mockSocket1);
@@ -2698,6 +2744,7 @@ describe('AgentsGateway', () => {
   describe('handleLogout', () => {
     it('should logout authenticated user successfully', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -2728,6 +2775,7 @@ describe('AgentsGateway', () => {
 
     it('should handle logout gracefully when agent details fetch fails', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       agentsService.findOne.mockRejectedValue(new Error('Database error'));
@@ -2917,6 +2965,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
@@ -2946,6 +2995,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // Ensure socket is connected and in the maps
       mockSocket.connected = true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2959,6 +3009,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStatus as jest.Mock).mockClear();
       (dockerService.getContainerStats as jest.Mock).mockClear();
       const emitSpy = jest.fn();
+
       mockSocket.emit = emitSpy;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
@@ -2989,11 +3040,13 @@ describe('AgentsGateway', () => {
 
     it('should not start stats broadcasting if agent has no container', async () => {
       const agentWithoutContainer = { ...mockAgent, containerId: null };
+
       agentsRepository.findById.mockResolvedValue(agentWithoutContainer);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
@@ -3011,6 +3064,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
@@ -3019,6 +3073,7 @@ describe('AgentsGateway', () => {
       // Verify interval exists
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
+
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
 
       // Disconnect
@@ -3036,6 +3091,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3046,6 +3102,7 @@ describe('AgentsGateway', () => {
       // Verify interval exists
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
+
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
 
       // Logout
@@ -3063,6 +3120,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStats as jest.Mock).mockRejectedValue(new Error('Stats error'));
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
@@ -3070,6 +3128,7 @@ describe('AgentsGateway', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
+
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
 
       jest.advanceTimersByTime(5000);
@@ -3088,6 +3147,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
@@ -3117,6 +3177,7 @@ describe('AgentsGateway', () => {
       (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
@@ -3125,6 +3186,7 @@ describe('AgentsGateway', () => {
       // Verify interval exists
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
+
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
       const firstInterval = statsIntervals.get(mockAgent.id);
 
@@ -3182,6 +3244,7 @@ describe('AgentsGateway', () => {
       const chatMessageCalls = (recoveredSocket.emit as jest.Mock).mock.calls.filter(
         (call: unknown[]) => call[0] === 'chatMessage',
       );
+
       expect(chatMessageCalls.length).toBe(0);
     });
 
@@ -3191,6 +3254,7 @@ describe('AgentsGateway', () => {
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
 
       const socketId = mockSocket.id || 'test-socket-id';
+
       // Mark agent as already authenticated (simulating reconnection scenario)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
@@ -3231,6 +3295,7 @@ describe('AgentsGateway', () => {
       const chatMessageCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
         (call: unknown[]) => call[0] === 'chatMessage',
       );
+
       expect(chatMessageCalls.length).toBe(0);
     });
 
@@ -3257,6 +3322,7 @@ describe('AgentsGateway', () => {
       // Ensure socket is not recovered and agent is not already authenticated
       const newSocket = { ...mockSocket, recovered: false } as Socket;
       const socketId = newSocket.id || 'test-socket-id';
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.delete(socketId);
 
@@ -3271,6 +3337,7 @@ describe('AgentsGateway', () => {
       const chatMessageCalls = (newSocket.emit as jest.Mock).mock.calls.filter(
         (call: unknown[]) => call[0] === 'chatMessage',
       );
+
       expect(chatMessageCalls.length).toBe(1);
     });
   });

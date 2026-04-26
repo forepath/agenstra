@@ -1,14 +1,14 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, type ActivatedRouteSnapshot, convertToParamMap, Router, type UrlTree } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router, type ActivatedRouteSnapshot, type UrlTree } from '@angular/router';
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { ClientsFacade } from '../../../../data-access-agent-console/src/lib/state/clients/clients.facade';
+import { ClientsFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import { firstValueFrom, isObservable, of, type Observable } from 'rxjs';
+
 import { configEditorGuard } from './config-editor.guard';
 
 describe('configEditorGuard', () => {
   const mockParentRoute = { path: 'parent' };
-
   let mockRouter: { createUrlTree: jest.Mock };
   let mockActivatedRoute: { parent: typeof mockParentRoute };
   let clientsFacadeStub: {
@@ -16,7 +16,6 @@ describe('configEditorGuard', () => {
     loadClient: jest.Mock;
     setActiveClient: jest.Mock;
   };
-
   const createInjector = (): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -26,15 +25,18 @@ describe('configEditorGuard', () => {
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],
     });
+
     return TestBed.inject(Injector);
   };
 
   async function runGuard(route: ActivatedRouteSnapshot): Promise<boolean | UrlTree> {
     const injector = createInjector();
     const raw = runInInjectionContext(injector, () => configEditorGuard(route, {} as never));
+
     if (isObservable(raw)) {
       return firstValueFrom(raw as Observable<boolean | UrlTree>);
     }
+
     return raw as boolean | UrlTree;
   }
 
@@ -61,7 +63,6 @@ describe('configEditorGuard', () => {
     const route = {
       paramMap: convertToParamMap({ clientId: 'c1', agentId: 'a1' }),
     } as ActivatedRouteSnapshot;
-
     const result = await runGuard(route);
 
     expect(clientsFacadeStub.setActiveClient).toHaveBeenCalledWith('c1');
@@ -72,6 +73,7 @@ describe('configEditorGuard', () => {
 
   it('redirects to agent chat when the user cannot manage workspace configuration', async () => {
     const urlTree = { toString: () => '/clients/c1/agents/a1' } as UrlTree;
+
     mockRouter.createUrlTree.mockReturnValue(urlTree);
     clientsFacadeStub.getClientById$.mockReturnValue(
       of({
@@ -82,7 +84,6 @@ describe('configEditorGuard', () => {
     const route = {
       paramMap: convertToParamMap({ clientId: 'c1', agentId: 'a1' }),
     } as ActivatedRouteSnapshot;
-
     const result = await runGuard(route);
 
     expect(result).toBe(urlTree);
@@ -91,9 +92,9 @@ describe('configEditorGuard', () => {
 
   it('redirects to /clients when client or agent id is missing', async () => {
     const urlTree = { toString: () => '/clients' } as UrlTree;
+
     mockRouter.createUrlTree.mockReturnValue(urlTree);
     const route = { paramMap: convertToParamMap({ clientId: 'c1' }) } as ActivatedRouteSnapshot;
-
     const result = await runGuard(route);
 
     expect(result).toBe(urlTree);

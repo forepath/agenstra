@@ -1,13 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
+
 import { DeploymentRunsRepository } from './deployment-runs.repository';
 
 describe('DeploymentRunsRepository', () => {
   let repository: DeploymentRunsRepository;
-  let typeOrmRepository: Repository<DeploymentRunEntity>;
-
   const mockRun: DeploymentRunEntity = {
     id: 'run-uuid',
     configurationId: 'config-uuid',
@@ -26,7 +25,6 @@ describe('DeploymentRunsRepository', () => {
     updatedAt: new Date('2024-01-01'),
     configuration: {} as any,
   };
-
   const mockTypeOrmRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
@@ -46,7 +44,6 @@ describe('DeploymentRunsRepository', () => {
     }).compile();
 
     repository = module.get<DeploymentRunsRepository>(DeploymentRunsRepository);
-    typeOrmRepository = module.get<Repository<DeploymentRunEntity>>(getRepositoryToken(DeploymentRunEntity));
   });
 
   afterEach(() => {
@@ -56,6 +53,7 @@ describe('DeploymentRunsRepository', () => {
   describe('findByConfigurationId', () => {
     it('should return runs with pagination', async () => {
       const runs = [mockRun];
+
       mockTypeOrmRepository.find.mockResolvedValue(runs);
 
       const result = await repository.findByConfigurationId('config-uuid', 50, 0);
@@ -71,6 +69,7 @@ describe('DeploymentRunsRepository', () => {
 
     it('should use default pagination values', async () => {
       const runs = [mockRun];
+
       mockTypeOrmRepository.find.mockResolvedValue(runs);
 
       await repository.findByConfigurationId('config-uuid');
@@ -116,6 +115,7 @@ describe('DeploymentRunsRepository', () => {
         sha: 'abc123',
       };
       const createdRun = { ...mockRun, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdRun);
       mockTypeOrmRepository.save.mockResolvedValue(createdRun);
 
@@ -131,6 +131,7 @@ describe('DeploymentRunsRepository', () => {
     it('should update existing run', async () => {
       const updateData = { status: 'completed', conclusion: 'success' };
       const updatedRun = { ...mockRun, ...updateData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(mockRun);
       mockTypeOrmRepository.save.mockResolvedValue(updatedRun);
 
@@ -158,6 +159,7 @@ describe('DeploymentRunsRepository', () => {
         sha: 'abc123',
       };
       const createdRun = { ...mockRun, ...createData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(null);
       mockTypeOrmRepository.create.mockReturnValue(createdRun);
       mockTypeOrmRepository.save.mockResolvedValue(createdRun);
@@ -176,6 +178,7 @@ describe('DeploymentRunsRepository', () => {
     it('should update existing run when exists', async () => {
       const updateData = { status: 'completed', conclusion: 'success' };
       const updatedRun = { ...mockRun, ...updateData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(mockRun);
       mockTypeOrmRepository.save.mockResolvedValue(updatedRun);
 

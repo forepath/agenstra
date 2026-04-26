@@ -3,6 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
+
+import type {
+  TicketAutomationResponseDto,
+  TicketAutomationRunResponseDto,
+  UpdateTicketAutomationDto,
+} from '../state/ticket-automation/ticket-automation.types';
 import type {
   CreateTicketDto,
   CreateTicketResultDto,
@@ -16,11 +22,6 @@ import type {
   TicketResponseDto,
   UpdateTicketDto,
 } from '../state/tickets/tickets.types';
-import type {
-  TicketAutomationResponseDto,
-  TicketAutomationRunResponseDto,
-  UpdateTicketAutomationDto,
-} from '../state/ticket-automation/ticket-automation.types';
 
 @Injectable({
   providedIn: 'root',
@@ -35,25 +36,31 @@ export class TicketsService {
 
   listTickets(params?: ListTicketsParams): Observable<TicketResponseDto[]> {
     let httpParams = new HttpParams();
+
     if (params?.clientId) {
       httpParams = httpParams.set('clientId', params.clientId);
     }
+
     if (params?.status) {
       httpParams = httpParams.set('status', params.status);
     }
+
     if (params?.parentId === null) {
       httpParams = httpParams.set('parentId', 'null');
     } else if (params?.parentId !== undefined) {
       httpParams = httpParams.set('parentId', params.parentId);
     }
+
     return this.http.get<TicketResponseDto[]>(`${this.apiUrl}/tickets`, { params: httpParams });
   }
 
   getTicket(id: string, includeDescendants = false): Observable<TicketResponseDto> {
     let params = new HttpParams();
+
     if (includeDescendants) {
       params = params.set('includeDescendants', 'true');
     }
+
     return this.http.get<TicketResponseDto>(`${this.apiUrl}/tickets/${id}`, { params });
   }
 
@@ -87,6 +94,7 @@ export class TicketsService {
 
   listActivity(ticketId: string, limit = 50, offset = 0): Observable<TicketActivityResponseDto[]> {
     const params = new HttpParams().set('limit', String(limit)).set('offset', String(offset));
+
     return this.http.get<TicketActivityResponseDto[]>(`${this.apiUrl}/tickets/${ticketId}/activity`, {
       params,
     });

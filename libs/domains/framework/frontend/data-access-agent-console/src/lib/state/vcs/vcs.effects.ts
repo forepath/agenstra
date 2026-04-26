@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, of, switchMap, tap } from 'rxjs';
+
 import { VcsService } from '../../services/vcs.service';
+
 import {
   commit,
   commitFailure,
@@ -55,15 +57,19 @@ function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     return error.error?.message || error.message || 'An unexpected error occurred';
   }
+
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -295,7 +301,7 @@ export const reloadStatusAfterOperation$ = createEffect(
         deleteBranchSuccess,
         resolveConflictSuccess,
       ),
-      tap((action) => {
+      tap((_) => {
         // Extract clientId and agentId from the action if available
         // For now, we'll need to reload status manually in components
         // This effect can be enhanced later to automatically reload

@@ -6,7 +6,9 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { KeycloakService } from 'keycloak-angular';
 import { of, throwError } from 'rxjs';
+
 import { LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
+
 import {
   checkAuthentication,
   checkAuthenticationFailure,
@@ -61,7 +63,6 @@ describe('AuthenticationEffects', () => {
   let mockAuthEnvironment: IdentityAuthEnvironment;
   let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
   let mockRouter: jest.Mocked<Partial<Router>>;
-
   const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 
   beforeEach(() => {
@@ -522,6 +523,7 @@ describe('AuthenticationEffects', () => {
 
       it('should extract admin role from realm_access.roles in token', (done) => {
         const action = checkAuthentication();
+
         mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
         mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
           tokenParsed: {
@@ -547,6 +549,7 @@ describe('AuthenticationEffects', () => {
 
       it('should extract user role when realm_access has no admin', (done) => {
         const action = checkAuthentication();
+
         mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
         mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
           tokenParsed: {
@@ -572,6 +575,7 @@ describe('AuthenticationEffects', () => {
 
       it('should extract admin role from resource_access client roles', (done) => {
         const action = checkAuthentication();
+
         mockKeycloakService.isLoggedIn = jest.fn().mockReturnValue(true);
         mockKeycloakService.getKeycloakInstance = jest.fn().mockReturnValue({
           tokenParsed: {
@@ -780,7 +784,6 @@ describe('AuthenticationEffects', () => {
     const mockAuthService = {
       listUsers: jest.fn(),
     } as any;
-
     const mockUser: UserResponseDto = {
       id: 'user-1',
       email: 'test@example.com',
@@ -858,7 +861,6 @@ describe('AuthenticationEffects', () => {
     const mockAuthService = {
       listUsers: jest.fn(),
     } as any;
-
     const mockUser: UserResponseDto = {
       id: 'user-1',
       email: 'test@example.com',

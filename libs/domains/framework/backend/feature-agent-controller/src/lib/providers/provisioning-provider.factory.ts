@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { ProvisioningProvider } from './provisioning-provider.interface';
 
 /**
@@ -16,9 +17,11 @@ export class ProvisioningProviderFactory {
    */
   registerProvider(provider: ProvisioningProvider): void {
     const type = provider.getType();
+
     if (this.providers.has(type)) {
       this.logger.warn(`Provider with type '${type}' is already registered. Overwriting existing provider.`);
     }
+
     this.providers.set(type, provider);
     this.logger.log(`Registered provisioning provider: ${type}`);
   }
@@ -31,12 +34,15 @@ export class ProvisioningProviderFactory {
    */
   getProvider(type: string): ProvisioningProvider {
     const provider = this.providers.get(type);
+
     if (!provider) {
       const availableTypes = Array.from(this.providers.keys()).join(', ');
+
       throw new Error(
         `Provisioning provider with type '${type}' not found. Available types: ${availableTypes || 'none'}`,
       );
     }
+
     return provider;
   }
 

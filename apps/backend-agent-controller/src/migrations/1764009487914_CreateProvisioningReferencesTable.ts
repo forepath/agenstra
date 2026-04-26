@@ -129,9 +129,11 @@ export class CreateProvisioningReferencesTable1764009487914 implements Migration
     // Drop FK
     const table = await queryRunner.getTable('provisioning_references');
     const foreignKey = table?.foreignKeys.find((fk) => fk.columnNames.indexOf('client_id') !== -1);
+
     if (foreignKey) {
       await queryRunner.dropForeignKey('provisioning_references', foreignKey);
     }
+
     // Drop unique
     await queryRunner.dropUniqueConstraint('provisioning_references', 'uq_provider_server');
     // Drop table

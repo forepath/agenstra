@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import axios from 'axios';
+
 import { ProviderServerTypesService } from './provider-server-types.service';
 
 jest.mock('axios');
@@ -14,18 +15,21 @@ describe('ProviderServerTypesService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [ProviderServerTypesService],
     }).compile();
+
     service = moduleRef.get(ProviderServerTypesService);
   });
 
   describe('getServerTypes', () => {
     it('should return empty array for unknown provider', async () => {
       const result = await service.getServerTypes('unknown');
+
       expect(result).toEqual([]);
       expect(mockedAxios.get).not.toHaveBeenCalled();
     });
 
     it('should fetch and map Hetzner server types when token is set', async () => {
       const env = process.env.HETZNER_API_TOKEN;
+
       process.env.HETZNER_API_TOKEN = 'test-token';
       mockedAxios.get.mockResolvedValue({
         data: {
@@ -91,6 +95,7 @@ describe('ProviderServerTypesService', () => {
 
     it('should throw when HETZNER_API_TOKEN is not set', async () => {
       const env = process.env.HETZNER_API_TOKEN;
+
       delete process.env.HETZNER_API_TOKEN;
 
       await expect(service.getServerTypes('hetzner')).rejects.toThrow(BadRequestException);
@@ -101,6 +106,7 @@ describe('ProviderServerTypesService', () => {
 
     it('should fetch and map DigitalOcean sizes when token is set', async () => {
       const env = process.env.DIGITALOCEAN_API_TOKEN;
+
       process.env.DIGITALOCEAN_API_TOKEN = 'do-test-token';
       mockedAxios.get.mockResolvedValue({
         data: {
@@ -141,6 +147,7 @@ describe('ProviderServerTypesService', () => {
 
     it('should throw when DIGITALOCEAN_API_TOKEN is not set', async () => {
       const env = process.env.DIGITALOCEAN_API_TOKEN;
+
       delete process.env.DIGITALOCEAN_API_TOKEN;
 
       await expect(service.getServerTypes('digital-ocean')).rejects.toThrow(BadRequestException);

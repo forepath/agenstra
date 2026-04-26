@@ -1,6 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
+import type {
+  CancelSubscriptionDto,
+  CreateSubscriptionDto,
+  ListParams,
+  ResumeSubscriptionDto,
+  SubscriptionResponse,
+} from '../../types/billing.types';
+
 import {
   cancelSubscription,
   clearSelectedSubscription,
@@ -10,18 +19,10 @@ import {
   resumeSubscription,
 } from './subscriptions.actions';
 import { SubscriptionsFacade } from './subscriptions.facade';
-import type {
-  CancelSubscriptionDto,
-  CreateSubscriptionDto,
-  ListParams,
-  ResumeSubscriptionDto,
-  SubscriptionResponse,
-} from '../../types/billing.types';
 
 describe('SubscriptionsFacade', () => {
   let facade: SubscriptionsFacade;
   let store: jest.Mocked<Store>;
-
   const mockSubscription: SubscriptionResponse = {
     id: 'sub-1',
     planId: 'plan-1',
@@ -53,6 +54,7 @@ describe('SubscriptionsFacade', () => {
   describe('State Observables', () => {
     it('should return subscriptions observable', (done) => {
       const subscriptions = [mockSubscription];
+
       store.select.mockReturnValue(of(subscriptions));
 
       facade.getSubscriptions$().subscribe((result) => {
@@ -95,6 +97,7 @@ describe('SubscriptionsFacade', () => {
   describe('Error Observable', () => {
     it('should return subscriptions error observable', (done) => {
       const error = 'Test error';
+
       store.select.mockReturnValue(of(error));
 
       facade.getSubscriptionsError$().subscribe((result) => {
@@ -127,6 +130,7 @@ describe('SubscriptionsFacade', () => {
   describe('Action Methods', () => {
     it('should dispatch loadSubscriptions action', () => {
       const params: ListParams = { limit: 10, offset: 0 };
+
       facade.loadSubscriptions(params);
 
       expect(store.dispatch).toHaveBeenCalledWith(loadSubscriptions({ params }));
@@ -140,6 +144,7 @@ describe('SubscriptionsFacade', () => {
 
     it('should dispatch createSubscription action', () => {
       const subscription: CreateSubscriptionDto = { planId: 'plan-1' };
+
       facade.createSubscription(subscription);
 
       expect(store.dispatch).toHaveBeenCalledWith(createSubscription({ subscription }));
@@ -147,6 +152,7 @@ describe('SubscriptionsFacade', () => {
 
     it('should dispatch cancelSubscription action', () => {
       const dto: CancelSubscriptionDto = { reason: 'test' };
+
       facade.cancelSubscription('sub-1', dto);
 
       expect(store.dispatch).toHaveBeenCalledWith(cancelSubscription({ id: 'sub-1', dto }));
@@ -154,6 +160,7 @@ describe('SubscriptionsFacade', () => {
 
     it('should dispatch resumeSubscription action', () => {
       const dto: ResumeSubscriptionDto = { reason: 'test' };
+
       facade.resumeSubscription('sub-1', dto);
 
       expect(store.dispatch).toHaveBeenCalledWith(resumeSubscription({ id: 'sub-1', dto }));

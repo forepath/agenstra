@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { DeploymentConfigurationEntity } from './deployment-configuration.entity';
 
 /**

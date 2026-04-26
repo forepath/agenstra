@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import * as nodemailer from 'nodemailer';
+
 import { EmailService } from './email.service';
 
 jest.mock('nodemailer', () => ({
@@ -30,6 +31,7 @@ describe('EmailService', () => {
       const module: TestingModule = await Test.createTestingModule({
         providers: [EmailService],
       }).compile();
+
       service = module.get<EmailService>(EmailService);
     });
 
@@ -47,6 +49,7 @@ describe('EmailService', () => {
         subject: 'Test',
         text: 'Body',
       });
+
       expect(result).toBe(false);
       expect(mockCreateTransport).not.toHaveBeenCalled();
     });
@@ -60,6 +63,7 @@ describe('EmailService', () => {
       const module: TestingModule = await Test.createTestingModule({
         providers: [EmailService],
       }).compile();
+
       service = module.get<EmailService>(EmailService);
     });
 
@@ -152,6 +156,7 @@ describe('EmailService', () => {
       const module: TestingModule = await Test.createTestingModule({
         providers: [EmailService],
       }).compile();
+
       service = module.get<EmailService>(EmailService);
     });
 
@@ -173,6 +178,7 @@ describe('EmailService', () => {
         subject: 'Test',
         text: 'Body',
       });
+
       expect(result).toBe(true);
     });
   });
@@ -185,6 +191,7 @@ describe('EmailService', () => {
       const module: TestingModule = await Test.createTestingModule({
         providers: [EmailService],
       }).compile();
+
       service = module.get<EmailService>(EmailService);
     });
 

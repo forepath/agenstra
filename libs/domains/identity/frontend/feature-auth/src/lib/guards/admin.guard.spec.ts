@@ -3,13 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
 import { of } from 'rxjs';
+
 import { adminGuard } from './admin.guard';
 
 describe('adminGuard', () => {
   let mockRouter: jest.Mocked<Router>;
   let mockRoute: ActivatedRouteSnapshot;
   let mockState: RouterStateSnapshot;
-
   const setupTestBed = (canAccess: boolean): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -27,6 +27,7 @@ describe('adminGuard', () => {
         },
       ],
     });
+
     return TestBed.inject(Injector);
   };
 
@@ -46,6 +47,7 @@ describe('adminGuard', () => {
 
     runInInjectionContext(injector, () => {
       const result = adminGuard(mockRoute, mockState);
+
       if (typeof result === 'object' && 'subscribe' in result) {
         result.subscribe((res) => {
           expect(res).toBe(true);
@@ -61,11 +63,13 @@ describe('adminGuard', () => {
 
   it('should redirect to /clients when canAccessUserManager is false', (done) => {
     const mockUrlTree = {} as UrlTree;
+
     mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
     const injector = setupTestBed(false);
 
     runInInjectionContext(injector, () => {
       const result = adminGuard(mockRoute, mockState);
+
       if (typeof result === 'object' && 'subscribe' in result) {
         result.subscribe((res) => {
           expect(res).toBe(mockUrlTree);

@@ -17,6 +17,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { VcsFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import type { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
+
 import { ThemeService } from '../../theme.service';
 
 /**
@@ -26,6 +27,7 @@ import { ThemeService } from '../../theme.service';
 function base64ToUtf8(base64: string): string {
   const binaryString = atob(base64);
   const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+
   return new TextDecoder('utf-8').decode(bytes);
 }
 
@@ -79,6 +81,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
       const filePath = this.filePath();
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (filePath && clientId && agentId && this.visible()) {
         this.loadDiff();
       }
@@ -89,6 +92,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
       if (diff) {
         // Store the diff for later use
         this.currentDiff = diff;
+
         // Update editor if it exists, otherwise it will be applied when editor is created
         if (this.diffEditor) {
           this.updateDiffEditor(diff);
@@ -109,6 +113,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
     // Watch theme changes
     effect(() => {
       const theme = this.themeService.isDarkMode() ? 'vs-dark' : 'vs-light';
+
       if (this.diffEditor) {
         monaco.editor.setTheme(theme);
       }
@@ -154,6 +159,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
       // Clear decorations
       const originalEditor = this.diffEditor.getOriginalEditor();
       const modifiedEditor = this.diffEditor.getModifiedEditor();
+
       this.originalDecorations = originalEditor.deltaDecorations(this.originalDecorations, []);
       this.modifiedDecorations = modifiedEditor.deltaDecorations(this.modifiedDecorations, []);
 
@@ -174,6 +180,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
     if (container.offsetWidth === 0 || container.offsetHeight === 0) {
       // Retry after a short delay if container doesn't have dimensions yet
       setTimeout(() => this.createDiffEditor(), 100);
+
       return;
     }
 
@@ -239,20 +246,19 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
       const modifiedSize = diff.modifiedSize ?? 0;
       const sizeDiff = modifiedSize - originalSize;
       const sizeDiffText = sizeDiff > 0 ? `+${sizeDiff}` : sizeDiff < 0 ? `${sizeDiff}` : '0';
-
       const originalText = `Binary file\nOriginal size: ${originalSize} bytes`;
       const modifiedText = `Binary file\nModified size: ${modifiedSize} bytes\nSize difference: ${sizeDiffText} bytes`;
-
       // Create models for binary file info
       const originalUri = monaco.Uri.parse(`file:///${diff.path}.original.binary`);
       const modifiedUri = monaco.Uri.parse(`file:///${diff.path}.modified.binary`);
-
       // Dispose existing models if they exist
       const existingOriginal = monaco.editor.getModel(originalUri);
       const existingModified = monaco.editor.getModel(modifiedUri);
+
       if (existingOriginal) {
         existingOriginal.dispose();
       }
+
       if (existingModified) {
         existingModified.dispose();
       }
@@ -267,6 +273,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
       });
 
       this.diffEditor.layout();
+
       return;
     }
 
@@ -284,22 +291,23 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
     } catch (error) {
       console.error('Failed to decode file content:', error);
       this.error.set('Failed to decode file content');
+
       return;
     }
 
     // Detect language from file path
     const language = this.detectLanguage(diff.path);
-
     // Create models with URIs - Monaco diff editor automatically computes diffs
     const originalUri = monaco.Uri.parse(`file:///${diff.path}.original`);
     const modifiedUri = monaco.Uri.parse(`file:///${diff.path}.modified`);
-
     // Dispose existing models if they exist
     const existingOriginal = monaco.editor.getModel(originalUri);
     const existingModified = monaco.editor.getModel(modifiedUri);
+
     if (existingOriginal) {
       existingOriginal.dispose();
     }
+
     if (existingModified) {
       existingModified.dispose();
     }
@@ -346,7 +354,6 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
     const modifiedLines = modifiedText.split('\n');
     const originalDecorations: editor.IModelDeltaDecoration[] = [];
     const modifiedDecorations: editor.IModelDeltaDecoration[] = [];
-
     // Simple diff: find lines that exist in one but not the other
     const originalSet = new Set(originalLines);
     const modifiedSet = new Set(modifiedLines);
@@ -415,6 +422,7 @@ export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, 
       bash: 'shell',
       sql: 'sql',
     };
+
     return languageMap[ext || ''] || 'plaintext';
   }
 

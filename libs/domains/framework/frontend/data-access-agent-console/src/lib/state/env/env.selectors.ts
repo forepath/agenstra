@@ -1,5 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import type { EnvironmentVariableResponseDto } from './env.types';
+
 import type { EnvState } from './env.reducer';
 
 export const selectEnvState = createFeatureSelector<EnvState>('env');
@@ -33,48 +33,56 @@ function getEnvVarKey(clientId: string, agentId: string, envVarId: string): stri
 export const selectEnvironmentVariablesForAgent = (clientId: string, agentId: string) =>
   createSelector(selectEnvironmentVariables, (environmentVariables) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return environmentVariables[key] ?? null;
   });
 
 export const selectEnvironmentVariablesCount = (clientId: string, agentId: string) =>
   createSelector(selectEnvCounts, (counts) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return counts[key] ?? null;
   });
 
 export const selectIsLoadingEnvironmentVariables = (clientId: string, agentId: string) =>
   createSelector(selectEnvLoading, (loading) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return loading[key] ?? false;
   });
 
 export const selectIsLoadingEnvironmentVariablesCount = (clientId: string, agentId: string) =>
   createSelector(selectEnvLoadingCount, (loadingCount) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return loadingCount[key] ?? false;
   });
 
 export const selectIsCreatingEnvironmentVariable = (clientId: string, agentId: string) =>
   createSelector(selectEnvCreating, (creating) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return creating[key] ?? false;
   });
 
 export const selectIsUpdatingEnvironmentVariable = (clientId: string, agentId: string, envVarId: string) =>
   createSelector(selectEnvUpdating, (updating) => {
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
+
     return updating[envVarKey] ?? false;
   });
 
 export const selectIsDeletingEnvironmentVariable = (clientId: string, agentId: string, envVarId: string) =>
   createSelector(selectEnvDeleting, (deleting) => {
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
+
     return deleting[envVarKey] ?? false;
   });
 
 export const selectIsDeletingAllEnvironmentVariables = (clientId: string, agentId: string) =>
   createSelector(selectEnvDeletingAll, (deletingAll) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return deletingAll[key] ?? false;
   });
 
@@ -82,12 +90,14 @@ export const selectIsDeletingAllEnvironmentVariables = (clientId: string, agentI
 export const selectEnvError = (clientId: string, agentId: string) =>
   createSelector(selectEnvErrors, (errors) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return errors[key] ?? null;
   });
 
 export const selectEnvVarError = (clientId: string, agentId: string, envVarId: string) =>
   createSelector(selectEnvErrors, (errors) => {
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
+
     return errors[envVarKey] ?? null;
   });
 

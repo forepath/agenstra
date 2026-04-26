@@ -4,10 +4,12 @@ import {
   EnvironmentVariableResponseDto,
   UpdateEnvironmentVariableDto,
 } from '@forepath/framework/backend/feature-agent-manager';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientsService } from './clients.service';
 
 /**
@@ -36,9 +38,11 @@ export class ClientAgentEnvironmentVariablesProxyService {
       if (!clientEntity.apiKey) {
         throw new BadRequestException('API key is not configured for this client');
       }
+
       return `Bearer ${clientEntity.apiKey}`;
     } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
       const token = await this.clientsService.getAccessToken(clientId);
+
       return `Bearer ${token}`;
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
@@ -54,6 +58,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
   private buildAgentEnvironmentApiUrl(endpoint: string, agentId: string): string {
     // Remove trailing slash if present
     const baseUrl = endpoint.replace(/\/$/, '');
+
     // Ensure /api/agents/{agentId}/environment path
     return `${baseUrl}/api/agents/${agentId}/environment`;
   }
@@ -96,6 +101,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
       // Handle error responses
       if (response.status >= 400) {
         const errorMessage = (response.data as { message?: string })?.message || 'Request failed';
+
         this.logger.error(
           `Request to ${baseUrl}${config.url || ''} failed with status ${response.status}: ${errorMessage}`,
         );
@@ -116,9 +122,11 @@ export class ClientAgentEnvironmentVariablesProxyService {
       }
 
       const axiosError = error as AxiosError;
+
       if (axiosError.response) {
         const errorMessage =
           (axiosError.response.data as { message?: string })?.message || axiosError.message || 'Request failed';
+
         this.logger.error(`Request to ${baseUrl}${config.url || ''} failed: ${errorMessage}`, axiosError.response.data);
 
         if (axiosError.response.status === 404) {

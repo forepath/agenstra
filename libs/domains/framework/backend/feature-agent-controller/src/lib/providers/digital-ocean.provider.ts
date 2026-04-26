@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import {
   ProvisionedServer,
   ProvisioningProvider,
@@ -21,6 +22,7 @@ export class DigitalOceanProvider implements ProvisioningProvider {
 
   constructor() {
     this.apiToken = process.env.DIGITALOCEAN_API_TOKEN || '';
+
     if (!this.apiToken) {
       this.logger.warn(
         'DIGITALOCEAN_API_TOKEN environment variable is not set. DigitalOcean provider will not function.',
@@ -91,9 +93,9 @@ export class DigitalOceanProvider implements ProvisioningProvider {
     try {
       // Generate user data script for Docker CE installation and agent-manager setup
       const userData = this.generateUserDataScript(options.userData || '');
-
       // Get SSH key ID if SSH key fingerprint/ID is provided
       let sshKeyIds: number[] | undefined;
+
       if (options.sshKey) {
         sshKeyIds = await this.getSshKeyIds(options.sshKey);
       }
@@ -119,8 +121,8 @@ export class DigitalOceanProvider implements ProvisioningProvider {
           },
         },
       );
-
       const droplet = createResponse.data.droplet;
+
       this.logger.log(`Created DigitalOcean droplet ${droplet.id} (${droplet.name})`);
 
       // Wait for droplet to be running
@@ -143,11 +145,15 @@ export class DigitalOceanProvider implements ProvisioningProvider {
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to provision DigitalOcean droplet: ${axiosError.message}`);
+
       if (axiosError.response?.data) {
         const errorData = axiosError.response.data as { message?: string; id?: string };
+
         throw new BadRequestException(`Failed to provision server: ${errorData.message || axiosError.message}`);
       }
+
       throw new BadRequestException(`Failed to provision server: ${axiosError.message}`);
     }
   }
@@ -170,12 +176,16 @@ export class DigitalOceanProvider implements ProvisioningProvider {
       this.logger.log(`Deleted DigitalOcean droplet ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to delete DigitalOcean droplet ${serverId}: ${axiosError.message}`);
+
       if (axiosError.response?.status === 404) {
         // Droplet already deleted or doesn't exist - treat as success
         this.logger.warn(`Droplet ${serverId} not found, assuming already deleted`);
+
         return;
       }
+
       throw new BadRequestException(`Failed to delete server: ${axiosError.message}`);
     }
   }
@@ -199,7 +209,6 @@ export class DigitalOceanProvider implements ProvisioningProvider {
           },
         },
       );
-
       const droplet = response.data.droplet;
       const publicIp = droplet.networks.v4.find((net) => net.type === 'public')?.ip_address || '';
       const privateIp = droplet.networks.v4.find((net) => net.type === 'private')?.ip_address || undefined;
@@ -217,10 +226,13 @@ export class DigitalOceanProvider implements ProvisioningProvider {
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to get DigitalOcean droplet info ${serverId}: ${axiosError.message}`);
+
       if (axiosError.response?.status === 404) {
         throw new BadRequestException(`Server ${serverId} not found`);
       }
+
       throw new BadRequestException(`Failed to get server info: ${axiosError.message}`);
     }
   }
@@ -237,11 +249,14 @@ export class DigitalOceanProvider implements ProvisioningProvider {
     while (Date.now() - startTime < maxWaitTime) {
       try {
         const info = await this.getServerInfo(serverId);
+
         if (info.status === 'active') {
           // Additional wait for SSH to be ready
           await new Promise((resolve) => setTimeout(resolve, 10000));
+
           return;
         }
+
         this.logger.debug(`Droplet ${serverId} status: ${info.status}, waiting...`);
       } catch (error) {
         this.logger.warn(`Error checking droplet status: ${(error as Error).message}`);
@@ -270,11 +285,12 @@ export class DigitalOceanProvider implements ProvisioningProvider {
           },
         },
       );
-
       // If it's a numeric ID, use it directly
       const numericId = parseInt(sshKey, 10);
+
       if (!isNaN(numericId)) {
         const keyExists = response.data.ssh_keys.some((key) => key.id === numericId);
+
         if (keyExists) {
           return [numericId];
         }
@@ -289,9 +305,11 @@ export class DigitalOceanProvider implements ProvisioningProvider {
 
       // If no match found, log warning and continue without SSH key
       this.logger.warn(`SSH key not found in DigitalOcean account: ${sshKey}`);
+
       return [];
     } catch (error) {
       this.logger.warn(`Failed to lookup SSH keys: ${(error as AxiosError).message}`);
+
       return [];
     }
   }
@@ -313,6 +331,7 @@ export class DigitalOceanProvider implements ProvisioningProvider {
   private generateUserDataScript(additionalUserData: string): string {
     // Decode additional user data if it's base64, otherwise use as-is
     let decodedAdditionalUserData = '';
+
     if (additionalUserData && additionalUserData.trim()) {
       try {
         decodedAdditionalUserData = Buffer.from(additionalUserData, 'base64').toString('utf-8');
@@ -323,6 +342,7 @@ export class DigitalOceanProvider implements ProvisioningProvider {
     }
 
     const hasAdditionalUserData = Boolean(decodedAdditionalUserData && decodedAdditionalUserData.trim());
+
     if (!hasAdditionalUserData) {
       throw new BadRequestException(
         'Provisioning user data is missing. Please provision servers through the provisioning service to supply configuration.',
@@ -457,7 +477,6 @@ fi
 
 log "Agent-manager provisioning completed successfully at $(date)"
 `;
-
     // Check size limit: DigitalOcean user_data is limited to 64KiB (65,536 bytes)
     // Note: The limit applies to the raw script content
     const scriptSize = Buffer.byteLength(script, 'utf8');
@@ -466,6 +485,7 @@ log "Agent-manager provisioning completed successfully at $(date)"
     if (scriptSize > MAX_USER_DATA_SIZE) {
       const sizeKB = (scriptSize / 1024).toFixed(2);
       const maxKB = (MAX_USER_DATA_SIZE / 1024).toFixed(2);
+
       throw new BadRequestException(
         `User data script size (${sizeKB}KB) exceeds DigitalOcean limit of ${maxKB}KB. Please reduce the configuration size.`,
       );

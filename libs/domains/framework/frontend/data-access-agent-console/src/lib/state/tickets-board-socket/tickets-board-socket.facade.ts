@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { filter, map, Observable, switchMap, take, tap } from 'rxjs';
+
 import {
   connectTicketsBoardSocket,
   disconnectTicketsBoardSocket,
@@ -44,8 +45,10 @@ export class TicketsBoardSocketFacade {
    */
   setClient(clientId: string): void {
     const socket = getTicketsBoardSocketInstance();
+
     if (!socket || !socket.connected) {
       console.warn('Tickets board socket not connected. Cannot set client.');
+
       return;
     }
 
@@ -56,9 +59,11 @@ export class TicketsBoardSocketFacade {
         if (s.selectedClientId === clientId && !s.settingClient) {
           return;
         }
+
         if (s.settingClient && s.settingClientId === clientId) {
           return;
         }
+
         this.store.dispatch(setTicketsBoardSocketClient({ clientId }));
         socket.emit('setClient', { clientId });
       });
@@ -73,8 +78,10 @@ export class TicketsBoardSocketFacade {
       switchMap((ok) => {
         if (!ok) {
           this.connect();
+
           return this.connected$.pipe(filter(Boolean), take(1));
         }
+
         return this.connected$.pipe(take(1));
       }),
       tap(() => this.setClient(clientId)),

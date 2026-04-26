@@ -1,77 +1,35 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { provideMockActions } from '@ngrx/effects/testing';
+import { TestBed } from '@angular/core/testing';
+import type { Environment } from '@forepath/framework/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
+import { provideMockActions } from '@ngrx/effects/testing';
 import { of } from 'rxjs';
+
 import { DeploymentsService } from '../../services/deployments.service';
+
 import {
-  cancelRun,
-  cancelRunFailure,
-  cancelRunSuccess,
   createDeploymentConfiguration,
-  createDeploymentConfigurationFailure,
   createDeploymentConfigurationSuccess,
-  deleteDeploymentConfiguration,
-  deleteDeploymentConfigurationFailure,
-  deleteDeploymentConfigurationSuccess,
-  loadBranches,
-  loadBranchesFailure,
-  loadBranchesSuccess,
   loadDeploymentConfiguration,
   loadDeploymentConfigurationFailure,
   loadDeploymentConfigurationSuccess,
-  loadJobLogs,
-  loadJobLogsFailure,
-  loadJobLogsSuccess,
-  loadRepositories,
-  loadRepositoriesFailure,
-  loadRepositoriesSuccess,
-  loadRunJobs,
-  loadRunJobsFailure,
-  loadRunJobsSuccess,
   loadRunLogs,
-  loadRunLogsFailure,
   loadRunLogsSuccess,
-  loadRunStatus,
-  loadRunStatusFailure,
-  loadRunStatusSuccess,
-  loadRuns,
-  loadRunsFailure,
-  loadRunsSuccess,
-  loadWorkflows,
-  loadWorkflowsFailure,
-  loadWorkflowsSuccess,
   triggerWorkflow,
-  triggerWorkflowFailure,
   triggerWorkflowSuccess,
-  updateDeploymentConfiguration,
-  updateDeploymentConfigurationFailure,
-  updateDeploymentConfigurationSuccess,
 } from './deployments.actions';
 import {
-  cancelRun$,
   createDeploymentConfiguration$,
-  deleteDeploymentConfiguration$,
-  loadBranches$,
   loadDeploymentConfiguration$,
-  loadJobLogs$,
-  loadRepositories$,
-  loadRunJobs$,
   loadRunLogs$,
-  loadRunStatus$,
-  loadRuns$,
-  loadWorkflows$,
   triggerWorkflow$,
-  updateDeploymentConfiguration$,
 } from './deployments.effects';
-import type { Environment } from '@forepath/framework/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 
 describe('DeploymentsEffects', () => {
   let actions$: Actions;
   let deploymentsService: DeploymentsService;
   let httpMock: HttpTestingController;
-
   const mockEnvironment: Environment = {
     controller: {
       restApiUrl: 'https://api.example.com',
@@ -113,6 +71,7 @@ describe('DeploymentsEffects', () => {
       actions$ = of(loadDeploymentConfiguration({ clientId: 'client-1', agentId: 'agent-1' }));
 
       const effects = loadDeploymentConfiguration$(actions$, deploymentsService);
+
       effects.subscribe((action) => {
         expect(action).toEqual(loadDeploymentConfigurationSuccess({ configuration: mockConfiguration }));
         done();
@@ -121,6 +80,7 @@ describe('DeploymentsEffects', () => {
       const req = httpMock.expectOne(
         'https://api.example.com/clients/client-1/agents/agent-1/deployments/configuration',
       );
+
       expect(req.request.method).toBe('GET');
       req.flush(mockConfiguration);
     });
@@ -129,6 +89,7 @@ describe('DeploymentsEffects', () => {
       actions$ = of(loadDeploymentConfiguration({ clientId: 'client-1', agentId: 'agent-1' }));
 
       const effects = loadDeploymentConfiguration$(actions$, deploymentsService);
+
       effects.subscribe((action) => {
         expect(action).toEqual(loadDeploymentConfigurationFailure({ error: expect.any(String) }));
         done();
@@ -137,6 +98,7 @@ describe('DeploymentsEffects', () => {
       const req = httpMock.expectOne(
         'https://api.example.com/clients/client-1/agents/agent-1/deployments/configuration',
       );
+
       req.error(new ErrorEvent('Network error'));
     });
   });
@@ -156,6 +118,7 @@ describe('DeploymentsEffects', () => {
       actions$ = of(createDeploymentConfiguration({ clientId: 'client-1', agentId: 'agent-1', dto }));
 
       const effects = createDeploymentConfiguration$(actions$, deploymentsService);
+
       effects.subscribe((action) => {
         expect(action).toEqual(createDeploymentConfigurationSuccess({ configuration: mockConfiguration }));
         done();
@@ -164,6 +127,7 @@ describe('DeploymentsEffects', () => {
       const req = httpMock.expectOne(
         'https://api.example.com/clients/client-1/agents/agent-1/deployments/configuration',
       );
+
       expect(req.request.method).toBe('POST');
       req.flush(mockConfiguration);
     });
@@ -187,6 +151,7 @@ describe('DeploymentsEffects', () => {
       actions$ = of(triggerWorkflow({ clientId: 'client-1', agentId: 'agent-1', dto }));
 
       const effects = triggerWorkflow$(actions$, deploymentsService);
+
       effects.subscribe((action) => {
         expect(action).toEqual(triggerWorkflowSuccess({ run: mockRun }));
         done();
@@ -195,6 +160,7 @@ describe('DeploymentsEffects', () => {
       const req = httpMock.expectOne(
         'https://api.example.com/clients/client-1/agents/agent-1/deployments/workflows/trigger',
       );
+
       expect(req.request.method).toBe('POST');
       req.flush(mockRun);
     });
@@ -207,6 +173,7 @@ describe('DeploymentsEffects', () => {
       actions$ = of(loadRunLogs({ clientId: 'client-1', agentId: 'agent-1', runId: 'run-1' }));
 
       const effects = loadRunLogs$(actions$, deploymentsService);
+
       effects.subscribe((action) => {
         expect(action).toEqual(loadRunLogsSuccess({ logs: 'Log content' }));
         done();
@@ -215,6 +182,7 @@ describe('DeploymentsEffects', () => {
       const req = httpMock.expectOne(
         'https://api.example.com/clients/client-1/agents/agent-1/deployments/runs/run-1/logs',
       );
+
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });

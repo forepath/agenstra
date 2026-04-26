@@ -86,6 +86,7 @@ export class KeycloakRolesGuard implements CanActivate {
     }
 
     collectRoles(tokenPayload.realm_access?.roles);
+
     if (tokenPayload.resource_access && typeof tokenPayload.resource_access === 'object') {
       for (const resource of Object.values(tokenPayload.resource_access)) {
         if (resource !== null && typeof resource === 'object' && 'roles' in resource) {

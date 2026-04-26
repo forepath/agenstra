@@ -9,8 +9,10 @@ import { EmailService } from '@forepath/shared/backend';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
+
 import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
+import { CustomerProfilesController } from './controllers/customer-profiles.controller';
 import { InvoicesController } from './controllers/invoices.controller';
 import { PricingController } from './controllers/pricing.controller';
 import { PublicServicePlanOfferingsController } from './controllers/public-service-plan-offerings.controller';
@@ -25,57 +27,55 @@ import { CustomerProfileEntity } from './entities/customer-profile.entity';
 import { InvoiceRefEntity } from './entities/invoice-ref.entity';
 import { OpenPositionEntity } from './entities/open-position.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
+import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
 import { ServiceTypeEntity } from './entities/service-type.entity';
-import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
-import { SubscriptionEntity } from './entities/subscription.entity';
 import { SubscriptionItemEntity } from './entities/subscription-item.entity';
+import { SubscriptionEntity } from './entities/subscription.entity';
 import { UsageRecordEntity } from './entities/usage-record.entity';
+import { BillingStatusGateway } from './gateways/billing-status.gateway';
 import { AvailabilitySnapshotsRepository } from './repositories/availability-snapshots.repository';
 import { BackordersRepository } from './repositories/backorders.repository';
+import { CustomerProfilesRepository } from './repositories/customer-profiles.repository';
 import { InvoiceRefsRepository } from './repositories/invoice-refs.repository';
 import { OpenPositionsRepository } from './repositories/open-positions.repository';
 import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-snapshots.repository';
-import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
+import { ReservedHostnamesRepository } from './repositories/reserved-hostnames.repository';
 import { ServicePlansRepository } from './repositories/service-plans.repository';
 import { ServiceTypesRepository } from './repositories/service-types.repository';
-import { ReservedHostnamesRepository } from './repositories/reserved-hostnames.repository';
 import { SubscriptionItemsRepository } from './repositories/subscription-items.repository';
 import { SubscriptionsRepository } from './repositories/subscriptions.repository';
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
-import { CustomerProfilesRepository } from './repositories/customer-profiles.repository';
+import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
 import { AvailabilityService } from './services/availability.service';
-import { BackorderService } from './services/backorder.service';
 import { BackorderRetryService } from './services/backorder-retry.service';
+import { BackorderService } from './services/backorder.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { CancellationPolicyService } from './services/cancellation-policy.service';
 import { CloudflareDnsService } from './services/cloudflare-dns.service';
+import { CustomerProfilesService } from './services/customer-profiles.service';
 import { DigitaloceanProvisioningService } from './services/digitalocean-provisioning.service';
 import { HetznerProvisioningService } from './services/hetzner-provisioning.service';
 import { HostnameReservationService } from './services/hostname-reservation.service';
-import { InvoiceNinjaService } from './services/invoice-ninja.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
+import { InvoiceNinjaService } from './services/invoice-ninja.service';
+import { InvoiceSyncScheduler } from './services/invoice-sync.scheduler';
+import { OpenPositionInvoiceScheduler } from './services/open-position-invoice.scheduler';
 import { PricingService } from './services/pricing.service';
 import { ProviderPricingService } from './services/provider-pricing.service';
 import { ProviderRegistryService } from './services/provider-registry.service';
 import { ProviderServerTypesService } from './services/provider-server-types.service';
 import { ProvisioningService } from './services/provisioning.service';
+import { SshExecutorService } from './services/ssh-executor.service';
+import { SubscriptionBillingScheduler } from './services/subscription-billing.scheduler';
+import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
+import { SubscriptionItemServerService } from './services/subscription-item-server.service';
+import { SubscriptionItemUpdateScheduler } from './services/subscription-item-update.scheduler';
+import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
 import { SubscriptionService } from './services/subscription.service';
 import { UsageService } from './services/usage.service';
-import { CustomerProfilesService } from './services/customer-profiles.service';
-import { CustomerProfilesController } from './controllers/customer-profiles.controller';
-import { InvoiceSyncScheduler } from './services/invoice-sync.scheduler';
-import { SubscriptionBillingScheduler } from './services/subscription-billing.scheduler';
-import { SubscriptionItemServerService } from './services/subscription-item-server.service';
-import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
-import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
-import { OpenPositionInvoiceScheduler } from './services/open-position-invoice.scheduler';
-import { SubscriptionItemUpdateScheduler } from './services/subscription-item-update.scheduler';
-import { SshExecutorService } from './services/ssh-executor.service';
-import { BillingStatusGateway } from './gateways/billing-status.gateway';
 
 const authMethod = getAuthenticationMethod();
-
 /**
  * Default config schema for Hetzner provisioning (serverType, location, optional firewallId).
  * Matches the shape expected by HetznerProvisioningService.provisionServer.
@@ -159,7 +159,6 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
     },
   },
 };
-
 const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   required: ['serverType', 'region', 'service'],
   basePriceFromField: 'serverType',

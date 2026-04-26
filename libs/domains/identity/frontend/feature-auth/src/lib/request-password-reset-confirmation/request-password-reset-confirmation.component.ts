@@ -15,6 +15,7 @@ import { AuthenticationFacade, IDENTITY_AUTH_ENVIRONMENT, resetPasswordSuccess }
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
+
 import { IdentityOtpInputComponent } from '../otp-input/otp-input.component';
 
 @Component({
@@ -44,6 +45,7 @@ export class IdentityRequestPasswordResetConfirmationComponent implements OnInit
 
   ngOnInit(): void {
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
+
     this.form = this.fb.group(
       {
         email: [emailFromQuery, [Validators.required, Validators.email]],
@@ -77,18 +79,22 @@ export class IdentityRequestPasswordResetConfirmationComponent implements OnInit
   private passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
     const password = group.get('newPassword')?.value;
     const passwordConfirmation = group.get('newPasswordConfirmation')?.value;
+
     if (password && passwordConfirmation && password !== passwordConfirmation) {
       return { passwordMismatch: true };
     }
+
     return null;
   }
 
   onSubmit(): void {
     this.formSubmitted = true;
+
     if (this.form.valid) {
       const email = this.form.get('email')?.value;
       const code = this.form.get('code')?.value;
       const newPassword = this.form.get('newPassword')?.value;
+
       this.authFacade.resetPassword(email, code, newPassword);
     } else {
       Object.keys(this.form.controls).forEach((key) => {

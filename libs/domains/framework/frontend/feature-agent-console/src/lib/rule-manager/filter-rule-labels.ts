@@ -43,6 +43,7 @@ export function filterRuleTesterNoContentChange(): string {
 
 export function filterRuleTesterReplacedMessage(replaced: string): string {
   const head = $localize`:@@featureRuleManager-testerReplacedHead:Match: replaced result:`;
+
   return `${head}\n${replaced}`;
 }
 
@@ -51,14 +52,18 @@ export function filterRuleWorkspaceSyncTitle(
   row: { syncStatus: string; lastError?: string | null } | undefined,
 ): string {
   const status = row?.syncStatus ?? 'pending';
+
   if (status === 'failed' && row?.lastError) {
     return row.lastError;
   }
+
   if (status === 'failed') {
     return $localize`:@@featureRuleManager-syncWsTitleFailed:Sync to agent-manager failed`;
   }
+
   if (status === 'synced') {
     return $localize`:@@featureRuleManager-syncWsTitleSynced:Synced to agent-manager`;
   }
+
   return $localize`:@@featureRuleManager-syncWsTitlePending:Waiting to sync to agent-manager`;
 }

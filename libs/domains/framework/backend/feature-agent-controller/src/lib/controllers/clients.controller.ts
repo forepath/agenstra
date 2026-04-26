@@ -16,6 +16,18 @@ import {
   WriteFileDto,
 } from '@forepath/framework/backend/feature-agent-manager';
 import {
+  AddClientUserDto,
+  checkClientAccess,
+  ClientUserResponseDto,
+  ClientUsersRepository,
+  ClientUsersService,
+  ensureClientAccess,
+  ensureWorkspaceManagementAccess,
+  getUserFromRequest,
+  type RequestWithUser,
+  UserRole,
+} from '@forepath/identity/backend';
+import {
   BadRequestException,
   Body,
   Controller,
@@ -33,18 +45,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import {
-  AddClientUserDto,
-  checkClientAccess,
-  ClientUserResponseDto,
-  ClientUsersRepository,
-  ClientUsersService,
-  ensureClientAccess,
-  ensureWorkspaceManagementAccess,
-  getUserFromRequest,
-  type RequestWithUser,
-  UserRole,
-} from '@forepath/identity/backend';
+
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
@@ -92,6 +93,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<ClientResponseDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.clientsService.findAll(
       limit ?? 10,
       offset ?? 0,
@@ -115,6 +117,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<CreateClientResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.clientsService.create(createClientDto, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth);
   }
 
@@ -143,9 +146,11 @@ export class ClientsController {
       userInfo.userRole,
       userInfo.isApiKeyAuth,
     );
+
     if (!access.hasAccess) {
       throw new ForbiddenException('You do not have access to this client');
     }
+
     return await this.clientAgentProxyService.getClientAgents(id, limit ?? 10, offset ?? 0);
   }
 
@@ -173,9 +178,11 @@ export class ClientsController {
       userInfo.userRole,
       userInfo.isApiKeyAuth,
     );
+
     if (!access.hasAccess) {
       throw new ForbiddenException('You do not have access to this client');
     }
+
     return await this.clientAgentProxyService.listClientAgentModels(id, agentId);
   }
 
@@ -202,9 +209,11 @@ export class ClientsController {
       userInfo.userRole,
       userInfo.isApiKeyAuth,
     );
+
     if (!access.hasAccess) {
       throw new ForbiddenException('You do not have access to this client');
     }
+
     return await this.clientAgentProxyService.getClientAgent(id, agentId);
   }
 
@@ -226,6 +235,7 @@ export class ClientsController {
   ): Promise<AgentResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.clientAgentProxyService.updateClientAgent(id, agentId, updateAgentDto, userInfo.userId);
   }
 
@@ -246,6 +256,7 @@ export class ClientsController {
   ): Promise<CreateAgentResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.clientAgentProxyService.createClientAgent(id, createAgentDto, userInfo.userId);
   }
 
@@ -265,6 +276,7 @@ export class ClientsController {
   ): Promise<void> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     await this.clientAgentProxyService.deleteClientAgent(id, agentId, userInfo.userId);
   }
 
@@ -283,6 +295,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentProxyService.startClientAgent(id, agentId);
   }
 
@@ -301,6 +314,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentProxyService.stopClientAgent(id, agentId);
   }
 
@@ -319,6 +333,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<AgentResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentProxyService.restartClientAgent(id, agentId);
   }
 
@@ -335,6 +350,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<ClientResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.clientsService.findOne(id, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth);
   }
 
@@ -353,6 +369,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<ClientResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.clientsService.update(
       id,
       updateClientDto,
@@ -377,9 +394,11 @@ export class ClientsController {
   ): Promise<void> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     // Check if client has provisioning - if so, delete the server from the provider
     try {
       await this.provisioningService.deleteProvisionedServer(id);
+
       // deleteProvisionedServer already deletes the client, so we're done
       return;
     } catch (error) {
@@ -390,8 +409,10 @@ export class ClientsController {
         (error.message.includes('No provisioning reference') || error.message.includes('provisioning reference'))
       ) {
         await this.clientsService.remove(id, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth);
+
         return;
       }
+
       // Re-throw other errors
       throw error;
     }
@@ -406,11 +427,13 @@ export class ClientsController {
     req?: RequestWithUser,
   ): Promise<AgentFileManagerContext> {
     const context = parseAgentFileManagerContext(contextRaw);
+
     if (context === 'config') {
       await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     } else {
       await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     }
+
     return context;
   }
 
@@ -434,6 +457,7 @@ export class ClientsController {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -444,6 +468,7 @@ export class ClientsController {
     } else {
       normalizedPath = '.';
     }
+
     return await this.clientAgentFileSystemProxyService.readFile(id, agentId, normalizedPath, context);
   }
 
@@ -469,6 +494,7 @@ export class ClientsController {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -477,9 +503,11 @@ export class ClientsController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     await this.clientAgentFileSystemProxyService.writeFile(id, agentId, normalizedPath, writeFileDto, context);
   }
 
@@ -501,6 +529,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<FileNodeDto[]> {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
+
     return await this.clientAgentFileSystemProxyService.listDirectory(id, agentId, path || '.', context);
   }
 
@@ -526,6 +555,7 @@ export class ClientsController {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -534,9 +564,11 @@ export class ClientsController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     await this.clientAgentFileSystemProxyService.createFileOrDirectory(
       id,
       agentId,
@@ -566,6 +598,7 @@ export class ClientsController {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -574,9 +607,11 @@ export class ClientsController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     await this.clientAgentFileSystemProxyService.deleteFileOrDirectory(id, agentId, normalizedPath, context);
   }
 
@@ -602,6 +637,7 @@ export class ClientsController {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -610,12 +646,15 @@ export class ClientsController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     if (!moveFileDto.destination) {
       throw new BadRequestException('Destination path is required');
     }
+
     await this.clientAgentFileSystemProxyService.moveFileOrDirectory(id, agentId, normalizedPath, moveFileDto, context);
   }
 
@@ -643,7 +682,9 @@ export class ClientsController {
         `Provider type '${providerType}' is not available. Available types: ${this.provisioningProviderFactory.getRegisteredTypes().join(', ')}`,
       );
     }
+
     const provider = this.provisioningProviderFactory.getProvider(providerType);
+
     return await provider.getServerTypes();
   }
 
@@ -660,6 +701,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<ProvisionedServerResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     return await this.provisioningService.provisionServer(
       provisionServerDto,
       userInfo.userId,
@@ -678,6 +720,7 @@ export class ClientsController {
   @Get(':id/provisioning/info')
   async getServerInfo(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() req?: RequestWithUser) {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.provisioningService.getServerInfo(id);
   }
 
@@ -695,6 +738,7 @@ export class ClientsController {
   ): Promise<void> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     await this.provisioningService.deleteProvisionedServer(id, userInfo.userId);
   }
 
@@ -717,6 +761,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto[]> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentEnvironmentVariablesProxyService.getEnvironmentVariables(
       id,
       agentId,
@@ -740,6 +785,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<{ count: number }> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentEnvironmentVariablesProxyService.countEnvironmentVariables(id, agentId);
   }
 
@@ -761,6 +807,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentEnvironmentVariablesProxyService.createEnvironmentVariable(id, agentId, createDto);
   }
 
@@ -783,6 +830,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<EnvironmentVariableResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentEnvironmentVariablesProxyService.updateEnvironmentVariable(
       id,
       agentId,
@@ -827,6 +875,7 @@ export class ClientsController {
     @Req() req?: RequestWithUser,
   ): Promise<{ deletedCount: number }> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
     return await this.clientAgentEnvironmentVariablesProxyService.deleteAllEnvironmentVariables(id, agentId);
   }
 
@@ -851,9 +900,11 @@ export class ClientsController {
       userInfo.userRole,
       userInfo.isApiKeyAuth,
     );
+
     if (!access.hasAccess) {
       throw new ForbiddenException('You do not have access to this client');
     }
+
     return await this.clientUsersService.getClientUsers(id);
   }
 
@@ -881,6 +932,7 @@ export class ClientsController {
       userInfo.userRole,
       userInfo.isApiKeyAuth,
     );
+
     if (!access.hasAccess) {
       throw new ForbiddenException('You do not have access to this client');
     }
@@ -921,6 +973,7 @@ export class ClientsController {
       userInfo.userRole,
       userInfo.isApiKeyAuth,
     );
+
     if (!access.hasAccess) {
       throw new ForbiddenException('You do not have access to this client');
     }

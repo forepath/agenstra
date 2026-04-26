@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+
 import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.service';
 
 @Injectable()
@@ -30,12 +31,15 @@ export class AutonomousTicketScheduler implements OnModuleInit, OnModuleDestroy 
     if (this.tickInFlight) {
       return;
     }
+
     this.tickInFlight = true;
+
     try {
       await this.orchestrator.processBatch(this.batchSize);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       const stack = error instanceof Error ? error.stack : undefined;
+
       this.logger.error(`Autonomous ticket scheduler tick failed: ${message}`, stack);
     } finally {
       this.tickInFlight = false;

@@ -2,8 +2,9 @@ import {
   RunVerifierCommandsDto,
   RunVerifierCommandsResponseDto,
 } from '@forepath/framework/backend/feature-agent-manager';
-import { Body, Controller, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
+import { Body, Controller, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 
@@ -26,6 +27,7 @@ export class ClientsAgentAutomationProxyController {
     @Req() req?: RequestWithUser,
   ): Promise<RunVerifierCommandsResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.clientAgentVcsProxyService.runVerifierCommands(clientId, agentId, body);
   }
 }

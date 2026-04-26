@@ -1,7 +1,7 @@
+import { UserEntity, UserRole } from '@forepath/identity/backend';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity, UserRole } from '@forepath/identity/backend';
 
 @Injectable()
 export class UsersRepository {
@@ -12,9 +12,11 @@ export class UsersRepository {
 
   async findByIdOrThrow(id: string): Promise<UserEntity> {
     const user = await this.repository.findOne({ where: { id } });
+
     if (!user) {
       throw new Error(`User not found: ${id}`);
     }
+
     return user;
   }
 
@@ -57,6 +59,7 @@ export class UsersRepository {
       ...data,
       email: data.email?.toLowerCase(),
     });
+
     return this.repository.save(entity);
   }
 
@@ -65,11 +68,13 @@ export class UsersRepository {
       ...data,
       ...(data.email && { email: data.email.toLowerCase() }),
     });
+
     return this.findByIdOrThrow(id);
   }
 
   async updateRole(id: string, role: UserRole): Promise<UserEntity> {
     await this.repository.update(id, { role });
+
     return this.findByIdOrThrow(id);
   }
 

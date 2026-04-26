@@ -31,6 +31,7 @@ export class DocsNavigationService {
       map((data) => data.sections || []),
       catchError((error) => {
         console.error('Failed to load navigation', error);
+
         return of([]);
       }),
       shareReplay(1),
@@ -54,13 +55,16 @@ export class DocsNavigationService {
       if (node.path === path) {
         return node;
       }
+
       if (node.children) {
         const found = this.findNodeByPath(node.children, path);
+
         if (found) {
           return found;
         }
       }
     }
+
     return null;
   }
 
@@ -73,19 +77,24 @@ export class DocsNavigationService {
       for (const node of nodeList) {
         if (node.path === currentPath) {
           breadcrumbs.push(node);
+
           return true;
         }
+
         if (node.children) {
           if (findPath(node.children, currentPath)) {
             breadcrumbs.unshift(node);
+
             return true;
           }
         }
       }
+
       return false;
     };
 
     findPath(nodes, path);
+
     return breadcrumbs;
   }
 }

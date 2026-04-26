@@ -3,11 +3,16 @@ import type { Environment } from '@forepath/framework/frontend/util-configuratio
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
+import type { Observable } from 'rxjs';
+import { catchError, filter, from, fromEvent, map, merge, mergeMap, of, switchMap, take, takeUntil, tap } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
+
 import type { BillingDashboardStatusUpdatePayload } from '../../types/billing.types';
 import {
   billingDashboardStatusPush,
   loadOverviewServerInfo,
 } from '../subscription-server-info/subscription-server-info.actions';
+
 import {
   billingDashboardSocketApplicationError,
   billingDashboardSocketDataReceived,
@@ -17,9 +22,6 @@ import {
   disconnectBillingDashboardSocket,
   disconnectBillingDashboardSocketSuccess,
 } from './billing-dashboard-socket.actions';
-import type { Observable } from 'rxjs';
-import { catchError, filter, from, fromEvent, map, merge, mergeMap, of, switchMap, take, takeUntil, tap } from 'rxjs';
-import { io, Socket } from 'socket.io-client';
 
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
@@ -29,24 +31,31 @@ function getAuthHeader(environment: Environment, keycloakService: KeycloakServic
     const apiKey =
       environment.authentication.apiKey ??
       (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
+
     if (apiKey) {
       return of(`Bearer ${apiKey}`);
     }
+
     return of(null);
   }
+
   if (environment.authentication.type === 'keycloak' && keycloakService) {
     return from(keycloakService.getToken()).pipe(
       map((token) => (token ? `Bearer ${token}` : null)),
       catchError(() => of(null)),
     );
   }
+
   if (environment.authentication.type === 'users') {
     const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
+
     if (jwt) {
       return of(`Bearer ${jwt}`);
     }
+
     return of(null);
   }
+
   return of(null);
 }
 
@@ -66,6 +75,7 @@ export const connectBillingDashboardSocket$ = createEffect(
       ofType(connectBillingDashboardSocket),
       switchMap(() => {
         const websocketUrl = environment.billing.websocketUrl?.trim();
+
         if (!websocketUrl) {
           return of(connectBillingDashboardSocketFailure({ error: 'Billing WebSocket URL not configured' }));
         }
@@ -102,17 +112,14 @@ export const connectBillingDashboardSocket$ = createEffect(
               take(1),
               map(() => connectBillingDashboardSocketSuccess()),
             );
-
             const connectError$ = fromEvent<Error>(socket, 'connect_error').pipe(
               takeUntil(fromEvent(socket, 'connect')),
               take(1),
               map(() => connectBillingDashboardSocketFailure({ error: 'WebSocket connection failed' })),
             );
-
             const statusUpdate$ = fromEvent<BillingDashboardStatusUpdatePayload>(socket, 'dashboardStatusUpdate').pipe(
               mergeMap((payload) => from([billingDashboardStatusPush(payload), billingDashboardSocketDataReceived()])),
             );
-
             const appError$ = fromEvent<{ message: string }>(socket, 'error').pipe(
               map((data) => billingDashboardSocketApplicationError({ message: data.message ?? 'Socket error' })),
             );
@@ -121,6 +128,7 @@ export const connectBillingDashboardSocket$ = createEffect(
               catchError((error: unknown) => {
                 billingDashboardSocketInstance = null;
                 const message = error instanceof Error ? error.message : 'WebSocket error';
+
                 return of(connectBillingDashboardSocketFailure({ error: message }));
               }),
             );

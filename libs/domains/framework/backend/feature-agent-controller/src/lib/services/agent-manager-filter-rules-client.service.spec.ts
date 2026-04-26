@@ -3,11 +3,13 @@ import {
   RegexFilterRuleResponseDto,
   UpdateRegexFilterRuleDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { AgentManagerFilterRulesClientService } from './agent-manager-filter-rules-client.service';
 import { ClientsService } from './clients.service';
 
@@ -16,12 +18,8 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('AgentManagerFilterRulesClientService', () => {
   let service: AgentManagerFilterRulesClientService;
-  let clientsService: jest.Mocked<ClientsService>;
-  let clientsRepository: jest.Mocked<ClientsRepository>;
-
   const mockClientId = '11111111-1111-1111-1111-111111111111';
   const mockManagerRuleId = '22222222-2222-2222-2222-222222222222';
-
   const mockClientEntity: ClientEntity = {
     id: mockClientId,
     name: 'Test Client',
@@ -32,13 +30,11 @@ describe('AgentManagerFilterRulesClientService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const createDto: CreateRegexFilterRuleDto = {
     pattern: 'foo',
     direction: 'incoming',
     filterType: 'none',
   };
-
   const mockRuleResponse: RegexFilterRuleResponseDto = {
     id: mockManagerRuleId,
     pattern: 'foo',
@@ -49,11 +45,9 @@ describe('AgentManagerFilterRulesClientService', () => {
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   };
-
   const mockClientsService = {
     getAccessToken: jest.fn(),
   };
-
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
@@ -69,8 +63,6 @@ describe('AgentManagerFilterRulesClientService', () => {
     }).compile();
 
     service = module.get(AgentManagerFilterRulesClientService);
-    clientsService = module.get(ClientsService);
-    clientsRepository = module.get(ClientsRepository);
   });
 
   describe('createRule', () => {
@@ -101,6 +93,7 @@ describe('AgentManagerFilterRulesClientService', () => {
         ...mockClientEntity,
         authenticationType: AuthenticationType.KEYCLOAK,
       };
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
       mockClientsService.getAccessToken.mockResolvedValue('kc-token');
       mockedAxios.request.mockResolvedValue({
@@ -145,6 +138,7 @@ describe('AgentManagerFilterRulesClientService', () => {
     it('should PUT to agent-manager with rule id in path', async () => {
       const updateDto: UpdateRegexFilterRuleDto = { pattern: 'bar' };
       const updated: RegexFilterRuleResponseDto = { ...mockRuleResponse, pattern: 'bar' };
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 200,
@@ -189,6 +183,7 @@ describe('AgentManagerFilterRulesClientService', () => {
         ...mockClientEntity,
         apiKey: undefined,
       };
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue(clientWithoutKey);
 
       await expect(service.createRule(mockClientId, createDto)).rejects.toThrow(BadRequestException);
@@ -200,6 +195,7 @@ describe('AgentManagerFilterRulesClientService', () => {
     it('should map axios errors without response to BadRequestException', async () => {
       mockClientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       const axiosError = new Error('Network error') as AxiosError;
+
       mockedAxios.request.mockRejectedValue(axiosError);
 
       await expect(service.createRule(mockClientId, createDto)).rejects.toThrow(BadRequestException);
@@ -208,6 +204,7 @@ describe('AgentManagerFilterRulesClientService', () => {
     it('should map axios response errors with 404 to NotFoundException', async () => {
       mockClientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       const axiosError = new Error('Not found') as AxiosError;
+
       axiosError.response = {
         status: 404,
         data: { message: 'Missing' },

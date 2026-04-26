@@ -12,6 +12,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+
 import { BackorderCancelDto } from '../dto/backorder-cancel.dto';
 import { BackorderResponseDto } from '../dto/backorder-response.dto';
 import { BackorderRetryDto } from '../dto/backorder-retry.dto';
@@ -34,10 +35,13 @@ export class BackordersController {
     @Req() req?: RequestWithUser,
   ): Promise<BackorderResponseDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     const rows = await this.backorderService.listForUser(userInfo.userId, limit ?? 10, offset ?? 0);
+
     return rows.map((row) => this.mapToResponse(row));
   }
 
@@ -48,14 +52,19 @@ export class BackordersController {
     @Req() req?: RequestWithUser,
   ): Promise<BackorderResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     const backorder = await this.backordersRepository.findByIdOrThrow(id);
+
     if (backorder.userId !== userInfo.userId) {
       ensureAdmin(userInfo);
     }
+
     const row = await this.backorderService.retry(id);
+
     return this.mapToResponse(row);
   }
 
@@ -67,14 +76,19 @@ export class BackordersController {
     @Req() req?: RequestWithUser,
   ): Promise<BackorderResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     const backorder = await this.backordersRepository.findByIdOrThrow(id);
+
     if (backorder.userId !== userInfo.userId) {
       ensureAdmin(userInfo);
     }
+
     const row = await this.backorderService.cancel(id);
+
     return this.mapToResponse(row);
   }
 

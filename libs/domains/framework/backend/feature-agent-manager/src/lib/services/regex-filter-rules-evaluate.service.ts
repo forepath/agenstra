@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { FilterDirection, FilterResult } from '../providers/chat-filter.interface';
+
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
-import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';
+import { FilterDirection, FilterResult } from '../providers/chat-filter.interface';
 import {
   applyReplace,
   compileRegexOrThrow,
   normalizeRegexFlags,
   ruleMatchesMessage,
 } from '../utils/regex-filter-rule.utils';
+
+import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';
 
 /**
  * Evaluates DB regex rules for a gateway direction (first match wins).
@@ -20,12 +22,15 @@ export class RegexFilterRulesEvaluateService {
     if (rule.direction === 'bidirectional') {
       return true;
     }
+
     if (gatewayDirection === FilterDirection.INCOMING) {
       return rule.direction === 'incoming';
     }
+
     if (gatewayDirection === FilterDirection.OUTGOING) {
       return rule.direction === 'outgoing';
     }
+
     return false;
   }
 
@@ -34,24 +39,32 @@ export class RegexFilterRulesEvaluateService {
    */
   async evaluate(message: string, gatewayDirection: FilterDirection): Promise<FilterResult> {
     const rules = await this.cache.getAllOrdered();
+
     for (const rule of rules) {
       if (!this.appliesToGatewayDirection(rule, gatewayDirection)) {
         continue;
       }
+
       try {
         const flags = normalizeRegexFlags(rule.regexFlags);
+
         compileRegexOrThrow(rule.pattern, flags);
+
         if (!ruleMatchesMessage(rule, message)) {
           continue;
         }
+
         if (rule.filterType === 'drop') {
           return { filtered: true, action: 'drop', reason: `Regex rule ${rule.id}` };
         }
+
         if (rule.filterType === 'none') {
           return { filtered: true, action: 'flag', reason: 'Regex rule matched (none)' };
         }
+
         if (rule.filterType === 'filter') {
           const modified = applyReplace(rule, message);
+
           return {
             filtered: true,
             action: 'flag',
@@ -64,6 +77,7 @@ export class RegexFilterRulesEvaluateService {
         continue;
       }
     }
+
     return { filtered: false };
   }
 }

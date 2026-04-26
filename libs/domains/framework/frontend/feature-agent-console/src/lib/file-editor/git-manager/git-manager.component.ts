@@ -51,6 +51,7 @@ export class GitManagerComponent {
       if (status && !loading && !hasLoaded) {
         this.hasLoadedContent.set(true);
       }
+
       // Show spinner only if loading AND we haven't loaded content before
       return loading && !hasLoaded;
     }),
@@ -108,15 +109,15 @@ export class GitManagerComponent {
 
   // Check if each section should have a top border (not first section)
   readonly hasCommitTopBorder$ = combineLatest([this.stagedFiles$, this.unstagedFiles$]).pipe(
-    map(([staged, unstaged]) => false), // Commit is always first if it appears
+    map(([_, __]) => false), // Commit is always first if it appears
   );
 
   readonly hasStagedTopBorder$ = combineLatest([this.stagedFiles$, this.unstagedFiles$]).pipe(
-    map(([staged, unstaged]) => staged.length > 0), // Has top border if commit section appears (staged files exist)
+    map(([staged, _]) => staged.length > 0), // Has top border if commit section appears (staged files exist)
   );
 
   readonly hasUnstagedTopBorder$ = combineLatest([this.stagedFiles$, this.unstagedFiles$]).pipe(
-    map(([staged, unstaged]) => staged.length > 0), // Has top border if staged appears before it
+    map(([staged, _]) => staged.length > 0), // Has top border if staged appears before it
   );
 
   constructor() {
@@ -124,6 +125,7 @@ export class GitManagerComponent {
     effect(() => {
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (clientId && agentId) {
         // Reset loaded flag when client/agent changes (new agent = first load)
         this.hasLoadedContent.set(false);
@@ -180,10 +182,12 @@ export class GitManagerComponent {
       .subscribe(() => {
         // Clear all other error states when this error occurs
         clearAllErrorStates('push');
+
         // Clear any existing timeout for this operation
         if (this.pushErrorTimeout) {
           clearTimeout(this.pushErrorTimeout);
         }
+
         this.pushError.set(true);
         this.pushErrorTimeout = setTimeout(() => {
           this.pushError.set(false);
@@ -198,20 +202,25 @@ export class GitManagerComponent {
           clearTimeout(this.pushErrorTimeout);
           this.pushErrorTimeout = null;
         }
+
         this.pushError.set(false);
       }
+
       if (exceptOperation !== 'pull') {
         if (this.pullErrorTimeout) {
           clearTimeout(this.pullErrorTimeout);
           this.pullErrorTimeout = null;
         }
+
         this.pullError.set(false);
       }
+
       if (exceptOperation !== 'fetch') {
         if (this.fetchErrorTimeout) {
           clearTimeout(this.fetchErrorTimeout);
           this.fetchErrorTimeout = null;
         }
+
         this.fetchError.set(false);
       }
     };
@@ -243,10 +252,12 @@ export class GitManagerComponent {
       .subscribe(() => {
         // Clear all other error states when this error occurs
         clearAllErrorStates('pull');
+
         // Clear any existing timeout for this operation
         if (this.pullErrorTimeout) {
           clearTimeout(this.pullErrorTimeout);
         }
+
         this.pullError.set(true);
         this.pullErrorTimeout = setTimeout(() => {
           this.pullError.set(false);
@@ -281,10 +292,12 @@ export class GitManagerComponent {
       .subscribe(() => {
         // Clear all other error states when this error occurs
         clearAllErrorStates('fetch');
+
         // Clear any existing timeout for this operation
         if (this.fetchErrorTimeout) {
           clearTimeout(this.fetchErrorTimeout);
         }
+
         this.fetchError.set(true);
         this.fetchErrorTimeout = setTimeout(() => {
           this.fetchError.set(false);
@@ -326,9 +339,11 @@ export class GitManagerComponent {
 
   onCommit(): void {
     const message = this.commitMessage().trim();
+
     if (!message) {
       return;
     }
+
     this.vcsFacade.commit(this.clientId(), this.agentId(), { message });
     this.commitMessage.set('');
   }
@@ -353,18 +368,23 @@ export class GitManagerComponent {
     if (file.type === 'untracked') {
       return 'bi-question-circle';
     }
+
     if (file.isBinary) {
       return 'bi-file-binary';
     }
+
     if (file.status.includes('M')) {
       return 'bi-pencil';
     }
+
     if (file.status.includes('A')) {
       return 'bi-plus-circle';
     }
+
     if (file.status.includes('D')) {
       return 'bi-dash-circle';
     }
+
     return 'bi-file-earmark';
   }
 
@@ -372,15 +392,19 @@ export class GitManagerComponent {
     if (file.type === 'untracked') {
       return 'bg-info';
     }
+
     if (file.type === 'staged') {
       return 'bg-success';
     }
+
     if (file.type === 'unstaged') {
       return 'bg-warning';
     }
+
     if (file.type === 'both') {
       return 'bg-primary';
     }
+
     return 'bg-secondary';
   }
 }

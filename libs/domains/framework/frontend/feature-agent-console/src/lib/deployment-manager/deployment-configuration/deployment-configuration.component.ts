@@ -102,9 +102,11 @@ export class DeploymentConfigurationComponent {
 
   readonly selectedWorkflow = computed(() => {
     const workflowId = this.selectedWorkflowId();
+
     if (!workflowId) {
       return null;
     }
+
     return this.workflows().find((w) => w.id === workflowId) || null;
   });
 
@@ -115,14 +117,18 @@ export class DeploymentConfigurationComponent {
   // Filter out 404 errors (not found) since we have a "Create Configuration" button
   readonly filteredError = computed(() => {
     const error = this.error();
+
     if (!error) {
       return null;
     }
+
     // Hide 404-related errors (not found)
     const lowerError = error.toLowerCase();
+
     if (lowerError.includes('not found') || lowerError.includes('404')) {
       return null;
     }
+
     return error;
   });
 
@@ -130,6 +136,7 @@ export class DeploymentConfigurationComponent {
     // Initialize form when configuration is loaded
     effect(() => {
       const config = this.configuration();
+
       if (config) {
         this.providerType.set(config.providerType);
         this.repositoryId.set(config.repositoryId);
@@ -144,10 +151,12 @@ export class DeploymentConfigurationComponent {
     effect(() => {
       const config = this.configuration();
       const repos = this.repositories();
+
       // Pre-select if we have a configuration with a repositoryId and repositories are loaded
       if (config?.repositoryId && repos.length > 0) {
         // Find matching repository, handling both full (owner/repo) and short (repo) formats
         const matchingRepo = repos.find((repo) => this.matchesRepositoryId(repo, config.repositoryId));
+
         // Only set if a match is found and is different from current selection (to avoid unnecessary updates)
         if (matchingRepo && this.selectedRepositoryId() !== matchingRepo.id) {
           // Use setTimeout to defer the update to the next tick, ensuring the select is fully rendered
@@ -163,6 +172,7 @@ export class DeploymentConfigurationComponent {
       const repositoryId = this.selectedRepositoryId();
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (repositoryId && clientId && agentId) {
         this.deploymentsFacade.loadBranches(clientId, agentId, repositoryId);
         this.repositorySelected.emit(repositoryId);
@@ -174,6 +184,7 @@ export class DeploymentConfigurationComponent {
       const config = this.configuration();
       const branches = this.branches();
       const repositoryId = this.selectedRepositoryId();
+
       // Only pre-select if we have a repository selected and branches are loaded
       if (repositoryId && branches.length > 0) {
         let branchToSelect: string | null = null;
@@ -181,6 +192,7 @@ export class DeploymentConfigurationComponent {
         // First, try the defaultBranch from configuration
         if (config?.defaultBranch) {
           const branchExists = branches.some((branch) => branch.name === config.defaultBranch);
+
           if (branchExists) {
             branchToSelect = config.defaultBranch;
           }
@@ -189,6 +201,7 @@ export class DeploymentConfigurationComponent {
         // If no defaultBranch or it doesn't exist, try "main"
         if (!branchToSelect) {
           const mainBranch = branches.find((branch) => branch.name === 'main');
+
           if (mainBranch) {
             branchToSelect = 'main';
           }
@@ -197,6 +210,7 @@ export class DeploymentConfigurationComponent {
         // If "main" doesn't exist, try "master"
         if (!branchToSelect) {
           const masterBranch = branches.find((branch) => branch.name === 'master');
+
           if (masterBranch) {
             branchToSelect = 'master';
           }
@@ -218,6 +232,7 @@ export class DeploymentConfigurationComponent {
       const branch = this.selectedBranch();
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (repositoryId && clientId && agentId) {
         this.deploymentsFacade.loadWorkflows(clientId, agentId, repositoryId, branch || undefined);
       }
@@ -229,11 +244,13 @@ export class DeploymentConfigurationComponent {
       const workflows = this.workflows();
       const repositoryId = this.selectedRepositoryId();
       const branch = this.selectedBranch();
+
       // Only pre-select if we have a repository, branch, and workflows are loaded
       if (repositoryId && branch && workflows.length > 0) {
         // First, try the workflowId from configuration
         if (config?.workflowId) {
           const matchingWorkflow = workflows.find((workflow) => workflow.id === config.workflowId);
+
           // Only set if a match is found and is different from current selection
           if (matchingWorkflow && this.selectedWorkflowId() !== matchingWorkflow.id) {
             // Use setTimeout to defer the update to the next tick, ensuring the select is fully rendered
@@ -254,6 +271,7 @@ export class DeploymentConfigurationComponent {
     this.hideModal();
     // Reset form to current configuration
     const config = this.configuration();
+
     if (config) {
       this.providerType.set(config.providerType);
       this.repositoryId.set(config.repositoryId);
@@ -266,11 +284,13 @@ export class DeploymentConfigurationComponent {
   onSaveConfiguration(): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (!clientId || !agentId) {
       return;
     }
 
     const config = this.configuration();
+
     if (config) {
       // Update existing configuration
       const updateDto: UpdateDeploymentConfigurationDto = {
@@ -280,6 +300,7 @@ export class DeploymentConfigurationComponent {
         providerToken: this.providerToken() || undefined,
         providerBaseUrl: this.providerBaseUrl() || undefined,
       };
+
       this.deploymentsFacade.updateConfiguration(clientId, agentId, updateDto);
     } else {
       // Create new configuration
@@ -291,6 +312,7 @@ export class DeploymentConfigurationComponent {
         providerToken: this.providerToken(),
         providerBaseUrl: this.providerBaseUrl() || undefined,
       };
+
       this.deploymentsFacade.createConfiguration(clientId, agentId, createDto);
     }
 
@@ -315,6 +337,7 @@ export class DeploymentConfigurationComponent {
     this.hideDeleteConfigurationConfirmModal();
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (clientId && agentId) {
       this.deploymentsFacade.deleteConfiguration(clientId, agentId);
       this.configurationDeleted.emit();
@@ -350,29 +373,34 @@ export class DeploymentConfigurationComponent {
   onAddWorkflowInput(): void {
     const inputs = this.workflowInputs();
     const newKey = `input_${Object.keys(inputs).length + 1}`;
+
     this.workflowInputs.set({ ...inputs, [newKey]: '' });
   }
 
   onRemoveWorkflowInput(key: string): void {
     const inputs = this.workflowInputs();
     const newInputs = { ...inputs };
+
     delete newInputs[key];
     this.workflowInputs.set(newInputs);
   }
 
   onUpdateWorkflowInput(key: string, value: string): void {
     const inputs = this.workflowInputs();
+
     this.workflowInputs.set({ ...inputs, [key]: value });
   }
 
   onTriggerWorkflowClick(): void {
     const workflowId = this.selectedWorkflowId();
     const branch = this.selectedBranch();
+
     if (!workflowId || !branch) {
       return;
     }
 
     const workflow = this.workflows().find((w) => w.id === workflowId);
+
     if (!workflow) {
       return;
     }
@@ -406,29 +434,35 @@ export class DeploymentConfigurationComponent {
     if (repo.id === repositoryId) {
       return true;
     }
+
     // Match on fullName (e.g., "forepath/laravel-s3-server")
     if (repo.fullName === repositoryId) {
       return true;
     }
+
     // Match on name (e.g., "laravel-s3-server")
     if (repo.name === repositoryId) {
       return true;
     }
+
     // Handle case where repositoryId is in short format but repo.id is in full format
     // e.g., repositoryId = "laravel-s3-server", repo.id = "forepath/laravel-s3-server"
     if (repo.id.endsWith(`/${repositoryId}`)) {
       return true;
     }
+
     // Handle case where repositoryId is in full format but repo.id is in short format
     // e.g., repositoryId = "forepath/laravel-s3-server", repo.id = "laravel-s3-server"
     if (repositoryId.endsWith(`/${repo.id}`)) {
       return true;
     }
+
     // Handle case where repositoryId is in full format but matches repo.name
     // e.g., repositoryId = "forepath/laravel-s3-server", repo.name = "laravel-s3-server"
     if (repositoryId.endsWith(`/${repo.name}`)) {
       return true;
     }
+
     return false;
   }
 
@@ -440,12 +474,14 @@ export class DeploymentConfigurationComponent {
       // Use Bootstrap 5 Modal API
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(this.configurationModal.nativeElement);
+
       if (modal) {
         modal.show();
       } else {
         // Fallback: create new modal instance
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Modal = (window as any).bootstrap?.Modal;
+
         if (Modal) {
           new Modal(this.configurationModal.nativeElement).show();
         }
@@ -460,6 +496,7 @@ export class DeploymentConfigurationComponent {
     if (this.configurationModal?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getInstance(this.configurationModal.nativeElement);
+
       if (modal) {
         modal.hide();
       }
@@ -468,25 +505,33 @@ export class DeploymentConfigurationComponent {
 
   private showDeleteConfigurationConfirmModal(): void {
     const el = this.deleteConfigurationConfirmModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Modal = (window as any).bootstrap?.Modal;
+
     if (!Modal) {
       return;
     }
+
     const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
     inst.show();
   }
 
   private hideDeleteConfigurationConfirmModal(): void {
     const el = this.deleteConfigurationConfirmModal?.nativeElement;
+
     if (!el) {
       return;
     }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const modal = (window as any).bootstrap?.Modal?.getInstance(el);
+
     modal?.hide();
   }
 

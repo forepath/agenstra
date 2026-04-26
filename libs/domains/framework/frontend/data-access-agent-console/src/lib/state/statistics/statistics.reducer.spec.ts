@@ -12,19 +12,16 @@ import {
   loadClientStatisticsSummaryFailure,
   loadClientStatisticsSummarySuccess,
   loadStatisticsChatIo,
-  loadStatisticsChatIoFailure,
   loadStatisticsChatIoSuccess,
   loadStatisticsEntityEvents,
-  loadStatisticsEntityEventsFailure,
   loadStatisticsEntityEventsSuccess,
   loadStatisticsFilterDrops,
-  loadStatisticsFilterDropsFailure,
   loadStatisticsFilterDropsSuccess,
   loadStatisticsSummary,
   loadStatisticsSummaryFailure,
   loadStatisticsSummarySuccess,
 } from './statistics.actions';
-import { statisticsReducer, initialStatisticsState, type StatisticsState } from './statistics.reducer';
+import { initialStatisticsState, statisticsReducer, type StatisticsState } from './statistics.reducer';
 import type {
   StatisticsChatIoListDto,
   StatisticsEntityEventListDto,
@@ -43,21 +40,18 @@ describe('statisticsReducer', () => {
     filterFlagCount: 0,
     filterFlagsBreakdown: [],
   };
-
   const mockChatIoList: StatisticsChatIoListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockFilterDropList: StatisticsFilterDropListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockEntityEventList: StatisticsEntityEventListDto = {
     data: [],
     total: 0,

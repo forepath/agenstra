@@ -1,10 +1,13 @@
 import { TestBed } from '@angular/core/testing';
-import { Actions } from '@ngrx/effects';
-import { provideMockActions } from '@ngrx/effects/testing';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+import { Actions } from '@ngrx/effects';
+import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { SubscriptionItemsService } from '../../services/subscription-items.service';
+import type { ServerInfoResponse, SubscriptionItemResponse, SubscriptionResponse } from '../../types/billing.types';
+
 import {
   loadOverviewServerInfo,
   refreshSubscriptionServerInfoSuccess,
@@ -25,7 +28,6 @@ import {
   startServerEffect,
   stopServerEffect,
 } from './subscription-server-info.effects';
-import type { ServerInfoResponse, SubscriptionItemResponse, SubscriptionResponse } from '../../types/billing.types';
 
 function mockBillingEnvironment(websocketUrl?: string): Environment {
   return { billing: { restApiUrl: '', frontendUrl: '', websocketUrl } } as Environment;
@@ -34,7 +36,6 @@ function mockBillingEnvironment(websocketUrl?: string): Environment {
 describe('Subscription Server Info Effects', () => {
   let actions$: Actions;
   let subscriptionItemsService: jest.Mocked<SubscriptionItemsService>;
-
   const mockSubscription: SubscriptionResponse = {
     id: 'sub-1',
     number: 'SUB-001',
@@ -44,20 +45,17 @@ describe('Subscription Server Info Effects', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockItem: SubscriptionItemResponse = {
     id: 'item-1',
     subscriptionId: 'sub-1',
     serviceTypeId: 'st-1',
     provisioningStatus: 'active',
   };
-
   const mockServerInfo: ServerInfoResponse = {
     name: 'server-1',
     publicIp: '1.2.3.4',
     status: 'running',
   };
-
   const createMockStore = (entities: SubscriptionResponse[]) => ({
     select: () => of(entities),
   });
@@ -84,6 +82,7 @@ describe('Subscription Server Info Effects', () => {
 
   it('should return loadOverviewServerInfoSuccess with empty map when no subscriptions', (done) => {
     const store = createMockStore([]);
+
     actions$ = of(loadOverviewServerInfo());
 
     loadOverviewServerInfoEffect(actions$, store as never, subscriptionItemsService).subscribe((result) => {
@@ -100,6 +99,7 @@ describe('Subscription Server Info Effects', () => {
 
   it('should return loadOverviewServerInfoSuccess with server info when subscription has active item', (done) => {
     const store = createMockStore([mockSubscription]);
+
     subscriptionItemsService.listSubscriptionItems.mockReturnValue(of([mockItem]));
     subscriptionItemsService.getServerInfo.mockReturnValue(of(mockServerInfo));
     actions$ = of(loadOverviewServerInfo());
@@ -120,6 +120,7 @@ describe('Subscription Server Info Effects', () => {
 
   it('should return loadOverviewServerInfoSuccess with empty map when subscription has no active item', (done) => {
     const store = createMockStore([mockSubscription]);
+
     subscriptionItemsService.listSubscriptionItems.mockReturnValue(
       of([{ ...mockItem, provisioningStatus: 'pending' as const }]),
     );
@@ -140,6 +141,7 @@ describe('Subscription Server Info Effects', () => {
 
   it('should return loadOverviewServerInfoFailure on API error', (done) => {
     const store = createMockStore([mockSubscription]);
+
     subscriptionItemsService.listSubscriptionItems.mockReturnValue(throwError(() => new Error('List items failed')));
     actions$ = of(loadOverviewServerInfo());
 
@@ -157,6 +159,7 @@ describe('Subscription Server Info Effects', () => {
       status: 'canceled',
     };
     const store = createMockStore([mockSubscription, canceledSubscription]);
+
     subscriptionItemsService.listSubscriptionItems.mockReturnValue(of([mockItem]));
     subscriptionItemsService.getServerInfo.mockReturnValue(of(mockServerInfo));
     actions$ = of(loadOverviewServerInfo());
@@ -183,6 +186,7 @@ describe('Subscription Server Info Effects', () => {
       actions$ = of(startServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
       const results: unknown[] = [];
+
       startServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe({
         next: (r) => results.push(r),
         complete: () => {
@@ -217,6 +221,7 @@ describe('Subscription Server Info Effects', () => {
       actions$ = of(startServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
       const results: unknown[] = [];
+
       startServerEffect(
         actions$,
         subscriptionItemsService,
@@ -244,6 +249,7 @@ describe('Subscription Server Info Effects', () => {
       actions$ = of(stopServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
       const results: unknown[] = [];
+
       stopServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe({
         next: (r) => results.push(r),
         complete: () => {
@@ -278,6 +284,7 @@ describe('Subscription Server Info Effects', () => {
       actions$ = of(restartServer({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
       const results: unknown[] = [];
+
       restartServerEffect(actions$, subscriptionItemsService, mockBillingEnvironment()).subscribe({
         next: (r) => results.push(r),
         complete: () => {

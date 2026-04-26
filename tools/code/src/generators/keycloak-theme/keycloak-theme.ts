@@ -1,6 +1,8 @@
-import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
 import * as path from 'path';
+
 import { E2eTestRunner, applicationGenerator as generatorFn } from '@nx/angular/generators';
+import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
+
 import { KeycloakThemeGeneratorSchema } from './schema';
 
 export async function keycloakThemeGenerator(tree: Tree, options: KeycloakThemeGeneratorSchema) {

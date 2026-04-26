@@ -1,3 +1,4 @@
+import { createAes256GcmTransformer } from '@forepath/shared/backend';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { createAes256GcmTransformer } from '@forepath/shared/backend';
+
 import { AgentEntity } from './agent.entity';
 
 /**

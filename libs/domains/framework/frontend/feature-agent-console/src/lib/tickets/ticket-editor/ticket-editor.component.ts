@@ -45,6 +45,7 @@ export class TicketEditorComponent implements AfterViewInit, OnChanges, OnDestro
     if (!this.viewReady || !this.crepe || !changes['markdown']) return;
 
     const nextValue = changes['markdown'].currentValue ?? '';
+
     if (nextValue === this.lastEmittedMarkdown) return;
 
     await this.recreateEditor(nextValue);
@@ -65,6 +66,7 @@ export class TicketEditorComponent implements AfterViewInit, OnChanges, OnDestro
     crepe.editor.use(listener);
     crepe.editor.config((ctx) => {
       const listeners = ctx.get(listenerCtx);
+
       listeners.markdownUpdated((_, markdown, prevMarkdown) => {
         if (markdown !== prevMarkdown) {
           this.lastEmittedMarkdown = markdown;
@@ -80,6 +82,7 @@ export class TicketEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
     if (this.destroyRef.destroyed) {
       await crepe.destroy();
+
       return;
     }
 
@@ -94,6 +97,7 @@ export class TicketEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   private async destroyEditor(): Promise<void> {
     if (!this.crepe) return;
+
     await this.crepe.destroy();
     this.crepe = null;
   }

@@ -3,11 +3,13 @@ import {
   EnvironmentVariableResponseDto,
   UpdateEnvironmentVariableDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentEnvironmentVariablesProxyService } from './client-agent-environment-variables-proxy.service';
 import { ClientsService } from './clients.service';
 
@@ -19,11 +21,9 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
   let service: ClientAgentEnvironmentVariablesProxyService;
   let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
-
   const mockClientId = 'test-client-uuid';
   const mockAgentId = 'test-agent-uuid';
   const mockEnvVarId = 'test-env-var-uuid';
-
   const mockClientEntity: ClientEntity = {
     id: mockClientId,
     name: 'Test Client',
@@ -34,7 +34,6 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockEnvironmentVariable: EnvironmentVariableResponseDto = {
     id: mockEnvVarId,
     agentId: mockAgentId,
@@ -43,11 +42,9 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockClientsService = {
     getAccessToken: jest.fn(),
   };
-
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
@@ -184,7 +181,6 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
         variable: 'UPDATED_API_KEY',
         content: 'updated-secret-value',
       };
-
       const updatedEnvVar: EnvironmentVariableResponseDto = {
         ...mockEnvironmentVariable,
         variable: 'UPDATED_API_KEY',
@@ -310,6 +306,7 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
 
       const axiosError = new Error('Network error') as AxiosError;
+
       axiosError.request = {};
       mockedAxios.request.mockRejectedValue(axiosError);
 
@@ -320,6 +317,7 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
 
       const axiosError = new Error('Request failed') as AxiosError;
+
       axiosError.response = {
         status: 500,
         data: { message: 'Internal server error' },

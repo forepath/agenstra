@@ -1,22 +1,21 @@
+import { ClientUsersRepository } from '@forepath/identity/backend';
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientUsersRepository } from '@forepath/identity/backend';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
+
 import { ClientsDeploymentsController } from './clients-deployments.controller';
 
 describe('ClientsDeploymentsController', () => {
   let controller: ClientsDeploymentsController;
   let proxyService: jest.Mocked<ClientAgentDeploymentsProxyService>;
-
   const mockClientsRepository = {
     findById: jest.fn(),
   };
-
   const mockClientUsersRepository = {
     findUserClientAccess: jest.fn(),
   };
-
   const mockProxyService = {
     getConfiguration: jest.fn(),
     upsertConfiguration: jest.fn(),
@@ -90,7 +89,6 @@ describe('ClientsDeploymentsController', () => {
         defaultBranch: 'main',
         providerToken: 'token',
       };
-
       const mockConfiguration = {
         id: 'config-uuid',
         agentId: 'agent-uuid',
@@ -113,6 +111,7 @@ describe('ClientsDeploymentsController', () => {
       proxyService.deleteConfiguration.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.deleteConfiguration('client-uuid', 'agent-uuid', mockReq);
 
       expect(proxyService.deleteConfiguration).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
@@ -208,7 +207,6 @@ describe('ClientsDeploymentsController', () => {
         ref: 'main',
         inputs: { environment: 'production' },
       };
-
       const mockRun = {
         id: 'run-uuid',
         providerRunId: '789',
@@ -336,6 +334,7 @@ describe('ClientsDeploymentsController', () => {
       proxyService.cancelRun.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.cancelRun('client-uuid', 'agent-uuid', '789', mockReq);
 
       expect(proxyService.cancelRun).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '789');

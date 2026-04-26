@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { SubscriptionEntity } from './subscription.entity';
 
 @Entity('billing_invoice_refs')

@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Put, Req } from '@nestjs/common';
 import { type RequestWithUser } from '@forepath/identity/backend';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Put, Req } from '@nestjs/common';
+
 import { UpsertClientAgentAutonomyDto } from '../dto/ticket-automation';
 import { ClientAgentAutonomyService } from '../services/client-agent-autonomy.service';
 

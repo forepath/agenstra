@@ -1,6 +1,15 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+
+import type {
+  CancelSubscriptionDto,
+  CreateSubscriptionDto,
+  ListParams,
+  ResumeSubscriptionDto,
+  SubscriptionResponse,
+} from '../../types/billing.types';
+
 import {
   cancelSubscription,
   clearSelectedSubscription,
@@ -27,13 +36,6 @@ import {
   selectSubscriptionsLoadingAny,
   selectSubscriptionsResuming,
 } from './subscriptions.selectors';
-import type {
-  CancelSubscriptionDto,
-  CreateSubscriptionDto,
-  ListParams,
-  ResumeSubscriptionDto,
-  SubscriptionResponse,
-} from '../../types/billing.types';
 
 @Injectable({
   providedIn: 'root',

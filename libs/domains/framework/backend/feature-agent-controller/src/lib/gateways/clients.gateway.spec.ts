@@ -1,16 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import {
-  UserRole,
   ClientAgentCredentialsRepository,
   ClientUsersRepository,
   SocketAuthService,
+  UserRole,
 } from '@forepath/identity/backend';
+import { Test, TestingModule } from '@nestjs/testing';
+
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientsService } from '../services/clients.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
+
 import { ClientsGateway } from './clients.gateway';
 
 jest.mock(
@@ -24,26 +26,33 @@ jest.mock(
       if (!handlers.has(event)) {
         handlers.set(event, []);
       }
+
       handlers.get(event)!.push(handler);
     });
     const once = jest.fn((event: string, handler: (...args: unknown[]) => void) => {
       if (!onceHandlers.has(event)) {
         onceHandlers.set(event, []);
       }
+
       onceHandlers.get(event)!.push(handler);
     });
     const off = jest.fn((event: string, handler?: (...args: unknown[]) => void) => {
       if (handler) {
         const eventHandlers = handlers.get(event);
+
         if (eventHandlers) {
           const index = eventHandlers.indexOf(handler);
+
           if (index > -1) {
             eventHandlers.splice(index, 1);
           }
         }
+
         const eventOnceHandlers = onceHandlers.get(event);
+
         if (eventOnceHandlers) {
           const index = eventOnceHandlers.indexOf(handler);
+
           if (index > -1) {
             eventOnceHandlers.splice(index, 1);
           }
@@ -61,12 +70,15 @@ jest.mock(
     const triggerEvent = (event: string, ...args: unknown[]) => {
       // Trigger once handlers first (they're removed after first call)
       const onceHandlersForEvent = onceHandlers.get(event);
+
       if (onceHandlersForEvent) {
         onceHandlersForEvent.forEach((handler) => handler(...args));
         onceHandlers.delete(event);
       }
+
       // Trigger regular handlers
       const handlersForEvent = handlers.get(event);
+
       if (handlersForEvent) {
         handlersForEvent.forEach((handler) => handler(...args));
       }
@@ -84,6 +96,7 @@ jest.mock(
       connected: true, // Default to connected so setClientSuccess emits immediately
       triggerEvent, // Helper to trigger events in tests
     };
+
     return { io: jest.fn(() => remote) };
   },
   { virtual: true },
@@ -91,49 +104,38 @@ jest.mock(
 
 describe('ClientsGateway', () => {
   let gateway: ClientsGateway;
-  let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
-  let credentialsRepo: jest.Mocked<ClientAgentCredentialsRepository>;
   let statisticsService: jest.Mocked<StatisticsService>;
-
   const mockClientsService = {
     findOne: jest.fn(),
   };
-
   const mockClientsRepository = {
     findById: jest.fn(),
     findByIdOrThrow: jest.fn(),
   };
-
   const mockCredentialsRepo = {
     findByClientAndAgent: jest.fn(),
   };
-
   const mockClientUsersRepository = {
     findUserClientAccess: jest.fn(),
   };
-
   const mockSocketAuthService = {
     validateAndGetUser: jest
       .fn()
       .mockResolvedValue({ isApiKeyAuth: true, user: { id: 'api-key-user', roles: ['admin'] } }),
   };
-
   const mockStatisticsService = {
     recordChatInput: jest.fn().mockResolvedValue(undefined),
     recordChatOutput: jest.fn().mockResolvedValue(undefined),
     recordChatFilterDrop: jest.fn().mockResolvedValue(undefined),
     recordChatFilterFlag: jest.fn().mockResolvedValue(undefined),
   };
-
   const mockClientAutomationChatRealtime = {
     attachServer: jest.fn(),
   };
-
   const mockTicketAutomationChatSync = {
     hydrateForAgentClient: jest.fn().mockResolvedValue(undefined),
   };
-
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -145,6 +147,7 @@ describe('ClientsGateway', () => {
       connected: true, // Required for event forwarding in gateway
       data: withUserInfo ? { userInfo: { isApiKeyAuth: true, user: { id: 'api-key-user', roles: ['admin'] } } } : {},
     } as any;
+
     return socket;
   };
 
@@ -165,9 +168,7 @@ describe('ClientsGateway', () => {
     }).compile();
 
     gateway = module.get(ClientsGateway);
-    clientsService = module.get(ClientsService);
     clientsRepository = module.get(ClientsRepository);
-    credentialsRepo = module.get(ClientAgentCredentialsRepository);
     statisticsService = module.get(StatisticsService);
   });
 
@@ -181,6 +182,7 @@ describe('ClientsGateway', () => {
 
   it('should set client on setClient and emit success', async () => {
     const socket = createMockSocket();
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -192,6 +194,7 @@ describe('ClientsGateway', () => {
     expect(clientsRepository.findByIdOrThrow).toHaveBeenCalledWith('client-uuid');
     expect(socket.emit).toHaveBeenCalledWith('setClientSuccess', expect.objectContaining({ clientId: 'client-uuid' }));
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+
     expect(io).toHaveBeenCalledWith(
       'http://localhost:8099/agents',
       expect.objectContaining({
@@ -202,12 +205,14 @@ describe('ClientsGateway', () => {
 
   it('should emit error on setClient when missing clientId', async () => {
     const socket = createMockSocket();
+
     await gateway.handleSetClient({} as any, socket);
     expect(socket.emit).toHaveBeenCalledWith('error', expect.objectContaining({ message: expect.any(String) }));
   });
 
   it('should emit Unauthorized when socket has no userInfo', async () => {
     const socket = createMockSocket('socket-1', false);
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -221,6 +226,7 @@ describe('ClientsGateway', () => {
 
   it('should emit error when user lacks access to client (403)', async () => {
     const socket = createMockSocket();
+
     (socket as any).data = {
       userInfo: {
         userId: 'user-without-access',
@@ -243,6 +249,7 @@ describe('ClientsGateway', () => {
 
   it('should emit error on setClient when findOne throws', async () => {
     const socket = createMockSocket();
+
     mockClientsRepository.findByIdOrThrow.mockRejectedValue(new Error('not found'));
     await gateway.handleSetClient({ clientId: 'bad' }, socket);
     expect(socket.emit).toHaveBeenCalledWith('error', expect.objectContaining({ message: 'not found' }));
@@ -250,12 +257,14 @@ describe('ClientsGateway', () => {
 
   it('should emit error on forward without setClient', async () => {
     const socket = createMockSocket();
+
     await gateway.handleForward({ event: 'chat', payload: {} }, socket);
     expect(socket.emit).toHaveBeenCalledWith('error', expect.objectContaining({ message: expect.any(String) }));
   });
 
   it('should ack forward when client is set', async () => {
     const socket = createMockSocket();
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -266,6 +275,7 @@ describe('ClientsGateway', () => {
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io();
+
     await gateway.handleForward({ event: 'chat', payload: { text: 'hi' } }, socket);
     expect(remote.emit).toHaveBeenCalledWith('chat', { text: 'hi' });
     expect(socket.emit).toHaveBeenCalledWith('forwardAck', expect.objectContaining({ received: true, event: 'chat' }));
@@ -275,6 +285,7 @@ describe('ClientsGateway', () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -294,6 +305,7 @@ describe('ClientsGateway', () => {
       { event: 'chat', payload: { message: 'hi' }, agentId: 'agent-uuid' },
       socket,
     );
+
     // Wait for handlers to be registered (handlers are registered in Promise constructor)
     // Use setImmediate to ensure the Promise constructor has executed
     await new Promise((resolve) => setImmediate(resolve));
@@ -308,6 +320,7 @@ describe('ClientsGateway', () => {
 
   it('should record chat input statistics when forwarding chat with agentId', async () => {
     const socket = createMockSocket();
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -318,6 +331,7 @@ describe('ClientsGateway', () => {
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
       clientId: 'client-uuid',
@@ -329,6 +343,7 @@ describe('ClientsGateway', () => {
       { event: 'chat', payload: { message: 'Hello world' }, agentId: 'agent-uuid' },
       socket,
     );
+
     await new Promise((resolve) => setImmediate(resolve));
     remote.triggerEvent('loginSuccess');
     await forwardPromise;
@@ -344,6 +359,7 @@ describe('ClientsGateway', () => {
 
   it('should record prompt enhancement input when forwarding enhanceChat with agentId', async () => {
     const socket = createMockSocket();
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -354,6 +370,7 @@ describe('ClientsGateway', () => {
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
       clientId: 'client-uuid',
@@ -369,6 +386,7 @@ describe('ClientsGateway', () => {
       },
       socket,
     );
+
     await new Promise((resolve) => setImmediate(resolve));
     remote.triggerEvent('loginSuccess');
     await forwardPromise;
@@ -386,6 +404,7 @@ describe('ClientsGateway', () => {
 
   it('should record ticket body generation input when forwarding generateTicketBody with agentId', async () => {
     const socket = createMockSocket();
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -396,6 +415,7 @@ describe('ClientsGateway', () => {
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
       clientId: 'client-uuid',
@@ -411,6 +431,7 @@ describe('ClientsGateway', () => {
       },
       socket,
     );
+
     await new Promise((resolve) => setImmediate(resolve));
     remote.triggerEvent('loginSuccess');
     await forwardPromise;
@@ -433,6 +454,7 @@ describe('ClientsGateway', () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -448,11 +470,11 @@ describe('ClientsGateway', () => {
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const chatPayload = { message: 'hi there', model: 'gpt-4.1-mini' };
-
     const forwardPromise = gateway.handleForward(
       { event: 'chat', payload: chatPayload, agentId: 'agent-uuid' },
       socket,
     );
+
     await new Promise((resolve) => setImmediate(resolve));
     remote.triggerEvent('loginSuccess');
     await forwardPromise;
@@ -466,6 +488,7 @@ describe('ClientsGateway', () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -482,6 +505,7 @@ describe('ClientsGateway', () => {
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     // Forward login event with agentId (payload will be overridden)
     const forwardPromise = gateway.handleForward({ event: 'login', payload: {}, agentId: 'agent-uuid' }, socket);
+
     // Wait for handlers to be registered
     await new Promise((resolve) => setImmediate(resolve));
     // Simulate loginSuccess event
@@ -498,6 +522,7 @@ describe('ClientsGateway', () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -514,6 +539,7 @@ describe('ClientsGateway', () => {
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     // First login to mark agent as logged in
     const firstLoginPromise = gateway.handleForward({ event: 'login', payload: {}, agentId: 'agent-uuid' }, socket);
+
     await new Promise((resolve) => setImmediate(resolve));
     remote.triggerEvent('loginSuccess');
     await firstLoginPromise;
@@ -524,6 +550,7 @@ describe('ClientsGateway', () => {
       { event: 'login', payload: { agentId: 'wrong', password: 'wrong' }, agentId: 'agent-uuid' },
       socket,
     );
+
     await new Promise((resolve) => setImmediate(resolve));
     remote.triggerEvent('loginSuccess');
     await secondLoginPromise;
@@ -537,6 +564,7 @@ describe('ClientsGateway', () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -560,6 +588,7 @@ describe('ClientsGateway', () => {
       },
       socket,
     );
+
     // Wait for handlers to be registered
     await new Promise((resolve) => setImmediate(resolve));
     // Simulate loginSuccess event
@@ -579,6 +608,7 @@ describe('ClientsGateway', () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
     const remote = io() as any;
+
     mockClientsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'client-uuid',
       endpoint: 'http://localhost:3100/api',
@@ -607,9 +637,11 @@ describe('ClientsGateway', () => {
     };
     // Trigger the onAny handler manually (simulating remote event)
     const onAnyHandler = remote.onAny.mock.calls[0]?.[0];
+
     if (onAnyHandler) {
       onAnyHandler('fileUpdateNotification', fileUpdateNotification);
     }
+
     // Wait for event to be processed
     await new Promise((resolve) => setImmediate(resolve));
     // Should forward fileUpdateNotification to local socket
@@ -621,6 +653,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -636,6 +669,7 @@ describe('ClientsGateway', () => {
       const reconnectAttemptHandler = remote.on.mock.calls.find(
         (call: unknown[]) => call[0] === 'reconnect_attempt',
       )?.[1];
+
       if (reconnectAttemptHandler) {
         reconnectAttemptHandler(2); // attempt number 2
       }
@@ -649,6 +683,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -662,6 +697,7 @@ describe('ClientsGateway', () => {
 
       // Simulate reconnect event
       const reconnectHandler = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'reconnect')?.[1];
+
       if (reconnectHandler) {
         reconnectHandler();
       }
@@ -675,6 +711,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -688,6 +725,7 @@ describe('ClientsGateway', () => {
 
       // Simulate reconnect_error event
       const reconnectErrorHandler = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'reconnect_error')?.[1];
+
       if (reconnectErrorHandler) {
         reconnectErrorHandler(new Error('Connection timeout'));
       }
@@ -704,6 +742,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -719,6 +758,7 @@ describe('ClientsGateway', () => {
       const reconnectFailedHandler = remote.on.mock.calls.find(
         (call: unknown[]) => call[0] === 'reconnect_failed',
       )?.[1];
+
       if (reconnectFailedHandler) {
         reconnectFailedHandler();
       }
@@ -736,7 +776,6 @@ describe('ClientsGateway', () => {
       const socket2 = createMockSocket('socket-2');
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote1 = io() as any;
-      const remote2 = io() as any;
 
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
@@ -759,6 +798,7 @@ describe('ClientsGateway', () => {
       const reconnectAttemptHandler1 = remote1.on.mock.calls.find(
         (call: unknown[]) => call[0] === 'reconnect_attempt',
       )?.[1];
+
       if (reconnectAttemptHandler1) {
         reconnectAttemptHandler1(1);
       }
@@ -774,6 +814,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -790,6 +831,7 @@ describe('ClientsGateway', () => {
 
       // Simulate disconnect event
       const disconnectHandler = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'disconnect')?.[1];
+
       if (disconnectHandler) {
         disconnectHandler('io server disconnect');
       }
@@ -803,6 +845,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -839,6 +882,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -857,6 +901,7 @@ describe('ClientsGateway', () => {
       // Mock Date.now to simulate timeout
       const originalNow = Date.now;
       let currentTime = 0;
+
       Date.now = jest.fn(() => currentTime);
 
       // Try to forward an event
@@ -884,6 +929,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -903,6 +949,7 @@ describe('ClientsGateway', () => {
       const reconnectFailedHandler = remote.on.mock.calls.find(
         (call: unknown[]) => call[0] === 'reconnect_failed',
       )?.[1];
+
       if (reconnectFailedHandler) {
         reconnectFailedHandler();
       }
@@ -933,6 +980,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -956,24 +1004,29 @@ describe('ClientsGateway', () => {
       remote.connected = true;
       remote.disconnected = false;
       const connectHandler = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'connect')?.[1];
+
       if (connectHandler) {
         connectHandler();
       }
+
       await new Promise((resolve) => setImmediate(resolve));
 
       // Track login success handlers
       const loginSuccessHandlers: Array<() => void> = [];
+
       remote.once.mockImplementation((event: string, handler: unknown) => {
         if (event === 'loginSuccess' && typeof handler === 'function') {
           loginSuccessHandlers.push(handler as () => void);
           // Auto-trigger login success after a short delay
           setTimeout(() => {
             const handlerToCall = loginSuccessHandlers[loginSuccessHandlers.length - 1];
+
             if (handlerToCall) {
               handlerToCall();
             }
           }, 10);
         }
+
         return remote;
       });
 
@@ -992,18 +1045,22 @@ describe('ClientsGateway', () => {
       remote.connected = false;
       remote.disconnected = true;
       const disconnectHandler = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'disconnect')?.[1];
+
       if (disconnectHandler) {
         disconnectHandler('io server disconnect');
       }
+
       await new Promise((resolve) => setImmediate(resolve));
 
       // Trigger reconnect_attempt to set reconnecting state
       const reconnectAttemptHandler = remote.on.mock.calls.find(
         (call: unknown[]) => call[0] === 'reconnect_attempt',
       )?.[1];
+
       if (reconnectAttemptHandler) {
         reconnectAttemptHandler(1);
       }
+
       await new Promise((resolve) => setImmediate(resolve));
 
       // Now simulate successful reconnection
@@ -1017,16 +1074,19 @@ describe('ClientsGateway', () => {
           // Auto-trigger login success
           setTimeout(() => {
             const handlerToCall = loginSuccessHandlers[loginSuccessHandlers.length - 1];
+
             if (handlerToCall) {
               handlerToCall();
             }
           }, 10);
         }
+
         return remote;
       });
 
       // Trigger connect event (this should trigger login restoration)
       const connectHandlerForReconnect = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'connect')?.[1];
+
       if (connectHandlerForReconnect) {
         connectHandlerForReconnect();
       }
@@ -1042,6 +1102,7 @@ describe('ClientsGateway', () => {
       const socket = createMockSocket();
       const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
       const remote = io() as any;
+
       mockClientsRepository.findByIdOrThrow.mockResolvedValue({
         id: 'client-uuid',
         endpoint: 'http://localhost:3100/api',
@@ -1059,6 +1120,7 @@ describe('ClientsGateway', () => {
             password: `password-${agentId}`,
           } as any;
         }
+
         return null;
       });
 
@@ -1070,24 +1132,29 @@ describe('ClientsGateway', () => {
       remote.connected = true;
       remote.disconnected = false;
       const connectHandler = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'connect')?.[1];
+
       if (connectHandler) {
         connectHandler();
       }
+
       await new Promise((resolve) => setImmediate(resolve));
 
       // Mock login success responses - auto-trigger on registration
       const loginSuccessHandlers: Array<() => void> = [];
+
       remote.once.mockImplementation((event: string, handler: unknown) => {
         if (event === 'loginSuccess' && typeof handler === 'function') {
           loginSuccessHandlers.push(handler as () => void);
           // Auto-trigger login success after a short delay
           setTimeout(() => {
             const handlerToCall = loginSuccessHandlers[loginSuccessHandlers.length - 1];
+
             if (handlerToCall) {
               handlerToCall();
             }
           }, 10);
         }
+
         return remote;
       });
 
@@ -1107,18 +1174,22 @@ describe('ClientsGateway', () => {
       remote.connected = false;
       remote.disconnected = true;
       const disconnectHandler = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'disconnect')?.[1];
+
       if (disconnectHandler) {
         disconnectHandler('io server disconnect');
       }
+
       await new Promise((resolve) => setImmediate(resolve));
 
       // Trigger reconnect_attempt to set reconnecting state
       const reconnectAttemptHandler = remote.on.mock.calls.find(
         (call: unknown[]) => call[0] === 'reconnect_attempt',
       )?.[1];
+
       if (reconnectAttemptHandler) {
         reconnectAttemptHandler(1);
       }
+
       await new Promise((resolve) => setImmediate(resolve));
 
       // Reset login success handlers for restoration - auto-trigger
@@ -1128,11 +1199,13 @@ describe('ClientsGateway', () => {
           // Auto-trigger login success
           setTimeout(() => {
             const handlerToCall = loginSuccessHandlers[loginSuccessHandlers.length - 1];
+
             if (handlerToCall) {
               handlerToCall();
             }
           }, 10);
         }
+
         return remote;
       });
 
@@ -1140,6 +1213,7 @@ describe('ClientsGateway', () => {
       remote.connected = true;
       remote.disconnected = false;
       const connectHandlerForReconnect = remote.on.mock.calls.find((call: unknown[]) => call[0] === 'connect')?.[1];
+
       if (connectHandlerForReconnect) {
         connectHandlerForReconnect();
       }

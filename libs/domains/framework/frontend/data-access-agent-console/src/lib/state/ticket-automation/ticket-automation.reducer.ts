@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import type { TicketAutomationResponseDto, TicketAutomationRunResponseDto } from './ticket-automation.types';
+
 import {
   approveTicketAutomation,
   approveTicketAutomationFailure,
@@ -28,6 +28,7 @@ import {
   unapproveTicketAutomationFailure,
   unapproveTicketAutomationSuccess,
 } from './ticket-automation.actions';
+import type { TicketAutomationResponseDto, TicketAutomationRunResponseDto } from './ticket-automation.types';
 
 export interface TicketAutomationState {
   activeTicketId: string | null;
@@ -61,11 +62,15 @@ function mergeRunInList(
   run: TicketAutomationRunResponseDto,
 ): TicketAutomationRunResponseDto[] {
   const idx = runs.findIndex((r) => r.id === run.id);
+
   if (idx < 0) {
     return [...runs, run];
   }
+
   const next = [...runs];
+
   next[idx] = run;
+
   return next;
 }
 
@@ -74,14 +79,18 @@ function mergeIntoRunCache(
   incoming: TicketAutomationRunResponseDto,
 ): Record<string, TicketAutomationRunResponseDto> {
   const prev = cache[incoming.id];
+
   if (!prev) {
     return { ...cache, [incoming.id]: incoming };
   }
+
   const prevT = Date.parse(prev.updatedAt);
   const nextT = Date.parse(incoming.updatedAt);
+
   if (!Number.isNaN(prevT) && !Number.isNaN(nextT) && nextT < prevT) {
     return cache;
   }
+
   const merged: TicketAutomationRunResponseDto = {
     ...prev,
     ...incoming,
@@ -91,6 +100,7 @@ function mergeIntoRunCache(
         ? incoming.ticketStatusBefore
         : prev.ticketStatusBefore,
   };
+
   return { ...cache, [incoming.id]: merged };
 }
 
@@ -197,13 +207,16 @@ export const ticketAutomationReducer = createReducer(
     if (state.activeTicketId !== config.ticketId) {
       return state;
     }
+
     return { ...state, config, error: null };
   }),
   on(ticketBoardAutomationRunUpsert, (state, { run }) => {
     const runCacheByRunId = mergeIntoRunCache(state.runCacheByRunId, run);
+
     if (state.activeTicketId !== run.ticketId) {
       return { ...state, runCacheByRunId };
     }
+
     const runs = mergeRunInList(state.runs, run);
     const runDetail =
       state.runDetail?.id === run.id
@@ -213,18 +226,23 @@ export const ticketAutomationReducer = createReducer(
             steps: run.steps ?? state.runDetail.steps,
           }
         : state.runDetail;
+
     return { ...state, runCacheByRunId, runs, runDetail, error: null };
   }),
   on(ticketBoardAutomationRunStepAppended, (state, { runId, step }) => {
     if (state.runDetail?.id !== runId) {
       return state;
     }
+
     const prev = state.runDetail.steps ?? [];
+
     if (prev.some((s) => s.id === step.id)) {
       return state;
     }
+
     const nextSteps = [...prev, step].sort((a, b) => a.stepIndex - b.stepIndex);
     const updatedRun: TicketAutomationRunResponseDto = { ...state.runDetail, steps: nextSteps };
+
     return {
       ...state,
       runDetail: updatedRun,

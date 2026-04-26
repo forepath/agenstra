@@ -4,11 +4,13 @@ import { AgentEntity } from './agent.entity';
 describe('AgentMessageEntity', () => {
   it('should create an instance', () => {
     const message = new AgentMessageEntity();
+
     expect(message).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const message = new AgentMessageEntity();
+
     message.id = 'test-uuid';
     message.agentId = 'agent-uuid-123';
     message.actor = 'user';
@@ -26,6 +28,7 @@ describe('AgentMessageEntity', () => {
 
   it('should support agent actor', () => {
     const message = new AgentMessageEntity();
+
     message.id = 'test-uuid';
     message.agentId = 'agent-uuid-123';
     message.actor = 'agent';
@@ -38,6 +41,7 @@ describe('AgentMessageEntity', () => {
 
   it('should support user actor', () => {
     const message = new AgentMessageEntity();
+
     message.id = 'test-uuid';
     message.agentId = 'agent-uuid-123';
     message.actor = 'user';
@@ -50,6 +54,7 @@ describe('AgentMessageEntity', () => {
 
   it('should support relationship to AgentEntity', () => {
     const agent = new AgentEntity();
+
     agent.id = 'agent-uuid-123';
     agent.name = 'Test Agent';
     agent.hashedPassword = 'hashed-password';
@@ -57,6 +62,7 @@ describe('AgentMessageEntity', () => {
     agent.updatedAt = new Date();
 
     const message = new AgentMessageEntity();
+
     message.id = 'test-uuid';
     message.agentId = 'agent-uuid-123';
     message.agent = agent;
@@ -73,6 +79,7 @@ describe('AgentMessageEntity', () => {
   it('should handle long message content', () => {
     const longMessage = 'A'.repeat(1000);
     const message = new AgentMessageEntity();
+
     message.id = 'test-uuid';
     message.agentId = 'agent-uuid-123';
     message.actor = 'user';

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { DocMetadata, SearchIndex, SearchIndexEntry } from '../interfaces';
 
 /**
@@ -33,8 +34,10 @@ export class SearchIndexBuilderService {
     if (isReadme) {
       // For README files, use the directory path
       const parts = pathWithoutExt.split('/');
+
       parts.pop(); // Remove 'README'
       const dirPath = parts.join('/');
+
       return dirPath ? `/docs/${dirPath}` : '/docs';
     }
 

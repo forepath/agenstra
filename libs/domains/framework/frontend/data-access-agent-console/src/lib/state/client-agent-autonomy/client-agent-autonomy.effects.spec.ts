@@ -1,10 +1,12 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import type { Action } from '@ngrx/store';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { take } from 'rxjs/operators';
+
 import { ClientsService } from '../../services/clients.service';
+
 import {
   loadClientAgentAutonomy,
   loadClientAgentAutonomyFailure,
@@ -19,7 +21,6 @@ import type { ClientAgentAutonomyResponseDto } from './client-agent-autonomy.typ
 describe('ClientAgentAutonomyEffects', () => {
   let actions$: Observable<Action>;
   let clientsService: jest.Mocked<Pick<ClientsService, 'getClientAgentAutonomy' | 'upsertClientAgentAutonomy'>>;
-
   const mockAutonomy: ClientAgentAutonomyResponseDto = {
     clientId: 'c1',
     agentId: 'a1',
@@ -105,6 +106,7 @@ describe('ClientAgentAutonomyEffects', () => {
       maxRuntimeMs: 60_000,
       maxIterations: 5,
     };
+
     clientsService.upsertClientAgentAutonomy!.mockReturnValue(of(mockAutonomy));
     actions$ = of(upsertClientAgentAutonomy({ clientId: 'c1', agentId: 'a1', dto }));
     TestBed.runInInjectionContext(() => {

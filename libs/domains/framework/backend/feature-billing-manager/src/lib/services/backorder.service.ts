@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+
 import { BackorderEntity, BackorderStatus } from '../entities/backorder.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
@@ -21,6 +22,7 @@ import {
   stripGeographyFromRequestedConfig,
 } from '../utils/provider-location.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
+
 import { AvailabilityService } from './availability.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
@@ -79,26 +81,28 @@ export class BackorderService {
     const backorder = await this.backordersRepository.findByIdOrThrow(backorderId);
     const plan = await this.servicePlansRepository.findByIdOrThrow(backorder.planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
-
     const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;
     const sanitizedSnapshot = allowCustomerLocationSelection
       ? { ...(backorder.requestedConfigSnapshot ?? {}) }
       : stripGeographyFromRequestedConfig(backorder.requestedConfigSnapshot);
-
     const effectiveConfig: Record<string, unknown> = {
       ...(plan.providerConfigDefaults ?? {}),
       ...sanitizedSnapshot,
     };
     const provider = serviceType.provider;
+
     if (provider === 'hetzner' || provider === 'digital-ocean') {
       const regionResolved = resolveProvisioningRegion(effectiveConfig, provider);
+
       mirrorGeographyInConfig(effectiveConfig, regionResolved);
     }
+
     if (!effectiveConfig.serverType) {
       effectiveConfig.serverType = provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11';
     }
 
     const validationErrors = validateConfigSchema(serviceType.configSchema, effectiveConfig);
+
     if (validationErrors.length > 0) {
       throw new BadRequestException(validationErrors.join('; '));
     }
@@ -120,7 +124,6 @@ export class BackorderService {
       plan.billingIntervalValue,
       plan.billingDayOfMonth,
     );
-
     const subscription = await this.subscriptionsRepository.create({
       userId: backorder.userId,
       planId: backorder.planId,
@@ -129,7 +132,6 @@ export class BackorderService {
       currentPeriodEnd: schedule.currentPeriodEnd,
       nextBillingAt: schedule.nextBillingAt,
     });
-
     const baseItem = await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: plan.serviceTypeId,
@@ -138,13 +140,17 @@ export class BackorderService {
 
     if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
       let hostname: string | null = null;
+
       try {
         hostname = await this.hostnameReservationService.reserveHostname(baseItem.id);
         const service = (effectiveConfig.service as string) ?? 'controller';
+
         if (service === 'manager' && (effectiveConfig.authenticationMethod as string) === 'users') {
           effectiveConfig.authenticationMethod = 'api-key';
         }
+
         const { publicKey, privateKey } = generateSshKeyPair();
+
         await this.subscriptionItemsRepository.updateSshPrivateKey(baseItem.id, privateKey);
         effectiveConfig.sshPublicKey = publicKey;
         const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
@@ -162,6 +168,7 @@ export class BackorderService {
           userData,
         };
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);
+
         if (provisioned?.serverId) {
           await this.subscriptionItemsRepository.updateProviderReference(baseItem.id, provisioned.serverId);
           await this.subscriptionItemsRepository.updateProvisioningStatus(baseItem.id, 'active');
@@ -171,6 +178,7 @@ export class BackorderService {
             provisioned.serverId,
             serverInfo,
           );
+
           if (publicIp) {
             try {
               await this.cloudflareDnsService.createARecord(hostname, publicIp);
@@ -191,6 +199,7 @@ export class BackorderService {
             );
           }
         }
+
         await this.subscriptionItemsRepository.updateProvisioningStatus(baseItem.id, 'failed');
         throw error;
       }

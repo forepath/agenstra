@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
 import { AgentConsoleRegexFilterRuleClientEntity } from './agent-console-regex-filter-rule-client.entity';
 import { AgentConsoleRegexFilterRuleSyncTargetEntity } from './agent-console-regex-filter-rule-sync-target.entity';
 

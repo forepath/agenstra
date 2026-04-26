@@ -1,14 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { UsageController } from './usage.controller';
-import { UsageService } from '../services/usage.service';
+
 import { SubscriptionService } from '../services/subscription.service';
+import { UsageService } from '../services/usage.service';
+
+import { UsageController } from './usage.controller';
 
 describe('UsageController', () => {
   let controller: UsageController;
   let usageService: jest.Mocked<Pick<UsageService, 'getLatestUsage' | 'createUsage'>>;
   let subscriptionService: jest.Mocked<Pick<SubscriptionService, 'getSubscription'>>;
-
   const subscriptionId = '11111111-1111-4111-8111-111111111111';
   const userId = 'user-1';
   const reqWithUser = { user: { id: userId, roles: ['user'] } };
@@ -41,6 +42,7 @@ describe('UsageController', () => {
         periodEnd: new Date('2025-01-31'),
         usagePayload: { requests: 100 },
       };
+
       usageService.getLatestUsage.mockResolvedValue(usage as never);
 
       const result = await controller.summary(subscriptionId, reqWithUser as never);
@@ -91,7 +93,6 @@ describe('UsageController', () => {
         periodEnd: '2025-01-31T23:59:59.999Z',
         usagePayload: { requests: 50 },
       };
-
       const result = await controller.record(body, reqWithUser as never);
 
       expect(subscriptionService.getSubscription).toHaveBeenCalledWith(subscriptionId, userId);

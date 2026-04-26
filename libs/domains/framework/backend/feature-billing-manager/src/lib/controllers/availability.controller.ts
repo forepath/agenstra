@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+
 import { AvailabilityCheckDto } from '../dto/availability-check.dto';
 import { AvailabilityResponseDto } from '../dto/availability-response.dto';
 import { AvailabilityService } from '../services/availability.service';

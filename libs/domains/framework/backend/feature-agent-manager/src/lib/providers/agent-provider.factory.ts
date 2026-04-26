@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { AgentProvider } from './agent-provider.interface';
 
 /**
@@ -16,9 +17,11 @@ export class AgentProviderFactory {
    */
   registerProvider(provider: AgentProvider): void {
     const type = provider.getType();
+
     if (this.providers.has(type)) {
       this.logger.warn(`Provider with type '${type}' is already registered. Overwriting existing provider.`);
     }
+
     this.providers.set(type, provider);
     this.logger.log(`Registered agent provider: ${type}`);
   }
@@ -31,10 +34,13 @@ export class AgentProviderFactory {
    */
   getProvider(type: string): AgentProvider {
     const provider = this.providers.get(type);
+
     if (!provider) {
       const availableTypes = Array.from(this.providers.keys()).join(', ');
+
       throw new Error(`Agent provider with type '${type}' not found. Available types: ${availableTypes || 'none'}`);
     }
+
     return provider;
   }
 

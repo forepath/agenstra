@@ -34,12 +34,10 @@ describe('filesReducer', () => {
   const agentId = 'agent-1';
   const filePath = 'test-file.txt';
   const directoryPath = '.';
-
   const mockFileContent: FileContentDto = {
     content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
     encoding: 'utf-8',
   };
-
   const mockFileNodes: FileNodeDto[] = [
     {
       name: 'file1.txt',
@@ -70,10 +68,9 @@ describe('filesReducer', () => {
         ...initialFilesState,
         errors: { [`${clientId}:${agentId}:app:${filePath}`]: 'Previous error' },
       };
-
       const newState = filesReducer(state, readFile({ clientId, agentId, filePath }));
-
       const key = `${clientId}:${agentId}:app:${filePath}`;
+
       expect(newState.reading[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -85,10 +82,9 @@ describe('filesReducer', () => {
         ...initialFilesState,
         reading: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-
       const newState = filesReducer(state, readFileSuccess({ clientId, agentId, filePath, content: mockFileContent }));
-
       const key = `${clientId}:${agentId}:app:${filePath}`;
+
       expect(newState.fileContents[key]).toEqual(mockFileContent);
       expect(newState.reading[key]).toBe(false);
       expect(newState.errors[key]).toBeNull();
@@ -101,10 +97,9 @@ describe('filesReducer', () => {
         ...initialFilesState,
         reading: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-
       const newState = filesReducer(state, readFileFailure({ clientId, agentId, filePath, error: 'Read failed' }));
-
       const key = `${clientId}:${agentId}:app:${filePath}`;
+
       expect(newState.errors[key]).toBe('Read failed');
       expect(newState.reading[key]).toBe(false);
     });
@@ -116,13 +111,12 @@ describe('filesReducer', () => {
         ...initialFilesState,
         errors: { [`${clientId}:${agentId}:app:${filePath}`]: 'Previous error' },
       };
-
       const newState = filesReducer(
         state,
         writeFile({ clientId, agentId, filePath, writeFileDto: { content: 'base64' } }),
       );
-
       const key = `${clientId}:${agentId}:app:${filePath}`;
+
       expect(newState.writing[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -136,7 +130,6 @@ describe('filesReducer', () => {
         fileContents: { [key]: mockFileContent },
         writing: { [key]: true },
       };
-
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
 
       expect(newState.fileContents[key]).toBeUndefined();
@@ -152,7 +145,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         writing: { [key]: true },
       };
-
       const newState = filesReducer(state, writeFileFailure({ clientId, agentId, filePath, error: 'Write failed' }));
 
       expect(newState.errors[key]).toBe('Write failed');
@@ -167,7 +159,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
       };
-
       const newState = filesReducer(state, listDirectory({ clientId, agentId }));
 
       expect(newState.listing[key]).toBe(true);
@@ -177,7 +168,6 @@ describe('filesReducer', () => {
     it('should use provided path parameter', () => {
       const customPath = 'subdirectory';
       const key = `${clientId}:${agentId}:app:${customPath}`;
-
       const newState = filesReducer(
         initialFilesState,
         listDirectory({ clientId, agentId, params: { path: customPath } }),
@@ -194,7 +184,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         listing: { [key]: true },
       };
-
       const newState = filesReducer(
         state,
         listDirectorySuccess({ clientId, agentId, directoryPath, files: mockFileNodes }),
@@ -213,7 +202,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         listing: { [key]: true },
       };
-
       const newState = filesReducer(
         state,
         listDirectoryFailure({ clientId, agentId, directoryPath, error: 'List failed' }),
@@ -231,7 +219,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
       };
-
       const newState = filesReducer(
         state,
         createFileOrDirectory({ clientId, agentId, filePath, createFileDto: { type: 'file' } }),
@@ -252,7 +239,6 @@ describe('filesReducer', () => {
         directoryListings: { [parentKey]: mockFileNodes },
         creating: { [key]: true },
       };
-
       const newState = filesReducer(
         state,
         createFileOrDirectorySuccess({ clientId, agentId, filePath, fileType: 'file' }),
@@ -271,7 +257,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         creating: { [key]: true },
       };
-
       const newState = filesReducer(
         state,
         createFileOrDirectoryFailure({ clientId, agentId, filePath, error: 'Create failed' }),
@@ -289,7 +274,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
       };
-
       const newState = filesReducer(state, deleteFileOrDirectory({ clientId, agentId, filePath }));
 
       expect(newState.deleting[key]).toBe(true);
@@ -308,7 +292,6 @@ describe('filesReducer', () => {
         directoryListings: { [key]: mockFileNodes, [parentKey]: mockFileNodes },
         deleting: { [key]: true },
       };
-
       const newState = filesReducer(state, deleteFileOrDirectorySuccess({ clientId, agentId, filePath }));
 
       expect(newState.fileContents[key]).toBeUndefined();
@@ -326,7 +309,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         deleting: { [key]: true },
       };
-
       const newState = filesReducer(
         state,
         deleteFileOrDirectoryFailure({ clientId, agentId, filePath, error: 'Delete failed' }),
@@ -345,7 +327,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         errors: { [key]: 'Previous error' },
       };
-
       const newState = filesReducer(
         state,
         moveFileOrDirectory({
@@ -375,7 +356,6 @@ describe('filesReducer', () => {
         directoryListings: { [sourceParentKey]: mockFileNodes },
         moving: { [sourceKey]: true },
       };
-
       const newState = filesReducer(
         state,
         moveFileOrDirectorySuccess({ clientId, agentId, sourcePath, destinationPath }),
@@ -400,7 +380,6 @@ describe('filesReducer', () => {
         },
         moving: { [sourceKey]: true },
       };
-
       const newState = filesReducer(
         state,
         moveFileOrDirectorySuccess({ clientId, agentId, sourcePath, destinationPath }),
@@ -421,7 +400,6 @@ describe('filesReducer', () => {
         directoryListings: { [sourceParentKey]: mockFileNodes },
         moving: { [sourceKey]: true },
       };
-
       const newState = filesReducer(
         state,
         moveFileOrDirectorySuccess({ clientId, agentId, sourcePath, destinationPath }),
@@ -442,7 +420,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         moving: { [key]: true },
       };
-
       const newState = filesReducer(
         state,
         moveFileOrDirectoryFailure({ clientId, agentId, sourcePath, error: 'Move failed' }),
@@ -460,7 +437,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         fileContents: { [key]: mockFileContent },
       };
-
       const newState = filesReducer(state, clearFileContent({ clientId, agentId, filePath }));
 
       expect(newState.fileContents[key]).toBeUndefined();
@@ -474,7 +450,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         directoryListings: { [key]: mockFileNodes },
       };
-
       const newState = filesReducer(state, clearDirectoryListing({ clientId, agentId, directoryPath }));
 
       expect(newState.directoryListings[key]).toBeUndefined();
@@ -488,7 +463,6 @@ describe('filesReducer', () => {
       const filePath2 = 'other-file.txt';
       const key1 = `${clientId}:${agentId}:app:${filePath}`;
       const key2 = `${clientId2}:${agentId2}:app:${filePath2}`;
-
       let state = initialFilesState;
 
       // Read file for first client/agent
@@ -511,8 +485,8 @@ describe('filesReducer', () => {
   describe('openFileTab', () => {
     it('should add a new tab when opening a file', () => {
       const newState = filesReducer(initialFilesState, openFileTab({ clientId, agentId, filePath }));
-
       const key = `${clientId}:${agentId}:app`;
+
       expect(newState.openTabs[key]).toHaveLength(1);
       expect(newState.openTabs[key][0]).toEqual({ filePath, pinned: false });
     });
@@ -523,7 +497,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
       };
-
       const newState = filesReducer(state, openFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
@@ -537,7 +510,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
       };
-
       const newState = filesReducer(state, openFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
@@ -591,7 +563,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
       };
-
       const newState = filesReducer(state, closeFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key]).toHaveLength(0);
@@ -609,7 +580,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, closeFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
@@ -623,7 +593,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
       };
-
       const newState = filesReducer(state, closeFileTab({ clientId, agentId, filePath: nonExistentPath }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
@@ -636,7 +605,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: {},
       };
-
       const newState = filesReducer(state, closeFileTab({ clientId, agentId, filePath }));
 
       // When no tabs exist, the reducer returns an empty array
@@ -651,7 +619,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
       };
-
       const newState = filesReducer(state, pinFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(true);
@@ -669,7 +636,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, pinFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(true);
@@ -683,7 +649,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
       };
-
       const newState = filesReducer(state, pinFileTab({ clientId, agentId, filePath: nonExistentPath }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
@@ -697,7 +662,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
       };
-
       const newState = filesReducer(state, pinFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(true);
@@ -711,7 +675,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
       };
-
       const newState = filesReducer(state, unpinFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(false);
@@ -729,7 +692,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, unpinFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(false);
@@ -743,7 +705,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: true }] },
       };
-
       const newState = filesReducer(state, unpinFileTab({ clientId, agentId, filePath: nonExistentPath }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
@@ -757,7 +718,6 @@ describe('filesReducer', () => {
         ...initialFilesState,
         openTabs: { [key]: [{ filePath, pinned: false }] },
       };
-
       const newState = filesReducer(state, unpinFileTab({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(false);
@@ -779,7 +739,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, moveTabToFront({ clientId, agentId, filePath: filePath3 }));
 
       expect(newState.openTabs[key]).toHaveLength(3);
@@ -801,7 +760,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, moveTabToFront({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key]).toHaveLength(2);
@@ -823,7 +781,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, moveTabToFront({ clientId, agentId, filePath: nonExistentPath }));
 
       expect(newState.openTabs[key]).toHaveLength(2);
@@ -844,7 +801,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, moveTabToFront({ clientId, agentId, filePath: filePath2 }));
 
       expect(newState.openTabs[key]).toHaveLength(2);
@@ -873,7 +829,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, moveTabToFront({ clientId, agentId, filePath: filePath2 }));
 
       // First client/agent tabs should be reordered
@@ -900,7 +855,6 @@ describe('filesReducer', () => {
           ],
         },
       };
-
       const newState = filesReducer(state, clearOpenTabs({ clientId, agentId }));
 
       expect(newState.openTabs[key]).toBeUndefined();
@@ -918,7 +872,6 @@ describe('filesReducer', () => {
           [key2]: [{ filePath: 'other-file.txt', pinned: false }],
         },
       };
-
       const newState = filesReducer(state, clearOpenTabs({ clientId, agentId }));
 
       expect(newState.openTabs[key1]).toBeUndefined();
@@ -934,7 +887,6 @@ describe('filesReducer', () => {
         openTabs: { [key]: [{ filePath, pinned: false }] },
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(true);
@@ -947,7 +899,6 @@ describe('filesReducer', () => {
         openTabs: { [key]: [{ filePath, pinned: true }] },
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key][0].pinned).toBe(true);
@@ -960,7 +911,6 @@ describe('filesReducer', () => {
         openTabs: {},
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
@@ -981,7 +931,6 @@ describe('filesReducer', () => {
         },
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-
       const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
 
       expect(newState.openTabs[key]).toHaveLength(2);
@@ -999,7 +948,6 @@ describe('filesReducer', () => {
       const filePath2 = 'other-file.txt';
       const key1 = `${clientId}:${agentId}:app`;
       const key2 = `${clientId2}:${agentId2}:app`;
-
       let state = initialFilesState;
 
       state = filesReducer(state, openFileTab({ clientId, agentId, filePath }));
@@ -1019,11 +967,11 @@ describe('filesReducer', () => {
         content: Buffer.from('config', 'utf-8').toString('base64'),
         encoding: 'utf-8',
       };
-
       let state = filesReducer(
         initialFilesState,
         readFileSuccess({ clientId, agentId, filePath, content: mockFileContent, context: 'app' }),
       );
+
       state = filesReducer(
         state,
         readFileSuccess({ clientId, agentId, filePath, content: configContent, context: 'config' }),

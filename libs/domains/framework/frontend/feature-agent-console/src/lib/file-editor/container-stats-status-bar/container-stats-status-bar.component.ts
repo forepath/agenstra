@@ -46,10 +46,8 @@ export class ContainerStatsStatusBarComponent {
 
           // Get previous entry for CPU calculation
           const previous = statsArray.length > 1 ? statsArray[statsArray.length - 2] : null;
-
           // Calculate CPU percent once here, not in template
           const cpuPercent = this.calculateCpuPercent(current, previous);
-
           // Calculate memory values once here, not in template (stats is defined here)
           const memoryUsage = current.stats.memory_stats?.usage || 0;
           const memoryLimit = this.getMemoryLimit(current.stats.memory_stats);
@@ -82,9 +80,11 @@ export class ContainerStatsStatusBarComponent {
    */
   formatBytes(bytes: number): string {
     if (bytes === 0) return '0 B';
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
+
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
@@ -100,12 +100,14 @@ export class ContainerStatsStatusBarComponent {
     }
 
     const currentCpu = currentEntry.stats.cpu_stats;
+
     if (!currentCpu?.cpu_usage?.total_usage || !currentCpu?.system_cpu_usage) {
       return 0;
     }
 
     // Get previous CPU stats - prefer precpu_stats from current entry, fallback to previous entry
     const prevCpu = currentEntry.stats.precpu_stats || previousEntry?.stats?.cpu_stats;
+
     if (!prevCpu?.cpu_usage?.total_usage || !prevCpu?.system_cpu_usage) {
       return 0;
     }
@@ -134,21 +136,26 @@ export class ContainerStatsStatusBarComponent {
     stats?: Record<string, unknown>;
   }): number {
     if (!memoryStats) return 0;
+
     // Try limit directly (some Docker versions)
     if (memoryStats.limit && memoryStats.limit > 0) {
       return memoryStats.limit;
     }
+
     // Try limit from stats object (common in Docker stats)
     if (memoryStats.stats) {
       const limit = memoryStats.stats['limit'];
+
       if (typeof limit === 'number' && limit > 0) {
         return limit;
       }
     }
+
     // Fallback to max_usage if limit is not available (not ideal but better than nothing)
     if (memoryStats.max_usage && memoryStats.max_usage > 0) {
       return memoryStats.max_usage;
     }
+
     return 0;
   }
 
@@ -157,6 +164,7 @@ export class ContainerStatsStatusBarComponent {
    */
   getMemoryUsagePercentage(stats: { memory_usage: number; memory_limit: number }): number {
     if (!stats || stats.memory_limit === 0) return 0;
+
     return (stats.memory_usage / stats.memory_limit) * 100;
   }
 }

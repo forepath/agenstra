@@ -1,4 +1,5 @@
 import type { AgenstraAgent, AgenstraContext, AgenstraSubagent, ToolOutput } from '../types';
+
 import { BaseTransformer } from './base.transformer';
 
 const CURSOR_DIR = '.cursor';
@@ -23,7 +24,6 @@ function ruleToMdc(name: string, entry: import('../types').RuleEntry): string {
   const description = entry.description || (firstLine.length > 80 ? firstLine.slice(0, 77) + '...' : firstLine);
   const globs = entry.globs ?? [];
   const alwaysApply = entry.alwaysApply ?? false;
-
   const globsYaml = globs.length === 0 ? ' []' : `\n${globs.map((g) => `  - ${yamlEscape(g)}`).join('\n')}`;
 
   return `---
@@ -44,6 +44,7 @@ function commandToMarkdown(id: string, cmd: Record<string, unknown>): string {
   const name = (cmd.name as string) ?? id;
   const desc = (cmd.description as string) ?? '';
   const prompt = (cmd.prompt as string) ?? '';
+
   return `# ${name}\n\n${desc ? `${desc}\n\n` : ''}${prompt || 'Run this command as described.'}\n`;
 }
 
@@ -54,6 +55,7 @@ function commandToMarkdown(id: string, cmd: Record<string, unknown>): string {
 function skillToCursorSkill(name: string, content: string): string {
   const firstLine = content.trim().split('\n')[0]?.replace(/^#\s*/, '') || name;
   const description = firstLine.length > 120 ? firstLine.slice(0, 117) + '...' : firstLine;
+
   return `---
 name: ${name.replace(/\s+/g, '-').toLowerCase()}
 description: ${yamlEscape(description)}
@@ -71,6 +73,7 @@ function agentToCursorAgentMd(id: string, config: AgenstraAgent | AgenstraSubage
   const name = (config.name as string) ?? id;
   const description = (config.description as string) ?? '';
   const bodyContent = (config.body as string)?.trim() ?? description;
+
   return `---
 name: ${name}
 description: ${yamlEscape(description || name)}
@@ -89,20 +92,27 @@ function toCursorMcpServerEntry(def: Record<string, unknown>): Record<string, un
   const command = def.command;
   const env = def.env ?? def.environment;
   const url = def.url;
+
   if (Array.isArray(command) && command.length > 0) {
     entry.command = command[0];
+
     if (command.length > 1) entry.args = command.slice(1);
   } else if (typeof command === 'string') {
     entry.command = command;
+
     if (def.args != null) entry.args = def.args;
   }
+
   if (env != null && typeof env === 'object' && !Array.isArray(env)) {
     entry.env = env;
   }
+
   if (typeof url === 'string') {
     entry.url = url;
+
     if (def.headers != null && typeof def.headers === 'object') entry.headers = def.headers;
   }
+
   return entry;
 }
 
@@ -118,7 +128,9 @@ export class CursorTransformer extends BaseTransformer {
 
     for (const [name, entry] of Object.entries(context.rules)) {
       if (name.startsWith('_')) continue;
+
       const ruleEntry = typeof entry === 'string' ? { content: entry } : entry;
+
       out.set(`${CURSOR_DIR}/rules/${name}.mdc`, ruleToMdc(name, ruleEntry));
     }
 
@@ -134,18 +146,22 @@ export class CursorTransformer extends BaseTransformer {
     for (const [id, config] of Object.entries(context.agents)) {
       out.set(`${CURSOR_DIR}/agents/${id}.md`, agentToCursorAgentMd(id, config));
     }
+
     for (const [id, config] of Object.entries(context.subagents)) {
       out.set(`${CURSOR_DIR}/agents/${id}.md`, agentToCursorAgentMd(id, config));
     }
 
     // Cursor uses a single .cursor/mcp.json with mcpServers object (https://cursor.com/docs/context/mcp)
     const mcpServersObj: Record<string, Record<string, unknown>> = {};
+
     for (const [id, def] of Object.entries(context.mcpDefinitions)) {
       const entry = toCursorMcpServerEntry(def as Record<string, unknown>);
+
       if (Object.keys(entry).length > 0) {
         mcpServersObj[id] = entry;
       }
     }
+
     out.set(`${CURSOR_DIR}/mcp.json`, JSON.stringify({ mcpServers: mcpServersObj }, null, 2));
 
     return out;

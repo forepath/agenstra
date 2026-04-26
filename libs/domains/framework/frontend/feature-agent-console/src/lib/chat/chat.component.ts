@@ -76,6 +76,7 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs';
+
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
@@ -85,6 +86,7 @@ import {
   ticketAutomationRunStatusLabel as ticketAutomationRunStatusLabelFn,
 } from '../tickets/ticket-automation-run-labels';
 import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
+
 import { mapForwardedChatEventsToDisplayRows } from './agent-chat-event-display';
 import { formatAgentResponseForChatMarkdown, formatUnknownAsMarkdown } from './agent-chat-response-markdown';
 import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
@@ -207,8 +209,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (cache.size <= AgentConsoleChatComponent.MAX_HTML_CACHE_ENTRIES) {
       return;
     }
+
     const overflow = cache.size - AgentConsoleChatComponent.MAX_HTML_CACHE_ENTRIES;
     const keys = [...cache.keys()].slice(0, overflow);
+
     for (const key of keys) {
       cache.delete(key);
     }
@@ -232,6 +236,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!searchQuery) {
         return clients;
       }
+
       return clients.filter((client) => JSON.stringify(client).toLowerCase().includes(searchQuery.toLowerCase()));
     }),
   );
@@ -250,12 +255,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of([]);
       }
+
       return this.agentsFacade.getClientAgents$(clientId).pipe(
         combineLatestWith(this.searchAgentQuery$),
         map(([agents, searchQuery]) => {
           if (!searchQuery) {
             return agents;
           }
+
           return agents.filter((agent) => JSON.stringify(agent).toLowerCase().includes(searchQuery.toLowerCase()));
         }),
       );
@@ -266,6 +273,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(false);
       }
+
       return this.agentsFacade.getClientAgentsLoading$(clientId);
     }),
   );
@@ -274,6 +282,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(false);
       }
+
       return this.agentsFacade.getClientAgentsDeleting$(clientId);
     }),
   );
@@ -282,6 +291,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(false);
       }
+
       return this.agentsFacade.getClientAgentsCreating$(clientId);
     }),
   );
@@ -290,24 +300,28 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(false);
       }
+
       return this.agentsFacade.getClientAgentsUpdating$(clientId);
     }),
   );
   readonly agentsStarting$: Observable<boolean> = this.activeClientId$.pipe(
     switchMap((clientId) => {
       if (!clientId) return of(false);
+
       return this.agentsFacade.getClientAgentsStarting$(clientId);
     }),
   );
   readonly agentsStopping$: Observable<boolean> = this.activeClientId$.pipe(
     switchMap((clientId) => {
       if (!clientId) return of(false);
+
       return this.agentsFacade.getClientAgentsStopping$(clientId);
     }),
   );
   readonly agentsRestarting$: Observable<boolean> = this.activeClientId$.pipe(
     switchMap((clientId) => {
       if (!clientId) return of(false);
+
       return this.agentsFacade.getClientAgentsRestarting$(clientId);
     }),
   );
@@ -316,6 +330,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(null);
       }
+
       return this.agentsFacade.getSelectedClientAgent$(clientId);
     }),
   );
@@ -326,6 +341,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agent) {
         return of([]);
       }
+
       return this.agentsFacade.getClientAgentCommands$(clientId, agent.id, agent.agentType);
     }),
   );
@@ -334,6 +350,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agent) {
         return of(false);
       }
+
       return this.agentsFacade.getClientAgentLoadingCommands$(clientId, agent.id);
     }),
   );
@@ -347,6 +364,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agent) {
         return of([]);
       }
+
       return this.agentsFacade
         .getClientAgentModels$(clientId, agent.id)
         .pipe(map((models) => this.resolveChatModelOptions(agent.agentType, models)));
@@ -362,6 +380,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agent) {
         return of(false);
       }
+
       return combineLatest([
         this.agentsFacade.getClientAgentModelsLoading$(clientId, agent.id),
         this.agentsFacade.getClientAgentModels$(clientId, agent.id),
@@ -396,6 +415,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (prev.length !== curr.length) {
           return false;
         }
+
         return prev.every(
           (row, i) =>
             row.timestamp === curr[i]?.timestamp &&
@@ -413,6 +433,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         // Extract timestamp from message data (ISO string) and convert to number for matching
         // Use the original message timestamp, not the received timestamp
         const messageTimestamp = messageData?.timestamp ? new Date(messageData.timestamp).getTime() : msg.timestamp; // Fallback to received timestamp if not available
+
         return {
           ...msg,
           filterResult: messageData
@@ -434,13 +455,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     map(([ordered, filtered, tickets, runCache]) => {
       const thread = buildMergedChatDisplayThread(ordered, filtered);
       const ticketsById = new Map(tickets.map((t) => [t.id, t]));
+
       return thread.map((item) => {
         if (item.kind !== 'ticketAutomationRun') {
           return item;
         }
+
         const liveTicket = ticketsById.get(item.payload.ticket.id);
         const cachedRun = runCache[item.payload.run.id];
         const payload = mergeTicketAutomationChatCardPayload(item.payload, liveTicket, cachedRun);
+
         return payload === item.payload ? item : { ...item, payload };
       });
     }),
@@ -457,6 +481,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(false);
       }
+
       return this.socketsFacade.isRemoteReconnecting$(clientId);
     }),
   );
@@ -465,6 +490,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(null);
       }
+
       return this.socketsFacade.getRemoteConnectionError$(clientId);
     }),
   );
@@ -513,7 +539,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!selectedAgent || selectedAgent.agentType === 'openclaw') {
         return false;
       }
+
       const sidePanelOpen = deploymentManagerOpen;
+
       return (!editorOpen && !sidePanelOpen) || chatVisible;
     }),
   );
@@ -529,7 +557,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!selectedAgent) {
         return false;
       }
+
       const sidePanelOpen = deploymentManagerOpen;
+
       return ((!editorOpen && !sidePanelOpen) || gatewayVisible) && selectedAgent.agentType === 'openclaw';
     }),
   );
@@ -550,12 +580,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agent) {
         return;
       }
+
       this.filesFacade.listDirectory(clientId, agent.id, { path: AgentConsoleChatComponent.OPENCLAW_CONFIG_DIR });
     }),
     switchMap(([clientId, agent]) => {
       if (!clientId || !agent) {
         return of([]);
       }
+
       return this.filesFacade.getDirectoryListing$(clientId, agent.id, AgentConsoleChatComponent.OPENCLAW_CONFIG_DIR);
     }),
     map((nodes) => nodes?.some((n) => n.name === 'openclaw.json' && n.type === 'file') ?? false),
@@ -573,6 +605,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agent) {
         return of(false);
       }
+
       return this.filesFacade.isWritingFile$(clientId, agent.id, AgentConsoleChatComponent.OPENCLAW_CONFIG_PATH);
     }),
     startWith(false),
@@ -595,15 +628,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     map(([messages, error, sentFallbackTs]) => {
       if (error) {
         this.lastUserMessageTimestamp.set(null);
+
         return false;
       }
 
       const { lastUserTs, hasAgentMessageAfter } = this.deriveLastUserAndAgentComplete(messages, sentFallbackTs);
+
       if (!lastUserTs) {
         return false;
       }
+
       if (hasAgentMessageAfter) {
         this.lastUserMessageTimestamp.set(null);
+
         return false;
       }
 
@@ -619,13 +656,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   ]).pipe(
     map(([messages, events, sentFallbackTs]) => {
       const { lastUserTs, hasAgentMessageAfter } = this.deriveLastUserAndAgentComplete(messages, sentFallbackTs);
+
       if (!lastUserTs || hasAgentMessageAfter) {
         return null;
       }
+
       const streamBaseline = this.deriveStreamingChatEventBaselineMs(messages, sentFallbackTs);
+
       if (streamBaseline == null) {
         return null;
       }
+
       return accumulateStreamingTurnFromEvents(events, streamBaseline);
     }),
   );
@@ -634,6 +675,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly chatPendingUi$ = combineLatest([this.waitingForResponse$, this.streamingAssistantState$]).pipe(
     map(([waiting, stream]) => {
       const hasStream = stream !== null && stream.segments.length > 0;
+
       return {
         showThinking: waiting && !hasStream,
         showStreaming: waiting && hasStream,
@@ -687,6 +729,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!providerType) {
         return of([]);
       }
+
       return this.clientsFacade.getServerTypes$(providerType);
     }),
   );
@@ -696,6 +739,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!providerType) {
         return of(false);
       }
+
       return this.clientsFacade.getLoadingServerTypes$(providerType);
     }),
   );
@@ -761,6 +805,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agentId) {
         return of([]);
       }
+
       return this.envFacade.getEnvironmentVariables$(clientId, agentId).pipe(map((envVars) => envVars || []));
     }),
   );
@@ -772,6 +817,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agentId) {
         return of(false);
       }
+
       return this.envFacade.isLoadingEnvironmentVariables$(clientId, agentId);
     }),
   );
@@ -783,6 +829,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agentId) {
         return of(false);
       }
+
       return this.envFacade.isCreatingEnvironmentVariable$(clientId, agentId);
     }),
   );
@@ -794,6 +841,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId || !agentId) {
         return of(null);
       }
+
       return this.envFacade.getEnvError$(clientId, agentId);
     }),
   );
@@ -811,6 +859,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of([]);
       }
+
       return this.clientsFacade.getClientUsers$(clientId).pipe(map((users) => users ?? []));
     }),
   );
@@ -819,6 +868,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(false);
       }
+
       return this.clientsFacade.getLoadingClientUsers$(clientId);
     }),
   );
@@ -827,6 +877,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!clientId) {
         return of(false);
       }
+
       return this.clientsFacade.getAddingClientUser$(clientId);
     }),
   );
@@ -847,6 +898,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (loading) {
         return { canAddUser: false, canAddAdminRole: false, canRemoveUser: () => false };
       }
+
       const currentUserInList =
         currentUser &&
         users.find(
@@ -854,6 +906,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             u.userId === currentUser.id ||
             (u.userEmail && currentUser.email && u.userEmail.toLowerCase() === currentUser.email.toLowerCase()),
         );
+
       if (!currentUserInList || !currentUser) {
         return {
           canAddUser: true,
@@ -861,6 +914,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           canRemoveUser: () => true,
         };
       }
+
       if (currentUserInList.role === 'admin') {
         return {
           canAddUser: true,
@@ -868,6 +922,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           canRemoveUser: (user: ClientUserResponseDto) => user.role === 'user',
         };
       }
+
       return {
         canAddUser: false,
         canAddAdminRole: false,
@@ -896,6 +951,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     effect(() => {
       const agentId = this.managingTicketAutonomyAgentId();
       const clientId = this.activeClientId;
+
       if (clientId && agentId) {
         this.autonomyFacade.load(clientId, agentId);
       }
@@ -904,7 +960,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (!this.managingTicketAutonomyAgentId()) {
         return;
       }
+
       const row = this.autonomyRow();
+
       if (row) {
         this.applyTicketAutonomyDraftFromRow(row);
       }
@@ -926,6 +984,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (!r) {
           return;
         }
+
         if (r.success && r.enhancedText !== undefined) {
           this.chatMessage.set(r.enhancedText);
           this.enhanceErrorMessage.set(null);
@@ -955,6 +1014,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           if (!clientId || !agent) {
             return of(null);
           }
+
           return this.agentsFacade.getClientAgentModels$(clientId, agent.id);
         }),
         filter((models): models is AgentModelsMap => models !== null),
@@ -962,6 +1022,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       )
       .subscribe((models) => {
         const current = this.selectedChatModel();
+
         if (current && current !== 'auto' && !(current in models)) {
           this.onChatModelChange('auto');
         }
@@ -1013,11 +1074,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         // Select client from route params (only on initial load)
         if (!this.initialRouting['client'] && clients.length > 0) {
           const clientId = params['clientId'];
+
           if (clientId) {
             // Only select if not already selected to avoid race conditions
             if (this.activeClientId !== clientId) {
               this.onClientSelect(clientId, false);
             }
+
             this.initialRouting['client'] = true;
           }
         }
@@ -1025,12 +1088,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         // Select agent from route params (only on initial load)
         if (!this.initialRouting['agent'] && agents.length > 0) {
           const agentId = params['agentId'];
+
           if (agentId) {
             // Only select if not already selected to avoid race conditions
             const currentAgentId = this.selectedAgentId();
+
             if (currentAgentId !== agentId) {
               this.onAgentSelect(agentId, false);
             }
+
             this.initialRouting['agent'] = true;
           }
         }
@@ -1045,11 +1111,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           // Check if file query parameter is set
           const filePath = queryParams['file'];
           const isFileOnlyMode = !!filePath;
+
           this.fileOnlyMode.set(isFileOnlyMode);
 
           // Check if standalone query parameter is set
           const isStandaloneMode = !!queryParams['standalone'];
+
           this.standaloneMode.set(isStandaloneMode);
+
           if (isStandaloneMode && isFileOnlyMode) {
             // Loading spinner is shown by container component
             this.standaloneFileLoaded = false;
@@ -1061,6 +1130,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           if (isFileOnlyMode) {
             // Hide file tree and chat by default in file-only mode
             this.chatVisible.set(false);
+
             if (this.fileEditor) {
               this.fileEditor.fileTreeVisible.set(false);
               this.fileEditor.terminalVisible.set(false);
@@ -1071,10 +1141,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             // Only show chat and file tree on desktop, hide on mobile by default
             if (!this.isMobile()) {
               this.chatVisible.set(true);
+
               if (this.fileEditor) {
                 this.fileEditor.fileTreeVisible.set(true);
               }
             }
+
             if (this.fileEditor) {
               this.fileEditor.terminalVisible.set(false);
               this.fileEditor.autosaveEnabled.set(false);
@@ -1091,11 +1163,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             // Decode the file path (in case it's URL encoded)
             // Use try-catch to handle cases where path is already decoded
             let decodedFilePath: string;
+
             try {
               decodedFilePath = decodeURIComponent(filePath);
             } catch {
               decodedFilePath = filePath;
             }
+
             this.openFileWhenReady(decodedFilePath);
           }
         }
@@ -1109,6 +1183,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         ) {
           // Check if standalone query parameter is set
           const isStandaloneMode = !!queryParams['standalone'];
+
           this.standaloneMode.set(isStandaloneMode);
 
           // Note: run query parameter is handled by the deployment manager component itself
@@ -1148,24 +1223,29 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .subscribe((queryParams) => {
         const filePath = queryParams['file'];
         const isFileOnlyMode = !!filePath;
+
         this.fileOnlyMode.set(isFileOnlyMode);
 
         // Check if standalone query parameter is set
         const isStandaloneMode = !!queryParams['standalone'];
+
         this.standaloneMode.set(isStandaloneMode);
 
         // If file query parameter is set and editor is open, open the file
         if (isFileOnlyMode && filePath && this.editorOpen()) {
           // Decode the file path (in case it's URL encoded)
           let decodedFilePath: string;
+
           try {
             decodedFilePath = decodeURIComponent(filePath);
           } catch {
             decodedFilePath = filePath;
           }
+
           // Only open if it's a different file and we haven't already opened it
           if (this.fileEditor) {
             const currentPath = this.fileEditor.selectedFilePath();
+
             if (currentPath !== decodedFilePath && !this.fileOpenedFromQuery) {
               this.fileOpenedFromQuery = false; // Reset flag for new file
               this.openFileWhenReady(decodedFilePath);
@@ -1212,13 +1292,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           // Only show chat and file tree on desktop, hide on mobile by default
           if (!this.isMobile()) {
             this.chatVisible.set(true);
+
             if (this.fileEditor) {
               this.fileEditor.fileTreeVisible.set(true);
             }
           }
+
           if (this.fileEditor) {
             this.fileEditor.terminalVisible.set(false);
           }
+
           setTimeout(() => this.syncFileEditorVisibility(), 0);
         } else {
           // Reset file opened flag when agent changes in file-only mode
@@ -1226,23 +1309,29 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.fileOpenedFromQuery = false;
           // Reset standalone loading state when switching agents
           this.standaloneFileLoaded = false;
+
           if (this.standaloneMode() && this.route.snapshot.queryParams['file']) {
             this.standaloneLoadingService.setLoading(true);
           }
+
           // Check if we still have a file query parameter and open it
           const filePath = this.route.snapshot.queryParams['file'];
+
           if (filePath) {
             // Decode the file path (in case it's URL encoded)
             let decodedFilePath: string;
+
             try {
               decodedFilePath = decodeURIComponent(filePath);
             } catch {
               decodedFilePath = filePath;
             }
+
             this.openFileWhenReady(decodedFilePath);
           }
         }
       }
+
       // Load commands when agent is selected
       if (currentAgentId && this.activeClientId) {
         if (agent?.agentType === 'cursor') {
@@ -1251,6 +1340,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.filesFacade.listDirectory(this.activeClientId, currentAgentId, { path: '.opencode/command' });
         }
       }
+
       this.previousAgentId = currentAgentId;
     });
 
@@ -1259,34 +1349,43 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (clientId && clientId !== this.activeClientId) {
         // Switching to a different client - clear agent selection from previous client
         const previousClientId = this.activeClientId;
+
         if (previousClientId) {
           // Clear agent selection in facade for the previous client
           this.agentsFacade.clearSelectedClientAgent(previousClientId);
         }
+
         // Clear local agent selection
         this.selectedAgentId.set(null);
         // Update active client
         this.activeClientId = clientId;
         this.agentsFacade.loadClientAgents(clientId);
+
         // Clear search agent query
         if (this.searchAgentQuery()) {
           this.searchAgentQuery.set('');
         }
+
         // Ensure socket is connected before setting client
         this.ensureSocketConnectedAndSetClient(clientId);
       } else if (!clientId && this.activeClientId) {
         // Client was cleared, reset local state
         const previousClientId = this.activeClientId;
+
         this.activeClientId = null;
+
         // Clear agent selection for the previous client
         if (previousClientId) {
           this.agentsFacade.clearSelectedClientAgent(previousClientId);
         }
+
         // Also clear local selected agent if any
         const currentAgentId = this.selectedAgentId();
+
         if (currentAgentId) {
           this.selectedAgentId.set(null);
         }
+
         // Clear search agent query
         if (this.searchAgentQuery()) {
           this.searchAgentQuery.set('');
@@ -1301,6 +1400,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Initialize lastAgentMessageTimestamp on first load to prevent treating existing messages as new
       if (this.previousMessageCount === 0 && currentMessageCount > 0 && this.lastAgentMessageTimestamp === 0) {
         const agentMessages = messages.filter((msg) => this.isAgentMessage(msg.payload));
+
         if (agentMessages.length > 0) {
           this.lastAgentMessageTimestamp = Math.max(...agentMessages.map((msg) => msg.timestamp));
         }
@@ -1316,6 +1416,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         const newAgentMessages = messages.filter(
           (msg) => this.isAgentMessage(msg.payload) && msg.timestamp > this.lastAgentMessageTimestamp,
         );
+
         if (newAgentMessages.length > 0) {
           // Update last agent message timestamp
           this.lastAgentMessageTimestamp = Math.max(
@@ -1340,6 +1441,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Merged thread can grow when automation cards hydrate or appear without new `chatMessage` rows — still scroll.
     this.displayChatThread$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((thread) => {
       const len = thread.length;
+
       if (len > this.previousDisplayThreadLength) {
         this.shouldScrollToBottom = true;
         this.previousDisplayThreadLength = len;
@@ -1356,20 +1458,26 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           if (a.showThinking !== b.showThinking || a.showStreaming !== b.showStreaming) {
             return false;
           }
+
           const sa = a.stream?.segments;
           const sb = b.stream?.segments;
+
           if (sa === sb) {
             return true;
           }
+
           if (!sa || !sb || sa.length !== sb.length) {
             return false;
           }
+
           for (let i = 0; i < sa.length; i++) {
             const xa = sa[i];
             const xb = sb[i];
+
             if (xa.kind !== xb.kind) {
               return false;
             }
+
             if (xa.kind === 'row' && xb.kind === 'row') {
               if (xa.row.trackId !== xb.row.trackId) {
                 return false;
@@ -1382,6 +1490,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               return false;
             }
           }
+
           return true;
         }),
       )
@@ -1422,11 +1531,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               fileContext: undefined as FileManagerContext | undefined,
             });
           }
+
           // At this point, TypeScript knows agent and clientId are non-null
           const nonNullAgent = agent;
           const nonNullClientId = clientId;
-
           const filePathParam = queryParams?.['file'];
+
           // If no file is specified, hide loading immediately
           if (!filePathParam || typeof filePathParam !== 'string') {
             return of({
@@ -1437,6 +1547,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               fileContext,
             }); // No file to wait for
           }
+
           const filePath: string = filePathParam;
           // Decode the file path
           const decodedFilePath: string = (() => {
@@ -1446,6 +1557,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               return filePath;
             }
           })();
+
           // Watch for file content to be loaded or error to occur
           return combineLatest([
             this.filesFacade.isReadingFile$(nonNullClientId, nonNullAgent.id, decodedFilePath, fileContext),
@@ -1483,19 +1595,24 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           if (result?.error && result.filePath && result.clientId && result.agentId) {
             // Close the tab
             this.filesFacade.closeFileTab(result.clientId, result.agentId, result.filePath, result.fileContext);
+
             // Open chat if it's not open
             if (!this.chatVisible()) {
               this.chatVisible.set(true);
             }
+
             // Unselect the file if it's currently selected
             if (this.fileEditor) {
               const currentPath = this.fileEditor.selectedFilePath();
+
               if (currentPath === result.filePath) {
                 this.fileEditor.selectedFilePath.set(null);
               }
             }
+
             this.fileOpenedFromQuery = false;
           }
+
           this.standaloneLoadingService.setLoading(false);
           this.standaloneFileLoaded = true;
         }
@@ -1508,6 +1625,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       cancelAnimationFrame(this.syncAnimationFrameId);
       this.syncAnimationFrameId = null;
     }
+
     if (this.syncTimeoutId !== null) {
       clearTimeout(this.syncTimeoutId);
       this.syncTimeoutId = null;
@@ -1538,6 +1656,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (this.syncAnimationFrameId !== null) {
       return;
     }
+
     this.syncAnimationFrameId = requestAnimationFrame(() => {
       this.syncAnimationFrameId = null;
       this.syncFileEditorVisibility();
@@ -1553,16 +1672,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       clearTimeout(this.syncTimeoutId);
       this.syncTimeoutId = null;
     }
+
     if (this.editorOpen() && this.fileEditor) {
       // Use setTimeout to ensure this runs after the current change detection cycle
       this.syncTimeoutId = setTimeout(() => {
         this.syncTimeoutId = null;
+
         if (this.fileEditor) {
           this.fileTreeVisible.set(this.fileEditor.fileTreeVisible());
           this.terminalVisible.set(this.fileEditor.terminalVisible());
           this.gitManagerVisible.set(this.fileEditor.gitManagerVisible());
           this.selectedFilePathForShare.set(this.fileEditor.selectedFilePath());
         }
+
         this.cdr.markForCheck();
       }, 0);
     } else {
@@ -1605,6 +1727,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (this.fileManagerContext() === 'config') {
       return;
     }
+
     if (this.fileEditor) {
       this.fileEditor.onToggleGitManager();
       this.syncFileEditorVisibility();
@@ -1619,9 +1742,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Client is already selected, unselect it
       // First, unselect any selected agent (without navigation)
       const currentAgentId = this.selectedAgentId();
+
       if (currentAgentId && this.activeClientId) {
         this.onAgentUnselect(false);
       }
+
       // Clear active client
       this.clientsFacade.clearActiveClient();
       // Disconnect socket if connected
@@ -1630,14 +1755,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.socketsFacade.disconnect();
         }
       });
+
       // Navigate to base route
       if (navigate) {
         this.router.navigate(['/']);
       }
+
       // Reset message count
       this.previousMessageCount = 0;
       this.previousDisplayThreadLength = 0;
       this.lastUserMessageTimestamp.set(null);
+
       // Close editor if open
       if (this.editorOpen()) {
         this.editorOpen.set(false);
@@ -1647,6 +1775,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Select the client
       // Clear agent selection from previous client if switching
       const previousClientId = this.activeClientId;
+
       if (previousClientId && previousClientId !== clientId) {
         // Clear agent selection in facade for the previous client
         this.agentsFacade.clearSelectedClientAgent(previousClientId);
@@ -1659,6 +1788,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       this.clientsFacade.setActiveClient(clientId);
+
       // Update local state and load agents immediately to avoid race conditions
       // This ensures agents are loaded even if the subscription doesn't fire due to timing
       if (this.activeClientId !== clientId) {
@@ -1667,6 +1797,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         // Ensure socket is connected before setting client
         this.ensureSocketConnectedAndSetClient(clientId);
       }
+
       // Reset message count when switching clients
       this.previousMessageCount = 0;
       this.previousDisplayThreadLength = 0;
@@ -1675,6 +1806,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.fileOpenedFromQuery = false;
       // Reset standalone loading state when switching clients
       this.standaloneFileLoaded = false;
+
       if (this.standaloneMode() && this.route.snapshot.queryParams['file']) {
         this.standaloneLoadingService.setLoading(true);
       }
@@ -1684,6 +1816,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onAgentSelect(agentId: string, navigate = true): void {
     // Check if this agent is already selected
     const currentAgentId = this.selectedAgentId();
+
     if (currentAgentId === agentId) {
       // Agent is already selected, unselect it
       this.onAgentUnselect();
@@ -1695,6 +1828,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
       this.selectedAgentId.set(agentId);
       const clientId = this.activeClientId;
+
       if (clientId) {
         this.agentsFacade.loadClientAgent(clientId, agentId);
         // Load commands for the selected agent
@@ -1706,6 +1840,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         // Disconnect current socket, then connect and auto-login agent
         this.disconnectAndReconnectForAgent(clientId, agentId);
         const draft = readAndClearAgentConsoleChatDraft();
+
         if (draft) {
           this.chatMessage.set(draft);
           this.enhanceErrorMessage.set(null);
@@ -1720,10 +1855,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    */
   onAgentUnselect(navigate = true): void {
     const clientId = this.activeClientId;
+
     if (clientId) {
       // Clear selected agent in facade
       this.agentsFacade.clearSelectedClientAgent(clientId);
     }
+
     // Clear local selected agent ID
     this.selectedAgentId.set(null);
     // Disconnect socket if connected
@@ -1732,14 +1869,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.socketsFacade.disconnect();
       }
     });
+
     // Navigate to client route (without agent) if requested
     if (navigate) {
       this.router.navigate(['/clients', clientId]);
     }
+
     // Reset message count
     this.previousMessageCount = 0;
     this.previousDisplayThreadLength = 0;
     this.lastUserMessageTimestamp.set(null);
+
     // Close editor if open
     if (this.editorOpen()) {
       this.editorOpen.set(false);
@@ -1752,6 +1892,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    */
   onClientUnselect(): void {
     const clientId = this.activeClientId;
+
     if (clientId) {
       this.onClientSelect(clientId, true);
     }
@@ -1759,9 +1900,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onSendMessage(): void {
     let message = this.chatMessage().trim();
-
     // Append selected command to message if one is selected
     const selectedCmd = this.selectedCommand();
+
     if (selectedCmd) {
       message = message ? `${selectedCmd}\n${message}` : selectedCmd;
     }
@@ -1771,6 +1912,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     const agentId = this.selectedAgentId();
+
     if (!agentId) {
       // Cannot send message without an agent selected
       return;
@@ -1796,20 +1938,26 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onEnhanceMessage(): void {
     let message = this.chatMessage().trim();
     const selectedCmd = this.selectedCommand();
+
     if (selectedCmd) {
       message = message ? `${selectedCmd}\n${message}` : selectedCmd;
     }
+
     if (!message) {
       return;
     }
+
     const agentId = this.selectedAgentId();
+
     if (!agentId) {
       return;
     }
+
     this.enhanceErrorMessage.set(null);
     const correlationId = crypto.randomUUID();
     const model = this.selectedChatModel();
     const normalizedModel = model === 'auto' || model === null || model === '' ? null : model;
+
     this.socketsFacade.forwardEnhanceChat(message, agentId, correlationId, normalizedModel);
   }
 
@@ -1822,6 +1970,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onChatModelChange(value: string): void {
     const normalizedValue = value === '' ? null : value;
+
     this.selectedChatModel.set(normalizedValue);
     this.socketsFacade.setChatModel(normalizedValue);
   }
@@ -1834,6 +1983,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onCommandChange(value: string): void {
     const normalizedValue = value === '' ? null : value;
+
     this.selectedCommand.set(normalizedValue);
   }
 
@@ -1851,6 +2001,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // If opening in new window and editor is not open, open new window
     if (openInNewWindow && !wasOpen) {
       this.openEditorInNewWindow();
+
       return;
     }
 
@@ -1864,6 +2015,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (navigate) {
       // Check if we're in file-only mode
       const filePath = this.route.snapshot.queryParams['file'];
+
       if (filePath && !wasOpen) {
         // Navigate with file query parameter
         this.router.navigate(['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'editor'], {
@@ -1883,14 +2035,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Only show chat and file tree on desktop, hide on mobile by default
       if (!this.isMobile()) {
         this.chatVisible.set(true);
+
         if (this.fileEditor) {
           this.fileEditor.fileTreeVisible.set(true);
         }
       }
+
       if (this.fileEditor) {
         this.fileEditor.terminalVisible.set(false);
         this.fileEditor.autosaveEnabled.set(false);
       }
+
       setTimeout(() => this.syncFileEditorVisibility(), 0);
     }
 
@@ -1904,13 +2059,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onOpenAgentConfigFiles(openInNewWindow = false): void {
     const clientId = this.activeClientId;
     const agentId = this.selectedAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
+
     if (openInNewWindow) {
       this.openAgentConfigInNewWindow();
+
       return;
     }
+
     void this.router.navigate(['/clients', clientId, 'agents', agentId, 'config']);
   }
 
@@ -1919,6 +2078,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    */
   onToggleVNC(client: ClientResponseDto, agent: AgentResponseDto): void {
     const vncPort = agent.vnc?.port;
+
     if (!vncPort) {
       return;
     }
@@ -1926,13 +2086,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Build the URL
     const urlObj = new URL(client.endpoint);
     const url = `${urlObj.protocol}//${urlObj.hostname}:${vncPort}/vnc.html?resize=scale&autoconnect=1&reconnect=1&password=${encodeURIComponent(agent.vnc?.password || '')}`;
-
     // Open new window with minimal controls and maximize if possible
     // Note: Modern browsers have restrictions on window features, but we try to minimize what's possible
     // Use screen dimensions to maximize the window
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
-
     const windowFeatures = [
       'menubar=no',
       'toolbar=no',
@@ -1945,7 +2103,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       `left=0`,
       `top=0`,
     ].join(',');
-
     const newWindow = window.open(url, '_blank', windowFeatures);
 
     // Try to maximize after window opens (may be blocked by browser security)
@@ -1955,10 +2112,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         try {
           newWindow.moveTo(0, 0);
           newWindow.resizeTo(screenWidth, screenHeight);
+
           // Try to maximize if the browser supports it
           if (newWindow.screen && 'availWidth' in newWindow.screen) {
             const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
             const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+
             if (availWidth && availHeight) {
               newWindow.resizeTo(availWidth, availHeight);
             }
@@ -2033,9 +2192,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   getDeploymentManagerToggleTitle(): string {
     const openInNew = this.getDeploymentOpenInNewWindow();
     const isOpen = this.deploymentManagerOpen();
+
     if (openInNew && !isOpen) {
       return $localize`:@@featureChat-openDeploymentManagerNewWindow:Open Deployment Manager in New Window`;
     }
+
     return isOpen
       ? $localize`:@@featureChat-closeDeploymentManager:Close Deployment Manager`
       : $localize`:@@featureChat-openDeploymentManager:Open Deployment Manager`;
@@ -2047,12 +2208,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private openEditorInNewWindow(): void {
     const clientId = this.activeClientId;
     const agentId = this.selectedAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
 
     // Get currently selected file path if editor is open and file is selected
     let filePath: string | undefined;
+
     if (this.fileEditor) {
       filePath = this.fileEditor.selectedFilePath() || undefined;
     }
@@ -2062,18 +2225,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
     const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
     const queryParams = new URLSearchParams();
+
     queryParams.set('standalone', 'true');
+
     if (filePath) {
       queryParams.set('file', encodeURIComponent(filePath));
     }
-    const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
 
+    const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
     // Open new window with minimal controls and maximize if possible
     // Note: Modern browsers have restrictions on window features, but we try to minimize what's possible
     // Use screen dimensions to maximize the window
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
-
     const windowFeatures = [
       'menubar=no',
       'toolbar=no',
@@ -2086,7 +2250,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       `left=0`,
       `top=0`,
     ].join(',');
-
     const newWindow = window.open(url, '_blank', windowFeatures);
 
     // Try to maximize after window opens (may be blocked by browser security)
@@ -2096,10 +2259,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         try {
           newWindow.moveTo(0, 0);
           newWindow.resizeTo(screenWidth, screenHeight);
+
           // Try to maximize if the browser supports it
           if (newWindow.screen && 'availWidth' in newWindow.screen) {
             const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
             const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+
             if (availWidth && availHeight) {
               newWindow.resizeTo(availWidth, availHeight);
             }
@@ -2118,11 +2283,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private openAgentConfigInNewWindow(): void {
     const clientId = this.activeClientId;
     const agentId = this.selectedAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
 
     let filePath: string | undefined;
+
     if (this.fileEditor && this.fileManagerContext() === 'config') {
       filePath = this.fileEditor.selectedFilePath() || undefined;
     }
@@ -2130,15 +2297,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const baseUrl = window.location.origin;
     const configPath = `/clients/${clientId}/agents/${agentId}/config`;
     const queryParams = new URLSearchParams();
+
     queryParams.set('standalone', 'true');
+
     if (filePath) {
       queryParams.set('file', encodeURIComponent(filePath));
     }
-    const url = `${baseUrl}${configPath}?${queryParams.toString()}`;
 
+    const url = `${baseUrl}${configPath}?${queryParams.toString()}`;
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
-
     const windowFeatures = [
       'menubar=no',
       'toolbar=no',
@@ -2151,7 +2319,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       `left=0`,
       `top=0`,
     ].join(',');
-
     const newWindow = window.open(url, '_blank', windowFeatures);
 
     if (newWindow) {
@@ -2159,9 +2326,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         try {
           newWindow.moveTo(0, 0);
           newWindow.resizeTo(screenWidth, screenHeight);
+
           if (newWindow.screen && 'availWidth' in newWindow.screen) {
             const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
             const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+
             if (availWidth && availHeight) {
               newWindow.resizeTo(availWidth, availHeight);
             }
@@ -2175,6 +2344,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onToggleChat(): void {
     this.chatVisible.update((visible) => !visible);
+
     // Recalculate file editor tabs when chat visibility changes
     if (this.fileEditor) {
       this.fileEditor.recalculateTabs();
@@ -2187,6 +2357,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // If opening in new window and deployment manager is not open, open new window
     if (openInNewWindow && !wasOpen) {
       this.openDeploymentManagerInNewWindow();
+
       return;
     }
 
@@ -2217,9 +2388,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onManageTicketAutonomyClick(agent: AgentResponseDto): void {
     const clientId = this.activeClientId;
+
     if (!clientId) {
       return;
     }
+
     this.managingTicketAutonomyAgentId.set(agent.id);
     this.showModal(this.ticketAutonomyModal);
   }
@@ -2239,10 +2412,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onResetTicketAutonomyDraft(): void {
     const row = this.autonomyRow();
+
     if (row) {
       this.applyTicketAutonomyDraftFromRow(row);
+
       return;
     }
+
     this.ticketAutonomyDraftEnabled.set(false);
     this.ticketAutonomyDraftPreImprove.set(false);
     this.ticketAutonomyDraftMaxRuntimeMs.set(3_600_000);
@@ -2253,9 +2429,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onSaveTicketAutonomy(): void {
     const clientId = this.activeClientId;
     const agentId = this.managingTicketAutonomyAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
+
     const tokenRaw = this.ticketAutonomyDraftTokenBudgetText().trim();
     const tokenBudgetLimit = tokenRaw === '' ? null : Number(tokenRaw);
     const dto: UpsertClientAgentAutonomyDto = {
@@ -2265,6 +2443,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       maxIterations: Number(this.ticketAutonomyDraftMaxIterations()) || 1,
       tokenBudgetLimit: tokenBudgetLimit !== null && !Number.isNaN(tokenBudgetLimit) ? tokenBudgetLimit : null,
     };
+
     this.autonomyFacade.clearError();
     this.autonomyFacade.upsert(clientId, agentId, dto);
 
@@ -2287,17 +2466,20 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private openDeploymentManagerInNewWindow(): void {
     const clientId = this.activeClientId;
     const agentId = this.selectedAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
 
     // Get currently selected run ID if deployment manager is open and run is selected
     let runId: string | undefined;
+
     if (this.deploymentManager) {
       // Access the selectedRunId signal from the deployment manager component
       // Note: We'll need to expose this via a getter or method if needed
       // For now, we'll check the URL query parameter
       const urlParams = new URLSearchParams(window.location.search);
+
       runId = urlParams.get('run') || undefined;
     }
 
@@ -2305,16 +2487,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const baseUrl = window.location.origin;
     const deploymentsPath = `/clients/${clientId}/agents/${agentId}/deployments`;
     const queryParams = new URLSearchParams();
+
     queryParams.set('standalone', 'true');
+
     if (runId) {
       queryParams.set('run', encodeURIComponent(runId));
     }
-    const url = `${baseUrl}${deploymentsPath}?${queryParams.toString()}`;
 
+    const url = `${baseUrl}${deploymentsPath}?${queryParams.toString()}`;
     // Open new window with minimal controls and maximize if possible
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
-
     const windowFeatures = [
       'menubar=no',
       'toolbar=no',
@@ -2327,7 +2510,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       `left=0`,
       `top=0`,
     ].join(',');
-
     const newWindow = window.open(url, '_blank', windowFeatures);
 
     // Try to maximize after window opens
@@ -2336,9 +2518,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         try {
           newWindow.moveTo(0, 0);
           newWindow.resizeTo(screenWidth, screenHeight);
+
           if (newWindow.screen && 'availWidth' in newWindow.screen) {
             const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
             const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+
             if (availWidth && availHeight) {
               newWindow.resizeTo(availWidth, availHeight);
             }
@@ -2359,6 +2543,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (this.editorOpen()) {
       // Editor is open, just close the chat
       this.chatVisible.set(false);
+
       if (this.fileEditor) {
         this.fileEditor.recalculateTabs();
       }
@@ -2385,6 +2570,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
     const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
     const queryParams = new URLSearchParams();
+
     queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(filePath));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
@@ -2400,6 +2586,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         console.error('Failed to copy file link to clipboard:', err);
         // Fallback: try using the older clipboard API
         const success = this.fallbackCopyToClipboard(url);
+
         if (success) {
           this.showShareTooltip('Link copied');
         }
@@ -2417,7 +2604,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     const element = this.shareFileLinkButton.nativeElement;
-
     // Store original values
     const originalTitle = element.getAttribute('title') || 'Share file link';
 
@@ -2429,8 +2615,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bootstrap = (window as any).bootstrap;
+
     if (!bootstrap?.Tooltip) {
       console.warn('Bootstrap Tooltip not available');
+
       return;
     }
 
@@ -2442,6 +2630,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       } else {
         // Fallback: check for existing instance first
         const existing = bootstrap.Tooltip.getInstance?.(element);
+
         if (existing) {
           this.shareButtonTooltip = existing;
         } else {
@@ -2466,6 +2655,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }, 10);
     } catch (error) {
       console.error('Failed to create Bootstrap Tooltip:', error);
+
       return;
     }
 
@@ -2500,9 +2690,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const element = this.shareFileLinkButton.nativeElement;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bootstrap = (window as any).bootstrap;
-
     // Remove any tooltip elements from DOM first to prevent Bootstrap from accessing them
     const tooltipElements = document.querySelectorAll('.tooltip');
+
     tooltipElements.forEach((tooltip) => {
       try {
         tooltip.remove();
@@ -2515,6 +2705,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (bootstrap?.Tooltip?.getInstance) {
       try {
         const instance = bootstrap.Tooltip.getInstance(element);
+
         if (instance) {
           try {
             instance.dispose();
@@ -2534,6 +2725,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       } catch (e) {
         // Ignore disposal errors
       }
+
       this.shareButtonTooltip = null;
     }
   }
@@ -2544,6 +2736,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    */
   private fallbackCopyToClipboard(text: string): boolean {
     const textArea = document.createElement('textarea');
+
     textArea.value = text;
     textArea.style.position = 'fixed';
     textArea.style.left = '-999999px';
@@ -2554,15 +2747,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     try {
       const successful = document.execCommand('copy');
+
       if (successful) {
         console.log('File link copied to clipboard (fallback):', text);
+
         return true;
       } else {
         console.error('Fallback copy command failed');
+
         return false;
       }
     } catch (err) {
       console.error('Fallback copy to clipboard failed:', err);
+
       return false;
     } finally {
       document.body.removeChild(textArea);
@@ -2609,6 +2806,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   confirmDeleteClient(): void {
     const clientId = this.clientToDeleteId();
+
     if (clientId) {
       this.clientsFacade.deleteClient(clientId);
       // Subscribe to deletion completion (success or failure) to close modal
@@ -2630,6 +2828,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   confirmDeleteAgent(): void {
     const agentId = this.agentToDeleteId();
     const clientId = this.activeClientId;
+
     if (agentId && clientId) {
       this.agentsFacade.deleteClientAgent(clientId, agentId);
       // Subscribe to deletion completion (success or failure) to close modal
@@ -2654,11 +2853,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (modalElement?.nativeElement) {
       // Use Bootstrap 5 Modal API
       const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.show();
       } else {
         // Fallback: create new modal instance
         const Modal = (window as any).bootstrap?.Modal;
+
         if (Modal) {
           new Modal(modalElement.nativeElement).show();
         }
@@ -2672,6 +2873,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
     if (modalElement?.nativeElement) {
       const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.hide();
       }
@@ -2723,6 +2925,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onClientAuthTypeChange(): void {
     // Clear authentication-specific fields when type changes
     const current = this.newClient();
+
     this.newClient.set({
       ...current,
       apiKey: undefined,
@@ -2734,9 +2937,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onProvisioningToggle(enabled: boolean): void {
     this.useProvisioning.set(enabled);
+
     if (enabled) {
       // Auto-fill name when provisioning is enabled
       this.autoFillProvisioningName();
+
       // Set default WebSocket port to 8443 for provisioned servers
       if (!this.newClient().agentWsPort) {
         this.updateClientFieldNumber('agentWsPort', 8443);
@@ -2747,9 +2952,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onProviderChange(providerType: string): void {
     this.selectedProvider.set(providerType);
     this.selectedServerType.set('');
+
     if (providerType) {
       this.clientsFacade.loadServerTypes(providerType);
     }
+
     // Auto-fill name when provider is selected and provisioning is enabled
     if (this.useProvisioning()) {
       this.autoFillProvisioningName();
@@ -2766,6 +2973,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.autoFillProvisioningName();
         // Get the updated data after auto-fill
         clientData = this.newClient();
+
         if (!clientData.name?.trim()) {
           return; // Still empty after generation, should not happen but safety check
         }
@@ -2804,12 +3012,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (clientData.keycloakClientId) {
           provisionDto.keycloakClientId = clientData.keycloakClientId;
         }
+
         if (clientData.keycloakClientSecret) {
           provisionDto.keycloakClientSecret = clientData.keycloakClientSecret;
         }
+
         if (clientData.keycloakRealm) {
           provisionDto.keycloakRealm = clientData.keycloakRealm;
         }
+
         if (clientData.keycloakAuthServerUrl) {
           provisionDto.keycloakAuthServerUrl = clientData.keycloakAuthServerUrl;
         }
@@ -2823,15 +3034,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (clientData.gitRepositoryUrl) {
         provisionDto.gitRepositoryUrl = clientData.gitRepositoryUrl;
       }
+
       if (clientData.gitUsername) {
         provisionDto.gitUsername = clientData.gitUsername;
       }
+
       if (clientData.gitToken) {
         provisionDto.gitToken = clientData.gitToken;
       }
+
       if (clientData.gitPassword) {
         provisionDto.gitPassword = clientData.gitPassword;
       }
+
       if (clientData.gitPrivateKey) {
         provisionDto.gitPrivateKey = clientData.gitPrivateKey;
       }
@@ -2840,6 +3055,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (clientData.cursorApiKey) {
         provisionDto.cursorApiKey = clientData.cursorApiKey;
       }
+
       if (clientData.agentDefaultImage) {
         provisionDto.agentDefaultImage = clientData.agentDefaultImage;
       }
@@ -2882,9 +3098,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (clientData.keycloakClientId) {
           createDto.keycloakClientId = clientData.keycloakClientId;
         }
+
         if (clientData.keycloakClientSecret) {
           createDto.keycloakClientSecret = clientData.keycloakClientSecret;
         }
+
         if (clientData.keycloakRealm) {
           createDto.keycloakRealm = clientData.keycloakRealm;
         }
@@ -3037,6 +3255,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
     const noun = nouns[Math.floor(Math.random() * nouns.length)];
     const number = Math.floor(Math.random() * 100);
+
     return `${adjective}-${noun}-${number}`;
   }
 
@@ -3046,6 +3265,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private autoFillProvisioningName(): void {
     if (this.useProvisioning() && !this.newClient().name?.trim()) {
       const generatedName = this.generateCoolName();
+
       this.updateClientField('name', generatedName);
     }
   }
@@ -3057,6 +3277,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   updateClientFieldNumber(field: 'agentWsPort', value: string | number | null | undefined): void {
     const numValue = value === '' || value === null || value === undefined ? undefined : Number(value);
+
     this.newClient.update((current) => ({ ...current, [field]: numValue }));
   }
 
@@ -3071,6 +3292,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   updateEditingClientFieldNumber(field: 'agentWsPort', value: string | number | null | undefined): void {
     const numValue = value === '' || value === null || value === undefined ? undefined : Number(value);
+
     this.editingClient.update((current) => ({ ...current, [field]: numValue }));
   }
 
@@ -3136,6 +3358,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         const content = JSON.stringify(config, null, 2);
         const base64Content = btoa(unescape(encodeURIComponent(content)));
         const writeDto: WriteFileDto = { content: base64Content, encoding: 'utf-8' };
+
         this.filesFacade.writeFile(clientId, agentId, AgentConsoleChatComponent.OPENCLAW_CONFIG_PATH, writeDto);
 
         this.filesFacade
@@ -3200,6 +3423,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onEditingClientAuthTypeChange(): void {
     // Clear authentication-specific fields when type changes
     const current = this.editingClient();
+
     this.editingClient.set({
       ...current,
       apiKey: undefined,
@@ -3212,6 +3436,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onSubmitUpdateClient(): void {
     const clientId = this.editingClientId();
     const clientData = this.editingClient();
+
     if (!clientId || !clientData.name || !clientData.endpoint || !clientData.authenticationType) {
       return;
     }
@@ -3222,12 +3447,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (clientData.name) {
       updateDto.name = clientData.name;
     }
+
     if (clientData.description !== undefined) {
       updateDto.description = clientData.description;
     }
+
     if (clientData.endpoint) {
       updateDto.endpoint = clientData.endpoint;
     }
+
     if (clientData.authenticationType) {
       updateDto.authenticationType = clientData.authenticationType;
     }
@@ -3240,9 +3468,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (clientData.keycloakClientId !== undefined) {
         updateDto.keycloakClientId = clientData.keycloakClientId;
       }
+
       if (clientData.keycloakClientSecret !== undefined) {
         updateDto.keycloakClientSecret = clientData.keycloakClientSecret;
       }
+
       if (clientData.keycloakRealm !== undefined) {
         updateDto.keycloakRealm = clientData.keycloakRealm;
       }
@@ -3294,9 +3524,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (agentData.name) {
       updateDto.name = agentData.name;
     }
+
     if (agentData.description !== undefined) {
       updateDto.description = agentData.description;
     }
+
     if (agentData.containerType !== undefined) {
       updateDto.containerType = agentData.containerType;
     }
@@ -3324,6 +3556,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onManageEnvironmentVariablesClick(agent: AgentResponseDto): void {
     const clientId = this.activeClientId;
+
     if (!clientId) {
       return;
     }
@@ -3340,11 +3573,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onSubmitCreateEnvironmentVariable(): void {
     const clientId = this.activeClientId;
     const agentId = this.managingEnvVarsAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
 
     const newEnvVar = this.newEnvVar();
+
     if (!newEnvVar.variable || !newEnvVar.content) {
       return;
     }
@@ -3380,14 +3615,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onSaveEnvironmentVariable(envVar: EnvironmentVariableResponseDto): void {
     const clientId = this.activeClientId;
     const agentId = this.managingEnvVarsAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
 
     const newValue = this.editingEnvVarValue();
+
     if (newValue === envVar.content) {
       // No change, just cancel edit
       this.onCancelEditEnvironmentVariable();
+
       return;
     }
 
@@ -3414,6 +3652,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onDeleteEnvironmentVariable(envVarId: string): void {
     const clientId = this.activeClientId;
     const agentId = this.managingEnvVarsAgentId();
+
     if (!clientId || !agentId) {
       return;
     }
@@ -3444,11 +3683,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onSubmitAddClientUser(): void {
     const clientId = this.managingClientUsersClientId();
+
     if (!clientId) {
       return;
     }
 
     const dto = this.newClientUser();
+
     if (!dto.email?.trim()) {
       return;
     }
@@ -3474,9 +3715,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onRemoveClientUser(relationshipId: string): void {
     const clientId = this.managingClientUsersClientId();
+
     if (!clientId) {
       return;
     }
+
     this.clientsFacade.removeClientUser(clientId, relationshipId);
   }
 
@@ -3502,9 +3745,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   openTicketAutomationRunFromChat(payload: TicketAutomationRunChatEventPayload): void {
     const act = payload.actions.find((a) => a.type === 'openTicketAutomationRun');
+
     if (!act) {
       return;
     }
+
     void this.router.navigate(['/tickets', payload.ticket.clientId], {
       queryParams: { openTicketId: act.ticketId, openAutomationRunId: act.runId },
     });
@@ -3525,10 +3770,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (price == null) {
       return '';
     }
+
     const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+
     if (isNaN(numPrice)) {
       return '';
     }
+
     return numPrice.toFixed(2);
   }
 
@@ -3540,10 +3788,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   getHostname(url: string, withPort = true): string {
     try {
       const urlObj = new URL(url);
+
       // Return hostname with port if port is explicitly specified in the URL
       if (withPort && urlObj.port) {
         return `${urlObj.hostname}:${urlObj.port}`;
       }
+
       return urlObj.hostname;
     } catch {
       // If URL parsing fails, return the original string
@@ -3561,8 +3811,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (!agentType) {
       return '';
     }
+
     const clientToUse = client;
     const agentTypeInfo = clientToUse?.config?.agentTypes?.find((at) => at.type === agentType);
+
     return agentTypeInfo?.displayName || agentType;
   }
 
@@ -3579,7 +3831,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (!providerType) {
       return null;
     }
+
     const provider = providers.find((p) => p.type === providerType);
+
     return provider?.displayName || null;
   }
 
@@ -3596,7 +3850,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             if (!serverInfo || !serverInfo.providerType || !providers || providers.length === 0) {
               return null;
             }
+
             const displayName = this.getProviderDisplayName(serverInfo.providerType, providers);
+
             return displayName;
           }),
           // Handle errors gracefully - if serverInfo doesn't exist (404), return null
@@ -3625,9 +3881,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     agentId: string,
   ): Observable<{ status: string; icon: string; color: string } | null> {
     const cacheKey = `${clientId}:${agentId}`;
-
     // Return cached observable if it exists
     const cached = this.deploymentStatusCache.get(cacheKey);
+
     if (cached) {
       return cached;
     }
@@ -3638,13 +3894,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (!config) {
           return of(null);
         }
+
         // Get the latest run (limit=1, sorted by createdAt desc on backend)
         return this.deploymentsService.listRuns(clientId, agentId, 1, 0).pipe(
           map((runs): { status: string; icon: string; color: string } | null => {
             if (!runs || runs.length === 0) {
               return null;
             }
+
             const latestRun = runs[0];
+
             return this.getDeploymentStatusInfo(latestRun);
           }),
           catchError(() => of(null)),
@@ -3655,6 +3914,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     );
 
     this.deploymentStatusCache.set(cacheKey, status$);
+
     return status$;
   }
 
@@ -3704,9 +3964,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (gitUrl.startsWith('http://') || gitUrl.startsWith('https://')) {
         const urlObj = new URL(gitUrl);
         const pathParts = urlObj.pathname.split('/').filter((part) => part.length > 0);
+
         if (pathParts.length >= 2) {
           const owner = pathParts[0];
           const repo = pathParts[1].replace(/\.git$/, '');
+
           return `${owner}/${repo}`;
         }
       }
@@ -3714,6 +3976,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Handle SSH URLs: git@github.com:owner/repo.git
       if (gitUrl.startsWith('git@')) {
         const match = gitUrl.match(/git@[^:]+:(.+?)(?:\.git)?$/);
+
         if (match && match[1]) {
           return match[1];
         }
@@ -3721,6 +3984,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
       // Fallback: try to extract from any URL pattern
       const match = gitUrl.match(/(?:[/:])([^/]+)\/([^/]+?)(?:\.git)?$/);
+
       if (match && match[1] && match[2]) {
         return `${match[1]}/${match[2]}`;
       }
@@ -3733,12 +3997,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   buildSSHCommand(clientEndpoint: string, port: number, username?: string, password?: string): string | null {
     const hostname = this.getHostname(clientEndpoint, false);
+
     if (!hostname) {
       return null;
     }
+
     if (!password) {
       return `ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${username ?? 'ssh'}@${hostname}`;
     }
+
     return `SSHPASS='${password}' sshpass -e ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${username ?? 'ssh'}@${hostname}`;
   }
 
@@ -3752,20 +4019,27 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   ): number | null {
     const userMessages = messages.filter((msg) => this.isUserMessage(msg.payload));
     let latestUserInArray: number | null = null;
+
     if (userMessages.length > 0) {
       const lastUser = userMessages.reduce((latest, msg) => (msg.timestamp > latest.timestamp ? msg : latest));
+
       latestUserInArray = lastUser.timestamp;
     }
+
     const candidates: number[] = [];
+
     if (sentFallbackTs != null) {
       candidates.push(sentFallbackTs);
     }
+
     if (latestUserInArray != null) {
       candidates.push(latestUserInArray);
     }
+
     if (candidates.length === 0) {
       return null;
     }
+
     return Math.min(...candidates);
   }
 
@@ -3776,34 +4050,43 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const chatMessages = messages.filter((msg) => this.isUserMessage(msg.payload) || this.isAgentMessage(msg.payload));
     let lastUserTs: number | null = null;
     const userMessages = chatMessages.filter((msg) => this.isUserMessage(msg.payload));
+
     if (userMessages.length > 0) {
       const lastUserMessage = userMessages.reduce((latest, msg) => (msg.timestamp > latest.timestamp ? msg : latest));
+
       lastUserTs = lastUserMessage.timestamp;
     } else if (sentFallbackTs) {
       lastUserTs = sentFallbackTs;
     }
+
     if (!lastUserTs) {
       return { lastUserTs: null, hasAgentMessageAfter: false };
     }
+
     const hasAgentMessageAfter = chatMessages.some(
       (msg) => this.isAgentMessage(msg.payload) && msg.timestamp > lastUserTs!,
     );
+
     return { lastUserTs, hasAgentMessageAfter };
   }
 
   isUserMessage(payload: ForwardedEventPayload): boolean {
     if ('success' in payload && payload.success && 'data' in payload) {
       const data = payload.data as ChatMessageData;
+
       return 'from' in data && data.from === 'user';
     }
+
     return false;
   }
 
   isAgentMessage(payload: ForwardedEventPayload): boolean {
     if ('success' in payload && payload.success && 'data' in payload) {
       const data = payload.data as ChatMessageData;
+
       return 'from' in data && data.from === 'agent';
     }
+
     return false;
   }
 
@@ -3811,6 +4094,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if ('success' in payload && payload.success && 'data' in payload) {
       return payload.data as ChatMessageData;
     }
+
     return null;
   }
 
@@ -3826,6 +4110,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if ('response' in messageData) {
       return messageData.response;
     }
+
     return null;
   }
 
@@ -3833,6 +4118,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if ('response' in messageData) {
       return formatAgentResponseForChatMarkdown(messageData.response);
     }
+
     return null;
   }
 
@@ -3840,11 +4126,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (!('response' in messageData)) {
       return false;
     }
+
     const r = messageData.response;
+
     if (typeof r !== 'object' || r === null) {
       return false;
     }
+
     const t = (r as AgentResponseObject)['type'];
+
     return t === 'tool_result' || t === 'toolResult';
   }
 
@@ -3858,13 +4148,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         status: 'success',
       };
     }
+
     const r = messageData.response;
+
     if (typeof r !== 'object' || r === null) {
       return {
         name: 'tool',
         status: 'success',
       };
     }
+
     const agentResponse = r as AgentResponseObject;
     const name = typeof agentResponse['name'] === 'string' ? agentResponse['name'] : 'tool';
     const isError = Boolean(agentResponse['isError']);
@@ -3879,10 +4172,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (!('response' in messageData)) {
       return '_—_';
     }
+
     const r = messageData.response;
+
     if (typeof r !== 'object' || r === null) {
       return '_—_';
     }
+
     return formatUnknownAsMarkdown((r as AgentResponseObject)['result']);
   }
 
@@ -3893,11 +4189,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (item.kind === 'user') {
       return `u-${item.msg.timestamp}`;
     }
+
     if (item.kind === 'ticketAutomationRun') {
       return `ar-${item.payload.run.id}-${item.sortTime}`;
     }
+
     const firstTs = item.msgs[0]?.timestamp ?? item.view.displayTimestamp;
     const lastTs = item.msgs[item.msgs.length - 1]?.timestamp ?? firstTs;
+
     return `a-${firstTs}-${lastTs}-${item.msgs.length}-${item.view.hasFiltered ? 'f' : 'n'}-${item.view.hasDropped ? 'd' : 'n'}`;
   }
 
@@ -3908,9 +4207,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (a === b) {
       return true;
     }
+
     if (a == null || b == null) {
       return a == null && b == null;
     }
+
     return (
       a.direction === b.direction &&
       a.status === b.status &&
@@ -3923,16 +4224,20 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (a.length !== b.length) {
       return false;
     }
+
     for (let i = 0; i < a.length; i++) {
       const x = a[i];
       const y = b[i];
+
       if (x.timestamp !== y.timestamp || x.event !== y.event || x.payload !== y.payload) {
         return false;
       }
+
       if (!this.chatFilterResultEqual(x.filterResult, y.filterResult)) {
         return false;
       }
     }
+
     return true;
   }
 
@@ -3946,10 +4251,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   isMessageDropped(messageData: ChatMessageData): boolean {
     if ('response' in messageData) {
       const response = messageData.response;
+
       if (typeof response === 'object' && response !== null) {
         return response.is_error === true && 'result' in response && response.result === 'MESSAGE_DROPPED';
       }
     }
+
     return false;
   }
 
@@ -3990,7 +4297,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   } | null {
     const direction = 'from' in messageData && messageData.from === 'user' ? 'incoming' : 'outgoing';
     const TIME_WINDOW_MS = 5000;
-
     // Find matching filter result
     const matchingResults = filterResults.filter(
       (fr) => fr.direction === direction && Math.abs(fr.timestamp - messageTimestamp) <= TIME_WINDOW_MS,
@@ -4031,7 +4337,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         const markedModule = await import('marked');
         // marked exports the parser directly
         const marked = markedModule.marked;
+
         this.markedInstance = marked;
+
         return marked;
       } catch (error) {
         this.markedLoadPromise = null;
@@ -4059,24 +4367,30 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (this.markedInstance) {
       const cached = this.markdownHtmlCache.get(result);
+
       if (cached !== undefined) {
         return cached;
       }
+
       try {
         const html = this.markedInstance.parse(result, {
           breaks: true,
           gfm: true,
         });
         const safe = this.sanitizer.bypassSecurityTrustHtml(html || '');
+
         this.markdownHtmlCache.set(result, safe);
         this.trimHtmlCache(this.markdownHtmlCache);
+
         return safe;
       } catch (error) {
         console.warn('Error parsing markdown:', error);
         const escaped = result.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safe = this.sanitizer.bypassSecurityTrustHtml(escaped);
+
         this.markdownHtmlCache.set(result, safe);
         this.trimHtmlCache(this.markdownHtmlCache);
+
         return safe;
       }
     }
@@ -4088,6 +4402,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .catch(() => undefined);
 
     const escaped = result.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
     return this.sanitizer.bypassSecurityTrustHtml(escaped);
   }
 
@@ -4095,6 +4410,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if ('text' in messageData) {
       return messageData.text;
     }
+
     return null;
   }
 
@@ -4109,16 +4425,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     const cached = this.commandBadgeHtmlCache.get(text);
+
     if (cached !== undefined) {
       return cached;
     }
 
     // Check if message starts with a slash command
     const commandMatch = text.match(/^(\/[^\s\n]+)(.*)$/s);
+
     if (commandMatch) {
       const command = commandMatch[1];
       const restOfMessage = commandMatch[2];
-
       // Escape HTML in the rest of the message
       const escapedRest = restOfMessage
         .replace(/&/g, '&amp;')
@@ -4127,12 +4444,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
         .replace(/\n/g, '<br>');
-
       // Create HTML with badge (white background with primary text for user messages)
       const html = `<span class="badge bg-white text-primary me-2">${command}</span>${escapedRest}`;
       const safe = this.sanitizer.bypassSecurityTrustHtml(html);
+
       this.commandBadgeHtmlCache.set(text, safe);
       this.trimHtmlCache(this.commandBadgeHtmlCache);
+
       return safe;
     }
 
@@ -4145,8 +4463,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .replace(/'/g, '&#39;')
       .replace(/\n/g, '<br>');
     const safe = this.sanitizer.bypassSecurityTrustHtml(escaped);
+
     this.commandBadgeHtmlCache.set(text, safe);
     this.trimHtmlCache(this.commandBadgeHtmlCache);
+
     return safe;
   }
 
@@ -4157,10 +4477,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (!this.chatMessagesContainer?.nativeElement) {
       return;
     }
+
     const element = this.chatMessagesContainer.nativeElement;
     const apply = (): void => {
       element.scrollTop = element.scrollHeight;
     };
+
     // Double rAF + microtask catches rows whose height changes after first paint (e.g. automation cards).
     requestAnimationFrame(() => {
       apply();
@@ -4184,10 +4506,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           if (connected) {
             // Already connected, set client immediately
             this.socketsFacade.setClient(clientId);
+
             return of(null);
           } else {
             // Not connected, connect first then set client
             this.socketsFacade.connect();
+
             return this.socketConnected$.pipe(
               filter((connected) => connected === true),
               take(1),
@@ -4227,6 +4551,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               if (this.fileEditor && !this.fileOpenedFromQuery) {
                 // Check if file is already selected to avoid unnecessary reloads
                 const currentPath = this.fileEditor.selectedFilePath();
+
                 if (currentPath !== filePath) {
                   this.fileEditor.onFileSelect(filePath);
                   this.fileOpenedFromQuery = true;
@@ -4254,6 +4579,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           if (connected) {
             // Currently connected, disconnect first
             this.socketsFacade.disconnect();
+
             // Wait for disconnection to complete (connected becomes false)
             return this.socketConnected$.pipe(
               filter((connected) => connected === false),
@@ -4261,6 +4587,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               switchMap(() => {
                 // Now connect
                 this.socketsFacade.connect();
+
                 // Wait for connection to be established
                 return this.socketConnected$.pipe(
                   filter((connected) => connected === true),
@@ -4271,6 +4598,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           } else {
             // Not connected, just connect
             this.socketsFacade.connect();
+
             // Wait for connection to be established
             return this.socketConnected$.pipe(
               filter((connected) => connected === true),
@@ -4281,6 +4609,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         switchMap(() => {
           // Socket is now connected, set client
           this.socketsFacade.setClient(clientId);
+
           // Wait for setClientSuccess (indicated by selectedClientId matching clientId)
           return this.selectedClientId$.pipe(
             filter((selectedClientId) => selectedClientId === clientId),
@@ -4327,6 +4656,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    */
   getChatModelOptions(provider: string): { value: string; label: string }[] {
     const options = this.environment.chatModelOptions?.[provider] ?? {};
+
     return Object.entries(options).map(([value, label]) => ({
       value,
       label,
@@ -4340,6 +4670,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (models !== null) {
       return Object.entries(models).map(([value, label]) => ({ value, label }));
     }
+
     return this.getChatModelOptions(agentType);
   }
 }

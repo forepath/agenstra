@@ -100,6 +100,7 @@ export class ServiceTypesPageComponent implements OnInit {
 
   onSubmitCreate(): void {
     if (!this.createForm.key?.trim() || !this.createForm.name?.trim() || !this.createForm.provider?.trim()) return;
+
     this.facade.createServiceType({
       key: this.createForm.key.trim(),
       name: this.createForm.name.trim(),
@@ -111,6 +112,7 @@ export class ServiceTypesPageComponent implements OnInit {
 
   onSubmitEdit(): void {
     if (!this.editForm.id) return;
+
     this.facade.updateServiceType(this.editForm.id, {
       name: this.editForm.name,
       description: this.editForm.description,
@@ -140,6 +142,7 @@ export class ServiceTypesPageComponent implements OnInit {
           bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => { show: () => void } } };
         }
       ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) modal.show();
     }
   }
@@ -151,6 +154,7 @@ export class ServiceTypesPageComponent implements OnInit {
           bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
         }
       ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) modal.hide();
     }
   }

@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { ServiceTypesService } from '../../services/service-types.service';
+import type { ServiceTypeResponse } from '../../types/billing.types';
+
 import {
   createServiceType,
   createServiceTypeFailure,
@@ -33,12 +36,10 @@ import {
   loadServiceTypesBatch$,
   updateServiceType$,
 } from './service-types.effects';
-import type { ServiceTypeResponse } from '../../types/billing.types';
 
 describe('ServiceTypesEffects', () => {
   let actions$: Actions;
   let serviceTypesService: jest.Mocked<ServiceTypesService>;
-
   const mockServiceType: ServiceTypeResponse = {
     id: 'st-1',
     key: 'cursor',
@@ -70,6 +71,7 @@ describe('ServiceTypesEffects', () => {
   describe('loadProviderDetails$', () => {
     it('should return loadProviderDetailsSuccess on success', (done) => {
       const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: {} }];
+
       actions$ = of(loadProviderDetails());
       serviceTypesService.getProviderDetails.mockReturnValue(of(providerDetails));
 
@@ -115,6 +117,7 @@ describe('ServiceTypesEffects', () => {
   describe('loadServiceTypesBatch$', () => {
     it('should return loadServiceTypesSuccess when batch is empty', (done) => {
       const accumulated = [mockServiceType];
+
       actions$ = of(loadServiceTypesBatch({ offset: 10, accumulatedServiceTypes: accumulated }));
       serviceTypesService.listServiceTypes.mockReturnValue(of([]));
 
@@ -172,6 +175,7 @@ describe('ServiceTypesEffects', () => {
   describe('updateServiceType$', () => {
     it('should return updateServiceTypeSuccess on success', (done) => {
       const updated = { ...mockServiceType, name: 'Updated' };
+
       actions$ = of(updateServiceType({ id: 'st-1', serviceType: { name: 'Updated' } }));
       serviceTypesService.updateServiceType.mockReturnValue(of(updated));
 

@@ -1,13 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import {
-  checkAvailability,
-  checkAvailabilityAlternatives,
-  clearAvailability,
-  previewPricing,
-} from './availability.actions';
-import { AvailabilityFacade } from './availability.facade';
+
 import type {
   AvailabilityCheckDto,
   AvailabilityResponse,
@@ -15,18 +9,23 @@ import type {
   PricingPreviewResponse,
 } from '../../types/billing.types';
 
+import {
+  checkAvailability,
+  checkAvailabilityAlternatives,
+  clearAvailability,
+  previewPricing,
+} from './availability.actions';
+import { AvailabilityFacade } from './availability.facade';
+
 describe('AvailabilityFacade', () => {
   let facade: AvailabilityFacade;
   let store: jest.Mocked<Store>;
-
   const mockCheck: AvailabilityCheckDto = {
     serviceTypeId: 'st-1',
     region: 'eu',
     serverType: 'small',
   };
-
   const mockAvailability: AvailabilityResponse = { isAvailable: true, reason: 'OK' };
-
   const mockPricing: PricingPreviewResponse = {
     basePrice: 100,
     marginPercent: 10,
@@ -83,6 +82,7 @@ describe('AvailabilityFacade', () => {
 
     it('should dispatch previewPricing', () => {
       const preview: PricingPreviewDto = { planId: 'plan-1' };
+
       facade.previewPricing(preview);
       expect(store.dispatch).toHaveBeenCalledWith(previewPricing({ preview }));
     });

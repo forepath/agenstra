@@ -16,6 +16,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
+
 import { typeormConfig } from '../typeorm.config';
 
 const authMethod = getAuthenticationMethod();

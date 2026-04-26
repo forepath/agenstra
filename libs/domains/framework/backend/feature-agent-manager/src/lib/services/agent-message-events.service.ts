@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { AgentEventEnvelope } from '../providers/agent-events.types';
 import { AgentMessageEventsRepository } from '../repositories/agent-message-events.repository';
 
@@ -25,6 +26,7 @@ export class AgentMessageEventsService {
       });
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       // Fail-open: persistence should not break live chat.
       this.logger.warn(`Failed to persist agent event: ${err.message}`);
     }

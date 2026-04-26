@@ -1,3 +1,5 @@
+import type { AvailabilityResponse, PricingPreviewResponse } from '../../types/billing.types';
+
 import {
   checkAvailability,
   checkAvailabilityAlternatives,
@@ -11,14 +13,12 @@ import {
   previewPricingSuccess,
 } from './availability.actions';
 import { availabilityReducer, initialAvailabilityState, type AvailabilityState } from './availability.reducer';
-import type { AvailabilityResponse, PricingPreviewResponse } from '../../types/billing.types';
 
 describe('availabilityReducer', () => {
   const mockAvailability: AvailabilityResponse = {
     isAvailable: true,
     reason: 'Available',
   };
-
   const mockPricing: PricingPreviewResponse = {
     basePrice: 100,
     marginPercent: 10,
@@ -29,6 +29,7 @@ describe('availabilityReducer', () => {
   describe('initial state', () => {
     it('should return the initial state', () => {
       const action = { type: 'UNKNOWN' };
+
       expect(availabilityReducer(undefined, action as never)).toEqual(initialAvailabilityState);
     });
   });
@@ -40,6 +41,7 @@ describe('availabilityReducer', () => {
         state,
         checkAvailability({ check: { serviceTypeId: 'st-1', region: 'eu', serverType: 'small' } }),
       );
+
       expect(newState.loadingAvailability).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -49,6 +51,7 @@ describe('availabilityReducer', () => {
     it('should set availability and set loadingAvailability to false', () => {
       const state: AvailabilityState = { ...initialAvailabilityState, loadingAvailability: true };
       const newState = availabilityReducer(state, checkAvailabilitySuccess({ response: mockAvailability }));
+
       expect(newState.availability).toEqual(mockAvailability);
       expect(newState.loadingAvailability).toBe(false);
       expect(newState.error).toBeNull();
@@ -59,6 +62,7 @@ describe('availabilityReducer', () => {
     it('should set error and set loadingAvailability to false', () => {
       const state: AvailabilityState = { ...initialAvailabilityState, loadingAvailability: true };
       const newState = availabilityReducer(state, checkAvailabilityFailure({ error: 'Check failed' }));
+
       expect(newState.error).toBe('Check failed');
       expect(newState.loadingAvailability).toBe(false);
     });
@@ -71,6 +75,7 @@ describe('availabilityReducer', () => {
         state,
         checkAvailabilityAlternatives({ check: { serviceTypeId: 'st-1', region: 'eu', serverType: 'small' } }),
       );
+
       expect(newState.loadingAlternatives).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -80,6 +85,7 @@ describe('availabilityReducer', () => {
     it('should set alternatives and set loadingAlternatives to false', () => {
       const state: AvailabilityState = { ...initialAvailabilityState, loadingAlternatives: true };
       const newState = availabilityReducer(state, checkAvailabilityAlternativesSuccess({ response: mockAvailability }));
+
       expect(newState.alternatives).toEqual(mockAvailability);
       expect(newState.loadingAlternatives).toBe(false);
       expect(newState.error).toBeNull();
@@ -93,6 +99,7 @@ describe('availabilityReducer', () => {
         state,
         checkAvailabilityAlternativesFailure({ error: 'Alternatives failed' }),
       );
+
       expect(newState.error).toBe('Alternatives failed');
       expect(newState.loadingAlternatives).toBe(false);
     });
@@ -102,6 +109,7 @@ describe('availabilityReducer', () => {
     it('should set loadingPricing to true and clear error', () => {
       const state: AvailabilityState = { ...initialAvailabilityState, error: 'Previous error' };
       const newState = availabilityReducer(state, previewPricing({ preview: { planId: 'plan-1' } }));
+
       expect(newState.loadingPricing).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -111,6 +119,7 @@ describe('availabilityReducer', () => {
     it('should set pricing and set loadingPricing to false', () => {
       const state: AvailabilityState = { ...initialAvailabilityState, loadingPricing: true };
       const newState = availabilityReducer(state, previewPricingSuccess({ response: mockPricing }));
+
       expect(newState.pricing).toEqual(mockPricing);
       expect(newState.loadingPricing).toBe(false);
       expect(newState.error).toBeNull();
@@ -121,6 +130,7 @@ describe('availabilityReducer', () => {
     it('should set error and set loadingPricing to false', () => {
       const state: AvailabilityState = { ...initialAvailabilityState, loadingPricing: true };
       const newState = availabilityReducer(state, previewPricingFailure({ error: 'Pricing failed' }));
+
       expect(newState.error).toBe('Pricing failed');
       expect(newState.loadingPricing).toBe(false);
     });
@@ -134,6 +144,7 @@ describe('availabilityReducer', () => {
         pricing: mockPricing,
       };
       const newState = availabilityReducer(state, clearAvailability());
+
       expect(newState).toEqual(initialAvailabilityState);
     });
   });

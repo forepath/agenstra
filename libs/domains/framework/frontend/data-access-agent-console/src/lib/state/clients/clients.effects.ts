@@ -3,7 +3,9 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, exhaustMap, map, mergeMap, of, switchMap } from 'rxjs';
+
 import { ClientsService } from '../../services/clients.service';
+
 import {
   addClientUser,
   addClientUserFailure,
@@ -57,12 +59,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -75,17 +80,20 @@ export const loadClients$ = createEffect(
       switchMap(() => {
         // Start with offset 0, limit 10, ignore user params for batch loading
         const batchParams = { limit: BATCH_SIZE, offset: 0 };
+
         return clientsService.listClients(batchParams).pipe(
           switchMap((clients) => {
             if (clients.length === 0) {
               // No entries, dispatch success with empty array
               return of(loadClientsSuccess({ clients: [] }));
             }
+
             // Has entries, check if we got a full batch (might be more)
             if (clients.length < BATCH_SIZE) {
               // Partial batch, we're done
               return of(loadClientsSuccess({ clients }));
             }
+
             // Full batch, load next batch
             return of(loadClientsBatch({ offset: BATCH_SIZE, accumulatedClients: clients }));
           }),
@@ -103,18 +111,22 @@ export const loadClientsBatch$ = createEffect(
       ofType(loadClientsBatch),
       switchMap(({ offset, accumulatedClients }) => {
         const batchParams = { limit: BATCH_SIZE, offset };
+
         return clientsService.listClients(batchParams).pipe(
           switchMap((clients) => {
             const newAccumulated = [...accumulatedClients, ...clients];
+
             if (clients.length === 0) {
               // No more entries, dispatch success with all accumulated
               return of(loadClientsSuccess({ clients: newAccumulated }));
             }
+
             // Has entries, check if we got a full batch (might be more)
             if (clients.length < BATCH_SIZE) {
               // Partial batch, we're done
               return of(loadClientsSuccess({ clients: newAccumulated }));
             }
+
             // Full batch, load next batch
             return of(loadClientsBatch({ offset: offset + BATCH_SIZE, accumulatedClients: newAccumulated }));
           }),
@@ -270,6 +282,7 @@ export const loadServerInfo$ = createEffect(
                   // Don't set error state, just mark loading as complete
                   return of(loadServerInfoFailure({ clientId, error: '' }));
                 }
+
                 // For other errors, set the error message
                 return of(loadServerInfoFailure({ clientId, error: normalizeError(error) }));
               }),

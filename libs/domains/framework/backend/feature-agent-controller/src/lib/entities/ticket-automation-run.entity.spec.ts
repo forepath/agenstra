@@ -1,14 +1,16 @@
-import { TicketAutomationRunPhase, TicketAutomationRunStatus } from './ticket-automation.enums';
 import { TicketAutomationRunEntity } from './ticket-automation-run.entity';
+import { TicketAutomationRunPhase, TicketAutomationRunStatus } from './ticket-automation.enums';
 
 describe('TicketAutomationRunEntity', () => {
   it('should create an instance', () => {
     const entity = new TicketAutomationRunEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should map run lifecycle fields', () => {
     const entity = new TicketAutomationRunEntity();
+
     entity.id = 'run-uuid';
     entity.ticketId = 'ticket-uuid';
     entity.clientId = 'client-uuid';

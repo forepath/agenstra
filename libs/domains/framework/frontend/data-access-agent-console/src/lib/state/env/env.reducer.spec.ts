@@ -26,7 +26,6 @@ describe('envReducer', () => {
   const clientId = 'client-1';
   const agentId = 'agent-1';
   const envVarId = 'env-var-1';
-
   const mockEnvironmentVariable: EnvironmentVariableResponseDto = {
     id: envVarId,
     agentId: agentId,
@@ -51,10 +50,9 @@ describe('envReducer', () => {
         ...initialEnvState,
         errors: { [`${clientId}:${agentId}`]: 'Previous error' },
       };
-
       const newState = envReducer(state, loadEnvironmentVariables({ clientId, agentId }));
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.loading[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -66,7 +64,6 @@ describe('envReducer', () => {
         ...initialEnvState,
         loading: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = envReducer(
         state,
         loadEnvironmentVariablesSuccess({
@@ -75,8 +72,8 @@ describe('envReducer', () => {
           environmentVariables: [mockEnvironmentVariable],
         }),
       );
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.environmentVariables[key]).toEqual([mockEnvironmentVariable]);
       expect(newState.loading[key]).toBe(false);
       expect(newState.errors[key]).toBeNull();
@@ -89,10 +86,9 @@ describe('envReducer', () => {
         ...initialEnvState,
         loading: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = envReducer(state, loadEnvironmentVariablesFailure({ clientId, agentId, error: 'Load failed' }));
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.loading[key]).toBe(false);
       expect(newState.errors[key]).toBe('Load failed');
     });
@@ -104,10 +100,9 @@ describe('envReducer', () => {
         ...initialEnvState,
         errors: { [`${clientId}:${agentId}`]: 'Previous error' },
       };
-
       const newState = envReducer(state, loadEnvironmentVariablesCount({ clientId, agentId }));
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.loadingCount[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -119,10 +114,9 @@ describe('envReducer', () => {
         ...initialEnvState,
         loadingCount: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = envReducer(state, loadEnvironmentVariablesCountSuccess({ clientId, agentId, count: 5 }));
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.counts[key]).toBe(5);
       expect(newState.loadingCount[key]).toBe(false);
       expect(newState.errors[key]).toBeNull();
@@ -135,13 +129,12 @@ describe('envReducer', () => {
         ...initialEnvState,
         loadingCount: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = envReducer(
         state,
         loadEnvironmentVariablesCountFailure({ clientId, agentId, error: 'Count failed' }),
       );
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.loadingCount[key]).toBe(false);
       expect(newState.errors[key]).toBe('Count failed');
     });
@@ -153,7 +146,6 @@ describe('envReducer', () => {
         ...initialEnvState,
         errors: { [`${clientId}:${agentId}`]: 'Previous error' },
       };
-
       const newState = envReducer(
         state,
         createEnvironmentVariable({
@@ -162,8 +154,8 @@ describe('envReducer', () => {
           createDto: { variable: 'NEW_VAR', content: 'new-value' },
         }),
       );
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.creating[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -176,7 +168,6 @@ describe('envReducer', () => {
         creating: { [`${clientId}:${agentId}`]: true },
         environmentVariables: { [`${clientId}:${agentId}`]: [] },
       };
-
       const newState = envReducer(
         state,
         createEnvironmentVariableSuccess({
@@ -185,8 +176,8 @@ describe('envReducer', () => {
           environmentVariable: mockEnvironmentVariable,
         }),
       );
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.environmentVariables[key]).toContainEqual(mockEnvironmentVariable);
       expect(newState.creating[key]).toBe(false);
       expect(newState.errors[key]).toBeNull();
@@ -199,13 +190,12 @@ describe('envReducer', () => {
         ...initialEnvState,
         creating: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = envReducer(
         state,
         createEnvironmentVariableFailure({ clientId, agentId, error: 'Create failed' }),
       );
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.creating[key]).toBe(false);
       expect(newState.errors[key]).toBe('Create failed');
     });
@@ -217,7 +207,6 @@ describe('envReducer', () => {
         ...initialEnvState,
         errors: { [`${clientId}:${agentId}:${envVarId}`]: 'Previous error' },
       };
-
       const newState = envReducer(
         state,
         updateEnvironmentVariable({
@@ -227,8 +216,8 @@ describe('envReducer', () => {
           updateDto: { variable: 'UPDATED_VAR', content: 'updated-value' },
         }),
       );
-
       const envVarKey = `${clientId}:${agentId}:${envVarId}`;
+
       expect(newState.updating[envVarKey]).toBe(true);
       expect(newState.errors[envVarKey]).toBeNull();
     });
@@ -241,7 +230,6 @@ describe('envReducer', () => {
         variable: 'UPDATED_VAR',
         content: 'updated-value',
       };
-
       const state: EnvState = {
         ...initialEnvState,
         updating: { [`${clientId}:${agentId}:${envVarId}`]: true },
@@ -249,7 +237,6 @@ describe('envReducer', () => {
           [`${clientId}:${agentId}`]: [mockEnvironmentVariable],
         },
       };
-
       const newState = envReducer(
         state,
         updateEnvironmentVariableSuccess({
@@ -258,9 +245,9 @@ describe('envReducer', () => {
           environmentVariable: updatedVar,
         }),
       );
-
       const key = `${clientId}:${agentId}`;
       const envVarKey = `${clientId}:${agentId}:${envVarId}`;
+
       expect(newState.environmentVariables[key]).toContainEqual(updatedVar);
       expect(newState.updating[envVarKey]).toBe(false);
       expect(newState.errors[envVarKey]).toBeNull();
@@ -273,13 +260,12 @@ describe('envReducer', () => {
         ...initialEnvState,
         updating: { [`${clientId}:${agentId}:${envVarId}`]: true },
       };
-
       const newState = envReducer(
         state,
         updateEnvironmentVariableFailure({ clientId, agentId, envVarId, error: 'Update failed' }),
       );
-
       const envVarKey = `${clientId}:${agentId}:${envVarId}`;
+
       expect(newState.updating[envVarKey]).toBe(false);
       expect(newState.errors[envVarKey]).toBe('Update failed');
     });
@@ -291,10 +277,9 @@ describe('envReducer', () => {
         ...initialEnvState,
         errors: { [`${clientId}:${agentId}:${envVarId}`]: 'Previous error' },
       };
-
       const newState = envReducer(state, deleteEnvironmentVariable({ clientId, agentId, envVarId }));
-
       const envVarKey = `${clientId}:${agentId}:${envVarId}`;
+
       expect(newState.deleting[envVarKey]).toBe(true);
       expect(newState.errors[envVarKey]).toBeNull();
     });
@@ -309,11 +294,10 @@ describe('envReducer', () => {
           [`${clientId}:${agentId}`]: [mockEnvironmentVariable],
         },
       };
-
       const newState = envReducer(state, deleteEnvironmentVariableSuccess({ clientId, agentId, envVarId }));
-
       const key = `${clientId}:${agentId}`;
       const envVarKey = `${clientId}:${agentId}:${envVarId}`;
+
       expect(newState.environmentVariables[key]).not.toContainEqual(mockEnvironmentVariable);
       expect(newState.deleting[envVarKey]).toBe(false);
       expect(newState.errors[envVarKey]).toBeNull();
@@ -326,13 +310,12 @@ describe('envReducer', () => {
         ...initialEnvState,
         deleting: { [`${clientId}:${agentId}:${envVarId}`]: true },
       };
-
       const newState = envReducer(
         state,
         deleteEnvironmentVariableFailure({ clientId, agentId, envVarId, error: 'Delete failed' }),
       );
-
       const envVarKey = `${clientId}:${agentId}:${envVarId}`;
+
       expect(newState.deleting[envVarKey]).toBe(false);
       expect(newState.errors[envVarKey]).toBe('Delete failed');
     });
@@ -344,10 +327,9 @@ describe('envReducer', () => {
         ...initialEnvState,
         errors: { [`${clientId}:${agentId}`]: 'Previous error' },
       };
-
       const newState = envReducer(state, deleteAllEnvironmentVariables({ clientId, agentId }));
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.deletingAll[key]).toBe(true);
       expect(newState.errors[key]).toBeNull();
     });
@@ -365,10 +347,9 @@ describe('envReducer', () => {
           [`${clientId}:${agentId}`]: 1,
         },
       };
-
       const newState = envReducer(state, deleteAllEnvironmentVariablesSuccess({ clientId, agentId, deletedCount: 1 }));
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.environmentVariables[key]).toEqual([]);
       expect(newState.counts[key]).toBe(0);
       expect(newState.deletingAll[key]).toBe(false);
@@ -382,13 +363,12 @@ describe('envReducer', () => {
         ...initialEnvState,
         deletingAll: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = envReducer(
         state,
         deleteAllEnvironmentVariablesFailure({ clientId, agentId, error: 'Delete all failed' }),
       );
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.deletingAll[key]).toBe(false);
       expect(newState.errors[key]).toBe('Delete all failed');
     });
@@ -405,10 +385,9 @@ describe('envReducer', () => {
           [`${clientId}:${agentId}`]: 1,
         },
       };
-
       const newState = envReducer(state, clearEnvironmentVariables({ clientId, agentId }));
-
       const key = `${clientId}:${agentId}`;
+
       expect(newState.environmentVariables[key]).toBeUndefined();
       expect(newState.counts[key]).toBeUndefined();
     });

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { VcsFacade } from './vcs.facade';
+
 import {
   clearGitDiff,
   commit,
@@ -18,6 +18,7 @@ import {
   switchBranch,
   unstageFiles,
 } from './vcs.actions';
+import { VcsFacade } from './vcs.facade';
 import type { VcsState } from './vcs.reducer';
 
 describe('VcsFacade', () => {
@@ -62,6 +63,7 @@ describe('VcsFacade', () => {
   describe('loadStatus', () => {
     it('should dispatch loadGitStatus action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadStatus('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(loadGitStatus({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -71,6 +73,7 @@ describe('VcsFacade', () => {
   describe('loadBranches', () => {
     it('should dispatch loadGitBranches action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadBranches('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(loadGitBranches({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -80,6 +83,7 @@ describe('VcsFacade', () => {
   describe('loadDiff', () => {
     it('should dispatch loadGitDiff action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.loadDiff('client-1', 'agent-1', 'file1.txt');
 
       expect(spy).toHaveBeenCalledWith(
@@ -91,6 +95,7 @@ describe('VcsFacade', () => {
   describe('clearDiff', () => {
     it('should dispatch clearGitDiff action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.clearDiff();
 
       expect(spy).toHaveBeenCalledWith(clearGitDiff());
@@ -100,6 +105,7 @@ describe('VcsFacade', () => {
   describe('stageFiles', () => {
     it('should dispatch stageFiles action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.stageFiles('client-1', 'agent-1', { files: ['file1.txt'] });
 
       expect(spy).toHaveBeenCalledWith(
@@ -111,6 +117,7 @@ describe('VcsFacade', () => {
   describe('unstageFiles', () => {
     it('should dispatch unstageFiles action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.unstageFiles('client-1', 'agent-1', { files: ['file1.txt'] });
 
       expect(spy).toHaveBeenCalledWith(
@@ -122,6 +129,7 @@ describe('VcsFacade', () => {
   describe('commit', () => {
     it('should dispatch commit action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.commit('client-1', 'agent-1', { message: 'Test commit' });
 
       expect(spy).toHaveBeenCalledWith(
@@ -133,6 +141,7 @@ describe('VcsFacade', () => {
   describe('push', () => {
     it('should dispatch push action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.push('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(push({ clientId: 'client-1', agentId: 'agent-1', force: undefined }));
@@ -140,6 +149,7 @@ describe('VcsFacade', () => {
 
     it('should dispatch push action with force option', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.push('client-1', 'agent-1', { force: true });
 
       expect(spy).toHaveBeenCalledWith(push({ clientId: 'client-1', agentId: 'agent-1', force: true }));
@@ -149,6 +159,7 @@ describe('VcsFacade', () => {
   describe('pull', () => {
     it('should dispatch pull action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.pull('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(pull({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -158,6 +169,7 @@ describe('VcsFacade', () => {
   describe('fetch', () => {
     it('should dispatch fetch action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.fetch('client-1', 'agent-1');
 
       expect(spy).toHaveBeenCalledWith(fetch({ clientId: 'client-1', agentId: 'agent-1' }));
@@ -167,6 +179,7 @@ describe('VcsFacade', () => {
   describe('rebase', () => {
     it('should dispatch rebase action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.rebase('client-1', 'agent-1', { branch: 'main' });
 
       expect(spy).toHaveBeenCalledWith(rebase({ clientId: 'client-1', agentId: 'agent-1', dto: { branch: 'main' } }));
@@ -176,6 +189,7 @@ describe('VcsFacade', () => {
   describe('switchBranch', () => {
     it('should dispatch switchBranch action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.switchBranch('client-1', 'agent-1', 'develop');
 
       expect(spy).toHaveBeenCalledWith(switchBranch({ clientId: 'client-1', agentId: 'agent-1', branch: 'develop' }));
@@ -185,6 +199,7 @@ describe('VcsFacade', () => {
   describe('createBranch', () => {
     it('should dispatch createBranch action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.createBranch('client-1', 'agent-1', { name: 'feature-branch' });
 
       expect(spy).toHaveBeenCalledWith(
@@ -196,6 +211,7 @@ describe('VcsFacade', () => {
   describe('deleteBranch', () => {
     it('should dispatch deleteBranch action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.deleteBranch('client-1', 'agent-1', 'feature-branch');
 
       expect(spy).toHaveBeenCalledWith(
@@ -207,6 +223,7 @@ describe('VcsFacade', () => {
   describe('resolveConflict', () => {
     it('should dispatch resolveConflict action', () => {
       const spy = jest.spyOn(store, 'dispatch');
+
       facade.resolveConflict('client-1', 'agent-1', { path: 'file1.txt', strategy: 'yours' });
 
       expect(spy).toHaveBeenCalledWith(

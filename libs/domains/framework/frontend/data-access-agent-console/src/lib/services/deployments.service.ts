@@ -4,6 +4,7 @@ import type { Environment } from '@forepath/framework/frontend/util-configuratio
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+
 import type {
   Branch,
   CreateDeploymentConfigurationDto,
@@ -45,6 +46,7 @@ export class DeploymentsService {
           if (error instanceof HttpErrorResponse && error.status === 404) {
             return of(null);
           }
+
           // Re-throw other errors
           throw error;
         }),
@@ -107,9 +109,11 @@ export class DeploymentsService {
    */
   listWorkflows(clientId: string, agentId: string, repositoryId: string, branch?: string): Observable<Workflow[]> {
     let params = new HttpParams();
+
     if (branch) {
       params = params.set('branch', branch);
     }
+
     return this.http.get<Workflow[]>(
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/deployments/repositories/${encodeURIComponent(repositoryId)}/workflows`,
       { params },
@@ -121,12 +125,15 @@ export class DeploymentsService {
    */
   listRuns(clientId: string, agentId: string, limit?: number, offset?: number): Observable<DeploymentRun[]> {
     let params = new HttpParams();
+
     if (limit !== undefined) {
       params = params.set('limit', limit.toString());
     }
+
     if (offset !== undefined) {
       params = params.set('offset', offset.toString());
     }
+
     return this.http.get<DeploymentRun[]>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/deployments/runs`, {
       params,
     });

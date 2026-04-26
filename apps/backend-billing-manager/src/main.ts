@@ -3,6 +3,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DataSource } from 'typeorm';
+
 import { AppModule } from './app/app.module';
 import { typeormConfig } from './typeorm.config';
 
@@ -15,8 +16,8 @@ async function bootstrap() {
 
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;
-
   let origin: string | string[];
+
   if (corsOrigin) {
     origin = corsOrigin.split(',').map((value) => value.trim());
   } else if (isProduction) {
@@ -44,6 +45,7 @@ async function bootstrap() {
 
   if (!typeormConfig.synchronize && typeormConfig.migrations?.length) {
     const dataSource = app.get(DataSource);
+
     try {
       Logger.log('🔄 Running pending migrations...');
       await dataSource.runMigrations();
@@ -65,8 +67,10 @@ async function bootstrap() {
   );
 
   const globalPrefix = 'api';
+
   app.setGlobalPrefix(globalPrefix);
   const port = parseInt(process.env.PORT || '3200', 10);
+
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }

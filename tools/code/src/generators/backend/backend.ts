@@ -1,6 +1,7 @@
 import { formatFiles, Tree, updateJson } from '@nx/devkit';
 import { applicationGenerator as generatorFn } from '@nx/nest';
 import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
+
 import { BackendGeneratorSchema } from './schema';
 
 export async function backendGenerator(tree: Tree, options: BackendGeneratorSchema) {
@@ -34,6 +35,7 @@ export async function backendGenerator(tree: Tree, options: BackendGeneratorSche
 
   if (tree.exists(oldWebpackConfigPath)) {
     const content = tree.read(oldWebpackConfigPath, 'utf-8');
+
     tree.write(newWebpackConfigPath, content);
     tree.delete(oldWebpackConfigPath);
   }
@@ -45,6 +47,7 @@ export async function backendGenerator(tree: Tree, options: BackendGeneratorSche
         'webpack.config.cjs',
       );
     }
+
     return json;
   });
 

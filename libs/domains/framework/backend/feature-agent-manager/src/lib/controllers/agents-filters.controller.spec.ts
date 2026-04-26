@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CreateRegexFilterRuleDto } from '../dto/create-regex-filter-rule.dto';
 import { UpdateRegexFilterRuleDto } from '../dto/update-regex-filter-rule.dto';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { AgentsFiltersService } from '../services/agents-filters.service';
+
 import { AgentsFiltersController } from './agents-filters.controller';
 
 describe('AgentsFiltersController', () => {
@@ -15,7 +17,6 @@ describe('AgentsFiltersController', () => {
     update: jest.fn(),
     delete: jest.fn(),
   };
-
   const mockRow: RegexFilterRuleEntity = Object.assign(new RegexFilterRuleEntity(), {
     id: '11111111-1111-1111-1111-111111111111',
     pattern: 'foo',
@@ -27,7 +28,6 @@ describe('AgentsFiltersController', () => {
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   });
-
   const expectedDto = {
     id: mockRow.id,
     pattern: mockRow.pattern,
@@ -46,6 +46,7 @@ describe('AgentsFiltersController', () => {
       controllers: [AgentsFiltersController],
       providers: [{ provide: AgentsFiltersService, useValue: mockService }],
     }).compile();
+
     controller = module.get(AgentsFiltersController);
   });
 
@@ -53,6 +54,7 @@ describe('AgentsFiltersController', () => {
     it('maps entities to DTOs with default pagination', async () => {
       mockService.list.mockResolvedValue([mockRow]);
       const result = await controller.list(undefined, undefined);
+
       expect(mockService.list).toHaveBeenCalledWith(100, 0);
       expect(result).toEqual([expectedDto]);
     });
@@ -75,6 +77,7 @@ describe('AgentsFiltersController', () => {
     it('maps entity to DTO', async () => {
       mockService.getById.mockResolvedValue(mockRow);
       const result = await controller.getOne(mockRow.id);
+
       expect(result).toEqual(expectedDto);
       expect(mockService.getById).toHaveBeenCalledWith(mockRow.id);
     });
@@ -87,8 +90,10 @@ describe('AgentsFiltersController', () => {
         direction: 'incoming',
         filterType: 'none',
       };
+
       mockService.create.mockResolvedValue(mockRow);
       const result = await controller.create(dto);
+
       expect(mockService.create).toHaveBeenCalledWith(dto);
       expect(result).toEqual(expectedDto);
     });
@@ -97,8 +102,10 @@ describe('AgentsFiltersController', () => {
   describe('update', () => {
     it('maps updated entity to DTO', async () => {
       const dto: UpdateRegexFilterRuleDto = { priority: 3 };
+
       mockService.update.mockResolvedValue(mockRow);
       const result = await controller.update(mockRow.id, dto);
+
       expect(mockService.update).toHaveBeenCalledWith(mockRow.id, dto);
       expect(result).toEqual(expectedDto);
     });

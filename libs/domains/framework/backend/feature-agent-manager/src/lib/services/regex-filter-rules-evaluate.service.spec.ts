@@ -1,9 +1,11 @@
 import { Test } from '@nestjs/testing';
-import { FilterDirection } from '../providers/chat-filter.interface';
+
 import type { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
-import { RegexFilterRulesEvaluateService } from './regex-filter-rules-evaluate.service';
-import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';
+import { FilterDirection } from '../providers/chat-filter.interface';
 import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.repository';
+
+import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';
+import { RegexFilterRulesEvaluateService } from './regex-filter-rules-evaluate.service';
 
 describe('RegexFilterRulesEvaluateService', () => {
   let service: RegexFilterRulesEvaluateService;
@@ -28,6 +30,7 @@ describe('RegexFilterRulesEvaluateService', () => {
         },
       ],
     }).compile();
+
     service = moduleRef.get(RegexFilterRulesEvaluateService);
     cache = moduleRef.get(RegexFilterRulesCacheService);
   });
@@ -45,6 +48,7 @@ describe('RegexFilterRulesEvaluateService', () => {
       } as RegexFilterRuleEntity,
     ]);
     const r = await service.evaluate('has secret word', FilterDirection.INCOMING);
+
     expect(r).toEqual(expect.objectContaining({ filtered: true, action: 'drop' }));
   });
 
@@ -61,6 +65,7 @@ describe('RegexFilterRulesEvaluateService', () => {
       } as RegexFilterRuleEntity,
     ]);
     const r = await service.evaluate('x', FilterDirection.INCOMING);
+
     expect(r).toEqual({ filtered: false });
   });
 });

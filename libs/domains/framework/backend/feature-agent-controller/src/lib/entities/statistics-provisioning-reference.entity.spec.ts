@@ -3,11 +3,13 @@ import { StatisticsProvisioningReferenceEntity } from './statistics-provisioning
 describe('StatisticsProvisioningReferenceEntity', () => {
   it('should create an instance', () => {
     const entity = new StatisticsProvisioningReferenceEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const entity = new StatisticsProvisioningReferenceEntity();
+
     entity.id = 'stats-prov-uuid';
     entity.originalProvisioningReferenceId = 'prov-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
@@ -27,6 +29,7 @@ describe('StatisticsProvisioningReferenceEntity', () => {
 
   it('should allow optional serverName, publicIp, privateIp and providerMetadata', () => {
     const entity = new StatisticsProvisioningReferenceEntity();
+
     entity.serverName = 'test-server';
     entity.publicIp = '1.2.3.4';
     entity.privateIp = '10.0.0.1';
@@ -41,6 +44,7 @@ describe('StatisticsProvisioningReferenceEntity', () => {
 
   it('should allow optional fields to be undefined', () => {
     const entity = new StatisticsProvisioningReferenceEntity();
+
     entity.id = 'stats-prov-uuid';
     entity.originalProvisioningReferenceId = 'prov-uuid';
     entity.statisticsClientId = 'stats-client-uuid';

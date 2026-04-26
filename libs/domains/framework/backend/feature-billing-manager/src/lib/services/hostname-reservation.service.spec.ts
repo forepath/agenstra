@@ -20,13 +20,12 @@ describe('HostnameReservationService', () => {
     const subscriptionItemsRepository = {
       updateHostname: jest.fn().mockResolvedValue({}),
     };
-
     const service = new HostnameReservationService(
       reservedHostnamesRepository as never,
       subscriptionItemsRepository as never,
     );
-
     const hostname = await service.reserveHostname(subscriptionItemId);
+
     expect(hostname).toMatch(/^[a-z]+-[a-z]+-[a-z0-9]+$/);
     expect(reservedHostnamesRepository.create).toHaveBeenCalledWith(hostname, subscriptionItemId);
     expect(subscriptionItemsRepository.updateHostname).toHaveBeenCalledWith(subscriptionItemId, hostname);
@@ -50,13 +49,12 @@ describe('HostnameReservationService', () => {
     const subscriptionItemsRepository = {
       updateHostname: jest.fn().mockResolvedValue({}),
     };
-
     const service = new HostnameReservationService(
       reservedHostnamesRepository as never,
       subscriptionItemsRepository as never,
     );
-
     const hostname = await service.reserveHostname(subscriptionItemId);
+
     expect(hostname).toBeDefined();
     expect(reservedHostnamesRepository.existsByHostname).toHaveBeenCalledTimes(3);
     expect(reservedHostnamesRepository.create).toHaveBeenCalledTimes(1);
@@ -72,7 +70,6 @@ describe('HostnameReservationService', () => {
     const subscriptionItemsRepository = {
       updateHostname: jest.fn(),
     };
-
     const service = new HostnameReservationService(
       reservedHostnamesRepository as never,
       subscriptionItemsRepository as never,
@@ -91,7 +88,6 @@ describe('HostnameReservationService', () => {
     const subscriptionItemsRepository = {
       updateHostname: jest.fn(),
     };
-
     const service = new HostnameReservationService(
       reservedHostnamesRepository as never,
       subscriptionItemsRepository as never,

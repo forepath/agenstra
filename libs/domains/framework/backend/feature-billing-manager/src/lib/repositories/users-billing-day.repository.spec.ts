@@ -24,6 +24,7 @@ describe('UsersBillingDayRepository', () => {
   describe('getEffectiveBillingDayForUser', () => {
     it('returns effective billing day from user createdAt and billingDayOfMonth', async () => {
       const createdAt = new Date('2024-03-15T12:00:00Z');
+
       mockRepository.findOne.mockResolvedValue({ createdAt, billingDayOfMonth: 20 });
 
       const repository = new UsersBillingDayRepository(mockRepository as never);
@@ -38,6 +39,7 @@ describe('UsersBillingDayRepository', () => {
 
     it('returns day from createdAt when billingDayOfMonth is null', async () => {
       const createdAt = new Date('2024-03-15T12:00:00Z');
+
       mockRepository.findOne.mockResolvedValue({ createdAt, billingDayOfMonth: null });
 
       const repository = new UsersBillingDayRepository(mockRepository as never);

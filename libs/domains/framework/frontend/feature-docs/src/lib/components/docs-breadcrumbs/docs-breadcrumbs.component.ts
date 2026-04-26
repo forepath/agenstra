@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NavigationNode } from '@forepath/framework/frontend/util-docs-parser';
+
 import { DocsNavigationService } from '../../services';
 
 @Component({
@@ -30,6 +31,7 @@ export class DocsBreadcrumbsComponent {
   readonly breadcrumbs = computed(() => {
     const path = this.currentPath();
     const nodes = this.navigationNodes();
+
     return this.navigationService.getBreadcrumbs(nodes, path);
   });
 }

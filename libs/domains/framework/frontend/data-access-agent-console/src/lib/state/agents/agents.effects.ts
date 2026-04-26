@@ -2,10 +2,12 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, exhaustMap, filter, from, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
+
 import { AgentsService } from '../../services/agents.service';
-import { setContainerRunningStatus } from '../stats/stats.actions';
 import { listDirectory, listDirectoryFailure, listDirectorySuccess } from '../files/files.actions';
 import type { FileNodeDto } from '../files/files.types';
+import { setContainerRunningStatus } from '../stats/stats.actions';
+
 import {
   createClientAgent,
   createClientAgentFailure,
@@ -47,12 +49,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -65,17 +70,20 @@ export const loadClientAgents$ = createEffect(
       switchMap(({ clientId }) => {
         // Start with offset 0, limit 10, ignore user params for batch loading
         const batchParams = { limit: BATCH_SIZE, offset: 0 };
+
         return agentsService.listClientAgents(clientId, batchParams).pipe(
           switchMap((agents) => {
             if (agents.length === 0) {
               // No entries, dispatch success with empty array
               return of(loadClientAgentsSuccess({ clientId, agents: [] }));
             }
+
             // Has entries, check if we got a full batch (might be more)
             if (agents.length < BATCH_SIZE) {
               // Partial batch, we're done
               return of(loadClientAgentsSuccess({ clientId, agents }));
             }
+
             // Full batch, load next batch
             return of(loadClientAgentsBatch({ clientId, offset: BATCH_SIZE, accumulatedAgents: agents }));
           }),
@@ -93,18 +101,22 @@ export const loadClientAgentsBatch$ = createEffect(
       ofType(loadClientAgentsBatch),
       switchMap(({ clientId, offset, accumulatedAgents }) => {
         const batchParams = { limit: BATCH_SIZE, offset };
+
         return agentsService.listClientAgents(clientId, batchParams).pipe(
           switchMap((agents) => {
             const newAccumulated = [...accumulatedAgents, ...agents];
+
             if (agents.length === 0) {
               // No more entries, dispatch success with all accumulated
               return of(loadClientAgentsSuccess({ clientId, agents: newAccumulated }));
             }
+
             // Has entries, check if we got a full batch (might be more)
             if (agents.length < BATCH_SIZE) {
               // Partial batch, we're done
               return of(loadClientAgentsSuccess({ clientId, agents: newAccumulated }));
             }
+
             // Full batch, load next batch
             return of(
               loadClientAgentsBatch({ clientId, offset: offset + BATCH_SIZE, accumulatedAgents: newAccumulated }),
@@ -264,6 +276,7 @@ export const loadClientAgentCommandsLoading$ = createEffect(
         // Normalize path for comparison (handle both '.cursor/commands' and './.cursor/commands')
         const path = params?.path || '';
         const normalized = path.replace(/^\.\//, '').replace(/\/$/, '');
+
         return (
           normalized === '.cursor/commands' ||
           normalized === 'cursor/commands' ||
@@ -288,9 +301,11 @@ export const loadClientAgentCommandsFromFiles$ = createEffect(
       withLatestFrom(store.select(selectAgentsEntities)),
       map(([action, agentsEntities]) => {
         const agent = agentsEntities[action.clientId]?.find((agent) => agent.id === action.agentId);
+
         if (!agent) {
           return action;
         }
+
         return {
           ...action,
           agentType: agent.agentType,
@@ -299,6 +314,7 @@ export const loadClientAgentCommandsFromFiles$ = createEffect(
       filter((action) => {
         // Normalize path for comparison (handle both '.cursor/commands' and './.cursor/commands')
         const normalized = action.directoryPath.replace(/^\.\//, '').replace(/\/$/, '');
+
         return (
           normalized === '.cursor/commands' ||
           normalized === 'cursor/commands' ||
@@ -311,20 +327,21 @@ export const loadClientAgentCommandsFromFiles$ = createEffect(
           const { clientId, agentId, agentType, files, directoryPath } = action;
           // Filter for .md files (type === 'file' and name ends with .md)
           const commandFiles = files.filter((file: FileNodeDto) => file.type === 'file' && file.name.endsWith('.md'));
-
           // Determine agentType from directoryPath
           const normalizedPath = directoryPath.replace(/^\.\//, '').replace(/\/$/, '');
-
           // Extract command names: remove .md extension and prefix with /
           const commands: { [agentType: string]: string[] } = {
             cursor: [],
             opencode: [],
           };
+
           if (agentType) {
             const commandNames = commandFiles.map((file: FileNodeDto) => {
               const commandName = file.name.replace(/\.md$/, '');
+
               return `/${commandName}`;
             });
+
             if (normalizedPath.includes(normalizedPath)) {
               commands[agentType] = commandNames;
             }
@@ -339,11 +356,13 @@ export const loadClientAgentCommandsFromFiles$ = createEffect(
           const { clientId, agentId, directoryPath } = action;
           const normalizedPath = directoryPath.replace(/^\.\//, '').replace(/\/$/, '');
           const commands: { [agentType: string]: string[] } = {};
+
           if (normalizedPath === '.cursor/commands' || normalizedPath === 'cursor/commands') {
             commands['cursor'] = [];
           } else if (normalizedPath === '.opencode/command' || normalizedPath === 'opencode/command') {
             commands['opencode'] = [];
           }
+
           return loadClientAgentCommandsSuccess({ clientId, agentId, commands });
         }
       }),

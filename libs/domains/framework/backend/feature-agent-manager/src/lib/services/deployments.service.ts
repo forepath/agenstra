@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
 import {
   CreateDeploymentConfigurationDto,
   DeploymentConfigurationResponseDto,
@@ -40,9 +41,11 @@ export class DeploymentsService {
    */
   async getConfiguration(agentId: string): Promise<DeploymentConfigurationResponseDto | null> {
     const config = await this.deploymentConfigurationsRepository.findByAgentId(agentId);
+
     if (!config) {
       return null;
     }
+
     return this.mapConfigurationToDto(config);
   }
 
@@ -58,14 +61,17 @@ export class DeploymentsService {
 
     // Determine provider type - required for create, optional for update
     let providerType: string;
+
     if ('providerType' in dto && dto.providerType) {
       providerType = dto.providerType;
     } else {
       // For updates without providerType, get it from existing configuration
       const existingConfig = await this.deploymentConfigurationsRepository.findByAgentId(agentId);
+
       if (!existingConfig) {
         throw new BadRequestException('Cannot update deployment configuration: no existing configuration found');
       }
+
       providerType = existingConfig.providerType;
     }
 
@@ -99,13 +105,12 @@ export class DeploymentsService {
   async listRepositories(agentId: string): Promise<RepositoryResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
     };
-
     const repositories = await provider.listRepositories(credentials);
+
     return repositories.map((repo) => ({
       id: repo.id,
       name: repo.name,
@@ -122,13 +127,12 @@ export class DeploymentsService {
   async listBranches(agentId: string, repositoryId: string): Promise<BranchResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
     };
-
     const branches = await provider.listBranches(credentials, repositoryId);
+
     return branches.map((branch) => ({
       name: branch.name,
       sha: branch.sha,
@@ -142,13 +146,12 @@ export class DeploymentsService {
   async listWorkflows(agentId: string, repositoryId: string, branch?: string): Promise<WorkflowResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
     };
-
     const workflows = await provider.listWorkflows(credentials, repositoryId, branch);
+
     return workflows.map((workflow) => ({
       id: workflow.id,
       name: workflow.name,
@@ -164,14 +167,11 @@ export class DeploymentsService {
   async triggerWorkflow(agentId: string, dto: TriggerWorkflowDto): Promise<DeploymentRunResponseDto> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
     };
-
     const run = await provider.triggerWorkflow(credentials, config.repositoryId, dto.workflowId, dto.ref, dto.inputs);
-
     // Store run in database
     const runEntity = await this.deploymentRunsRepository.upsertByProviderRunId(config.id, run.id, {
       runName: run.name,
@@ -194,26 +194,24 @@ export class DeploymentsService {
    */
   async getRunStatus(agentId: string, runId: string): Promise<DeploymentRunResponseDto> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-
     // Look up the run entity to get the providerRunId
     const runEntity = await this.deploymentRunsRepository.findById(runId);
+
     if (!runEntity) {
       throw new NotFoundException(`Deployment run with ID ${runId} not found`);
     }
+
     if (runEntity.configurationId !== config.id) {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
     };
-
     // Use providerRunId (GitHub run ID) instead of database UUID
     const run = await provider.getRunStatus(credentials, config.repositoryId, runEntity.providerRunId);
-
     // Update run in database
     const updatedRunEntity = await this.deploymentRunsRepository.upsertByProviderRunId(config.id, run.id, {
       runName: run.name,
@@ -236,18 +234,18 @@ export class DeploymentsService {
    */
   async getRunLogs(agentId: string, runId: string): Promise<string> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-
     // Look up the run entity to get the providerRunId
     const runEntity = await this.deploymentRunsRepository.findById(runId);
+
     if (!runEntity) {
       throw new NotFoundException(`Deployment run with ID ${runId} not found`);
     }
+
     if (runEntity.configurationId !== config.id) {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -262,25 +260,25 @@ export class DeploymentsService {
    */
   async listRunJobs(agentId: string, runId: string): Promise<JobResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-
     // Look up the run entity to get the providerRunId
     const runEntity = await this.deploymentRunsRepository.findById(runId);
+
     if (!runEntity) {
       throw new NotFoundException(`Deployment run with ID ${runId} not found`);
     }
+
     if (runEntity.configurationId !== config.id) {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
     };
-
     // Use providerRunId (GitHub run ID) instead of database UUID
     const jobs = await provider.listRunJobs(credentials, config.repositoryId, runEntity.providerRunId);
+
     return jobs.map((job) => ({
       id: job.id,
       name: job.name,
@@ -296,18 +294,18 @@ export class DeploymentsService {
    */
   async getJobLogs(agentId: string, runId: string, jobId: string): Promise<string> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-
     // Look up the run entity to get the providerRunId
     const runEntity = await this.deploymentRunsRepository.findById(runId);
+
     if (!runEntity) {
       throw new NotFoundException(`Deployment run with ID ${runId} not found`);
     }
+
     if (runEntity.configurationId !== config.id) {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -322,18 +320,18 @@ export class DeploymentsService {
    */
   async cancelRun(agentId: string, runId: string): Promise<void> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-
     // Look up the run entity to get the providerRunId
     const runEntity = await this.deploymentRunsRepository.findById(runId);
+
     if (!runEntity) {
       throw new NotFoundException(`Deployment run with ID ${runId} not found`);
     }
+
     if (runEntity.configurationId !== config.id) {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
     const provider = this.pipelineProviderFactory.getProvider(config.providerType);
-
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -354,6 +352,7 @@ export class DeploymentsService {
   async listRuns(agentId: string, limit = 50, offset = 0): Promise<DeploymentRunResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
     const runs = await this.deploymentRunsRepository.findByConfigurationId(config.id, limit, offset);
+
     return runs.map((run) => this.mapRunToDto(run));
   }
 

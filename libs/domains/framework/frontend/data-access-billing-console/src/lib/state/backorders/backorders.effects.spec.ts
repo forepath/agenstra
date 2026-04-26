@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { BackordersService } from '../../services/backorders.service';
+import type { BackorderResponse } from '../../types/billing.types';
+
 import {
   cancelBackorder,
   cancelBackorderFailure,
@@ -16,12 +19,10 @@ import {
   retryBackorderSuccess,
 } from './backorders.actions';
 import { cancelBackorder$, loadBackorders$, loadBackordersBatch$, retryBackorder$ } from './backorders.effects';
-import type { BackorderResponse } from '../../types/billing.types';
 
 describe('BackordersEffects', () => {
   let actions$: Actions;
   let backordersService: jest.Mocked<BackordersService>;
-
   const mockBackorder: BackorderResponse = {
     id: 'bo-1',
     userId: 'user-1',
@@ -74,6 +75,7 @@ describe('BackordersEffects', () => {
   describe('loadBackordersBatch$', () => {
     it('should return loadBackordersSuccess when batch is empty', (done) => {
       const accumulated = [mockBackorder];
+
       actions$ = of(loadBackordersBatch({ offset: 10, accumulatedBackorders: accumulated }));
       backordersService.listBackorders.mockReturnValue(of([]));
 

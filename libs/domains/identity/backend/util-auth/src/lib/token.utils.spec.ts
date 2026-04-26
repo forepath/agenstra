@@ -14,6 +14,7 @@ describe('token.utils', () => {
     it('should create unique codes', () => {
       const { code: code1 } = createConfirmationCode();
       const { code: code2 } = createConfirmationCode();
+
       expect(code1).not.toBe(code2);
     });
   });
@@ -22,21 +23,22 @@ describe('token.utils', () => {
     it('should validate correct code', async () => {
       const { code, hash } = createConfirmationCode();
       const codeHash = await hash;
-
       const result = await validateConfirmationCode(code, codeHash);
+
       expect(result).toBe(true);
     }, 15000);
 
     it('should reject invalid code', async () => {
       const { code, hash } = createConfirmationCode();
       const codeHash = await hash;
-
       const result = await validateConfirmationCode(code + '1', codeHash);
+
       expect(result).toBe(false);
     }, 15000);
 
     it('should reject when storedHash is null', async () => {
       const result = await validateConfirmationCode('123456', null);
+
       expect(result).toBe(false);
     });
 

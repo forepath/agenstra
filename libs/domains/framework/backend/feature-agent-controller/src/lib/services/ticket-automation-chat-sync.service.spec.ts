@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
+import { TicketAutomationRunPhase, TicketAutomationRunStatus } from '../entities/ticket-automation.enums';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
-import { TicketAutomationRunPhase, TicketAutomationRunStatus } from '../entities/ticket-automation.enums';
+
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 
@@ -27,6 +29,7 @@ describe('TicketAutomationChatSyncService', () => {
       take: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([]),
     };
+
     runRepo.createQueryBuilder.mockReturnValue(qb);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -37,6 +40,7 @@ describe('TicketAutomationChatSyncService', () => {
         { provide: ClientAutomationChatRealtimeService, useValue: chatRealtime },
       ],
     }).compile();
+
     service = module.get(TicketAutomationChatSyncService);
   });
 
@@ -61,6 +65,7 @@ describe('TicketAutomationChatSyncService', () => {
       cancelledByUserId: null,
       cancellationReason: null,
     } as TicketAutomationRunEntity;
+
     runRepo.createQueryBuilder().getMany.mockResolvedValue([run]);
     ticketRepo.findOne.mockResolvedValue({
       id: 't1',
@@ -74,6 +79,7 @@ describe('TicketAutomationChatSyncService', () => {
     });
     automationRepo.findOne.mockResolvedValue({ eligible: true });
     const socket = { connected: true, emit: jest.fn() } as never;
+
     await service.hydrateForAgentClient(socket, 'c1', 'a1');
     expect(runRepo.createQueryBuilder).toHaveBeenCalled();
     expect(chatRealtime.emitToSocket).toHaveBeenCalledTimes(1);
@@ -81,6 +87,7 @@ describe('TicketAutomationChatSyncService', () => {
       hydrate: boolean;
       run: { id: string };
     };
+
     expect(payload.hydrate).toBe(true);
     expect(payload.run.id).toBe('r1');
   });

@@ -39,7 +39,6 @@ describe('StatsReducer', () => {
     },
     networks: {},
   };
-
   const createMockEntry = (
     clientId: string,
     agentId: string,
@@ -57,6 +56,7 @@ describe('StatsReducer', () => {
   describe('initial state', () => {
     it('should return the initial state', () => {
       const state = statsReducer(undefined, { type: '[Stats] Unknown' });
+
       expect(state).toEqual(initialStatsState);
     });
   });
@@ -74,8 +74,8 @@ describe('StatsReducer', () => {
       const entry1 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
       const entry3 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000);
-
       let state = statsReducer(initialStatsState, containerStatsReceived({ entry: entry1 }));
+
       state = statsReducer(state, containerStatsReceived({ entry: entry2 }));
       state = statsReducer(state, containerStatsReceived({ entry: entry3 }));
 
@@ -89,8 +89,8 @@ describe('StatsReducer', () => {
       const entry1 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createMockEntry('client-1', 'agent-2', '2024-01-01T00:00:00.000Z', 2000);
       const entry3 = createMockEntry('client-2', 'agent-1', '2024-01-01T00:00:00.000Z', 3000);
-
       let state = statsReducer(initialStatsState, containerStatsReceived({ entry: entry1 }));
+
       state = statsReducer(state, containerStatsReceived({ entry: entry2 }));
       state = statsReducer(state, containerStatsReceived({ entry: entry3 }));
 
@@ -114,6 +114,7 @@ describe('StatsReducer', () => {
       }
 
       let state = initialStatsState;
+
       for (const entry of entries) {
         state = statsReducer(state, containerStatsReceived({ entry }));
       }
@@ -129,8 +130,8 @@ describe('StatsReducer', () => {
     it('should clear stats for a specific container', () => {
       const entry1 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createMockEntry('client-1', 'agent-2', '2024-01-01T00:00:00.000Z', 2000);
-
       let state = statsReducer(initialStatsState, containerStatsReceived({ entry: entry1 }));
+
       state = statsReducer(state, containerStatsReceived({ entry: entry2 }));
       state = statsReducer(state, clearStatsHistory({ clientId: 'client-1', agentId: 'agent-1' }));
 
@@ -142,8 +143,8 @@ describe('StatsReducer', () => {
       const entry1 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createMockEntry('client-1', 'agent-2', '2024-01-01T00:00:00.000Z', 2000);
       const entry3 = createMockEntry('client-2', 'agent-1', '2024-01-01T00:00:00.000Z', 3000);
-
       let state = statsReducer(initialStatsState, containerStatsReceived({ entry: entry1 }));
+
       state = statsReducer(state, containerStatsReceived({ entry: entry2 }));
       state = statsReducer(state, containerStatsReceived({ entry: entry3 }));
       state = statsReducer(state, clearStatsHistory({ clientId: 'client-1', agentId: 'agent-2' }));
@@ -158,6 +159,7 @@ describe('StatsReducer', () => {
         initialStatsState,
         clearStatsHistory({ clientId: 'non-existent', agentId: 'non-existent' }),
       );
+
       expect(state.statsByContainer).toEqual({});
     });
   });
@@ -167,8 +169,8 @@ describe('StatsReducer', () => {
       const entry1 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createMockEntry('client-1', 'agent-2', '2024-01-01T00:00:00.000Z', 2000);
       const entry3 = createMockEntry('client-2', 'agent-1', '2024-01-01T00:00:00.000Z', 3000);
-
       let state = statsReducer(initialStatsState, containerStatsReceived({ entry: entry1 }));
+
       state = statsReducer(state, containerStatsReceived({ entry: entry2 }));
       state = statsReducer(state, containerStatsReceived({ entry: entry3 }));
       state = statsReducer(state, clearAllStatsHistory());
@@ -178,6 +180,7 @@ describe('StatsReducer', () => {
 
     it('should handle clearing when no stats exist', () => {
       const state = statsReducer(initialStatsState, clearAllStatsHistory());
+
       expect(state.statsByContainer).toEqual({});
     });
   });

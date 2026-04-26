@@ -20,6 +20,7 @@ import {
   withLatestFrom,
 } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+
 import {
   ticketBoardAutomationRunStepAppended,
   ticketBoardAutomationRunUpsert,
@@ -31,6 +32,7 @@ import {
   ticketBoardTicketRemoved,
   ticketBoardTicketUpsert,
 } from '../tickets/tickets.actions';
+
 import {
   connectTicketsBoardSocket,
   connectTicketsBoardSocketFailure,
@@ -55,19 +57,25 @@ const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
 export function resolveTicketsBoardWebsocketUrl(environment: Environment): string | null {
   const explicit = environment.controller.ticketsWebsocketUrl?.trim();
+
   if (explicit) {
     return explicit;
   }
+
   const base = environment.controller.websocketUrl?.trim();
+
   if (!base) {
     return null;
   }
+
   if (base.endsWith('/clients')) {
     return `${base.slice(0, -'/clients'.length)}/tickets`;
   }
+
   try {
     const u = new URL(base);
     const root = `${u.protocol}//${u.host}`;
+
     return `${root}/tickets`;
   } catch {
     return `${base.replace(/\/$/, '')}/tickets`;
@@ -79,27 +87,35 @@ function getAuthHeader(environment: Environment, keycloakService: KeycloakServic
     const apiKey =
       environment.authentication.apiKey ??
       (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
+
     if (apiKey) {
       return of(`Bearer ${apiKey}`);
     }
+
     return of(null);
   }
+
   if (environment.authentication.type === 'keycloak' && keycloakService) {
     return from(keycloakService.getToken()).pipe(
       map((token) => (token ? `Bearer ${token}` : null)),
       catchError((error) => {
         console.warn('Failed to get Keycloak token:', error);
+
         return of(null);
       }),
     );
   }
+
   if (environment.authentication.type === 'users') {
     const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
+
     if (jwt) {
       return of(`Bearer ${jwt}`);
     }
+
     return of(null);
   }
+
   return of(null);
 }
 
@@ -119,6 +135,7 @@ export const connectTicketsBoardSocket$ = createEffect(
       ofType(connectTicketsBoardSocket),
       switchMap(() => {
         const websocketUrl = resolveTicketsBoardWebsocketUrl(environment);
+
         if (!websocketUrl) {
           return of(connectTicketsBoardSocketFailure({ error: 'Tickets WebSocket URL not configured' }));
         }
@@ -144,83 +161,71 @@ export const connectTicketsBoardSocket$ = createEffect(
             const connectSuccess$ = fromEvent(ticketsBoardSocketInstance, 'connect').pipe(
               map(() => connectTicketsBoardSocketSuccess()),
             );
-
             const connectError$ = fromEvent<Error>(ticketsBoardSocketInstance, 'connect_error').pipe(
               map((error) => ticketsBoardSocketReconnectError({ error: error.message || 'Connection error' })),
             );
-
             const reconnectAttempt$ = fromEvent<number>(ticketsBoardSocketInstance, 'reconnect_attempt').pipe(
               map((attempt) => ticketsBoardSocketReconnecting({ attempt })),
             );
-
             const reconnecting$ = fromEvent<number>(ticketsBoardSocketInstance, 'reconnecting').pipe(
               map((attempt) => ticketsBoardSocketReconnecting({ attempt })),
             );
-
             const reconnect$ = fromEvent(ticketsBoardSocketInstance, 'reconnect').pipe(
               map(() => ticketsBoardSocketReconnected()),
             );
-
             const reconnectError$ = fromEvent<Error>(ticketsBoardSocketInstance, 'reconnect_error').pipe(
               map((error) => ticketsBoardSocketReconnectError({ error: error.message || 'Reconnection error' })),
             );
-
             const reconnectFailed$ = fromEvent(ticketsBoardSocketInstance, 'reconnect_failed').pipe(
               map(() => {
                 ticketsBoardSocketInstance = null;
+
                 return ticketsBoardSocketReconnectFailed({ error: 'Reconnection failed after all attempts' });
               }),
             );
-
             const setClientSuccess$ = fromEvent<{ message: string; clientId: string }>(
               ticketsBoardSocketInstance,
               'setClientSuccess',
             ).pipe(
               map((data) => setTicketsBoardSocketClientSuccess({ message: data.message, clientId: data.clientId })),
             );
-
             const error$ = fromEvent<{ message: string }>(ticketsBoardSocketInstance, 'error').pipe(
               map((data) => ticketsBoardSocketError({ message: data.message })),
             );
-
             const ticketUpsert$ = fromEvent(ticketsBoardSocketInstance, TICKETS_BOARD_SOCKET_EVENTS.ticketUpsert).pipe(
               map((payload) => ticketBoardTicketUpsert({ ticket: payload as never })),
             );
-
             const ticketRemoved$ = fromEvent(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketRemoved,
             ).pipe(map((payload) => ticketBoardTicketRemoved(payload as { id: string; clientId: string })));
-
             const ticketComment$ = fromEvent(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketCommentCreated,
             ).pipe(map((payload) => ticketBoardCommentCreated({ comment: payload as never })));
-
             const ticketActivity$ = fromEvent(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketActivityCreated,
             ).pipe(map((payload) => ticketBoardActivityCreated({ activity: payload as never })));
-
             const automationUpsert$ = fromEvent(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketAutomationUpsert,
             ).pipe(map((payload) => ticketBoardAutomationUpsert({ config: payload as never })));
-
             const runUpsert$ = fromEvent(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketAutomationRunUpsert,
             ).pipe(map((payload) => ticketBoardAutomationRunUpsert({ run: payload as never })));
-
             const runStep$ = fromEvent(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketAutomationRunStepAppended,
             ).pipe(
               map((raw) => {
                 const body = raw as { runId?: string; step?: unknown };
+
                 if (!body?.runId || !body?.step) {
                   return null;
                 }
+
                 return ticketBoardAutomationRunStepAppended({
                   runId: body.runId,
                   step: body.step as never,
@@ -249,6 +254,7 @@ export const connectTicketsBoardSocket$ = createEffect(
             ).pipe(
               catchError((error) => {
                 ticketsBoardSocketInstance = null;
+
                 return of(connectTicketsBoardSocketFailure({ error: error.message || 'Connection error' }));
               }),
             );
@@ -269,6 +275,7 @@ export const disconnectTicketsBoardSocket$ = createEffect(
           ticketsBoardSocketInstance.disconnect();
           ticketsBoardSocketInstance = null;
         }
+
         return disconnectTicketsBoardSocketSuccess();
       }),
     );
@@ -288,10 +295,12 @@ export const restoreTicketsBoardSocketClient$ = createEffect(
         if (settingClient || !selectedClientId) {
           return EMPTY;
         }
+
         return of(null).pipe(
           delay(100),
           tap(() => {
             const socket = getTicketsBoardSocketInstance();
+
             if (socket?.connected) {
               socket.emit('setClient', { clientId: selectedClientId });
             }

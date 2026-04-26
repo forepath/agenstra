@@ -18,6 +18,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import type { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+
 import { ThemeService } from '../../theme.service';
 
 // Type declaration for marked library
@@ -32,6 +33,7 @@ interface Marked {
 function base64ToUtf8(base64: string): string {
   const binaryString = atob(base64);
   const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+
   return new TextDecoder('utf-8').decode(bytes);
 }
 
@@ -42,9 +44,11 @@ function base64ToUtf8(base64: string): string {
 function utf8ToBase64(str: string): string {
   const bytes = new TextEncoder().encode(str);
   let binary = '';
+
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
+
   return btoa(binary);
 }
 
@@ -125,8 +129,10 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     effect(() => {
       const isDarkMode = this.themeService.isDarkMode();
       const editor = this.editorInstance();
+
       if (editor) {
         const theme = isDarkMode ? 'vs-dark' : 'vs-light';
+
         monaco.editor.setTheme(theme);
       }
     });
@@ -156,7 +162,9 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     if (this.contentChangeDisposable) {
       this.contentChangeDisposable.dispose();
     }
+
     const editor = this.editorInstance();
+
     if (editor) {
       try {
         editor.dispose();
@@ -176,6 +184,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
 
   onEditorInit(event: editor.IStandaloneCodeEditor | unknown): void {
     const editorInstance = event as editor.IStandaloneCodeEditor;
+
     if (!editorInstance || typeof editorInstance.getValue !== 'function') {
       return;
     }
@@ -187,14 +196,17 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
 
     // Always ensure the model has the correct language set for syntax highlighting
     const model = editorInstance.getModel();
+
     if (model) {
       const currentLanguage = this.language();
+
       // Set the model language to enable syntax highlighting
       monaco.editor.setModelLanguage(model, currentLanguage);
     }
 
     // Set initial theme based on current dark mode state
     const theme = this.themeService.isDarkMode() ? 'vs-dark' : 'vs-light';
+
     monaco.editor.setTheme(theme);
 
     // Dispose old listener if exists
@@ -215,6 +227,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       }
 
       const currentEditor = this.editorInstance();
+
       if (!currentEditor) {
         return;
       }
@@ -247,7 +260,6 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   private updateContent(): void {
     const content = this.content();
     const editor = this.editorInstance();
-
     // Store current preview visibility state before updating
     const wasPreviewVisible = this.previewVisible();
 
@@ -259,6 +271,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
         if (wasPreviewVisible && this.isPreviewable()) {
           this.previewVisible.set(true);
         }
+
         return;
       }
 
@@ -269,12 +282,14 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       if (wasPreviewVisible && this.isPreviewable()) {
         this.previewVisible.set(true);
       }
+
       return;
     }
 
     // For text files, handle editor content updates
     if (!editor || !content) {
       this.lastContent = content;
+
       return;
     }
 
@@ -285,6 +300,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       if (wasPreviewVisible && this.isPreviewable()) {
         this.previewVisible.set(true);
       }
+
       return;
     }
 
@@ -301,6 +317,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
 
         if (!model) {
           this.isSettingInitialContent = false;
+
           return;
         }
 
@@ -325,9 +342,11 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
 
         // Update current editor content
         this.currentEditorContent.set(decoded);
+
         if (position) {
           editor.setPosition(position);
         }
+
         // Clear flag after a brief delay to allow change event to process
         setTimeout(() => {
           this.isSettingInitialContent = false;
@@ -348,6 +367,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   // Watch for content input changes
   ngDoCheck(): void {
     const content = this.content();
+
     // Update content for both text files (with editor) and binary files (images)
     if (content !== this.lastContent) {
       if (this.isBinary()) {
@@ -362,6 +382,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     // Also check for filePath and encoding changes (fallback for effect)
     const filePath = this.filePath();
     const encoding = this.encoding();
+
     if (filePath !== this.lastFilePath || encoding !== this.lastEncoding) {
       this.lastFilePath = filePath;
       this.lastEncoding = encoding;
@@ -371,9 +392,11 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
 
   private updateBinaryAndLanguage(): void {
     const filePath = this.filePath();
+
     if (!filePath) {
       this.isBinary.set(false);
       this.language.set('plaintext');
+
       return;
     }
 
@@ -403,6 +426,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     ];
     const lowerPath = filePath.toLowerCase();
     const isBinaryFile = binaryExtensions.some((ext) => lowerPath.endsWith(ext)) || this.encoding() === 'base64';
+
     this.isBinary.set(isBinaryFile);
 
     const ext = filePath.split('.').pop()?.toLowerCase();
@@ -455,16 +479,18 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       propfile: 'ini',
     };
     const newLanguage = langMap[ext || ''] || 'plaintext';
-
     // Always update the language signal first
     const previousLanguage = this.language();
+
     this.language.set(newLanguage);
 
     // Update the model language if editor is already initialized
     if (previousLanguage !== newLanguage) {
       const editor = this.editorInstance();
+
       if (editor) {
         const model = editor.getModel();
+
         if (model) {
           monaco.editor.setModelLanguage(model, newLanguage);
         }
@@ -476,6 +502,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     if (this.isBinary()) {
       return;
     }
+
     // Emit save request - parent will get content from editorContent signal
     this.saveRequest.emit();
   }
@@ -483,11 +510,14 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   // Method to get current content (can be called by parent via ViewChild if needed)
   getCurrentContent(): string | null {
     const editor = this.editorInstance();
+
     if (!editor || this.isBinary()) {
       return null;
     }
+
     try {
       const value = editor.getValue();
+
       return btoa(value);
     } catch (error) {
       return null;
@@ -506,10 +536,13 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
    */
   readonly isMarkdown = computed(() => {
     const filePath = this.filePath();
+
     if (!filePath) {
       return false;
     }
+
     const lowerPath = filePath.toLowerCase();
+
     return lowerPath.endsWith('.md') || lowerPath.endsWith('.markdown');
   });
 
@@ -518,11 +551,14 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
    */
   readonly isImage = computed(() => {
     const filePath = this.filePath();
+
     if (!filePath) {
       return false;
     }
+
     const lowerPath = filePath.toLowerCase();
     const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.ico', '.webp'];
+
     return imageExtensions.some((ext) => lowerPath.endsWith(ext));
   });
 
@@ -536,12 +572,14 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     }
 
     const content = this.content();
+
     if (!content) {
       return null;
     }
 
     // Determine MIME type from file extension
     const filePath = this.filePath();
+
     if (!filePath) {
       return null;
     }
@@ -584,7 +622,6 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     // Use current editor content for live preview, or fall back to input content
     const editorContent = this.currentEditorContent();
     const inputContent = this.content();
-
     // Prefer editor content if available (for live preview), otherwise use input content
     let markdownText: string | null = null;
 
@@ -614,15 +651,18 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
             gfm: true,
           });
           const sanitized = this.sanitizer.sanitize(SecurityContext.HTML, html);
+
           return this.sanitizer.bypassSecurityTrustHtml(sanitized || '');
         } catch (error) {
           console.warn('Error parsing markdown:', error);
           const escaped = markdownText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
           return this.sanitizer.bypassSecurityTrustHtml(escaped);
         }
       } else {
         // Return escaped text as fallback while marked is loading
         const escaped = markdownText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
         return this.sanitizer.bypassSecurityTrustHtml(escaped);
       }
     } catch (error) {
@@ -660,8 +700,10 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       try {
         const markedModule = await import('marked');
         const marked = markedModule.marked;
+
         this.markedInstance = marked;
         this.markedLoaded.set(true);
+
         return marked;
       } catch (error) {
         this.markedLoadPromise = null;
@@ -677,6 +719,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
    */
   undo(): void {
     const editor = this.editorInstance();
+
     if (!editor || this.isBinary()) {
       return;
     }
@@ -689,6 +732,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
    */
   redo(): void {
     const editor = this.editorInstance();
+
     if (!editor || this.isBinary()) {
       return;
     }

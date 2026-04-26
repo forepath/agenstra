@@ -1,14 +1,13 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
+
 import { AgentsRepository } from './agents.repository';
 
 describe('AgentsRepository', () => {
   let repository: AgentsRepository;
-  let typeOrmRepository: Repository<AgentEntity>;
-
   const mockAgent: AgentEntity = {
     id: 'test-uuid',
     name: 'Test Agent',
@@ -21,7 +20,6 @@ describe('AgentsRepository', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockTypeOrmRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
@@ -43,7 +41,6 @@ describe('AgentsRepository', () => {
     }).compile();
 
     repository = module.get<AgentsRepository>(AgentsRepository);
-    typeOrmRepository = module.get<Repository<AgentEntity>>(getRepositoryToken(AgentEntity));
   });
 
   afterEach(() => {
@@ -103,6 +100,7 @@ describe('AgentsRepository', () => {
   describe('findAll', () => {
     it('should return array of agents with pagination', async () => {
       const agents = [mockAgent];
+
       mockTypeOrmRepository.find.mockResolvedValue(agents);
 
       const result = await repository.findAll(10, 0);
@@ -117,6 +115,7 @@ describe('AgentsRepository', () => {
 
     it('should use default pagination values', async () => {
       const agents = [mockAgent];
+
       mockTypeOrmRepository.find.mockResolvedValue(agents);
 
       await repository.findAll();
@@ -149,6 +148,7 @@ describe('AgentsRepository', () => {
         volumePath: '/opt/agents/test-volume-uuid',
       };
       const createdAgent = { ...mockAgent, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdAgent);
       mockTypeOrmRepository.save.mockResolvedValue(createdAgent);
 
@@ -164,6 +164,7 @@ describe('AgentsRepository', () => {
     it('should update existing agent', async () => {
       const updateData = { name: 'Updated Agent' };
       const updatedAgent = { ...mockAgent, ...updateData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(mockAgent);
       mockTypeOrmRepository.save.mockResolvedValue(updatedAgent);
 

@@ -1,3 +1,5 @@
+import { AuthenticationType, UserEntity } from '@forepath/identity/backend';
+import { createAes256GcmTransformer } from '@forepath/shared/backend';
 import {
   Column,
   CreateDateColumn,
@@ -7,8 +9,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { createAes256GcmTransformer } from '@forepath/shared/backend';
-import { AuthenticationType, UserEntity } from '@forepath/identity/backend';
 
 /**
  * Client entity representing a client in the system.

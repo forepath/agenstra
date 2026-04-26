@@ -3,6 +3,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
+
 import { DocsSearchComponent } from '../../components';
 import { DocsSearchService, SearchResult } from '../../services';
 
@@ -41,12 +42,14 @@ export class DocsSearchPageComponent implements OnInit {
 
   ngOnInit(): void {
     const query = this.searchQuery();
+
     if (query) {
       this.searchService.searchQuery.set(query);
       this.searchService.loadSearchIndex().subscribe((index) => {
         if (index) {
           this.searchService.search(query, index);
         }
+
         this.loading.set(false);
       });
     } else {
@@ -61,6 +64,7 @@ export class DocsSearchPageComponent implements OnInit {
     if (count === 1) {
       return $localize`:@@featureDocsSearchPage-foundOneResult:Found ${count} result for "${query}"`;
     }
+
     return $localize`:@@featureDocsSearchPage-foundResults:Found ${count} results for "${query}"`;
   }
 

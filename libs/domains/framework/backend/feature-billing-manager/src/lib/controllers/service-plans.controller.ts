@@ -13,6 +13,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
 import { ServicePlanResponseDto } from '../dto/service-plan-response.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
@@ -37,15 +38,18 @@ export class ServicePlansController {
     @Query('serviceTypeId') serviceTypeId?: string,
   ): Promise<ServicePlanResponseDto[]> {
     let rows = await this.servicePlansRepository.findAll(limit ?? 10, offset ?? 0);
+
     if (serviceTypeId) {
       rows = rows.filter((row) => row.serviceTypeId === serviceTypeId);
     }
+
     return rows.map((row) => this.mapToResponse(row));
   }
 
   @Get(':id')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServicePlanResponseDto> {
     const row = await this.servicePlansRepository.findByIdOrThrow(id);
+
     return this.mapToResponse(row);
   }
 
@@ -72,6 +76,7 @@ export class ServicePlansController {
       allowCustomerLocationSelection: dto.allowCustomerLocationSelection ?? false,
       isActive: dto.isActive ?? true,
     });
+
     return this.mapToResponse(row);
   }
 
@@ -83,9 +88,11 @@ export class ServicePlansController {
     @Body() dto: UpdateServicePlanDto,
   ): Promise<ServicePlanResponseDto> {
     const existing = await this.servicePlansRepository.findByIdOrThrow(id);
+
     if (dto.allowCustomerLocationSelection === true) {
       await this.assertAllowLocationAllowed(existing.serviceTypeId, true);
     }
+
     const row = await this.servicePlansRepository.update(id, {
       name: dto.name,
       description: dto.description,
@@ -105,6 +112,7 @@ export class ServicePlansController {
         : {}),
       isActive: dto.isActive,
     });
+
     return this.mapToResponse(row);
   }
 
@@ -142,8 +150,10 @@ export class ServicePlansController {
 
   private async assertAllowLocationAllowed(serviceTypeId: string, allow: boolean): Promise<void> {
     if (!allow) return;
+
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(serviceTypeId);
     const providerDetail = this.providerRegistry.getProviders().find((p) => p.id === serviceType.provider);
+
     if (!effectiveSchemaSupportsLocationSelection(serviceType.configSchema, providerDetail?.configSchema)) {
       throw new BadRequestException(
         'allowCustomerLocationSelection requires region or location with a string enum on the service type config schema or on the provider registered for this service type',

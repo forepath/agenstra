@@ -1,11 +1,11 @@
-import type { TicketActivityResponseDto } from '../dto/tickets/ticket-activity-response.dto';
 import type {
   TicketAutomationRunResponseDto,
   TicketAutomationRunStepResponseDto,
 } from '../dto/ticket-automation/ticket-automation-run-response.dto';
+import type { TicketActivityResponseDto } from '../dto/tickets/ticket-activity-response.dto';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
-import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
+import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 
 /** Snapshot DTO for websocket payloads (actor email enrichment optional). */
 export function ticketActivityEntityToDto(row: TicketActivityEntity): TicketActivityResponseDto {

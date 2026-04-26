@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { DockerService } from '../../services/docker.service';
 import {
   AgentProvider,
@@ -114,6 +115,7 @@ export class CursorAgentProvider implements AgentProvider {
    */
   toModelsList(result: string): AgentProviderModels {
     const models: AgentProviderModels = {};
+
     if (!result?.trim()) {
       return models;
     }
@@ -123,15 +125,20 @@ export class CursorAgentProvider implements AgentProvider {
 
     for (const line of cleaned.split(/\r?\n/)) {
       const trimmed = line.trim();
+
       if (!trimmed) {
         continue;
       }
+
       const sepIndex = trimmed.indexOf(sep);
+
       if (sepIndex === -1) {
         continue;
       }
+
       const id = trimmed.slice(0, sepIndex).trim();
       const name = trimmed.slice(sepIndex + sep.length).trim();
+
       if (id) {
         models[id] = name;
       }
@@ -157,12 +164,14 @@ export class CursorAgentProvider implements AgentProvider {
     const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
     // Build command: cursor-agent with prompt mode and JSON output
     let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
+
     if (options?.model) {
       command += ` --model ${options.model}`;
     }
 
     // Send the message to STDIN of the command and get the response
     const response = await this.dockerService.sendCommandToContainer(containerId, command, message);
+
     return response;
   }
 
@@ -174,6 +183,7 @@ export class CursorAgentProvider implements AgentProvider {
   ): AsyncIterable<string> {
     const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
     let command = `cursor-agent --print --approve-mcps --force --output-format stream-json --stream-partial-output --resume ${resumeId}`;
+
     if (options?.model) {
       command += ` --model ${options.model}`;
     }
@@ -196,6 +206,7 @@ export class CursorAgentProvider implements AgentProvider {
     const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
     // Build command: cursor-agent with prompt mode and JSON output
     let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
+
     if (options?.model) {
       command += ` --model ${options.model}`;
     }
@@ -230,6 +241,7 @@ MESSAGE HANDLING:
       this.logger.debug(`Sent initialization message to agent ${agentId}`);
     } catch (error) {
       const err = error as { message?: string; stack?: string };
+
       this.logger.warn(`Failed to send initialization message to agent ${agentId}: ${err.message}`, err.stack);
       // Re-throw to allow caller to handle the error
       throw error;
@@ -245,6 +257,7 @@ MESSAGE HANDLING:
   toParseableStrings(response: string): string[] {
     // Extract the response object from the response
     const lines = response.split('\n');
+
     if (lines.length === 0) {
       return [];
     }
@@ -252,15 +265,16 @@ MESSAGE HANDLING:
     return lines.map((line) => {
       // Clean the response: remove everything before first { and after last }
       let toParse = line.trim();
-
       // Remove everything before the first { in the string
       const firstBrace = toParse.indexOf('{');
+
       if (firstBrace !== -1) {
         toParse = toParse.slice(firstBrace);
       }
 
       // Remove everything after the last } in the string
       const lastBrace = toParse.lastIndexOf('}');
+
       if (lastBrace !== -1) {
         toParse = toParse.slice(0, lastBrace + 1);
       }
@@ -278,9 +292,11 @@ MESSAGE HANDLING:
     const parsed = JSON.parse(response) as Record<string, unknown>;
     const topLevelType = typeof parsed.type === 'string' ? parsed.type : undefined;
     const normalized = this.normalizeCursorCliOutput(parsed);
+
     if (normalized !== undefined) {
       return normalized;
     }
+
     if (
       topLevelType === 'user' ||
       topLevelType === 'system' ||
@@ -289,6 +305,7 @@ MESSAGE HANDLING:
     ) {
       return undefined;
     }
+
     return parsed as AgentResponseObject;
   }
 
@@ -298,6 +315,7 @@ MESSAGE HANDLING:
    */
   private normalizeCursorCliOutput(parsed: Record<string, unknown>): AgentResponseObject | undefined {
     const type = parsed.type;
+
     if (typeof type !== 'string') {
       return undefined;
     }
@@ -308,9 +326,11 @@ MESSAGE HANDLING:
 
     if (type === 'assistant') {
       const delta = this.extractCursorStreamAssistantDelta(parsed);
+
       if (!delta) {
         return undefined;
       }
+
       return { type: 'delta', delta };
     }
 
@@ -323,19 +343,25 @@ MESSAGE HANDLING:
 
   private extractCursorStreamAssistantDelta(parsed: Record<string, unknown>): string {
     const message = parsed.message;
+
     if (!message || typeof message !== 'object') {
       return '';
     }
+
     const content = (message as { content?: unknown }).content;
+
     if (!Array.isArray(content)) {
       return '';
     }
+
     return content
       .map((part) => {
         if (!part || typeof part !== 'object') {
           return '';
         }
+
         const p = part as { type?: unknown; text?: unknown };
+
         return p.type === 'text' && typeof p.text === 'string' ? p.text : '';
       })
       .join('');
@@ -344,10 +370,13 @@ MESSAGE HANDLING:
   private mapCursorStreamToolCall(parsed: Record<string, unknown>): AgentResponseObject | undefined {
     const subtype = parsed.subtype;
     const toolCallRoot = parsed.tool_call;
+
     if (!toolCallRoot || typeof toolCallRoot !== 'object') {
       return undefined;
     }
+
     const info = this.getCursorStreamToolCallIdentity(toolCallRoot as Record<string, unknown>);
+
     if (!info) {
       return undefined;
     }
@@ -364,6 +393,7 @@ MESSAGE HANDLING:
 
     if (subtype === 'completed') {
       const { result, isError } = this.summarizeCursorStreamToolCompletion(toolCallRoot as Record<string, unknown>);
+
       return {
         type: 'tool_result',
         toolCallId: info.toolCallId,
@@ -385,12 +415,15 @@ MESSAGE HANDLING:
       if (!key.endsWith('ToolCall') || !value || typeof value !== 'object') {
         continue;
       }
+
       const entry = value as Record<string, unknown>;
       const name = key.replace(/ToolCall$/, '');
       const args = entry.args;
       let fingerprint = name;
+
       if (args && typeof args === 'object') {
         const a = args as Record<string, unknown>;
+
         if (typeof a.pattern === 'string' && typeof a.path === 'string') {
           fingerprint = `${name}:${a.pattern}@${a.path}`;
         } else if (typeof a.path === 'string') {
@@ -407,20 +440,24 @@ MESSAGE HANDLING:
           }
         }
       }
+
       return {
         toolCallId: `cursor-${name}-${this.fingerprintHash(fingerprint)}`,
         name,
         args,
       };
     }
+
     return null;
   }
 
   private fingerprintHash(value: string): string {
     let hash = 0;
+
     for (let index = 0; index < value.length; index++) {
       hash = (Math.imul(31, hash) + value.charCodeAt(index)) | 0;
     }
+
     return Math.abs(hash).toString(36);
   }
 
@@ -432,24 +469,33 @@ MESSAGE HANDLING:
       if (!key.endsWith('ToolCall') || !value || typeof value !== 'object') {
         continue;
       }
+
       const entry = value as Record<string, unknown>;
       const toolResult = entry.result;
+
       if (!toolResult || typeof toolResult !== 'object') {
         return { result: entry, isError: false };
       }
+
       const outcome = toolResult as Record<string, unknown>;
+
       if (outcome.success !== undefined) {
         return { result: outcome.success, isError: false };
       }
+
       if (outcome.rejected !== undefined) {
         return { result: outcome.rejected, isError: true };
       }
+
       const exitCode = (outcome as { exitCode?: unknown }).exitCode;
+
       if (typeof exitCode === 'number') {
         return { result: outcome, isError: exitCode !== 0 };
       }
+
       return { result: outcome, isError: false };
     }
+
     return { result: toolCallBlock, isError: false };
   }
 }

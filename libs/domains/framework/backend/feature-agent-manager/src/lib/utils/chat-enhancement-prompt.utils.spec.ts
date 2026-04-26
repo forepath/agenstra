@@ -11,6 +11,7 @@ describe('chat-enhancement-prompt.utils', () => {
   it('should include user draft in the wrapped message', () => {
     const draft = 'fix the bug';
     const out = buildPromptEnhancementMessage(draft);
+
     expect(out).toContain(draft);
     expect(out).toContain('<<<DRAFT>>>');
     expect(out).toContain('Output ONLY the improved prompt text');

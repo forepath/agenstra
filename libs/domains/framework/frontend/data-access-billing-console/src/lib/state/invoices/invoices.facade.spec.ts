@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of, throwError } from 'rxjs';
+
+import { InvoicesService } from '../../services/invoices.service';
+import type { CreateInvoiceDto, InvoiceResponse } from '../../types/billing.types';
+
 import {
   clearInvoices,
   createInvoice,
@@ -11,14 +15,11 @@ import {
   refreshInvoiceLinkSuccess,
 } from './invoices.actions';
 import { InvoicesFacade } from './invoices.facade';
-import type { CreateInvoiceDto, InvoiceResponse } from '../../types/billing.types';
-import { InvoicesService } from '../../services/invoices.service';
 
 describe('InvoicesFacade', () => {
   let facade: InvoicesFacade;
   let store: jest.Mocked<Store>;
   let invoicesService: jest.Mocked<Pick<InvoicesService, 'refreshInvoiceLink'>>;
-
   const subscriptionId = 'sub-1';
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
@@ -80,6 +81,7 @@ describe('InvoicesFacade', () => {
 
     it('should return invoices summary observable', (done) => {
       const summary = { openOverdueCount: 2, openOverdueTotal: 100, billingDayOfMonth: 10, unbilledTotal: 25 };
+
       store.select.mockReturnValue(of(summary));
       facade.getInvoicesSummary$().subscribe((result) => {
         expect(result).toEqual(summary);
@@ -96,6 +98,7 @@ describe('InvoicesFacade', () => {
 
     it('should dispatch createInvoice', () => {
       const dto: CreateInvoiceDto = { description: 'Test' };
+
       facade.createInvoice(subscriptionId, dto);
       expect(store.dispatch).toHaveBeenCalledWith(createInvoice({ subscriptionId, dto }));
     });
@@ -113,6 +116,7 @@ describe('InvoicesFacade', () => {
     it('refreshInvoiceLink should dispatch request then success and return preAuthUrl', (done) => {
       const invoiceRefId = 'ref-1';
       const preAuthUrl = 'https://example.com/new-link';
+
       invoicesService.refreshInvoiceLink.mockReturnValue(of({ preAuthUrl }));
 
       facade.refreshInvoiceLink(subscriptionId, invoiceRefId).subscribe({
@@ -129,6 +133,7 @@ describe('InvoicesFacade', () => {
 
     it('refreshInvoiceLink should dispatch failure on error', (done) => {
       const invoiceRefId = 'ref-1';
+
       invoicesService.refreshInvoiceLink.mockReturnValue(throwError(() => ({ message: 'Network error' })));
 
       facade.refreshInvoiceLink(subscriptionId, invoiceRefId).subscribe({

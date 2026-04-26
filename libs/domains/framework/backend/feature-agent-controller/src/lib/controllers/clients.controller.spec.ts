@@ -13,8 +13,6 @@ import {
   UpdateEnvironmentVariableDto,
   WriteFileDto,
 } from '@forepath/framework/backend/feature-agent-manager';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import {
   AddClientUserDto,
   AuthenticationType,
@@ -25,6 +23,9 @@ import {
   UserRole,
   WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE,
 } from '@forepath/identity/backend';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
@@ -39,6 +40,7 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { ProvisioningService } from '../services/provisioning.service';
+
 import { ClientsController } from './clients.controller';
 
 describe('ClientsController', () => {
@@ -46,13 +48,11 @@ describe('ClientsController', () => {
   let service: jest.Mocked<ClientsService>;
   let proxyService: jest.Mocked<ClientAgentProxyService>;
   let fileSystemProxyService: jest.Mocked<ClientAgentFileSystemProxyService>;
-  let environmentVariablesProxyService: jest.Mocked<ClientAgentEnvironmentVariablesProxyService>;
   let provisioningService: jest.Mocked<ProvisioningService>;
   let provisioningProviderFactory: jest.Mocked<ProvisioningProviderFactory>;
   let clientUsersService: jest.Mocked<ClientUsersService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
-
   const mockClientResponse: ClientResponseDto = {
     id: 'test-uuid',
     name: 'Test Client',
@@ -68,12 +68,10 @@ describe('ClientsController', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockCreateClientResponse: CreateClientResponseDto = {
     ...mockClientResponse,
     apiKey: 'generated-api-key-123',
   };
-
   const mockAgentResponse: AgentResponseDto = {
     id: 'agent-uuid',
     name: 'Test Agent',
@@ -83,12 +81,10 @@ describe('ClientsController', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockCreateAgentResponse: CreateAgentResponseDto = {
     ...mockAgentResponse,
     password: 'generated-password-123',
   };
-
   const mockService = {
     create: jest.fn(),
     findAll: jest.fn(),
@@ -96,7 +92,6 @@ describe('ClientsController', () => {
     update: jest.fn(),
     remove: jest.fn(),
   };
-
   const mockProxyService = {
     getClientAgents: jest.fn(),
     listClientAgentModels: jest.fn(),
@@ -109,7 +104,6 @@ describe('ClientsController', () => {
     restartClientAgent: jest.fn(),
     getClientConfig: jest.fn(),
   };
-
   const mockFileSystemProxyService = {
     readFile: jest.fn(),
     writeFile: jest.fn(),
@@ -118,7 +112,6 @@ describe('ClientsController', () => {
     deleteFileOrDirectory: jest.fn(),
     moveFileOrDirectory: jest.fn(),
   };
-
   const mockEnvironmentVariablesProxyService = {
     getEnvironmentVariables: jest.fn(),
     countEnvironmentVariables: jest.fn(),
@@ -127,31 +120,26 @@ describe('ClientsController', () => {
     deleteEnvironmentVariable: jest.fn(),
     deleteAllEnvironmentVariables: jest.fn(),
   };
-
   const mockProvisioningService = {
     provisionServer: jest.fn(),
     deleteProvisionedServer: jest.fn(),
     getServerInfo: jest.fn(),
   };
-
   const mockProvisioningProviderFactory = {
     getAllProviders: jest.fn(),
     hasProvider: jest.fn(),
     getProvider: jest.fn(),
     getRegisteredTypes: jest.fn(),
   };
-
   const mockClientUsersService = {
     addUserToClient: jest.fn(),
     removeUserFromClient: jest.fn(),
     getClientUsers: jest.fn(),
   };
-
   const mockClientsRepository = {
     findById: jest.fn(),
     findByIdOrThrow: jest.fn(),
   };
-
   const mockClientUsersRepository = {
     findUserClientAccess: jest.fn(),
   };
@@ -203,7 +191,6 @@ describe('ClientsController', () => {
     service = module.get(ClientsService);
     proxyService = module.get(ClientAgentProxyService);
     fileSystemProxyService = module.get(ClientAgentFileSystemProxyService);
-    environmentVariablesProxyService = module.get(ClientAgentEnvironmentVariablesProxyService);
     provisioningService = module.get(ProvisioningService);
     provisioningProviderFactory = module.get(ProvisioningProviderFactory);
     clientUsersService = module.get(ClientUsersService);
@@ -219,6 +206,7 @@ describe('ClientsController', () => {
     it('should return array of clients', async () => {
       const clients = [mockClientResponse];
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       service.findAll.mockResolvedValue(clients);
 
       const result = await controller.getClients(10, 0, mockReq);
@@ -230,6 +218,7 @@ describe('ClientsController', () => {
     it('should use default pagination values', async () => {
       const clients = [mockClientResponse];
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       service.findAll.mockResolvedValue(clients);
 
       const result = await controller.getClients(undefined, undefined, mockReq);
@@ -242,6 +231,7 @@ describe('ClientsController', () => {
   describe('getClient', () => {
     it('should return single client', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       service.findOne.mockResolvedValue(mockClientResponse);
 
       const result = await controller.getClient('test-uuid', mockReq);
@@ -301,8 +291,8 @@ describe('ClientsController', () => {
       const updateDto: UpdateClientDto = {
         name: 'Updated Client',
       };
-
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findByIdOrThrow.mockResolvedValue({ id: 'test-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       service.update.mockResolvedValue(mockClientResponse);
@@ -317,6 +307,7 @@ describe('ClientsController', () => {
   describe('deleteClient', () => {
     it('should delete client', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       provisioningService.deleteProvisionedServer.mockRejectedValue(
         new BadRequestException('No provisioning reference for client'),
       );
@@ -333,6 +324,7 @@ describe('ClientsController', () => {
     it('should return array of agents for a client', async () => {
       const agents = [mockAgentResponse];
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.getClientAgents.mockResolvedValue(agents);
@@ -346,6 +338,7 @@ describe('ClientsController', () => {
     it('should use default pagination values', async () => {
       const agents = [mockAgentResponse];
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.getClientAgents.mockResolvedValue(agents);
@@ -360,6 +353,7 @@ describe('ClientsController', () => {
   describe('getClientAgent', () => {
     it('should return single agent for a client', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.getClientAgent.mockResolvedValue(mockAgentResponse);
@@ -375,6 +369,7 @@ describe('ClientsController', () => {
     it('should return models map from proxy service', async () => {
       const models = { 'model-a': 'Model A' };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.listClientAgentModels.mockResolvedValue(models);
@@ -393,6 +388,7 @@ describe('ClientsController', () => {
         description: 'New Agent Description',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.createClientAgent.mockResolvedValue(mockCreateAgentResponse);
@@ -406,6 +402,7 @@ describe('ClientsController', () => {
     it('should reject when user is plain workspace member', async () => {
       const createDto: CreateAgentDto = { name: 'New Agent', description: 'd' };
       const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'owner-id' } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue({
         userId: 'user-1',
@@ -426,6 +423,7 @@ describe('ClientsController', () => {
         name: 'Updated Agent',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.updateClientAgent.mockResolvedValue(mockAgentResponse);
@@ -440,6 +438,7 @@ describe('ClientsController', () => {
   describe('deleteClientAgent', () => {
     it('should delete agent for a client', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.deleteClientAgent.mockResolvedValue(undefined);
@@ -453,6 +452,7 @@ describe('ClientsController', () => {
   describe('startClientAgent', () => {
     it('should start agent for a client and return agent response', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.startClientAgent.mockResolvedValue(mockAgentResponse);
@@ -467,6 +467,7 @@ describe('ClientsController', () => {
   describe('stopClientAgent', () => {
     it('should stop agent for a client and return agent response', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.stopClientAgent.mockResolvedValue(mockAgentResponse);
@@ -481,6 +482,7 @@ describe('ClientsController', () => {
   describe('restartClientAgent', () => {
     it('should restart agent for a client and return agent response', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       proxyService.restartClientAgent.mockResolvedValue(mockAgentResponse);
@@ -499,6 +501,7 @@ describe('ClientsController', () => {
         encoding: 'utf-8',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.readFile.mockResolvedValue(mockFileContent);
@@ -515,6 +518,7 @@ describe('ClientsController', () => {
         encoding: 'utf-8',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.readFile.mockResolvedValue(mockFileContent);
@@ -526,6 +530,7 @@ describe('ClientsController', () => {
 
     it('should reject config context when user cannot manage workspace configuration', async () => {
       const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'other-user' } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue({
         id: 'rel-1',
@@ -547,6 +552,7 @@ describe('ClientsController', () => {
         encoding: 'utf-8',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.writeFile.mockResolvedValue(undefined);
@@ -575,6 +581,7 @@ describe('ClientsController', () => {
         },
       ];
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.listDirectory.mockResolvedValue(mockFileNodes);
@@ -588,6 +595,7 @@ describe('ClientsController', () => {
     it('should use default path when not provided', async () => {
       const mockFileNodes: FileNodeDto[] = [];
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.listDirectory.mockResolvedValue(mockFileNodes);
@@ -605,6 +613,7 @@ describe('ClientsController', () => {
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
@@ -632,6 +641,7 @@ describe('ClientsController', () => {
         type: 'directory',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
@@ -653,6 +663,7 @@ describe('ClientsController', () => {
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.createFileOrDirectory.mockResolvedValue(undefined);
@@ -681,6 +692,7 @@ describe('ClientsController', () => {
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -695,6 +707,7 @@ describe('ClientsController', () => {
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -714,6 +727,7 @@ describe('ClientsController', () => {
   describe('deleteFileOrDirectory', () => {
     it('should proxy delete file request', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.deleteFileOrDirectory.mockResolvedValue(undefined);
@@ -735,6 +749,7 @@ describe('ClientsController', () => {
         destination: 'new-location/file.txt',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.moveFileOrDirectory.mockResolvedValue(undefined);
@@ -755,6 +770,7 @@ describe('ClientsController', () => {
         destination: 'new-location/file.txt',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.moveFileOrDirectory.mockResolvedValue(undefined);
@@ -782,6 +798,7 @@ describe('ClientsController', () => {
         destination: 'new-location/file.txt',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -795,6 +812,7 @@ describe('ClientsController', () => {
         destination: 'new-location/file.txt',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -808,6 +826,7 @@ describe('ClientsController', () => {
         destination: '',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -827,6 +846,7 @@ describe('ClientsController', () => {
         deleteServer: jest.fn(),
         getServerInfo: jest.fn(),
       };
+
       provisioningProviderFactory.getAllProviders.mockReturnValue([mockProvider]);
 
       const result = await controller.getProvisioningProviders();
@@ -894,7 +914,6 @@ describe('ClientsController', () => {
         authenticationType: AuthenticationType.API_KEY,
         agentWsPort: 8080,
       };
-
       const mockResponse: ProvisionedServerResponseDto = {
         ...mockClientResponse,
         isAutoProvisioned: true,
@@ -926,6 +945,7 @@ describe('ClientsController', () => {
         providerType: 'hetzner',
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       provisioningService.getServerInfo.mockResolvedValue(mockServerInfo);
@@ -940,6 +960,7 @@ describe('ClientsController', () => {
   describe('deleteProvisionedServer', () => {
     it('should delete a provisioned server and its client', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       provisioningService.deleteProvisionedServer.mockResolvedValue(undefined);
@@ -954,7 +975,6 @@ describe('ClientsController', () => {
     const clientId = 'test-uuid';
     const agentId = 'agent-uuid';
     const envVarId = 'env-var-uuid';
-
     const mockEnvVar: EnvironmentVariableResponseDto = {
       id: envVarId,
       agentId,
@@ -967,6 +987,7 @@ describe('ClientsController', () => {
     describe('getClientAgentEnvironmentVariables', () => {
       it('should proxy get environment variables request', async () => {
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.getEnvironmentVariables.mockResolvedValue([mockEnvVar]);
@@ -984,6 +1005,7 @@ describe('ClientsController', () => {
 
       it('should use default pagination parameters', async () => {
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.getEnvironmentVariables.mockResolvedValue([]);
@@ -1002,6 +1024,7 @@ describe('ClientsController', () => {
     describe('countClientAgentEnvironmentVariables', () => {
       it('should proxy count environment variables request', async () => {
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.countEnvironmentVariables.mockResolvedValue({ count: 5 });
@@ -1020,6 +1043,7 @@ describe('ClientsController', () => {
           content: 'secret-api-key-value',
         };
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.createEnvironmentVariable.mockResolvedValue(mockEnvVar);
@@ -1042,6 +1066,7 @@ describe('ClientsController', () => {
           content: 'updated-secret-value',
         };
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -1074,6 +1099,7 @@ describe('ClientsController', () => {
     describe('deleteClientAgentEnvironmentVariable', () => {
       it('should proxy delete environment variable request', async () => {
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.deleteEnvironmentVariable.mockResolvedValue(undefined);
@@ -1091,6 +1117,7 @@ describe('ClientsController', () => {
     describe('deleteAllClientAgentEnvironmentVariables', () => {
       it('should proxy delete all environment variables request', async () => {
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         mockEnvironmentVariablesProxyService.deleteAllEnvironmentVariables.mockResolvedValue({ deletedCount: 3 });
@@ -1122,6 +1149,7 @@ describe('ClientsController', () => {
     describe('getClientUsers', () => {
       it('should return list of client users', async () => {
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
         clientUsersService.getClientUsers.mockResolvedValue([mockClientUserResponse]);
@@ -1134,6 +1162,7 @@ describe('ClientsController', () => {
 
       it('should throw ForbiddenException when user does not have access', async () => {
         const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', role: 'user' } } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: 'other-user-id' } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -1149,6 +1178,7 @@ describe('ClientsController', () => {
           role: 'user' as ClientUserRole,
         };
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientsRepository.findByIdOrThrow.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
@@ -1173,6 +1203,7 @@ describe('ClientsController', () => {
           role: 'user' as ClientUserRole,
         };
         const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', role: 'user' } } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: 'other-user-id' } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 
@@ -1184,6 +1215,7 @@ describe('ClientsController', () => {
     describe('removeClientUser', () => {
       it('should remove a user from a client', async () => {
         const mockReq = { apiKeyAuthenticated: true } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
         clientsRepository.findByIdOrThrow.mockResolvedValue({ id: clientId, userId: null } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
@@ -1203,6 +1235,7 @@ describe('ClientsController', () => {
 
       it('should throw ForbiddenException when user does not have access', async () => {
         const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', role: 'user' } } as any;
+
         clientsRepository.findById.mockResolvedValue({ id: clientId, userId: 'other-user-id' } as any);
         clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
 

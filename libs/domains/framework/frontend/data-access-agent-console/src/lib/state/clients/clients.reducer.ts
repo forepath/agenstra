@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+
 import {
   addClientUser,
   addClientUserFailure,
@@ -15,14 +16,14 @@ import {
   deleteProvisionedServerSuccess,
   loadClient,
   loadClientFailure,
-  loadClientUsers,
-  loadClientUsersFailure,
-  loadClientUsersSuccess,
   loadClients,
   loadClientsBatch,
   loadClientsFailure,
   loadClientsSuccess,
   loadClientSuccess,
+  loadClientUsers,
+  loadClientUsersFailure,
+  loadClientUsersSuccess,
   loadProvisioningProviders,
   loadProvisioningProvidersFailure,
   loadProvisioningProvidersSuccess,
@@ -139,6 +140,7 @@ export const clientsReducer = createReducer(
     const existingIndex = state.entities.findIndex((c) => c.id === client.id);
     const entities =
       existingIndex >= 0 ? state.entities.map((c) => (c.id === client.id ? client : c)) : [...state.entities, client];
+
     return {
       ...state,
       selectedClient: client,
@@ -160,7 +162,8 @@ export const clientsReducer = createReducer(
   })),
   on(createClientSuccess, (state, { client }) => {
     // Strip apiKey from CreateClientResponseDto to store as ClientResponseDto
-    const { apiKey, ...clientResponse } = client;
+    const { ...clientResponse } = client;
+
     return {
       ...state,
       entities: [...state.entities, clientResponse],
@@ -276,7 +279,8 @@ export const clientsReducer = createReducer(
   })),
   on(provisionServerSuccess, (state, { server }) => {
     // Strip provisioning-specific fields to store as ClientResponseDto
-    const { providerType, serverId, serverName, publicIp, privateIp, serverStatus, ...clientResponse } = server;
+    const { ...clientResponse } = server;
+
     return {
       ...state,
       entities: [...state.entities, clientResponse],
@@ -316,9 +320,10 @@ export const clientsReducer = createReducer(
     error: null,
   })),
   on(deleteProvisionedServerSuccess, (state, { clientId }) => {
-    const { [clientId]: removed, ...restServerInfo } = state.serverInfo;
-    const { [clientId]: removedLoading, ...restLoadingServerInfo } = state.loadingServerInfo;
-    const { [clientId]: removedDeleting, ...restDeletingProvisionedServer } = state.deletingProvisionedServer;
+    const { [clientId]: _, ...restServerInfo } = state.serverInfo;
+    const { [clientId]: __, ...restLoadingServerInfo } = state.loadingServerInfo;
+    const { [clientId]: ___, ...restDeletingProvisionedServer } = state.deletingProvisionedServer;
+
     return {
       ...state,
       entities: state.entities.filter((c) => c.id !== clientId),
@@ -362,6 +367,7 @@ export const clientsReducer = createReducer(
   })),
   on(addClientUserSuccess, (state, { clientId, user }) => {
     const existingUsers = state.clientUsers[clientId] ?? [];
+
     return {
       ...state,
       clientUsers: { ...state.clientUsers, [clientId]: [...existingUsers, user] },
@@ -383,6 +389,7 @@ export const clientsReducer = createReducer(
     const existingUsers = state.clientUsers[clientId] ?? [];
     const updatedUsers = existingUsers.filter((u) => u.id !== relationshipId);
     const { [relationshipId]: _, ...restRemoving } = state.removingClientUser;
+
     return {
       ...state,
       clientUsers: { ...state.clientUsers, [clientId]: updatedUsers },
@@ -392,6 +399,7 @@ export const clientsReducer = createReducer(
   }),
   on(removeClientUserFailure, (state, { relationshipId, error }) => {
     const { [relationshipId]: _, ...restRemoving } = state.removingClientUser;
+
     return {
       ...state,
       removingClientUser: restRemoving,

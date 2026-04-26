@@ -1,3 +1,4 @@
+import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -14,7 +15,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+
 import { CreateUserDto } from '../dto/auth/create-user.dto';
 import { UpdateUserDto } from '../dto/auth/update-user.dto';
 import { UsersAuthGuard } from '../guards/users-auth.guard';
@@ -44,6 +45,7 @@ export class UsersController {
   async create(@Body() dto: CreateUserDto) {
     const count = await this.usersService.getUsersCount();
     const isFirstUser = count === 0;
+
     return this.usersService.create(dto, isFirstUser);
   }
 
@@ -75,6 +77,7 @@ export class UsersController {
     @Req() req?: Request & { user?: { id?: string } },
   ) {
     const userId = req?.user?.id;
+
     return this.usersService.remove(id, userId);
   }
 }

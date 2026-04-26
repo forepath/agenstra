@@ -1,4 +1,5 @@
 import { getTodayBillingDay } from '../utils/billing-day.utils';
+
 import { OpenPositionInvoiceScheduler } from './open-position-invoice.scheduler';
 
 jest.mock('../utils/billing-day.utils', () => ({
@@ -49,6 +50,7 @@ describe('OpenPositionInvoiceScheduler', () => {
         skipIfNoBillableAmount: true,
       },
     ];
+
     usersBillingDayRepository.findUserIdsWithBillingDay.mockResolvedValue(['user-1']);
     openPositionsRepository.findUnbilledByUserId.mockResolvedValue(positions);
     invoiceCreationService.createAccumulatedInvoice.mockResolvedValue({
@@ -56,6 +58,7 @@ describe('OpenPositionInvoiceScheduler', () => {
     });
 
     const scheduler = createScheduler();
+
     await scheduler.processBillingDayInvoices();
 
     expect(usersBillingDayRepository.findUserIdsWithBillingDay).toHaveBeenCalledWith(10);
@@ -80,6 +83,7 @@ describe('OpenPositionInvoiceScheduler', () => {
     invoiceCreationService.createAccumulatedInvoice.mockResolvedValue(undefined);
 
     const scheduler = createScheduler();
+
     await scheduler.processBillingDayInvoices();
 
     expect(invoiceCreationService.createAccumulatedInvoice).toHaveBeenCalledWith('user-1', expect.any(Array));
@@ -114,6 +118,7 @@ describe('OpenPositionInvoiceScheduler', () => {
       .mockResolvedValueOnce({ invoiceRefId: 'ref-2' });
 
     const scheduler = createScheduler();
+
     await scheduler.processBillingDayInvoices();
 
     expect(invoiceCreationService.createAccumulatedInvoice).toHaveBeenCalledTimes(2);
@@ -126,6 +131,7 @@ describe('OpenPositionInvoiceScheduler', () => {
     openPositionsRepository.findUnbilledByUserId.mockResolvedValue([]);
 
     const scheduler = createScheduler();
+
     await scheduler.processBillingDayInvoices();
 
     expect(invoiceCreationService.createAccumulatedInvoice).not.toHaveBeenCalled();

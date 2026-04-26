@@ -1,17 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import type {
-  AddClientUserDto,
-  ClientResponseDto,
-  ClientUserResponseDto,
-  CreateClientDto,
-  ListClientsParams,
-  ProvisionServerDto,
-  ServerInfo,
-  ServerType,
-  UpdateClientDto,
-} from './clients.types';
+
 import {
   addClientUser,
   clearActiveClient,
@@ -57,6 +47,17 @@ import {
   selectServerInfo,
   selectServerTypes,
 } from './clients.selectors';
+import type {
+  AddClientUserDto,
+  ClientResponseDto,
+  ClientUserResponseDto,
+  CreateClientDto,
+  ListClientsParams,
+  ProvisionServerDto,
+  ServerInfo,
+  ServerType,
+  UpdateClientDto,
+} from './clients.types';
 
 /**
  * Facade for clients state management.

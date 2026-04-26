@@ -1,4 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
+
 import {
   assertWorkspaceManagementAccessForUser,
   canManageWorkspaceConfiguration,
@@ -17,7 +18,6 @@ describe('client-access.utils', () => {
   const mockClientsRepository = {
     findById: jest.fn(),
   };
-
   const mockClientUsersRepository = {
     findUserClientAccess: jest.fn(),
   };
@@ -30,6 +30,7 @@ describe('client-access.utils', () => {
     it('should return isApiKeyAuth when apiKeyAuthenticated is true', () => {
       const req = { apiKeyAuthenticated: true } as RequestWithUser;
       const result = getUserFromRequest(req);
+
       expect(result).toEqual({ isApiKeyAuth: true });
     });
 
@@ -39,6 +40,7 @@ describe('client-access.utils', () => {
         user: { id: 'user-1', email: 'test@example.com', roles: ['user'] },
       } as RequestWithUser;
       const result = getUserFromRequest(req);
+
       expect(result).toEqual({
         userId: 'user-1',
         userRole: UserRole.USER,
@@ -52,12 +54,14 @@ describe('client-access.utils', () => {
         user: { id: 'user-1', roles: ['admin'] },
       } as RequestWithUser;
       const result = getUserFromRequest(req);
+
       expect(result.userRole).toBe(UserRole.ADMIN);
     });
 
     it('should return isApiKeyAuth false when no user', () => {
       const req = {} as RequestWithUser;
       const result = getUserFromRequest(req);
+
       expect(result).toEqual({ isApiKeyAuth: false });
     });
   });
@@ -72,6 +76,7 @@ describe('client-access.utils', () => {
         undefined,
         true,
       );
+
       expect(result).toEqual({ hasAccess: true, isClientCreator: false });
       expect(mockClientsRepository.findById).not.toHaveBeenCalled();
     });
@@ -85,6 +90,7 @@ describe('client-access.utils', () => {
         undefined,
         false,
       );
+
       expect(result).toEqual({ hasAccess: false, isClientCreator: false });
     });
 
@@ -97,6 +103,7 @@ describe('client-access.utils', () => {
         UserRole.ADMIN,
         false,
       );
+
       expect(result).toEqual({ hasAccess: true, isClientCreator: false });
       expect(mockClientsRepository.findById).not.toHaveBeenCalled();
     });
@@ -113,6 +120,7 @@ describe('client-access.utils', () => {
         UserRole.USER,
         false,
       );
+
       expect(result).toEqual({ hasAccess: true, isClientCreator: true });
     });
 
@@ -132,6 +140,7 @@ describe('client-access.utils', () => {
         UserRole.USER,
         false,
       );
+
       expect(result).toEqual({
         hasAccess: true,
         isClientCreator: false,
@@ -151,6 +160,7 @@ describe('client-access.utils', () => {
         UserRole.USER,
         false,
       );
+
       expect(result).toEqual({ hasAccess: false, isClientCreator: false });
     });
 
@@ -165,6 +175,7 @@ describe('client-access.utils', () => {
         UserRole.USER,
         false,
       );
+
       expect(result).toEqual({ hasAccess: false, isClientCreator: false });
     });
   });
@@ -181,6 +192,7 @@ describe('client-access.utils', () => {
         'client-1',
         req,
       );
+
       expect(result).toEqual({ isClientCreator: false });
     });
 
@@ -199,6 +211,7 @@ describe('client-access.utils', () => {
   describe('canManageWorkspaceConfiguration', () => {
     it('returns true for API key auth regardless of access shape', () => {
       const userInfo: UserInfoFromRequest = { isApiKeyAuth: true };
+
       expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: false, isClientCreator: false })).toBe(true);
     });
 
@@ -208,6 +221,7 @@ describe('client-access.utils', () => {
         userRole: UserRole.ADMIN,
         isApiKeyAuth: false,
       };
+
       expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: true, isClientCreator: false })).toBe(true);
     });
 
@@ -217,6 +231,7 @@ describe('client-access.utils', () => {
         userRole: UserRole.USER,
         isApiKeyAuth: false,
       };
+
       expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: true, isClientCreator: true })).toBe(true);
     });
 
@@ -226,6 +241,7 @@ describe('client-access.utils', () => {
         userRole: UserRole.USER,
         isApiKeyAuth: false,
       };
+
       expect(
         canManageWorkspaceConfiguration(userInfo, {
           hasAccess: true,
@@ -241,6 +257,7 @@ describe('client-access.utils', () => {
         userRole: UserRole.USER,
         isApiKeyAuth: false,
       };
+
       expect(
         canManageWorkspaceConfiguration(userInfo, {
           hasAccess: true,
@@ -256,6 +273,7 @@ describe('client-access.utils', () => {
         userRole: UserRole.USER,
         isApiKeyAuth: false,
       };
+
       expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: false, isClientCreator: false })).toBe(false);
     });
   });

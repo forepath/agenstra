@@ -3,8 +3,8 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthenticationFacade, loginSuccess } from '@forepath/identity/frontend';
 import type { IdentityAuthEnvironment, UsersAuthenticationConfig } from '@forepath/identity/frontend';
+import { AuthenticationFacade, loginSuccess } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
@@ -67,13 +67,17 @@ export class IdentityLoginComponent implements OnInit {
    */
   get apiBaseHostname(): string {
     const apiUrl = this.environment.controllerApiUrl;
+
     if (!apiUrl) return '';
+
     try {
       const url = new URL(apiUrl);
+
       return url.host;
     } catch {
       // Fallback if URL parsing fails - try to extract hostname manually
       const match = apiUrl.match(/\/\/([^/]+)/);
+
       return match ? match[1] : apiUrl;
     }
   }
@@ -105,9 +109,11 @@ export class IdentityLoginComponent implements OnInit {
       if (this.isUsersAuth) {
         const email = this.loginForm.get('email')?.value;
         const password = this.loginForm.get('password')?.value;
+
         this.authFacade.login(undefined, email, password);
       } else {
         const apiKey = this.loginForm.get('apiKey')?.value;
+
         this.authFacade.login(apiKey);
       }
     } else {

@@ -1,17 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import type {
-  Branch,
-  CreateDeploymentConfigurationDto,
-  DeploymentConfiguration,
-  DeploymentRun,
-  Job,
-  Repository,
-  TriggerWorkflowDto,
-  UpdateDeploymentConfigurationDto,
-  Workflow,
-} from './deployments.types';
+
 import {
   cancelRun,
   createDeploymentConfiguration,
@@ -58,6 +48,17 @@ import {
   selectUpdatingConfiguration,
   selectWorkflows,
 } from './deployments.selectors';
+import type {
+  Branch,
+  CreateDeploymentConfigurationDto,
+  DeploymentConfiguration,
+  DeploymentRun,
+  Job,
+  Repository,
+  TriggerWorkflowDto,
+  UpdateDeploymentConfigurationDto,
+  Workflow,
+} from './deployments.types';
 
 /**
  * Facade for deployments state management.

@@ -1,23 +1,26 @@
+import { ClientUsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ClientUsersRepository } from '@forepath/identity/backend';
+
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease.entity';
-import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
+import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
-import { TicketEntity } from '../entities/ticket.entity';
 import { TicketAutomationLeaseStatus, TicketAutomationRunStatus } from '../entities/ticket-automation.enums';
+import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
+import { TicketAutomationService } from './ticket-automation.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
-import { TicketAutomationService } from './ticket-automation.service';
 
 jest.mock('@forepath/identity/backend', () => {
   const actual = jest.requireActual('@forepath/identity/backend');
+
   return {
     ...actual,
     ensureClientAccess: jest.fn().mockResolvedValue(undefined),
@@ -71,6 +74,7 @@ describe('TicketAutomationService', () => {
         },
       ],
     }).compile();
+
     service = module.get(TicketAutomationService);
   });
 
@@ -83,6 +87,7 @@ describe('TicketAutomationService', () => {
 
   it('returns automation dto when row exists', async () => {
     const tid = '00000000-0000-4000-8000-000000000002';
+
     ticketRepo.findOne.mockResolvedValue({
       id: tid,
       clientId: 'c1',
@@ -100,6 +105,7 @@ describe('TicketAutomationService', () => {
       }),
     );
     const dto = await service.getAutomation(tid, undefined);
+
     expect(dto.ticketId).toBe(tid);
     expect(dto.eligible).toBe(false);
   });
@@ -141,11 +147,13 @@ describe('TicketAutomationService', () => {
       automationRepo.findOne.mockResolvedValue(baseAutomation({ eligible: false, requiresApproval: false }));
       await service.patchAutomation(tid, { eligible: true }, undefined);
       const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
       expect(types).toEqual([TicketActionType.AUTOMATION_ELIGIBILITY_CHANGED]);
     });
 
     it('logs approval requirement change only when turning off requirement (no approval invalidated)', async () => {
       const approvedAt = new Date('2024-06-01');
+
       automationRepo.findOne.mockResolvedValue(
         baseAutomation({
           requiresApproval: true,
@@ -155,11 +163,13 @@ describe('TicketAutomationService', () => {
       );
       await service.patchAutomation(tid, { requiresApproval: false }, undefined);
       const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
       expect(types).toEqual([TicketActionType.AUTOMATION_APPROVAL_REQUIREMENT_CHANGED]);
     });
 
     it('logs approval invalidated when prior approval existed and an eligibility change voids it', async () => {
       const approvedAt = new Date('2024-06-01');
+
       automationRepo.findOne.mockResolvedValue(
         baseAutomation({
           eligible: true,
@@ -170,6 +180,7 @@ describe('TicketAutomationService', () => {
       );
       await service.patchAutomation(tid, { eligible: false }, undefined);
       const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
       expect(types).toEqual([
         TicketActionType.AUTOMATION_ELIGIBILITY_CHANGED,
         TicketActionType.AUTOMATION_APPROVAL_INVALIDATED,
@@ -180,6 +191,7 @@ describe('TicketAutomationService', () => {
       automationRepo.findOne.mockResolvedValue(baseAutomation({ allowedAgentIds: [] }));
       await service.patchAutomation(tid, { allowedAgentIds: ['00000000-0000-4000-8000-0000000000aa'] }, undefined);
       const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
       expect(types).toEqual([TicketActionType.AUTOMATION_SETTINGS_UPDATED]);
     });
 
@@ -204,11 +216,13 @@ describe('TicketAutomationService', () => {
       await service.patchAutomation(tid, { forceNewAutomationBranchNextRun: true }, undefined);
       expect(automationRepo.save).toHaveBeenCalled();
       const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
       expect(types).toEqual([TicketActionType.AUTOMATION_SETTINGS_UPDATED]);
     });
 
     it('invalidates approval when automationBranchStrategy changes while approved', async () => {
       const approvedAt = new Date('2024-06-01');
+
       automationRepo.findOne.mockResolvedValue(
         baseAutomation({
           requiresApproval: true,
@@ -219,6 +233,7 @@ describe('TicketAutomationService', () => {
       );
       await service.patchAutomation(tid, { automationBranchStrategy: 'new_per_run' }, undefined);
       const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
       expect(types).toEqual([
         TicketActionType.AUTOMATION_SETTINGS_UPDATED,
         TicketActionType.AUTOMATION_APPROVAL_INVALIDATED,
@@ -232,14 +247,17 @@ describe('TicketAutomationService', () => {
 
     it('refreshes approval baseline after restoring ticket status when automation was approved', async () => {
       const postCancelUpdatedAt = new Date('2026-04-17T20:00:00.000Z');
+
       ticketRepo.findOne.mockImplementation((opts: { select?: string[] }) => {
         if (opts?.select?.length === 1 && opts.select[0] === 'updatedAt') {
           return Promise.resolve({ updatedAt: postCancelUpdatedAt });
         }
+
         return Promise.resolve({ id: tid, clientId: 'c1', status: TicketStatus.IN_PROGRESS });
       });
       ticketRepo.save.mockImplementation((t: { updatedAt?: Date }) => {
         t.updatedAt = postCancelUpdatedAt;
+
         return Promise.resolve(t);
       });
 
@@ -326,6 +344,7 @@ describe('TicketAutomationService', () => {
       const identity = jest.requireMock('@forepath/identity/backend') as {
         getUserFromRequest: jest.Mock;
       };
+
       identity.getUserFromRequest.mockReturnValueOnce({ userId: null, userRole: 'admin', isApiKeyAuth: true });
       ticketRepo.findOne.mockResolvedValue({ id: tid, clientId: 'c1', status: TicketStatus.TODO });
 
@@ -360,6 +379,7 @@ describe('TicketAutomationService', () => {
         createdAt: new Date('2026-04-01T00:00:00.000Z'),
         updatedAt: new Date('2026-04-17T08:09:00.000Z'),
       };
+
       automationRepo.findOne.mockResolvedValue(row);
       automationRepo.save.mockImplementation(async (r: typeof row) => Promise.resolve(r));
       runRepo.find.mockResolvedValue([]);

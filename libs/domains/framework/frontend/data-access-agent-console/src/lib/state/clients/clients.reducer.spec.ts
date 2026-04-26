@@ -1,6 +1,4 @@
 import {
-  addClientUser,
-  addClientUserFailure,
   addClientUserSuccess,
   clearActiveClient,
   createClient,
@@ -11,19 +9,16 @@ import {
   deleteClientSuccess,
   loadClient,
   loadClientFailure,
-  loadClientUsers,
-  loadClientUsersFailure,
-  loadClientUsersSuccess,
   loadClients,
   loadClientsBatch,
   loadClientsFailure,
   loadClientsSuccess,
   loadClientSuccess,
+  loadClientUsers,
+  loadClientUsersSuccess,
   loadServerInfo,
   loadServerInfoFailure,
   loadServerInfoSuccess,
-  removeClientUser,
-  removeClientUserFailure,
   removeClientUserSuccess,
   setActiveClient,
   setActiveClientFailure,
@@ -51,7 +46,6 @@ describe('clientsReducer', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockClient2: ClientResponseDto = {
     id: 'client-2',
     name: 'Test Client 2',
@@ -83,7 +77,6 @@ describe('clientsReducer', () => {
         entities: [mockClient],
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, loadClients({}));
 
       expect(newState.loading).toBe(true);
@@ -99,7 +92,6 @@ describe('clientsReducer', () => {
         loading: true,
         entities: [mockClient],
       };
-
       const accumulatedClients = [mockClient, mockClient2];
       const newState = clientsReducer(state, loadClientsBatch({ offset: 10, accumulatedClients }));
 
@@ -115,7 +107,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         loading: true,
       };
-
       const newState = clientsReducer(state, loadClientsSuccess({ clients: [mockClient, mockClient2] }));
 
       expect(newState.entities).toEqual([mockClient, mockClient2]);
@@ -130,7 +121,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         loading: true,
       };
-
       const newState = clientsReducer(state, loadClientsFailure({ error: 'Load failed' }));
 
       expect(newState.error).toBe('Load failed');
@@ -144,7 +134,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, loadClient({ id: 'client-1' }));
 
       expect(newState.loadingClient).toBe(true);
@@ -159,7 +148,6 @@ describe('clientsReducer', () => {
         entities: [mockClient],
         loadingClient: true,
       };
-
       const updatedClient = { ...mockClient, name: 'Updated Name' };
       const newState = clientsReducer(state, loadClientSuccess({ client: updatedClient }));
 
@@ -174,7 +162,6 @@ describe('clientsReducer', () => {
         entities: [],
         loadingClient: true,
       };
-
       const newState = clientsReducer(state, loadClientSuccess({ client: mockClient }));
 
       expect(newState.selectedClient).toEqual(mockClient);
@@ -188,7 +175,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         loadingClient: true,
       };
-
       const newState = clientsReducer(state, loadClientFailure({ error: 'Load failed' }));
 
       expect(newState.error).toBe('Load failed');
@@ -202,7 +188,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, createClient({ client: {} as any }));
 
       expect(newState.creating).toBe(true);
@@ -217,11 +202,10 @@ describe('clientsReducer', () => {
         entities: [mockClient],
         creating: true,
       };
-
       const newState = clientsReducer(state, createClientSuccess({ client: { ...mockClient2, apiKey: 'key' } }));
 
-      expect(newState.entities).toContainEqual(mockClient2);
-      expect(newState.selectedClient).toEqual(mockClient2);
+      expect(newState.entities).toContainEqual({ ...mockClient2, apiKey: 'key' });
+      expect(newState.selectedClient).toEqual({ ...mockClient2, apiKey: 'key' });
       expect(newState.creating).toBe(false);
     });
   });
@@ -232,7 +216,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         creating: true,
       };
-
       const newState = clientsReducer(state, createClientFailure({ error: 'Create failed' }));
 
       expect(newState.error).toBe('Create failed');
@@ -246,7 +229,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, updateClient({ id: 'client-1', client: {} }));
 
       expect(newState.updating).toBe(true);
@@ -261,7 +243,6 @@ describe('clientsReducer', () => {
         entities: [mockClient],
         updating: true,
       };
-
       const updatedClient = { ...mockClient, name: 'Updated Name' };
       const newState = clientsReducer(state, updateClientSuccess({ client: updatedClient }));
 
@@ -276,7 +257,6 @@ describe('clientsReducer', () => {
         selectedClient: mockClient,
         updating: true,
       };
-
       const updatedClient = { ...mockClient, name: 'Updated Name' };
       const newState = clientsReducer(state, updateClientSuccess({ client: updatedClient }));
 
@@ -290,7 +270,6 @@ describe('clientsReducer', () => {
         selectedClient: mockClient2,
         updating: true,
       };
-
       const updatedClient = { ...mockClient, name: 'Updated Name' };
       const newState = clientsReducer(state, updateClientSuccess({ client: updatedClient }));
 
@@ -304,7 +283,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         updating: true,
       };
-
       const newState = clientsReducer(state, updateClientFailure({ error: 'Update failed' }));
 
       expect(newState.error).toBe('Update failed');
@@ -318,7 +296,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, deleteClient({ id: 'client-1' }));
 
       expect(newState.deleting).toBe(true);
@@ -333,7 +310,6 @@ describe('clientsReducer', () => {
         entities: [mockClient, mockClient2],
         deleting: true,
       };
-
       const newState = clientsReducer(state, deleteClientSuccess({ id: 'client-1' }));
 
       expect(newState.entities).not.toContainEqual(mockClient);
@@ -348,7 +324,6 @@ describe('clientsReducer', () => {
         selectedClient: mockClient,
         deleting: true,
       };
-
       const newState = clientsReducer(state, deleteClientSuccess({ id: 'client-1' }));
 
       expect(newState.selectedClient).toBeNull();
@@ -361,7 +336,6 @@ describe('clientsReducer', () => {
         activeClientId: 'client-1',
         deleting: true,
       };
-
       const newState = clientsReducer(state, deleteClientSuccess({ id: 'client-1' }));
 
       expect(newState.activeClientId).toBeNull();
@@ -374,7 +348,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         deleting: true,
       };
-
       const newState = clientsReducer(state, deleteClientFailure({ error: 'Delete failed' }));
 
       expect(newState.error).toBe('Delete failed');
@@ -388,7 +361,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, setActiveClient({ id: 'client-1' }));
 
       expect(newState.error).toBeNull();
@@ -400,7 +372,6 @@ describe('clientsReducer', () => {
       const state: ClientsState = {
         ...initialClientsState,
       };
-
       const newState = clientsReducer(state, setActiveClientSuccess({ id: 'client-1' }));
 
       expect(newState.activeClientId).toBe('client-1');
@@ -413,7 +384,6 @@ describe('clientsReducer', () => {
       const state: ClientsState = {
         ...initialClientsState,
       };
-
       const newState = clientsReducer(state, setActiveClientFailure({ error: 'Set active failed' }));
 
       expect(newState.error).toBe('Set active failed');
@@ -427,7 +397,6 @@ describe('clientsReducer', () => {
         activeClientId: 'client-1',
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, clearActiveClient());
 
       expect(newState.activeClientId).toBeNull();
@@ -439,7 +408,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         activeClientId: null,
       };
-
       const newState = clientsReducer(state, clearActiveClient());
 
       expect(newState.activeClientId).toBeNull();
@@ -452,7 +420,6 @@ describe('clientsReducer', () => {
         selectedClient: mockClient,
         activeClientId: 'client-1',
       };
-
       const newState = clientsReducer(state, clearActiveClient());
 
       expect(newState.activeClientId).toBeNull();
@@ -467,7 +434,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         loadingServerInfo: {},
       };
-
       const newState = clientsReducer(state, loadServerInfo({ clientId: 'client-1' }));
 
       expect(newState.loadingServerInfo['client-1']).toBe(true);
@@ -479,7 +445,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         loadingServerInfo: { 'client-2': true },
       };
-
       const newState = clientsReducer(state, loadServerInfo({ clientId: 'client-1' }));
 
       expect(newState.loadingServerInfo['client-1']).toBe(true);
@@ -500,7 +465,6 @@ describe('clientsReducer', () => {
         loadingServerInfo: { 'client-1': true },
         serverInfo: {},
       };
-
       const newState = clientsReducer(
         state,
         loadServerInfoSuccess({ clientId: 'client-1', serverInfo: mockServerInfo }),
@@ -525,7 +489,6 @@ describe('clientsReducer', () => {
         loadingServerInfo: { 'client-1': true, 'client-2': false },
         serverInfo: { 'client-2': existingServerInfo },
       };
-
       const newState = clientsReducer(
         state,
         loadServerInfoSuccess({ clientId: 'client-1', serverInfo: newServerInfo }),
@@ -542,7 +505,6 @@ describe('clientsReducer', () => {
         ...initialClientsState,
         loadingServerInfo: { 'client-1': true, 'client-2': true },
       };
-
       const newState = clientsReducer(state, loadServerInfoFailure({ clientId: 'client-1', error: 'Load failed' }));
 
       expect(newState.loadingServerInfo['client-1']).toBe(false);
@@ -556,7 +518,6 @@ describe('clientsReducer', () => {
         loadingServerInfo: { 'client-1': true },
         error: 'Previous error',
       };
-
       const newState = clientsReducer(state, loadServerInfoFailure({ clientId: 'client-1', error: '' }));
 
       expect(newState.loadingServerInfo['client-1']).toBe(false);
@@ -569,7 +530,6 @@ describe('clientsReducer', () => {
         loadingServerInfo: { 'client-1': true },
         error: null,
       };
-
       const newState = clientsReducer(state, loadServerInfoFailure({ clientId: 'client-1', error: 'Network error' }));
 
       expect(newState.loadingServerInfo['client-1']).toBe(false);
@@ -581,6 +541,7 @@ describe('clientsReducer', () => {
     it('should set loadingClientUsers to true for clientId', () => {
       const state: ClientsState = { ...initialClientsState };
       const newState = clientsReducer(state, loadClientUsers({ clientId: 'client-1' }));
+
       expect(newState.loadingClientUsers['client-1']).toBe(true);
     });
   });
@@ -603,6 +564,7 @@ describe('clientsReducer', () => {
         loadingClientUsers: { 'client-1': true },
       };
       const newState = clientsReducer(state, loadClientUsersSuccess({ clientId: 'client-1', users }));
+
       expect(newState.clientUsers['client-1']).toEqual(users);
       expect(newState.loadingClientUsers['client-1']).toBe(false);
     });
@@ -633,6 +595,7 @@ describe('clientsReducer', () => {
         addingClientUser: { 'client-1': true },
       };
       const newState = clientsReducer(state, addClientUserSuccess({ clientId: 'client-1', user: newUser }));
+
       expect(newState.clientUsers['client-1']).toHaveLength(2);
       expect(newState.clientUsers['client-1']).toContainEqual(newUser);
       expect(newState.addingClientUser['client-1']).toBe(false);
@@ -668,6 +631,7 @@ describe('clientsReducer', () => {
         state,
         removeClientUserSuccess({ clientId: 'client-1', relationshipId: 'rel-2' }),
       );
+
       expect(newState.clientUsers['client-1']).toHaveLength(1);
       expect(newState.clientUsers['client-1'][0].id).toBe('rel-1');
       expect(newState.removingClientUser['rel-2']).toBeUndefined();

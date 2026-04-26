@@ -26,6 +26,7 @@ describe('ticketsBoardSocketReducer', () => {
   it('connectTicketsBoardSocket sets connecting and clears error', () => {
     const prev: TicketsBoardSocketState = { ...initialTicketsBoardSocketState, error: 'x' };
     const next = ticketsBoardSocketReducer(prev, connectTicketsBoardSocket());
+
     expect(next.connecting).toBe(true);
     expect(next.disconnecting).toBe(false);
     expect(next.error).toBeNull();
@@ -34,6 +35,7 @@ describe('ticketsBoardSocketReducer', () => {
   it('connectTicketsBoardSocketSuccess marks connected', () => {
     const prev: TicketsBoardSocketState = { ...initialTicketsBoardSocketState, connecting: true, reconnecting: true };
     const next = ticketsBoardSocketReducer(prev, connectTicketsBoardSocketSuccess());
+
     expect(next.connected).toBe(true);
     expect(next.connecting).toBe(false);
     expect(next.reconnecting).toBe(false);
@@ -47,11 +49,13 @@ describe('ticketsBoardSocketReducer', () => {
       selectedClientId: 'c1',
     };
     const next = ticketsBoardSocketReducer(prev, connectTicketsBoardSocketFailure({ error: 'bad' }));
+
     expect(next).toEqual({ ...initialTicketsBoardSocketState, error: 'bad' });
   });
 
   it('disconnectTicketsBoardSocket sets disconnecting', () => {
     const next = ticketsBoardSocketReducer(initialTicketsBoardSocketState, disconnectTicketsBoardSocket());
+
     expect(next.disconnecting).toBe(true);
   });
 
@@ -61,6 +65,7 @@ describe('ticketsBoardSocketReducer', () => {
       connected: true,
       selectedClientId: 'c1',
     };
+
     expect(ticketsBoardSocketReducer(prev, disconnectTicketsBoardSocketSuccess())).toEqual(
       initialTicketsBoardSocketState,
     );
@@ -71,6 +76,7 @@ describe('ticketsBoardSocketReducer', () => {
       initialTicketsBoardSocketState,
       ticketsBoardSocketReconnecting({ attempt: 2 }),
     );
+
     expect(next.reconnecting).toBe(true);
     expect(next.reconnectAttempts).toBe(2);
   });
@@ -82,6 +88,7 @@ describe('ticketsBoardSocketReducer', () => {
       reconnectAttempts: 3,
     };
     const next = ticketsBoardSocketReducer(prev, ticketsBoardSocketReconnected());
+
     expect(next.connected).toBe(true);
     expect(next.reconnecting).toBe(false);
     expect(next.reconnectAttempts).toBe(0);
@@ -92,6 +99,7 @@ describe('ticketsBoardSocketReducer', () => {
       initialTicketsBoardSocketState,
       ticketsBoardSocketReconnectError({ error: 'e' }),
     );
+
     expect(next.error).toBe('e');
   });
 
@@ -102,6 +110,7 @@ describe('ticketsBoardSocketReducer', () => {
       reconnecting: true,
     };
     const next = ticketsBoardSocketReducer(prev, ticketsBoardSocketReconnectFailed({ error: 'gave up' }));
+
     expect(next.connected).toBe(false);
     expect(next.reconnecting).toBe(false);
     expect(next.error).toBe('gave up');
@@ -112,6 +121,7 @@ describe('ticketsBoardSocketReducer', () => {
       initialTicketsBoardSocketState,
       setTicketsBoardSocketClient({ clientId: 'c' }),
     );
+
     expect(next.settingClient).toBe(true);
     expect(next.settingClientId).toBe('c');
   });
@@ -123,6 +133,7 @@ describe('ticketsBoardSocketReducer', () => {
       settingClientId: 'c',
     };
     const next = ticketsBoardSocketReducer(prev, setTicketsBoardSocketClientSuccess({ message: 'ok', clientId: 'c' }));
+
     expect(next.selectedClientId).toBe('c');
     expect(next.settingClient).toBe(false);
     expect(next.settingClientId).toBeNull();
@@ -135,6 +146,7 @@ describe('ticketsBoardSocketReducer', () => {
       settingClientId: 'c',
     };
     const next = ticketsBoardSocketReducer(prev, ticketsBoardSocketError({ message: 'nope' }));
+
     expect(next.settingClient).toBe(false);
     expect(next.settingClientId).toBeNull();
     expect(next.error).toBe('nope');

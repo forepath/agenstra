@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+
 import { CommitDto } from '../dto/commit.dto';
 import { CreateBranchDto } from '../dto/create-branch.dto';
 import { GitBranchDto } from '../dto/git-branch.dto';
@@ -54,6 +55,7 @@ export class AgentsVcsController {
     if (!filePath) {
       throw new Error('File path is required');
     }
+
     return await this.agentsVcsService.getFileDiff(agentId, filePath);
   }
 

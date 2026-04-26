@@ -1,20 +1,20 @@
 import { DestroyRef, inject, Injectable } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { distinctUntilChanged, Observable } from 'rxjs';
-import { clearAllStatsHistory, clearStatsHistory, containerStatsReceived } from './stats.actions';
-import type { ContainerStatsEntry } from './stats.types';
+
+import { clearAllStatsHistory, clearStatsHistory } from './stats.actions';
 import {
+  selectContainerRunningStatus,
   selectContainerStats,
   selectContainerStatsCount,
   selectContainerStatsFiltered,
   selectContainerStatsFromTime,
   selectContainerStatsInRange,
   selectContainerStatsLimited,
-  selectContainerRunningStatus,
   selectContainersWithStats,
   selectCurrentContainerStats,
 } from './stats.selectors';
+import type { ContainerStatsEntry } from './stats.types';
 
 /**
  * Facade for stats state management.

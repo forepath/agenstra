@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 
 /**
@@ -22,9 +23,11 @@ export class ProvisioningReferencesRepository {
    */
   async findByIdOrThrow(id: string): Promise<ProvisioningReferenceEntity> {
     const reference = await this.repository.findOne({ where: { id } });
+
     if (!reference) {
       throw new NotFoundException(`Provisioning reference with id '${id}' not found`);
     }
+
     return reference;
   }
 
@@ -93,6 +96,7 @@ export class ProvisioningReferencesRepository {
    */
   async create(data: Partial<ProvisioningReferenceEntity>): Promise<ProvisioningReferenceEntity> {
     const reference = this.repository.create(data);
+
     return await this.repository.save(reference);
   }
 
@@ -106,6 +110,7 @@ export class ProvisioningReferencesRepository {
   async update(id: string, data: Partial<ProvisioningReferenceEntity>): Promise<ProvisioningReferenceEntity> {
     await this.findByIdOrThrow(id);
     await this.repository.update(id, data);
+
     return await this.findByIdOrThrow(id);
   }
 

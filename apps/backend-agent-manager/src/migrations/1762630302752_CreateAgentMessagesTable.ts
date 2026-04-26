@@ -93,6 +93,7 @@ export class CreateAgentMessagesTable1762630302752 implements MigrationInterface
     // Drop foreign key
     const table = await queryRunner.getTable('agent_messages');
     const foreignKey = table?.foreignKeys.find((fk) => fk.columnNames.indexOf('agent_id') !== -1);
+
     if (foreignKey) {
       await queryRunner.dropForeignKey('agent_messages', foreignKey);
     }

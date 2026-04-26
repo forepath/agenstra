@@ -1,26 +1,25 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CreateFileDto } from '../dto/create-file.dto';
 import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
 import { MoveFileDto } from '../dto/move-file.dto';
 import { WriteFileDto } from '../dto/write-file.dto';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
+
 import { AgentsFilesController } from './agents-files.controller';
 
 describe('AgentsFilesController', () => {
   let controller: AgentsFilesController;
   let service: jest.Mocked<AgentFileSystemService>;
-
   const mockAgentId = 'test-agent-uuid';
   const mockFilePath = 'test-file.txt';
   const mockDirectoryPath = 'test-directory';
-
   const mockFileContent: FileContentDto = {
     content: 'Hello, World!',
     encoding: 'utf-8',
   };
-
   const mockFileNodes: FileNodeDto[] = [
     {
       name: 'file1.txt',
@@ -35,7 +34,6 @@ describe('AgentsFilesController', () => {
       path: 'dir1',
     },
   ];
-
   const mockService = {
     readFile: jest.fn(),
     writeFile: jest.fn(),

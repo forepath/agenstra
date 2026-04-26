@@ -10,9 +10,12 @@ export async function expandProviderPathTildeInContainer(
   if (providerPath === '~') {
     return await getContainerHomeDirectory(containerId);
   }
+
   if (providerPath.startsWith('~/')) {
     const home = await getContainerHomeDirectory(containerId);
+
     return `${home}${providerPath.slice(1)}`;
   }
+
   return providerPath;
 }

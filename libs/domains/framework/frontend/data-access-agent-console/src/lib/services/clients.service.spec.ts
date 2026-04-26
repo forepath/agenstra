@@ -1,19 +1,20 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type {
   ClientResponseDto,
   CreateClientDto,
   CreateClientResponseDto,
   UpdateClientDto,
 } from '../state/clients/clients.types';
+
 import { ClientsService } from './clients.service';
 
 describe('ClientsService', () => {
   let service: ClientsService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3100/api';
-
   const mockClient: ClientResponseDto = {
     id: 'client-1',
     name: 'Test Client',
@@ -29,7 +30,6 @@ describe('ClientsService', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockCreateClientResponse: CreateClientResponseDto = {
     ...mockClient,
     apiKey: 'generated-api-key',
@@ -72,6 +72,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockClients);
     });
@@ -86,6 +87,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients?limit=10&offset=20`);
+
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
@@ -103,6 +105,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockClient);
     });
@@ -122,6 +125,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(mockCreateClientResponse);
@@ -141,6 +145,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(updateDto);
       req.flush({ ...mockClient, name: 'Updated Client' });
@@ -156,6 +161,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -182,6 +188,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/users`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockUsers);
     });
@@ -207,6 +214,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/users`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockResponse);
@@ -223,6 +231,7 @@ describe('ClientsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/users/${relationshipId}`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -247,6 +256,7 @@ describe('ClientsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/clients/client-1/agent-autonomy/enabled-agent-ids`);
+
       expect(req.request.method).toBe('GET');
       req.flush({ agentIds: ['agent-1', 'agent-2'] });
     });
@@ -257,6 +267,7 @@ describe('ClientsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/clients/client-1/agents/agent-1/autonomy`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockAutonomy);
     });
@@ -268,11 +279,13 @@ describe('ClientsService', () => {
         maxRuntimeMs: 120_000,
         maxIterations: 10,
       };
+
       service.upsertClientAgentAutonomy('client-1', 'agent-1', dto).subscribe((row) => {
         expect(row).toEqual(mockAutonomy);
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/clients/client-1/agents/agent-1/autonomy`);
+
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(dto);
       req.flush(mockAutonomy);

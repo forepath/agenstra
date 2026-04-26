@@ -3,18 +3,19 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
+
 import { forwardedEventReceived } from '../sockets/sockets.actions';
 import { selectSelectedAgentId, selectSelectedClientId } from '../sockets/sockets.selectors';
-import { processContainerStats$ } from './stats.effects';
-import { containerStatsReceived } from './stats.actions';
 import { ChatActor } from '../sockets/sockets.types';
 import type { ChatMessageData, ContainerStatsPayload, SuccessResponse } from '../sockets/sockets.types';
+
+import { containerStatsReceived } from './stats.actions';
+import { processContainerStats$ } from './stats.effects';
 
 describe('StatsEffects', () => {
   let actions$: Actions;
   let store: MockStore;
   let effects: ReturnType<typeof processContainerStats$>;
-
   const mockStats = {
     read: '2024-01-01T00:00:00.000000000Z',
     preread: '2024-01-01T00:00:00.000000000Z',
@@ -51,7 +52,6 @@ describe('StatsEffects', () => {
     },
     networks: {},
   };
-
   const createContainerStatsPayload = (): SuccessResponse<ContainerStatsPayload> => ({
     success: true,
     data: {
@@ -83,12 +83,14 @@ describe('StatsEffects', () => {
 
     store = TestBed.inject(MockStore);
     const actions = TestBed.inject(Actions);
+
     effects = processContainerStats$(actions, store);
   });
 
   describe('processContainerStats$', () => {
     it('should dispatch containerStatsReceived when containerStats event is received', (done) => {
       const payload = createContainerStatsPayload();
+
       actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
 
       effects.subscribe((action) => {
@@ -114,6 +116,7 @@ describe('StatsEffects', () => {
       store.refreshState();
 
       const payload = createContainerStatsPayload();
+
       actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
 
       effects.subscribe((action) => {
@@ -135,6 +138,7 @@ describe('StatsEffects', () => {
       store.refreshState();
 
       const payload = createContainerStatsPayload();
+
       actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
 
       effects.subscribe((action) => {
@@ -160,6 +164,7 @@ describe('StatsEffects', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
+
       actions$ = of(forwardedEventReceived({ event: 'chatMessage', payload }));
 
       let callCount = 0;
@@ -183,6 +188,7 @@ describe('StatsEffects', () => {
         },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
+
       actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
 
       let callCount = 0;
@@ -204,6 +210,7 @@ describe('StatsEffects', () => {
         success: true as const,
         timestamp: '2024-01-01T00:00:00.000Z',
       } as unknown as SuccessResponse<ContainerStatsPayload>;
+
       actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
 
       let callCount = 0;

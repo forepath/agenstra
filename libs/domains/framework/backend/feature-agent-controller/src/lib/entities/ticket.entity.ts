@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { TicketPriority, TicketStatus } from './ticket.enums';
 
 @Entity('tickets')

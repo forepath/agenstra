@@ -1,8 +1,4 @@
-import {
-  mapForwardedChatEventToDisplayRow,
-  tryParseChatEventEnvelope,
-  type AgentChatEventDisplayRow,
-} from './agent-chat-event-display';
+import { mapForwardedChatEventToDisplayRow, tryParseChatEventEnvelope } from './agent-chat-event-display';
 import { consolidateThinkingInSegments, type AgentTurnSegment } from './chat-thread-display';
 
 export interface StreamingTurnAccumulated {
@@ -20,12 +16,13 @@ export function accumulateStreamingTurnFromEvents(
 ): StreamingTurnAccumulated {
   const segments: AgentTurnSegment[] = [];
   let markdownSeq = 0;
-
   const appendMarkdownDelta = (delta: string): void => {
     if (delta.length === 0) {
       return;
     }
+
     const last = segments[segments.length - 1];
+
     if (last?.kind === 'markdown') {
       last.markdown += delta;
     } else {
@@ -36,12 +33,13 @@ export function accumulateStreamingTurnFromEvents(
       });
     }
   };
-
   const setAssistantMessageText = (full: string): void => {
     if (full.length === 0) {
       return;
     }
+
     const last = segments[segments.length - 1];
+
     if (last?.kind === 'markdown') {
       last.markdown = full;
     } else {
@@ -57,7 +55,9 @@ export function accumulateStreamingTurnFromEvents(
     if (ev.timestamp <= lastUserClientTimestamp) {
       continue;
     }
+
     const envelope = tryParseChatEventEnvelope(ev.payload);
+
     if (!envelope) {
       continue;
     }
@@ -65,34 +65,44 @@ export function accumulateStreamingTurnFromEvents(
     switch (envelope.kind) {
       case 'userMessage':
         break;
+
       case 'thinking': {
         const row = mapForwardedChatEventToDisplayRow(ev);
+
         if (row) {
           segments.push({ kind: 'row', row });
         }
+
         break;
       }
+
       case 'assistantDelta': {
         const delta =
           typeof (envelope.payload as { delta?: unknown }).delta === 'string'
             ? (envelope.payload as { delta: string }).delta
             : '';
+
         appendMarkdownDelta(delta);
         break;
       }
+
       case 'assistantMessage': {
         const full =
           typeof (envelope.payload as { text?: unknown }).text === 'string'
             ? (envelope.payload as { text: string }).text
             : '';
+
         setAssistantMessageText(full);
         break;
       }
+
       default: {
         const row = mapForwardedChatEventToDisplayRow(ev);
+
         if (row) {
           segments.push({ kind: 'row', row });
         }
+
         break;
       }
     }

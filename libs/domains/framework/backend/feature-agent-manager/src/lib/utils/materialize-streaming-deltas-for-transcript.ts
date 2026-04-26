@@ -16,28 +16,36 @@ export function materializeDeltaPartsIntoInterleavedResults(
       buf = '';
     }
   };
+
   for (const part of streamedUnified) {
     const typ = String(part.type);
     const deltaChunk = (part as unknown as { delta?: unknown }).delta;
+
     if (typ === 'delta' && typeof deltaChunk === 'string') {
       buf += deltaChunk;
       continue;
     }
+
     flush();
     out.push(part);
   }
+
   flush();
+
   return out;
 }
 
 function extractResultTextBody(part: AgentResponseObject): string {
   const r = part['result'];
+
   if (typeof r === 'string') {
     return r;
   }
+
   if (r === undefined || r === null) {
     return '';
   }
+
   try {
     return JSON.stringify(r);
   } catch {
@@ -52,11 +60,13 @@ function collapseWhitespaceForCompare(s: string): string {
 
 function joinResultBodiesFromParts(parts: AgentResponseObject[]): string {
   let acc = '';
+
   for (const p of parts) {
     if (String(p.type) === 'result') {
       acc += extractResultTextBody(p);
     }
   }
+
   return acc;
 }
 
@@ -70,22 +80,30 @@ export function dropRedundantTrailingStreamResultParts(parts: AgentResponseObjec
   if (parts.length < 2) {
     return parts;
   }
+
   const last = parts[parts.length - 1];
+
   if (String(last.type) !== 'result') {
     return parts;
   }
+
   const terminal = extractResultTextBody(last);
+
   if (!terminal.trim()) {
     return parts.slice(0, -1);
   }
+
   const prior = parts.slice(0, -1);
   const priorJoined = joinResultBodiesFromParts(prior);
+
   if (priorJoined === terminal) {
     return prior;
   }
+
   if (collapseWhitespaceForCompare(priorJoined) === collapseWhitespaceForCompare(terminal)) {
     return prior;
   }
+
   return parts;
 }
 
@@ -102,29 +120,37 @@ export function collapseRepeatedWholeCopiesInString(
   minUnitLength = DEFAULT_MIN_UNIT_FOR_WHOLE_STRING_REPEAT,
 ): string {
   const n = s.length;
+
   if (n < minUnitLength * 2) {
     return s;
   }
+
   for (let k = Math.min(MAX_REPEAT_COPIES_TO_DETECT, n); k >= 2; k--) {
     if (n % k !== 0) {
       continue;
     }
+
     const unitLen = n / k;
+
     if (unitLen < minUnitLength) {
       continue;
     }
+
     const unit = s.slice(0, unitLen);
     let allMatch = true;
+
     for (let i = 1; i < k; i++) {
       if (s.slice(i * unitLen, (i + 1) * unitLen) !== unit) {
         allMatch = false;
         break;
       }
     }
+
     if (allMatch) {
       return unit;
     }
   }
+
   return s;
 }
 
@@ -132,14 +158,19 @@ function normalizeResultPartRepeatedProse(part: AgentResponseObject): AgentRespo
   if (String(part.type) !== 'result') {
     return part;
   }
+
   const raw = extractResultTextBody(part);
+
   if (!raw.trim()) {
     return part;
   }
+
   const collapsed = collapseRepeatedWholeCopiesInString(raw);
+
   if (collapsed === raw) {
     return part;
   }
+
   return { ...(part as Record<string, unknown>), result: collapsed } as AgentResponseObject;
 }
 
@@ -152,15 +183,19 @@ function normalizeResultPartRepeatedProse(part: AgentResponseObject): AgentRespo
  */
 export function collapseConsecutiveIdenticalResultParts(parts: AgentResponseObject[]): AgentResponseObject[] {
   const out: AgentResponseObject[] = [];
+
   for (const p of parts) {
     if (String(p.type) !== 'result') {
       out.push(p);
       continue;
     }
+
     const last = out[out.length - 1];
+
     if (out.length > 0 && String(last.type) === 'result') {
       const prevBody = collapseWhitespaceForCompare(extractResultTextBody(last));
       const nextBody = collapseWhitespaceForCompare(extractResultTextBody(p));
+
       if (prevBody.length > 0 && prevBody === nextBody) {
         out[out.length - 1] = {
           ...(last as Record<string, unknown>),
@@ -169,8 +204,10 @@ export function collapseConsecutiveIdenticalResultParts(parts: AgentResponseObje
         continue;
       }
     }
+
     out.push(p);
   }
+
   return out;
 }
 
@@ -180,5 +217,6 @@ export function collapseConsecutiveIdenticalResultParts(parts: AgentResponseObje
 export function finalizeStreamingTranscriptParts(streamedUnified: AgentResponseObject[]): AgentResponseObject[] {
   const materialized = materializeDeltaPartsIntoInterleavedResults(streamedUnified);
   const proseNormalized = materialized.map((p) => normalizeResultPartRepeatedProse(p));
+
   return dropRedundantTrailingStreamResultParts(collapseConsecutiveIdenticalResultParts(proseNormalized));
 }

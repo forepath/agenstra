@@ -1,3 +1,4 @@
+import { createAes256GcmTransformer, createJsonAes256GcmTransformer } from '@forepath/shared/backend';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { createAes256GcmTransformer, createJsonAes256GcmTransformer } from '@forepath/shared/backend';
+
 import { ServiceTypeEntity } from './service-type.entity';
 import { SubscriptionEntity } from './subscription.entity';
 

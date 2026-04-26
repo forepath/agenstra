@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
+
 import type {
   StatisticsAggregateParams,
   StatisticsChatIoListDto,
@@ -26,6 +27,7 @@ export class StatisticsService {
 
   private buildParams(params?: Record<string, string | number | undefined>): HttpParams {
     let httpParams = new HttpParams();
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -33,6 +35,7 @@ export class StatisticsService {
         }
       });
     }
+
     return httpParams;
   }
 
@@ -42,6 +45,7 @@ export class StatisticsService {
     params?: { from?: string; to?: string; groupBy?: 'day' | 'hour' },
   ): Observable<StatisticsSummaryDto> {
     const httpParams = this.buildParams(params);
+
     return this.http.get<StatisticsSummaryDto>(`${this.apiUrl}/clients/${clientId}/statistics/summary`, {
       params: httpParams,
     });
@@ -58,6 +62,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsChatIoListDto>(`${this.apiUrl}/clients/${clientId}/statistics/chat-io`, {
       params: httpParams,
     });
@@ -77,6 +82,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsFilterDropListDto>(`${this.apiUrl}/clients/${clientId}/statistics/filter-drops`, {
       params: httpParams,
     });
@@ -96,6 +102,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsFilterFlagListDto>(`${this.apiUrl}/clients/${clientId}/statistics/filter-flags`, {
       params: httpParams,
     });
@@ -115,6 +122,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsEntityEventListDto>(`${this.apiUrl}/clients/${clientId}/statistics/entity-events`, {
       params: httpParams,
     });
@@ -128,6 +136,7 @@ export class StatisticsService {
       to: params?.to,
       groupBy: params?.groupBy,
     });
+
     return this.http.get<StatisticsSummaryDto>(`${this.apiUrl}/statistics/summary`, {
       params: httpParams,
     });
@@ -145,6 +154,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsChatIoListDto>(`${this.apiUrl}/statistics/chat-io`, {
       params: httpParams,
     });
@@ -162,6 +172,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsFilterDropListDto>(`${this.apiUrl}/statistics/filter-drops`, {
       params: httpParams,
     });
@@ -179,6 +190,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsFilterFlagListDto>(`${this.apiUrl}/statistics/filter-flags`, {
       params: httpParams,
     });
@@ -196,6 +208,7 @@ export class StatisticsService {
       limit: params?.limit ?? 10,
       offset: params?.offset ?? 0,
     });
+
     return this.http.get<StatisticsEntityEventListDto>(`${this.apiUrl}/statistics/entity-events`, {
       params: httpParams,
     });

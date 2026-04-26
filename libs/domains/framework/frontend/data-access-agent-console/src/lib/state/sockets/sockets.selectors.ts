@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import { CLIENT_CHAT_AUTOMATION_SOCKET_EVENT } from './client-chat-automation.constants';
 import type { SocketsState } from './sockets.reducer';
 import type { ChatMessageData, TicketAutomationRunChatEventPayload } from './sockets.types';
@@ -87,6 +88,7 @@ export const selectForwardedEvents = createSelector(selectSocketsState, (state) 
 export const selectForwardedEventsByEvent = (eventName: string) =>
   createSelector(selectForwardedEvents, (events) => {
     const filtered = events.filter((e) => e.event === eventName);
+
     // Return a new array reference only if the filtered result actually changed
     // This helps with distinctUntilChanged in observables
     return filtered;
@@ -105,6 +107,7 @@ export const selectMostRecentForwardedEvent = createSelector(selectForwardedEven
 export const selectMostRecentForwardedEventByEvent = (eventName: string) =>
   createSelector(selectForwardedEvents, (events) => {
     const filtered = events.filter((e) => e.event === eventName);
+
     return filtered.length > 0 ? filtered[filtered.length - 1] : null;
   });
 
@@ -124,6 +127,7 @@ export const selectFilterResultForMessage = (direction: 'incoming' | 'outgoing',
   createSelector(selectMessageFilterResults, (filterResults) => {
     // Find filter results matching the direction
     const matchingDirection = filterResults.filter((fr) => fr.direction === direction);
+
     if (matchingDirection.length === 0) {
       return null;
     }
@@ -155,22 +159,28 @@ export type ChatTimelineOrderedRow = {
 function semanticSortKey(row: { event: string; payload: unknown; timestamp: number }): number {
   if (row.event === 'chatMessage' && row.payload && typeof row.payload === 'object' && 'success' in row.payload) {
     const envelope = row.payload as { success?: boolean; data?: ChatMessageData };
+
     if (envelope.success && envelope.data?.timestamp) {
       const t = Date.parse(envelope.data.timestamp);
+
       if (!Number.isNaN(t)) {
         return t;
       }
     }
   }
+
   if (row.event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT) {
     const p = row.payload as TicketAutomationRunChatEventPayload | undefined;
+
     if (p?.timelineAt) {
       const t = Date.parse(p.timelineAt);
+
       if (!Number.isNaN(t)) {
         return t;
       }
     }
   }
+
   return row.timestamp;
 }
 
@@ -185,31 +195,41 @@ export const selectChatTimelineOrdered = createSelector(
     const chatMsgs = events.filter((e) => e.event === 'chatMessage');
     const rawAuto = events.filter((e) => e.event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT);
     const byRun = new Map<string, (typeof events)[0]>();
+
     for (const e of rawAuto) {
       const run = (e.payload as TicketAutomationRunChatEventPayload | undefined)?.run;
+
       if (!run?.id || !run.agentId) {
         continue;
       }
+
       if (selectedAgentId && run.agentId !== selectedAgentId) {
         continue;
       }
+
       const prev = byRun.get(run.id);
+
       if (!prev) {
         byRun.set(run.id, e);
         continue;
       }
+
       const prevT = semanticSortKey(prev);
       const curT = semanticSortKey(e);
+
       if (curT >= prevT) {
         byRun.set(run.id, e);
       }
     }
+
     const automations = [...byRun.values()];
     const merged: ChatTimelineOrderedRow[] = [...chatMsgs, ...automations].map((e) => ({
       ...e,
       semanticTimestamp: semanticSortKey(e),
     }));
+
     merged.sort((a, b) => a.semanticTimestamp - b.semanticTimestamp || a.timestamp - b.timestamp);
+
     return merged;
   },
 );

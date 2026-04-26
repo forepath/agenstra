@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { PipelineProvider } from './pipeline-provider.interface';
 
 /**
@@ -16,9 +17,11 @@ export class PipelineProviderFactory {
    */
   registerProvider(provider: PipelineProvider): void {
     const type = provider.getType();
+
     if (this.providers.has(type)) {
       this.logger.warn(`Provider with type '${type}' is already registered. Overwriting existing provider.`);
     }
+
     this.providers.set(type, provider);
     this.logger.log(`Registered pipeline provider: ${type}`);
   }
@@ -31,10 +34,13 @@ export class PipelineProviderFactory {
    */
   getProvider(type: string): PipelineProvider {
     const provider = this.providers.get(type);
+
     if (!provider) {
       const availableTypes = Array.from(this.providers.keys()).join(', ');
+
       throw new Error(`Pipeline provider with type '${type}' not found. Available types: ${availableTypes || 'none'}`);
     }
+
     return provider;
   }
 

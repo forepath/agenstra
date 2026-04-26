@@ -1,11 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+
 import { SubscriptionItemResponseDto } from '../dto/subscription-item-response.dto';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
-import { ProvisioningService } from './provisioning.service';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
-import { SubscriptionService } from './subscription.service';
-import { CloudflareDnsService } from './cloudflare-dns.service';
 import { ServerInfo } from '../utils/provisioning.utils';
+
+import { CloudflareDnsService } from './cloudflare-dns.service';
+import { ProvisioningService } from './provisioning.service';
+import { SubscriptionService } from './subscription.service';
 
 @Injectable()
 export class SubscriptionItemServerService {
@@ -23,9 +25,11 @@ export class SubscriptionItemServerService {
     await this.subscriptionService.getSubscription(subscriptionId, userId);
 
     const items = await this.subscriptionItemsRepository.findBySubscription(subscriptionId);
+
     return items.map((item) => {
       const service = item.configSnapshot?.service as string | undefined;
       const serviceVal = service === 'manager' ? ('manager' as const) : ('controller' as const);
+
       return {
         id: item.id,
         subscriptionId: item.subscriptionId,
@@ -45,6 +49,7 @@ export class SubscriptionItemServerService {
     await this.subscriptionService.getSubscription(subscriptionId, userId);
 
     const item = await this.subscriptionItemsRepository.findByIdAndSubscriptionId(itemId, subscriptionId);
+
     if (!item) {
       throw new NotFoundException(`Subscription item ${itemId} not found`);
     }
@@ -52,11 +57,13 @@ export class SubscriptionItemServerService {
     this.assertProvisioned(item.providerReference, item.provisioningStatus);
 
     const provider = item.serviceType?.provider;
+
     if (!provider) {
       throw new BadRequestException('Service type has no provider');
     }
 
     const info = await this.provisioningService.getServerInfo(provider, item.providerReference!);
+
     if (!info) {
       throw new BadRequestException('Provider does not support server info');
     }
@@ -79,16 +86,19 @@ export class SubscriptionItemServerService {
 
   async startServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {
     const item = await this.resolveItemForAction(subscriptionId, itemId, userId);
+
     await this.provisioningService.startServer(item.serviceType!.provider!, item.providerReference!);
   }
 
   async stopServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {
     const item = await this.resolveItemForAction(subscriptionId, itemId, userId);
+
     await this.provisioningService.stopServer(item.serviceType!.provider!, item.providerReference!);
   }
 
   async restartServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {
     const item = await this.resolveItemForAction(subscriptionId, itemId, userId);
+
     await this.provisioningService.restartServer(item.serviceType!.provider!, item.providerReference!);
   }
 
@@ -96,6 +106,7 @@ export class SubscriptionItemServerService {
     await this.subscriptionService.getSubscription(subscriptionId, userId);
 
     const item = await this.subscriptionItemsRepository.findByIdAndSubscriptionId(itemId, subscriptionId);
+
     if (!item) {
       throw new NotFoundException(`Subscription item ${itemId} not found`);
     }
@@ -113,6 +124,7 @@ export class SubscriptionItemServerService {
     if (!providerReference) {
       throw new BadRequestException('Service is not provisioned yet');
     }
+
     if (status !== ProvisioningStatus.ACTIVE) {
       throw new BadRequestException(
         `Service is not active (status: ${status}). Only provisioned services can be queried or controlled.`,

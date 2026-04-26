@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { VcsState } from './vcs.reducer';
 
 export const selectVcsState = createFeatureSelector<VcsState>('vcs');
@@ -46,10 +47,12 @@ export const selectGitStatusIndicator = createSelector(selectGitStatus, (status)
 
   // Check for conflicts (files with 'U' in status = unmerged/conflict)
   const hasConflicts = status.files.some((f) => f.status.includes('U'));
+
   if (hasConflicts) return 'conflict'; // red
 
   // Check for local changes (staged, unstaged, untracked, or unpushed commits)
   const hasLocalChanges = !status.isClean || status.hasUnpushedCommits;
+
   if (hasLocalChanges) return 'changes'; // yellow
 
   // Completely in sync with remote

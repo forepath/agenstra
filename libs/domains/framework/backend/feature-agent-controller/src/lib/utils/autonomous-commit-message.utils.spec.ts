@@ -12,6 +12,7 @@ describe('autonomous-commit-message.utils', () => {
         { id: '00000000-0000-4000-8000-000000000001', title: 'Add login' },
         'automation/abcd1234',
       );
+
       expect(p).toContain('00000000-0000-4000-8000-000000000001');
       expect(p).toContain('Add login');
       expect(p).toContain('automation/abcd1234');

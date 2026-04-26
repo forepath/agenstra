@@ -1,7 +1,9 @@
+import { UserRole } from '@forepath/identity/backend';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole } from '@forepath/identity/backend';
+
 import { UsersRepository } from '../repositories/users.repository';
+
 import { UsersAuthGuard } from './users-auth.guard';
 
 describe('UsersAuthGuard', () => {
@@ -10,7 +12,6 @@ describe('UsersAuthGuard', () => {
   let reflector: jest.Mocked<Pick<Reflector, 'getAllAndOverride'>>;
   let usersRepository: jest.Mocked<Pick<UsersRepository, 'findById'>>;
   let originalAuthMethod: string | undefined;
-
   const createExecutionContext = (request: Record<string, unknown>) =>
     ({
       switchToHttp: () => ({
@@ -41,11 +42,13 @@ describe('UsersAuthGuard', () => {
     } else {
       delete process.env.AUTHENTICATION_METHOD;
     }
+
     jest.clearAllMocks();
   });
 
   it('allows request when JWT is valid and user is not locked', async () => {
     const request = { headers: { authorization: 'Bearer valid.jwt.token' } };
+
     jwtService.verifyAsync.mockResolvedValue({
       sub: 'user-1',
       email: 'a@b.com',
@@ -70,6 +73,7 @@ describe('UsersAuthGuard', () => {
 
   it('rejects when user is locked', async () => {
     const request = { headers: { authorization: 'Bearer valid.jwt.token' } };
+
     jwtService.verifyAsync.mockResolvedValue({
       sub: 'user-1',
       email: 'a@b.com',
@@ -87,6 +91,7 @@ describe('UsersAuthGuard', () => {
 
   it('rejects when user no longer exists', async () => {
     const request = { headers: { authorization: 'Bearer valid.jwt.token' } };
+
     jwtService.verifyAsync.mockResolvedValue({
       sub: 'missing',
       email: 'a@b.com',
@@ -102,7 +107,6 @@ describe('UsersAuthGuard', () => {
       headers: {},
       user: { id: 'api-key-user', roles: ['admin'] },
     };
-
     const ok = await guard.canActivate(createExecutionContext(request));
 
     expect(ok).toBe(true);

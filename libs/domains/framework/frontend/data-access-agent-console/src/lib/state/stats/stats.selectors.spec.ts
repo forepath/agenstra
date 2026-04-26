@@ -50,7 +50,6 @@ describe('Stats Selectors', () => {
     },
     networks: {},
   };
-
   const createEntry = (
     clientId: string,
     agentId: string,
@@ -64,7 +63,6 @@ describe('Stats Selectors', () => {
     clientId,
     agentId,
   });
-
   const createState = (overrides?: Partial<StatsState>): StatsState => ({
     ...initialStatsState,
     ...overrides,
@@ -157,7 +155,6 @@ describe('Stats Selectors', () => {
       };
       const state = createState({ statsByContainer });
       const rootState = { stats: state };
-
       // Select entries between 00:05 and 00:10
       const startTime = new Date('2024-01-01T00:05:00.000Z').getTime();
       const endTime = new Date('2024-01-01T00:10:00.000Z').getTime();
@@ -176,9 +173,9 @@ describe('Stats Selectors', () => {
       };
       const state = createState({ statsByContainer });
       const rootState = { stats: state };
-
       // Mock Date.now() to return a time after entry3
       const originalNow = Date.now;
+
       Date.now = jest.fn(() => new Date('2024-01-01T00:20:00.000Z').getTime());
 
       const startTime = new Date('2024-01-01T00:05:00.000Z').getTime();
@@ -198,7 +195,6 @@ describe('Stats Selectors', () => {
       };
       const state = createState({ statsByContainer });
       const rootState = { stats: state };
-
       const selector = selectContainerStatsInRange(
         'client-1',
         'agent-1',
@@ -221,8 +217,8 @@ describe('Stats Selectors', () => {
       };
       const state = createState({ statsByContainer });
       const rootState = { stats: state };
-
       const originalNow = Date.now;
+
       Date.now = jest.fn(() => new Date('2024-01-01T00:20:00.000Z').getTime());
 
       const startTime = new Date('2024-01-01T00:05:00.000Z').getTime();

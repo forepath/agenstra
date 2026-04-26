@@ -93,6 +93,7 @@ export class CreateAgentEnvironmentVariablesTable1766995600000 implements Migrat
     // Drop foreign key
     const table = await queryRunner.getTable('agent_environment_variables');
     const foreignKey = table?.foreignKeys.find((fk) => fk.columnNames.indexOf('agent_id') !== -1);
+
     if (foreignKey) {
       await queryRunner.dropForeignKey('agent_environment_variables', foreignKey);
     }

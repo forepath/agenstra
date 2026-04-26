@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, of, switchMap } from 'rxjs';
+
 import { DeploymentsService } from '../../services/deployments.service';
+
 import {
   cancelRun,
   cancelRunFailure,
@@ -55,15 +57,19 @@ function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     return error.error?.message || error.message || 'An unexpected error occurred';
   }
+
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 

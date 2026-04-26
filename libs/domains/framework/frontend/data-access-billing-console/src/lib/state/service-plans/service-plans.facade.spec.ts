@@ -1,6 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
+import type {
+  CreateServicePlanDto,
+  ListParams,
+  ServicePlanResponse,
+  UpdateServicePlanDto,
+} from '../../types/billing.types';
+
 import {
   clearSelectedServicePlan,
   createServicePlan,
@@ -10,17 +18,10 @@ import {
   updateServicePlan,
 } from './service-plans.actions';
 import { ServicePlansFacade } from './service-plans.facade';
-import type {
-  CreateServicePlanDto,
-  ListParams,
-  ServicePlanResponse,
-  UpdateServicePlanDto,
-} from '../../types/billing.types';
 
 describe('ServicePlansFacade', () => {
   let facade: ServicePlansFacade;
   let store: jest.Mocked<Store>;
-
   const mockPlan: ServicePlanResponse = {
     id: 'sp-1',
     serviceTypeId: 'st-1',
@@ -69,6 +70,7 @@ describe('ServicePlansFacade', () => {
   describe('Action Methods', () => {
     it('should dispatch loadServicePlans', () => {
       const params: ListParams = { limit: 10 };
+
       facade.loadServicePlans(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadServicePlans({ params }));
     });
@@ -85,12 +87,14 @@ describe('ServicePlansFacade', () => {
         billingIntervalType: 'month',
         billingIntervalValue: 1,
       };
+
       facade.createServicePlan(dto);
       expect(store.dispatch).toHaveBeenCalledWith(createServicePlan({ servicePlan: dto }));
     });
 
     it('should dispatch updateServicePlan', () => {
       const dto: UpdateServicePlanDto = { name: 'Updated' };
+
       facade.updateServicePlan('sp-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(updateServicePlan({ id: 'sp-1', servicePlan: dto }));
     });

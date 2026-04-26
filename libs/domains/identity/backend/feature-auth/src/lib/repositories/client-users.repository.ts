@@ -1,7 +1,7 @@
+import { ClientUserEntity } from '@forepath/identity/backend';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ClientUserEntity } from '@forepath/identity/backend';
 
 /**
  * Repository for client_users database operations.
@@ -22,9 +22,11 @@ export class ClientUsersRepository {
    */
   async findByIdOrThrow(id: string): Promise<ClientUserEntity> {
     const clientUser = await this.repository.findOne({ where: { id } });
+
     if (!clientUser) {
       throw new NotFoundException(`Client-user relationship with ID ${id} not found`);
     }
+
     return clientUser;
   }
 
@@ -89,6 +91,7 @@ export class ClientUsersRepository {
    */
   async create(dto: Partial<ClientUserEntity>): Promise<ClientUserEntity> {
     const clientUser = this.repository.create(dto);
+
     return await this.repository.save(clientUser);
   }
 
@@ -101,7 +104,9 @@ export class ClientUsersRepository {
    */
   async update(id: string, dto: Partial<ClientUserEntity>): Promise<ClientUserEntity> {
     const clientUser = await this.findByIdOrThrow(id);
+
     Object.assign(clientUser, dto);
+
     return await this.repository.save(clientUser);
   }
 
@@ -112,6 +117,7 @@ export class ClientUsersRepository {
    */
   async delete(id: string): Promise<void> {
     const clientUser = await this.findByIdOrThrow(id);
+
     await this.repository.remove(clientUser);
   }
 
@@ -123,6 +129,7 @@ export class ClientUsersRepository {
    */
   async deleteByUserAndClient(userId: string, clientId: string): Promise<boolean> {
     const result = await this.repository.delete({ userId, clientId });
+
     return (result.affected ?? 0) > 0;
   }
 }

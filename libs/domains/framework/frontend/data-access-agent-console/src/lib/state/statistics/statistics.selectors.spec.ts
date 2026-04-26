@@ -7,13 +7,7 @@ import {
   selectClientSummary,
   selectEntityEvents,
   selectFilterDrops,
-  selectLoadingChatIo,
-  selectLoadingClientChatIo,
-  selectLoadingClientEntityEvents,
-  selectLoadingClientFilterDrops,
   selectLoadingClientSummary,
-  selectLoadingEntityEvents,
-  selectLoadingFilterDrops,
   selectLoadingSummary,
   selectStatisticsError,
   selectStatisticsState,
@@ -37,28 +31,24 @@ describe('Statistics Selectors', () => {
     filterFlagCount: 0,
     filterFlagsBreakdown: [],
   };
-
   const mockChatIoList: StatisticsChatIoListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockFilterDropList: StatisticsFilterDropListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const mockEntityEventList: StatisticsEntityEventListDto = {
     data: [],
     total: 0,
     limit: 10,
     offset: 0,
   };
-
   const createState = (overrides?: Partial<StatisticsState>): StatisticsState => ({
     ...initialStatisticsState,
     ...overrides,

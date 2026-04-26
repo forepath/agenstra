@@ -1,5 +1,7 @@
-import { formatFiles, generateFiles, Tree, updateJson } from '@nx/devkit';
 import * as path from 'path';
+
+import { formatFiles, generateFiles, Tree, updateJson } from '@nx/devkit';
+
 import { DomainGeneratorSchema } from './schema';
 
 export async function domainGenerator(tree: Tree, options: DomainGeneratorSchema) {

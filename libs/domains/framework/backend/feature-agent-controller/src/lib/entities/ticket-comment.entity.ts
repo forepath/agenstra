@@ -1,5 +1,6 @@
 import { UserEntity } from '@forepath/identity/backend';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { TicketEntity } from './ticket.entity';
 
 @Entity('ticket_comments')

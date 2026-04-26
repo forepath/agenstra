@@ -1,45 +1,32 @@
 import {
   cancelRun,
-  cancelRunFailure,
   cancelRunSuccess,
   createDeploymentConfiguration,
-  createDeploymentConfigurationFailure,
   createDeploymentConfigurationSuccess,
   deleteDeploymentConfiguration,
-  deleteDeploymentConfigurationFailure,
   deleteDeploymentConfigurationSuccess,
   loadBranches,
-  loadBranchesFailure,
   loadBranchesSuccess,
   loadDeploymentConfiguration,
   loadDeploymentConfigurationFailure,
   loadDeploymentConfigurationSuccess,
   loadJobLogs,
-  loadJobLogsFailure,
   loadJobLogsSuccess,
   loadRepositories,
-  loadRepositoriesFailure,
   loadRepositoriesSuccess,
   loadRunJobs,
-  loadRunJobsFailure,
   loadRunJobsSuccess,
   loadRunLogs,
-  loadRunLogsFailure,
   loadRunLogsSuccess,
   loadRunStatus,
-  loadRunStatusFailure,
   loadRunStatusSuccess,
   loadRuns,
-  loadRunsFailure,
   loadRunsSuccess,
   loadWorkflows,
-  loadWorkflowsFailure,
   loadWorkflowsSuccess,
   triggerWorkflow,
-  triggerWorkflowFailure,
   triggerWorkflowSuccess,
   updateDeploymentConfiguration,
-  updateDeploymentConfigurationFailure,
   updateDeploymentConfigurationSuccess,
 } from './deployments.actions';
 import { deploymentsReducer, initialDeploymentsState, type DeploymentsState } from './deployments.reducer';
@@ -56,7 +43,6 @@ describe('DeploymentsReducer', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockRepository: Repository = {
     id: 'repo-1',
     name: 'test-repo',
@@ -65,13 +51,11 @@ describe('DeploymentsReducer', () => {
     url: 'https://github.com/owner/test-repo',
     private: false,
   };
-
   const mockBranch: Branch = {
     name: 'main',
     sha: 'abc123',
     default: true,
   };
-
   const mockWorkflow: Workflow = {
     id: 'workflow-1',
     name: 'CI Workflow',
@@ -79,7 +63,6 @@ describe('DeploymentsReducer', () => {
     state: 'active',
     canTrigger: true,
   };
-
   const mockRun: DeploymentRun = {
     id: 'run-1',
     configurationId: 'config-1',
@@ -97,7 +80,6 @@ describe('DeploymentsReducer', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockJob: Job = {
     id: 'job-1',
     name: 'Build',
@@ -122,7 +104,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         error: 'Previous error',
       };
-
       const newState = deploymentsReducer(
         state,
         loadDeploymentConfiguration({ clientId: 'client-1', agentId: 'agent-1' }),
@@ -139,7 +120,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingConfiguration: true,
       };
-
       const newState = deploymentsReducer(
         state,
         loadDeploymentConfigurationSuccess({ configuration: mockConfiguration }),
@@ -155,7 +135,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingConfiguration: true,
       };
-
       const newState = deploymentsReducer(state, loadDeploymentConfigurationSuccess({ configuration: null }));
 
       expect(newState.configuration).toBeNull();
@@ -169,7 +148,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingConfiguration: true,
       };
-
       const newState = deploymentsReducer(
         state,
         loadDeploymentConfigurationFailure({ error: 'Failed to load configuration' }),
@@ -201,7 +179,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         creatingConfiguration: true,
       };
-
       const newState = deploymentsReducer(
         state,
         createDeploymentConfigurationSuccess({ configuration: mockConfiguration }),
@@ -235,7 +212,6 @@ describe('DeploymentsReducer', () => {
         configuration: mockConfiguration,
         updatingConfiguration: true,
       };
-
       const newState = deploymentsReducer(
         state,
         updateDeploymentConfigurationSuccess({ configuration: updatedConfig }),
@@ -264,7 +240,6 @@ describe('DeploymentsReducer', () => {
         configuration: mockConfiguration,
         deletingConfiguration: true,
       };
-
       const newState = deploymentsReducer(state, deleteDeploymentConfigurationSuccess());
 
       expect(newState.configuration).toBeNull();
@@ -289,7 +264,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingRepositories: true,
       };
-
       const newState = deploymentsReducer(state, loadRepositoriesSuccess({ repositories: [mockRepository] }));
 
       expect(newState.repositories).toEqual([mockRepository]);
@@ -314,7 +288,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingBranches: true,
       };
-
       const newState = deploymentsReducer(state, loadBranchesSuccess({ branches: [mockBranch] }));
 
       expect(newState.branches).toEqual([mockBranch]);
@@ -339,7 +312,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingWorkflows: true,
       };
-
       const newState = deploymentsReducer(state, loadWorkflowsSuccess({ workflows: [mockWorkflow] }));
 
       expect(newState.workflows).toEqual([mockWorkflow]);
@@ -364,7 +336,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingRuns: true,
       };
-
       const newState = deploymentsReducer(state, loadRunsSuccess({ runs: [mockRun] }));
 
       expect(newState.runs).toEqual([mockRun]);
@@ -394,7 +365,6 @@ describe('DeploymentsReducer', () => {
         triggeringWorkflow: true,
         runs: [],
       };
-
       const newState = deploymentsReducer(state, triggerWorkflowSuccess({ run: mockRun }));
 
       expect(newState.runs).toEqual([mockRun]);
@@ -421,7 +391,6 @@ describe('DeploymentsReducer', () => {
         runs: [mockRun],
         loadingRunStatus: true,
       };
-
       const newState = deploymentsReducer(state, loadRunStatusSuccess({ run: updatedRun }));
 
       expect(newState.runs).toEqual([updatedRun]);
@@ -446,7 +415,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingRunLogs: true,
       };
-
       const newState = deploymentsReducer(state, loadRunLogsSuccess({ logs: 'Log content' }));
 
       expect(newState.runLogs).toBe('Log content');
@@ -471,7 +439,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         cancelingRun: true,
       };
-
       const newState = deploymentsReducer(state, cancelRunSuccess());
 
       expect(newState.cancelingRun).toBe(false);
@@ -495,7 +462,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingRunJobs: true,
       };
-
       const newState = deploymentsReducer(state, loadRunJobsSuccess({ jobs: [mockJob] }));
 
       expect(newState.jobs).toEqual([mockJob]);
@@ -520,7 +486,6 @@ describe('DeploymentsReducer', () => {
         ...initialDeploymentsState,
         loadingJobLogs: true,
       };
-
       const newState = deploymentsReducer(state, loadJobLogsSuccess({ logs: 'Job log content' }));
 
       expect(newState.jobLogs).toBe('Job log content');

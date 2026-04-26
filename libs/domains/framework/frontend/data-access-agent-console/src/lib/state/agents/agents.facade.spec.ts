@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   clearSelectedClientAgent,
   createClientAgent,
@@ -26,9 +27,7 @@ import type {
 describe('AgentsFacade', () => {
   let facade: AgentsFacade;
   let store: jest.Mocked<Store>;
-
   const clientId = 'client-1';
-
   const mockAgent: AgentResponseDto = {
     id: 'agent-1',
     name: 'Test Agent',
@@ -38,7 +37,6 @@ describe('AgentsFacade', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockAgent2: AgentResponseDto = {
     id: 'agent-2',
     name: 'Test Agent 2',
@@ -70,6 +68,7 @@ describe('AgentsFacade', () => {
   describe('State Observables', () => {
     it('should return client agents observable', (done) => {
       const agents = [mockAgent, mockAgent2];
+
       store.select.mockReturnValue(of(agents));
 
       facade.getClientAgents$(clientId).subscribe((result) => {
@@ -157,6 +156,7 @@ describe('AgentsFacade', () => {
   describe('Error Observable', () => {
     it('should return client agents error observable', (done) => {
       const error = 'Test error';
+
       store.select.mockReturnValue(of(error));
 
       facade.getClientAgentsError$(clientId).subscribe((result) => {
@@ -178,6 +178,7 @@ describe('AgentsFacade', () => {
   describe('Derived State Observables', () => {
     it('should return client agents count observable', (done) => {
       const count = 5;
+
       store.select.mockReturnValue(of(count));
 
       facade.getClientAgentsCount$(clientId).subscribe((result) => {
@@ -199,6 +200,7 @@ describe('AgentsFacade', () => {
   describe('Agent Lookup', () => {
     it('should return client agent by ID observable', (done) => {
       const agentId = 'agent-1';
+
       store.select.mockReturnValue(of(mockAgent));
 
       facade.getClientAgentById$(clientId, agentId).subscribe((result) => {
@@ -209,6 +211,7 @@ describe('AgentsFacade', () => {
 
     it('should return null when agent not found', (done) => {
       const agentId = 'non-existent';
+
       store.select.mockReturnValue(of(null));
 
       facade.getClientAgentById$(clientId, agentId).subscribe((result) => {
@@ -253,6 +256,7 @@ describe('AgentsFacade', () => {
   describe('Action Methods', () => {
     it('should dispatch loadClientAgents action', () => {
       const params: ListClientAgentsParams = { limit: 10, offset: 0 };
+
       facade.loadClientAgents(clientId, params);
 
       expect(store.dispatch).toHaveBeenCalledWith(loadClientAgents({ clientId, params }));
@@ -266,6 +270,7 @@ describe('AgentsFacade', () => {
 
     it('should dispatch loadClientAgent action', () => {
       const agentId = 'agent-1';
+
       facade.loadClientAgent(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(loadClientAgent({ clientId, agentId }));
@@ -273,6 +278,7 @@ describe('AgentsFacade', () => {
 
     it('should dispatch loadClientAgentModels action', () => {
       const agentId = 'agent-1';
+
       facade.loadClientAgentModels(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(loadClientAgentModels({ clientId, agentId }));
@@ -283,6 +289,7 @@ describe('AgentsFacade', () => {
         name: 'New Agent',
         description: 'New Agent Description',
       };
+
       facade.createClientAgent(clientId, createDto);
 
       expect(store.dispatch).toHaveBeenCalledWith(createClientAgent({ clientId, agent: createDto }));
@@ -293,6 +300,7 @@ describe('AgentsFacade', () => {
       const updateDto: UpdateAgentDto = {
         name: 'Updated Agent',
       };
+
       facade.updateClientAgent(clientId, agentId, updateDto);
 
       expect(store.dispatch).toHaveBeenCalledWith(updateClientAgent({ clientId, agentId, agent: updateDto }));
@@ -300,6 +308,7 @@ describe('AgentsFacade', () => {
 
     it('should dispatch deleteClientAgent action', () => {
       const agentId = 'agent-1';
+
       facade.deleteClientAgent(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(deleteClientAgent({ clientId, agentId }));
@@ -307,6 +316,7 @@ describe('AgentsFacade', () => {
 
     it('should dispatch startClientAgent action', () => {
       const agentId = 'agent-1';
+
       facade.startClientAgent(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(startClientAgent({ clientId, agentId }));
@@ -314,6 +324,7 @@ describe('AgentsFacade', () => {
 
     it('should dispatch stopClientAgent action', () => {
       const agentId = 'agent-1';
+
       facade.stopClientAgent(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(stopClientAgent({ clientId, agentId }));
@@ -321,6 +332,7 @@ describe('AgentsFacade', () => {
 
     it('should dispatch restartClientAgent action', () => {
       const agentId = 'agent-1';
+
       facade.restartClientAgent(clientId, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(restartClientAgent({ clientId, agentId }));
@@ -361,6 +373,7 @@ describe('AgentsFacade', () => {
     it('should return client agent commands observable', (done) => {
       const commands = ['/command1', '/command2'];
       const agentType = 'cursor';
+
       store.select.mockReturnValue(of(commands));
 
       facade.getClientAgentCommands$(clientId, agentId, agentType).subscribe((result) => {
@@ -372,6 +385,7 @@ describe('AgentsFacade', () => {
 
     it('should return empty array when no commands', (done) => {
       const agentType = 'cursor';
+
       store.select.mockReturnValue(of([]));
 
       facade.getClientAgentCommands$(clientId, agentId, agentType).subscribe((result) => {

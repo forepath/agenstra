@@ -3,11 +3,13 @@ import { StatisticsAgentEntity } from './statistics-agent.entity';
 describe('StatisticsAgentEntity', () => {
   it('should create an instance', () => {
     const entity = new StatisticsAgentEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const entity = new StatisticsAgentEntity();
+
     entity.id = 'stats-agent-uuid';
     entity.originalAgentId = 'agent-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
@@ -27,6 +29,7 @@ describe('StatisticsAgentEntity', () => {
 
   it('should allow optional name and description', () => {
     const entity = new StatisticsAgentEntity();
+
     entity.id = 'stats-agent-uuid';
     entity.originalAgentId = 'agent-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
@@ -39,6 +42,7 @@ describe('StatisticsAgentEntity', () => {
 
   it('should use default agentType and containerType when not set', () => {
     const entity = new StatisticsAgentEntity();
+
     entity.agentType = 'cursor';
     entity.containerType = 'generic';
 

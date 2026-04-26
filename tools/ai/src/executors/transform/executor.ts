@@ -1,5 +1,7 @@
-import type { ExecutorContext } from '@nx/devkit';
 import * as path from 'path';
+
+import type { ExecutorContext } from '@nx/devkit';
+
 import { transform as runTransform } from '../../transform';
 import type { ToolName } from '../../types';
 
@@ -31,6 +33,7 @@ export default async function transformExecutor(
 
   if (!result.success && result.errors.length > 0) {
     console.error('Transform failed:', result.errors.join('; '));
+
     return { success: false };
   }
 
@@ -39,5 +42,6 @@ export default async function transformExecutor(
       `[agenstra] ${r.tool}: ${r.fileCount} file(s) → ${r.path}${r.merged?.length ? ` (merged: ${r.merged.join(', ')})` : ''}`,
     );
   });
+
   return { success: result.success };
 }

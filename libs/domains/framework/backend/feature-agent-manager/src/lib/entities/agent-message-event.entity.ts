@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { AgentEntity } from './agent.entity';
 
 @Entity('agent_message_events')

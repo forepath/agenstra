@@ -10,9 +10,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+
+import { AgentEventEnvelope, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentResponseObject } from '../providers/agent-provider.interface';
-import { AgentEventEnvelope, AgentResponseMode } from '../providers/agent-events.types';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import {
   AppliedFilterInfo,
@@ -25,11 +26,11 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
-import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
 import {
   buildPromptEnhancementMessage,
   PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX,
 } from '../utils/chat-enhancement-prompt.utils';
+import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
 import {
   buildTicketBodyFromTitleMessage,
   PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX,
@@ -183,7 +184,6 @@ const createSuccessResponse = <T>(data: T): SuccessResponse<T> => ({
   data,
   timestamp: new Date().toISOString(),
 });
-
 const createErrorResponse = (message: string, code?: string, details?: string): ErrorResponse => ({
   success: false,
   error: {
@@ -265,6 +265,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       this.logger.log(`Client connected: ${socket.id}`);
     }
+
     // Store socket reference for reliable broadcasting
     this.socketById.set(socket.id, socket);
   }
@@ -277,21 +278,26 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(socket: Socket) {
     this.logger.log(`Client disconnected: ${socket.id}`);
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     this.authenticatedClients.delete(socket.id);
     this.socketById.delete(socket.id);
     // Clean up all terminal sessions for this socket
     const sessionIds = this.terminalSessionsBySocket.get(socket.id);
+
     if (sessionIds) {
       for (const sessionId of sessionIds) {
         try {
           this.dockerService.closeTerminalSession(sessionId);
         } catch (error) {
           const err = error as { message?: string };
+
           this.logger.warn(`Failed to close terminal session ${sessionId} on disconnect: ${err.message}`);
         }
       }
+
       this.terminalSessionsBySocket.delete(socket.id);
     }
+
     // Clean up stats interval if this was the last socket for this agent
     if (agentUuid) {
       this.cleanupStatsIntervalIfNeeded(agentUuid);
@@ -307,12 +313,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private async findAgentIdByIdentifier(identifier: string): Promise<string | null> {
     // Try UUID lookup first
     const agentById = await this.agentsRepository.findById(identifier);
+
     if (agentById) {
       return agentById.id;
     }
 
     // Fallback to name lookup
     const agentByName = await this.agentsRepository.findByName(identifier);
+
     if (agentByName) {
       return agentByName.id;
     }
@@ -330,6 +338,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private broadcastToAgent(agentUuid: string, event: string, data: unknown): void {
     // Find all socket IDs authenticated to this agent
     const socketIds: string[] = [];
+
     for (const [socketId, authenticatedAgentUuid] of this.authenticatedClients.entries()) {
       if (authenticatedAgentUuid === agentUuid) {
         socketIds.push(socketId);
@@ -338,8 +347,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Emit to each authenticated socket using stored socket references
     let successCount = 0;
+
     for (const socketId of socketIds) {
       const socket = this.socketById.get(socketId);
+
       if (socket && socket.connected) {
         try {
           socket.emit(event, data);
@@ -379,8 +390,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     if (ephemeral) {
       requestSocket.emit(event, data);
+
       return;
     }
+
     this.broadcastToAgent(agentUuid, event, data);
   }
 
@@ -392,8 +405,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     if (ephemeral) {
       requestSocket.emit('chatEvent', createSuccessResponse<AgentEventEnvelope>(envelope));
+
       return;
     }
+
     this.broadcastChatEvent(agentUuid, envelope);
   }
 
@@ -428,12 +443,15 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (streamedUnified.length > 0 && (hasStructuredStreamParts || !finalText)) {
       const streamEmittedResult = streamedUnified.some((p) => String(p.type) === 'result');
       const parts = finalizeStreamingTranscriptParts(streamedUnified);
+
       // Keep prior rule: never duplicate the final NDJSON `result` with a synthetic `aggregatedText` blob.
       // After materializing deltas, skip synthetic append when any `result` part exists (from stream or flushes).
       if (finalText && !streamEmittedResult && !parts.some((p) => String(p.type) === 'result')) {
         parts.push({ type: 'result', subtype: 'success', result: finalText });
       }
+
       const hasCanonicalAnswer = parts.some((p) => String(p.type) === 'result');
+
       if (hasCanonicalAnswer) {
         return {
           type: 'agenstra_turn',
@@ -441,11 +459,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           parts: parts.filter((p) => String(p.type) !== 'delta'),
         };
       }
+
       return { type: 'agenstra_turn', subtype: 'success', parts };
     }
+
     if (finalText) {
       return { type: 'result', subtype: 'success', result: finalText };
     }
+
     return null;
   }
 
@@ -458,6 +479,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       agentId: agentUuid,
       actor: 'agent',
     });
+
     this.broadcastToAgent(
       agentUuid,
       'messageFilterResult',
@@ -469,6 +491,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (outgoingFilterResult.status !== 'dropped') {
       let responseToUse: AgentResponseObject | string = finalResponse;
+
       if (outgoingFilterResult.modifiedMessage !== undefined) {
         try {
           responseToUse = JSON.parse(outgoingFilterResult.modifiedMessage);
@@ -485,6 +508,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         );
       } catch (persistError) {
         const err = persistError as { message?: string };
+
         this.logger.warn(`Failed to persist agent message: ${err.message}`);
       }
 
@@ -505,17 +529,22 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const o = response as Record<string, unknown>;
     const pick = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
     let text = pick(o['text']) || pick(o['thinking']) || pick(o['phase']) || pick(o['summary']) || pick(o['message']);
+
     if (!text) {
       const msg = o['message'];
+
       if (msg && typeof msg === 'object') {
         const content = (msg as { content?: unknown }).content;
+
         if (Array.isArray(content)) {
           text = content
             .map((part) => {
               if (!part || typeof part !== 'object') {
                 return '';
               }
+
               const p = part as { type?: unknown; text?: unknown };
+
               return p.type === 'text' && typeof p.text === 'string' ? p.text : '';
             })
             .join('')
@@ -523,10 +552,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       }
     }
+
     if (!text) {
       return undefined;
     }
+
     const collapsed = text.replace(/\s+/g, ' ').trim();
+
     return collapsed.length <= 120 ? collapsed : `${collapsed.slice(0, 119)}…`;
   }
 
@@ -564,6 +596,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (response.type === 'thinking') {
       const phase = this.extractThinkingPhaseForChatEvent(response);
+
       return [
         {
           ...base,
@@ -594,6 +627,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (response.type === 'tool_result' && typeof response.toolCallId === 'string') {
       const name = typeof response.name === 'string' ? response.name : 'tool';
+
       return [
         {
           ...base,
@@ -664,17 +698,21 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       // Find agent by UUID or name
       const agentUuid = await this.findAgentIdByIdentifier(agentId);
+
       if (!agentUuid) {
         socket.emit('loginError', createErrorResponse('Invalid credentials', 'INVALID_CREDENTIALS'));
         this.logger.warn(`Failed login attempt: agent not found (${agentId})`);
+
         return;
       }
 
       // Verify credentials
       const isValid = await this.agentsService.verifyCredentials(agentUuid, password);
+
       if (!isValid) {
         socket.emit('loginError', createErrorResponse('Invalid credentials', 'INVALID_CREDENTIALS'));
         this.logger.warn(`Failed login attempt: invalid password for agent ${agentUuid}`);
+
         return;
       }
 
@@ -687,6 +725,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Get agent details for welcome message
       const agent = await this.agentsService.findOne(agentUuid);
+
       socket.emit(
         'loginSuccess',
         createSuccessResponse<LoginSuccessData>({
@@ -715,6 +754,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       socket.emit('loginError', createErrorResponse('Invalid credentials', 'LOGIN_ERROR'));
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Login error for agent ${agentId}: ${err.message}`, err.stack);
     }
   }
@@ -734,13 +774,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // If totalCount <= 20, offset is 0 (get all messages)
       // Otherwise, offset = totalCount - 20 (skip older messages)
       const offset = Math.max(0, totalCount - limit);
-
       // Fetch chat history (ordered chronologically by createdAt ASC)
       // Only restore the most recent 20 messages
       const chatHistory = await this.agentMessagesService.getChatHistory(agentUuid, limit, offset);
 
       if (chatHistory.length === 0) {
         this.logger.debug(`No chat history found for agent ${agentUuid}`);
+
         return;
       }
 
@@ -764,6 +804,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             action: 'flag', // Since it was persisted, it must have been flagged, not dropped
             timestamp,
           };
+
           socket.emit('messageFilterResult', createSuccessResponse<MessageFilterResultData>(filterResult));
         }
 
@@ -783,23 +824,27 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           // 1. A JSON string (from successful parse) - will parse successfully
           // 2. A cleaned string (toParse from failed parse) - might parse now or remain as string
           let toParse = messageEntity.message;
-
           // Apply the same cleaning logic as in handleChat
           // Remove everything before the first { in the string
           const firstBrace = toParse.indexOf('{');
+
           if (firstBrace !== -1) {
             toParse = toParse.slice(firstBrace);
           }
+
           // Remove everything after the last } in the string
           const lastBrace = toParse.lastIndexOf('}');
+
           if (lastBrace !== -1) {
             toParse = toParse.slice(0, lastBrace + 1);
           }
 
           let response: AgentResponseObject | string;
+
           try {
             // Try to parse the cleaned string
             const parsed = JSON.parse(toParse);
+
             response = parsed;
           } catch {
             // If parsing fails, use the cleaned string (same as live communication)
@@ -820,6 +865,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.debug(`Successfully restored ${chatHistory.length} messages for agent ${agentUuid}`);
     } catch (error) {
       const err = error as { message?: string; stack?: string };
+
       this.logger.warn(`Failed to restore chat history for agent ${agentUuid}: ${err.message}`, err.stack);
       // Don't fail login if history restoration fails
     }
@@ -834,12 +880,15 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('chat')
   async handleChat(@MessageBody() data: ChatPayload, @ConnectedSocket() socket: Socket) {
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     if (!agentUuid) {
       socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
       return;
     }
 
     const message = data.message?.trim();
+
     if (!message) {
       return;
     }
@@ -850,10 +899,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const wantsStream = data.responseMode === 'stream';
     const responseMode: AgentResponseMode = wantsStream ? 'stream' : data.responseMode === 'sync' ? 'sync' : 'single';
     let sequence = 0;
-
     // Create timestamp immediately for consistent message ordering
     const chatTimestamp = new Date().toISOString();
-
     // Apply incoming filters before processing (single hook point for incoming messages)
     const incomingFilterResult = await this.applyFilters(message, FilterDirection.INCOMING, {
       agentId: agentUuid,
@@ -887,6 +934,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           await this.agentMessagesService.createUserMessage(agentUuid, fakeUserMessage, false);
         } catch (persistError) {
           const err = persistError as { message?: string };
+
           this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
         }
       }
@@ -942,24 +990,29 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       // Get agent details for display
       const agent = await this.agentsService.findOne(agentUuid);
+
       this.logger.log(`Agent ${agent.name} (${agentUuid}) says: ${message}`);
 
       // Check if this is the first message for this agent
       // Send initialization message if agent has no chat history and hasn't received first message
       if (!this.agentsWithFirstMessageSent.has(agentUuid)) {
         const chatHistory = await this.agentMessagesService.getChatHistory(agentUuid, 1, 0);
+
         if (chatHistory.length === 0) {
           // This is the first message ever - send dummy initialization message first
           const entity = await this.agentsRepository.findById(agentUuid);
           const containerId = entity?.containerId;
+
           if (containerId) {
             try {
               // Get the appropriate provider based on agent type
               const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+
               await provider.sendInitialization(agent.id, containerId, { model: data.model });
               this.logger.debug(`Sent initialization message to agent ${agentUuid}`);
             } catch (error) {
               const err = error as { message?: string; stack?: string };
+
               this.logger.warn(
                 `Failed to send initialization message to agent ${agentUuid}: ${err.message}`,
                 err.stack,
@@ -967,6 +1020,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               // Continue with normal flow even if initialization fails
             }
           }
+
           // Mark agent as having received first message
           this.agentsWithFirstMessageSent.add(agentUuid);
         } else {
@@ -986,6 +1040,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           );
         } catch (persistError) {
           const err = persistError as { message?: string };
+
           this.logger.warn(`Failed to persist user message: ${err.message}`);
           // Continue with message broadcasting even if persistence fails
         }
@@ -995,6 +1050,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Use modified message if filter provided one
       const entity = await this.agentsRepository.findById(agentUuid);
       const containerId = entity?.containerId;
+
       if (containerId) {
         // Get the appropriate provider based on agent type
         try {
@@ -1004,7 +1060,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             responseMode !== 'sync' &&
             provider.getCapabilities().supportsStreaming &&
             provider.sendMessageStream;
-
           const agentResponseTimestamp = new Date().toISOString();
 
           if (supportsStreaming) {
@@ -1012,16 +1067,18 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             let aggregatedText = '';
             const streamedUnified: AgentResponseObject[] = [];
             let streamingTurnPersisted = false;
-
             const consumeStreamingRawLine = async (rawLine: string): Promise<void> => {
               const parseables = provider.toParseableStrings(rawLine);
+
               for (const toParse of parseables) {
                 try {
                   const parsed = provider.toUnifiedResponse(toParse);
+
                   if (!parsed) continue;
 
                   streamedUnified.push(parsed);
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, parsed);
+
                   for (const ev of events) {
                     if (ev.kind === 'assistantDelta') {
                       aggregatedText += ev.payload.delta;
@@ -1029,15 +1086,18 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       // Full replacement: deltas already built the prose; final `result` NDJSON repeats it.
                       // Multiple `result` lines must not be concatenated or persisted text becomes 2–3× duplicate.
                       const t = ev.payload.text;
+
                       if (typeof t === 'string' && t.length > 0) {
                         aggregatedText = t;
                       }
                     }
+
                     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
 
                   if (!ephemeral && !streamingTurnPersisted && this.isStreamingTerminalUnifiedResponse(parsed)) {
                     const built = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+
                     if (built) {
                       await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, built);
                       streamingTurnPersisted = true;
@@ -1045,17 +1105,21 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   }
                 } catch (parseError) {
                   const parseErr = parseError as { message?: string };
+
                   this.logger.warn(`Failed to parse streaming agent line: ${parseErr.message}`);
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, toParse);
+
                   for (const ev of events) {
                     if (ev.kind === 'assistantDelta') {
                       aggregatedText += ev.payload.delta;
                     } else if (ev.kind === 'assistantMessage') {
                       const t = ev.payload.text;
+
                       if (typeof t === 'string' && t.length > 0) {
                         aggregatedText = t;
                       }
                     }
+
                     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
                 }
@@ -1069,6 +1133,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             })) {
               buffered += chunk;
               const parts = buffered.split('\n');
+
               buffered = parts.pop() ?? '';
 
               for (const rawLine of parts) {
@@ -1085,10 +1150,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             if (!ephemeral && !streamingTurnPersisted) {
               const finalResponse = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+
               if (finalResponse) {
                 await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, finalResponse);
               } else {
                 const finalTextLen = aggregatedText.trim().length;
+
                 this.logger.warn(
                   `Streaming completed with no persistable agent response for agent ${agentUuid} ` +
                     `(correlationId=${correlationId}, streamedUnified=${streamedUnified.length}, finalTextLen=${finalTextLen})`,
@@ -1108,6 +1175,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               for (const toParse of lines) {
                 try {
                   const parsedResponse = provider.toUnifiedResponse(toParse);
+
                   if (!parsedResponse) {
                     continue;
                   }
@@ -1146,6 +1214,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
                       } catch (persistError) {
                         const err = persistError as { message?: string };
+
                         this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
                       }
                     }
@@ -1168,6 +1237,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       sequence++,
                       fakeAgentResponse,
                     );
+
                     for (const ev of events) {
                       this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                     }
@@ -1176,6 +1246,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   }
 
                   let responseToUse: AgentResponseObject | string = parsedResponse;
+
                   if (outgoingFilterResult.modifiedMessage !== undefined) {
                     try {
                       responseToUse = JSON.parse(outgoingFilterResult.modifiedMessage);
@@ -1193,6 +1264,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       );
                     } catch (persistError) {
                       const err = persistError as { message?: string };
+
                       this.logger.warn(`Failed to persist agent message: ${err.message}`);
                     }
                   }
@@ -1210,11 +1282,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   );
 
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, responseToUse);
+
                   for (const ev of events) {
                     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
                 } catch (parseError) {
                   const parseErr = parseError as { message?: string };
+
                   this.logger.warn(`Failed to parse agent response as JSON: ${parseErr.message}`);
 
                   const outgoingFilterResult = await this.applyFilters(toParse, FilterDirection.OUTGOING, {
@@ -1246,9 +1320,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                         await this.agentMessagesService.createAgentMessage(agentUuid, fakeAgentResponse, false);
                       } catch (persistError) {
                         const err = persistError as { message?: string };
+
                         this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
                       }
                     }
+
                     this.emitChatPayloadToViewers(
                       agentUuid,
                       ephemeral,
@@ -1267,6 +1343,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       sequence++,
                       fakeAgentResponse,
                     );
+
                     for (const ev of events) {
                       this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                     }
@@ -1275,6 +1352,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   }
 
                   const stringResponseToUse = outgoingFilterResult.modifiedMessage ?? toParse;
+
                   if (!ephemeral) {
                     try {
                       await this.agentMessagesService.createAgentMessage(
@@ -1284,6 +1362,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       );
                     } catch (persistError) {
                       const err = persistError as { message?: string };
+
                       this.logger.warn(`Failed to persist agent message: ${err.message}`);
                     }
                   }
@@ -1306,6 +1385,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     sequence++,
                     stringResponseToUse,
                   );
+
                   for (const ev of events) {
                     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, ev);
                   }
@@ -1315,6 +1395,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           }
         } catch (error) {
           const err = error as { message?: string; stack?: string };
+
           this.logger.error(`Error getting agent response: ${err.message}`, err.stack);
           // Don't fail the chat message, just log the error
         }
@@ -1322,6 +1403,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       socket.emit('error', createErrorResponse('Error processing chat message', 'CHAT_ERROR'));
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Chat error for agent ${agentUuid}: ${err.message}`, err.stack);
     }
   }
@@ -1332,13 +1414,16 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('enhanceChat')
   async handleEnhanceChat(@MessageBody() data: EnhanceChatPayload, @ConnectedSocket() socket: Socket) {
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     if (!agentUuid) {
       socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
       return;
     }
 
     const correlationId = typeof data?.correlationId === 'string' ? data.correlationId.trim() : '';
     const message = data?.message?.trim();
+
     if (!correlationId || !message) {
       socket.emit(
         'chatEnhanceResult',
@@ -1348,6 +1433,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           error: { message: 'correlationId and message are required', code: 'INVALID_PAYLOAD' },
         }),
       );
+
       return;
     }
 
@@ -1368,16 +1454,17 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           },
         }),
       );
+
       return;
     }
 
     const messageToUse = incomingFilterResult.modifiedMessage ?? message;
     const composed = buildPromptEnhancementMessage(messageToUse);
-
     const timeoutMs = parseInt(process.env.CHAT_ENHANCE_TIMEOUT_MS || '120000', 10);
     const runWithTimeout = <T>(promise: Promise<T>): Promise<T> =>
       new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('Enhancement timed out')), timeoutMs);
+
         promise
           .then((value) => {
             clearTimeout(timer);
@@ -1393,6 +1480,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const agent = await this.agentsService.findOne(agentUuid);
       const entity = await this.agentsRepository.findById(agentUuid);
       const containerId = entity?.containerId;
+
       if (!containerId) {
         socket.emit(
           'chatEnhanceResult',
@@ -1402,11 +1490,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             error: { message: 'Agent container not available', code: 'NO_CONTAINER' },
           }),
         );
+
         return;
       }
 
       const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
-
       const rawResponse = await runWithTimeout(
         provider.sendMessage(agent.id, containerId, composed, {
           model: data.model,
@@ -1414,20 +1502,22 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           resumeSessionSuffix: PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX,
         }),
       );
-
       const lines = provider.toParseableStrings(rawResponse);
       let extractedText: string | undefined;
 
       for (const toParse of lines) {
         try {
           const parsed = provider.toUnifiedResponse(toParse);
+
           if (!parsed) {
             continue;
           }
+
           const outgoingFilter = await this.applyFilters(JSON.stringify(parsed), FilterDirection.OUTGOING, {
             agentId: agentUuid,
             actor: 'agent',
           });
+
           if (outgoingFilter.status === 'dropped') {
             socket.emit(
               'chatEnhanceResult',
@@ -1440,9 +1530,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 },
               }),
             );
+
             return;
           }
+
           let useObj: AgentResponseObject | string = parsed;
+
           if (outgoingFilter.modifiedMessage !== undefined) {
             try {
               useObj = JSON.parse(outgoingFilter.modifiedMessage) as AgentResponseObject;
@@ -1450,12 +1543,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               useObj = outgoingFilter.modifiedMessage;
             }
           }
+
           const text =
             typeof useObj === 'object' && useObj !== null && typeof useObj.result === 'string'
               ? useObj.result.trim()
               : typeof useObj === 'string'
                 ? useObj.trim()
                 : '';
+
           if (text) {
             extractedText = text;
             break;
@@ -1465,6 +1560,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             agentId: agentUuid,
             actor: 'agent',
           });
+
           if (outgoingFilter.status === 'dropped') {
             socket.emit(
               'chatEnhanceResult',
@@ -1477,9 +1573,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 },
               }),
             );
+
             return;
           }
+
           const str = (outgoingFilter.modifiedMessage ?? toParse).trim();
+
           if (str) {
             extractedText = str;
             break;
@@ -1496,6 +1595,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             error: { message: 'Could not parse enhancement result from agent', code: 'PARSE_ERROR' },
           }),
         );
+
         return;
       }
 
@@ -1509,6 +1609,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     } catch (error) {
       const err = error as { message?: string };
+
       socket.emit(
         'chatEnhanceResult',
         createSuccessResponse<ChatEnhanceFailureData>({
@@ -1529,13 +1630,16 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('generateTicketBody')
   async handleGenerateTicketBody(@MessageBody() data: GenerateTicketBodyPayload, @ConnectedSocket() socket: Socket) {
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     if (!agentUuid) {
       socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
       return;
     }
 
     const correlationId = typeof data?.correlationId === 'string' ? data.correlationId.trim() : '';
     const title = data?.title?.trim();
+
     if (!correlationId || !title) {
       socket.emit(
         'ticketBodyResult',
@@ -1545,6 +1649,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           error: { message: 'correlationId and title are required', code: 'INVALID_PAYLOAD' },
         }),
       );
+
       return;
     }
 
@@ -1565,6 +1670,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           },
         }),
       );
+
       return;
     }
 
@@ -1574,11 +1680,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         ? data.hierarchyContext.trim()
         : undefined;
     const composed = buildTicketBodyFromTitleMessage(titleToUse, hierarchyContext);
-
     const timeoutMs = parseInt(process.env.CHAT_ENHANCE_TIMEOUT_MS || '120000', 10);
     const runWithTimeout = <T>(promise: Promise<T>): Promise<T> =>
       new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('Ticket body generation timed out')), timeoutMs);
+
         promise
           .then((value) => {
             clearTimeout(timer);
@@ -1594,6 +1700,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const agent = await this.agentsService.findOne(agentUuid);
       const entity = await this.agentsRepository.findById(agentUuid);
       const containerId = entity?.containerId;
+
       if (!containerId) {
         socket.emit(
           'ticketBodyResult',
@@ -1603,11 +1710,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             error: { message: 'Agent container not available', code: 'NO_CONTAINER' },
           }),
         );
+
         return;
       }
 
       const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
-
       const rawResponse = await runWithTimeout(
         provider.sendMessage(agent.id, containerId, composed, {
           model: data.model,
@@ -1615,20 +1722,22 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           resumeSessionSuffix: PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX,
         }),
       );
-
       const lines = provider.toParseableStrings(rawResponse);
       let extractedText: string | undefined;
 
       for (const toParse of lines) {
         try {
           const parsed = provider.toUnifiedResponse(toParse);
+
           if (!parsed) {
             continue;
           }
+
           const outgoingFilter = await this.applyFilters(JSON.stringify(parsed), FilterDirection.OUTGOING, {
             agentId: agentUuid,
             actor: 'agent',
           });
+
           if (outgoingFilter.status === 'dropped') {
             socket.emit(
               'ticketBodyResult',
@@ -1641,9 +1750,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 },
               }),
             );
+
             return;
           }
+
           let useObj: AgentResponseObject | string = parsed;
+
           if (outgoingFilter.modifiedMessage !== undefined) {
             try {
               useObj = JSON.parse(outgoingFilter.modifiedMessage) as AgentResponseObject;
@@ -1651,12 +1763,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
               useObj = outgoingFilter.modifiedMessage;
             }
           }
+
           const text =
             typeof useObj === 'object' && useObj !== null && typeof useObj.result === 'string'
               ? useObj.result.trim()
               : typeof useObj === 'string'
                 ? useObj.trim()
                 : '';
+
           if (text) {
             extractedText = text;
             break;
@@ -1666,6 +1780,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             agentId: agentUuid,
             actor: 'agent',
           });
+
           if (outgoingFilter.status === 'dropped') {
             socket.emit(
               'ticketBodyResult',
@@ -1678,9 +1793,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 },
               }),
             );
+
             return;
           }
+
           const str = (outgoingFilter.modifiedMessage ?? toParse).trim();
+
           if (str) {
             extractedText = str;
             break;
@@ -1697,6 +1815,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             error: { message: 'Could not parse ticket body from agent', code: 'PARSE_ERROR' },
           }),
         );
+
         return;
       }
 
@@ -1710,6 +1829,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     } catch (error) {
       const err = error as { message?: string };
+
       socket.emit(
         'ticketBodyResult',
         createSuccessResponse<ChatEnhanceFailureData>({
@@ -1734,8 +1854,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('fileUpdate')
   async handleFileUpdate(@MessageBody() data: FileUpdatePayload, @ConnectedSocket() socket: Socket) {
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     if (!agentUuid) {
       socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
       return;
     }
 
@@ -1744,12 +1866,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Validate payload
     if (!filePath) {
       socket.emit('error', createErrorResponse('filePath is required', 'INVALID_PAYLOAD'));
+
       return;
     }
 
     try {
       // Get agent details for logging
       const agent = await this.agentsService.findOne(agentUuid);
+
       this.logger.log(`Agent ${agent.name} (${agentUuid}) updated file ${filePath} on socket ${socket.id}`);
 
       const updateTimestamp = new Date().toISOString();
@@ -1769,6 +1893,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       socket.emit('error', createErrorResponse('Error processing file update', 'FILE_UPDATE_ERROR'));
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`File update error for agent ${agentUuid}: ${err.message}`, err.stack);
     }
   }
@@ -1792,6 +1917,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       try {
         // Get agent details for logging
         const agent = await this.agentsService.findOne(agentUuid);
+
         this.logger.log(`Agent ${agent.name} (${agentUuid}) logged out from socket ${socket.id}`);
 
         socket.emit(
@@ -1804,6 +1930,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         );
       } catch (error) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(`Failed to get agent details during logout: ${err.message}`, err.stack);
         // Still emit success since session is already cleared
         socket.emit(
@@ -1839,8 +1966,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('createTerminal')
   async handleCreateTerminal(@MessageBody() data: CreateTerminalPayload, @ConnectedSocket() socket: Socket) {
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     if (!agentUuid) {
       socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
       return;
     }
 
@@ -1848,23 +1977,25 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Get agent entity to find container
       const entity = await this.agentsRepository.findById(agentUuid);
       const containerId = entity?.containerId;
+
       if (!containerId) {
         socket.emit('error', createErrorResponse('Agent container not found', 'TERMINAL_ERROR'));
+
         return;
       }
 
       // Generate session ID: socket.id + timestamp to ensure uniqueness
       const sessionId = data.sessionId || `${socket.id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-
       // Create terminal session
       const stream = await this.dockerService.createTerminalSession(containerId, sessionId, data.shell || 'sh');
-
       // Track session for this socket
       let sessions = this.terminalSessionsBySocket.get(socket.id);
+
       if (!sessions) {
         sessions = new Set<string>();
         this.terminalSessionsBySocket.set(socket.id, sessions);
       }
+
       sessions.add(sessionId);
 
       // Set up stream data handler to forward output to client
@@ -1887,10 +2018,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.logger.warn(`Failed to emit terminal closed for session ${sessionId}: ${emitError}`);
           }
         }
+
         // Clean up session tracking
         const socketSessions = this.terminalSessionsBySocket.get(socket.id);
+
         if (socketSessions) {
           socketSessions.delete(sessionId);
+
           if (socketSessions.size === 0) {
             this.terminalSessionsBySocket.delete(socket.id);
           }
@@ -1905,10 +2039,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.logger.warn(`Failed to emit terminal closed for session ${sessionId}: ${emitError}`);
           }
         }
+
         // Clean up session tracking
         const socketSessions = this.terminalSessionsBySocket.get(socket.id);
+
         if (socketSessions) {
           socketSessions.delete(sessionId);
+
           if (socketSessions.size === 0) {
             this.terminalSessionsBySocket.delete(socket.id);
           }
@@ -1921,6 +2058,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (error) {
       socket.emit('error', createErrorResponse('Error creating terminal session', 'TERMINAL_ERROR'));
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Terminal creation error for agent ${agentUuid}: ${err.message}`, err.stack);
     }
   }
@@ -1935,8 +2073,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('terminalInput')
   async handleTerminalInput(@MessageBody() data: TerminalInputPayload, @ConnectedSocket() socket: Socket) {
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     if (!agentUuid) {
       socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
       return;
     }
 
@@ -1944,13 +2084,16 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (!sessionId || !inputData) {
       socket.emit('error', createErrorResponse('sessionId and data are required', 'INVALID_PAYLOAD'));
+
       return;
     }
 
     // Verify session belongs to this socket
     const socketSessions = this.terminalSessionsBySocket.get(socket.id);
+
     if (!socketSessions || !socketSessions.has(sessionId)) {
       socket.emit('error', createErrorResponse('Terminal session not found or access denied', 'TERMINAL_ERROR'));
+
       return;
     }
 
@@ -1958,14 +2101,17 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.dockerService.sendTerminalInput(sessionId, inputData);
     } catch (error) {
       const err = error as { message?: string };
+
       if (err.message?.includes('not found')) {
         // Session was closed, clean up tracking
         if (socketSessions) {
           socketSessions.delete(sessionId);
+
           if (socketSessions.size === 0) {
             this.terminalSessionsBySocket.delete(socket.id);
           }
         }
+
         socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
       } else {
         socket.emit('error', createErrorResponse('Error sending terminal input', 'TERMINAL_ERROR'));
@@ -1984,8 +2130,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('closeTerminal')
   async handleCloseTerminal(@MessageBody() data: CloseTerminalPayload, @ConnectedSocket() socket: Socket) {
     const agentUuid = this.authenticatedClients.get(socket.id);
+
     if (!agentUuid) {
       socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
       return;
     }
 
@@ -1993,13 +2141,16 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (!sessionId) {
       socket.emit('error', createErrorResponse('sessionId is required', 'INVALID_PAYLOAD'));
+
       return;
     }
 
     // Verify session belongs to this socket
     const socketSessions = this.terminalSessionsBySocket.get(socket.id);
+
     if (!socketSessions || !socketSessions.has(sessionId)) {
       socket.emit('error', createErrorResponse('Terminal session not found or access denied', 'TERMINAL_ERROR'));
+
       return;
     }
 
@@ -2007,21 +2158,26 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.dockerService.closeTerminalSession(sessionId);
       // Clean up session tracking
       socketSessions.delete(sessionId);
+
       if (socketSessions.size === 0) {
         this.terminalSessionsBySocket.delete(socket.id);
       }
+
       socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
       this.logger.log(`Closed terminal session ${sessionId} for agent ${agentUuid} on socket ${socket.id}`);
     } catch (error) {
       const err = error as { message?: string };
+
       if (err.message?.includes('not found')) {
         // Session already closed, clean up tracking
         if (socketSessions) {
           socketSessions.delete(sessionId);
+
           if (socketSessions.size === 0) {
             this.terminalSessionsBySocket.delete(socket.id);
           }
         }
+
         socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
       } else {
         socket.emit('error', createErrorResponse('Error closing terminal session', 'TERMINAL_ERROR'));
@@ -2039,14 +2195,17 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Check if stats interval already exists for this agent
     if (this.statsIntervalsByAgent.has(agentUuid)) {
       this.logger.debug(`Stats broadcasting already active for agent ${agentUuid}`);
+
       return;
     }
 
     // Get agent entity to find container
     const entity = await this.agentsRepository.findById(agentUuid);
     const containerId = entity?.containerId;
+
     if (!containerId) {
       this.logger.debug(`No container found for agent ${agentUuid}, skipping stats broadcasting`);
+
       return;
     }
 
@@ -2057,9 +2216,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const interval = setInterval(async () => {
       // Check if agent still has authenticated clients
       const hasAuthenticatedClients = Array.from(this.authenticatedClients.values()).includes(agentUuid);
+
       if (!hasAuthenticatedClients) {
         // No more authenticated clients, clean up interval
         this.cleanupStatsInterval(agentUuid);
+
         return;
       }
 
@@ -2067,6 +2228,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         await this.broadcastContainerStats(agentUuid, containerId);
       } catch (error) {
         const err = error as { message?: string };
+
         this.logger.warn(`Failed to broadcast stats for agent ${agentUuid}: ${err.message}`);
         // Continue broadcasting even if one attempt fails
       }
@@ -2086,13 +2248,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const status = await this.dockerService.getContainerStatus(containerId);
       const statsTimestamp = new Date().toISOString();
-
       let stats: Awaited<ReturnType<DockerService['getContainerStats']>> | null = null;
+
       if (status.running) {
         try {
           stats = await this.dockerService.getContainerStats(containerId);
         } catch (statsError) {
           const err = statsError as { message?: string; stack?: string };
+
           this.logger.warn(`Failed to get container stats for agent ${agentUuid}: ${err.message}`, err.stack);
         }
       }
@@ -2108,6 +2271,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     } catch (error) {
       const err = error as { message?: string; stack?: string };
+
       this.logger.warn(`Failed to get container status for agent ${agentUuid}: ${err.message}`, err.stack);
     }
   }
@@ -2119,6 +2283,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private cleanupStatsIntervalIfNeeded(agentUuid: string): void {
     // Check if there are any authenticated clients for this agent
     const hasAuthenticatedClients = Array.from(this.authenticatedClients.values()).includes(agentUuid);
+
     if (!hasAuthenticatedClients) {
       this.cleanupStatsInterval(agentUuid);
     }
@@ -2130,6 +2295,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   private cleanupStatsInterval(agentUuid: string): void {
     const interval = this.statsIntervalsByAgent.get(agentUuid);
+
     if (interval) {
       clearInterval(interval);
       this.statsIntervalsByAgent.delete(agentUuid);
@@ -2168,6 +2334,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           matched: result.filtered,
           reason: result.filtered ? result.reason : undefined,
         };
+
         appliedFilters.push(filterInfo);
 
         if (result.filtered) {
@@ -2207,6 +2374,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       } catch (error) {
         const err = error as { message?: string; stack?: string };
+
         this.logger.warn(`Filter ${filter.getType()} failed: ${err.message}`, err.stack);
         // Record filter as applied but failed
         appliedFilters.push({

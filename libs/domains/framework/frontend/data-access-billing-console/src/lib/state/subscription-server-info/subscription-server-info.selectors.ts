@@ -1,7 +1,9 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
-import type { ServerActionType, SubscriptionServerInfoState } from './subscription-server-info.reducer';
 import { selectSubscriptionsEntities } from '../subscriptions/subscriptions.selectors';
+
+import type { ServerActionType, SubscriptionServerInfoState } from './subscription-server-info.reducer';
 
 export interface SubscriptionWithServerInfo {
   subscription: SubscriptionResponse;

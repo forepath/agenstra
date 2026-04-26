@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+
 import {
   StatisticsChatIoListDto,
   StatisticsChatIoDto,
@@ -19,18 +20,22 @@ const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 function validateIsoDate(value: string | undefined, paramName: string): string | undefined {
   if (!value) return undefined;
+
   if (!ISO_DATE_REGEX.test(value)) {
     throw new BadRequestException(`${paramName} must be a valid ISO 8601 date string`);
   }
+
   return value;
 }
 
 /** Normalize date-only "to" param to end-of-day so the full day is included. */
 function normalizeToEndOfDay(value: string | undefined): string | undefined {
   if (!value) return undefined;
+
   if (DATE_ONLY_REGEX.test(value)) {
     return `${value}T23:59:59.999Z`;
   }
+
   return value;
 }
 
@@ -45,9 +50,11 @@ const ALLOWED_INTERACTION_KINDS: ReadonlySet<string> = new Set([
 
 function parseStatisticsInteractionKind(value: string | undefined): StatisticsInteractionKind | undefined {
   if (!value) return undefined;
+
   if (ALLOWED_INTERACTION_KINDS.has(value)) {
     return value as StatisticsInteractionKind;
   }
+
   throw new BadRequestException(`interactionKind must be one of: ${[...ALLOWED_INTERACTION_KINDS].join(', ')}`);
 }
 
@@ -57,6 +64,7 @@ export class StatisticsQueryService {
 
   private async resolveStatisticsClientIds(originalClientIds: string[]): Promise<string[]> {
     if (originalClientIds.length === 0) return [];
+
     return await this.statisticsRepository.findStatisticsClientIdsByOriginalIds(originalClientIds);
   }
 
@@ -67,6 +75,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds([clientId]);
+
     if (ids.length === 0) {
       return {
         totalMessages: 0,
@@ -111,6 +120,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds(accessibleClientIds);
+
     if (ids.length === 0) {
       return {
         totalMessages: 0,
@@ -165,6 +175,7 @@ export class StatisticsQueryService {
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const interactionKind = parseStatisticsInteractionKind(params.interactionKind);
     const ids = await this.resolveStatisticsClientIds([clientId]);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -180,7 +191,6 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsChatIoDto[] = rows.map((r) => ({
       id: r.id,
       clientId: r.statisticsClient?.originalClientId ?? r.statisticsClientId,
@@ -220,6 +230,7 @@ export class StatisticsQueryService {
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const interactionKind = parseStatisticsInteractionKind(params.interactionKind);
     const ids = await this.resolveStatisticsClientIds(accessibleClientIds);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -235,7 +246,6 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsChatIoDto[] = rows.map((r) => ({
       id: r.id,
       clientId: r.statisticsClient?.originalClientId ?? r.statisticsClientId,
@@ -273,6 +283,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds([clientId]);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -287,7 +298,6 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsFilterDropDto[] = rows.map((r) => ({
       id: r.id,
       clientId: r.statisticsClient?.originalClientId ?? r.statisticsClientId,
@@ -327,6 +337,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds(accessibleClientIds);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -341,7 +352,6 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsFilterDropDto[] = rows.map((r) => ({
       id: r.id,
       clientId: r.statisticsClient?.originalClientId ?? r.statisticsClientId,
@@ -381,6 +391,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds([clientId]);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -395,7 +406,6 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsFilterFlagDto[] = rows.map((r) => ({
       id: r.id,
       clientId: r.statisticsClient?.originalClientId ?? r.statisticsClientId,
@@ -435,6 +445,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds(accessibleClientIds);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -449,7 +460,6 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsFilterFlagDto[] = rows.map((r) => ({
       id: r.id,
       clientId: r.statisticsClient?.originalClientId ?? r.statisticsClientId,
@@ -489,6 +499,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds([clientId]);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -503,9 +514,9 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsEntityEventDto[] = rows.map((r) => {
       const agent = r.statisticsAgents;
+
       return {
         id: r.id,
         entityType: r.entityType,
@@ -543,6 +554,7 @@ export class StatisticsQueryService {
     const from = validateIsoDate(params.from, 'from');
     const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
     const ids = await this.resolveStatisticsClientIds(accessibleClientIds);
+
     if (ids.length === 0) {
       return { data: [], total: 0, limit: params.limit ?? 10, offset: params.offset ?? 0 };
     }
@@ -557,9 +569,9 @@ export class StatisticsQueryService {
       limit: params.limit ?? 10,
       offset: params.offset ?? 0,
     });
-
     const data: StatisticsEntityEventDto[] = rows.map((r) => {
       const agent = r.statisticsAgents;
+
       return {
         id: r.id,
         entityType: r.entityType,

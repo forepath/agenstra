@@ -10,6 +10,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+
 import { CreateInvoiceDto } from '../dto/create-invoice.dto';
 import { InvoiceResponseDto } from '../dto/invoice-response.dto';
 import { InvoiceRefEntity } from '../entities/invoice-ref.entity';
@@ -46,14 +47,17 @@ export class InvoicesController {
   @Get('summary')
   async getSummary(@Req() req?: RequestWithUser): Promise<InvoicesSummaryResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     const [summary, billingDayOfMonth, unbilledTotal] = await Promise.all([
       this.invoiceRefsRepository.findOpenOverdueSummaryByUserId(userInfo.userId),
       this.usersBillingDayRepository.getEffectiveBillingDayForUser(userInfo.userId),
       this.invoiceCreationService.getUnbilledTotalForUser(userInfo.userId),
     ]);
+
     return {
       openOverdueCount: summary.count,
       openOverdueTotal: summary.totalBalance,
@@ -65,10 +69,13 @@ export class InvoicesController {
   @Get('open-overdue')
   async listOpenOverdue(@Req() req?: RequestWithUser): Promise<InvoiceResponseDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     const rows = await this.invoiceRefsRepository.findOpenOverdueByUserId(userInfo.userId);
+
     return rows.map((row) => this.mapToResponse(row, row.subscription?.number));
   }
 
@@ -78,11 +85,14 @@ export class InvoicesController {
     @Req() req?: RequestWithUser,
   ): Promise<InvoiceResponseDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     await this.invoiceNinjaService.syncCustomerProfile(userInfo.userId);
     const rows = await this.invoiceNinjaService.listInvoices(userInfo.userId, subscriptionId);
+
     return rows.map((row) => this.mapToResponse(row));
   }
 
@@ -95,6 +105,7 @@ export class InvoicesController {
     @Req() req?: RequestWithUser,
   ) {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
@@ -111,23 +122,28 @@ export class InvoicesController {
     @Req() req?: RequestWithUser,
   ): Promise<RefreshInvoiceLinkResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');
     }
+
     await this.subscriptionService.getSubscription(subscriptionId, userInfo.userId);
 
     await this.invoiceNinjaService.syncCustomerProfile(userInfo.userId);
     const ref = await this.invoiceRefsRepository.findByIdAndSubscriptionId(invoiceRefId, subscriptionId);
+
     if (!ref) {
       throw new NotFoundException('Invoice not found');
     }
 
     const preAuthUrl = await this.invoiceNinjaService.getInvoiceClientLink(ref.invoiceNinjaId);
+
     if (!preAuthUrl) {
       throw new NotFoundException('Could not obtain invoice link from provider');
     }
 
     await this.invoiceRefsRepository.update(ref.id, { preAuthUrl });
+
     return { preAuthUrl };
   }
 
@@ -138,6 +154,7 @@ export class InvoicesController {
           ? row.balance
           : parseFloat(String(row.balance))
         : undefined;
+
     return {
       id: row.id,
       subscriptionId: row.subscriptionId,

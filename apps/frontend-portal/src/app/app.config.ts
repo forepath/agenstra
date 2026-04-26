@@ -8,6 +8,7 @@ import { cookieConfig } from '@forepath/framework/frontend/util-cookie-consent';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
+
 import { ViewportScrollerOffset } from './viewport-scroller-offset.service';
 
 export const appConfig: ApplicationConfig = {

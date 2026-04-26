@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { FilesService } from '../../services/files.service';
+
 import {
   createFileOrDirectory,
   createFileOrDirectoryFailure,
@@ -38,12 +40,10 @@ describe('FilesEffects', () => {
   let filesService: jest.Mocked<FilesService>;
   const clientId = 'client-1';
   const agentId = 'agent-1';
-
   const mockFileContent: FileContentDto = {
     content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
     encoding: 'utf-8',
   };
-
   const mockFileNodes: FileNodeDto[] = [
     {
       name: 'file1.txt',

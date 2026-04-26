@@ -1,22 +1,19 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
-import { PipelineProvider, PipelineProviderCredentials } from '../providers/pipeline-provider.interface';
 import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
+import { PipelineProvider } from '../providers/pipeline-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
+
 import { DeploymentsService } from './deployments.service';
 
 describe('DeploymentsService', () => {
   let service: DeploymentsService;
-  let configRepository: jest.Mocked<DeploymentConfigurationsRepository>;
-  let runsRepository: jest.Mocked<DeploymentRunsRepository>;
-  let agentsRepository: jest.Mocked<AgentsRepository>;
-  let providerFactory: jest.Mocked<PipelineProviderFactory>;
   let mockProvider: jest.Mocked<PipelineProvider>;
-
   const mockConfiguration: DeploymentConfigurationEntity = {
     id: 'config-uuid',
     agentId: 'agent-uuid',
@@ -30,7 +27,6 @@ describe('DeploymentsService', () => {
     updatedAt: new Date('2024-01-01'),
     agent: {} as any,
   };
-
   const mockRun: DeploymentRunEntity = {
     id: 'run-uuid',
     configurationId: 'config-uuid',
@@ -49,14 +45,12 @@ describe('DeploymentsService', () => {
     updatedAt: new Date('2024-01-01'),
     configuration: {} as any,
   };
-
   const mockConfigRepository = {
     findByAgentId: jest.fn(),
     findByAgentIdOrThrow: jest.fn(),
     upsertByAgentId: jest.fn(),
     deleteByAgentId: jest.fn(),
   };
-
   const mockRunsRepository = {
     findByConfigurationId: jest.fn(),
     findByProviderRunId: jest.fn(),
@@ -64,16 +58,13 @@ describe('DeploymentsService', () => {
     upsertByProviderRunId: jest.fn(),
     update: jest.fn(),
   };
-
   const mockAgentsRepository = {
     findByIdOrThrow: jest.fn(),
   };
-
   const mockProviderFactory = {
     hasProvider: jest.fn(),
     getProvider: jest.fn(),
   };
-
   const mockPipelineProvider: jest.Mocked<PipelineProvider> = {
     getType: jest.fn().mockReturnValue('github'),
     getDisplayName: jest.fn().mockReturnValue('GitHub Actions'),
@@ -112,10 +103,6 @@ describe('DeploymentsService', () => {
     }).compile();
 
     service = module.get<DeploymentsService>(DeploymentsService);
-    configRepository = module.get(DeploymentConfigurationsRepository);
-    runsRepository = module.get(DeploymentRunsRepository);
-    agentsRepository = module.get(AgentsRepository);
-    providerFactory = module.get(PipelineProviderFactory);
     mockProvider = mockPipelineProvider;
   });
 
@@ -226,7 +213,6 @@ describe('DeploymentsService', () => {
         ref: 'main',
         inputs: { environment: 'production' },
       };
-
       const mockPipelineRun = {
         id: '789',
         name: 'Pipeline #789',

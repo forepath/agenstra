@@ -3,17 +3,21 @@ import type { TicketResponseDto } from '@forepath/framework/frontend/data-access
 function formatPromptLinesForTicket(ticket: TicketResponseDto, depth: number): string[] {
   const indent = '  '.repeat(depth);
   const lines: string[] = [`${indent}- [${ticket.id}] ${ticket.title} (${ticket.status}, ${ticket.priority})`];
+
   if (ticket.content?.trim()) {
     lines.push(`${indent}  Content:\n${indent}  ${ticket.content.trim().split('\n').join(`\n${indent}  `)}`);
   }
+
   return lines;
 }
 
 function formatSubtree(root: TicketResponseDto, depth: number): string {
   const parts: string[] = [...formatPromptLinesForTicket(root, depth)];
+
   for (const child of root.children ?? []) {
     parts.push(formatSubtree(child, depth + 1));
   }
+
   return parts.join('\n');
 }
 
@@ -30,6 +34,7 @@ export function buildTicketBodyHierarchyContext(
 
   if (parents.length > 0) {
     const parentLines: string[] = [];
+
     parents.forEach((p, index) => {
       parentLines.push(...formatPromptLinesForTicket(p, index));
     });
@@ -37,13 +42,16 @@ export function buildTicketBodyHierarchyContext(
   }
 
   const children = detail.children ?? [];
+
   if (children.length > 0) {
     const subParts = children.map((c) => formatSubtree(c, 0));
+
     blocks.push(`Subtasks under this ticket:\n${subParts.join('\n')}`);
   }
 
   if (blocks.length === 0) {
     return '';
   }
+
   return blocks.join('\n\n');
 }

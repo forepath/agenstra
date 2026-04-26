@@ -1,4 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
+import type { ServicePlanResponse } from '../../types/billing.types';
+
 import {
   clearSelectedServicePlan,
   createServicePlan,
@@ -18,7 +21,6 @@ import {
   updateServicePlanFailure,
   updateServicePlanSuccess,
 } from './service-plans.actions';
-import type { ServicePlanResponse } from '../../types/billing.types';
 
 export interface ServicePlansState {
   entities: ServicePlanResponse[];
@@ -80,6 +82,7 @@ export const servicePlansReducer = createReducer(
       existingIndex >= 0
         ? state.entities.map((sp) => (sp.id === servicePlan.id ? servicePlan : sp))
         : [...state.entities, servicePlan];
+
     return {
       ...state,
       entities,

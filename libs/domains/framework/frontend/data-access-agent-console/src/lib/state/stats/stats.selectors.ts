@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import type { ContainerStatsEntry } from './stats.types';
+
 import type { StatsState } from './stats.reducer';
+import type { ContainerStatsEntry } from './stats.types';
 
 export const selectStatsState = createFeatureSelector<StatsState>('stats');
 
@@ -24,6 +25,7 @@ function getStatsKey(clientId: string, agentId: string): string {
 export const selectContainerStats = (clientId: string, agentId: string) =>
   createSelector(selectStatsByContainer, (statsByContainer) => {
     const key = getStatsKey(clientId, agentId);
+
     return statsByContainer[key] || [];
   });
 
@@ -47,8 +49,11 @@ export const selectCurrentContainerStats = (clientId: string, agentId: string) =
 export const selectContainerRunningStatus = (clientId: string, agentId: string) =>
   createSelector(selectCurrentContainerStats(clientId, agentId), selectRunningOverrides, (entry, overrides) => {
     const key = getStatsKey(clientId, agentId);
+
     if (key in overrides) return overrides[key];
+
     if (entry?.status != null) return entry.status.running;
+
     return null;
   });
 
@@ -71,6 +76,7 @@ export const selectContainerStatsInRange = (
 
     return stats.filter((entry) => {
       const entryTime = typeof entry.timestamp === 'string' ? new Date(entry.timestamp).getTime() : entry.timestamp;
+
       return entryTime >= start && entryTime <= end;
     });
   });

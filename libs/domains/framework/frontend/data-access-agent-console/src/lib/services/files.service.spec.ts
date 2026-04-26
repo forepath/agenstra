@@ -1,7 +1,9 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { CreateFileDto, FileContentDto, FileNodeDto, MoveFileDto, WriteFileDto } from '../state/files/files.types';
+
 import { FilesService } from './files.service';
 
 describe('FilesService', () => {
@@ -10,12 +12,10 @@ describe('FilesService', () => {
   const apiUrl = 'http://localhost:3100/api';
   const clientId = 'client-1';
   const agentId = 'agent-1';
-
   const mockFileContent: FileContentDto = {
     content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
     encoding: 'utf-8',
   };
-
   const mockFileNodes: FileNodeDto[] = [
     {
       name: 'file1.txt',
@@ -68,6 +68,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFileContent);
     });
@@ -83,6 +84,7 @@ describe('FilesService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
       );
+
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('context')).toBe('config');
       req.flush(mockFileContent);
@@ -97,6 +99,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${expectedPath}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFileContent);
     });
@@ -115,6 +118,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}`);
+
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(writeDto);
       req.flush(null);
@@ -134,6 +138,7 @@ describe('FilesService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
       );
+
       expect(req.request.method).toBe('PUT');
       expect(req.request.params.get('context')).toBe('config');
       req.flush(null);
@@ -148,6 +153,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFileNodes);
     });
@@ -161,6 +167,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files?path=subdirectory`);
+
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('path')).toBe('subdirectory');
       req.flush(mockFileNodes);
@@ -178,6 +185,7 @@ describe('FilesService', () => {
           r.params.get('context') === 'config' &&
           r.params.get('path') === '.',
       );
+
       expect(req.request.method).toBe('GET');
       req.flush(mockFileNodes);
     });
@@ -196,6 +204,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(null);
@@ -215,6 +224,7 @@ describe('FilesService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
       );
+
       expect(req.request.method).toBe('POST');
       expect(req.request.params.get('context')).toBe('config');
       req.flush(null);
@@ -231,6 +241,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${directoryPath}`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(null);
@@ -246,6 +257,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -260,6 +272,7 @@ describe('FilesService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
       );
+
       expect(req.request.method).toBe('DELETE');
       expect(req.request.params.get('context')).toBe('config');
       req.flush(null);
@@ -278,6 +291,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${sourcePath}`);
+
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(moveDto);
       req.flush(null);
@@ -296,6 +310,7 @@ describe('FilesService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${sourcePath}?context=config`,
       );
+
       expect(req.request.method).toBe('PATCH');
       expect(req.request.params.get('context')).toBe('config');
       req.flush(null);
@@ -312,6 +327,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${sourcePath}`);
+
       expect(req.request.method).toBe('PATCH');
       req.flush(null);
     });
@@ -328,6 +344,7 @@ describe('FilesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${expectedPath}`);
+
       expect(req.request.method).toBe('PATCH');
       req.flush(null);
     });

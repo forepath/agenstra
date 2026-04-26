@@ -24,6 +24,7 @@ describe('Availability Selectors', () => {
     it('should select the availability feature state', () => {
       const state = createState();
       const rootState = { availability: state };
+
       expect(selectAvailabilityState(rootState as never)).toEqual(state);
     });
   });
@@ -33,6 +34,7 @@ describe('Availability Selectors', () => {
       const availability = { isAvailable: true, reason: 'OK' };
       const state = createState({ availability });
       const rootState = { availability: state };
+
       expect(selectAvailability(rootState as never)).toEqual(availability);
     });
   });
@@ -42,6 +44,7 @@ describe('Availability Selectors', () => {
       const alternatives = { isAvailable: false, alternatives: {} };
       const state = createState({ alternatives });
       const rootState = { availability: state };
+
       expect(selectAvailabilityAlternatives(rootState as never)).toEqual(alternatives);
     });
   });
@@ -51,6 +54,7 @@ describe('Availability Selectors', () => {
       const pricing = { basePrice: 100, marginPercent: 10, marginFixed: 5, totalPrice: 115 };
       const state = createState({ pricing });
       const rootState = { availability: state };
+
       expect(selectPricingPreview(rootState as never)).toEqual(pricing);
     });
   });
@@ -59,6 +63,7 @@ describe('Availability Selectors', () => {
     it('should return loadingAvailability state', () => {
       const state = createState({ loadingAvailability: true });
       const rootState = { availability: state };
+
       expect(selectAvailabilityLoading(rootState as never)).toBe(true);
     });
   });
@@ -67,6 +72,7 @@ describe('Availability Selectors', () => {
     it('should return loadingAlternatives state', () => {
       const state = createState({ loadingAlternatives: true });
       const rootState = { availability: state };
+
       expect(selectAvailabilityAlternativesLoading(rootState as never)).toBe(true);
     });
   });
@@ -75,6 +81,7 @@ describe('Availability Selectors', () => {
     it('should return loadingPricing state', () => {
       const state = createState({ loadingPricing: true });
       const rootState = { availability: state };
+
       expect(selectPricingPreviewLoading(rootState as never)).toBe(true);
     });
   });
@@ -83,6 +90,7 @@ describe('Availability Selectors', () => {
     it('should return error', () => {
       const state = createState({ error: 'Test error' });
       const rootState = { availability: state };
+
       expect(selectAvailabilityError(rootState as never)).toBe('Test error');
     });
   });
@@ -91,6 +99,7 @@ describe('Availability Selectors', () => {
     it('should return true when any loading state is true', () => {
       const state = createState({ loadingAvailability: true });
       const rootState = { availability: state };
+
       expect(selectAvailabilityLoadingAny(rootState as never)).toBe(true);
     });
   });
@@ -99,11 +108,13 @@ describe('Availability Selectors', () => {
     it('should return true when availability.isAvailable is true', () => {
       const state = createState({ availability: { isAvailable: true } });
       const rootState = { availability: state };
+
       expect(selectIsAvailable(rootState as never)).toBe(true);
     });
     it('should return false when availability is null', () => {
       const state = createState({ availability: null });
       const rootState = { availability: state };
+
       expect(selectIsAvailable(rootState as never)).toBe(false);
     });
   });
@@ -112,11 +123,13 @@ describe('Availability Selectors', () => {
     it('should return reason when availability exists', () => {
       const state = createState({ availability: { isAvailable: false, reason: 'Not available' } });
       const rootState = { availability: state };
+
       expect(selectAvailabilityReason(rootState as never)).toBe('Not available');
     });
     it('should return null when availability is null', () => {
       const state = createState({ availability: null });
       const rootState = { availability: state };
+
       expect(selectAvailabilityReason(rootState as never)).toBeNull();
     });
   });
@@ -125,11 +138,13 @@ describe('Availability Selectors', () => {
     it('should return true when alternatives has alternatives property', () => {
       const state = createState({ alternatives: { isAvailable: false, alternatives: { key: 'value' } } });
       const rootState = { availability: state };
+
       expect(selectHasAlternatives(rootState as never)).toBe(true);
     });
     it('should return false when alternatives is null', () => {
       const state = createState({ alternatives: null });
       const rootState = { availability: state };
+
       expect(selectHasAlternatives(rootState as never)).toBe(false);
     });
   });

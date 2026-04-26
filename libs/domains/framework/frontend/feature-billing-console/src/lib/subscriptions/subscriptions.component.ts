@@ -48,6 +48,7 @@ export interface CountryOption {
 const COUNTRY_OPTIONS: CountryOption[] = (() => {
   const supported = new Set(INVOICE_NINJA_SUPPORTED_ALPHA2_CODES);
   const names = getNames('en', { select: 'official' });
+
   return Object.entries(names)
     .filter(([code]) => supported.has(code))
     .map(([code, name]) => ({ code, name: name as string }))
@@ -92,6 +93,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     const list = this.subscriptions();
     const page = this.subscriptionsPage();
     const start = page * PAGE_SIZE;
+
     return list.slice(start, start + PAGE_SIZE);
   });
   readonly subscriptionsTotalPages = computed(() => Math.max(1, Math.ceil(this.subscriptions().length / PAGE_SIZE)));
@@ -111,6 +113,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     const list = this.backorders();
     const page = this.backordersPage();
     const start = page * PAGE_SIZE;
+
     return list.slice(start, start + PAGE_SIZE);
   });
   readonly backordersTotalPages = computed(() => Math.max(1, Math.ceil(this.backorders().length / PAGE_SIZE)));
@@ -142,10 +145,12 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   onServiceChange(value: 'controller' | 'manager'): void {
     this.orderRequestedConfig = { ...this.orderRequestedConfig, service: value };
+
     if (value === 'manager' && this.orderRequestedConfig.authenticationMethod === 'users') {
       this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: 'api-key' };
       this.authMethod.set('api-key');
     }
+
     this.cdr.detectChanges();
   }
 
@@ -215,6 +220,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   planNameByPlanId(plans: ServicePlanResponse[], planId: string): string {
     const plan = plans?.find((p) => p.id === planId);
+
     return plan?.name ?? planId;
   }
 
@@ -229,22 +235,29 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */
   getPlanTotalPrice(plan: ServicePlanResponse): number | null {
     const base = this.parsePlanNumber(plan.basePrice);
+
     if (base <= 0) return null;
+
     const marginPct = this.parsePlanNumber(plan.marginPercent);
     const marginFix = this.parsePlanNumber(plan.marginFixed);
+
     return base + base * (marginPct / 100) + marginFix;
   }
 
   private parsePlanNumber(value: string | number | null | undefined): number {
     if (value === undefined || value === null) return 0;
+
     const n = typeof value === 'number' ? value : Number(String(value).trim());
+
     return Number.isFinite(n) ? n : 0;
   }
 
   /** Formats plan price for display (e.g. "€4.51" or "—"). */
   formatPlanPrice(plan: ServicePlanResponse): string {
     const total = this.getPlanTotalPrice(plan);
+
     if (total === null) return '—';
+
     return `€${Number.isInteger(total) ? String(total) : total.toFixed(2)}`;
   }
 
@@ -252,12 +265,14 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   formatPlanOptionLabel(plan: ServicePlanResponse): string {
     const price = this.formatPlanPrice(plan);
     const interval = `${plan.billingIntervalValue} ${plan.billingIntervalType}(s)`;
+
     return `${plan.name} – ${price} / ${interval}`;
   }
 
   /** Returns the plan matching planId from the list, or null. */
   getSelectedPlan(plans: ServicePlanResponse[] | null, planId: string): ServicePlanResponse | null {
     if (!plans?.length || !planId?.trim()) return null;
+
     return plans.find((p) => p.id === planId) ?? null;
   }
 
@@ -281,14 +296,17 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     const queryParamMap = this.route.snapshot.queryParamMap;
     const planParam = queryParamMap.get('plan');
+
     this.initialPlanIdFromQuery = planParam?.trim() || null;
 
     const orderParam = queryParamMap.get('order');
+
     if (orderParam === 'true') {
       this.openOrderPlanModal();
     }
 
     const profileParam = queryParamMap.get('profile');
+
     if (profileParam === 'true') {
       this.openEditProfileModal();
     }
@@ -297,6 +315,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   constructor() {
     const subFacade = inject(SubscriptionsFacade);
     const profileFacade = inject(CustomerProfileFacade);
+
     subFacade
       .getSubscriptionsCreating$()
       .pipe(
@@ -342,12 +361,15 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       .subscribe((plans) => {
         if (effectivePreferredPlanId) {
           const matchingPlan = plans.find((plan) => plan.id === effectivePreferredPlanId);
+
           if (matchingPlan) {
             this.orderPlanId = matchingPlan.id;
             this.syncOrderProvisioningLocationState();
+
             return;
           }
         }
+
         this.orderPlanId = plans[0].id;
         this.syncOrderProvisioningLocationState();
       });
@@ -364,9 +386,13 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     serviceTypeId: string,
   ): Record<string, unknown> | null {
     if (!serviceTypeId?.trim() || !serviceTypes?.length || !providerDetails?.length) return null;
+
     const serviceType = serviceTypes.find((st) => st.id === serviceTypeId);
+
     if (!serviceType?.provider) return null;
+
     const detail = providerDetails.find((p) => p.id === serviceType.provider);
+
     return (detail?.configSchema as Record<string, unknown>) ?? null;
   }
 
@@ -379,15 +405,22 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     providerDetails: ProviderDetail[],
   ): { field: 'region' | 'location'; options: string[] } | null {
     if (!plan.allowCustomerLocationSelection) return null;
+
     const full = this.getProviderSchemaFullForOrder(serviceTypes, providerDetails, plan.serviceTypeId);
     const props = full?.['properties'] as Record<string, { type?: string; enum?: unknown[] }> | undefined;
+
     if (!props) return null;
+
     const pick = (key: 'region' | 'location'): { field: 'region' | 'location'; options: string[] } | null => {
       const p = props[key];
+
       if (!p || String(p.type) !== 'string' || !Array.isArray(p.enum)) return null;
+
       const options = p.enum.filter((x): x is string => typeof x === 'string');
+
       return options.length > 0 ? { field: key, options } : null;
     };
+
     return pick('region') ?? pick('location');
   }
 
@@ -395,7 +428,9 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     this.orderGeographyFieldKey = null;
     this.orderLocationOptions = [];
     this.orderProvisioningLocation = '';
+
     if (!this.orderPlanId?.trim()) return;
+
     combineLatest([
       this.servicePlans$,
       this.serviceTypesFacade.getServiceTypes$(),
@@ -404,14 +439,19 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       .pipe(take(1))
       .subscribe(([plans, serviceTypes, providerDetails]) => {
         const plan = plans.find((p) => p.id === this.orderPlanId);
+
         if (!plan) return;
+
         const resolved = this.resolveOrderGeography(plan, serviceTypes ?? [], providerDetails ?? []);
+
         if (!resolved) return;
+
         this.orderGeographyFieldKey = resolved.field;
         this.orderLocationOptions = resolved.options;
         const defaults = plan.providerConfigDefaults ?? {};
         const fromPlan = defaults[resolved.field];
         const fromPlanStr = typeof fromPlan === 'string' ? fromPlan : '';
+
         this.orderProvisioningLocation = resolved.options.includes(fromPlanStr)
           ? fromPlanStr
           : (resolved.options[0] ?? '');
@@ -420,32 +460,40 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   onSubmitOrderPlan(): void {
     if (!this.orderPlanId?.trim()) return;
+
     const cfg = this.orderRequestedConfig;
     const requestedConfig: Record<string, unknown> = {
       service: cfg.service,
       authenticationMethod: cfg.authenticationMethod,
       smtp: { ...cfg.smtp },
     };
+
     if (cfg.service === 'controller') {
       requestedConfig['disableSignup'] = cfg.disableSignup;
     }
+
     if (cfg.authenticationMethod === 'api-key' && cfg.staticApiKey?.trim()) {
       requestedConfig['staticApiKey'] = cfg.staticApiKey.trim();
     }
+
     if (cfg.authenticationMethod === 'keycloak') {
       requestedConfig['keycloak'] = { ...cfg.keycloak };
     }
+
     if (cfg.service === 'controller') {
       if (cfg.hetznerApiToken?.trim()) {
         requestedConfig['hetznerApiToken'] = cfg.hetznerApiToken.trim();
       }
+
       if (cfg.digitaloceanApiToken?.trim()) {
         requestedConfig['digitaloceanApiToken'] = cfg.digitaloceanApiToken.trim();
       }
     }
+
     if (this.orderGeographyFieldKey && this.orderProvisioningLocation?.trim()) {
       requestedConfig[this.orderGeographyFieldKey] = this.orderProvisioningLocation.trim();
     }
+
     if (cfg.service === 'manager') {
       const hasGit =
         (cfg.git?.repositoryUrl?.trim() ?? '') !== '' ||
@@ -455,6 +503,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         (cfg.git?.privateKey?.trim() ?? '') !== '' ||
         (cfg.git?.commitAuthorName?.trim() ?? '') !== '' ||
         (cfg.git?.commitAuthorEmail?.trim() ?? '') !== '';
+
       if (hasGit) {
         requestedConfig['git'] = {
           repositoryUrl: (cfg.git?.repositoryUrl ?? '').trim() || undefined,
@@ -466,15 +515,18 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           commitAuthorEmail: (cfg.git?.commitAuthorEmail ?? '').trim() || undefined,
         };
       }
+
       if (cfg.cursorApiKey?.trim()) {
         requestedConfig['cursorApiKey'] = cfg.cursorApiKey.trim();
       }
     }
+
     const dto: CreateSubscriptionDto = {
       planId: this.orderPlanId.trim(),
       requestedConfig,
       autoBackorder: this.orderAutoBackorder,
     };
+
     this.subscriptionsFacade.createSubscription(dto);
   }
 
@@ -563,6 +615,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           };
         }
       ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.show();
       }
@@ -615,6 +668,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
         }
       ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.hide();
       }

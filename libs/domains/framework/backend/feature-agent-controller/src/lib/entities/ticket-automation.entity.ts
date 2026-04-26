@@ -1,6 +1,8 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+
 import type { TicketAutomationBranchStrategy } from '../utils/ticket-automation-branch.constants';
 import { DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY } from '../utils/ticket-automation-branch.constants';
+
 import { TicketEntity } from './ticket.entity';
 
 /** JSON shape for verifier profile stored in DB (validated on write). */

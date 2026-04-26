@@ -1,7 +1,8 @@
+import { AuthenticationType, ClientUserRole } from '@forepath/identity/backend';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { AuthenticationType, ClientUserRole } from '@forepath/identity/backend';
+
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { FilterDropDirection, StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection, StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
@@ -10,8 +11,8 @@ import {
   StatisticsChatIoEntity,
   StatisticsInteractionKind,
 } from '../entities/statistics-chat-io.entity';
-import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsClientUserEntity } from '../entities/statistics-client-user.entity';
+import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import {
   StatisticsEntityEventEntity,
   StatisticsEntityEventType,
@@ -28,8 +29,11 @@ function escapeIlikePattern(value: string): string {
 
 function sanitizeSearch(search: string | undefined): string | undefined {
   if (!search || typeof search !== 'string') return undefined;
+
   const trimmed = search.trim();
+
   if (trimmed.length === 0) return undefined;
+
   return trimmed.length > MAX_SEARCH_LENGTH ? trimmed.slice(0, MAX_SEARCH_LENGTH) : trimmed;
 }
 
@@ -62,11 +66,15 @@ export class StatisticsRepository {
 
   async upsertStatisticsUser(originalUserId: string, role: string): Promise<StatisticsUserEntity> {
     let entity = await this.statisticsUsers.findOne({ where: { originalUserId } });
+
     if (!entity) {
       entity = this.statisticsUsers.create({ originalUserId, role: role as StatisticsUserEntity['role'] });
+
       return await this.statisticsUsers.save(entity);
     }
+
     entity.role = role as StatisticsUserEntity['role'];
+
     return await this.statisticsUsers.save(entity);
   }
 
@@ -79,6 +87,7 @@ export class StatisticsRepository {
     data: { name: string; endpoint: string; authenticationType: AuthenticationType },
   ): Promise<StatisticsClientEntity> {
     let entity = await this.statisticsClients.findOne({ where: { originalClientId } });
+
     if (!entity) {
       entity = this.statisticsClients.create({
         originalClientId,
@@ -86,11 +95,14 @@ export class StatisticsRepository {
         endpoint: data.endpoint,
         authenticationType: data.authenticationType,
       });
+
       return await this.statisticsClients.save(entity);
     }
+
     entity.name = data.name;
     entity.endpoint = data.endpoint;
     entity.authenticationType = data.authenticationType;
+
     return await this.statisticsClients.save(entity);
   }
 
@@ -106,6 +118,7 @@ export class StatisticsRepository {
     let entity = await this.statisticsAgents.findOne({
       where: { originalAgentId, statisticsClientId },
     });
+
     if (!entity) {
       entity = this.statisticsAgents.create({
         originalAgentId,
@@ -115,15 +128,22 @@ export class StatisticsRepository {
         name: data?.name,
         description: data?.description,
       });
+
       return await this.statisticsAgents.save(entity);
     }
+
     if (data) {
       if (data.agentType !== undefined) entity.agentType = data.agentType;
+
       if (data.containerType !== undefined) entity.containerType = data.containerType;
+
       if (data.name !== undefined) entity.name = data.name;
+
       if (data.description !== undefined) entity.description = data.description;
+
       return await this.statisticsAgents.save(entity);
     }
+
     return entity;
   }
 
@@ -147,6 +167,7 @@ export class StatisticsRepository {
     providerMetadata?: string;
   }): Promise<StatisticsProvisioningReferenceEntity> {
     const entity = this.statisticsProvisioningReferences.create(data);
+
     return await this.statisticsProvisioningReferences.save(entity);
   }
 
@@ -162,6 +183,7 @@ export class StatisticsRepository {
       statisticsUserId: data.statisticsUserId,
       role: data.role as ClientUserRole,
     });
+
     return await this.statisticsClientUsers.save(entity);
   }
 
@@ -179,6 +201,7 @@ export class StatisticsRepository {
       ...data,
       interactionKind: data.interactionKind ?? StatisticsInteractionKind.CHAT,
     });
+
     return await this.statisticsChatIo.save(entity);
   }
 
@@ -195,6 +218,7 @@ export class StatisticsRepository {
     occurredAt: Date;
   }): Promise<StatisticsChatFilterDropEntity> {
     const entity = this.statisticsChatFilterDrops.create(data);
+
     return await this.statisticsChatFilterDrops.save(entity);
   }
 
@@ -211,6 +235,7 @@ export class StatisticsRepository {
     occurredAt: Date;
   }): Promise<StatisticsChatFilterFlagEntity> {
     const entity = this.statisticsChatFilterFlags.create(data);
+
     return await this.statisticsChatFilterFlags.save(entity);
   }
 
@@ -227,6 +252,7 @@ export class StatisticsRepository {
     occurredAt: Date;
   }): Promise<StatisticsEntityEventEntity> {
     const entity = this.statisticsEntityEvents.create(data);
+
     return await this.statisticsEntityEvents.save(entity);
   }
 
@@ -237,11 +263,13 @@ export class StatisticsRepository {
    */
   async findStatisticsClientIdsByOriginalIds(originalClientIds: string[]): Promise<string[]> {
     if (originalClientIds.length === 0) return [];
+
     const rows = await this.statisticsClients
       .createQueryBuilder('sc')
       .select('sc.id')
       .where('sc.original_client_id IN (:...ids)', { ids: originalClientIds })
       .getMany();
+
     return rows.map((r) => r.id);
   }
 
@@ -258,38 +286,42 @@ export class StatisticsRepository {
     offset: number;
   }): Promise<{ rows: StatisticsChatIoEntity[]; total: number }> {
     const { statisticsClientIds, agentId, from, to, direction, interactionKind, search, limit, offset } = params;
+
     if (statisticsClientIds.length === 0) return { rows: [], total: 0 };
 
     const sanitized = sanitizeSearch(search);
     const searchPattern = sanitized ? `%${escapeIlikePattern(sanitized)}%` : undefined;
-
     const applyChatIoWhere = (qb: ReturnType<typeof this.statisticsChatIo.createQueryBuilder>) => {
       qb = qb.where('cio.statistics_client_id IN (:...ids)', { ids: statisticsClientIds });
+
       if (agentId) {
         qb = qb.andWhere(
           'cio.statistics_agent_id IN (SELECT id FROM statistics_agents WHERE original_agent_id = :agentId AND statistics_client_id IN (:...ids))',
           { agentId, ids: statisticsClientIds },
         );
       }
+
       if (from) qb = qb.andWhere('cio.occurred_at >= :from', { from });
+
       if (to) qb = qb.andWhere('cio.occurred_at <= :to', { to });
+
       if (direction) qb = qb.andWhere('cio.direction = :direction', { direction });
+
       if (interactionKind) qb = qb.andWhere('cio.interaction_kind = :interactionKind', { interactionKind });
+
       if (searchPattern) {
         qb = qb.andWhere(
           '(cio.id::text ILIKE :search OR cio.direction::text ILIKE :search OR cio.interaction_kind::text ILIKE :search OR cio.word_count::text ILIKE :search OR cio.char_count::text ILIKE :search)',
           { search: searchPattern },
         );
       }
+
       return qb;
     };
-
     const countQb = applyChatIoWhere(this.statisticsChatIo.createQueryBuilder('cio'));
     const total = await countQb.getCount();
-
     const dataQb = applyChatIoWhere(this.statisticsChatIo.createQueryBuilder('cio'));
     const rowsPlain = await dataQb.orderBy('cio.occurred_at', 'DESC').skip(offset).take(limit).getMany();
-
     const rows = rowsPlain.length === 0 ? [] : await this.loadChatIoWithRelations(rowsPlain.map((r) => r.id));
 
     return { rows, total };
@@ -301,6 +333,7 @@ export class StatisticsRepository {
       relations: ['statisticsClient', 'statisticsAgent', 'statisticsUser'],
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
+
     return ids.map((id) => byId.get(id)!).filter(Boolean);
   }
 
@@ -321,6 +354,7 @@ export class StatisticsRepository {
     series?: { period: string; count: number; wordCount: number; charCount: number }[];
   }> {
     const { statisticsClientIds, agentId, from, to, direction, interactionKind, groupBy } = params;
+
     if (statisticsClientIds.length === 0) {
       return {
         totalMessages: 0,
@@ -341,9 +375,13 @@ export class StatisticsRepository {
         { agentId, ids: statisticsClientIds },
       );
     }
+
     if (from) qb = qb.andWhere('cio.occurred_at >= :from', { from });
+
     if (to) qb = qb.andWhere('cio.occurred_at <= :to', { to });
+
     if (direction) qb = qb.andWhere('cio.direction = :direction', { direction });
+
     if (interactionKind) qb = qb.andWhere('cio.interaction_kind = :interactionKind', { interactionKind });
 
     const raw = await qb
@@ -353,13 +391,12 @@ export class StatisticsRepository {
         'COALESCE(SUM(cio.char_count), 0) AS char_count',
       ])
       .getRawOne<{ count: string; word_count: string; char_count: string }>();
-
     const totalMessages = parseInt(raw?.count ?? '0', 10);
     const totalWords = parseInt(raw?.word_count ?? '0', 10);
     const totalChars = parseInt(raw?.char_count ?? '0', 10);
     const avgWordsPerMessage = totalMessages > 0 ? totalWords / totalMessages : 0;
-
     let series: { period: string; count: number; wordCount: number; charCount: number }[] | undefined;
+
     if (groupBy) {
       const dateFormat =
         groupBy === 'day' ? "date_trunc('day', cio.occurred_at)" : "date_trunc('hour', cio.occurred_at)";
@@ -381,9 +418,13 @@ export class StatisticsRepository {
           { agentId, ids: statisticsClientIds },
         );
       }
+
       if (from) seriesQb.andWhere('cio.occurred_at >= :from', { from });
+
       if (to) seriesQb.andWhere('cio.occurred_at <= :to', { to });
+
       if (direction) seriesQb.andWhere('cio.direction = :direction', { direction });
+
       if (interactionKind) seriesQb.andWhere('cio.interaction_kind = :interactionKind', { interactionKind });
 
       const seriesRows = await seriesQb.getRawMany<{
@@ -392,6 +433,7 @@ export class StatisticsRepository {
         word_count: string;
         char_count: string;
       }>();
+
       series = seriesRows.map((r) => ({
         period: r.period instanceof Date ? r.period.toISOString() : String(r.period),
         count: parseInt(r.count ?? '0', 10),
@@ -421,37 +463,40 @@ export class StatisticsRepository {
     offset: number;
   }): Promise<{ rows: StatisticsChatFilterDropEntity[]; total: number }> {
     const { statisticsClientIds, agentId, filterType, from, to, search, limit, offset } = params;
+
     if (statisticsClientIds.length === 0) return { rows: [], total: 0 };
 
     const sanitized = sanitizeSearch(search);
     const searchPattern = sanitized ? `%${escapeIlikePattern(sanitized)}%` : undefined;
-
     const applyFilterDropsWhere = (qb: ReturnType<typeof this.statisticsChatFilterDrops.createQueryBuilder>) => {
       qb = qb.where('fd.statistics_client_id IN (:...ids)', { ids: statisticsClientIds });
+
       if (agentId) {
         qb = qb.andWhere(
           'fd.statistics_agent_id IN (SELECT id FROM statistics_agents WHERE original_agent_id = :agentId AND statistics_client_id IN (:...ids))',
           { agentId, ids: statisticsClientIds },
         );
       }
+
       if (filterType) qb = qb.andWhere('fd.filter_type = :filterType', { filterType });
+
       if (from) qb = qb.andWhere('fd.occurred_at >= :from', { from });
+
       if (to) qb = qb.andWhere('fd.occurred_at <= :to', { to });
+
       if (searchPattern) {
         qb = qb.andWhere(
           "(fd.filter_type ILIKE :search OR fd.filter_display_name ILIKE :search OR COALESCE(fd.filter_reason, '') ILIKE :search OR fd.direction::text ILIKE :search)",
           { search: searchPattern },
         );
       }
+
       return qb;
     };
-
     const countQb = applyFilterDropsWhere(this.statisticsChatFilterDrops.createQueryBuilder('fd'));
     const total = await countQb.getCount();
-
     const dataQb = applyFilterDropsWhere(this.statisticsChatFilterDrops.createQueryBuilder('fd'));
     const rowsPlain = await dataQb.orderBy('fd.occurred_at', 'DESC').skip(offset).take(limit).getMany();
-
     const rows = rowsPlain.length === 0 ? [] : await this.loadFilterDropsWithRelations(rowsPlain.map((r) => r.id));
 
     return { rows, total };
@@ -463,6 +508,7 @@ export class StatisticsRepository {
       relations: ['statisticsClient', 'statisticsAgent', 'statisticsUser'],
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
+
     return ids.map((id) => byId.get(id)!).filter(Boolean);
   }
 
@@ -478,6 +524,7 @@ export class StatisticsRepository {
     uniqueFilterTypes: string[];
   }> {
     const { statisticsClientIds, agentId, from, to } = params;
+
     if (statisticsClientIds.length === 0) {
       return { filterDropCount: 0, filterTypesBreakdown: [], uniqueFilterTypes: [] };
     }
@@ -492,11 +539,12 @@ export class StatisticsRepository {
         { agentId, ids: statisticsClientIds },
       );
     }
+
     if (from) qb = qb.andWhere('fd.occurred_at >= :from', { from });
+
     if (to) qb = qb.andWhere('fd.occurred_at <= :to', { to });
 
     const filterDropCount = await qb.getCount();
-
     const breakdownQb = this.statisticsChatFilterDrops
       .createQueryBuilder('fd')
       .select('fd.filter_type', 'filterType')
@@ -512,7 +560,9 @@ export class StatisticsRepository {
         { agentId, ids: statisticsClientIds },
       );
     }
+
     if (from) breakdownQb.andWhere('fd.occurred_at >= :from', { from });
+
     if (to) breakdownQb.andWhere('fd.occurred_at <= :to', { to });
 
     const breakdownRows = await breakdownQb.getRawMany<{ filterType: string; direction: string; count: string }>();
@@ -521,7 +571,6 @@ export class StatisticsRepository {
       direction: r.direction,
       count: parseInt(r.count ?? '0', 10),
     }));
-
     const distinctQb = this.statisticsChatFilterDrops
       .createQueryBuilder('fd')
       .select('DISTINCT fd.filter_type', 'filterType')
@@ -533,7 +582,9 @@ export class StatisticsRepository {
         { agentId, ids: statisticsClientIds },
       );
     }
+
     if (from) distinctQb.andWhere('fd.occurred_at >= :from', { from });
+
     if (to) distinctQb.andWhere('fd.occurred_at <= :to', { to });
 
     const distinctRows = await distinctQb.getRawMany<{ filterType: string }>();
@@ -554,37 +605,40 @@ export class StatisticsRepository {
     offset: number;
   }): Promise<{ rows: StatisticsChatFilterFlagEntity[]; total: number }> {
     const { statisticsClientIds, agentId, filterType, from, to, search, limit, offset } = params;
+
     if (statisticsClientIds.length === 0) return { rows: [], total: 0 };
 
     const sanitized = sanitizeSearch(search);
     const searchPattern = sanitized ? `%${escapeIlikePattern(sanitized)}%` : undefined;
-
     const applyWhere = (qb: ReturnType<typeof this.statisticsChatFilterFlags.createQueryBuilder>) => {
       qb = qb.where('ff.statistics_client_id IN (:...ids)', { ids: statisticsClientIds });
+
       if (agentId) {
         qb = qb.andWhere(
           'ff.statistics_agent_id IN (SELECT id FROM statistics_agents WHERE original_agent_id = :agentId AND statistics_client_id IN (:...ids))',
           { agentId, ids: statisticsClientIds },
         );
       }
+
       if (filterType) qb = qb.andWhere('ff.filter_type = :filterType', { filterType });
+
       if (from) qb = qb.andWhere('ff.occurred_at >= :from', { from });
+
       if (to) qb = qb.andWhere('ff.occurred_at <= :to', { to });
+
       if (searchPattern) {
         qb = qb.andWhere(
           "(ff.filter_type ILIKE :search OR ff.filter_display_name ILIKE :search OR COALESCE(ff.filter_reason, '') ILIKE :search OR ff.direction::text ILIKE :search)",
           { search: searchPattern },
         );
       }
+
       return qb;
     };
-
     const countQb = applyWhere(this.statisticsChatFilterFlags.createQueryBuilder('ff'));
     const total = await countQb.getCount();
-
     const dataQb = applyWhere(this.statisticsChatFilterFlags.createQueryBuilder('ff'));
     const rowsPlain = await dataQb.orderBy('ff.occurred_at', 'DESC').skip(offset).take(limit).getMany();
-
     const rows = rowsPlain.length === 0 ? [] : await this.loadFilterFlagsWithRelations(rowsPlain.map((r) => r.id));
 
     return { rows, total };
@@ -596,6 +650,7 @@ export class StatisticsRepository {
       relations: ['statisticsClient', 'statisticsAgent', 'statisticsUser'],
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
+
     return ids.map((id) => byId.get(id)!).filter(Boolean);
   }
 
@@ -611,6 +666,7 @@ export class StatisticsRepository {
     uniqueFilterTypes: string[];
   }> {
     const { statisticsClientIds, agentId, from, to } = params;
+
     if (statisticsClientIds.length === 0) {
       return { filterFlagCount: 0, filterTypesBreakdown: [], uniqueFilterTypes: [] };
     }
@@ -625,11 +681,12 @@ export class StatisticsRepository {
         { agentId, ids: statisticsClientIds },
       );
     }
+
     if (from) qb = qb.andWhere('ff.occurred_at >= :from', { from });
+
     if (to) qb = qb.andWhere('ff.occurred_at <= :to', { to });
 
     const filterFlagCount = await qb.getCount();
-
     const breakdownQb = this.statisticsChatFilterFlags
       .createQueryBuilder('ff')
       .select('ff.filter_type', 'filter_type')
@@ -645,7 +702,9 @@ export class StatisticsRepository {
         { agentId, ids: statisticsClientIds },
       );
     }
+
     if (from) breakdownQb.andWhere('ff.occurred_at >= :from', { from });
+
     if (to) breakdownQb.andWhere('ff.occurred_at <= :to', { to });
 
     const breakdownRows = await breakdownQb.getRawMany<{ filter_type: string; direction: string; count: string }>();
@@ -654,7 +713,6 @@ export class StatisticsRepository {
       direction: r.direction,
       count: parseInt(r.count ?? '0', 10),
     }));
-
     const distinctQb = this.statisticsChatFilterFlags
       .createQueryBuilder('ff')
       .select('DISTINCT ff.filter_type', 'filter_type')
@@ -666,7 +724,9 @@ export class StatisticsRepository {
         { agentId, ids: statisticsClientIds },
       );
     }
+
     if (from) distinctQb.andWhere('ff.occurred_at >= :from', { from });
+
     if (to) distinctQb.andWhere('ff.occurred_at <= :to', { to });
 
     const distinctRows = await distinctQb.getRawMany<{ filter_type: string }>();
@@ -687,26 +747,29 @@ export class StatisticsRepository {
     offset: number;
   }): Promise<{ rows: StatisticsEntityEventEntity[]; total: number }> {
     const { statisticsClientIds, entityType, eventType, from, to, search, limit, offset } = params;
+
     if (statisticsClientIds.length === 0) return { rows: [], total: 0 };
 
     const sanitized = sanitizeSearch(search);
     const searchPattern = sanitized ? `%${escapeIlikePattern(sanitized)}%` : undefined;
-
     const subQs: string[] = [
       'e.statistics_clients_id IN (:...ids)',
       'e.statistics_agents_id IN (SELECT id FROM statistics_agents WHERE statistics_client_id IN (:...ids))',
       'e.statistics_client_users_id IN (SELECT id FROM statistics_client_users WHERE statistics_client_id IN (:...ids))',
       'e.statistics_provisioning_references_id IN (SELECT id FROM statistics_provisioning_references WHERE statistics_client_id IN (:...ids))',
     ];
-
     let qb = this.statisticsEntityEvents
       .createQueryBuilder('e')
       .where(`(${subQs.join(' OR ')})`, { ids: statisticsClientIds });
 
     if (entityType) qb = qb.andWhere('e.entity_type = :entityType', { entityType });
+
     if (eventType) qb = qb.andWhere('e.event_type = :eventType', { eventType });
+
     if (from) qb = qb.andWhere('e.occurred_at >= :from', { from });
+
     if (to) qb = qb.andWhere('e.occurred_at <= :to', { to });
+
     if (searchPattern) {
       qb = qb.andWhere(
         '(e.entity_type::text ILIKE :search OR e.event_type::text ILIKE :search OR e.original_entity_id::text ILIKE :search)',
@@ -717,18 +780,23 @@ export class StatisticsRepository {
     const countQb = this.statisticsEntityEvents
       .createQueryBuilder('e')
       .where(`(${subQs.join(' OR ')})`, { ids: statisticsClientIds });
+
     if (entityType) countQb.andWhere('e.entity_type = :entityType', { entityType });
+
     if (eventType) countQb.andWhere('e.event_type = :eventType', { eventType });
+
     if (from) countQb.andWhere('e.occurred_at >= :from', { from });
+
     if (to) countQb.andWhere('e.occurred_at <= :to', { to });
+
     if (searchPattern) {
       countQb.andWhere(
         '(e.entity_type::text ILIKE :search OR e.event_type::text ILIKE :search OR e.original_entity_id::text ILIKE :search)',
         { search: searchPattern },
       );
     }
-    const total = await countQb.getCount();
 
+    const total = await countQb.getCount();
     const rowsPlain = await qb.orderBy('e.occurred_at', 'DESC').skip(offset).take(limit).getMany();
     const rows = rowsPlain.length === 0 ? [] : await this.loadEntityEventsWithRelations(rowsPlain.map((r) => r.id));
 
@@ -741,6 +809,7 @@ export class StatisticsRepository {
       relations: ['statisticsUser', 'statisticsAgents', 'statisticsAgents.statisticsClient'],
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
+
     return ids.map((id) => byId.get(id)!).filter(Boolean);
   }
 }

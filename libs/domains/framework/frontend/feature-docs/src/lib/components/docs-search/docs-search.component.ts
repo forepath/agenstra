@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+
 import { DocsSearchService } from '../../services';
 
 @Component({
@@ -42,6 +43,7 @@ export class DocsSearchComponent {
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((query: string) => {
         this.searchService.searchQuery.set(query);
+
         if (query.trim().length > 0) {
           this.searchService.loadSearchIndex().subscribe((index) => {
             if (index) {
@@ -56,6 +58,7 @@ export class DocsSearchComponent {
     // Sync with service
     effect(() => {
       const query = this.searchService.searchQuery();
+
       this.searchQuery.set(query);
     });
   }
@@ -65,6 +68,7 @@ export class DocsSearchComponent {
    */
   onSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
+
     this.searchQuery.set(value);
     this.searchSubject.next(value);
     this.showResults.set(value.trim().length > 0);
@@ -85,6 +89,7 @@ export class DocsSearchComponent {
    */
   onSearchClick(): void {
     const query = this.searchQuery().trim();
+
     if (query.length > 0) {
       this.router.navigate(['/search'], { queryParams: { q: query } });
       this.showResults.set(false);

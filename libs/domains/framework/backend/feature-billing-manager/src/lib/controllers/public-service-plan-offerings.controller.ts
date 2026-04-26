@@ -1,5 +1,6 @@
-import { Controller, Get, NotFoundException, ParseIntPipe, Query } from '@nestjs/common';
 import { Public } from '@forepath/identity/backend';
+import { Controller, Get, NotFoundException, ParseIntPipe, Query } from '@nestjs/common';
+
 import { PublicServicePlanOfferingDto } from '../dto/public-service-plan-offering.dto';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -22,19 +23,24 @@ export class PublicServicePlanOfferingsController {
   @Get('cheapest')
   async getCheapest(@Query('serviceTypeId') serviceTypeId?: string): Promise<PublicServicePlanOfferingDto> {
     const rows = await this.servicePlansRepository.findAllActiveWithServiceType(serviceTypeId);
+
     if (rows.length === 0) {
       throw new NotFoundException('No active service plan offerings');
     }
+
     let bestRow = rows[0];
     let bestPrice = this.pricingService.calculate(bestRow).totalPrice;
+
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const price = this.pricingService.calculate(row).totalPrice;
+
       if (price < bestPrice || (price === bestPrice && row.id < bestRow.id)) {
         bestPrice = price;
         bestRow = row;
       }
     }
+
     return this.mapToOffering(bestRow);
   }
 
@@ -49,11 +55,13 @@ export class PublicServicePlanOfferingsController {
     const rawOffset = offset ?? 0;
     const skip = Math.max(Number.isFinite(rawOffset) ? rawOffset : 0, 0);
     const rows = await this.servicePlansRepository.findActiveWithServiceType(take, skip, serviceTypeId);
+
     return rows.map((row) => this.mapToOffering(row));
   }
 
   private mapToOffering(row: ServicePlanEntity): PublicServicePlanOfferingDto {
     const totalPrice = this.pricingService.calculate(row).totalPrice;
+
     return {
       id: row.id,
       name: row.name,

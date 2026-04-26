@@ -56,6 +56,7 @@ describe('environment', () => {
         expect(environment.authentication).toMatchObject({
           type: 'api-key',
         });
+
         // apiKey is optional
         if ('apiKey' in environment.authentication) {
           expect(typeof environment.authentication.apiKey).toBe('string');

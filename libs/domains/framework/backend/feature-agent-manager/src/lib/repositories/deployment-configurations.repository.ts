@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 
 /**
@@ -31,9 +32,11 @@ export class DeploymentConfigurationsRepository {
    */
   async findByAgentIdOrThrow(agentId: string): Promise<DeploymentConfigurationEntity> {
     const config = await this.findByAgentId(agentId);
+
     if (!config) {
       throw new NotFoundException(`Deployment configuration for agent ${agentId} not found`);
     }
+
     return config;
   }
 
@@ -45,9 +48,11 @@ export class DeploymentConfigurationsRepository {
    */
   async findByIdOrThrow(id: string): Promise<DeploymentConfigurationEntity> {
     const config = await this.repository.findOne({ where: { id } });
+
     if (!config) {
       throw new NotFoundException(`Deployment configuration with ID ${id} not found`);
     }
+
     return config;
   }
 
@@ -58,6 +63,7 @@ export class DeploymentConfigurationsRepository {
    */
   async create(dto: Partial<DeploymentConfigurationEntity>): Promise<DeploymentConfigurationEntity> {
     const config = this.repository.create(dto);
+
     return await this.repository.save(config);
   }
 
@@ -70,7 +76,9 @@ export class DeploymentConfigurationsRepository {
    */
   async update(id: string, dto: Partial<DeploymentConfigurationEntity>): Promise<DeploymentConfigurationEntity> {
     const config = await this.findByIdOrThrow(id);
+
     Object.assign(config, dto);
+
     return await this.repository.save(config);
   }
 
@@ -85,11 +93,14 @@ export class DeploymentConfigurationsRepository {
     dto: Partial<DeploymentConfigurationEntity>,
   ): Promise<DeploymentConfigurationEntity> {
     const existing = await this.findByAgentId(agentId);
+
     if (existing) {
       Object.assign(existing, dto);
+
       return await this.repository.save(existing);
     } else {
       const config = this.repository.create({ ...dto, agentId });
+
       return await this.repository.save(config);
     }
   }
@@ -101,6 +112,7 @@ export class DeploymentConfigurationsRepository {
    */
   async deleteByAgentId(agentId: string): Promise<void> {
     const config = await this.findByAgentIdOrThrow(agentId);
+
     await this.repository.remove(config);
   }
 }
