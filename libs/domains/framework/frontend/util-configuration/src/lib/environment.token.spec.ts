@@ -1,5 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import { environment } from './environment';
 import { Environment } from './environment.interface';
 import { ENVIRONMENT, loadRuntimeEnvironment } from './environment.token';
@@ -16,6 +17,7 @@ describe('environment.token', () => {
         provide: ENVIRONMENT,
         useValue: environment,
       };
+
       expect(testProvider.provide).toBe(ENVIRONMENT);
       expect(testProvider.useValue).toBeDefined();
     });
@@ -35,6 +37,7 @@ describe('environment.token', () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
       const result = await loadRuntimeEnvironment();
+
       expect(result).toBe(environment);
     });
 
@@ -45,6 +48,7 @@ describe('environment.token', () => {
       });
 
       const result = await loadRuntimeEnvironment();
+
       expect(result).toBe(environment);
     });
 
@@ -62,6 +66,7 @@ describe('environment.token', () => {
       });
 
       const result = await loadRuntimeEnvironment();
+
       expect(result.controller.restApiUrl).toBe('http://custom-api:3000/api');
       expect(result.controller.websocketUrl).toBe('http://custom-ws:8080/clients');
       // Other properties should remain from base environment
@@ -91,6 +96,7 @@ describe('environment.token', () => {
       }).compileComponents();
 
       const injected = TestBed.inject(ENVIRONMENT);
+
       expect(injected).toBe(environment);
       expect(injected).toMatchObject<Environment>({
         production: expect.any(Boolean),
@@ -116,6 +122,7 @@ describe('environment.token', () => {
 
       const first = TestBed.inject(ENVIRONMENT);
       const second = TestBed.inject(ENVIRONMENT);
+
       expect(first).toBe(second);
       expect(first).toBe(environment);
     });
@@ -140,6 +147,7 @@ describe('environment.token', () => {
       }).compileComponents();
 
       const service = TestBed.inject(TestService);
+
       expect(service.env).toBe(environment);
       expect(service.env).toMatchObject<Environment>({
         production: expect.any(Boolean),

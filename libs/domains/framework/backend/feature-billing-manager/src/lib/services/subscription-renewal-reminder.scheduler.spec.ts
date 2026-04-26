@@ -14,7 +14,6 @@ describe('SubscriptionRenewalReminderScheduler', () => {
     isEnabled: jest.fn(),
     send: jest.fn(),
   } as any;
-
   let scheduler: SubscriptionRenewalReminderScheduler;
 
   beforeEach(() => {
@@ -112,6 +111,7 @@ describe('SubscriptionRenewalReminderScheduler', () => {
       currentPeriodEnd: new Date('2024-02-01'),
       nextBillingAt: new Date('2024-02-15'),
     };
+
     subscriptionsRepository.findUpcomingRenewals.mockResolvedValue([subscription, subscription]);
     customerProfilesRepository.findByUserId.mockResolvedValue({
       userId: 'user-1',

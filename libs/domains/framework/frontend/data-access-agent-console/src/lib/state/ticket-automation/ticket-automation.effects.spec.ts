@@ -4,8 +4,10 @@ import { provideMockActions } from '@ngrx/effects/testing';
 import type { Action } from '@ngrx/store';
 import { Observable, of, throwError } from 'rxjs';
 import { take } from 'rxjs/operators';
+
 import { TicketsService } from '../../services/tickets.service';
 import { replaceTicketDetailActivity } from '../tickets/tickets.actions';
+
 import {
   approveTicketAutomation,
   approveTicketAutomationFailure,
@@ -41,7 +43,6 @@ describe('TicketAutomationEffects', () => {
       | 'listActivity'
     >
   >;
-
   const mockConfig: TicketAutomationResponseDto = {
     ticketId: 't1',
     eligible: false,
@@ -115,6 +116,7 @@ describe('TicketAutomationEffects', () => {
 
   it('patchTicketAutomation$ maps HttpErrorResponse message', (done) => {
     const err = new HttpErrorResponse({ error: { message: 'bad' }, status: 400, statusText: 'Bad' });
+
     ticketsService.patchTicketAutomation!.mockReturnValue(throwError(() => err));
     actions$ = of(patchTicketAutomation({ ticketId: 't1', dto: {} }));
     TestBed.runInInjectionContext(() => {
@@ -190,6 +192,7 @@ describe('TicketAutomationEffects', () => {
         payload: {},
       },
     ];
+
     ticketsService.listActivity!.mockReturnValue(of(activity));
     actions$ = of(patchTicketAutomationSuccess({ config: mockConfig }));
     TestBed.runInInjectionContext(() => {

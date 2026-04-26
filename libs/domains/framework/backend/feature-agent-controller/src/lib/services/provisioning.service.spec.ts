@@ -1,21 +1,19 @@
-import { BadRequestException, forwardRef, NotFoundException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
-import { ProvisioningProvider, ProvisionedServer, ServerInfo } from '../providers/provisioning-provider.interface';
+import { ProvisionedServer, ProvisioningProvider, ServerInfo } from '../providers/provisioning-provider.interface';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
+
 import { ClientsService } from './clients.service';
 import { ProvisioningService } from './provisioning.service';
 import { StatisticsService } from './statistics.service';
 
 describe('ProvisioningService', () => {
   let service: ProvisioningService;
-  let provisioningProviderFactory: jest.Mocked<ProvisioningProviderFactory>;
-  let clientsService: jest.Mocked<ClientsService>;
-  let provisioningReferencesRepository: jest.Mocked<ProvisioningReferencesRepository>;
-
   const mockProvider: ProvisioningProvider = {
     getType: jest.fn().mockReturnValue('hetzner'),
     getDisplayName: jest.fn().mockReturnValue('Hetzner Cloud'),
@@ -24,7 +22,6 @@ describe('ProvisioningService', () => {
     deleteServer: jest.fn(),
     getServerInfo: jest.fn(),
   };
-
   const mockClient: ClientEntity = {
     id: 'client-uuid',
     name: 'test-server',
@@ -35,7 +32,6 @@ describe('ProvisioningService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockProvisionedServer: ProvisionedServer = {
     serverId: 'server-123',
     name: 'test-server',
@@ -48,7 +44,6 @@ describe('ProvisioningService', () => {
       datacenter: 'fsn1-dc8',
     },
   };
-
   const mockServerInfo: ServerInfo = {
     serverId: 'server-123',
     name: 'test-server',
@@ -60,7 +55,6 @@ describe('ProvisioningService', () => {
       datacenter: 'fsn1-dc8',
     },
   };
-
   const mockProvisioningReference: ProvisioningReferenceEntity = {
     id: 'ref-uuid',
     clientId: 'client-uuid',
@@ -74,24 +68,20 @@ describe('ProvisioningService', () => {
     updatedAt: new Date('2024-01-01'),
     client: mockClient,
   };
-
   const mockProvisioningProviderFactory = {
     hasProvider: jest.fn(),
     getProvider: jest.fn(),
     getRegisteredTypes: jest.fn(),
   };
-
   const mockClientsService = {
     create: jest.fn(),
     remove: jest.fn(),
   };
-
   const mockProvisioningReferencesRepository = {
     create: jest.fn(),
     findByClientId: jest.fn(),
     update: jest.fn(),
   };
-
   const mockStatisticsService = {
     recordEntityCreated: jest.fn().mockResolvedValue(undefined),
     recordEntityDeleted: jest.fn().mockResolvedValue(undefined),
@@ -129,9 +119,6 @@ describe('ProvisioningService', () => {
     }).compile();
 
     service = module.get<ProvisioningService>(ProvisioningService);
-    provisioningProviderFactory = module.get(ProvisioningProviderFactory);
-    clientsService = module.get(ClientsService);
-    provisioningReferencesRepository = module.get(ProvisioningReferencesRepository);
 
     jest.clearAllMocks();
   });
@@ -216,7 +203,6 @@ describe('ProvisioningService', () => {
         keycloakClientSecret: 'keycloak-client-secret',
         keycloakRealm: 'test-realm',
       };
-
       const keycloakClient: ClientEntity = {
         ...mockClient,
         authenticationType: AuthenticationType.KEYCLOAK,
@@ -282,6 +268,7 @@ describe('ProvisioningService', () => {
       await service.provisionServer(provisionDto);
 
       const createCall = mockClientsService.create.mock.calls[0][0];
+
       expect(createCall.apiKey).toBeDefined();
       expect(createCall.apiKey).toHaveLength(32); // API_KEY_LENGTH
       expect(typeof createCall.apiKey).toBe('string');
@@ -305,8 +292,10 @@ describe('ProvisioningService', () => {
       await service.provisionServer(provisionDto);
 
       const provisionCall = (mockProvider.provisionServer as jest.Mock).mock.calls[0][0];
+
       expect(provisionCall.userData).toBeDefined();
       const decodedUserData = Buffer.from(provisionCall.userData, 'base64').toString('utf-8');
+
       expect(decodedUserData).toContain('agent-manager');
       expect(decodedUserData).toContain('docker-compose.yml');
     });

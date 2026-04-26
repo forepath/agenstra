@@ -1,4 +1,5 @@
 import { IsBoolean, IsEnum, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 import { ContainerType } from '../entities/agent.entity';
 
 /**

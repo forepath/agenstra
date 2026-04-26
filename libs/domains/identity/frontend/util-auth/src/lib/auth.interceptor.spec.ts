@@ -1,7 +1,9 @@
 import { HttpRequest, HttpResponse } from '@angular/common/http';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { KeycloakService } from 'keycloak-angular';
 import { of } from 'rxjs';
+
 import { IDENTITY_AUTH_ENVIRONMENT, IdentityAuthEnvironment } from './auth-environment';
 import { authInterceptor } from './auth.interceptor';
 
@@ -10,15 +12,12 @@ jest.mock('keycloak-angular', () => ({
   KeycloakService: jest.fn(),
 }));
 
-import { KeycloakService } from 'keycloak-angular';
-
 describe('authInterceptor', () => {
   const mockNext = jest.fn((req: HttpRequest<unknown>) => {
     return of(new HttpResponse({ body: null, status: 200, url: req.url, headers: req.headers }));
   });
   let mockAuthEnv: IdentityAuthEnvironment;
   let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
-
   const setupTestBed = (envOverrides?: Partial<IdentityAuthEnvironment>, keycloakServiceOverride?: any): Injector => {
     TestBed.resetTestingModule();
     const providers: any[] = [
@@ -38,6 +37,7 @@ describe('authInterceptor', () => {
     TestBed.configureTestingModule({
       providers,
     });
+
     return TestBed.inject(Injector);
   };
 
@@ -85,9 +85,11 @@ describe('authInterceptor', () => {
       result.subscribe((response) => {
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.get('Authorization')).toBe('Bearer test-api-key');
         expect(mockNext).toHaveBeenCalled();
         const interceptedReq = mockNext.mock.calls[0][0];
+
         expect(interceptedReq.headers.get('Authorization')).toBe('Bearer test-api-key');
         done();
       });
@@ -97,6 +99,7 @@ describe('authInterceptor', () => {
       const injector = setupTestBed({
         authentication: { type: 'api-key', apiKey: undefined },
       });
+
       Storage.prototype.getItem = jest.fn().mockReturnValue(null);
       const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
       const result = runInInjectionContext(injector, () => authInterceptor(req, mockNext));
@@ -104,6 +107,7 @@ describe('authInterceptor', () => {
       result.subscribe((response) => {
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.has('Authorization')).toBe(false);
         done();
       });
@@ -111,6 +115,7 @@ describe('authInterceptor', () => {
 
     it('should use API key from localStorage when environment API key is missing', (done) => {
       const localStorageApiKey = 'localStorage-api-key-123';
+
       Storage.prototype.getItem = jest.fn().mockReturnValue(localStorageApiKey);
       const injector = setupTestBed({
         authentication: { type: 'api-key', apiKey: undefined },
@@ -122,9 +127,11 @@ describe('authInterceptor', () => {
         expect(Storage.prototype.getItem).toHaveBeenCalledWith('agent-controller-api-key');
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.get('Authorization')).toBe(`Bearer ${localStorageApiKey}`);
         expect(mockNext).toHaveBeenCalled();
         const interceptedReq = mockNext.mock.calls[0][0];
+
         expect(interceptedReq.headers.get('Authorization')).toBe(`Bearer ${localStorageApiKey}`);
         done();
       });
@@ -133,6 +140,7 @@ describe('authInterceptor', () => {
     it('should prefer environment API key over localStorage API key', (done) => {
       const environmentApiKey = 'environment-api-key';
       const localStorageApiKey = 'localStorage-api-key-123';
+
       Storage.prototype.getItem = jest.fn().mockReturnValue(localStorageApiKey);
       const injector = setupTestBed({
         authentication: { type: 'api-key', apiKey: environmentApiKey },
@@ -143,6 +151,7 @@ describe('authInterceptor', () => {
       result.subscribe((response) => {
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.get('Authorization')).toBe(`Bearer ${environmentApiKey}`);
         expect(Storage.prototype.getItem).not.toHaveBeenCalled();
         done();
@@ -168,6 +177,7 @@ describe('authInterceptor', () => {
         expect(keycloakService.getToken).toHaveBeenCalled();
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.get('Authorization')).toBe('Bearer keycloak-token-123');
         done();
       });
@@ -189,6 +199,7 @@ describe('authInterceptor', () => {
       result.subscribe((response) => {
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.has('Authorization')).toBe(false);
         done();
       });
@@ -232,6 +243,7 @@ describe('authInterceptor', () => {
       result.subscribe((response) => {
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.has('Authorization')).toBe(false);
         done();
       });
@@ -241,6 +253,7 @@ describe('authInterceptor', () => {
   describe('when authentication type is users', () => {
     it('should add Authorization header with JWT from localStorage', (done) => {
       const jwt = 'users-jwt-token-123';
+
       Storage.prototype.getItem = jest.fn().mockReturnValue(jwt);
       const injector = setupTestBed({
         authentication: { type: 'users' },
@@ -252,6 +265,7 @@ describe('authInterceptor', () => {
         expect(Storage.prototype.getItem).toHaveBeenCalledWith('agent-controller-users-jwt');
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.get('Authorization')).toBe(`Bearer ${jwt}`);
         done();
       });
@@ -268,6 +282,7 @@ describe('authInterceptor', () => {
       result.subscribe((response) => {
         expect(response).toBeInstanceOf(HttpResponse);
         const httpResponse = response as HttpResponse<unknown>;
+
         expect(httpResponse.headers.has('Authorization')).toBe(false);
         done();
       });

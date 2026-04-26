@@ -38,7 +38,6 @@ import type { AgentResponseDto, ContainerType } from './agents.types';
 describe('agentsReducer', () => {
   const clientId = 'client-1';
   const clientId2 = 'client-2';
-
   const mockAgent: AgentResponseDto = {
     id: 'agent-1',
     name: 'Test Agent',
@@ -48,7 +47,6 @@ describe('agentsReducer', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockAgent2: AgentResponseDto = {
     id: 'agent-2',
     name: 'Test Agent 2',
@@ -74,7 +72,6 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [mockAgent] },
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, loadClientAgents({ clientId, params: {} }));
 
       expect(newState.loading[clientId]).toBe(true);
@@ -90,7 +87,6 @@ describe('agentsReducer', () => {
         loading: { [clientId]: true },
         entities: { [clientId]: [mockAgent] },
       };
-
       const accumulatedAgents = [mockAgent, mockAgent2];
       const newState = agentsReducer(state, loadClientAgentsBatch({ clientId, offset: 10, accumulatedAgents }));
 
@@ -106,7 +102,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loading: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentsSuccess({ clientId, agents: [mockAgent, mockAgent2] }));
 
       expect(newState.entities[clientId]).toEqual([mockAgent, mockAgent2]);
@@ -121,7 +116,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loading: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentsFailure({ clientId, error: 'Load failed' }));
 
       expect(newState.errors[clientId]).toBe('Load failed');
@@ -135,7 +129,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, loadClientAgent({ clientId, agentId: 'agent-1' }));
 
       expect(newState.loadingAgent[clientId]).toBe(true);
@@ -150,7 +143,6 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [mockAgent] },
         loadingAgent: { [clientId]: true },
       };
-
       const updatedAgent = { ...mockAgent, name: 'Updated Name' };
       const newState = agentsReducer(state, loadClientAgentSuccess({ clientId, agent: updatedAgent }));
 
@@ -165,7 +157,6 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [] },
         loadingAgent: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentSuccess({ clientId, agent: mockAgent }));
 
       expect(newState.entities[clientId]).toContainEqual(mockAgent);
@@ -179,7 +170,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loadingAgent: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentFailure({ clientId, error: 'Load failed' }));
 
       expect(newState.errors[clientId]).toBe('Load failed');
@@ -196,7 +186,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         agentModelsErrors: { [key]: 'old' },
       };
-
       const newState = agentsReducer(state, loadClientAgentModels({ clientId, agentId }));
 
       expect(newState.loadingAgentModels[key]).toBe(true);
@@ -214,7 +203,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loadingAgentModels: { [key]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentModelsSuccess({ clientId, agentId, models }));
 
       expect(newState.agentModels[key]).toEqual(models);
@@ -232,7 +220,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loadingAgentModels: { [key]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentModelsFailure({ clientId, agentId, error: 'failed' }));
 
       expect(newState.agentModelsErrors[key]).toBe('failed');
@@ -246,7 +233,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, createClientAgent({ clientId, agent: {} as any }));
 
       expect(newState.creating[clientId]).toBe(true);
@@ -261,14 +247,13 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [mockAgent] },
         creating: { [clientId]: true },
       };
-
       const newState = agentsReducer(
         state,
         createClientAgentSuccess({ clientId, agent: { ...mockAgent2, password: 'pwd' } }),
       );
 
-      expect(newState.entities[clientId]).toContainEqual(mockAgent2);
-      expect(newState.selectedAgents[clientId]).toEqual(mockAgent2);
+      expect(newState.entities[clientId]).toContainEqual({ ...mockAgent2, password: 'pwd' });
+      expect(newState.selectedAgents[clientId]).toEqual({ ...mockAgent2, password: 'pwd' });
       expect(newState.creating[clientId]).toBe(false);
     });
   });
@@ -279,7 +264,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         creating: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, createClientAgentFailure({ clientId, error: 'Create failed' }));
 
       expect(newState.errors[clientId]).toBe('Create failed');
@@ -293,7 +277,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, updateClientAgent({ clientId, agentId: 'agent-1', agent: {} }));
 
       expect(newState.updating[clientId]).toBe(true);
@@ -308,7 +291,6 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [mockAgent] },
         updating: { [clientId]: true },
       };
-
       const updatedAgent = { ...mockAgent, name: 'Updated Name' };
       const newState = agentsReducer(state, updateClientAgentSuccess({ clientId, agent: updatedAgent }));
 
@@ -323,7 +305,6 @@ describe('agentsReducer', () => {
         selectedAgents: { [clientId]: mockAgent },
         updating: { [clientId]: true },
       };
-
       const updatedAgent = { ...mockAgent, name: 'Updated Name' };
       const newState = agentsReducer(state, updateClientAgentSuccess({ clientId, agent: updatedAgent }));
 
@@ -337,7 +318,6 @@ describe('agentsReducer', () => {
         selectedAgents: { [clientId]: mockAgent2 },
         updating: { [clientId]: true },
       };
-
       const updatedAgent = { ...mockAgent, name: 'Updated Name' };
       const newState = agentsReducer(state, updateClientAgentSuccess({ clientId, agent: updatedAgent }));
 
@@ -351,7 +331,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         updating: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, updateClientAgentFailure({ clientId, error: 'Update failed' }));
 
       expect(newState.errors[clientId]).toBe('Update failed');
@@ -365,7 +344,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, deleteClientAgent({ clientId, agentId: 'agent-1' }));
 
       expect(newState.deleting[clientId]).toBe(true);
@@ -380,7 +358,6 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [mockAgent, mockAgent2] },
         deleting: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, deleteClientAgentSuccess({ clientId, agentId: 'agent-1' }));
 
       expect(newState.entities[clientId]).not.toContainEqual(mockAgent);
@@ -395,7 +372,6 @@ describe('agentsReducer', () => {
         selectedAgents: { [clientId]: mockAgent },
         deleting: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, deleteClientAgentSuccess({ clientId, agentId: 'agent-1' }));
 
       expect(newState.selectedAgents[clientId]).toBeNull();
@@ -412,7 +388,6 @@ describe('agentsReducer', () => {
         loadingAgentModels: { [key]: false },
         agentModelsErrors: { [key]: null },
       };
-
       const newState = agentsReducer(state, deleteClientAgentSuccess({ clientId, agentId }));
 
       expect(newState.agentModels[key]).toBeUndefined();
@@ -427,7 +402,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         deleting: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, deleteClientAgentFailure({ clientId, error: 'Delete failed' }));
 
       expect(newState.errors[clientId]).toBe('Delete failed');
@@ -441,7 +415,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, startClientAgent({ clientId, agentId: 'agent-1' }));
 
       expect(newState.starting[clientId]).toBe(true);
@@ -458,7 +431,6 @@ describe('agentsReducer', () => {
         selectedAgents: { [clientId]: mockAgent },
         starting: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, startClientAgentSuccess({ clientId, agent: updatedAgent }));
 
       expect(newState.entities[clientId]).toContainEqual(updatedAgent);
@@ -473,7 +445,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         starting: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, startClientAgentFailure({ clientId, error: 'Start failed' }));
 
       expect(newState.errors[clientId]).toBe('Start failed');
@@ -487,7 +458,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, stopClientAgent({ clientId, agentId: 'agent-1' }));
 
       expect(newState.stopping[clientId]).toBe(true);
@@ -504,7 +474,6 @@ describe('agentsReducer', () => {
         selectedAgents: { [clientId]: mockAgent },
         stopping: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, stopClientAgentSuccess({ clientId, agent: updatedAgent }));
 
       expect(newState.entities[clientId]).toContainEqual(updatedAgent);
@@ -519,7 +488,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         stopping: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, stopClientAgentFailure({ clientId, error: 'Stop failed' }));
 
       expect(newState.errors[clientId]).toBe('Stop failed');
@@ -533,7 +501,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         errors: { [clientId]: 'Previous error' },
       };
-
       const newState = agentsReducer(state, restartClientAgent({ clientId, agentId: 'agent-1' }));
 
       expect(newState.restarting[clientId]).toBe(true);
@@ -550,7 +517,6 @@ describe('agentsReducer', () => {
         selectedAgents: { [clientId]: mockAgent },
         restarting: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, restartClientAgentSuccess({ clientId, agent: updatedAgent }));
 
       expect(newState.entities[clientId]).toContainEqual(updatedAgent);
@@ -565,7 +531,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         restarting: { [clientId]: true },
       };
-
       const newState = agentsReducer(state, restartClientAgentFailure({ clientId, error: 'Restart failed' }));
 
       expect(newState.errors[clientId]).toBe('Restart failed');
@@ -580,7 +545,6 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [mockAgent, mockAgent2] },
         selectedAgents: { [clientId]: mockAgent },
       };
-
       const newState = agentsReducer(state, clearSelectedClientAgent({ clientId }));
 
       expect(newState.selectedAgents[clientId]).toBeNull();
@@ -600,7 +564,6 @@ describe('agentsReducer', () => {
           [clientId2]: mockAgent2,
         },
       };
-
       const newState = agentsReducer(state, clearSelectedClientAgent({ clientId }));
 
       expect(newState.selectedAgents[clientId]).toBeNull();
@@ -613,7 +576,6 @@ describe('agentsReducer', () => {
         entities: { [clientId]: [mockAgent] },
         selectedAgents: { [clientId]: null },
       };
-
       const newState = agentsReducer(state, clearSelectedClientAgent({ clientId }));
 
       expect(newState.selectedAgents[clientId]).toBeNull();
@@ -649,7 +611,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loadingCommands: {},
       };
-
       const newState = agentsReducer(state, loadClientAgentCommands({ clientId, agentId }));
 
       expect(newState.loadingCommands[`${clientId}:${agentId}`]).toBe(true);
@@ -665,7 +626,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loadingCommands: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentCommandsSuccess({ clientId, agentId, commands }));
 
       expect(newState.commands[`${clientId}:${agentId}`]).toEqual(commands);
@@ -677,7 +637,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loadingCommands: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentCommandsSuccess({ clientId, agentId, commands: {} }));
 
       expect(newState.commands[`${clientId}:${agentId}`]).toEqual({});
@@ -695,7 +654,6 @@ describe('agentsReducer', () => {
           [`${clientId2}:${agentId2}`]: false,
         },
       };
-
       const newState = agentsReducer(state, loadClientAgentCommandsSuccess({ clientId, agentId, commands }));
 
       expect(newState.commands[`${clientId}:${agentId}`]).toEqual(commands);
@@ -711,7 +669,6 @@ describe('agentsReducer', () => {
         ...initialAgentsState,
         loadingCommands: { [`${clientId}:${agentId}`]: true },
       };
-
       const newState = agentsReducer(state, loadClientAgentCommandsFailure({ clientId, agentId }));
 
       expect(newState.loadingCommands[`${clientId}:${agentId}`]).toBe(false);

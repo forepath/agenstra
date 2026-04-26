@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import {
   ProvisionedServer,
   ProvisioningProvider,
@@ -21,6 +22,7 @@ export class HetznerProvider implements ProvisioningProvider {
 
   constructor() {
     this.apiToken = process.env.HETZNER_API_TOKEN || '';
+
     if (!this.apiToken) {
       this.logger.warn('HETZNER_API_TOKEN environment variable is not set. Hetzner provider will not function.');
     }
@@ -92,7 +94,6 @@ export class HetznerProvider implements ProvisioningProvider {
     try {
       // Generate user data script for Docker CE installation and agent-manager setup
       const userData = this.generateUserDataScript(options.userData || '');
-
       // Create server
       // Use Unix timestamp (seconds since epoch) for provisioned-at label
       const provisionedAt = Math.floor(Date.now() / 1000).toString();
@@ -118,8 +119,8 @@ export class HetznerProvider implements ProvisioningProvider {
           },
         },
       );
-
       const server = createResponse.data.server;
+
       this.logger.log(`Created Hetzner server ${server.id} (${server.name})`);
 
       // Wait for server to be running
@@ -142,11 +143,15 @@ export class HetznerProvider implements ProvisioningProvider {
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to provision Hetzner server: ${axiosError.message}`);
+
       if (axiosError.response?.data) {
         const errorData = axiosError.response.data as { error?: { message?: string } };
+
         throw new BadRequestException(`Failed to provision server: ${errorData.error?.message || axiosError.message}`);
       }
+
       throw new BadRequestException(`Failed to provision server: ${axiosError.message}`);
     }
   }
@@ -169,12 +174,16 @@ export class HetznerProvider implements ProvisioningProvider {
       this.logger.log(`Deleted Hetzner server ${serverId}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to delete Hetzner server ${serverId}: ${axiosError.message}`);
+
       if (axiosError.response?.status === 404) {
         // Server already deleted or doesn't exist - treat as success
         this.logger.warn(`Server ${serverId} not found, assuming already deleted`);
+
         return;
       }
+
       throw new BadRequestException(`Failed to delete server: ${axiosError.message}`);
     }
   }
@@ -198,7 +207,6 @@ export class HetznerProvider implements ProvisioningProvider {
           },
         },
       );
-
       const server = response.data.server;
       const publicIp = server.public_net.ipv4?.ip || '';
       const privateIp = server.private_net[0]?.ip || undefined;
@@ -216,10 +224,13 @@ export class HetznerProvider implements ProvisioningProvider {
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to get Hetzner server info ${serverId}: ${axiosError.message}`);
+
       if (axiosError.response?.status === 404) {
         throw new BadRequestException(`Server ${serverId} not found`);
       }
+
       throw new BadRequestException(`Failed to get server info: ${axiosError.message}`);
     }
   }
@@ -236,11 +247,14 @@ export class HetznerProvider implements ProvisioningProvider {
     while (Date.now() - startTime < maxWaitTime) {
       try {
         const info = await this.getServerInfo(serverId.toString());
+
         if (info.status === 'running') {
           // Additional wait for SSH to be ready
           await new Promise((resolve) => setTimeout(resolve, 10000));
+
           return;
         }
+
         this.logger.debug(`Server ${serverId} status: ${info.status}, waiting...`);
       } catch (error) {
         this.logger.warn(`Error checking server status: ${(error as Error).message}`);
@@ -269,6 +283,7 @@ export class HetznerProvider implements ProvisioningProvider {
   private generateUserDataScript(additionalUserData: string): string {
     // Decode additional user data if it's base64, otherwise use as-is
     let decodedAdditionalUserData = '';
+
     if (additionalUserData && additionalUserData.trim()) {
       try {
         decodedAdditionalUserData = Buffer.from(additionalUserData, 'base64').toString('utf-8');
@@ -279,6 +294,7 @@ export class HetznerProvider implements ProvisioningProvider {
     }
 
     const hasAdditionalUserData = Boolean(decodedAdditionalUserData && decodedAdditionalUserData.trim());
+
     if (!hasAdditionalUserData) {
       throw new BadRequestException(
         'Provisioning user data is missing. Please provision servers through the provisioning service to supply configuration.',
@@ -413,7 +429,6 @@ fi
 
 log "agent-manager provisioning completed successfully at $(date)"
 `;
-
     // Check size limit: Hetzner Cloud user_data is limited to 32KiB (32,768 bytes)
     // Note: The limit applies to the raw script content, not the base64-encoded version
     const scriptSize = Buffer.byteLength(script, 'utf8');
@@ -422,6 +437,7 @@ log "agent-manager provisioning completed successfully at $(date)"
     if (scriptSize > MAX_USER_DATA_SIZE) {
       const sizeKB = (scriptSize / 1024).toFixed(2);
       const maxKB = (MAX_USER_DATA_SIZE / 1024).toFixed(2);
+
       throw new BadRequestException(
         `User data script size (${sizeKB}KB) exceeds Hetzner Cloud limit of ${maxKB}KB. Please reduce the configuration size.`,
       );

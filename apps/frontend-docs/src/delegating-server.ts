@@ -1,14 +1,12 @@
+import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
-import { readFileSync, existsSync, createReadStream, statSync } from 'node:fs';
-import { join, dirname, extname } from 'node:path';
+import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 const AVAILABLE_LOCALES = ['en', 'de'];
 const DEFAULT_LOCALE = 'en';
-
 const localeServers = new Map<string, any>();
 
 async function loadLocaleServers() {
@@ -18,6 +16,7 @@ async function loadLocaleServers() {
 
       if (existsSync(serverPath)) {
         const serverModule = await import(serverPath);
+
         localeServers.set(locale, serverModule.default);
         console.log(`Loaded server for locale: ${locale}`);
       } else {
@@ -59,6 +58,7 @@ function serveStaticFile(req: IncomingMessage, res: ServerResponse, locale: stri
 
     if (existsSync(localeBrowserPath)) {
       const stat = statSync(localeBrowserPath);
+
       if (stat.isFile()) {
         const ext = extname(pathname).toLowerCase();
         const contentType = getContentType(ext);
@@ -70,7 +70,9 @@ function serveStaticFile(req: IncomingMessage, res: ServerResponse, locale: stri
         });
 
         const stream = createReadStream(localeBrowserPath);
+
         stream.pipe(res);
+
         return true;
       }
     }
@@ -109,6 +111,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
       console.error(`No server found for locale: ${locale}`);
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error: Locale server not found');
+
       return;
     }
 
@@ -132,7 +135,6 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     res.end('Internal Server Error');
   }
 });
-
 const port = process.env['PORT'] || 4000;
 
 loadLocaleServers()

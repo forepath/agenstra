@@ -1,5 +1,6 @@
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
+
 import {
   buildDescendantCheckboxTaskTotalsByTicketId,
   countMarkdownCheckboxTasks,
@@ -20,6 +21,7 @@ describe('countMarkdownCheckboxTasks', () => {
 - [X] three
 - [ ] four
 `;
+
     expect(countMarkdownCheckboxTasks(md)).toEqual({ open: 2, done: 2 });
   });
 
@@ -54,6 +56,7 @@ describe('buildDescendantCheckboxTaskTotalsByTicketId', () => {
     const a = ent('a', 'root', '- [ ] a1');
     const b = ent('b', 'a', '- [x] b1');
     const map = buildDescendantCheckboxTaskTotalsByTicketId([root, a, b]);
+
     expect(map.get('root')).toEqual({ open: 1, done: 1 });
     expect(map.get('a')).toEqual({ open: 0, done: 1 });
     expect(map.get('b')).toEqual({ open: 0, done: 0 });

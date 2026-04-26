@@ -1,4 +1,5 @@
 import type { AgentResponseObject } from '@forepath/framework/frontend/data-access-agent-console';
+
 import {
   extractThinkingPreviewText,
   formatAgentResponseForChatMarkdown,
@@ -19,6 +20,7 @@ describe('formatAgentResponseForChatMarkdown', () => {
       args: { path: '/README.md' },
     });
     const md = formatAgentResponseForChatMarkdown(raw);
+
     expect(md).toContain('Tool call');
     expect(md).toContain('read');
     expect(md).toContain('README');
@@ -34,6 +36,7 @@ describe('formatAgentResponseForChatMarkdown', () => {
       result: { output: 'ok\n', exit: 0 },
     };
     const md = formatAgentResponseForChatMarkdown(obj);
+
     expect(md).toContain('Tool result');
     expect(md).toContain('ok');
     expect(md).not.toContain('[object Object]');
@@ -51,6 +54,7 @@ describe('formatAgentResponseForChatMarkdown', () => {
       ],
     };
     const md = formatAgentResponseForChatMarkdown(obj);
+
     expect(md).toContain('Question');
     expect(md).toContain('Pick one');
     expect(md).toContain('`a`');
@@ -76,6 +80,7 @@ describe('formatAgentResponseForChatMarkdown', () => {
       ],
     };
     const md = formatAgentResponseForChatMarkdown(composite);
+
     expect(md).toContain('Tool call');
     expect(md).toContain('Listed.');
   });
@@ -86,6 +91,7 @@ describe('formatAgentResponseForChatMarkdown', () => {
       message: { content: [{ type: 'text', text: 'Planning next steps' }] },
     } as AgentResponseObject;
     const md = formatAgentResponseForChatMarkdown(thinking);
+
     expect(md).toContain('Planning next steps');
     expect(md).not.toMatch(/^\s*-\s+\*\*/m);
   });
@@ -95,6 +101,7 @@ describe('formatAgentResponseForChatMarkdown', () => {
       type: 'thinking',
       message: { content: [{ type: 'text', text: 'Step one' }] },
     } as AgentResponseObject;
+
     expect(extractThinkingPreviewText(thinking)).toBe('Step one');
   });
 });
@@ -102,6 +109,7 @@ describe('formatAgentResponseForChatMarkdown', () => {
 describe('formatUnknownAsMarkdown', () => {
   it('formats nested objects as bullets', () => {
     const md = formatUnknownAsMarkdown({ a: 1, b: { c: 'x' } });
+
     expect(md).toContain('**a**');
     expect(md).toContain('**c**');
   });

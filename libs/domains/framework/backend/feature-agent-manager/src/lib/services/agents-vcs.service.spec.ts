@@ -1,9 +1,11 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CreateBranchDto } from '../dto/create-branch.dto';
 import { ResolveConflictDto } from '../dto/resolve-conflict.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentsRepository } from '../repositories/agents.repository';
+
 import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentsVcsService } from './agents-vcs.service';
 import { AgentsService } from './agents.service';
@@ -15,10 +17,8 @@ describe('AgentsVcsService', () => {
   let agentsRepository: jest.Mocked<AgentsRepository>;
   let dockerService: jest.Mocked<DockerService>;
   let agentFileSystemService: jest.Mocked<AgentFileSystemService>;
-
   const mockAgentId = 'test-agent-uuid';
   const mockContainerId = 'test-container-id';
-
   const mockAgentEntity: AgentEntity = {
     id: mockAgentId,
     name: 'Test Agent',
@@ -31,19 +31,15 @@ describe('AgentsVcsService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockAgentsService = {
     findOne: jest.fn(),
   };
-
   const mockAgentsRepository = {
     findByIdOrThrow: jest.fn(),
   };
-
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
   };
-
   const mockAgentFileSystemService = {
     readFile: jest.fn(),
   };
@@ -333,6 +329,7 @@ describe('AgentsVcsService', () => {
       // The commit command includes all config in a single call
       // Find the commit call and verify it contains the message and author config
       const commitCall = dockerService.sendCommandToContainer.mock.calls.find((call) => call[1].includes('commit'));
+
       expect(commitCall).toBeDefined();
       expect(commitCall[0]).toBe(mockContainerId);
       expect(commitCall[1]).toContain('commit');

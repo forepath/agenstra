@@ -1,7 +1,9 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { CreateUsageRecordDto, UsageRecordResponse, UsageSummary } from '../types/billing.types';
+
 import { UsageService } from './usage.service';
 
 describe('UsageService', () => {
@@ -9,14 +11,12 @@ describe('UsageService', () => {
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
   const subscriptionId = 'sub-1';
-
   const mockSummary: UsageSummary = {
     subscriptionId: 'sub-1',
     periodStart: '2024-01-01',
     periodEnd: '2024-01-31',
     usagePayload: { key: 'value' },
   };
-
   const mockRecord: UsageRecordResponse = {
     id: 'rec-1',
     subscriptionId: 'sub-1',
@@ -62,6 +62,7 @@ describe('UsageService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/usage/summary/${subscriptionId}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockSummary);
     });
@@ -82,6 +83,7 @@ describe('UsageService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/usage/record`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockRecord);

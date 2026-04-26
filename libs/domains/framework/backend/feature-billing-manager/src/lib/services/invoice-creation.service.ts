@@ -1,16 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InvoiceNinjaService } from './invoice-ninja.service';
-import { PricingService } from './pricing.service';
+
+import type { OpenPositionEntity } from '../entities/open-position.entity';
+import { BillingIntervalType } from '../entities/service-plan.entity';
+import type { ServicePlanEntity } from '../entities/service-plan.entity';
+import type { SubscriptionEntity } from '../entities/subscription.entity';
+import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
+
 import { BillingScheduleService } from './billing-schedule.service';
-import { BillingIntervalType } from '../entities/service-plan.entity';
-import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
-import type { OpenPositionEntity } from '../entities/open-position.entity';
-import type { SubscriptionEntity } from '../entities/subscription.entity';
-import type { ServicePlanEntity } from '../entities/service-plan.entity';
+import { InvoiceNinjaService } from './invoice-ninja.service';
+import { PricingService } from './pricing.service';
 
 interface InvoiceCreationOptions {
   /**
@@ -43,6 +45,7 @@ export class InvoiceCreationService {
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+
     if (subscription.userId !== userId) {
       throw new BadRequestException('Subscription does not belong to user');
     }
@@ -51,7 +54,6 @@ export class InvoiceCreationService {
     const pricing = this.pricingService.calculate(plan);
     const usage = await this.usageRecordsRepository.findLatestForSubscription(subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
-
     const billUntil = options?.billUntil ?? new Date();
     const baseAmount = await this.calculateBaseAmountSinceLastBilling(
       subscription,
@@ -59,12 +61,13 @@ export class InvoiceCreationService {
       pricing.totalPrice,
       billUntil,
     );
-
     const total = baseAmount + usageCost;
+
     if (total < MIN_BILLABLE_AMOUNT) {
       if (options?.skipIfNoBillableAmount) {
         return undefined;
       }
+
       throw new BadRequestException('No billable amount since last invoice');
     }
 
@@ -75,6 +78,7 @@ export class InvoiceCreationService {
       roundedTotal,
       description,
     );
+
     return result ?? undefined;
   }
 
@@ -97,7 +101,9 @@ export class InvoiceCreationService {
       if (position.userId !== userId) {
         throw new BadRequestException('Position does not belong to user');
       }
+
       const amount = await this.getBillableAmountForPosition(position);
+
       positionAmounts.push({ position, amount });
     }
 
@@ -112,7 +118,6 @@ export class InvoiceCreationService {
       description: p.position.description ?? 'Subscription',
       amount: Math.round(p.amount * 100) / 100,
     }));
-
     const primarySubscriptionId = billable[0].position.subscriptionId;
     const result = await this.invoiceNinjaService.createInvoiceWithLineItems(userId, lineItems, primarySubscriptionId);
 
@@ -130,12 +135,15 @@ export class InvoiceCreationService {
   async getUnbilledTotalForUser(userId: string): Promise<number> {
     const positions = await this.openPositionsRepository.findUnbilledByUserId(userId);
     let total = 0;
+
     for (const position of positions) {
       const amount = await this.getBillableAmountForPosition(position);
+
       if (amount >= MIN_BILLABLE_AMOUNT) {
         total += amount;
       }
     }
+
     return Math.round(total * 100) / 100;
   }
 
@@ -144,6 +152,7 @@ export class InvoiceCreationService {
    */
   private async getBillableAmountForPosition(position: OpenPositionEntity): Promise<number> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(position.subscriptionId);
+
     if (subscription.userId !== position.userId) {
       throw new BadRequestException('Subscription does not belong to user');
     }
@@ -152,19 +161,19 @@ export class InvoiceCreationService {
     const pricing = this.pricingService.calculate(plan);
     const usage = await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
-
     const baseAmount = await this.calculateBaseAmountSinceLastBilling(
       subscription,
       plan,
       pricing.totalPrice,
       position.billUntil,
     );
-
     const total = baseAmount + usageCost;
+
     if (total < MIN_BILLABLE_AMOUNT) {
       if (position.skipIfNoBillableAmount) {
         return 0;
       }
+
       throw new BadRequestException('No billable amount since last invoice');
     }
 
@@ -173,12 +182,14 @@ export class InvoiceCreationService {
 
   private extractUsageCost(payload: Record<string, unknown>): number {
     const direct = this.parseNumeric(payload['totalCost']) ?? this.parseNumeric(payload['usageCost']);
+
     if (direct !== null) {
       return direct;
     }
 
     const units = this.parseNumeric(payload['units']);
     const unitPrice = this.parseNumeric(payload['unitPrice']);
+
     if (units !== null && unitPrice !== null) {
       return units * unitPrice;
     }
@@ -190,10 +201,13 @@ export class InvoiceCreationService {
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value;
     }
+
     if (typeof value === 'string' && value.trim().length > 0) {
       const parsed = Number(value);
+
       return Number.isFinite(parsed) ? parsed : null;
     }
+
     return null;
   }
 
@@ -207,8 +221,8 @@ export class InvoiceCreationService {
     const subscriptionStart = subscription.currentPeriodStart ?? subscription.createdAt ?? now;
     const subscriptionEndOrToday =
       subscription.cancelEffectiveAt && subscription.cancelEffectiveAt < now ? subscription.cancelEffectiveAt : now;
-
     let effectiveUntil = billUntil;
+
     if (effectiveUntil > subscriptionEndOrToday) {
       effectiveUntil = subscriptionEndOrToday;
     }
@@ -218,8 +232,8 @@ export class InvoiceCreationService {
     }
 
     const latestInvoice = await this.invoiceRefsRepository.findLatestBySubscription(subscription.id);
-
     let lastBillingAt: Date | undefined = latestInvoice?.createdAt;
+
     if (!lastBillingAt) {
       lastBillingAt = subscription.currentPeriodStart ?? subscription.createdAt;
     }
@@ -252,8 +266,8 @@ export class InvoiceCreationService {
         plan.billingDayOfMonth,
         cursor,
       );
-
       const cycleEnd = schedule.currentPeriodEnd;
+
       if (!cycleEnd || cycleEnd <= cursor) {
         // Safety fallback: bill remaining time as a full period.
         amount += fullPeriodPrice;
@@ -261,11 +275,13 @@ export class InvoiceCreationService {
       }
 
       const cycleMs = cycleEnd.getTime() - cursor.getTime();
+
       if (cycleMs <= 0) {
         break;
       }
 
       const segmentMs = Math.min(remainingMs, cycleMs);
+
       amount += fullPeriodPrice * (segmentMs / cycleMs);
 
       remainingMs -= segmentMs;

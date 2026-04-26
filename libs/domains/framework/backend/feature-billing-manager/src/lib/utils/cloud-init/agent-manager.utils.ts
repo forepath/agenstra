@@ -84,15 +84,15 @@ export function buildAgentManagerCloudInitConfigFromRequest(
 ): AgentManagerCloudInitConfig {
   const encryptionKey = randomBytes(32).toString('base64');
   const fqdn = `${hostname}.${baseDomain}`;
-
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
   const git = effectiveConfig.git as Record<string, unknown> | undefined;
-
   let authMethod = (effectiveConfig.authenticationMethod as string) ?? 'api-key';
+
   if (authMethod === 'users') {
     authMethod = 'api-key';
   }
+
   if (authMethod !== 'api-key' && authMethod !== 'keycloak') {
     authMethod = 'api-key';
   }
@@ -202,7 +202,6 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
         ]
       : []),
   ]);
-
   const dockerCompose = `services:
   postgres:
     image: postgres:16-alpine
@@ -264,7 +263,6 @@ networks:
   agent-manager-network:
     driver: bridge
 `;
-
   const nginxBootstrapConfig = `
 server {
     listen ${config.proxy?.httpPort ?? '80'};
@@ -323,7 +321,6 @@ server {
     }
 }
 `;
-
   const nginxLetsEncryptConfig = `
 server {
     listen ${config.proxy?.httpPort ?? '80'};
@@ -382,7 +379,6 @@ server {
     }
 }
 `;
-
   const sshConfig = `
 Include /etc/ssh/sshd_config.d/*.conf
 PermitRootLogin yes
@@ -394,7 +390,6 @@ PrintMotd no
 AcceptEnv LANG LC_*
 Subsystem       sftp    /usr/lib/openssh/sftp-server
 `;
-
   const script = `#!/bin/bash
 set -euo pipefail
 

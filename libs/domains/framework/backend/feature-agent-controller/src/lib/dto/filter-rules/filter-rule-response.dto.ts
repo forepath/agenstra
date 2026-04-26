@@ -1,8 +1,8 @@
+import type { FilterRuleSyncStatus } from '../../entities/agent-console-regex-filter-rule-sync-target.entity';
 import type {
   ConsoleRegexFilterDirection,
   ConsoleRegexFilterType,
 } from '../../entities/agent-console-regex-filter-rule.entity';
-import type { FilterRuleSyncStatus } from '../../entities/agent-console-regex-filter-rule-sync-target.entity';
 
 export class FilterRuleSyncSummaryDto {
   pending!: number;

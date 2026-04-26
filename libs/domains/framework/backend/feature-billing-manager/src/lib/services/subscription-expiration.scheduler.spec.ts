@@ -1,4 +1,5 @@
 import { SubscriptionStatus } from '../entities/subscription.entity';
+
 import { SubscriptionExpirationScheduler } from './subscription-expiration.scheduler';
 
 describe('SubscriptionExpirationScheduler', () => {
@@ -21,7 +22,6 @@ describe('SubscriptionExpirationScheduler', () => {
   const cloudflareDnsService = {
     deleteRecord: jest.fn().mockResolvedValue(undefined),
   } as any;
-
   const scheduler = new SubscriptionExpirationScheduler(
     subscriptionsRepository,
     subscriptionItemsRepository,

@@ -2,8 +2,10 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, exhaustMap, map, of, switchMap, tap } from 'rxjs';
+
 import { EnvService } from '../../services/env.service';
 import { clearChatHistory } from '../sockets/sockets.actions';
+
 import {
   createEnvironmentVariable,
   createEnvironmentVariableFailure,
@@ -33,12 +35,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -51,17 +56,20 @@ export const loadEnvironmentVariables$ = createEffect(
       switchMap(({ clientId, agentId }) => {
         // Start with offset 0, limit 50, ignore user params for batch loading
         const batchParams = { limit: BATCH_SIZE, offset: 0 };
+
         return envService.listEnvironmentVariables(clientId, agentId, batchParams).pipe(
           switchMap((environmentVariables) => {
             if (environmentVariables.length === 0) {
               // No entries, dispatch success with empty array
               return of(loadEnvironmentVariablesSuccess({ clientId, agentId, environmentVariables: [] }));
             }
+
             // Has entries, check if we got a full batch (might be more)
             if (environmentVariables.length < BATCH_SIZE) {
               // Partial batch, we're done
               return of(loadEnvironmentVariablesSuccess({ clientId, agentId, environmentVariables }));
             }
+
             // Full batch, load next batch
             return of(
               loadEnvironmentVariablesBatch({
@@ -88,18 +96,22 @@ export const loadEnvironmentVariablesBatch$ = createEffect(
       ofType(loadEnvironmentVariablesBatch),
       switchMap(({ clientId, agentId, offset, accumulatedEnvVars }) => {
         const batchParams = { limit: BATCH_SIZE, offset };
+
         return envService.listEnvironmentVariables(clientId, agentId, batchParams).pipe(
           switchMap((environmentVariables) => {
             const newAccumulated = [...accumulatedEnvVars, ...environmentVariables];
+
             if (environmentVariables.length === 0) {
               // No more entries, dispatch success with all accumulated
               return of(loadEnvironmentVariablesSuccess({ clientId, agentId, environmentVariables: newAccumulated }));
             }
+
             // Has entries, check if we got a full batch (might be more)
             if (environmentVariables.length < BATCH_SIZE) {
               // Partial batch, we're done
               return of(loadEnvironmentVariablesSuccess({ clientId, agentId, environmentVariables: newAccumulated }));
             }
+
             // Full batch, load next batch
             return of(
               loadEnvironmentVariablesBatch({

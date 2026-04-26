@@ -3,8 +3,8 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthenticationFacade, requestPasswordResetSuccess } from '@forepath/identity/frontend';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
+import { AuthenticationFacade, requestPasswordResetSuccess } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
@@ -51,6 +51,7 @@ export class IdentityRequestPasswordResetComponent implements OnInit {
   onSubmit(): void {
     if (this.form.valid) {
       const email = this.form.get('email')?.value;
+
       this.authFacade.requestPasswordReset(email);
     } else {
       Object.keys(this.form.controls).forEach((key) => {

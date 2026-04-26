@@ -2,6 +2,7 @@ import { DestroyRef, inject, Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { distinctUntilChanged, Observable, take } from 'rxjs';
+
 import {
   chatEnhancementStarted,
   ticketBodyGenerationStarted,
@@ -141,14 +142,17 @@ export class SocketsFacade {
    */
   setClient(clientId: string): void {
     const socket = getSocketInstance();
+
     if (!socket || !socket.connected) {
       console.warn('Socket not connected. Cannot set client.');
+
       return;
     }
 
     // Prevent duplicate setClient calls with the same clientId
     // Use synchronous state check to avoid race conditions
     const state = this.store.select(selectSocketsState).pipe(take(1));
+
     state.subscribe((socketsState) => {
       // Skip if already selected
       if (socketsState.selectedClientId === clientId) {
@@ -174,10 +178,13 @@ export class SocketsFacade {
    */
   forwardEvent(event: ForwardableEvent, payload?: ForwardableEventPayload, agentId?: string): void {
     const socket = getSocketInstance();
+
     if (!socket || !socket.connected) {
       console.warn('Socket not connected. Cannot forward event.');
+
       return;
     }
+
     this.store.dispatch(forwardEvent({ event, payload, agentId }));
     socket.emit('forward', { event, payload, agentId });
   }
@@ -194,6 +201,7 @@ export class SocketsFacade {
       effectiveModel !== undefined && effectiveModel !== null
         ? { message, model: effectiveModel, responseMode }
         : { message, responseMode };
+
     this.forwardEvent(ForwardableEvent.CHAT, payload, agentId);
   }
 
@@ -202,15 +210,19 @@ export class SocketsFacade {
    */
   forwardEnhanceChat(message: string, agentId: string, correlationId: string, model?: string | null): void {
     const socket = getSocketInstance();
+
     if (!socket || !socket.connected) {
       console.warn('Socket not connected. Cannot forward enhance chat.');
+
       return;
     }
+
     const effectiveModel = model ?? this.currentChatModel ?? undefined;
     const payload =
       effectiveModel !== undefined && effectiveModel !== null && effectiveModel !== ''
         ? { message, correlationId, model: effectiveModel }
         : { message, correlationId };
+
     this.store.dispatch(chatEnhancementStarted({ correlationId }));
     this.store.dispatch(forwardEvent({ event: ForwardableEvent.ENHANCE_CHAT, payload, agentId }));
     socket.emit('forward', { event: ForwardableEvent.ENHANCE_CHAT, payload, agentId });
@@ -227,10 +239,13 @@ export class SocketsFacade {
     hierarchyContext?: string | null,
   ): void {
     const socket = getSocketInstance();
+
     if (!socket || !socket.connected) {
       console.warn('Socket not connected. Cannot forward generate ticket body.');
+
       return;
     }
+
     const effectiveModel = model ?? this.currentChatModel ?? undefined;
     const trimmedContext = hierarchyContext?.trim();
     const base =
@@ -239,6 +254,7 @@ export class SocketsFacade {
         : { title, correlationId };
     const payload =
       trimmedContext !== undefined && trimmedContext !== '' ? { ...base, hierarchyContext: trimmedContext } : base;
+
     this.store.dispatch(ticketBodyGenerationStarted({ correlationId }));
     this.store.dispatch(forwardEvent({ event: ForwardableEvent.GENERATE_TICKET_BODY, payload, agentId }));
     socket.emit('forward', { event: ForwardableEvent.GENERATE_TICKET_BODY, payload, agentId });
@@ -326,6 +342,7 @@ export class SocketsFacade {
         if (prev.length !== curr.length) {
           return false;
         }
+
         return prev.every((p, i) => p === curr[i]);
       }),
     );

@@ -1,4 +1,5 @@
 import { IsEnum, IsOptional, IsString, IsUUID, MaxLength, ValidateIf } from 'class-validator';
+
 import { TicketPriority, TicketStatus } from '../../entities/ticket.enums';
 
 export class UpdateTicketDto {

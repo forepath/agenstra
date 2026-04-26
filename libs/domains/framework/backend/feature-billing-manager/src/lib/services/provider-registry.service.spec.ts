@@ -26,11 +26,14 @@ describe('ProviderRegistryService', () => {
         location: { type: 'string', description: 'Location', enum: ['fsn1', 'nbg1'] },
       },
     };
+
     service.register({ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema });
     const providers = service.getProviders();
+
     expect(providers).toHaveLength(1);
     expect(providers[0].configSchema).toEqual(configSchema);
     const props = (providers[0].configSchema as { properties?: Record<string, unknown> })?.properties ?? {};
+
     expect((props.serverType as { enum?: string[] })?.enum).toEqual(['cax11', 'cpx11']);
     expect((props.location as { enum?: string[] })?.enum).toEqual(['fsn1', 'nbg1']);
   });

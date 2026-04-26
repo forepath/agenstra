@@ -1,5 +1,6 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common';
 import { type RequestWithUser } from '@forepath/identity/backend';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common';
+
 import { UpdateTicketAutomationDto } from '../dto/ticket-automation';
 import { TicketAutomationService } from '../services/ticket-automation.service';
 

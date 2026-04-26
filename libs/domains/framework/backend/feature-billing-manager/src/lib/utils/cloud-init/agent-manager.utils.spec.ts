@@ -13,6 +13,7 @@ describe('agent-manager.utils', () => {
         'awesome-armadillo-abc12',
         'spirde.com',
       );
+
       expect(config.host.hostname).toBe('awesome-armadillo-abc12');
       expect(config.host.fqdn).toBe('awesome-armadillo-abc12.spirde.com');
       expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
@@ -20,11 +21,13 @@ describe('agent-manager.utils', () => {
 
     it('defaults baseDomain to spirde.com when not provided', () => {
       const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'foo');
+
       expect(config.host.fqdn).toBe('foo.spirde.com');
     });
 
     it('coerces authenticationMethod users to api-key', () => {
       const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'users' }, 'host1');
+
       expect(config.backend.authentication.authenticationMethod).toBe('api-key');
     });
 
@@ -33,6 +36,7 @@ describe('agent-manager.utils', () => {
         { authenticationMethod: 'api-key', staticApiKey: 'key123' },
         'host1',
       );
+
       expect(configApiKey.backend.authentication.authenticationMethod).toBe('api-key');
       expect(configApiKey.backend.authentication.staticApiKey).toBe('key123');
 
@@ -49,6 +53,7 @@ describe('agent-manager.utils', () => {
         },
         'host1',
       );
+
       expect(configKeycloak.backend.authentication.authenticationMethod).toBe('keycloak');
       expect(configKeycloak.backend.authentication.keycloak?.realm).toBe('r');
     });
@@ -58,6 +63,7 @@ describe('agent-manager.utils', () => {
         { authenticationMethod: 'api-key', hetznerApiToken: 'ignored', disableSignup: true },
         'host1',
       );
+
       expect(config.backend).toBeDefined();
       expect((config.backend as Record<string, unknown>).provisioning).toBeUndefined();
       expect((config.backend.authentication as Record<string, unknown>).disableSignup).toBeUndefined();
@@ -66,6 +72,7 @@ describe('agent-manager.utils', () => {
     it('generates random encryptionKey', () => {
       const config1 = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host1');
       const config2 = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host2');
+
       expect(config1.backend.encryption.encryptionKey).toBeTruthy();
       expect(config1.backend.encryption.encryptionKey).not.toBe(config2.backend.encryption.encryptionKey);
     });
@@ -84,6 +91,7 @@ describe('agent-manager.utils', () => {
         },
         'host1',
       );
+
       expect(config.backend.git).toBeDefined();
       expect(config.backend.git?.repositoryUrl).toBe('https://github.com/org/repo.git');
       expect(config.backend.git?.username).toBe('gituser');
@@ -94,6 +102,7 @@ describe('agent-manager.utils', () => {
 
     it('omits backend.git when request has no git', () => {
       const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host1');
+
       expect(config.backend.git).toBeUndefined();
     });
 
@@ -102,6 +111,7 @@ describe('agent-manager.utils', () => {
         { authenticationMethod: 'api-key', cursorApiKey: ' sk-secret-123 ' },
         'host1',
       );
+
       expect(config.backend.cursorApiKey).toBe('sk-secret-123');
     });
 
@@ -111,6 +121,7 @@ describe('agent-manager.utils', () => {
         { authenticationMethod: 'api-key', cursorApiKey: '   ' },
         'host1',
       );
+
       expect(config1.backend.cursorApiKey).toBeUndefined();
       expect(config2.backend.cursorApiKey).toBeUndefined();
     });
@@ -120,11 +131,13 @@ describe('agent-manager.utils', () => {
         { authenticationMethod: 'api-key', sshPublicKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ user@host' },
         'host1',
       );
+
       expect(config.ssh.publicKey).toBe('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ user@host');
     });
 
     it('defaults ssh.publicKey to empty string when not provided', () => {
       const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host1');
+
       expect(config.ssh.publicKey).toBe('');
     });
   });
@@ -155,6 +168,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('location /');
       expect(script).toContain('agent-manager-api');
     });
@@ -183,8 +197,10 @@ describe('agent-manager.utils', () => {
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
+
       expect(Buffer.from(b64, 'base64').toString('utf-8')).toBeTruthy();
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('agent-manager');
       expect(script).toContain('docker compose up -d');
       expect(script).toContain('backend-agent-manager');
@@ -212,6 +228,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('certbot certonly --webroot');
       expect(script).toContain('/opt/certbot');
       expect(script).toContain('/.well-known/acme-challenge/');
@@ -254,6 +271,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('GIT_REPOSITORY_URL: https://github.com/org/repo.git');
       expect(script).toContain('GIT_USERNAME: gituser');
       expect(script).toContain('GIT_TOKEN: secret');
@@ -286,6 +304,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).not.toContain('GIT_REPOSITORY_URL');
       expect(script).not.toContain('GIT_USERNAME');
     });
@@ -316,6 +335,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('CURSOR_API_KEY: sk-test-key');
     });
 
@@ -344,6 +364,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).not.toContain('CURSOR_API_KEY');
     });
 
@@ -373,6 +394,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('/root/.ssh/authorized_keys');
       expect(script).toContain(key);
     });
@@ -402,6 +424,7 @@ describe('agent-manager.utils', () => {
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('/etc/ssh/sshd_config');
       expect(script).toContain('PermitRootLogin yes');
       expect(script).toContain('PasswordAuthentication no');
@@ -413,6 +436,7 @@ describe('agent-manager.utils', () => {
   describe('buildAgentManagerUpdateCommand', () => {
     it('returns a command that logs to agent-manager-update.log and runs docker compose up -d --pull=always', () => {
       const cmd = buildAgentManagerUpdateCommand();
+
       expect(cmd).toContain('/var/log/agent-manager-update.log');
       expect(cmd).toContain('cd /opt/agent-manager');
       expect(cmd).toContain('docker compose up -d --pull=always');

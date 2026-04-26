@@ -1,8 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { ServiceTypesController } from './service-types.controller';
+
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
+
+import { ServiceTypesController } from './service-types.controller';
 
 describe('ServiceTypesController', () => {
   const mockProviderServerTypes = {
@@ -23,7 +25,6 @@ describe('ServiceTypesController', () => {
           { provide: ProviderServerTypesService, useValue: serverTypesService },
         ],
       }).compile();
-
       const controller = moduleRef.get(ServiceTypesController);
       const result = await controller.getProviderServerTypes('hetzner');
 
@@ -48,7 +49,6 @@ describe('ServiceTypesController', () => {
           { provide: ProviderServerTypesService, useValue: mockProviderServerTypes },
         ],
       }).compile();
-
       const controller = moduleRef.get(ServiceTypesController);
       const result = await controller.getProviders();
 
@@ -78,12 +78,12 @@ describe('ServiceTypesController', () => {
           { provide: ProviderServerTypesService, useValue: mockProviderServerTypes },
         ],
       }).compile();
-
       const controller = moduleRef.get(ServiceTypesController);
       const result = await controller.getProviders();
 
       expect(result).toHaveLength(1);
       const schema = result[0].configSchema as { properties?: Record<string, { enum?: string[] }> };
+
       expect(schema.properties?.serverType?.enum).toEqual(['cax11', 'cpx11']);
       expect(schema.properties?.location?.enum).toEqual(['fsn1', 'nbg1']);
     });

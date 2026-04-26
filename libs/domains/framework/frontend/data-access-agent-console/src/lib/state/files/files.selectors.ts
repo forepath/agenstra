@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import type { FileContentDto, FileManagerContext, FileNodeDto } from './files.types';
-import type { FilesState, OpenTab } from './files.reducer';
+
+import type { FilesState } from './files.reducer';
+import type { FileManagerContext } from './files.types';
 
 export const selectFilesState = createFeatureSelector<FilesState>('files');
 
@@ -24,6 +25,7 @@ function resolveFileContext(context?: FileManagerContext): FileManagerContext {
  */
 function getFileKey(clientId: string, agentId: string, path: string, context?: FileManagerContext): string {
   const c = resolveFileContext(context);
+
   return `${clientId}:${agentId}:${c}:${path}`;
 }
 
@@ -31,6 +33,7 @@ function getFileKey(clientId: string, agentId: string, path: string, context?: F
 export const selectFileContent = (clientId: string, agentId: string, filePath: string, context?: FileManagerContext) =>
   createSelector(selectFileContents, (fileContents) => {
     const key = getFileKey(clientId, agentId, filePath, context);
+
     return fileContents[key] ?? null;
   });
 
@@ -42,6 +45,7 @@ export const selectIsReadingFile = (
 ) =>
   createSelector(selectFilesReading, (reading) => {
     const key = getFileKey(clientId, agentId, filePath, context);
+
     return reading[key] ?? false;
   });
 
@@ -53,6 +57,7 @@ export const selectIsWritingFile = (
 ) =>
   createSelector(selectFilesWriting, (writing) => {
     const key = getFileKey(clientId, agentId, filePath, context);
+
     return writing[key] ?? false;
   });
 
@@ -65,6 +70,7 @@ export const selectDirectoryListing = (
 ) =>
   createSelector(selectDirectoryListings, (directoryListings) => {
     const key = getFileKey(clientId, agentId, directoryPath, context);
+
     return directoryListings[key] ?? null;
   });
 
@@ -76,6 +82,7 @@ export const selectIsListingDirectory = (
 ) =>
   createSelector(selectFilesListing, (listing) => {
     const key = getFileKey(clientId, agentId, directoryPath, context);
+
     return listing[key] ?? false;
   });
 
@@ -88,6 +95,7 @@ export const selectIsCreatingFile = (
 ) =>
   createSelector(selectFilesCreating, (creating) => {
     const key = getFileKey(clientId, agentId, filePath, context);
+
     return creating[key] ?? false;
   });
 
@@ -99,12 +107,14 @@ export const selectIsDeletingFile = (
 ) =>
   createSelector(selectFilesDeleting, (deleting) => {
     const key = getFileKey(clientId, agentId, filePath, context);
+
     return deleting[key] ?? false;
   });
 
 export const selectIsMovingFile = (clientId: string, agentId: string, filePath: string, context?: FileManagerContext) =>
   createSelector(selectFilesMoving, (moving) => {
     const key = getFileKey(clientId, agentId, filePath, context);
+
     return moving[key] ?? false;
   });
 
@@ -112,6 +122,7 @@ export const selectIsMovingFile = (clientId: string, agentId: string, filePath: 
 export const selectFileError = (clientId: string, agentId: string, filePath: string, context?: FileManagerContext) =>
   createSelector(selectFilesErrors, (errors) => {
     const key = getFileKey(clientId, agentId, filePath, context);
+
     return errors[key] ?? null;
   });
 
@@ -152,5 +163,6 @@ export const selectOpenTabsForClientAgent = (clientId: string, agentId: string, 
   createSelector(selectOpenTabs, (openTabs) => {
     const c = resolveFileContext(context);
     const key = `${clientId}:${agentId}:${c}`;
+
     return openTabs[key] || [];
   });

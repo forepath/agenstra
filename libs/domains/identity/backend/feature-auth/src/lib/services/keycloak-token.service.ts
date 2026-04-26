@@ -36,17 +36,19 @@ export class KeycloakTokenService {
   async getAccessToken(authServerUrl: string, realm: string, clientId: string, clientSecret: string): Promise<string> {
     // Create cache key from credentials
     const cacheKey = `${authServerUrl}:${realm}:${clientId}`;
-
     // Check if we have a valid cached token
     const cached = this.tokenCache.get(cacheKey);
+
     if (cached && cached.expiresAt > new Date()) {
       this.logger.debug(`Using cached token for client ${clientId} in realm ${realm}`);
+
       return cached.token;
     }
 
     // Fetch new token from Keycloak
     try {
       const tokenUrl = `${authServerUrl}/realms/${realm}/protocol/openid-connect/token`;
+
       this.logger.debug(`Fetching token from Keycloak: ${tokenUrl}`);
 
       const response = await axios.post<TokenResponse>(
@@ -62,7 +64,6 @@ export class KeycloakTokenService {
           },
         },
       );
-
       const { access_token, expires_in } = response.data;
 
       if (!access_token) {
@@ -71,16 +72,19 @@ export class KeycloakTokenService {
 
       // Cache the token (expire 30 seconds before actual expiration for safety)
       const expiresAt = new Date(Date.now() + (expires_in - 30) * 1000);
+
       this.tokenCache.set(cacheKey, {
         token: access_token,
         expiresAt,
       });
 
       this.logger.log(`Successfully obtained token for client ${clientId} in realm ${realm}`);
+
       return access_token;
     } catch (error) {
       const err = error as AxiosError<{ error?: string; error_description?: string }>;
       const errorMessage = err.response?.data?.error_description || err.message || 'Unknown error';
+
       this.logger.error(
         `Failed to get token from Keycloak for client ${clientId} in realm ${realm}: ${errorMessage}`,
         err.response?.data,
@@ -98,6 +102,7 @@ export class KeycloakTokenService {
    */
   clearCache(authServerUrl: string, realm: string, clientId: string): void {
     const cacheKey = `${authServerUrl}:${realm}:${clientId}`;
+
     this.tokenCache.delete(cacheKey);
     this.logger.debug(`Cleared token cache for client ${clientId} in realm ${realm}`);
   }

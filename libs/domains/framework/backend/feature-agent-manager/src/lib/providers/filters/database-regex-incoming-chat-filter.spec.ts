@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FilterDirection, FilterResult } from '../chat-filter.interface';
+
 import { RegexFilterRulesEvaluateService } from '../../services/regex-filter-rules-evaluate.service';
+import { FilterDirection, FilterResult } from '../chat-filter.interface';
+
 import { DatabaseRegexIncomingChatFilter } from './database-regex-incoming-chat-filter';
 
 describe('DatabaseRegexIncomingChatFilter', () => {
@@ -41,6 +43,7 @@ describe('DatabaseRegexIncomingChatFilter', () => {
   describe('filter', () => {
     it('delegates to evaluateService with INCOMING direction', async () => {
       const result: FilterResult = { filtered: true, action: 'flag', reason: 'db-rule' };
+
       evaluateService.evaluate.mockResolvedValue(result);
 
       const ctx = { agentId: 'agent-1', actor: 'user' as const };
@@ -53,6 +56,7 @@ describe('DatabaseRegexIncomingChatFilter', () => {
 
     it('works without context', async () => {
       const result: FilterResult = { filtered: false };
+
       evaluateService.evaluate.mockResolvedValue(result);
 
       const out = await filter.filter('plain');

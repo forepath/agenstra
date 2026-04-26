@@ -1,7 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentsRepository } from '../repositories/agents.repository';
+
 import { AgentsVerificationService } from './agents-verification.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
@@ -11,7 +13,6 @@ describe('AgentsVerificationService', () => {
   const agentsService = { findOne: jest.fn() };
   const agentsRepository = { findByIdOrThrow: jest.fn() };
   const dockerService = { sendCommandToContainer: jest.fn() };
-
   const agent: AgentEntity = {
     id: 'a1',
     name: 'A',
@@ -35,6 +36,7 @@ describe('AgentsVerificationService', () => {
         { provide: DockerService, useValue: dockerService },
       ],
     }).compile();
+
     service = module.get(AgentsVerificationService);
   });
 

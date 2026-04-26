@@ -2,8 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
-import type { TicketActivityResponseDto, TicketResponseDto } from './tickets.types';
+
 import { TicketsService } from '../../services/tickets.service';
+
 import {
   addTicketComment,
   addTicketCommentFailure,
@@ -27,25 +28,31 @@ import {
   updateTicketFailure,
   updateTicketSuccess,
 } from './tickets.actions';
+import type { TicketActivityResponseDto, TicketResponseDto } from './tickets.types';
 
 function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     return error.error?.message ?? error.message ?? String(error.status);
   }
+
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   return 'An unexpected error occurred';
 }
 
 function collectTicketTreeIds(root: TicketResponseDto): string[] {
   const ids = [root.id];
+
   for (const c of root.children ?? []) {
     ids.push(...collectTicketTreeIds(c));
   }
+
   return ids;
 }
 
@@ -91,6 +98,7 @@ export const createTicket$ = createEffect(
         ticketsService.createTicket(dto).pipe(
           map((res) => {
             const { createdChildTickets, ...ticket } = res;
+
             return createTicketSuccess({
               ticket,
               ...(createdChildTickets?.length ? { createdChildTickets } : {}),

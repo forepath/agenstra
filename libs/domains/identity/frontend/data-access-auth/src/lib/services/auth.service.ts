@@ -73,12 +73,15 @@ export class AuthService {
 
   listUsers(params?: { limit?: number; offset?: number }): Observable<UserResponseDto[]> {
     let httpParams = new HttpParams();
+
     if (params?.limit !== undefined) {
       httpParams = httpParams.set('limit', params.limit.toString());
     }
+
     if (params?.offset !== undefined) {
       httpParams = httpParams.set('offset', params.offset.toString());
     }
+
     return this.http.get<UserResponseDto[]>(`${this.apiUrl}/users`, { params: httpParams });
   }
 

@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { CreateServiceTypeDto, ServiceTypeResponse, UpdateServiceTypeDto } from '../types/billing.types';
+
 import { ServiceTypesService } from './service-types.service';
 
 describe('ServiceTypesService', () => {
   let service: ServiceTypesService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockServiceType: ServiceTypeResponse = {
     id: 'st-1',
     key: 'cursor',
@@ -57,6 +58,7 @@ describe('ServiceTypesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/providers`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockProviders);
     });
@@ -72,6 +74,7 @@ describe('ServiceTypesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockList);
     });
@@ -85,6 +88,7 @@ describe('ServiceTypesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types?limit=10&offset=20`);
+
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
       req.flush([mockServiceType]);
@@ -101,6 +105,7 @@ describe('ServiceTypesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/${id}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockServiceType);
     });
@@ -120,6 +125,7 @@ describe('ServiceTypesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(mockServiceType);
@@ -137,6 +143,7 @@ describe('ServiceTypesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/${id}`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(updateDto);
       req.flush({ ...mockServiceType, name: 'Updated Name' });
@@ -150,6 +157,7 @@ describe('ServiceTypesService', () => {
       service.deleteServiceType(id).subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/${id}`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });

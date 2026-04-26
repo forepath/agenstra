@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { FilterDirection } from '../chat-filter.interface';
+
 import { NoopChatFilter } from './noop-chat-filter';
 
 describe('NoopChatFilter', () => {
@@ -54,6 +56,7 @@ describe('NoopChatFilter', () => {
 
       for (const message of messages) {
         const result = await filter.filter(message);
+
         expect(result.filtered).toBe(false);
       }
     });

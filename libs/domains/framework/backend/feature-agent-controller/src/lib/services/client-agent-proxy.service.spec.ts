@@ -6,11 +6,13 @@ import {
   CreateAgentResponseDto,
   UpdateAgentDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { AuthenticationType, ClientAgentCredentialsService, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthenticationType, ClientAgentCredentialsService, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -24,7 +26,6 @@ describe('ClientAgentProxyService', () => {
   let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let credentialsService: jest.Mocked<ClientAgentCredentialsService>;
-
   const mockClientEntity: ClientEntity = {
     id: 'client-uuid',
     name: 'Test Client',
@@ -38,7 +39,6 @@ describe('ClientAgentProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockKeycloakClientEntity: ClientEntity = {
     ...mockClientEntity,
     authenticationType: AuthenticationType.KEYCLOAK,
@@ -47,7 +47,6 @@ describe('ClientAgentProxyService', () => {
     keycloakClientSecret: 'keycloak-client-secret',
     keycloakRealm: 'test-realm',
   };
-
   const mockAgentResponse: AgentResponseDto = {
     id: 'agent-uuid',
     name: 'Test Agent',
@@ -57,26 +56,21 @@ describe('ClientAgentProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockCreateAgentResponse: CreateAgentResponseDto = {
     ...mockAgentResponse,
     password: 'generated-password-123',
   };
-
   const mockClientsService = {
     findOne: jest.fn(),
     getAccessToken: jest.fn(),
   };
-
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
-
   const mockCredentialsService = {
     saveCredentials: jest.fn(),
     deleteCredentials: jest.fn(),
   };
-
   const mockStatisticsService = {
     recordEntityCreated: jest.fn().mockResolvedValue(undefined),
     recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
@@ -255,6 +249,7 @@ describe('ClientAgentProxyService', () => {
   describe('listClientAgentModels', () => {
     it('should return models map from remote agent-manager', async () => {
       const models: AgentModelsResponseDto = { 'm-1': 'Model One', 'm-2': 'Model Two' };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         data: models,
@@ -361,6 +356,7 @@ describe('ClientAgentProxyService', () => {
       const credentialsService = (service as any)['clientAgentCredentialsService'] as {
         deleteCredentials: jest.Mock;
       };
+
       expect(credentialsService.deleteCredentials).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
@@ -440,6 +436,7 @@ describe('ClientAgentProxyService', () => {
         ...mockClientEntity,
         apiKey: undefined,
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(clientWithoutApiKey);
 
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow(BadRequestException);
@@ -453,6 +450,7 @@ describe('ClientAgentProxyService', () => {
         ...mockKeycloakClientEntity,
         keycloakClientId: undefined,
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(clientWithoutKeycloak);
       clientsService.getAccessToken.mockRejectedValue(
         new BadRequestException('Keycloak client credentials are not configured'),
@@ -468,6 +466,7 @@ describe('ClientAgentProxyService', () => {
         ...mockClientEntity,
         endpoint: 'https://example.com/api/',
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(clientWithTrailingSlash);
       mockedAxios.request.mockResolvedValue({
         data: [mockAgentResponse],

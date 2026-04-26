@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   approveTicketAutomation,
   cancelTicketAutomationRun,
@@ -38,6 +39,7 @@ describe('TicketAutomationFacade', () => {
 
   it('dispatches patchConfig', () => {
     const dto = { eligible: true };
+
     facade.patchConfig('t1', dto);
     expect(store.dispatch).toHaveBeenCalledWith(patchTicketAutomation({ ticketId: 't1', dto }));
   });

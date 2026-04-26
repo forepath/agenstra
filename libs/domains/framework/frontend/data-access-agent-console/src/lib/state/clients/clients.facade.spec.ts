@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   addClientUser,
   clearActiveClient,
@@ -19,7 +20,6 @@ import type { ClientResponseDto, CreateClientDto, ListClientsParams, UpdateClien
 describe('ClientsFacade', () => {
   let facade: ClientsFacade;
   let store: jest.Mocked<Store>;
-
   const mockClient: ClientResponseDto = {
     id: 'client-1',
     name: 'Test Client',
@@ -35,7 +35,6 @@ describe('ClientsFacade', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockClient2: ClientResponseDto = {
     id: 'client-2',
     name: 'Test Client 2',
@@ -50,7 +49,6 @@ describe('ClientsFacade', () => {
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
   };
-
   const createFacadeWithMock = (mockSelectReturn: any): ClientsFacade => {
     const mockStore = {
       select: jest.fn().mockReturnValue(of(mockSelectReturn)),
@@ -231,6 +229,7 @@ describe('ClientsFacade', () => {
   describe('Action Methods', () => {
     it('should dispatch loadClients action', () => {
       const params: ListClientsParams = { limit: 10, offset: 0 };
+
       facade.loadClients(params);
 
       expect(store.dispatch).toHaveBeenCalledWith(loadClients({ params }));
@@ -244,6 +243,7 @@ describe('ClientsFacade', () => {
 
     it('should dispatch loadClient action', () => {
       const id = 'client-1';
+
       facade.loadClient(id);
 
       expect(store.dispatch).toHaveBeenCalledWith(loadClient({ id }));
@@ -255,6 +255,7 @@ describe('ClientsFacade', () => {
         endpoint: 'https://new.example.com/api',
         authenticationType: 'api_key',
       };
+
       facade.createClient(createDto);
 
       expect(store.dispatch).toHaveBeenCalledWith(createClient({ client: createDto }));
@@ -265,6 +266,7 @@ describe('ClientsFacade', () => {
       const updateDto: UpdateClientDto = {
         name: 'Updated Client',
       };
+
       facade.updateClient(id, updateDto);
 
       expect(store.dispatch).toHaveBeenCalledWith(updateClient({ id, client: updateDto }));
@@ -272,6 +274,7 @@ describe('ClientsFacade', () => {
 
     it('should dispatch deleteClient action', () => {
       const id = 'client-1';
+
       facade.deleteClient(id);
 
       expect(store.dispatch).toHaveBeenCalledWith(deleteClient({ id }));
@@ -279,6 +282,7 @@ describe('ClientsFacade', () => {
 
     it('should dispatch setActiveClient action', () => {
       const id = 'client-1';
+
       facade.setActiveClient(id);
 
       expect(store.dispatch).toHaveBeenCalledWith(setActiveClient({ id }));
@@ -321,6 +325,7 @@ describe('ClientsFacade', () => {
 
     it('should dispatch addClientUser action', () => {
       const dto = { email: 'new@test.com', role: 'user' as const };
+
       facade.addClientUser('client-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(addClientUser({ clientId: 'client-1', dto }));
     });

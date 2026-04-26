@@ -1,8 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
+
 import { RegexFilterRulesRepository } from './regex-filter-rules.repository';
 
 describe('RegexFilterRulesRepository', () => {
@@ -15,7 +16,6 @@ describe('RegexFilterRulesRepository', () => {
     save: jest.fn(),
     remove: jest.fn(),
   };
-
   const row: RegexFilterRuleEntity = Object.assign(new RegexFilterRuleEntity(), {
     id: 'rule-1',
     pattern: 'x',
@@ -35,6 +35,7 @@ describe('RegexFilterRulesRepository', () => {
         { provide: getRepositoryToken(RegexFilterRuleEntity), useValue: typeOrm },
       ],
     }).compile();
+
     repository = module.get(RegexFilterRulesRepository);
   });
 
@@ -55,6 +56,7 @@ describe('RegexFilterRulesRepository', () => {
     it('orders by priority and createdAt', async () => {
       typeOrm.find.mockResolvedValue([row]);
       const result = await repository.findAllOrdered();
+
       expect(result).toEqual([row]);
       expect(typeOrm.find).toHaveBeenCalledWith({
         order: { priority: 'ASC', createdAt: 'ASC' },
@@ -91,6 +93,7 @@ describe('RegexFilterRulesRepository', () => {
         direction: 'incoming',
         filterType: 'none',
       });
+
       expect(typeOrm.create).toHaveBeenCalled();
       expect(typeOrm.save).toHaveBeenCalledWith(row);
       expect(result).toEqual(row);
@@ -102,6 +105,7 @@ describe('RegexFilterRulesRepository', () => {
       typeOrm.findOne.mockResolvedValue({ ...row });
       typeOrm.save.mockImplementation(async (r: RegexFilterRuleEntity) => r);
       const result = await repository.update('rule-1', { priority: 9 });
+
       expect(result.priority).toBe(9);
       expect(typeOrm.save).toHaveBeenCalled();
     });

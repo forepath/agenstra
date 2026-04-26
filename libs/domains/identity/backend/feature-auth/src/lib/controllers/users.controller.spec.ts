@@ -11,7 +11,6 @@ describe('UsersController', () => {
     unlockUser: jest.fn(),
     remove: jest.fn(),
   };
-
   let controller: UsersController;
 
   beforeEach(() => {

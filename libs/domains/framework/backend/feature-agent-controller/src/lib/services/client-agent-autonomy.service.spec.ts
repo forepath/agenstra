@@ -1,12 +1,15 @@
+import { ClientUsersRepository } from '@forepath/identity/backend';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ClientUsersRepository } from '@forepath/identity/backend';
+
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentAutonomyService } from './client-agent-autonomy.service';
 
 jest.mock('@forepath/identity/backend', () => {
   const actual = jest.requireActual('@forepath/identity/backend');
+
   return {
     ...actual,
     ensureClientAccess: jest.fn().mockResolvedValue(undefined),
@@ -34,6 +37,7 @@ describe('ClientAgentAutonomyService', () => {
     const service = module.get(ClientAgentAutonomyService);
     const clientId = '00000000-0000-4000-8000-000000000010';
     const agentId = '00000000-0000-4000-8000-000000000020';
+
     await service.upsert(clientId, agentId, {
       enabled: true,
       preImproveTicket: false,
@@ -69,6 +73,7 @@ describe('ClientAgentAutonomyService', () => {
     }).compile();
     const service = module.get(ClientAgentAutonomyService);
     const res = await service.listEnabledAgentIds('00000000-0000-4000-8000-000000000010', undefined);
+
     expect(res).toEqual({ agentIds: ['a1', 'a2'] });
     expect(repo.find).toHaveBeenCalledWith({
       where: { clientId: '00000000-0000-4000-8000-000000000010', enabled: true },

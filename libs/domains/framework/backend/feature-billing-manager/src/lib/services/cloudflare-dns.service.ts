@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+
 import { isValidSubdomainHostname } from '../utils/hostname-generator.utils';
 
 /**
@@ -17,6 +18,7 @@ export class CloudflareDnsService {
     this.apiToken = process.env.CLOUDFLARE_API_TOKEN ?? '';
     this.zoneId = process.env.CLOUDFLARE_ZONE_ID ?? '';
     this.baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
+
     if (!this.apiToken || !this.zoneId) {
       this.logger.warn(
         'CLOUDFLARE_API_TOKEN or CLOUDFLARE_ZONE_ID not set. DNS record creation/removal will be skipped.',
@@ -36,13 +38,18 @@ export class CloudflareDnsService {
   async createARecord(subdomain: string, ip: string): Promise<void> {
     if (!isValidSubdomainHostname(subdomain)) {
       this.logger.warn(`Invalid subdomain hostname (no dots allowed): ${subdomain}`);
+
       return;
     }
+
     if (!this.isConfigured()) {
       this.logger.warn('Cloudflare DNS not configured, skipping A record creation');
+
       return;
     }
+
     const name = this.getFqdn(subdomain);
+
     try {
       await axios.post(
         `https://api.cloudflare.com/client/v4/zones/${this.zoneId}/dns_records`,
@@ -63,6 +70,7 @@ export class CloudflareDnsService {
       this.logger.log(`Created DNS A record ${this.getFqdn(subdomain)} -> ${ip}`);
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to create DNS A record for ${this.getFqdn(subdomain)}: ${axiosError.message}`);
       throw error;
     }
@@ -75,12 +83,16 @@ export class CloudflareDnsService {
   async deleteRecord(subdomain: string): Promise<void> {
     if (!isValidSubdomainHostname(subdomain)) {
       this.logger.warn(`Invalid subdomain hostname: ${subdomain}`);
+
       return;
     }
+
     if (!this.isConfigured()) {
       this.logger.warn('Cloudflare DNS not configured, skipping DNS record deletion');
+
       return;
     }
+
     try {
       const listRes = await axios.get<{
         result: Array<{ id: string; type: string; name: string }>;
@@ -91,17 +103,20 @@ export class CloudflareDnsService {
         },
       );
       const records = listRes.data?.result ?? [];
+
       for (const record of records) {
         await axios.delete(`https://api.cloudflare.com/client/v4/zones/${this.zoneId}/dns_records/${record.id}`, {
           headers: { Authorization: `Bearer ${this.apiToken}` },
         });
         this.logger.log(`Deleted DNS A record ${record.name}`);
       }
+
       if (records.length === 0) {
         this.logger.debug(`No DNS A record found for ${this.getFqdn(subdomain)}`);
       }
     } catch (error) {
       const axiosError = error as AxiosError;
+
       this.logger.error(`Failed to delete DNS record for ${this.getFqdn(subdomain)}: ${axiosError.message}`);
       throw error;
     }

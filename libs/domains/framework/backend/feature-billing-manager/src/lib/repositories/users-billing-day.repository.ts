@@ -1,7 +1,8 @@
+import { UserEntity } from '@forepath/identity/backend';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from '@forepath/identity/backend';
+
 import { getEffectiveBillingDay } from '../utils/billing-day.utils';
 
 /**
@@ -20,9 +21,11 @@ export class UsersBillingDayRepository {
    */
   async getEffectiveBillingDayForUser(userId: string): Promise<number> {
     const user = await this.repository.findOne({ where: { id: userId }, select: ['createdAt', 'billingDayOfMonth'] });
+
     if (!user?.createdAt) {
       return 1;
     }
+
     return getEffectiveBillingDay(user.createdAt, user.billingDayOfMonth ?? undefined);
   }
 
@@ -37,6 +40,7 @@ export class UsersBillingDayRepository {
         day: dayOfMonth,
       })
       .getRawMany<{ id: string }>();
+
     return rows.map((r) => r.id);
   }
 }

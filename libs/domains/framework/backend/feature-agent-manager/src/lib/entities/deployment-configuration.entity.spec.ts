@@ -1,14 +1,16 @@
-import { DeploymentConfigurationEntity } from './deployment-configuration.entity';
 import { AgentEntity } from './agent.entity';
+import { DeploymentConfigurationEntity } from './deployment-configuration.entity';
 
 describe('DeploymentConfigurationEntity', () => {
   it('should create an instance', () => {
     const config = new DeploymentConfigurationEntity();
+
     expect(config).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -28,6 +30,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should support optional defaultBranch property', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -42,6 +45,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should support optional workflowId property', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -56,6 +60,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should support optional providerBaseUrl property', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -70,6 +75,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should allow undefined optional properties', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -85,6 +91,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should support relationship to AgentEntity', () => {
     const agent = new AgentEntity();
+
     agent.id = 'agent-uuid-123';
     agent.name = 'Test Agent';
     agent.hashedPassword = 'hashed-password';
@@ -92,6 +99,7 @@ describe('DeploymentConfigurationEntity', () => {
     agent.updatedAt = new Date();
 
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.agent = agent;
@@ -108,6 +116,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should support GitHub provider type', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -121,6 +130,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should support GitLab provider type', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'gitlab';
@@ -134,6 +144,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should store full configuration with all optional fields', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -159,6 +170,7 @@ describe('DeploymentConfigurationEntity', () => {
 
   it('should handle long repository ID', () => {
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';
@@ -173,6 +185,7 @@ describe('DeploymentConfigurationEntity', () => {
   it('should handle long provider token', () => {
     const longToken = 'ghp_' + 'A'.repeat(2000);
     const config = new DeploymentConfigurationEntity();
+
     config.id = 'test-uuid';
     config.agentId = 'agent-uuid-123';
     config.providerType = 'github';

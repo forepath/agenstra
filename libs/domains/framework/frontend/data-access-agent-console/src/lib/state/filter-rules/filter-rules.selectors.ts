@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { FilterRulesState } from './filter-rules.reducer';
 
 export const selectFilterRulesState = createFeatureSelector<FilterRulesState>('filterRules');

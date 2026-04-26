@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+
 import type { CreateFilterRuleDto, FilterRuleResponseDto, UpdateFilterRuleDto } from './filter-rules.types';
 
 export const loadFilterRules = createAction('[Filter Rules] Load');

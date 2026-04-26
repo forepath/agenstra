@@ -1,6 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+
+import type {
+  AvailabilityCheckDto,
+  AvailabilityResponse,
+  PricingPreviewDto,
+  PricingPreviewResponse,
+} from '../../types/billing.types';
+
 import {
   checkAvailability,
   checkAvailabilityAlternatives,
@@ -20,12 +28,6 @@ import {
   selectPricingPreview,
   selectPricingPreviewLoading,
 } from './availability.selectors';
-import type {
-  AvailabilityCheckDto,
-  AvailabilityResponse,
-  PricingPreviewDto,
-  PricingPreviewResponse,
-} from '../../types/billing.types';
 
 @Injectable({
   providedIn: 'root',

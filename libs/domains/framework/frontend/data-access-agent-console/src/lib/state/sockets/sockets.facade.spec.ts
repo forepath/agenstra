@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   chatEnhancementStarted,
   ticketBodyGenerationStarted,
@@ -29,7 +30,6 @@ describe('SocketsFacade', () => {
   let facade: SocketsFacade;
   let store: jest.Mocked<Store>;
   let mockSocket: any;
-
   const mockForwardedPayload: ForwardedEventPayload = {
     success: true,
     data: {
@@ -39,7 +39,6 @@ describe('SocketsFacade', () => {
     },
     timestamp: '2024-01-01T00:00:00Z',
   };
-
   const createFacadeWithMock = (mockSelectReturn: any): SocketsFacade => {
     const mockStore = {
       select: jest.fn().mockReturnValue(of(mockSelectReturn)),
@@ -198,6 +197,7 @@ describe('SocketsFacade', () => {
 
     it('should dispatch setClient action and emit to socket', () => {
       const clientId = 'client-1';
+
       // Mock state where client is not selected and not being set
       store.select = jest.fn().mockReturnValue(
         of({
@@ -214,6 +214,7 @@ describe('SocketsFacade', () => {
 
     it('should not dispatch setClient if client is already selected', () => {
       const clientId = 'client-1';
+
       // Mock state where client is already selected
       store.select = jest.fn().mockReturnValue(
         of({
@@ -230,6 +231,7 @@ describe('SocketsFacade', () => {
 
     it('should not dispatch setClient if client is already being set', () => {
       const clientId = 'client-1';
+
       // Mock state where client is currently being set
       store.select = jest.fn().mockReturnValue(
         of({
@@ -261,6 +263,7 @@ describe('SocketsFacade', () => {
 
     it('should dispatch forwardEvent action and emit to socket', () => {
       const payload = { message: 'test' };
+
       facade.forwardEvent(ForwardableEvent.CHAT, payload);
 
       expect(store.dispatch).toHaveBeenCalledWith(forwardEvent({ event: ForwardableEvent.CHAT, payload }));
@@ -290,6 +293,7 @@ describe('SocketsFacade', () => {
     it('should forward chat event with typed payload and agentId', () => {
       const message = 'Hello world';
       const agentId = 'agent-1';
+
       facade.forwardChat(message, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(
@@ -310,6 +314,7 @@ describe('SocketsFacade', () => {
       const message = 'Hello world';
       const agentId = 'agent-1';
       const model = 'gpt-4o';
+
       facade.forwardChat(message, agentId, model);
 
       expect(store.dispatch).toHaveBeenCalledWith(
@@ -330,6 +335,7 @@ describe('SocketsFacade', () => {
       (facade as any).currentChatModel = 'stored-model';
       const message = 'Hello world';
       const agentId = 'agent-1';
+
       facade.forwardChat(message, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(
@@ -350,6 +356,7 @@ describe('SocketsFacade', () => {
       (facade as any).currentChatResponseMode = 'single';
       const message = 'Hello world';
       const agentId = 'agent-1';
+
       facade.forwardChat(message, agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(
@@ -375,6 +382,7 @@ describe('SocketsFacade', () => {
       const message = 'draft';
       const agentId = 'agent-1';
       const correlationId = 'cid-1';
+
       facade.forwardEnhanceChat(message, agentId, correlationId);
 
       expect(store.dispatch).toHaveBeenCalledWith(chatEnhancementStarted({ correlationId }));
@@ -396,6 +404,7 @@ describe('SocketsFacade', () => {
       const title = 'Ship feature';
       const agentId = 'agent-1';
       const correlationId = 'tb-cid';
+
       facade.forwardGenerateTicketBody(title, agentId, correlationId);
 
       expect(store.dispatch).toHaveBeenCalledWith(ticketBodyGenerationStarted({ correlationId }));
@@ -418,6 +427,7 @@ describe('SocketsFacade', () => {
       const agentId = 'agent-1';
       const correlationId = 'tb-cid';
       const hierarchyContext = 'Subtasks under this ticket:\n- [a] Child (todo, low)';
+
       facade.forwardGenerateTicketBody(title, agentId, correlationId, undefined, hierarchyContext);
 
       expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
@@ -429,6 +439,7 @@ describe('SocketsFacade', () => {
 
     it('should forward login event with agentId', () => {
       const agentId = 'agent-1';
+
       facade.forwardLogin(agentId);
 
       expect(store.dispatch).toHaveBeenCalledWith(
@@ -455,6 +466,7 @@ describe('SocketsFacade', () => {
   describe('Chat Model', () => {
     it('should dispatch setChatModel action', () => {
       const model = 'gpt-4o';
+
       facade.setChatModel(model);
 
       expect(store.dispatch).toHaveBeenCalledWith(setChatModel({ model }));

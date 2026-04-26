@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 
 /**
@@ -15,9 +16,11 @@ export class RegexFilterRulesRepository {
 
   async findByIdOrThrow(id: string): Promise<RegexFilterRuleEntity> {
     const row = await this.repository.findOne({ where: { id } });
+
     if (!row) {
       throw new NotFoundException(`Regex filter rule with ID ${id} not found`);
     }
+
     return row;
   }
 
@@ -41,17 +44,21 @@ export class RegexFilterRulesRepository {
 
   async create(dto: Partial<RegexFilterRuleEntity>): Promise<RegexFilterRuleEntity> {
     const row = this.repository.create(dto);
+
     return await this.repository.save(row);
   }
 
   async update(id: string, dto: Partial<RegexFilterRuleEntity>): Promise<RegexFilterRuleEntity> {
     const row = await this.findByIdOrThrow(id);
+
     Object.assign(row, dto);
+
     return await this.repository.save(row);
   }
 
   async delete(id: string): Promise<void> {
     const row = await this.findByIdOrThrow(id);
+
     await this.repository.remove(row);
   }
 }

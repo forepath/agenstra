@@ -1,4 +1,5 @@
 import type { AgenstraContext } from '../types';
+
 import type { BaseTransformer } from './base.transformer';
 
 const MERGED_SKILLS_KEY = '_merged_skills';
@@ -9,12 +10,14 @@ const MERGED_SKILLS_KEY = '_merged_skills';
  */
 export function mergeComponentsForTransformer(context: AgenstraContext, transformer: BaseTransformer): AgenstraContext {
   const toMerge = transformer.needsFallbackMerge();
+
   if (toMerge.length === 0) return context;
 
   const next = { ...context, rules: { ...context.rules } };
 
   if (toMerge.includes('skills') && Object.keys(context.skills).length > 0) {
     const merged = mergeSkillsIntoMarkdown(context.skills);
+
     next.rules[MERGED_SKILLS_KEY] = merged;
   }
 
@@ -23,8 +26,10 @@ export function mergeComponentsForTransformer(context: AgenstraContext, transfor
 
 function mergeSkillsIntoMarkdown(skills: Record<string, import('../types').SkillEntry>): string {
   const parts: string[] = ['# Merged Skills\n', 'The following sections are merged from .agenstra/skills/.\n'];
+
   for (const [name, entry] of Object.entries(skills)) {
     parts.push(`\n## ${name}\n\n`, entry.content);
   }
+
   return parts.join('');
 }

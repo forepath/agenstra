@@ -1,14 +1,17 @@
 import { UserRole } from '@forepath/identity/backend';
+
 import { StatisticsUserEntity } from './statistics-user.entity';
 
 describe('StatisticsUserEntity', () => {
   it('should create an instance', () => {
     const entity = new StatisticsUserEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const entity = new StatisticsUserEntity();
+
     entity.id = 'stats-user-uuid';
     entity.originalUserId = 'user-uuid';
     entity.role = UserRole.USER;
@@ -24,6 +27,7 @@ describe('StatisticsUserEntity', () => {
 
   it('should allow nullable originalUserId for deleted users', () => {
     const entity = new StatisticsUserEntity();
+
     entity.id = 'stats-user-uuid';
     entity.originalUserId = undefined;
     entity.role = UserRole.USER;
@@ -35,10 +39,12 @@ describe('StatisticsUserEntity', () => {
 
   it('should support USER and ADMIN roles', () => {
     const userEntity = new StatisticsUserEntity();
+
     userEntity.role = UserRole.USER;
     expect(userEntity.role).toBe(UserRole.USER);
 
     const adminEntity = new StatisticsUserEntity();
+
     adminEntity.role = UserRole.ADMIN;
     expect(adminEntity.role).toBe(UserRole.ADMIN);
   });

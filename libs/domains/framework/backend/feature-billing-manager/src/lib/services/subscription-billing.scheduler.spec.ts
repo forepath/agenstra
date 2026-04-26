@@ -1,4 +1,5 @@
 import { BillingIntervalType } from '../entities/service-plan.entity';
+
 import { BillingScheduleService } from './billing-schedule.service';
 import { SubscriptionBillingScheduler } from './subscription-billing.scheduler';
 
@@ -17,7 +18,6 @@ describe('SubscriptionBillingScheduler', () => {
   const openPositionsRepository = {
     create: jest.fn(),
   } as any;
-
   const scheduler = new SubscriptionBillingScheduler(
     subscriptionsRepository,
     servicePlansRepository,

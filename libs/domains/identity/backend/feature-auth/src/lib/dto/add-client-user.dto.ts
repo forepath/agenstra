@@ -1,5 +1,5 @@
-import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 import { ClientUserRole } from '@forepath/identity/backend';
+import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 
 /**
  * DTO for adding a user to a client.

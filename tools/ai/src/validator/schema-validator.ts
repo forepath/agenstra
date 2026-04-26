@@ -11,7 +11,7 @@ export interface ValidationResult {
  */
 export function validateContext(context: AgenstraContext): ValidationResult[] {
   const results: ValidationResult[] = [];
-  const { metadata, rules, commands, skills, agents, subagents } = context;
+  const { metadata, rules } = context;
 
   if (!metadata.appName) {
     results.push({ level: 'error', message: 'metadata must have appName', path: 'metadata.json' });

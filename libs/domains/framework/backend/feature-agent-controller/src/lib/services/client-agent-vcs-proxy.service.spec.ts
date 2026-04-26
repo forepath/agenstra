@@ -5,11 +5,13 @@ import {
   RunVerifierCommandsDto,
   RunVerifierCommandsResponseDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { ClientsService } from './clients.service';
 
@@ -20,10 +22,8 @@ describe('ClientAgentVcsProxyService', () => {
   let service: ClientAgentVcsProxyService;
   let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
-
   const mockClientId = 'test-client-uuid';
   const mockAgentId = 'test-agent-uuid';
-
   const mockClientEntity: ClientEntity = {
     id: mockClientId,
     name: 'Test Client',
@@ -34,11 +34,9 @@ describe('ClientAgentVcsProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockClientsService = {
     getAccessToken: jest.fn(),
   };
-
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
@@ -69,6 +67,7 @@ describe('ClientAgentVcsProxyService', () => {
         behindCount: 0,
         files: [],
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({ status: 200, data: status } as any);
 
@@ -93,6 +92,7 @@ describe('ClientAgentVcsProxyService', () => {
         authenticationType: AuthenticationType.KEYCLOAK,
         apiKey: undefined,
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
       clientsService.getAccessToken.mockResolvedValue('jwt-token');
       mockedAxios.request.mockResolvedValue({
@@ -139,6 +139,7 @@ describe('ClientAgentVcsProxyService', () => {
 
     it('should throw BadRequestException when API key is missing for API_KEY client', async () => {
       const noKey = { ...mockClientEntity, apiKey: undefined };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(noKey);
 
       await expect(service.getStatus(mockClientId, mockAgentId)).rejects.toThrow(BadRequestException);
@@ -148,6 +149,7 @@ describe('ClientAgentVcsProxyService', () => {
     it('should map axios network error to BadRequestException', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       const err = new AxiosError('Network Error');
+
       err.request = {};
       mockedAxios.request.mockRejectedValue(err);
 
@@ -200,6 +202,7 @@ describe('ClientAgentVcsProxyService', () => {
   describe('prepareCleanWorkspace', () => {
     it('should POST to vcs workspace/prepare-clean', async () => {
       const body: PrepareCleanWorkspaceDto = { baseBranch: 'main' };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
 
@@ -224,6 +227,7 @@ describe('ClientAgentVcsProxyService', () => {
       const response: RunVerifierCommandsResponseDto = {
         results: [{ cmd: 'npm test', exitCode: 0, output: 'ok' }],
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({ status: 200, data: response } as any);
 
@@ -252,6 +256,7 @@ describe('ClientAgentVcsProxyService', () => {
           message: 'init',
         },
       ];
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({ status: 200, data: branches } as any);
 

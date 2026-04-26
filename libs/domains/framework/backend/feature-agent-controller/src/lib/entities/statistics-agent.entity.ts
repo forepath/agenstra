@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { StatisticsClientEntity } from './statistics-client.entity';
 
 /**

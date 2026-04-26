@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Socket } from 'socket.io';
 import { Repository } from 'typeorm';
+
 import type {
   TicketAutomationRunChatEventDto,
   TicketAutomationRunChatTicketSummaryDto,
@@ -10,6 +11,7 @@ import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.ent
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { ticketAutomationRunEntityToDto } from '../utils/ticket-board-realtime-mappers';
+
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 
 /** Cap for post-login hydration (per agent + client). */
@@ -47,22 +49,28 @@ export class TicketAutomationChatSyncService {
       .orderBy('r.started_at', 'ASC')
       .take(TICKET_AUTOMATION_CHAT_HYDRATE_LIMIT)
       .getMany();
+
     for (const run of runs) {
       const payload = await this.buildPayload(run, true);
+
       if (payload) {
         this.clientAutomationChatRealtime.emitToSocket(socket, payload);
       }
     }
+
     this.logger.debug(`Hydrated ${runs.length} automation run(s) for chat, client=${clientId} agent=${agentId}`);
   }
 
   /** Live run snapshot to all sockets in the client room (clients namespace). */
   async emitLiveRunUpdateByRunId(runId: string): Promise<void> {
     const run = await this.runRepo.findOne({ where: { id: runId } });
+
     if (!run) {
       return;
     }
+
     const payload = await this.buildPayload(run, false);
+
     if (payload) {
       this.clientAutomationChatRealtime.emitToClient(run.clientId, payload);
     }
@@ -82,14 +90,18 @@ export class TicketAutomationChatSyncService {
     hydrate: boolean,
   ): Promise<TicketAutomationRunChatEventDto | null> {
     const ticket = await this.ticketRepo.findOne({ where: { id: run.ticketId } });
+
     if (!ticket) {
       this.logger.warn(`ticket_automation_run ${run.id} references missing ticket ${run.ticketId}`);
+
       return null;
     }
+
     const automation = await this.automationRepo.findOne({ where: { ticketId: ticket.id } });
     const ticketSummary = this.mapTicketSummary(ticket, automation?.eligible ?? false);
     const runDto = ticketAutomationRunEntityToDto(run);
     const timelineAt = hydrate ? run.startedAt.toISOString() : run.updatedAt.toISOString();
+
     return {
       timelineAt,
       hydrate,

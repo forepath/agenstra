@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
+
 import type {
   CreateInvoiceDto,
   CreateInvoiceResponse,

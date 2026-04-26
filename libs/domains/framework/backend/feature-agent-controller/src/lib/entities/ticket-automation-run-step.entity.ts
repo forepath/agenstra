@@ -1,4 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { TicketAutomationRunEntity } from './ticket-automation-run.entity';
 
 @Entity('ticket_automation_run_step')

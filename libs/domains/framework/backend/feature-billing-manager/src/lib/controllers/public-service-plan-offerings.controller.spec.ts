@@ -1,8 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { PricingService } from '../services/pricing.service';
+
 import { PublicServicePlanOfferingsController } from './public-service-plan-offerings.controller';
 
 describe('PublicServicePlanOfferingsController', () => {
@@ -16,7 +18,6 @@ describe('PublicServicePlanOfferingsController', () => {
     orderingHighlights: [{ icon: 'check', text: 'Included' }],
     serviceType: { name: 'Agent Hosting' },
   } as ServicePlanEntity;
-
   let controller: PublicServicePlanOfferingsController;
   let findActiveWithServiceType: jest.Mock;
   let findAllActiveWithServiceType: jest.Mock;
@@ -69,6 +70,7 @@ describe('PublicServicePlanOfferingsController', () => {
   it('does not expose internal pricing fields on response objects', async () => {
     const result = await controller.list(10, 0, undefined);
     const json = JSON.parse(JSON.stringify(result[0]));
+
     expect(json).not.toHaveProperty('basePrice');
     expect(json).not.toHaveProperty('marginPercent');
     expect(json).not.toHaveProperty('providerConfigDefaults');
@@ -89,9 +91,11 @@ describe('PublicServicePlanOfferingsController', () => {
 
   it('uses empty serviceTypeName when relation missing', async () => {
     const rowNoType = { ...planRow, serviceType: undefined } as ServicePlanEntity;
+
     findActiveWithServiceType.mockResolvedValue([rowNoType]);
     calculate.mockReturnValue({ totalPrice: 5, basePrice: 5, marginPercent: 0, marginFixed: 0 });
     const result = await controller.list(10, 0, undefined);
+
     expect(result[0].serviceTypeName).toBe('');
   });
 
@@ -126,6 +130,7 @@ describe('PublicServicePlanOfferingsController', () => {
     it('breaks ties with lexicographically smaller plan id', async () => {
       const planA = { ...planRow, id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', name: 'A' } as ServicePlanEntity;
       const planB = { ...planRow, id: 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb', name: 'B' } as ServicePlanEntity;
+
       findAllActiveWithServiceType.mockResolvedValue([planB, planA]);
       calculate.mockReturnValue({ basePrice: 1, marginPercent: 0, marginFixed: 0, totalPrice: 10 });
 

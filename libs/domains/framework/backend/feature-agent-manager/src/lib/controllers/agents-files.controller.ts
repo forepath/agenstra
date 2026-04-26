@@ -13,6 +13,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+
 import { CreateFileDto } from '../dto/create-file.dto';
 import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
@@ -44,6 +45,7 @@ export class AgentsFilesController {
     const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -54,6 +56,7 @@ export class AgentsFilesController {
     } else {
       normalizedPath = '.';
     }
+
     return await this.agentFileSystemService.readFile(agentId, normalizedPath, context);
   }
 
@@ -74,6 +77,7 @@ export class AgentsFilesController {
     const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -82,9 +86,11 @@ export class AgentsFilesController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     await this.agentFileSystemService.writeFile(
       agentId,
       normalizedPath,
@@ -107,6 +113,7 @@ export class AgentsFilesController {
     @Query('context') contextRaw?: string,
   ): Promise<FileNodeDto[]> {
     const context = parseAgentFileManagerContext(contextRaw);
+
     return await this.agentFileSystemService.listDirectory(agentId, path || '.', context);
   }
 
@@ -127,6 +134,7 @@ export class AgentsFilesController {
     const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -135,9 +143,11 @@ export class AgentsFilesController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     await this.agentFileSystemService.createFileOrDirectory(
       agentId,
       normalizedPath,
@@ -162,6 +172,7 @@ export class AgentsFilesController {
     const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -170,9 +181,11 @@ export class AgentsFilesController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     await this.agentFileSystemService.deleteFileOrDirectory(agentId, normalizedPath, context);
   }
 
@@ -193,6 +206,7 @@ export class AgentsFilesController {
     const context = parseAgentFileManagerContext(contextRaw);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string | undefined;
+
     if (typeof path === 'string') {
       normalizedPath = path;
     } else if (Array.isArray(path)) {
@@ -201,12 +215,15 @@ export class AgentsFilesController {
       // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
+
     if (!normalizedPath) {
       throw new BadRequestException('File path is required');
     }
+
     if (!moveFileDto.destination) {
       throw new BadRequestException('Destination path is required');
     }
+
     await this.agentFileSystemService.moveFileOrDirectory(agentId, normalizedPath, moveFileDto.destination, context);
   }
 }

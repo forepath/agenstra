@@ -1,6 +1,7 @@
 import { APP_INITIALIZER, inject, Provider } from '@angular/core';
 import { KeycloakService } from 'keycloak-angular';
 import Keycloak from 'keycloak-js';
+
 import { IDENTITY_AUTH_ENVIRONMENT } from './auth-environment';
 
 /**

@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CreateEnvironmentVariableDto } from '../dto/create-environment-variable.dto';
 import { EnvironmentVariableResponseDto } from '../dto/environment-variable-response.dto';
 import { UpdateEnvironmentVariableDto } from '../dto/update-environment-variable.dto';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
+
 import { AgentsEnvironmentVariablesController } from './agents-environment-variables.controller';
 
 describe('AgentsEnvironmentVariablesController', () => {
   let controller: AgentsEnvironmentVariablesController;
   let service: jest.Mocked<AgentEnvironmentVariablesService>;
-
   const mockAgentId = 'test-agent-uuid';
   const mockEnvVarId = 'test-env-var-uuid';
-
   const mockEnvironmentVariableEntity: AgentEnvironmentVariableEntity = {
     id: mockEnvVarId,
     agentId: mockAgentId,
@@ -21,7 +21,6 @@ describe('AgentsEnvironmentVariablesController', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   } as AgentEnvironmentVariableEntity;
-
   const mockEnvironmentVariableResponse: EnvironmentVariableResponseDto = {
     id: mockEnvVarId,
     agentId: mockAgentId,
@@ -30,7 +29,6 @@ describe('AgentsEnvironmentVariablesController', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockService = {
     createEnvironmentVariable: jest.fn(),
     updateEnvironmentVariable: jest.fn(),
@@ -62,6 +60,7 @@ describe('AgentsEnvironmentVariablesController', () => {
   describe('getEnvironmentVariables', () => {
     it('should return array of environment variables', async () => {
       const variables = [mockEnvironmentVariableEntity];
+
       service.getEnvironmentVariables.mockResolvedValue(variables);
 
       const result = await controller.getEnvironmentVariables(mockAgentId, 50, 0);
@@ -72,6 +71,7 @@ describe('AgentsEnvironmentVariablesController', () => {
 
     it('should use default pagination values', async () => {
       const variables = [mockEnvironmentVariableEntity];
+
       service.getEnvironmentVariables.mockResolvedValue(variables);
 
       const result = await controller.getEnvironmentVariables(mockAgentId);
@@ -82,6 +82,7 @@ describe('AgentsEnvironmentVariablesController', () => {
 
     it('should use custom pagination parameters', async () => {
       const variables = [mockEnvironmentVariableEntity];
+
       service.getEnvironmentVariables.mockResolvedValue(variables);
 
       const result = await controller.getEnvironmentVariables(mockAgentId, 100, 10);
@@ -136,7 +137,6 @@ describe('AgentsEnvironmentVariablesController', () => {
         variable: 'UPDATED_API_KEY',
         content: 'updated-secret-value',
       };
-
       const updatedEntity = {
         ...mockEnvironmentVariableEntity,
         variable: 'UPDATED_API_KEY',

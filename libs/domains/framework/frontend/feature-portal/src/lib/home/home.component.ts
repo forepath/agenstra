@@ -43,6 +43,7 @@ export class PortalHomeComponent implements OnInit {
     const clickX = event.clientX - rect.left;
     const slideWidth = rect.width / 4;
     let slideNum = Math.floor(clickX / slideWidth) + 1;
+
     slideNum = Math.max(1, Math.min(4, slideNum));
     this.activeSlide.set(slideNum);
   }
@@ -51,6 +52,7 @@ export class PortalHomeComponent implements OnInit {
     if (this.autoplayInterval) {
       clearInterval(this.autoplayInterval);
     }
+
     this.autoplayInterval = null;
   }
 
@@ -62,6 +64,7 @@ export class PortalHomeComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       return setInterval(() => {
         this.activeSlide.update((prev) => prev + 1);
+
         if (this.activeSlide() > 4) {
           this.activeSlide.set(1);
         }

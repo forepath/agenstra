@@ -1,12 +1,13 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { PassThrough } from 'stream';
 import { promisify } from 'util';
-import { v4 as uuidv4 } from 'uuid';
+
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Docker = require('dockerode');
+import { v4 as uuidv4 } from 'uuid';
 
 const execAsync = promisify(exec);
 
@@ -32,20 +33,21 @@ export class DockerService {
     network?: string;
   }): Promise<string> {
     const { image, env, volumes = [], ports = [], network } = options;
-
     // Resolve image: explicit -> env -> default placeholder
     const resolvedImage = image || process.env.AGENT_DEFAULT_IMAGE || 'ghcr.io/forepath/agenstra-manager-worker:latest';
-
     // Build HostConfig.Binds from volumes
     const binds = volumes.map((v) => `${v.hostPath}:${v.containerPath}${v.readOnly ? ':ro' : ''}`);
-
     // Build ExposedPorts and PortBindings from ports
     const exposedPorts: Record<string, Record<string, never>> = {};
     const portBindings: Record<string, Array<{ HostPort?: string }>> = {};
+
     for (const p of ports) {
       const key = `${p.containerPort}/${p.protocol ?? 'tcp'}`;
+
       exposedPorts[key] = {};
+
       if (!portBindings[key]) portBindings[key] = [];
+
       portBindings[key].push({ HostPort: p.hostPort ? String(p.hostPort) : undefined });
     }
 
@@ -53,8 +55,10 @@ export class DockerService {
     await new Promise<void>((resolve, reject) => {
       this.docker.pull(resolvedImage, (err: unknown, stream: NodeJS.ReadableStream) => {
         if (err) return reject(err);
+
         // followProgress is available via modem (not typed in dockerode)
         const modem: any = (this.docker as any).modem;
+
         modem.followProgress(stream, (pullErr: unknown) => (pullErr ? reject(pullErr) : resolve()));
       });
     }).catch((e) => {
@@ -66,24 +70,24 @@ export class DockerService {
     // Escape special characters in the value to preserve intent (no quoting)
     const escapeEnvValue = (val: string): string =>
       val.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
-
     const maybeQuote = (val: string): string => {
       // Quote if contains whitespace or quotes
       if (/\s|"|'/u.test(val)) {
         const inner = val.replace(/"/g, '\\"');
+
         return `"${inner}"`;
       }
+
       return val;
     };
-
     const envArray = env
       ? Object.entries(env).map(([key, value]) => {
           const raw = value == null ? '' : escapeEnvValue(String(value));
           const quoted = maybeQuote(raw);
+
           return `${key}=${quoted}`;
         })
       : undefined;
-
     // Create container
     const container = await this.docker.createContainer({
       Image: resolvedImage,
@@ -123,18 +127,18 @@ export class DockerService {
     },
   ): Promise<string> {
     const { env } = options;
-
     // Map env object to KEY=VALUE strings as required by Docker API
     // Escape special characters in the value to preserve intent (no quoting)
     const escapeEnvValue = (val: string): string =>
       val.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
-
     const maybeQuote = (val: string): string => {
       // Quote if contains whitespace or quotes
       if (/\s|"|'/u.test(val)) {
         const inner = val.replace(/"/g, '\\"');
+
         return `"${inner}"`;
       }
+
       return val;
     };
 
@@ -146,17 +150,21 @@ export class DockerService {
         inspectInfo = await container.inspect();
       } catch (inspectError: unknown) {
         const err = inspectError as { statusCode?: number };
+
         if (err.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw inspectError;
       }
 
       // Get current environment variables
       const currentEnvArray = inspectInfo.Config?.Env || [];
       const currentEnvMap: Record<string, string> = {};
+
       for (const envVar of currentEnvArray) {
         const [key, ...valueParts] = envVar.split('=');
+
         if (key) {
           currentEnvMap[key] = valueParts.join('=');
         }
@@ -164,6 +172,7 @@ export class DockerService {
 
       // Merge new environment variables (new values override existing ones)
       const mergedEnv: Record<string, string | undefined> = { ...currentEnvMap };
+
       if (env) {
         Object.assign(mergedEnv, env);
       }
@@ -172,9 +181,9 @@ export class DockerService {
       const envArray = Object.entries(mergedEnv).map(([key, value]) => {
         const raw = value == null ? '' : escapeEnvValue(String(value));
         const quoted = maybeQuote(raw);
+
         return `${key}=${quoted}`;
       });
-
       // Extract container configuration
       const containerName = inspectInfo.Name.startsWith('/') ? inspectInfo.Name.slice(1) : inspectInfo.Name;
       const image = inspectInfo.Config?.Image || inspectInfo.Image;
@@ -189,6 +198,7 @@ export class DockerService {
         await container.stop();
       } catch (stopError: unknown) {
         const err = stopError as { statusCode?: number; message?: string };
+
         // Ignore error if container is already stopped (304) or not found (404)
         if (err.statusCode === 304 || err.statusCode === 404) {
           // Container is already stopped or doesn't exist, continue with removal
@@ -203,9 +213,11 @@ export class DockerService {
         await container.remove({ force: true });
       } catch (removeError: unknown) {
         const err = removeError as { statusCode?: number; message?: string };
+
         if (err.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw removeError;
       }
 
@@ -214,12 +226,13 @@ export class DockerService {
         .map((mount) => {
           if (mount.Type === 'bind' || mount.Type === 'volume') {
             const readOnly = mount.RW === false ? ':ro' : '';
+
             return `${mount.Source}:${mount.Destination}${readOnly}`;
           }
+
           return null;
         })
         .filter((bind): bind is string => bind !== null);
-
       // Recreate container with updated environment variables
       const newContainer = await this.docker.createContainer({
         name: containerName,
@@ -233,13 +246,14 @@ export class DockerService {
         },
         Labels: Object.keys(labels).length ? labels : undefined,
       });
-
       // Reconnect to networks if the container was connected to any
       const networks = networkSettings?.Networks;
+
       if (networks) {
         for (const networkName of Object.keys(networks)) {
           try {
             const network = this.docker.getNetwork(networkName);
+
             await network.connect({ Container: newContainer.id });
           } catch (networkError: unknown) {
             // Log but don't fail if network connection fails (network might not exist)
@@ -254,13 +268,17 @@ export class DockerService {
       await newContainer.start();
 
       const newContainerId = newContainer.id as unknown as string;
+
       this.logger.log(`Successfully updated container ${containerId} (recreated as ${newContainerId})`);
+
       return newContainerId;
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error updating container: ${err.message}`, err.stack);
       throw error;
     }
@@ -275,16 +293,18 @@ export class DockerService {
   async deleteContainer(containerId: string): Promise<void> {
     try {
       const container = this.docker.getContainer(containerId);
-
       // Check if container exists and get its state
       let containerInfo;
+
       try {
         containerInfo = await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -294,6 +314,7 @@ export class DockerService {
           await container.stop();
         } catch (error: unknown) {
           const stopError = error as { statusCode?: number; message?: string };
+
           // Ignore error if container is already stopped (409 Conflict)
           if (stopError.statusCode !== 409) {
             this.logger.warn(`Failed to stop container ${containerId}: ${stopError.message}`, stopError);
@@ -307,23 +328,29 @@ export class DockerService {
         await container.remove();
       } catch (error: unknown) {
         const removeError = error as { statusCode?: number; message?: string };
+
         // If container doesn't exist (404), consider it already deleted
         if (removeError.statusCode === 404) {
           this.logger.debug(`Container ${containerId} was already removed`);
+
           return;
         }
+
         // If container is still running (409), try force removal
         if (removeError.statusCode === 409) {
           this.logger.warn(`Container ${containerId} is still running, attempting force removal`);
+
           try {
             await container.remove({ force: true });
           } catch (forceError: unknown) {
             const forceErr = forceError as { message?: string; stack?: string };
+
             this.logger.error(`Failed to force remove container ${containerId}: ${forceErr.message}`, forceErr.stack);
             throw forceError;
           }
         } else {
           const err = removeError as { message?: string; stack?: string };
+
           this.logger.error(`Failed to remove container ${containerId}: ${err.message}`, err.stack);
           throw error;
         }
@@ -332,7 +359,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error deleting container: ${err.message}`, err.stack);
       throw error;
     }
@@ -351,9 +380,11 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -362,11 +393,15 @@ export class DockerService {
         this.logger.log(`Started container ${containerId}`);
       } catch (error: unknown) {
         const startError = error as { statusCode?: number; message?: string };
+
         if (startError.statusCode === 304) {
           this.logger.debug(`Container ${containerId} is already running`);
+
           return;
         }
+
         const err = startError as { message?: string; stack?: string };
+
         this.logger.error(`Failed to start container ${containerId}: ${err.message}`, err.stack);
         throw error;
       }
@@ -374,7 +409,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error starting container: ${err.message}`, err.stack);
       throw error;
     }
@@ -393,9 +430,11 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -404,11 +443,15 @@ export class DockerService {
         this.logger.log(`Stopped container ${containerId}`);
       } catch (error: unknown) {
         const stopError = error as { statusCode?: number; message?: string };
+
         if (stopError.statusCode === 304) {
           this.logger.debug(`Container ${containerId} is already stopped`);
+
           return;
         }
+
         const err = stopError as { message?: string; stack?: string };
+
         this.logger.error(`Failed to stop container ${containerId}: ${err.message}`, err.stack);
         throw error;
       }
@@ -416,7 +459,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error stopping container: ${err.message}`, err.stack);
       throw error;
     }
@@ -437,9 +482,11 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -449,19 +496,23 @@ export class DockerService {
         this.logger.log(`Restarted container ${containerId}`);
       } catch (error: unknown) {
         const restartError = error as { statusCode?: number; message?: string };
+
         // If container is not running (409 Conflict), try to start it
         if (restartError.statusCode === 409) {
           this.logger.debug(`Container ${containerId} is not running, attempting to start it`);
+
           try {
             await container.start();
             this.logger.log(`Started container ${containerId}`);
           } catch (startError: unknown) {
             const startErr = startError as { message?: string; stack?: string };
+
             this.logger.error(`Failed to start container ${containerId}: ${startErr.message}`, startErr.stack);
             throw startError;
           }
         } else {
           const err = restartError as { message?: string; stack?: string };
+
           this.logger.error(`Failed to restart container ${containerId}: ${err.message}`, err.stack);
           throw error;
         }
@@ -470,7 +521,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error restarting container: ${err.message}`, err.stack);
       throw error;
     }
@@ -487,13 +540,11 @@ export class DockerService {
   async createNetwork(options: { name?: string; driver?: string; containerIds?: string[] }): Promise<string> {
     try {
       const { name = uuidv4(), driver = 'bridge', containerIds = [] } = options;
-
       // Create the network
       const network = await this.docker.createNetwork({
         Name: name,
         Driver: driver,
       });
-
       const networkId = network.id as unknown as string;
 
       // Attach containers if provided
@@ -504,6 +555,7 @@ export class DockerService {
             this.logger.debug(`Attached container ${containerId} to network ${name}`);
           } catch (error: unknown) {
             const connectError = error as { statusCode?: number; message?: string };
+
             // Log warning but continue attaching other containers
             this.logger.warn(`Failed to attach container ${containerId} to network ${name}: ${connectError.message}`);
           }
@@ -511,9 +563,11 @@ export class DockerService {
       }
 
       this.logger.log(`Created network ${name} with ID ${networkId}`);
+
       return networkId;
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error creating network: ${err.message}`, err.stack);
       throw error;
     }
@@ -528,16 +582,18 @@ export class DockerService {
   async deleteNetwork(networkId: string): Promise<void> {
     try {
       const network = this.docker.getNetwork(networkId);
-
       // Check if network exists and get its info
       let networkInfo;
+
       try {
         networkInfo = await network.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Network with ID '${networkId}' not found`);
         }
+
         throw error;
       }
 
@@ -547,12 +603,14 @@ export class DockerService {
 
       if (containerIds.length > 0) {
         this.logger.debug(`Disconnecting ${containerIds.length} containers from network ${networkId}`);
+
         for (const containerId of containerIds) {
           try {
             await network.disconnect({ Container: containerId });
             this.logger.debug(`Disconnected container ${containerId} from network ${networkId}`);
           } catch (error: unknown) {
             const disconnectError = error as { statusCode?: number; message?: string };
+
             // Log warning but continue disconnecting other containers
             // Ignore 404 errors (container already disconnected or doesn't exist)
             if (disconnectError.statusCode !== 404) {
@@ -570,12 +628,16 @@ export class DockerService {
         this.logger.log(`Deleted network ${networkId}`);
       } catch (error: unknown) {
         const removeError = error as { statusCode?: number; message?: string };
+
         // If network doesn't exist (404), consider it already deleted
         if (removeError.statusCode === 404) {
           this.logger.debug(`Network ${networkId} was already removed`);
+
           return;
         }
+
         const err = removeError as { message?: string; stack?: string };
+
         this.logger.error(`Failed to remove network ${networkId}: ${err.message}`, err.stack);
         throw error;
       }
@@ -583,7 +645,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error deleting network: ${err.message}`, err.stack);
       throw error;
     }
@@ -605,9 +669,11 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -618,10 +684,10 @@ export class DockerService {
         tail: 100, // Get last 100 lines of historical logs
         timestamps: false,
       });
-
       // Parse historical logs and yield each line
       const historicalBuffer = Buffer.isBuffer(historicalLogs) ? historicalLogs : Buffer.from(historicalLogs);
       const historicalLines = historicalBuffer.toString('utf-8').split('\n');
+
       for (const line of historicalLines) {
         if (line.trim()) {
           yield line;
@@ -637,13 +703,14 @@ export class DockerService {
         tail: 0, // Start from now (no historical logs, we already got them)
         timestamps: false,
       })) as NodeJS.ReadableStream;
-
       // Process live log stream
       let buffer = '';
+
       try {
         for await (const chunk of logStream) {
           buffer += chunk.toString('utf-8');
           const lines = buffer.split('\n');
+
           // Keep the last incomplete line in buffer
           buffer = lines.pop() || '';
 
@@ -661,6 +728,7 @@ export class DockerService {
       } catch (streamError: unknown) {
         // Stream ended or error occurred
         const err = streamError as { code?: string; message?: string; stack?: string };
+
         if (err.code !== 'ECONNRESET' && err.code !== 'EPIPE') {
           this.logger.error(`Error reading log stream: ${err.message}`, err.stack);
           throw streamError;
@@ -670,7 +738,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error getting container logs: ${err.message}`, err.stack);
       throw error;
     }
@@ -730,6 +800,7 @@ export class DockerService {
             args.push(current);
             current = '';
           }
+
           // Skip additional whitespace
           while (i + 1 < command.length && /\s/.test(command[i + 1])) {
             i++;
@@ -738,6 +809,7 @@ export class DockerService {
           current += char;
         }
       }
+
       i++;
     }
 
@@ -776,9 +848,11 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -787,7 +861,6 @@ export class DockerService {
       const commandParts = this.parseShellCommand(command.trim());
       const executable = commandParts[0];
       const args = commandParts.slice(1);
-
       // Create exec instance with stdin enabled for keystrokes
       const execInstance = await container.exec({
         Cmd: [executable, ...args],
@@ -796,13 +869,11 @@ export class DockerService {
         AttachStderr: true,
         Tty: false, // Disable TTY to properly capture output
       });
-
       // Start the exec
       const stream = (await execInstance.start({
         hijack: true,
         stdin: true,
       })) as NodeJS.ReadWriteStream;
-
       // Collect output from stdout and stderr
       const outputChunks: Buffer[] = [];
 
@@ -815,15 +886,18 @@ export class DockerService {
         // Normalize input: convert literal \n strings to actual newlines
         // This handles cases where \n is passed as literal "\\n" over websocket connections
         let inputArray: string[];
+
         if (Array.isArray(input)) {
           // For arrays: normalize each element, then split each element if it contains newlines
           inputArray = input.flatMap((line) => {
             const normalized = line.replace(/\\n/g, '\n');
+
             return normalized.split(/\r?\n/);
           });
         } else {
           // For strings: normalize, then split
           const normalized = input.replace(/\\n/g, '\n');
+
           inputArray = normalized.split(/\r?\n/);
         }
 
@@ -831,6 +905,7 @@ export class DockerService {
         for (const inputLine of inputArray) {
           // Add newline if not present (simulates Enter key)
           const lineToSend = inputLine.endsWith('\n') ? inputLine : `${inputLine}\n`;
+
           stream.write(lineToSend);
         }
       }
@@ -842,14 +917,12 @@ export class DockerService {
       const output = await new Promise<string>((resolve, reject) => {
         let resolved = false;
         let extractedOutput = ''; // Declare outside event handlers for scope
-
         const resolveOnce = (result: string) => {
           if (!resolved) {
             resolved = true;
             resolve(result);
           }
         };
-
         const rejectOnce = (error: unknown) => {
           if (!resolved) {
             resolved = true;
@@ -860,10 +933,10 @@ export class DockerService {
         stream.on('end', () => {
           // Combine all output chunks and demultiplex Docker's multiplexed format
           const combinedBuffer = Buffer.concat(outputChunks);
-
           // Docker multiplexed format: [STREAM_TYPE(1 byte)][LENGTH(4 bytes BE)][DATA...]
           // Stream type: 1 = stdout, 2 = stderr
           let i = 0;
+
           while (i < combinedBuffer.length) {
             if (i + 5 <= combinedBuffer.length) {
               const streamType = combinedBuffer[i];
@@ -874,6 +947,7 @@ export class DockerService {
               if (dataEnd <= combinedBuffer.length && (streamType === 1 || streamType === 2)) {
                 // Valid frame: extract data (both stdout and stderr)
                 const data = combinedBuffer.subarray(dataStart, dataEnd);
+
                 extractedOutput += data.toString('utf-8');
                 i = dataEnd;
               } else {
@@ -900,10 +974,12 @@ export class DockerService {
 
           // Extract output if not already extracted
           let finalOutput = '';
+
           if (extractedOutput) {
             finalOutput = extractedOutput.trim();
           } else {
             const combinedBuffer = Buffer.concat(outputChunks);
+
             finalOutput = combinedBuffer.toString('utf-8').trim();
           }
 
@@ -917,6 +993,7 @@ export class DockerService {
                 if (exitCode !== 0 && exitCode !== null) {
                   // Command failed - reject with error including output
                   const errorMessage = finalOutput || `Command failed with exit code ${exitCode}`;
+
                   this.logger.error(`Command failed with exit code ${exitCode}: ${errorMessage}`);
                   rejectOnce(new Error(errorMessage));
                 } else {
@@ -927,6 +1004,7 @@ export class DockerService {
               .catch((inspectError) => {
                 // If we can't inspect, log warning but resolve with output
                 const err = inspectError as { message?: string };
+
                 this.logger.warn(`Failed to inspect exec exit code: ${err.message}`);
                 resolveOnce(finalOutput);
               });
@@ -938,12 +1016,14 @@ export class DockerService {
 
         stream.on('error', (error: unknown) => {
           const err = error as { code?: string; message?: string };
+
           // Ignore EPIPE errors (stdin closed) - this is expected when stdin ends
           if (err.code !== 'EPIPE' && err.code !== 'ECONNRESET') {
             rejectOnce(error);
           } else {
             // For EPIPE/ECONNRESET, resolve with collected output
             const combinedBuffer = Buffer.concat(outputChunks);
+
             resolveOnce(combinedBuffer.toString('utf-8').trim());
           }
         });
@@ -953,6 +1033,7 @@ export class DockerService {
           if (!resolved) {
             const combinedBuffer = Buffer.concat(outputChunks);
             const timeoutOutput = combinedBuffer.toString('utf-8').trim();
+
             rejectOnce(
               new Error(`Command timed out after 24 hours${timeoutOutput ? `\nOutput: ${timeoutOutput}` : ''}`),
             );
@@ -965,7 +1046,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error sending command to container: ${err.message}`, err.stack);
       throw error;
     }
@@ -991,16 +1074,17 @@ export class DockerService {
       await container.inspect();
     } catch (error: unknown) {
       const dockerError = error as { statusCode?: number };
+
       if (dockerError.statusCode === 404) {
         throw new NotFoundException(`Container with ID '${containerId}' not found`);
       }
+
       throw error;
     }
 
     const commandParts = this.parseShellCommand(command.trim());
     const executable = commandParts[0];
     const args = commandParts.slice(1);
-
     const execInstance = await container.exec({
       Cmd: [executable, ...args],
       AttachStdin: true,
@@ -1008,21 +1092,19 @@ export class DockerService {
       AttachStderr: true,
       Tty: false,
     });
-
     const stream = (await execInstance.start({
       hijack: true,
       stdin: true,
     })) as NodeJS.ReadWriteStream;
-
     const stdoutStream = new PassThrough();
     const stderrStream = new PassThrough();
+
     container.modem.demuxStream(stream, stdoutStream, stderrStream);
 
     type QueueItem = { stream: 'stdout' | 'stderr'; chunk: string };
     const queue: QueueItem[] = [];
     let done = false;
     let error: unknown | null = null;
-
     const notify = (() => {
       let resolve: (() => void) | null = null;
       const wait = () =>
@@ -1033,20 +1115,18 @@ export class DockerService {
         resolve?.();
         resolve = null;
       };
+
       return { wait, signal };
     })();
-
     const onData = (which: 'stdout' | 'stderr') => (chunk: Buffer) => {
       queue.push({ stream: which, chunk: chunk.toString('utf-8') });
       notify.signal();
     };
-
     const onError = (err: unknown) => {
       error = err;
       done = true;
       notify.signal();
     };
-
     const tryFinish = () => {
       if (stdoutStream.readableEnded && stderrStream.readableEnded) {
         done = true;
@@ -1064,30 +1144,38 @@ export class DockerService {
 
     if (input !== undefined) {
       let inputArray: string[];
+
       if (Array.isArray(input)) {
         inputArray = input.flatMap((line) => line.replace(/\\n/g, '\n').split(/\r?\n/));
       } else {
         inputArray = input.replace(/\\n/g, '\n').split(/\r?\n/);
       }
+
       for (const inputLine of inputArray) {
         const lineToSend = inputLine.endsWith('\n') ? inputLine : `${inputLine}\n`;
+
         stream.write(lineToSend);
       }
     }
+
     stream.end();
 
     while (!done || queue.length > 0) {
       if (error) {
         throw error;
       }
+
       const item = queue.shift();
+
       if (item) {
         yield item;
         continue;
       }
+
       if (done) {
         break;
       }
+
       await notify.wait();
     }
   }
@@ -1110,16 +1198,17 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
       // Escape file path for shell usage
       const escapedPath = filePath.replace(/'/g, "'\\''");
       const safePath = `'${escapedPath}'`;
-
       // Create exec instance to read file
       const exec = await container.exec({
         Cmd: ['sh', '-c', `cat ${safePath}`],
@@ -1128,13 +1217,11 @@ export class DockerService {
         AttachStderr: true,
         Tty: false,
       });
-
       // Start the exec
       const stream = (await exec.start({
         hijack: true,
         stdin: false,
       })) as NodeJS.ReadWriteStream;
-
       // Use PassThrough streams and demuxStream to properly handle Docker's multiplexed format
       const stdoutStream = new PassThrough();
       const stderrStream = new PassThrough();
@@ -1163,7 +1250,6 @@ export class DockerService {
             resolve(result);
           }
         };
-
         const rejectOnce = (error: unknown) => {
           if (!resolved) {
             resolved = true;
@@ -1201,6 +1287,7 @@ export class DockerService {
 
         stream.on('error', (error: unknown) => {
           const err = error as { code?: string; message?: string };
+
           // Ignore EPIPE errors (stdin closed) - this is expected
           if (err.code !== 'EPIPE' && err.code !== 'ECONNRESET') {
             rejectOnce(error);
@@ -1226,7 +1313,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error reading file from container: ${err.message}`, err.stack);
       throw error;
     }
@@ -1240,13 +1329,16 @@ export class DockerService {
   async getContainerHomeDirectory(containerId: string): Promise<string> {
     try {
       const container = this.docker.getContainer(containerId);
+
       try {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -1257,15 +1349,14 @@ export class DockerService {
         AttachStderr: true,
         Tty: false,
       });
-
       const stream = (await exec.start({
         hijack: true,
         stdin: false,
       })) as NodeJS.ReadWriteStream;
-
       const stdoutStream = new PassThrough();
       const stderrStream = new PassThrough();
       let stdoutData = '';
+
       container.modem.demuxStream(stream, stdoutStream, stderrStream);
       stdoutStream.on('data', (chunk: Buffer) => {
         stdoutData += chunk.toString('utf8');
@@ -1285,6 +1376,7 @@ export class DockerService {
             reject(err);
           }
         };
+
         stream.on('end', () => {
           stdoutStream.end();
           stderrStream.end();
@@ -1310,14 +1402,16 @@ export class DockerService {
           }
         }, 60000);
       });
-
       const home = output.trim() || '/root';
+
       return home;
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error resolving HOME in container: ${err.message}`, err.stack);
       throw error;
     }
@@ -1341,9 +1435,11 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -1361,7 +1457,6 @@ export class DockerService {
         AttachStderr: true,
         Tty: true, // Enable TTY for terminal emulation
       });
-
       // Start the exec with TTY
       const stream = (await exec.start({
         hijack: true,
@@ -1390,17 +1485,21 @@ export class DockerService {
 
       stream.on('error', (error: unknown) => {
         const err = error as { code?: string; message?: string };
+
         this.logger.error(`Terminal session ${sessionId} error: ${err.message}`);
         this.terminalSessions.delete(sessionId);
       });
 
       this.logger.log(`Created terminal session ${sessionId} for container ${containerId}`);
+
       return stream;
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error creating terminal session: ${err.message}`, err.stack);
       throw error;
     }
@@ -1414,15 +1513,18 @@ export class DockerService {
    */
   async sendTerminalInput(sessionId: string, data: string | Buffer): Promise<void> {
     const session = this.terminalSessions.get(sessionId);
+
     if (!session) {
       throw new NotFoundException(`Terminal session '${sessionId}' not found`);
     }
 
     try {
       const buffer = typeof data === 'string' ? Buffer.from(data, 'utf-8') : data;
+
       session.stream.write(buffer);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error sending input to terminal session ${sessionId}: ${err.message}`, err.stack);
       throw error;
     }
@@ -1435,6 +1537,7 @@ export class DockerService {
    */
   async closeTerminalSession(sessionId: string): Promise<void> {
     const session = this.terminalSessions.get(sessionId);
+
     if (!session) {
       throw new NotFoundException(`Terminal session '${sessionId}' not found`);
     }
@@ -1447,6 +1550,7 @@ export class DockerService {
       this.logger.log(`Closed terminal session ${sessionId}`);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error closing terminal session ${sessionId}: ${err.message}`, err.stack);
       // Remove from map even if close fails
       this.terminalSessions.delete(sessionId);
@@ -1462,9 +1566,11 @@ export class DockerService {
    */
   getTerminalSession(sessionId: string): NodeJS.ReadWriteStream {
     const session = this.terminalSessions.get(sessionId);
+
     if (!session) {
       throw new NotFoundException(`Terminal session '${sessionId}' not found`);
     }
+
     return session.stream;
   }
 
@@ -1484,11 +1590,13 @@ export class DockerService {
    */
   getTerminalSessionsForContainer(containerId: string): string[] {
     const sessionIds: string[] = [];
+
     for (const [sessionId, session] of this.terminalSessions.entries()) {
       if (session.containerId === containerId) {
         sessionIds.push(sessionId);
       }
     }
+
     return sessionIds;
   }
 
@@ -1509,17 +1617,19 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
       // Get the file as a tar archive stream
       const tarStream = await container.getArchive({ path: containerPath });
-
       // Create directory for the host path if it doesn't exist
       const hostDir = path.dirname(hostPath);
+
       if (!fs.existsSync(hostDir)) {
         fs.mkdirSync(hostDir, { recursive: true });
       }
@@ -1527,6 +1637,7 @@ export class DockerService {
       // Write tar stream to a temporary file
       const tempTarPath = `${hostPath}.tar`;
       const writeStream = fs.createWriteStream(tempTarPath);
+
       tarStream.pipe(writeStream);
 
       // Wait for the tar file to be written
@@ -1560,6 +1671,7 @@ export class DockerService {
           // Try alternative: the file might be at the root of tempDir if path was stripped
           const fileName = path.basename(containerPath);
           const alternativePath = path.join(tempDir, fileName);
+
           if (fs.existsSync(alternativePath)) {
             fs.copyFileSync(alternativePath, hostPath);
           } else {
@@ -1582,17 +1694,22 @@ export class DockerService {
             // Ignore cleanup errors
           }
         }
+
         const err = extractError as { message?: string; code?: string };
+
         if (err.code === 'ENOENT' || err.message?.includes('No such file') || err.message?.includes('not found')) {
           throw new NotFoundException(`File not found in container: ${containerPath}`);
         }
+
         throw extractError;
       }
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error copying file from container: ${err.message}`, err.stack);
       throw error;
     }
@@ -1607,25 +1724,30 @@ export class DockerService {
   async getContainerStatus(containerId: string): Promise<{ running: boolean }> {
     try {
       const container = this.docker.getContainer(containerId);
-
       let inspectInfo: Docker.ContainerInspectInfo;
+
       try {
         inspectInfo = await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
       const running = inspectInfo.State?.Running ?? false;
+
       return { running };
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error getting container status: ${err.message}`, err.stack);
       throw error;
     }
@@ -1647,9 +1769,11 @@ export class DockerService {
         await container.inspect();
       } catch (error: unknown) {
         const dockerError = error as { statusCode?: number };
+
         if (dockerError.statusCode === 404) {
           throw new NotFoundException(`Container with ID '${containerId}' not found`);
         }
+
         throw error;
       }
 
@@ -1670,7 +1794,9 @@ export class DockerService {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       const err = error as { message?: string; stack?: string };
+
       this.logger.error(`Error getting container stats: ${err.message}`, err.stack);
       throw error;
     }

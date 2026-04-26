@@ -29,10 +29,12 @@ export function validateConfigSchema(schema: ConfigSchema | undefined, config: R
     }
 
     const type = typeof config[key];
+
     if (property.type === 'object') {
       if (type !== 'object' || Array.isArray(config[key])) {
         errors.push(`Invalid type for config field ${key}: expected object`);
       }
+
       continue;
     }
 
@@ -42,9 +44,11 @@ export function validateConfigSchema(schema: ConfigSchema | undefined, config: R
     }
 
     const enumList = property.enum;
+
     if (Array.isArray(enumList) && enumList.length > 0) {
       const value = config[key];
       const allowed = new Set(enumList);
+
       if (!allowed.has(value)) {
         errors.push(`Invalid value for config field ${key}: must be one of allowed options`);
       }

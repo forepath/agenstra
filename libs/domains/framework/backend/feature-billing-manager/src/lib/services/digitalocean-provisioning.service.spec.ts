@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import axios from 'axios';
+
 import { DigitaloceanProvisioningService } from './digitalocean-provisioning.service';
 
 jest.mock('axios');
@@ -54,8 +55,8 @@ describe('DigitaloceanProvisioningService', () => {
 
     const plainScript = '#!/bin/bash\necho billing-controller';
     const userDataBase64 = Buffer.from(plainScript, 'utf8').toString('base64');
-
     const service = new DigitaloceanProvisioningService();
+
     await service.provisionServer({
       name: 'do-billing',
       serverType: 's-1vcpu-1gb',
@@ -75,6 +76,7 @@ describe('DigitaloceanProvisioningService', () => {
   it('throws when user_data exceeds DigitalOcean 64KiB limit after decode', async () => {
     const service = new DigitaloceanProvisioningService();
     const huge = '#!/bin/bash\n' + 'x'.repeat(70 * 1024);
+
     await expect(
       service.provisionServer({
         name: 'test-server',
@@ -90,6 +92,7 @@ describe('DigitaloceanProvisioningService', () => {
     mockedAxios.post.mockResolvedValueOnce({ data: {} });
 
     const service = new DigitaloceanProvisioningService();
+
     await expect(
       service.provisionServer({
         name: 'test-server',
@@ -104,6 +107,7 @@ describe('DigitaloceanProvisioningService', () => {
     delete process.env.DIGITALOCEAN_API_TOKEN;
 
     const service = new DigitaloceanProvisioningService();
+
     await expect(
       service.provisionServer({
         name: 'test-server',
@@ -118,6 +122,7 @@ describe('DigitaloceanProvisioningService', () => {
     mockedAxios.delete.mockResolvedValueOnce({});
 
     const service = new DigitaloceanProvisioningService();
+
     await service.deprovisionServer('98765');
 
     expect(mockedAxios.delete).toHaveBeenCalledWith('https://api.digitalocean.com/v2/droplets/98765', {
@@ -129,6 +134,7 @@ describe('DigitaloceanProvisioningService', () => {
     delete process.env.DIGITALOCEAN_API_TOKEN;
 
     const service = new DigitaloceanProvisioningService();
+
     await service.deprovisionServer('98765');
 
     expect(mockedAxios.delete).not.toHaveBeenCalled();
@@ -170,6 +176,7 @@ describe('DigitaloceanProvisioningService', () => {
       delete process.env.DIGITALOCEAN_API_TOKEN;
 
       const service = new DigitaloceanProvisioningService();
+
       await expect(service.getServerInfo('98765')).rejects.toThrow(
         'DIGITALOCEAN_API_TOKEN environment variable is not set',
       );
@@ -181,6 +188,7 @@ describe('DigitaloceanProvisioningService', () => {
     it('calls power_on for startServer', async () => {
       mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
       const service = new DigitaloceanProvisioningService();
+
       await service.startServer('98765');
       expect(mockedAxios.post).toHaveBeenCalledWith(
         'https://api.digitalocean.com/v2/droplets/98765/actions',
@@ -194,6 +202,7 @@ describe('DigitaloceanProvisioningService', () => {
     it('calls power_off for stopServer', async () => {
       mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
       const service = new DigitaloceanProvisioningService();
+
       await service.stopServer('98765');
       expect(mockedAxios.post).toHaveBeenCalledWith(
         'https://api.digitalocean.com/v2/droplets/98765/actions',
@@ -205,6 +214,7 @@ describe('DigitaloceanProvisioningService', () => {
     it('calls reboot for restartServer', async () => {
       mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
       const service = new DigitaloceanProvisioningService();
+
       await service.restartServer('98765');
       expect(mockedAxios.post).toHaveBeenCalledWith(
         'https://api.digitalocean.com/v2/droplets/98765/actions',

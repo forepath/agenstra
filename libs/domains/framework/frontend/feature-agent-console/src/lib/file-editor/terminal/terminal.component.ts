@@ -94,8 +94,10 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
 
         // If there's an active session but terminal isn't opened yet, open it now
         const activeSessionId = this.activeSessionId();
+
         if (activeSessionId) {
           const session = this.sessions().get(activeSessionId);
+
           if (session && !this.activeTerminal) {
             this.openTerminalInContainer(session);
           }
@@ -111,6 +113,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
         if (events.length > 0) {
           const latest = events[events.length - 1];
           const response = latest.payload as SuccessResponse<TerminalCreatedData>;
+
           if (response.success && response.data) {
             this.handleTerminalCreated(response.data.sessionId);
           }
@@ -123,14 +126,19 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
       .subscribe((events) => {
         // Group events by sessionId to process per session
         const eventsBySession = new Map<string, typeof events>();
+
         for (const event of events) {
           const response = event.payload as SuccessResponse<TerminalOutputData>;
+
           if (response.success && response.data) {
             const sessionId = response.data.sessionId;
+
             if (!eventsBySession.has(sessionId)) {
               eventsBySession.set(sessionId, []);
             }
+
             const sessionEvents = eventsBySession.get(sessionId);
+
             if (sessionEvents) {
               sessionEvents.push(event);
             }
@@ -144,6 +152,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
 
           for (const event of eventsToProcess) {
             const response = event.payload as SuccessResponse<TerminalOutputData>;
+
             if (response.success && response.data) {
               this.handleTerminalOutput(response.data.sessionId, response.data.data);
             }
@@ -160,6 +169,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
       .subscribe((events) => {
         for (const event of events) {
           const response = event.payload as SuccessResponse<TerminalClosedData>;
+
           if (response.success && response.data) {
             this.handleTerminalClosed(response.data.sessionId);
           }
@@ -172,6 +182,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
     for (const session of this.sessions().values()) {
       session.terminal.dispose();
     }
+
     this.sessions.set(new Map());
     this.activeTerminal = null;
 
@@ -191,6 +202,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
    */
   onCreateTerminal(): void {
     const sessionId = `${this.clientId()}-${this.agentId()}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
     this.socketsFacade.forwardCreateTerminal(sessionId, undefined, this.agentId());
   }
 
@@ -202,6 +214,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
       event.preventDefault();
       event.stopPropagation();
     }
+
     this.socketsFacade.forwardCloseTerminal(sessionId, this.agentId());
   }
 
@@ -213,6 +226,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
       event.preventDefault();
       event.stopPropagation();
     }
+
     this.setActiveSession(sessionId);
   }
 
@@ -252,16 +266,15 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
       cursorBlink: true,
       cursorStyle: 'block',
     });
-
     // Create session
     const session: TerminalSession = {
       sessionId,
       terminal,
       createdAt: new Date(),
     };
-
     // Add to sessions map
     const sessions = new Map(this.sessions());
+
     sessions.set(sessionId, session);
     this.sessions.set(sessions);
     this.updateSessionIds();
@@ -290,20 +303,24 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
           // Erase only the characters the user typed (not the prompt)
           // First, move cursor to the end of the input if it's not already there
           const remainingChars = buffer.length - cursorPos;
+
           if (remainingChars > 0) {
             // Move cursor forward to end
             for (let i = 0; i < remainingChars; i++) {
               terminal.write('\x1b[C'); // Move cursor forward
             }
           }
+
           // Now move back and clear all typed characters
           for (let i = 0; i < buffer.length; i++) {
             terminal.write('\b'); // Move cursor back
           }
+
           terminal.write('\x1b[K'); // Clear from cursor to end of line
 
           // Send the line with newline
           const lineToSend = buffer + '\n';
+
           this.socketsFacade.forwardTerminalInput(sessionId, lineToSend, this.agentId());
 
           // Clear the buffer and cursor position
@@ -406,6 +423,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
     // Write remaining characters after cursor
     if (remainingChars > 0) {
       terminal.write(buffer.slice(cursorPos));
+
       // Move cursor back to the correct position
       for (let i = 0; i < remainingChars; i++) {
         terminal.write('\b');
@@ -423,6 +441,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
    */
   private handleTerminalOutput(sessionId: string, data: string): void {
     const session = this.sessions().get(sessionId);
+
     if (!session?.terminal) {
       return;
     }
@@ -440,6 +459,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
    */
   private handleTerminalClosed(sessionId: string): void {
     const session = this.sessions().get(sessionId);
+
     if (session) {
       session.terminal.dispose();
     }
@@ -451,6 +471,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
 
     // Remove from sessions
     const sessions = new Map(this.sessions());
+
     sessions.delete(sessionId);
     this.sessions.set(sessions);
     this.updateSessionIds();
@@ -458,6 +479,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
     // If this was the active session, switch to another or clear
     if (this.activeSessionId() === sessionId) {
       const remainingSessions = Array.from(sessions.keys());
+
       if (remainingSessions.length > 0) {
         this.setActiveSession(remainingSessions[0]);
       } else {
@@ -474,10 +496,12 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
 
     if (!sessionId) {
       this.activeTerminal = null;
+
       return;
     }
 
     const session = this.sessions().get(sessionId);
+
     if (!session) {
       return;
     }
@@ -489,6 +513,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
           this.openTerminalInContainer(session);
         }
       }, 0);
+
       return;
     }
 
@@ -510,6 +535,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
       // Hide the currently active terminal if it exists and is different
       if (this.activeTerminal && this.activeTerminal !== session.terminal && this.activeTerminal.element) {
         const currentElement = this.activeTerminal.element;
+
         if (currentElement.parentElement === container) {
           // Hide the current terminal but keep it in DOM to preserve state
           (currentElement as HTMLElement).style.display = 'none';
@@ -528,6 +554,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
           // Terminal is attached elsewhere - remove it first
           terminalElement.parentElement.removeChild(terminalElement);
         }
+
         // Open the terminal - this will create the element and attach it to container
         session.terminal.open(container);
       }
@@ -558,10 +585,8 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
 
     const container = this.terminalContainerRef.nativeElement;
     const containerRect = container.getBoundingClientRect();
-
     const charWidth = 8.4;
     const charHeight = 17;
-
     const cols = Math.floor(containerRect.width / charWidth);
     const rows = Math.floor(containerRect.height / charHeight);
 
@@ -582,10 +607,13 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
    */
   getSessionName(sessionId: string): string {
     const session = this.sessions().get(sessionId);
+
     if (!session) {
       return sessionId;
     }
+
     const index = this.sessionIds().indexOf(sessionId) + 1;
+
     return `Terminal ${index}`;
   }
 }

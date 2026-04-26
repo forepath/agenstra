@@ -35,7 +35,6 @@ describe('InvoiceRefsRepository', () => {
     it('returns count and totalBalance from query result', async () => {
       mockQueryBuilder.getRawOne.mockResolvedValue({ count: '2', total: '99.50' });
       const repository = new InvoiceRefsRepository(mockRepository as never);
-
       const result = await repository.findOpenOverdueSummaryByUserId('user-1');
 
       expect(result).toEqual({ count: 2, totalBalance: 99.5 });
@@ -47,7 +46,6 @@ describe('InvoiceRefsRepository', () => {
     it('returns zero count and total when getRawOne returns null', async () => {
       mockQueryBuilder.getRawOne.mockResolvedValue(null);
       const repository = new InvoiceRefsRepository(mockRepository as never);
-
       const result = await repository.findOpenOverdueSummaryByUserId('user-1');
 
       expect(result).toEqual({ count: 0, totalBalance: 0 });
@@ -56,7 +54,6 @@ describe('InvoiceRefsRepository', () => {
     it('parses string total as float', async () => {
       mockQueryBuilder.getRawOne.mockResolvedValue({ count: '1', total: '42.25' });
       const repository = new InvoiceRefsRepository(mockRepository as never);
-
       const result = await repository.findOpenOverdueSummaryByUserId('user-1');
 
       expect(result.totalBalance).toBe(42.25);

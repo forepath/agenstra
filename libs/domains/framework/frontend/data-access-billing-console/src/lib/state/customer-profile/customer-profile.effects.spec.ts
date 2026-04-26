@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { CustomerProfileService } from '../../services/customer-profile.service';
+import type { CustomerProfileResponse } from '../../types/billing.types';
+
 import {
   loadCustomerProfile,
   loadCustomerProfileFailure,
@@ -12,12 +15,10 @@ import {
   updateCustomerProfileSuccess,
 } from './customer-profile.actions';
 import { loadCustomerProfile$, updateCustomerProfile$ } from './customer-profile.effects';
-import type { CustomerProfileResponse } from '../../types/billing.types';
 
 describe('CustomerProfileEffects', () => {
   let actions$: Actions;
   let customerProfileService: jest.Mocked<CustomerProfileService>;
-
   const mockProfile: CustomerProfileResponse = {
     id: 'cp-1',
     userId: 'user-1',
@@ -69,8 +70,10 @@ describe('CustomerProfileEffects', () => {
   describe('updateCustomerProfile$', () => {
     it('should return updateCustomerProfileSuccess on success', (done) => {
       const dto = { firstName: 'Jane' };
+
       actions$ = of(updateCustomerProfile({ profile: dto }));
       const updated = { ...mockProfile, firstName: 'Jane' };
+
       customerProfileService.updateCustomerProfile.mockReturnValue(of(updated));
 
       updateCustomerProfile$(actions$, customerProfileService).subscribe((result) => {

@@ -1,10 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import { AgentConsoleRegexFilterRuleClientEntity } from '../entities/agent-console-regex-filter-rule-client.entity';
 import { AgentConsoleRegexFilterRuleSyncTargetEntity } from '../entities/agent-console-regex-filter-rule-sync-target.entity';
 import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { AgentManagerFilterRulesClientService } from './agent-manager-filter-rules-client.service';
 import { FilterRulesService } from './filter-rules.service';
 
@@ -30,7 +32,6 @@ describe('FilterRulesService', () => {
   };
   const clientsRepository = { findAllIds: jest.fn().mockResolvedValue(['c1']), findByIdOrThrow: jest.fn() };
   const amClient = { deleteRule: jest.fn().mockResolvedValue(undefined) };
-
   let service: FilterRulesService;
 
   beforeEach(async () => {
@@ -45,6 +46,7 @@ describe('FilterRulesService', () => {
         { provide: AgentManagerFilterRulesClientService, useValue: amClient },
       ],
     }).compile();
+
     service = m.get(FilterRulesService);
   });
 

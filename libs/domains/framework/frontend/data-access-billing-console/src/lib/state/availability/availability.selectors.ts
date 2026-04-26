@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { AvailabilityState } from './availability.reducer';
 
 export const selectAvailabilityState = createFeatureSelector<AvailabilityState>('availability');

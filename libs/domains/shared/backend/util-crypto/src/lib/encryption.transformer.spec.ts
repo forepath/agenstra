@@ -10,7 +10,7 @@ describe('assertProductionEncryptionKeyOrExit', () => {
 
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    exitSpy = jest.spyOn(process, 'exit').mockImplementation(((code?: number) => undefined) as never);
+    exitSpy = jest.spyOn(process, 'exit').mockImplementation(((_?: number) => undefined) as never);
   });
 
   afterEach(() => {
@@ -71,13 +71,14 @@ describe('createAes256GcmTransformer (AES-256-GCM)', () => {
   it('should encrypt and decrypt (round-trip) with fallback key when ENCRYPTION_KEY is not set', () => {
     const transformer = createAes256GcmTransformer();
     const plaintext = 'super-secret-text';
-
     const stored = transformer.to(plaintext);
+
     expect(stored).toBeTruthy();
     expect(stored).not.toEqual(plaintext);
     expect(stored!.split(':')).toHaveLength(3); // iv:tag:data
 
     const decrypted = transformer.from(stored!);
+
     expect(decrypted).toEqual(plaintext);
   });
 
@@ -86,12 +87,13 @@ describe('createAes256GcmTransformer (AES-256-GCM)', () => {
     process.env.ENCRYPTION_KEY = Buffer.from(Array.from({ length: 32 }, (_, i) => i + 1)).toString('base64');
     const transformer = createAes256GcmTransformer();
     const plaintext = 'another-secret';
-
     const stored = transformer.to(plaintext);
+
     expect(stored).toBeTruthy();
     expect(stored).not.toEqual(plaintext);
 
     const decrypted = transformer.from(stored!);
+
     expect(decrypted).toEqual(plaintext);
   });
 
@@ -99,11 +101,13 @@ describe('createAes256GcmTransformer (AES-256-GCM)', () => {
     const transformer = createAes256GcmTransformer();
     const legacy = 'plain-text-without-colons';
     const decrypted = transformer.from(legacy);
+
     expect(decrypted).toEqual(legacy);
   });
 
   it('should handle empty string and null/undefined values', () => {
     const transformer = createAes256GcmTransformer();
+
     expect(transformer.to('')).toEqual('');
     expect(transformer.from('')).toEqual('');
     expect(transformer.to(null as unknown as string)).toBeNull();
@@ -140,24 +144,27 @@ describe('createJsonAes256GcmTransformer', () => {
   it('should encrypt and decrypt a JSON object (round-trip)', () => {
     const transformer = createJsonAes256GcmTransformer();
     const obj = { region: 'fsn1', serverType: 'cx11', service: 'controller' };
-
     const stored = transformer.to(obj);
+
     expect(stored).toBeTruthy();
     expect(typeof stored).toBe('string');
     expect(stored).not.toContain('fsn1');
 
     const decrypted = transformer.from(stored!);
+
     expect(decrypted).toEqual(obj);
   });
 
   it('should return {} for null/undefined stored value', () => {
     const transformer = createJsonAes256GcmTransformer();
+
     expect(transformer.from(null)).toEqual({});
     expect(transformer.from(undefined)).toEqual({});
   });
 
   it('should return null from to() for null/undefined input', () => {
     const transformer = createJsonAes256GcmTransformer();
+
     expect(transformer.to(null)).toBeNull();
     expect(transformer.to(undefined)).toBeNull();
   });

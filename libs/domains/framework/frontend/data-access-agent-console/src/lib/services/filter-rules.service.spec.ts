@@ -1,18 +1,19 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type {
   CreateFilterRuleDto,
   FilterRuleResponseDto,
   UpdateFilterRuleDto,
 } from '../state/filter-rules/filter-rules.types';
+
 import { FilterRulesService } from './filter-rules.service';
 
 describe('FilterRulesService', () => {
   let service: FilterRulesService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3100/api';
-
   const mockRule: FilterRuleResponseDto = {
     id: '11111111-1111-1111-1111-111111111111',
     pattern: 'x',
@@ -57,6 +58,7 @@ describe('FilterRulesService', () => {
       done();
     });
     const req = httpMock.expectOne(`${apiUrl}/filter-rules`);
+
     expect(req.request.method).toBe('GET');
     expect(req.request.params.keys().length).toBe(0);
     req.flush([mockRule]);
@@ -70,6 +72,7 @@ describe('FilterRulesService', () => {
     const req = httpMock.expectOne(
       (r) => r.url === `${apiUrl}/filter-rules` && r.params.get('limit') === '10' && r.params.get('offset') === '20',
     );
+
     expect(req.request.method).toBe('GET');
     req.flush([mockRule]);
   });
@@ -81,11 +84,13 @@ describe('FilterRulesService', () => {
       filterType: 'none',
       isGlobal: true,
     };
+
     service.create(dto).subscribe((r) => {
       expect(r).toEqual(mockRule);
       done();
     });
     const req = httpMock.expectOne(`${apiUrl}/filter-rules`);
+
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(dto);
     req.flush(mockRule);
@@ -93,11 +98,13 @@ describe('FilterRulesService', () => {
 
   it('updates a filter rule', (done) => {
     const dto: UpdateFilterRuleDto = { pattern: 'b' };
+
     service.update(mockRule.id, dto).subscribe((r) => {
       expect(r.pattern).toBe('b');
       done();
     });
     const req = httpMock.expectOne(`${apiUrl}/filter-rules/${mockRule.id}`);
+
     expect(req.request.method).toBe('PUT');
     req.flush({ ...mockRule, pattern: 'b' });
   });
@@ -105,6 +112,7 @@ describe('FilterRulesService', () => {
   it('deletes a filter rule', (done) => {
     service.delete(mockRule.id).subscribe(() => done());
     const req = httpMock.expectOne(`${apiUrl}/filter-rules/${mockRule.id}`);
+
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
   });

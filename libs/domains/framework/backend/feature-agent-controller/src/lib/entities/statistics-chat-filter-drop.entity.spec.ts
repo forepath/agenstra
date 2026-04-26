@@ -3,11 +3,13 @@ import { FilterDropDirection, StatisticsChatFilterDropEntity } from './statistic
 describe('StatisticsChatFilterDropEntity', () => {
   it('should create an instance', () => {
     const entity = new StatisticsChatFilterDropEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const entity = new StatisticsChatFilterDropEntity();
+
     entity.id = 'filter-drop-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
     entity.filterType = 'profanity';
@@ -29,6 +31,7 @@ describe('StatisticsChatFilterDropEntity', () => {
 
   it('should allow optional statisticsAgentId, statisticsUserId and filterReason', () => {
     const entity = new StatisticsChatFilterDropEntity();
+
     entity.statisticsAgentId = undefined;
     entity.statisticsUserId = undefined;
     entity.filterReason = 'Contains profanity';
@@ -40,6 +43,7 @@ describe('StatisticsChatFilterDropEntity', () => {
 
   it('should support INCOMING direction', () => {
     const entity = new StatisticsChatFilterDropEntity();
+
     entity.direction = FilterDropDirection.INCOMING;
     expect(entity.direction).toBe(FilterDropDirection.INCOMING);
     expect(entity.direction).toBe('incoming');
@@ -47,6 +51,7 @@ describe('StatisticsChatFilterDropEntity', () => {
 
   it('should support OUTGOING direction', () => {
     const entity = new StatisticsChatFilterDropEntity();
+
     entity.direction = FilterDropDirection.OUTGOING;
     expect(entity.direction).toBe(FilterDropDirection.OUTGOING);
     expect(entity.direction).toBe('outgoing');
@@ -54,6 +59,7 @@ describe('StatisticsChatFilterDropEntity', () => {
 
   it('should allow wordCount and charCount of 0 for outgoing drops', () => {
     const entity = new StatisticsChatFilterDropEntity();
+
     entity.wordCount = 0;
     entity.charCount = 0;
 

@@ -11,6 +11,7 @@ import {
   type ServicePlanResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
 import { BehaviorSubject, combineLatest, filter, map, of, pairwise, switchMap } from 'rxjs';
+
 import { getSubscriptionStatusLabel } from '../billing-status-labels';
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 
@@ -51,6 +52,7 @@ export class InvoicesComponent implements OnInit {
     const list = this.allInvoices();
     const page = this.invoicesPage();
     const start = page * PAGE_SIZE;
+
     return list.slice(start, start + PAGE_SIZE);
   });
   readonly invoicesTotalPages = computed(() => Math.max(1, Math.ceil(this.allInvoices().length / PAGE_SIZE)));
@@ -77,7 +79,9 @@ export class InvoicesComponent implements OnInit {
 
   planNameByPlanId(planId: string, plans: ServicePlanResponse[] | null): string {
     if (!plans) return planId;
+
     const plan = plans.find((p) => p.id === planId);
+
     return plan?.name ?? planId;
   }
 
@@ -105,8 +109,10 @@ export class InvoicesComponent implements OnInit {
 
   onSelectSubscription(subscriptionId: string): void {
     const id = subscriptionId || '';
+
     this.selectedSubscriptionId$.next(id);
     this.invoicesPage.set(0);
+
     if (id) {
       this.invoicesFacade.loadInvoices(id);
     }
@@ -123,10 +129,13 @@ export class InvoicesComponent implements OnInit {
 
   onSubmitCreateInvoice(): void {
     const id = this.selectedSubscriptionId$.value;
+
     if (!id) return;
+
     const dto: CreateInvoiceDto | undefined = this.createInvoiceDescription?.trim()
       ? { description: this.createInvoiceDescription.trim() }
       : undefined;
+
     this.invoicesFacade.createInvoice(id, dto);
   }
 
@@ -143,7 +152,9 @@ export class InvoicesComponent implements OnInit {
    */
   openInvoiceLink(inv: InvoiceResponse): void {
     const subscriptionId = this.selectedSubscriptionId$.value;
+
     if (!subscriptionId || !inv.id) return;
+
     this.openInvoiceLinkForRef(subscriptionId, inv);
   }
 
@@ -152,6 +163,7 @@ export class InvoicesComponent implements OnInit {
    */
   openInvoiceLinkForRef(subscriptionId: string, inv: InvoiceResponse): void {
     if (!subscriptionId || !inv.id) return;
+
     this.invoicesFacade.refreshInvoiceLink(subscriptionId, inv.id).subscribe({
       next: (preAuthUrl) => {
         if (preAuthUrl) {
@@ -171,6 +183,7 @@ export class InvoicesComponent implements OnInit {
           bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => { show: () => void } } };
         }
       ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.show();
       }
@@ -184,6 +197,7 @@ export class InvoicesComponent implements OnInit {
           bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
         }
       ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.hide();
       }

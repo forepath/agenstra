@@ -1,7 +1,8 @@
 import { UserEntity } from '@forepath/identity/backend';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { TicketActorType } from './ticket.enums';
+
 import { TicketEntity } from './ticket.entity';
+import { TicketActorType } from './ticket.enums';
 
 @Entity('ticket_activity')
 export class TicketActivityEntity {

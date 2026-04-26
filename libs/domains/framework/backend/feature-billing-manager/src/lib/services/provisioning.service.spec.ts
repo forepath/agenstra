@@ -25,6 +25,7 @@ describe('ProvisioningService', () => {
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
     const result = await service.provision('hetzner', { name: 'test' });
+
     expect(result).toEqual({ serverId: '1' });
   });
 
@@ -34,6 +35,7 @@ describe('ProvisioningService', () => {
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
     const result = await service.provision('digital-ocean', { name: 'test' });
+
     expect(result).toEqual({ serverId: '2' });
     expect(digitalocean.provisionServer).toHaveBeenCalledWith({ name: 'test' });
   });
@@ -44,6 +46,7 @@ describe('ProvisioningService', () => {
       deprovisionServer: jest.fn().mockResolvedValue(undefined),
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.deprovision('hetzner', 'server-123');
     expect(hetzner.deprovisionServer).toHaveBeenCalledWith('server-123');
   });
@@ -54,6 +57,7 @@ describe('ProvisioningService', () => {
       deprovisionServer: jest.fn(),
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.deprovision('digital-ocean', 'server-456');
     expect(digitalocean.deprovisionServer).toHaveBeenCalledWith('server-456');
   });
@@ -64,6 +68,7 @@ describe('ProvisioningService', () => {
       deprovisionServer: jest.fn(),
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.deprovision('unknown', 'server-123');
     expect(hetzner.deprovisionServer).not.toHaveBeenCalled();
     expect(digitalocean.deprovisionServer).not.toHaveBeenCalled();
@@ -73,6 +78,7 @@ describe('ProvisioningService', () => {
     const hetzner: { provisionServer: jest.Mock } = { provisionServer: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
     const result = await service.provision('unknown', { name: 'test' });
+
     expect(result).toBeNull();
   });
 
@@ -88,6 +94,7 @@ describe('ProvisioningService', () => {
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
     const result = await service.getServerInfo('hetzner', '123');
+
     expect(result).toEqual(serverInfo);
     expect(hetzner.getServerInfo).toHaveBeenCalledWith('123');
   });
@@ -96,6 +103,7 @@ describe('ProvisioningService', () => {
     const hetzner: { getServerInfo: jest.Mock } = { getServerInfo: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
     const result = await service.getServerInfo('digital-ocean', '456');
+
     expect(result).toEqual({
       serverId: '2',
       name: 'do-srv',
@@ -109,6 +117,7 @@ describe('ProvisioningService', () => {
     const hetzner: { getServerInfo: jest.Mock } = { getServerInfo: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
     const result = await service.getServerInfo('unknown', '123');
+
     expect(result).toBeNull();
     expect(hetzner.getServerInfo).not.toHaveBeenCalled();
     expect(digitalocean.getServerInfo).not.toHaveBeenCalled();
@@ -119,6 +128,7 @@ describe('ProvisioningService', () => {
       startServer: jest.fn().mockResolvedValue(undefined),
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.startServer('hetzner', '123');
     expect(hetzner.startServer).toHaveBeenCalledWith('123');
   });
@@ -126,6 +136,7 @@ describe('ProvisioningService', () => {
   it('routes startServer to DigitalOcean', async () => {
     const hetzner: { startServer: jest.Mock } = { startServer: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.startServer('digital-ocean', '123');
     expect(digitalocean.startServer).toHaveBeenCalledWith('123');
   });
@@ -133,6 +144,7 @@ describe('ProvisioningService', () => {
   it('does nothing for startServer with unknown provider', async () => {
     const hetzner: { startServer: jest.Mock } = { startServer: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.startServer('unknown', '123');
     expect(hetzner.startServer).not.toHaveBeenCalled();
     expect(digitalocean.startServer).not.toHaveBeenCalled();
@@ -143,6 +155,7 @@ describe('ProvisioningService', () => {
       stopServer: jest.fn().mockResolvedValue(undefined),
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.stopServer('hetzner', '123');
     expect(hetzner.stopServer).toHaveBeenCalledWith('123');
   });
@@ -150,6 +163,7 @@ describe('ProvisioningService', () => {
   it('routes stopServer to DigitalOcean', async () => {
     const hetzner: { stopServer: jest.Mock } = { stopServer: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.stopServer('digital-ocean', '123');
     expect(digitalocean.stopServer).toHaveBeenCalledWith('123');
   });
@@ -157,6 +171,7 @@ describe('ProvisioningService', () => {
   it('does nothing for stopServer with unknown provider', async () => {
     const hetzner: { stopServer: jest.Mock } = { stopServer: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.stopServer('unknown', '123');
     expect(hetzner.stopServer).not.toHaveBeenCalled();
     expect(digitalocean.stopServer).not.toHaveBeenCalled();
@@ -167,6 +182,7 @@ describe('ProvisioningService', () => {
       restartServer: jest.fn().mockResolvedValue(undefined),
     };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.restartServer('hetzner', '123');
     expect(hetzner.restartServer).toHaveBeenCalledWith('123');
   });
@@ -174,6 +190,7 @@ describe('ProvisioningService', () => {
   it('routes restartServer to DigitalOcean', async () => {
     const hetzner: { restartServer: jest.Mock } = { restartServer: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.restartServer('digital-ocean', '123');
     expect(digitalocean.restartServer).toHaveBeenCalledWith('123');
   });
@@ -181,6 +198,7 @@ describe('ProvisioningService', () => {
   it('does nothing for restartServer with unknown provider', async () => {
     const hetzner: { restartServer: jest.Mock } = { restartServer: jest.fn() };
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
+
     await service.restartServer('unknown', '123');
     expect(hetzner.restartServer).not.toHaveBeenCalled();
     expect(digitalocean.restartServer).not.toHaveBeenCalled();
@@ -196,6 +214,7 @@ describe('ProvisioningService', () => {
       publicIp: '9.8.7.6',
       status: 'active',
     });
+
     expect(ip).toBe('9.8.7.6');
     expect(digitalocean.getServerInfo).not.toHaveBeenCalled();
   });
@@ -210,12 +229,14 @@ describe('ProvisioningService', () => {
       publicIp: '',
       status: 'initializing',
     });
+
     expect(ip).toBeUndefined();
     expect(hetzner.getServerInfo).not.toHaveBeenCalled();
   });
 
   it('ensurePublicIpForDns polls DigitalOcean until public IPv4 appears', async () => {
     jest.useFakeTimers();
+
     try {
       const hetzner = {};
       const digitalocean = {
@@ -236,6 +257,7 @@ describe('ProvisioningService', () => {
       };
       const service = new ProvisioningService(hetzner as never, digitalocean as never);
       const promise = service.ensurePublicIpForDns('digital-ocean', '1', null);
+
       await Promise.resolve();
       await jest.advanceTimersByTimeAsync(2000);
       await expect(promise).resolves.toBe('5.5.5.5');

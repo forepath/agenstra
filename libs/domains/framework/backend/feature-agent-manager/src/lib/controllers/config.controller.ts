@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+
 import { ConfigResponseDto } from '../dto/config-response.dto';
 import { ConfigService } from '../services/config.service';
 

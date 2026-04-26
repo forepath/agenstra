@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+
 import {
   clearEnvironmentVariables,
   createEnvironmentVariable,
@@ -70,6 +71,7 @@ export const envReducer = createReducer(
   // Load Environment Variables
   on(loadEnvironmentVariables, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loading: { ...state.loading, [key]: true },
@@ -78,6 +80,7 @@ export const envReducer = createReducer(
   }),
   on(loadEnvironmentVariablesSuccess, (state, { clientId, agentId, environmentVariables }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       environmentVariables: { ...state.environmentVariables, [key]: environmentVariables },
@@ -87,6 +90,7 @@ export const envReducer = createReducer(
   }),
   on(loadEnvironmentVariablesFailure, (state, { clientId, agentId, error }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loading: { ...state.loading, [key]: false },
@@ -96,6 +100,7 @@ export const envReducer = createReducer(
   // Load Environment Variables Batch (continues loading with accumulated results)
   on(loadEnvironmentVariablesBatch, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loading: { ...state.loading, [key]: true },
@@ -105,6 +110,7 @@ export const envReducer = createReducer(
   // Load Environment Variables Count
   on(loadEnvironmentVariablesCount, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loadingCount: { ...state.loadingCount, [key]: true },
@@ -113,6 +119,7 @@ export const envReducer = createReducer(
   }),
   on(loadEnvironmentVariablesCountSuccess, (state, { clientId, agentId, count }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       counts: { ...state.counts, [key]: count },
@@ -122,6 +129,7 @@ export const envReducer = createReducer(
   }),
   on(loadEnvironmentVariablesCountFailure, (state, { clientId, agentId, error }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loadingCount: { ...state.loadingCount, [key]: false },
@@ -131,6 +139,7 @@ export const envReducer = createReducer(
   // Create Environment Variable
   on(createEnvironmentVariable, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       creating: { ...state.creating, [key]: true },
@@ -140,6 +149,7 @@ export const envReducer = createReducer(
   on(createEnvironmentVariableSuccess, (state, { clientId, agentId, environmentVariable }) => {
     const key = getClientAgentKey(clientId, agentId);
     const currentVars = state.environmentVariables[key] || [];
+
     return {
       ...state,
       environmentVariables: {
@@ -152,6 +162,7 @@ export const envReducer = createReducer(
   }),
   on(createEnvironmentVariableFailure, (state, { clientId, agentId, error }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       creating: { ...state.creating, [key]: false },
@@ -160,8 +171,8 @@ export const envReducer = createReducer(
   }),
   // Update Environment Variable
   on(updateEnvironmentVariable, (state, { clientId, agentId, envVarId }) => {
-    const key = getClientAgentKey(clientId, agentId);
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
+
     return {
       ...state,
       updating: { ...state.updating, [envVarKey]: true },
@@ -173,6 +184,7 @@ export const envReducer = createReducer(
     const envVarKey = getEnvVarKey(clientId, agentId, environmentVariable.id);
     const currentVars = state.environmentVariables[key] || [];
     const updatedVars = currentVars.map((v) => (v.id === environmentVariable.id ? environmentVariable : v));
+
     return {
       ...state,
       environmentVariables: {
@@ -185,6 +197,7 @@ export const envReducer = createReducer(
   }),
   on(updateEnvironmentVariableFailure, (state, { clientId, agentId, envVarId, error }) => {
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
+
     return {
       ...state,
       updating: { ...state.updating, [envVarKey]: false },
@@ -194,6 +207,7 @@ export const envReducer = createReducer(
   // Delete Environment Variable
   on(deleteEnvironmentVariable, (state, { clientId, agentId, envVarId }) => {
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
+
     return {
       ...state,
       deleting: { ...state.deleting, [envVarKey]: true },
@@ -205,6 +219,7 @@ export const envReducer = createReducer(
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
     const currentVars = state.environmentVariables[key] || [];
     const updatedVars = currentVars.filter((v) => v.id !== envVarId);
+
     return {
       ...state,
       environmentVariables: {
@@ -217,6 +232,7 @@ export const envReducer = createReducer(
   }),
   on(deleteEnvironmentVariableFailure, (state, { clientId, agentId, envVarId, error }) => {
     const envVarKey = getEnvVarKey(clientId, agentId, envVarId);
+
     return {
       ...state,
       deleting: { ...state.deleting, [envVarKey]: false },
@@ -226,6 +242,7 @@ export const envReducer = createReducer(
   // Delete All Environment Variables
   on(deleteAllEnvironmentVariables, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       deletingAll: { ...state.deletingAll, [key]: true },
@@ -234,6 +251,7 @@ export const envReducer = createReducer(
   }),
   on(deleteAllEnvironmentVariablesSuccess, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       environmentVariables: {
@@ -250,6 +268,7 @@ export const envReducer = createReducer(
   }),
   on(deleteAllEnvironmentVariablesFailure, (state, { clientId, agentId, error }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       deletingAll: { ...state.deletingAll, [key]: false },
@@ -259,8 +278,9 @@ export const envReducer = createReducer(
   // Clear Environment Variables
   on(clearEnvironmentVariables, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
-    const { [key]: removedVars, ...environmentVariables } = state.environmentVariables;
-    const { [key]: removedCount, ...counts } = state.counts;
+    const { [key]: _, ...environmentVariables } = state.environmentVariables;
+    const { [key]: __, ...counts } = state.counts;
+
     return {
       ...state,
       environmentVariables,

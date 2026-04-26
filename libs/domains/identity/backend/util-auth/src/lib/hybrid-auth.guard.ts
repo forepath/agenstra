@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
+
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 
 /** Supported authentication methods. */
@@ -16,13 +17,16 @@ export const DEFAULT_AUTHENTICATION_METHOD: AuthenticationMethod = 'api-key';
  */
 export function getAuthenticationMethod(): AuthenticationMethod {
   const explicit = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
+
   if (explicit === 'api-key' || explicit === 'keycloak' || explicit === 'users') {
     return explicit;
   }
+
   // Backward compatibility: STATIC_API_KEY set -> api-key, else -> keycloak
   if (process.env.STATIC_API_KEY) {
     return 'api-key';
   }
+
   return 'keycloak';
 }
 
@@ -49,13 +53,13 @@ export class HybridAuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+
     if (isPublic) {
       return true;
     }
 
     const authMethod = getAuthenticationMethod();
     const staticApiKey = process.env.STATIC_API_KEY;
-
     // api-key: require STATIC_API_KEY to be set and validate it
     const useApiKey = authMethod === 'api-key' && staticApiKey;
 
@@ -75,6 +79,7 @@ export class HybridAuthGuard implements CanActivate {
 
       // Support both "Bearer <key>" and "ApiKey <key>" formats
       const parts = authHeader.split(' ');
+
       if (parts.length !== 2) {
         throw new UnauthorizedException('Invalid authorization header format');
       }
@@ -91,6 +96,7 @@ export class HybridAuthGuard implements CanActivate {
         };
         // Mark that API key authentication succeeded
         request.apiKeyAuthenticated = true;
+
         return true;
       }
 

@@ -1,7 +1,8 @@
+import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
 import { Controller, Get, Param, ParseIntPipe, ParseUUIDPipe, Query, Req } from '@nestjs/common';
+
 import { ChatDirection } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { StatisticsQueryService } from '../services/statistics-query.service';
 
@@ -30,6 +31,7 @@ export class ClientStatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.statisticsQueryService.getClientSummary(clientId, {
       from,
       to,
@@ -55,6 +57,7 @@ export class ClientStatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.statisticsQueryService.getClientChatIo(clientId, {
       agentId,
       from,
@@ -84,6 +87,7 @@ export class ClientStatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.statisticsQueryService.getClientFilterDrops(clientId, {
       agentId,
       filterType,
@@ -112,6 +116,7 @@ export class ClientStatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.statisticsQueryService.getClientFilterFlags(clientId, {
       agentId,
       filterType,
@@ -140,6 +145,7 @@ export class ClientStatisticsController {
     @Req() req?: RequestWithUser,
   ) {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.statisticsQueryService.getClientEntityEvents(clientId, {
       entityType,
       eventType,

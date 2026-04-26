@@ -11,6 +11,7 @@ import {
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, map, Observable, take } from 'rxjs';
+
 import { DeploymentConfigurationComponent } from './deployment-configuration/deployment-configuration.component';
 import { DeploymentRunDetailsComponent } from './deployment-run-details/deployment-run-details.component';
 import { DeploymentRunsListComponent } from './deployment-runs-list/deployment-runs-list.component';
@@ -72,6 +73,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
       if (!runId) {
         return undefined;
       }
+
       return runs.find((run) => run.id === runId);
     }),
   );
@@ -85,6 +87,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
 
   readonly hasConfiguration = computed(() => {
     const config = this.configurationSignal();
+
     return config !== null;
   });
 
@@ -93,6 +96,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
     effect(() => {
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (clientId && agentId) {
         this.deploymentsFacade.loadConfiguration(clientId, agentId);
       }
@@ -103,6 +107,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
       const config = this.configurationSignal();
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (config && clientId && agentId) {
         this.deploymentsFacade.loadRepositories(clientId, agentId);
       }
@@ -113,6 +118,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
       const config = this.configurationSignal();
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (config && clientId && agentId) {
         this.deploymentsFacade.loadRuns(clientId, agentId);
       }
@@ -133,11 +139,13 @@ export class DeploymentManagerComponent implements AfterViewInit {
       if (this.isInitializing && !loadingRuns && clientId && agentId && !this.selectedRunId()) {
         const url = new URL(window.location.href);
         const runParam = url.searchParams.get('run');
+
         if (runParam) {
           try {
             const decodedRunId = decodeURIComponent(runParam);
             // Check if the run exists in the loaded runs
             const runExists = runs.some((run) => run.id === decodedRunId);
+
             if (runExists || runs.length > 0) {
               // Run exists in list, or runs are loaded (even if empty, try to select it)
               // The run might be loaded separately via loadRunStatus
@@ -160,9 +168,11 @@ export class DeploymentManagerComponent implements AfterViewInit {
         // Runs loaded but empty, check if we should still try to restore
         const url = new URL(window.location.href);
         const runParam = url.searchParams.get('run');
+
         if (runParam) {
           try {
             const decodedRunId = decodeURIComponent(runParam);
+
             // Even if runs list is empty, try to select the run (it might be loaded separately)
             this.onRunSelected(decodedRunId);
             setTimeout(() => {
@@ -212,6 +222,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
   onConfigurationSaved(config: DeploymentConfiguration): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (clientId && agentId) {
       // Reload configuration, repositories, and runs after configuration is saved
       this.deploymentsFacade.loadConfiguration(clientId, agentId);
@@ -222,9 +233,11 @@ export class DeploymentManagerComponent implements AfterViewInit {
       if (config.repositoryId) {
         this.selectedRepositoryId.set(config.repositoryId);
       }
+
       if (config.defaultBranch) {
         this.selectedBranch.set(config.defaultBranch);
       }
+
       if (config.workflowId) {
         this.selectedWorkflowId.set(config.workflowId);
       }
@@ -234,6 +247,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
   onConfigurationDeleted(): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (clientId && agentId) {
       // Clear selections
       this.selectedRepositoryId.set(null);
@@ -247,6 +261,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
     this.selectedRepositoryId.set(repositoryId);
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (clientId && agentId) {
       this.deploymentsFacade.loadBranches(clientId, agentId, repositoryId);
       this.deploymentsFacade.loadWorkflows(clientId, agentId, repositoryId);
@@ -258,6 +273,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
     const repositoryId = this.selectedRepositoryId();
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (repositoryId && clientId && agentId) {
       this.deploymentsFacade.loadWorkflows(clientId, agentId, repositoryId, branch);
     }
@@ -278,6 +294,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
       // Unselect run
       this.selectedRunId.set(null);
       this.runDetailsVisible.set(false);
+
       // Query parameter will be updated by the effect
       return;
     }
@@ -286,6 +303,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
     this.runDetailsVisible.set(true);
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (clientId && agentId) {
       this.deploymentsFacade.loadRunStatus(clientId, agentId, runId);
       this.deploymentsFacade.loadRunJobs(clientId, agentId, runId);
@@ -298,6 +316,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
     if (this.isInitializing) {
       this.isInitializing = false;
     }
+
     this.selectedRunId.set(null);
     this.runDetailsVisible.set(false);
     // Query parameter will be updated by the effect
@@ -306,6 +325,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
   onTriggerWorkflow(workflow: Workflow, branch: string, inputs?: Record<string, string>): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (clientId && agentId) {
       this.deploymentsFacade.triggerWorkflow(clientId, agentId, {
         workflowId: workflow.id,
@@ -324,6 +344,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
   onRefreshRuns(): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (clientId && agentId) {
       this.deploymentsFacade.loadRuns(clientId, agentId);
     }
@@ -343,6 +364,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
 
       if (value) {
         const encodedValue = encodeURIComponent(value);
+
         // Only update if the value has changed
         if (currentValue !== encodedValue) {
           url.searchParams.set(key, encodedValue);
@@ -368,6 +390,7 @@ export class DeploymentManagerComponent implements AfterViewInit {
       availableLocales.includes(firstSegment) && pathSegments.length > 1
         ? '/' + pathSegments.slice(1).join('/')
         : pathname;
+
     this.location.replaceState(pathnameWithoutLocale + search + hash);
   }
 }

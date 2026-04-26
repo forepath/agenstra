@@ -16,6 +16,7 @@ describe('sanitizeProviderMetadata', () => {
   it('should remove gitToken from metadata', () => {
     const input = JSON.stringify({ location: 'fsn1', gitToken: 'secret-token-123' });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({ location: 'fsn1' });
     expect(result).not.toHaveProperty('gitToken');
   });
@@ -23,6 +24,7 @@ describe('sanitizeProviderMetadata', () => {
   it('should remove gitPassword from metadata', () => {
     const input = JSON.stringify({ datacenter: 'fsn1-dc8', gitPassword: 'secret-pass' });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({ datacenter: 'fsn1-dc8' });
     expect(result).not.toHaveProperty('gitPassword');
   });
@@ -30,6 +32,7 @@ describe('sanitizeProviderMetadata', () => {
   it('should remove cursorApiKey from metadata', () => {
     const input = JSON.stringify({ serverType: 'cx11', cursorApiKey: 'cursor-key-xyz' });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({ serverType: 'cx11' });
     expect(result).not.toHaveProperty('cursorApiKey');
   });
@@ -37,6 +40,7 @@ describe('sanitizeProviderMetadata', () => {
   it('should remove keycloakClientSecret from metadata', () => {
     const input = JSON.stringify({ realm: 'test', keycloakClientSecret: 'client-secret' });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({ realm: 'test' });
     expect(result).not.toHaveProperty('keycloakClientSecret');
   });
@@ -51,6 +55,7 @@ describe('sanitizeProviderMetadata', () => {
       disk: 40,
     });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({
       location: 'fsn1',
       image: 'ubuntu-22.04',
@@ -69,6 +74,7 @@ describe('sanitizeProviderMetadata', () => {
       clientSecret: 'secret',
     });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({ safeField: 'value' });
     expect(result).not.toHaveProperty('apiPassword');
     expect(result).not.toHaveProperty('authToken');
@@ -84,6 +90,7 @@ describe('sanitizeProviderMetadata', () => {
       },
     });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({
       topLevel: 'keep',
       nested: { inner: 'keep' },
@@ -96,6 +103,7 @@ describe('sanitizeProviderMetadata', () => {
       items: [{ name: 'a', password: 'secret' }, { name: 'b' }],
     });
     const result = JSON.parse(sanitizeProviderMetadata(input));
+
     expect(result).toEqual({
       items: [{ name: 'a' }, { name: 'b' }],
     });

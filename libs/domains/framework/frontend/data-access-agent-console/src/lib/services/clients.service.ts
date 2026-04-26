@@ -3,6 +3,11 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/framework/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Observable } from 'rxjs';
+
+import type {
+  ClientAgentAutonomyResponseDto,
+  UpsertClientAgentAutonomyDto,
+} from '../state/client-agent-autonomy/client-agent-autonomy.types';
 import type {
   AddClientUserDto,
   ClientResponseDto,
@@ -17,10 +22,6 @@ import type {
   ServerType,
   UpdateClientDto,
 } from '../state/clients/clients.types';
-import type {
-  ClientAgentAutonomyResponseDto,
-  UpsertClientAgentAutonomyDto,
-} from '../state/client-agent-autonomy/client-agent-autonomy.types';
 
 @Injectable({
   providedIn: 'root',
@@ -41,9 +42,11 @@ export class ClientsService {
    */
   listClients(params?: ListClientsParams): Observable<ClientResponseDto[]> {
     let httpParams = new HttpParams();
+
     if (params?.limit !== undefined) {
       httpParams = httpParams.set('limit', params.limit.toString());
     }
+
     if (params?.offset !== undefined) {
       httpParams = httpParams.set('offset', params.offset.toString());
     }

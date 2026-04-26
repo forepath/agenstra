@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { FilterDirection } from '../chat-filter.interface';
+
 import { BidirectionalChatFilter } from './bidirectional-chat-filter';
 
 describe('BidirectionalChatFilter', () => {
@@ -36,6 +38,7 @@ describe('BidirectionalChatFilter', () => {
       const result = await filter.filter('This message contains test-filter keyword');
 
       expect(result.filtered).toBe(true);
+
       if (result.filtered) {
         expect(result.action).toBe('flag');
         expect(result.reason).toBe('Message contains test-filter keyword');

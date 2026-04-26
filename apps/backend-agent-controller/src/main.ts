@@ -8,6 +8,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DataSource } from 'typeorm';
+
 import { AppModule } from './app/app.module';
 import { typeormConfig } from './typeorm.config';
 
@@ -15,14 +16,13 @@ async function bootstrap() {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
 
   const app = await NestFactory.create(AppModule);
-
   // Configure CORS
   // In production: CORS is restricted by default (requires CORS_ORIGIN to be set)
   // In development: CORS allows all origins by default (can be restricted via CORS_ORIGIN)
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;
-
   let origin: string | string[];
+
   if (corsOrigin) {
     // If CORS_ORIGIN is explicitly set, use it (comma-separated list)
     origin = corsOrigin.split(',').map((o) => o.trim());
@@ -63,6 +63,7 @@ async function bootstrap() {
   // To use migrations, set synchronize: false in typeorm.config.ts
   if (!typeormConfig.synchronize && typeormConfig.migrations?.length) {
     const dataSource = app.get(DataSource);
+
     try {
       Logger.log('🔄 Running pending migrations...');
       await dataSource.runMigrations();
@@ -84,8 +85,10 @@ async function bootstrap() {
   );
 
   const globalPrefix = 'api';
+
   app.setGlobalPrefix(globalPrefix);
   const port = parseInt(process.env.PORT || '3100', 10);
+
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }

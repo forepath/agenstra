@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ClientEntity } from '@forepath/identity/backend';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { AgentConsoleRegexFilterRuleEntity } from './agent-console-regex-filter-rule.entity';
 
 @Entity('agent_console_regex_filter_rule_clients')

@@ -3,11 +3,13 @@ import { ClientAgentAutonomyEntity } from './client-agent-autonomy.entity';
 describe('ClientAgentAutonomyEntity', () => {
   it('should create an instance', () => {
     const entity = new ClientAgentAutonomyEntity();
+
     expect(entity).toBeDefined();
   });
 
   it('should have composite primary key fields and autonomy settings', () => {
     const entity = new ClientAgentAutonomyEntity();
+
     entity.clientId = 'client-uuid';
     entity.agentId = 'agent-uuid';
     entity.enabled = true;
@@ -31,6 +33,7 @@ describe('ClientAgentAutonomyEntity', () => {
 
   it('should allow null token budget', () => {
     const entity = new ClientAgentAutonomyEntity();
+
     entity.tokenBudgetLimit = null;
     expect(entity.tokenBudgetLimit).toBeNull();
   });

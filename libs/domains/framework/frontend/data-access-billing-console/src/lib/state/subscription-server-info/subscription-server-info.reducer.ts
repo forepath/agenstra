@@ -1,6 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
+
 import type { ServerInfoResponse } from '../../types/billing.types';
 import { billingOptimisticOnlineStatus } from '../../utils/server-info-provider.utils';
+
 import {
   billingDashboardStatusPush,
   loadOverviewServerInfo,
@@ -56,11 +58,13 @@ function setActionInProgress(
   action: ServerActionType | null,
 ): Record<string, ServerActionType> {
   const next = { ...state.actionInProgress };
+
   if (action === null) {
     delete next[subscriptionId];
   } else {
     next[subscriptionId] = action;
   }
+
   return next;
 }
 
@@ -93,6 +97,7 @@ export const subscriptionServerInfoReducer = createReducer(
     const serviceBySubscriptionId = { ...state.serviceBySubscriptionId };
     const actionInProgress = { ...state.actionInProgress };
     const history = [...state.billingStatusHistory];
+
     for (const item of items) {
       serverInfoBySubscriptionId[item.subscriptionId] = {
         name: item.name,
@@ -113,7 +118,9 @@ export const subscriptionServerInfoReducer = createReducer(
         status: item.status,
       });
     }
+
     const billingStatusHistory = history.slice(-MAX_STATUS_HISTORY);
+
     return {
       ...state,
       serverInfoBySubscriptionId,
@@ -130,9 +137,11 @@ export const subscriptionServerInfoReducer = createReducer(
       ...state,
       serverInfoBySubscriptionId: { ...state.serverInfoBySubscriptionId, [subscriptionId]: serverInfo },
     };
+
     if (clearActionInProgress !== false) {
       next.actionInProgress = setActionInProgress(state, subscriptionId, null);
     }
+
     return next;
   }),
   on(startServer, (state, { subscriptionId }) => ({
@@ -150,6 +159,7 @@ export const subscriptionServerInfoReducer = createReducer(
           },
         }
       : state.serverInfoBySubscriptionId;
+
     return { ...state, serverInfoBySubscriptionId };
   }),
   on(startServerFailure, (state, { subscriptionId }) => ({
@@ -165,6 +175,7 @@ export const subscriptionServerInfoReducer = createReducer(
     const serverInfoBySubscriptionId = existing
       ? { ...state.serverInfoBySubscriptionId, [subscriptionId]: { ...existing, status: 'off' } }
       : state.serverInfoBySubscriptionId;
+
     return { ...state, serverInfoBySubscriptionId };
   }),
   on(stopServerFailure, (state, { subscriptionId }) => ({

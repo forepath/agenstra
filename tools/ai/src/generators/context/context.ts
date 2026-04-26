@@ -1,8 +1,11 @@
-import { formatFiles, getProjects, joinPathFragments, Tree } from '@nx/devkit';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { formatFiles, getProjects, joinPathFragments, Tree } from '@nx/devkit';
+
 import { transform } from '../../transform';
 import type { ToolName } from '../../types';
+
 import { ContextGeneratorSchema } from './schema';
 
 const ALL_TARGETS: ToolName[] = ['cursor', 'opencode', 'github-copilot'];
@@ -14,12 +17,16 @@ function resolveBaseDir(tree: Tree, options: ContextGeneratorSchema): string {
   if (options.project) {
     const projects = getProjects(tree);
     const config = projects.get(options.project);
+
     if (!config) {
       throw new Error(`Project "${options.project}" not found in workspace.`);
     }
+
     return config.root;
   }
+
   const pathOption = options.path ?? '.';
+
   return pathOption.endsWith('.agenstra') ? pathOption.replace(/\.agenstra\/?$/, '') : pathOption;
 }
 
@@ -40,6 +47,7 @@ export async function contextGenerator(tree: Tree, options: ContextGeneratorSche
 
   if (options.dryRun === true) {
     console.log(`[agenstra:context] Valid: .agenstra found at ${agenstraRoot}`);
+
     return;
   }
 
@@ -64,19 +72,23 @@ export async function contextGenerator(tree: Tree, options: ContextGeneratorSche
 
     const outputBase = joinPathFragments(baseDir, outputDir);
     const agenstraPath = path.join(workspaceRoot, baseDir, '.agenstra');
+
     for (const r of result.results) {
       if (r.output) {
         for (const [relPath, content] of r.output) {
           const treePath = joinPathFragments(outputBase, relPath);
+
           tree.write(treePath, content);
         }
       }
+
       // Copy overrides last so they can overwrite auto-generated content
       copyOverridesToTree(tree, agenstraPath, r.tool, outputBase);
     }
 
     // Skip formatting in test environments (Jest doesn't support ES Modules in VM API required by Prettier)
     const isTestEnv = process.env.NODE_ENV === 'test' || typeof (globalThis as { jest?: unknown }).jest !== 'undefined';
+
     if (!isTestEnv) {
       await formatFiles(tree);
     }
@@ -89,6 +101,7 @@ export async function contextGenerator(tree: Tree, options: ContextGeneratorSche
  */
 function copyOverridesToTree(tree: Tree, agenstraDir: string, toolName: ToolName, outputBase: string): void {
   const overridesDir = path.join(agenstraDir, 'overrides');
+
   if (!fs.existsSync(overridesDir) || !fs.statSync(overridesDir).isDirectory()) {
     return;
   }
@@ -98,15 +111,17 @@ function copyOverridesToTree(tree: Tree, agenstraDir: string, toolName: ToolName
     opencode: ['.opencode', 'AGENTS.md', 'opencode.json'],
     'github-copilot': ['.github'],
   };
-
   const pathsToCopy = overridePaths[toolName] || [];
+
   for (const overridePath of pathsToCopy) {
     const sourcePath = path.join(overridesDir, overridePath);
+
     if (!fs.existsSync(sourcePath)) continue;
 
     if (fs.statSync(sourcePath).isFile()) {
       const targetPath = joinPathFragments(outputBase, overridePath);
       const content = fs.readFileSync(sourcePath, 'utf-8');
+
       tree.write(targetPath, content);
     } else if (fs.statSync(sourcePath).isDirectory()) {
       copyDirectoryToTreeRecursive(tree, sourcePath, joinPathFragments(outputBase, overridePath));
@@ -116,6 +131,7 @@ function copyOverridesToTree(tree: Tree, agenstraDir: string, toolName: ToolName
 
 function copyDirectoryToTreeRecursive(tree: Tree, source: string, targetBase: string): void {
   const entries = fs.readdirSync(source, { withFileTypes: true });
+
   for (const entry of entries) {
     const sourcePath = path.join(source, entry.name);
     const targetPath = joinPathFragments(targetBase, entry.name);
@@ -124,6 +140,7 @@ function copyDirectoryToTreeRecursive(tree: Tree, source: string, targetBase: st
       copyDirectoryToTreeRecursive(tree, sourcePath, targetPath);
     } else if (entry.isFile()) {
       const content = fs.readFileSync(sourcePath, 'utf-8');
+
       tree.write(targetPath, content);
     }
   }

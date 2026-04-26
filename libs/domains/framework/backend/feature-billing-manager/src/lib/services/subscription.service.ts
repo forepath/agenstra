@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -20,6 +21,7 @@ import {
   stripGeographyFromRequestedConfig,
 } from '../utils/provider-location.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
+
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
@@ -55,6 +57,7 @@ export class SubscriptionService {
     autoBackorder = false,
   ) {
     const profile = await this.customerProfilesService.getByUserId(userId);
+
     if (!this.customerProfilesService.isProfileComplete(profile)) {
       throw new BadRequestException(
         'Customer billing profile must be complete before ordering. Please complete your profile.',
@@ -63,30 +66,31 @@ export class SubscriptionService {
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
-
     const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;
     const sanitizedRequested = allowCustomerLocationSelection
       ? { ...(requestedConfig ?? {}) }
       : stripGeographyFromRequestedConfig(requestedConfig);
-
     const baseConfig = plan.providerConfigDefaults ?? {};
     const effectiveConfig: Record<string, unknown> = {
       ...(baseConfig || {}),
       ...sanitizedRequested,
     };
-
     const provider = serviceType.provider;
+
     if (provider === 'hetzner' || provider === 'digital-ocean') {
       const regionResolved = resolveProvisioningRegion(effectiveConfig, provider);
+
       mirrorGeographyInConfig(effectiveConfig, regionResolved);
     }
 
     const validationErrors = validateConfigSchema(serviceType.configSchema, effectiveConfig);
+
     if (validationErrors.length > 0) {
       throw new BadRequestException(validationErrors.join('; '));
     }
 
     const service = (effectiveConfig.service as string) ?? 'controller';
+
     if (service === 'manager' && (effectiveConfig.authenticationMethod as string) === 'users') {
       effectiveConfig.authenticationMethod = 'api-key';
     }
@@ -107,6 +111,7 @@ export class SubscriptionService {
           preferredAlternatives: availability.alternatives ?? {},
         });
       }
+
       throw new BadRequestException(availability.reason || 'Configuration not available');
     }
 
@@ -115,7 +120,6 @@ export class SubscriptionService {
       plan.billingIntervalValue,
       plan.billingDayOfMonth,
     );
-
     const subscription = await this.subscriptionsRepository.create({
       userId,
       planId,
@@ -124,7 +128,6 @@ export class SubscriptionService {
       currentPeriodEnd: schedule.currentPeriodEnd,
       nextBillingAt: schedule.nextBillingAt,
     });
-
     const subscriptionItem = await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: plan.serviceTypeId,
@@ -133,9 +136,11 @@ export class SubscriptionService {
 
     if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
       let hostname: string | null = null;
+
       try {
         hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
         const { publicKey, privateKey } = generateSshKeyPair();
+
         await this.subscriptionItemsRepository.updateSshPrivateKey(subscriptionItem.id, privateKey);
         effectiveConfig.sshPublicKey = publicKey;
         const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
@@ -152,8 +157,8 @@ export class SubscriptionService {
           firewallId: effectiveConfig.firewallId as number | undefined,
           userData,
         };
-
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);
+
         if (provisioned?.serverId) {
           await this.subscriptionItemsRepository.updateProviderReference(subscriptionItem.id, provisioned.serverId);
           await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'active');
@@ -163,6 +168,7 @@ export class SubscriptionService {
             provisioned.serverId,
             serverInfo,
           );
+
           if (publicIp) {
             try {
               await this.cloudflareDnsService.createARecord(hostname, publicIp);
@@ -183,7 +189,9 @@ export class SubscriptionService {
             );
           }
         }
+
         await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'failed');
+
         if (autoBackorder) {
           await this.backorderService.create({
             userId,
@@ -193,6 +201,7 @@ export class SubscriptionService {
             providerErrors: { reason: (error as Error).message },
           });
         }
+
         throw error;
       }
     }
@@ -215,16 +224,17 @@ export class SubscriptionService {
 
   async getSubscription(subscriptionId: string, userId: string) {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+
     if (subscription.userId !== userId) {
       throw new BadRequestException('Subscription does not belong to user');
     }
+
     return subscription;
   }
 
   async cancelSubscription(subscriptionId: string, userId: string): Promise<SubscriptionEntity> {
     const subscription = await this.getSubscription(subscriptionId, userId);
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
-
     const decision = this.cancellationPolicyService.evaluate(
       subscription.createdAt,
       subscription.currentPeriodEnd,
@@ -246,6 +256,7 @@ export class SubscriptionService {
 
   async resumeSubscription(subscriptionId: string, userId: string): Promise<SubscriptionEntity> {
     const subscription = await this.getSubscription(subscriptionId, userId);
+
     if (subscription.status !== SubscriptionStatus.PENDING_CANCEL) {
       throw new BadRequestException('Subscription is not pending cancel');
     }

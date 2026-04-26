@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { PublicServicePlanOffering } from '../types/portal-service-plans.types';
+
 import { PublicServicePlanOfferingsService } from './public-service-plan-offerings.service';
 
 describe('PublicServicePlanOfferingsService', () => {
   let service: PublicServicePlanOfferingsService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockOffering: PublicServicePlanOffering = {
     id: 'sp-1',
     name: 'Basic',
@@ -58,6 +59,7 @@ describe('PublicServicePlanOfferingsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/public/service-plan-offerings`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockList);
     });
@@ -75,6 +77,7 @@ describe('PublicServicePlanOfferingsService', () => {
           r.params.get('offset') === '20' &&
           r.params.get('serviceTypeId') === 'st-x',
       );
+
       expect(req.request.method).toBe('GET');
       req.flush([mockOffering]);
     });
@@ -88,6 +91,7 @@ describe('PublicServicePlanOfferingsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/public/service-plan-offerings/cheapest`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockOffering);
     });
@@ -101,6 +105,7 @@ describe('PublicServicePlanOfferingsService', () => {
       const req = httpMock.expectOne(
         (r) => r.url === `${apiUrl}/public/service-plan-offerings/cheapest` && r.params.get('serviceTypeId') === 'st-x',
       );
+
       req.flush(mockOffering);
     });
   });

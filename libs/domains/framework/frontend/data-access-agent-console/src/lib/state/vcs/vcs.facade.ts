@@ -1,17 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import type {
-  CommitDto,
-  CreateBranchDto,
-  GitBranch,
-  GitDiff,
-  GitStatus,
-  RebaseDto,
-  ResolveConflictDto,
-  StageFilesDto,
-  UnstageFilesDto,
-} from './vcs.types';
+
 import {
   clearGitDiff,
   commit,
@@ -51,6 +41,17 @@ import {
   selectUnstaging,
   selectVcsError,
 } from './vcs.selectors';
+import type {
+  CommitDto,
+  CreateBranchDto,
+  GitBranch,
+  GitDiff,
+  GitStatus,
+  RebaseDto,
+  ResolveConflictDto,
+  StageFilesDto,
+  UnstageFilesDto,
+} from './vcs.types';
 
 /**
  * Facade for VCS state management.

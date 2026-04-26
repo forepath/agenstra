@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+
 import {
   clearAllStatsHistory,
   clearStatsHistory,
@@ -38,16 +39,13 @@ export const statsReducer = createReducer(
   on(containerStatsReceived, (state, { entry }) => {
     // Use composite key (clientId:agentId) for unique identification
     const key = getStatsKey(entry.clientId, entry.agentId);
-
     const currentStats = state.statsByContainer[key] || [];
     const updatedStats = [...currentStats, entry];
-
     // Keep only the last maxEntriesPerContainer entries
     const trimmedStats =
       updatedStats.length > state.maxEntriesPerContainer
         ? updatedStats.slice(-state.maxEntriesPerContainer)
         : updatedStats;
-
     // Clear override for this container so socket data is now the source of truth
     const { [key]: _removed, ...remainingOverrides } = state.runningOverrides;
 
@@ -62,8 +60,9 @@ export const statsReducer = createReducer(
   }),
   on(clearStatsHistory, (state, { clientId, agentId }) => {
     const key = getStatsKey(clientId, agentId);
-    const { [key]: removed, ...remainingStats } = state.statsByContainer;
-    const { [key]: removedOverride, ...remainingOverrides } = state.runningOverrides;
+    const { [key]: _, ...remainingStats } = state.statsByContainer;
+    const { [key]: __, ...remainingOverrides } = state.runningOverrides;
+
     return {
       ...state,
       statsByContainer: remainingStats,
@@ -77,6 +76,7 @@ export const statsReducer = createReducer(
   })),
   on(setContainerRunningStatus, (state, { clientId, agentId, running }) => {
     const key = getStatsKey(clientId, agentId);
+
     return {
       ...state,
       runningOverrides: {

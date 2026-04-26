@@ -2,8 +2,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, EMPTY, map, of, switchMap } from 'rxjs';
+
 import { TicketsService } from '../../services/tickets.service';
 import { replaceTicketDetailActivity } from '../tickets/tickets.actions';
+
 import {
   approveTicketAutomation,
   approveTicketAutomationFailure,
@@ -32,12 +34,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     return error.error?.message ?? error.message ?? String(error.status);
   }
+
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -158,6 +163,7 @@ export const refreshTicketDetailActivityAfterAutomation$ = createEffect(
       ),
       switchMap((action) => {
         let ticketId: string | null = null;
+
         if (
           patchTicketAutomationSuccess.type === action.type ||
           approveTicketAutomationSuccess.type === action.type ||
@@ -167,9 +173,11 @@ export const refreshTicketDetailActivityAfterAutomation$ = createEffect(
         } else if (cancelTicketAutomationRunSuccess.type === action.type) {
           ticketId = action.run.ticketId;
         }
+
         if (!ticketId) {
           return EMPTY;
         }
+
         return ticketsService.listActivity(ticketId, 100, 0).pipe(
           map((activity) => replaceTicketDetailActivity({ ticketId, activity })),
           catchError(() => EMPTY),

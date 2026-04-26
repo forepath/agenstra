@@ -1,7 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
+
 import { SubscriptionsService } from '../../services/subscriptions.service';
+
 import {
   cancelSubscription,
   cancelSubscriptionFailure,
@@ -25,12 +27,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -42,14 +47,17 @@ export const loadSubscriptions$ = createEffect(
       ofType(loadSubscriptions),
       switchMap(({ params }) => {
         const batchParams = { limit: BATCH_SIZE, offset: 0, ...params };
+
         return subscriptionsService.listSubscriptions(batchParams).pipe(
           switchMap((subscriptions) => {
             if (subscriptions.length === 0) {
               return of(loadSubscriptionsSuccess({ subscriptions: [] }));
             }
+
             if (subscriptions.length < BATCH_SIZE) {
               return of(loadSubscriptionsSuccess({ subscriptions }));
             }
+
             return of(loadSubscriptionsBatch({ offset: BATCH_SIZE, accumulatedSubscriptions: subscriptions }));
           }),
           catchError((error) => of(loadSubscriptionsFailure({ error: normalizeError(error) }))),
@@ -66,15 +74,19 @@ export const loadSubscriptionsBatch$ = createEffect(
       ofType(loadSubscriptionsBatch),
       switchMap(({ offset, accumulatedSubscriptions }) => {
         const batchParams = { limit: BATCH_SIZE, offset };
+
         return subscriptionsService.listSubscriptions(batchParams).pipe(
           switchMap((subscriptions) => {
             const newAccumulated = [...accumulatedSubscriptions, ...subscriptions];
+
             if (subscriptions.length === 0) {
               return of(loadSubscriptionsSuccess({ subscriptions: newAccumulated }));
             }
+
             if (subscriptions.length < BATCH_SIZE) {
               return of(loadSubscriptionsSuccess({ subscriptions: newAccumulated }));
             }
+
             return of(
               loadSubscriptionsBatch({
                 offset: offset + BATCH_SIZE,

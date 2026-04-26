@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 
 /**
@@ -22,9 +23,11 @@ export class AgentEnvironmentVariablesRepository {
    */
   async findByIdOrThrow(id: string): Promise<AgentEnvironmentVariableEntity> {
     const variable = await this.repository.findOne({ where: { id } });
+
     if (!variable) {
       throw new NotFoundException(`Environment variable with ID ${id} not found`);
     }
+
     return variable;
   }
 
@@ -102,6 +105,7 @@ export class AgentEnvironmentVariablesRepository {
    */
   async create(dto: Partial<AgentEnvironmentVariableEntity>): Promise<AgentEnvironmentVariableEntity> {
     const variable = this.repository.create(dto);
+
     return await this.repository.save(variable);
   }
 
@@ -113,7 +117,9 @@ export class AgentEnvironmentVariablesRepository {
    */
   async update(id: string, dto: Partial<AgentEnvironmentVariableEntity>): Promise<AgentEnvironmentVariableEntity> {
     const environmentVariable = await this.findByIdOrThrow(id);
+
     Object.assign(environmentVariable, dto);
+
     return await this.repository.save(environmentVariable);
   }
 
@@ -124,6 +130,7 @@ export class AgentEnvironmentVariablesRepository {
    */
   async delete(id: string): Promise<void> {
     const variable = await this.findByIdOrThrow(id);
+
     await this.repository.remove(variable);
   }
 
@@ -134,6 +141,7 @@ export class AgentEnvironmentVariablesRepository {
    */
   async deleteByAgentId(agentId: string): Promise<number> {
     const result = await this.repository.delete({ agentId });
+
     return result.affected || 0;
   }
 }

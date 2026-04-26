@@ -7,6 +7,7 @@ describe('StatisticsChatFilterFlagEntity', () => {
 
   it('supports required fields', () => {
     const entity = new StatisticsChatFilterFlagEntity();
+
     entity.id = 'flag-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
     entity.filterType = 'database-regex-incoming';
@@ -28,16 +29,19 @@ describe('StatisticsChatFilterFlagEntity', () => {
 
   it('allows optional agent, user and reason', () => {
     const entity = new StatisticsChatFilterFlagEntity();
+
     entity.filterReason = 'regex flag';
     expect(entity.filterReason).toBe('regex flag');
   });
 
   it('supports INCOMING and OUTGOING enum string values', () => {
     const incoming = new StatisticsChatFilterFlagEntity();
+
     incoming.direction = FilterFlagDirection.INCOMING;
     expect(incoming.direction).toBe('incoming');
 
     const outgoing = new StatisticsChatFilterFlagEntity();
+
     outgoing.direction = FilterFlagDirection.OUTGOING;
     expect(outgoing.direction).toBe('outgoing');
   });

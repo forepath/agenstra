@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 
@@ -27,6 +28,7 @@ export class CustomerProfilesService {
     if (profile === null) {
       return false;
     }
+
     return REQUIRED_PROFILE_FIELDS.every((field) => isNonEmptyString(profile[field]));
   }
 
@@ -36,6 +38,7 @@ export class CustomerProfilesService {
 
   async upsert(userId: string, dto: Partial<CustomerProfileEntity>): Promise<CustomerProfileEntity> {
     const existing = await this.customerProfilesRepository.findByUserId(userId);
+
     if (existing) {
       return await this.customerProfilesRepository.update(existing.id, dto);
     }
@@ -48,6 +51,7 @@ export class CustomerProfilesService {
 
   async updateInvoiceNinjaClientId(userId: string, invoiceNinjaClientId: string): Promise<CustomerProfileEntity> {
     const profile = await this.customerProfilesRepository.findByUserId(userId);
+
     if (!profile) {
       throw new BadRequestException('Customer profile not found');
     }

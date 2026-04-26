@@ -1,16 +1,17 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentEntity } from '../entities/agent.entity';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
+
 import { AgentEnvironmentVariablesService } from './agent-environment-variables.service';
 import { DockerService } from './docker.service';
 
 describe('AgentEnvironmentVariablesService', () => {
   let service: AgentEnvironmentVariablesService;
-
   const mockAgent: AgentEntity = {
     id: 'agent-uuid-123',
     name: 'Test Agent',
@@ -21,7 +22,6 @@ describe('AgentEnvironmentVariablesService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   } as AgentEntity;
-
   const mockEnvironmentVariable: AgentEnvironmentVariableEntity = {
     id: 'env-var-uuid-123',
     agentId: 'agent-uuid-123',
@@ -31,7 +31,6 @@ describe('AgentEnvironmentVariablesService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockRepository = {
     create: jest.fn(),
     update: jest.fn(),
@@ -43,16 +42,13 @@ describe('AgentEnvironmentVariablesService', () => {
     findByIdOrThrow: jest.fn(),
     findById: jest.fn(),
   };
-
   const mockAgentsRepository = {
     findByIdOrThrow: jest.fn(),
     update: jest.fn(),
   };
-
   const mockAgentMessagesRepository = {
     deleteByAgentId: jest.fn(),
   };
-
   const mockDockerService = {
     updateContainer: jest.fn(),
   };
@@ -98,8 +94,8 @@ describe('AgentEnvironmentVariablesService', () => {
         variable,
         content,
       };
-
       const newContainerId = 'new-container-id-456';
+
       mockRepository.create.mockResolvedValue(expectedVariable);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([expectedVariable]);
@@ -134,8 +130,8 @@ describe('AgentEnvironmentVariablesService', () => {
         variable,
         content,
       };
-
       const newContainerId = 'new-container-id-456';
+
       mockRepository.create.mockResolvedValue(expectedVariable);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([expectedVariable]);
@@ -171,8 +167,8 @@ describe('AgentEnvironmentVariablesService', () => {
         content,
         agentId: 'agent-uuid-123',
       };
-
       const newContainerId = 'new-container-id-456';
+
       mockRepository.update.mockResolvedValue(expectedVariable);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([expectedVariable]);
@@ -204,8 +200,8 @@ describe('AgentEnvironmentVariablesService', () => {
         content,
         agentId: 'agent-uuid-123',
       };
-
       const newContainerId = 'new-container-id-456';
+
       mockRepository.update.mockResolvedValue(expectedVariable);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([expectedVariable]);
@@ -235,8 +231,8 @@ describe('AgentEnvironmentVariablesService', () => {
         content,
         agentId: 'agent-uuid-123',
       };
-
       const newContainerId = 'new-container-id-456';
+
       mockRepository.update.mockResolvedValue(expectedVariable);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([expectedVariable]);
@@ -264,8 +260,8 @@ describe('AgentEnvironmentVariablesService', () => {
         id,
         agentId: 'agent-uuid-123',
       };
-
       const newContainerId = 'new-container-id-456';
+
       mockRepository.findByIdOrThrow.mockResolvedValue(variableToDelete);
       mockRepository.delete.mockResolvedValue(undefined);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
@@ -287,6 +283,7 @@ describe('AgentEnvironmentVariablesService', () => {
 
     it('should throw NotFoundException when environment variable not found', async () => {
       const id = 'env-var-uuid-123';
+
       mockRepository.findByIdOrThrow.mockRejectedValue(new NotFoundException('Environment variable not found'));
 
       await expect(service.deleteEnvironmentVariable(id)).rejects.toThrow(NotFoundException);
@@ -299,6 +296,7 @@ describe('AgentEnvironmentVariablesService', () => {
     it('should return environment variables for an agent', async () => {
       const agentId = 'agent-uuid-123';
       const variables = [mockEnvironmentVariable];
+
       mockRepository.findByAgentId.mockResolvedValue(variables);
 
       const result = await service.getEnvironmentVariables(agentId);
@@ -310,6 +308,7 @@ describe('AgentEnvironmentVariablesService', () => {
     it('should use custom pagination parameters', async () => {
       const agentId = 'agent-uuid-123';
       const variables = [mockEnvironmentVariable];
+
       mockRepository.findByAgentId.mockResolvedValue(variables);
 
       await service.getEnvironmentVariables(agentId, 100, 10);
@@ -319,6 +318,7 @@ describe('AgentEnvironmentVariablesService', () => {
 
     it('should return empty array when no environment variables exist', async () => {
       const agentId = 'agent-uuid-123';
+
       mockRepository.findByAgentId.mockResolvedValue([]);
 
       const result = await service.getEnvironmentVariables(agentId);
@@ -331,6 +331,7 @@ describe('AgentEnvironmentVariablesService', () => {
   describe('countEnvironmentVariables', () => {
     it('should return count of environment variables for an agent', async () => {
       const agentId = 'agent-uuid-123';
+
       mockRepository.countByAgentId.mockResolvedValue(5);
 
       const result = await service.countEnvironmentVariables(agentId);
@@ -341,6 +342,7 @@ describe('AgentEnvironmentVariablesService', () => {
 
     it('should return 0 when no environment variables exist', async () => {
       const agentId = 'agent-uuid-123';
+
       mockRepository.countByAgentId.mockResolvedValue(0);
 
       const result = await service.countEnvironmentVariables(agentId);
@@ -354,6 +356,7 @@ describe('AgentEnvironmentVariablesService', () => {
     it('should delete all environment variables for an agent and reconcile with container', async () => {
       const agentId = 'agent-uuid-123';
       const newContainerId = 'new-container-id-456';
+
       mockRepository.deleteByAgentId.mockResolvedValue(3);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([]);
@@ -375,6 +378,7 @@ describe('AgentEnvironmentVariablesService', () => {
     it('should return 0 when no environment variables are deleted', async () => {
       const agentId = 'agent-uuid-123';
       const newContainerId = 'new-container-id-456';
+
       mockRepository.deleteByAgentId.mockResolvedValue(0);
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([]);
@@ -399,8 +403,8 @@ describe('AgentEnvironmentVariablesService', () => {
         { ...mockEnvironmentVariable, variable: 'API_KEY', content: 'secret-key' },
         { ...mockEnvironmentVariable, id: 'env-var-2', variable: 'DB_URL', content: 'postgres://...' },
       ];
-
       const newContainerId = 'new-container-id-456';
+
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue(envVars);
       mockDockerService.updateContainer.mockResolvedValue(newContainerId);
@@ -440,8 +444,8 @@ describe('AgentEnvironmentVariablesService', () => {
 
     it('should handle empty environment variables', async () => {
       const agentId = 'agent-uuid-123';
-
       const newContainerId = 'new-container-id-456';
+
       mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       mockRepository.findAllByAgentId.mockResolvedValue([]);
       mockDockerService.updateContainer.mockResolvedValue(newContainerId);
@@ -457,6 +461,7 @@ describe('AgentEnvironmentVariablesService', () => {
 
     it('should throw NotFoundException when agent not found', async () => {
       const agentId = 'agent-uuid-123';
+
       mockAgentsRepository.findByIdOrThrow.mockRejectedValue(new NotFoundException('Agent not found'));
 
       await expect(service.reconcileEnvironmentVariables(agentId)).rejects.toThrow(NotFoundException);

@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { InvoicesService } from '../../services/invoices.service';
+import type { InvoiceResponse } from '../../types/billing.types';
+
 import {
   createInvoice,
   createInvoiceFailure,
@@ -18,12 +21,10 @@ import {
   loadOpenOverdueInvoicesSuccess,
 } from './invoices.actions';
 import { createInvoice$, loadInvoices$, loadInvoicesSummary$, loadOpenOverdueInvoices$ } from './invoices.effects';
-import type { InvoiceResponse } from '../../types/billing.types';
 
 describe('InvoicesEffects', () => {
   let actions$: Actions;
   let invoicesService: jest.Mocked<InvoicesService>;
-
   const subscriptionId = 'sub-1';
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
@@ -51,6 +52,7 @@ describe('InvoicesEffects', () => {
   describe('loadInvoicesSummary$', () => {
     it('should return loadInvoicesSummarySuccess on success', (done) => {
       const summary = { openOverdueCount: 2, openOverdueTotal: 100, billingDayOfMonth: 10, unbilledTotal: 25 };
+
       actions$ = of(loadInvoicesSummary());
       invoicesService.getInvoicesSummary.mockReturnValue(of(summary));
 
@@ -75,6 +77,7 @@ describe('InvoicesEffects', () => {
   describe('loadOpenOverdueInvoices$', () => {
     it('should return loadOpenOverdueInvoicesSuccess on success', (done) => {
       const invoices = [mockInvoice];
+
       actions$ = of(loadOpenOverdueInvoices());
       invoicesService.getOpenOverdueInvoices.mockReturnValue(of(invoices));
 
@@ -99,6 +102,7 @@ describe('InvoicesEffects', () => {
   describe('loadInvoices$', () => {
     it('should return loadInvoicesSuccess on success', (done) => {
       const invoices = [mockInvoice];
+
       actions$ = of(loadInvoices({ subscriptionId }));
       invoicesService.listInvoices.mockReturnValue(of(invoices));
 
@@ -123,6 +127,7 @@ describe('InvoicesEffects', () => {
   describe('createInvoice$', () => {
     it('should return createInvoiceSuccess on success', (done) => {
       const response = { invoiceId: 'inv-1', preAuthUrl: 'https://example.com' };
+
       actions$ = of(createInvoice({ subscriptionId, dto: {} }));
       invoicesService.createInvoice.mockReturnValue(of(response));
 

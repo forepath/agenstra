@@ -85,6 +85,7 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
       } else {
         this.isLastCardVisible.set(true);
       }
+
       this.pricingCarousel.nativeElement.scrollBy({
         left:
           direction === 'left'

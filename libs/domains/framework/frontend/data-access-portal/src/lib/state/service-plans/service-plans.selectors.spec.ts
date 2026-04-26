@@ -1,3 +1,5 @@
+import type { PublicServicePlanOffering } from '../../types/portal-service-plans.types';
+
 import { initialServicePlansState, type ServicePlansState } from './service-plans.reducer';
 import {
   selectCheapestServicePlanOffering,
@@ -11,7 +13,6 @@ import {
   selectServicePlansLoading,
   selectServicePlansState,
 } from './service-plans.selectors';
-import type { PublicServicePlanOffering } from '../../types/portal-service-plans.types';
 
 describe('Portal Service Plans Selectors', () => {
   const mockOffering: PublicServicePlanOffering = {
@@ -25,7 +26,6 @@ describe('Portal Service Plans Selectors', () => {
     totalPrice: 99,
     orderingHighlights: [],
   };
-
   const mockOffering2: PublicServicePlanOffering = {
     id: 'sp-2',
     name: 'Pro',
@@ -37,7 +37,6 @@ describe('Portal Service Plans Selectors', () => {
     totalPrice: 199,
     orderingHighlights: [],
   };
-
   const createState = (overrides?: Partial<ServicePlansState>): ServicePlansState => ({
     ...initialServicePlansState,
     ...overrides,
@@ -45,51 +44,61 @@ describe('Portal Service Plans Selectors', () => {
 
   it('selectServicePlansState should select feature state', () => {
     const state = createState();
+
     expect(selectServicePlansState({ servicePlans: state } as never)).toEqual(state);
   });
 
   it('selectServicePlansEntities should select entities', () => {
     const state = createState({ entities: [mockOffering, mockOffering2] });
+
     expect(selectServicePlansEntities({ servicePlans: state } as never)).toEqual([mockOffering, mockOffering2]);
   });
 
   it('selectCheapestServicePlanOffering should select cheapest', () => {
     const state = createState({ cheapestOffering: mockOffering });
+
     expect(selectCheapestServicePlanOffering({ servicePlans: state } as never)).toEqual(mockOffering);
   });
 
   it('selectServicePlansLoading should select loading', () => {
     const state = createState({ loading: true });
+
     expect(selectServicePlansLoading({ servicePlans: state } as never)).toBe(true);
   });
 
   it('selectCheapestServicePlanOfferingLoading should select loadingCheapest', () => {
     const state = createState({ loadingCheapest: true });
+
     expect(selectCheapestServicePlanOfferingLoading({ servicePlans: state } as never)).toBe(true);
   });
 
   it('selectServicePlansError should select error', () => {
     const state = createState({ error: 'e' });
+
     expect(selectServicePlansError({ servicePlans: state } as never)).toBe('e');
   });
 
   it('selectServicePlansCount should count entities', () => {
     const state = createState({ entities: [mockOffering] });
+
     expect(selectServicePlansCount({ servicePlans: state } as never)).toBe(1);
   });
 
   it('selectHasServicePlans should be true when entities exist', () => {
     const state = createState({ entities: [mockOffering] });
+
     expect(selectHasServicePlans({ servicePlans: state } as never)).toBe(true);
   });
 
   it('selectServicePlanById should find by id', () => {
     const state = createState({ entities: [mockOffering, mockOffering2] });
+
     expect(selectServicePlanById('sp-2')({ servicePlans: state } as never)).toEqual(mockOffering2);
   });
 
   it('selectServicePlansByServiceTypeId should filter', () => {
     const state = createState({ entities: [mockOffering, mockOffering2] });
+
     expect(selectServicePlansByServiceTypeId('st-1')({ servicePlans: state } as never)).toEqual([mockOffering]);
   });
 });

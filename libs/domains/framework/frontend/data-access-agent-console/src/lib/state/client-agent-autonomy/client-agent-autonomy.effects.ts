@@ -2,7 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
+
 import { ClientsService } from '../../services/clients.service';
+
 import {
   loadClientAgentAutonomy,
   loadClientAgentAutonomyFailure,
@@ -16,6 +18,7 @@ import type { ClientAgentAutonomyResponseDto } from './client-agent-autonomy.typ
 /** Missing autonomy row (404) is normal — use defaults so the UI can edit and save without a spurious error. */
 function defaultAutonomyWhenMissing(clientId: string, agentId: string): ClientAgentAutonomyResponseDto {
   const now = new Date().toISOString();
+
   return {
     clientId,
     agentId,
@@ -33,12 +36,15 @@ function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     return error.error?.message ?? error.message ?? String(error.status);
   }
+
   if (error instanceof Error) {
     return error.message;
   }
+
   if (typeof error === 'string') {
     return error;
   }
+
   return 'An unexpected error occurred';
 }
 
@@ -53,6 +59,7 @@ export const loadClientAgentAutonomy$ = createEffect(
             if (error instanceof HttpErrorResponse && error.status === 404) {
               return of(loadClientAgentAutonomySuccess({ autonomy: defaultAutonomyWhenMissing(clientId, agentId) }));
             }
+
             return of(loadClientAgentAutonomyFailure({ error: normalizeError(error) }));
           }),
         ),

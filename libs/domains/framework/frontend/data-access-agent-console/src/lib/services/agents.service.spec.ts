@@ -1,6 +1,7 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type {
   AgentResponseDto,
   ContainerType,
@@ -8,6 +9,7 @@ import type {
   CreateAgentResponseDto,
   UpdateAgentDto,
 } from '../state/agents/agents.types';
+
 import { AgentsService } from './agents.service';
 
 describe('AgentsService', () => {
@@ -15,7 +17,6 @@ describe('AgentsService', () => {
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3100/api';
   const clientId = 'client-1';
-
   const mockAgent: AgentResponseDto = {
     id: 'agent-1',
     name: 'Test Agent',
@@ -25,7 +26,6 @@ describe('AgentsService', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockCreateAgentResponse: CreateAgentResponseDto = {
     ...mockAgent,
     password: 'generated-password',
@@ -68,6 +68,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockAgents);
     });
@@ -82,6 +83,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents?limit=10&offset=20`);
+
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
@@ -99,6 +101,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockAgent);
     });
@@ -115,6 +118,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/models`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockModels);
     });
@@ -132,6 +136,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(mockCreateAgentResponse);
@@ -151,6 +156,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(updateDto);
       req.flush({ ...mockAgent, name: 'Updated Agent' });
@@ -166,6 +172,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -181,6 +188,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/start`);
+
       expect(req.request.method).toBe('POST');
       req.flush(mockAgent);
     });
@@ -196,6 +204,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/stop`);
+
       expect(req.request.method).toBe('POST');
       req.flush(mockAgent);
     });
@@ -211,6 +220,7 @@ describe('AgentsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/restart`);
+
       expect(req.request.method).toBe('POST');
       req.flush(mockAgent);
     });

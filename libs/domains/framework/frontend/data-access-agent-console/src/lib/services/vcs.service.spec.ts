@@ -1,6 +1,7 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type {
   CommitDto,
   CreateBranchDto,
@@ -12,6 +13,7 @@ import type {
   StageFilesDto,
   UnstageFilesDto,
 } from '../state/vcs/vcs.types';
+
 import { VcsService } from './vcs.service';
 
 describe('VcsService', () => {
@@ -20,7 +22,6 @@ describe('VcsService', () => {
   const apiUrl = 'http://localhost:3100/api';
   const clientId = 'client-1';
   const agentId = 'agent-1';
-
   const mockGitStatus: GitStatus = {
     isClean: false,
     currentBranch: 'main',
@@ -35,7 +36,6 @@ describe('VcsService', () => {
       },
     ],
   };
-
   const mockBranches: GitBranch[] = [
     {
       name: 'main',
@@ -46,7 +46,6 @@ describe('VcsService', () => {
       message: 'Test commit',
     },
   ];
-
   const mockGitDiff: GitDiff = {
     path: 'file1.txt',
     originalContent: Buffer.from('Old content', 'utf-8').toString('base64'),
@@ -90,6 +89,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/status`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockGitStatus);
     });
@@ -103,6 +103,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/branches`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockBranches);
     });
@@ -120,6 +121,7 @@ describe('VcsService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/diff?path=${encodeURIComponent(filePath)}`,
       );
+
       expect(req.request.method).toBe('GET');
       req.flush(mockGitDiff);
     });
@@ -137,6 +139,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/branches`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(null);
@@ -154,6 +157,7 @@ describe('VcsService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/branches/${encodeURIComponent(branch)}/switch`,
       );
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -170,6 +174,7 @@ describe('VcsService', () => {
       const req = httpMock.expectOne(
         `${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/branches/${encodeURIComponent(branch)}`,
       );
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -186,6 +191,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/stage`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(null);
@@ -203,6 +209,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/unstage`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(null);
@@ -220,6 +227,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/commit`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(null);
@@ -233,6 +241,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/fetch`);
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -245,6 +254,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/pull`);
+
       expect(req.request.method).toBe('POST');
       req.flush(null);
     });
@@ -257,6 +267,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/push`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ force: false });
       req.flush(null);
@@ -268,6 +279,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/push`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ force: true });
       req.flush(null);
@@ -285,6 +297,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/rebase`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(null);
@@ -303,6 +316,7 @@ describe('VcsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/vcs/conflicts/resolve`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(null);

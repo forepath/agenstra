@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 
 /**
@@ -24,6 +25,7 @@ export class ConfigService {
   getAvailableAgentTypes(): Array<{ type: string; displayName: string }> {
     return this.agentProviderFactory.getRegisteredTypes().map((type) => {
       const provider = this.agentProviderFactory.getProvider(type);
+
       return {
         type: provider.getType(),
         displayName: provider.getDisplayName(),

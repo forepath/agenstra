@@ -5,23 +5,27 @@ import { Router } from '@angular/router';
 import { IDENTITY_AUTH_ENVIRONMENT, IdentityAuthEnvironment, USERS_JWT_STORAGE_KEY } from '@forepath/identity/frontend';
 import { Store } from '@ngrx/store';
 import { throwError } from 'rxjs';
+
 import { logout } from '../state/authentication/authentication.actions';
+
 import { usersSessionInvalidatedInterceptor } from './users-session-invalidated.interceptor';
 
 describe('usersSessionInvalidatedInterceptor', () => {
   let mockNext: jest.Mock;
   let storeDispatch: jest.Mock;
   let removeItemSpy: jest.SpyInstance;
-
   const setupInjector = (env: IdentityAuthEnvironment, store?: { dispatch: jest.Mock }): Injector => {
     TestBed.resetTestingModule();
     const providers: unknown[] = [{ provide: IDENTITY_AUTH_ENVIRONMENT, useValue: env }];
+
     if (store) {
       providers.push({ provide: Store, useValue: store });
     } else {
       providers.push({ provide: Router, useValue: { navigate: jest.fn().mockResolvedValue(true) } });
     }
+
     TestBed.configureTestingModule({ providers });
+
     return TestBed.inject(Injector);
   };
 
@@ -42,6 +46,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
       authentication: { type: 'users' },
     };
     const injector = setupInjector(env, { dispatch: storeDispatch });
+
     mockNext.mockReturnValue(
       throwError(
         () =>
@@ -57,6 +62,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
     );
 
     const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
+
     runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
       error: () => {
         expect(removeItemSpy).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
@@ -72,6 +78,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
       authentication: { type: 'users' },
     };
     const injector = setupInjector(env, { dispatch: storeDispatch });
+
     mockNext.mockReturnValue(
       throwError(
         () =>
@@ -84,6 +91,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
     );
 
     const req = new HttpRequest('POST', 'http://localhost:3100/api/auth/change-password', {});
+
     runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
       error: () => {
         expect(removeItemSpy).not.toHaveBeenCalled();
@@ -99,6 +107,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
       authentication: { type: 'api-key', apiKey: 'k' },
     };
     const injector = setupInjector(env, { dispatch: storeDispatch });
+
     mockNext.mockReturnValue(
       throwError(
         () =>
@@ -110,6 +119,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
     );
 
     const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
+
     runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
       error: () => {
         expect(removeItemSpy).not.toHaveBeenCalled();
@@ -125,6 +135,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
       authentication: { type: 'keycloak' },
     };
     const injector = setupInjector(env, { dispatch: storeDispatch });
+
     mockNext.mockReturnValue(
       throwError(
         () =>
@@ -140,6 +151,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
     );
 
     const req = new HttpRequest('GET', 'http://localhost:3100/api/clients');
+
     runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
       error: () => {
         expect(removeItemSpy).not.toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);

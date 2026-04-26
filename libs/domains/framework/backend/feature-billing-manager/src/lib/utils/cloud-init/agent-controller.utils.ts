@@ -88,7 +88,6 @@ export function buildAgentControllerCloudInitConfigFromRequest(
   const encryptionKey = randomBytes(32).toString('base64');
   const jwtSecret = randomBytes(32).toString('hex');
   const fqdn = `${hostname}.${baseDomain}`;
-
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
 
@@ -198,7 +197,6 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `RATE_LIMIT_TTL: ${config.backend?.rateLimit?.ttl ?? '60'}`,
     `RATE_LIMIT_LIMIT: ${config.backend?.rateLimit?.limit ?? '100'}`,
   ]);
-
   const frontendEnv = formatEnv([
     // Frontend web server configuration
     `HOST: ${config.frontend?.host ?? '0.0.0.0'}`,
@@ -206,7 +204,6 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
     `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
   ]);
-
   const frontendConfig: any = {
     production: true,
     controller: {
@@ -236,7 +233,6 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
       termsUrl: 'https://www.agenstra.com/legal/terms',
     },
   };
-
   const dockerCompose = `services:
   postgres:
     image: postgres:16-alpine
@@ -309,7 +305,6 @@ networks:
   agent-controller-network:
     driver: bridge
 `;
-
   const nginxBootstrapConfig = `
 server {
     listen ${config.proxy?.httpPort ?? '80'};
@@ -381,7 +376,6 @@ server {
     }
 }
 `;
-
   const nginxLetsEncryptConfig = `
 server {
     listen ${config.proxy?.httpPort ?? '80'};
@@ -453,7 +447,6 @@ server {
     }
 }
 `;
-
   const sshConfig = `
 Include /etc/ssh/sshd_config.d/*.conf
 PermitRootLogin yes
@@ -465,7 +458,6 @@ PrintMotd no
 AcceptEnv LANG LC_*
 Subsystem       sftp    /usr/lib/openssh/sftp-server
 `;
-
   const script = `#!/bin/bash
 set -euo pipefail
 

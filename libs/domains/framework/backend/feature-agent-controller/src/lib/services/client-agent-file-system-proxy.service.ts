@@ -7,10 +7,12 @@ import {
   type AgentFileManagerContext,
   WriteFileDto,
 } from '@forepath/framework/backend/feature-agent-manager';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientsService } from './clients.service';
 
 /**
@@ -39,9 +41,11 @@ export class ClientAgentFileSystemProxyService {
       if (!clientEntity.apiKey) {
         throw new BadRequestException('API key is not configured for this client');
       }
+
       return `Bearer ${clientEntity.apiKey}`;
     } else if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
       const token = await this.clientsService.getAccessToken(clientId);
+
       return `Bearer ${token}`;
     } else {
       throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
@@ -56,6 +60,7 @@ export class ClientAgentFileSystemProxyService {
   private buildAgentFilesApiUrl(endpoint: string, agentId: string): string {
     // Remove trailing slash if present
     const baseUrl = endpoint.replace(/\/$/, '');
+
     // Ensure /api/agents/{agentId}/files path
     return `${baseUrl}/api/agents/${agentId}/files`;
   }
@@ -98,6 +103,7 @@ export class ClientAgentFileSystemProxyService {
       // Handle error responses
       if (response.status >= 400) {
         const errorMessage = (response.data as { message?: string })?.message || 'Request failed';
+
         this.logger.error(
           `Request to ${baseUrl}${config.url || ''} failed with status ${response.status}: ${errorMessage}`,
         );
@@ -118,9 +124,11 @@ export class ClientAgentFileSystemProxyService {
       }
 
       const axiosError = error as AxiosError;
+
       if (axiosError.response) {
         const errorMessage =
           (axiosError.response.data as { message?: string })?.message || axiosError.message || 'Request failed';
+
         this.logger.error(`Request to ${baseUrl}${config.url || ''} failed: ${errorMessage}`, axiosError.response.data);
 
         if (axiosError.response.status === 404) {
@@ -154,6 +162,7 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
   ): Promise<FileContentDto> {
     const encodedPath = encodeURIComponent(filePath);
+
     return await this.makeRequest<FileContentDto>(clientId, agentId, {
       method: 'GET',
       url: `/${encodedPath}`,
@@ -176,6 +185,7 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeURIComponent(filePath);
+
     await this.makeRequest<void>(clientId, agentId, {
       method: 'PUT',
       url: `/${encodedPath}`,
@@ -198,12 +208,15 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
   ): Promise<FileNodeDto[]> {
     const params: Record<string, string> = {};
+
     if (path) {
       params.path = path;
     }
+
     if (context === 'config') {
       params.context = 'config';
     }
+
     return await this.makeRequest<FileNodeDto[]>(clientId, agentId, {
       method: 'GET',
       params: Object.keys(params).length ? params : undefined,
@@ -225,6 +238,7 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeURIComponent(filePath);
+
     await this.makeRequest<void>(clientId, agentId, {
       method: 'POST',
       url: `/${encodedPath}`,
@@ -246,6 +260,7 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeURIComponent(filePath);
+
     await this.makeRequest<void>(clientId, agentId, {
       method: 'DELETE',
       url: `/${encodedPath}`,
@@ -268,6 +283,7 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeURIComponent(sourcePath);
+
     await this.makeRequest<void>(clientId, agentId, {
       method: 'PATCH',
       url: `/${encodedPath}`,

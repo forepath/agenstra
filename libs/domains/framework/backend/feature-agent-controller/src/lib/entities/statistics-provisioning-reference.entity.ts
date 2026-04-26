@@ -1,3 +1,4 @@
+import { createAes256GcmTransformer } from '@forepath/shared/backend';
 import {
   Column,
   CreateDateColumn,
@@ -8,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { createAes256GcmTransformer } from '@forepath/shared/backend';
+
 import { StatisticsClientEntity } from './statistics-client.entity';
 
 /**

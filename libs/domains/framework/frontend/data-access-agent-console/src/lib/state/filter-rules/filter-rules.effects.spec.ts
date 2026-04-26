@@ -1,5 +1,7 @@
 import { of, throwError } from 'rxjs';
+
 import { FilterRulesService } from '../../services/filter-rules.service';
+
 import {
   loadFilterRules,
   loadFilterRulesBatch,
@@ -29,6 +31,7 @@ describe('FilterRulesEffects', () => {
   describe('loadFilterRules$', () => {
     it('dispatches success with empty list when API returns no rows', (done) => {
       const svc = { list: jest.fn().mockReturnValue(of([])) } as unknown as FilterRulesService;
+
       loadFilterRules$(of(loadFilterRules()), svc).subscribe((result) => {
         expect(result).toEqual(loadFilterRulesSuccess({ rules: [] }));
         expect(svc.list).toHaveBeenCalledWith({ limit: 10, offset: 0 });
@@ -39,6 +42,7 @@ describe('FilterRulesEffects', () => {
     it('dispatches success when first page is partial', (done) => {
       const rules = [mockRule('a')];
       const svc = { list: jest.fn().mockReturnValue(of(rules)) } as unknown as FilterRulesService;
+
       loadFilterRules$(of(loadFilterRules()), svc).subscribe((result) => {
         expect(result).toEqual(loadFilterRulesSuccess({ rules }));
         expect(svc.list).toHaveBeenCalledWith({ limit: 10, offset: 0 });
@@ -49,6 +53,7 @@ describe('FilterRulesEffects', () => {
     it('dispatches loadFilterRulesBatch when first page is full', (done) => {
       const rules = Array.from({ length: 10 }, (_, i) => mockRule(`id-${i}`));
       const svc = { list: jest.fn().mockReturnValue(of(rules)) } as unknown as FilterRulesService;
+
       loadFilterRules$(of(loadFilterRules()), svc).subscribe((result) => {
         expect(result).toEqual(loadFilterRulesBatch({ offset: 10, accumulatedRules: rules }));
         expect(svc.list).toHaveBeenCalledWith({ limit: 10, offset: 0 });
@@ -60,6 +65,7 @@ describe('FilterRulesEffects', () => {
       const svc = {
         list: jest.fn().mockReturnValue(throwError(() => new Error('network'))),
       } as unknown as FilterRulesService;
+
       loadFilterRules$(of(loadFilterRules()), svc).subscribe((result) => {
         expect(result).toEqual(loadFilterRulesFailure({ error: 'network' }));
         done();
@@ -71,6 +77,7 @@ describe('FilterRulesEffects', () => {
     it('dispatches success when next page is empty', (done) => {
       const accumulated = [mockRule('a')];
       const svc = { list: jest.fn().mockReturnValue(of([])) } as unknown as FilterRulesService;
+
       loadFilterRulesBatch$(of(loadFilterRulesBatch({ offset: 10, accumulatedRules: accumulated })), svc).subscribe(
         (result) => {
           expect(result).toEqual(loadFilterRulesSuccess({ rules: accumulated }));
@@ -84,6 +91,7 @@ describe('FilterRulesEffects', () => {
       const accumulated = Array.from({ length: 10 }, (_, i) => mockRule(`a-${i}`));
       const page = [mockRule('b')];
       const svc = { list: jest.fn().mockReturnValue(of(page)) } as unknown as FilterRulesService;
+
       loadFilterRulesBatch$(of(loadFilterRulesBatch({ offset: 10, accumulatedRules: accumulated })), svc).subscribe(
         (result) => {
           expect(result).toEqual(loadFilterRulesSuccess({ rules: [...accumulated, ...page] }));
@@ -97,6 +105,7 @@ describe('FilterRulesEffects', () => {
       const accumulated = Array.from({ length: 10 }, (_, i) => mockRule(`a-${i}`));
       const page = Array.from({ length: 10 }, (_, i) => mockRule(`b-${i}`));
       const svc = { list: jest.fn().mockReturnValue(of(page)) } as unknown as FilterRulesService;
+
       loadFilterRulesBatch$(of(loadFilterRulesBatch({ offset: 10, accumulatedRules: accumulated })), svc).subscribe(
         (result) => {
           expect(result).toEqual(loadFilterRulesBatch({ offset: 20, accumulatedRules: [...accumulated, ...page] }));

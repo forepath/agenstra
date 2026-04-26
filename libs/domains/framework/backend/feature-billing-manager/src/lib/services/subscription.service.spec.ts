@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -14,6 +15,7 @@ import {
   buildAgentManagerCloudInitUserData,
 } from '../utils/cloud-init/agent-manager.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
+
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
@@ -89,7 +91,6 @@ describe('SubscriptionService', () => {
   const cloudflareDnsService = {
     createARecord: jest.fn().mockResolvedValue(undefined),
   } as any;
-
   const completeProfile = {
     id: 'cp-1',
     userId: 'user-1',
@@ -100,12 +101,10 @@ describe('SubscriptionService', () => {
     city: 'Berlin',
     country: 'DE',
   };
-
   const customerProfilesService = {
     getByUserId: jest.fn().mockResolvedValue(completeProfile),
     isProfileComplete: jest.fn().mockReturnValue(true),
   } as unknown as CustomerProfilesService;
-
   const service = new SubscriptionService(
     plansRepository,
     typesRepository,
@@ -149,7 +148,9 @@ describe('SubscriptionService', () => {
         if (initial?.publicIp) {
           return initial.publicIp;
         }
+
         const info = await provisioningService.getServerInfo(_provider, _serverId);
+
         return info?.publicIp || undefined;
       },
     );
@@ -183,6 +184,7 @@ describe('SubscriptionService', () => {
     (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
 
     const result = await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' });
+
     expect(result.id).toBe('sub-1');
     expect(subscriptionsRepository.create).toHaveBeenCalled();
     expect(itemsRepository.create).toHaveBeenCalled();

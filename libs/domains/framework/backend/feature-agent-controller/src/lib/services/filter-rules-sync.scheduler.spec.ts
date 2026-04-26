@@ -1,6 +1,6 @@
-import { FilterRulesService } from './filter-rules.service';
-import { FilterRulesSyncService } from './filter-rules-sync.service';
 import { FilterRulesSyncScheduler } from './filter-rules-sync.scheduler';
+import { FilterRulesSyncService } from './filter-rules-sync.service';
+import { FilterRulesService } from './filter-rules.service';
 
 describe('FilterRulesSyncScheduler', () => {
   const syncService = { processBatch: jest.fn() };
@@ -22,6 +22,7 @@ describe('FilterRulesSyncScheduler', () => {
   it('runs processBatch then reconcileAllGlobalRules on tick', async () => {
     syncService.processBatch.mockResolvedValue(3);
     const scheduler = createScheduler();
+
     await scheduler.tick();
     expect(syncService.processBatch).toHaveBeenCalled();
     expect(filterRulesService.reconcileAllGlobalRules).toHaveBeenCalled();
@@ -32,10 +33,12 @@ describe('FilterRulesSyncScheduler', () => {
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
+
     syncService.processBatch.mockImplementation(() => gate);
     const scheduler = createScheduler();
     const first = scheduler.tick();
     const second = scheduler.tick();
+
     expect(syncService.processBatch).toHaveBeenCalledTimes(1);
     release!();
     await first;
@@ -45,6 +48,7 @@ describe('FilterRulesSyncScheduler', () => {
 
   it('allows a new tick after the previous tick finished', async () => {
     const scheduler = createScheduler();
+
     await scheduler.tick();
     await scheduler.tick();
     expect(syncService.processBatch).toHaveBeenCalledTimes(2);
@@ -53,6 +57,7 @@ describe('FilterRulesSyncScheduler', () => {
   it('still clears tickInFlight when processBatch throws', async () => {
     syncService.processBatch.mockRejectedValueOnce(new Error('db down'));
     const scheduler = createScheduler();
+
     await expect(scheduler.tick()).resolves.toBeUndefined();
     syncService.processBatch.mockResolvedValue(0);
     await scheduler.tick();

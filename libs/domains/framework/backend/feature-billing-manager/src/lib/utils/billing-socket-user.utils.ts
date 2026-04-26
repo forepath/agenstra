@@ -8,9 +8,12 @@ export function getBillingUserIdFromSocketUser(userInfo: SocketUserInfo | undefi
   if (!userInfo) {
     return null;
   }
+
   if (userInfo.isApiKeyAuth) {
     return null;
   }
+
   const id = userInfo.userId ?? userInfo.user?.id;
+
   return id ?? null;
 }

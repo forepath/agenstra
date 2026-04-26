@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type { CustomerProfileDto, CustomerProfileResponse } from '../types/billing.types';
+
 import { CustomerProfileService } from './customer-profile.service';
 
 describe('CustomerProfileService', () => {
   let service: CustomerProfileService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockProfile: CustomerProfileResponse = {
     id: 'cp-1',
     userId: 'user-1',
@@ -50,6 +51,7 @@ describe('CustomerProfileService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/customer-profile`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockProfile);
     });
@@ -66,6 +68,7 @@ describe('CustomerProfileService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/customer-profile`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(updated);

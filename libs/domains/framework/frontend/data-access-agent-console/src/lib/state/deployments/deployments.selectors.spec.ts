@@ -1,4 +1,4 @@
-import { createFeatureSelector } from '@ngrx/store';
+import { initialDeploymentsState, type DeploymentsState } from './deployments.reducer';
 import {
   selectBranches,
   selectCancelingRun,
@@ -11,8 +11,8 @@ import {
   selectJobLogs,
   selectJobs,
   selectJobsByStatus,
-  selectLoadingDeploymentBranches,
   selectLoadingConfiguration,
+  selectLoadingDeploymentBranches,
   selectLoadingJobLogs,
   selectLoadingRepositories,
   selectLoadingRunJobs,
@@ -30,7 +30,6 @@ import {
   selectUpdatingConfiguration,
   selectWorkflows,
 } from './deployments.selectors';
-import { initialDeploymentsState, type DeploymentsState } from './deployments.reducer';
 import type { Branch, DeploymentConfiguration, DeploymentRun, Job, Repository, Workflow } from './deployments.types';
 
 describe('Deployments Selectors', () => {
@@ -44,7 +43,6 @@ describe('Deployments Selectors', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockRepository: Repository = {
     id: 'repo-1',
     name: 'test-repo',
@@ -53,13 +51,11 @@ describe('Deployments Selectors', () => {
     url: 'https://github.com/owner/test-repo',
     private: false,
   };
-
   const mockBranch: Branch = {
     name: 'main',
     sha: 'abc123',
     default: true,
   };
-
   const mockWorkflow: Workflow = {
     id: 'workflow-1',
     name: 'CI Workflow',
@@ -67,7 +63,6 @@ describe('Deployments Selectors', () => {
     state: 'active',
     canTrigger: true,
   };
-
   const mockRun: DeploymentRun = {
     id: 'run-1',
     configurationId: 'config-1',
@@ -85,7 +80,6 @@ describe('Deployments Selectors', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockJob: Job = {
     id: 'job-1',
     name: 'Build',
@@ -94,7 +88,6 @@ describe('Deployments Selectors', () => {
     startedAt: new Date('2024-01-01'),
     completedAt: new Date('2024-01-01'),
   };
-
   const createState = (overrides?: Partial<DeploymentsState>): DeploymentsState => ({
     ...initialDeploymentsState,
     ...overrides,

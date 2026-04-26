@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { CustomerProfilesService } from './customer-profiles.service';
 import { InvoiceNinjaService } from './invoice-ninja.service';
 
@@ -8,7 +9,6 @@ const mockClient = { post: mockPost, put: mockPut, get: jest.fn() };
 
 describe('InvoiceNinjaService', () => {
   const invoiceRefsRepository = { findBySubscription: jest.fn(), create: jest.fn() } as any;
-
   let customerProfilesService: jest.Mocked<CustomerProfilesService>;
   let createSpy: jest.SpyInstance;
 
@@ -37,6 +37,7 @@ describe('InvoiceNinjaService', () => {
       customerProfilesService as unknown as CustomerProfilesService,
     );
     const result = await service.syncCustomerProfile('user-1');
+
     expect(result).toBeNull();
     expect(mockPost).not.toHaveBeenCalled();
     expect(mockPut).not.toHaveBeenCalled();
@@ -58,9 +59,11 @@ describe('InvoiceNinjaService', () => {
       customerProfilesService as unknown as CustomerProfilesService,
     );
     const result = await service.syncCustomerProfile('user-1');
+
     expect(result).toBe('new-client-1');
     expect(mockPost).toHaveBeenCalledTimes(1);
     const payload = mockPost.mock.calls[0][1];
+
     expect(payload.country_id).toBe(276);
   });
 
@@ -79,8 +82,10 @@ describe('InvoiceNinjaService', () => {
       invoiceRefsRepository,
       customerProfilesService as unknown as CustomerProfilesService,
     );
+
     await service.syncCustomerProfile('user-1');
     const payload = mockPost.mock.calls[0][1];
+
     expect(payload.country_id).toBe(840);
   });
 
@@ -101,10 +106,12 @@ describe('InvoiceNinjaService', () => {
       customerProfilesService as unknown as CustomerProfilesService,
     );
     const result = await service.syncCustomerProfile('user-1');
+
     expect(result).toBe('existing-invoice-ninja-id');
     expect(mockPut).toHaveBeenCalledTimes(1);
     expect(mockPost).not.toHaveBeenCalled();
     const payload = mockPut.mock.calls[0][1];
+
     expect(payload.country_id).toBe(826);
   });
 
@@ -213,6 +220,7 @@ describe('InvoiceNinjaService', () => {
       status_id: '2',
       invitations: [{ key: 'invitation-key-123', link: '' }],
     };
+
     mockPost.mockResolvedValueOnce({ data: unwrappedInvoiceResponse });
 
     const service = new InvoiceNinjaService(
@@ -260,6 +268,7 @@ describe('InvoiceNinjaService', () => {
         { description: 'Subscription 123', amount: 50 },
         { description: 'Subscription 456', amount: 30 },
       ];
+
       mockPost.mockResolvedValueOnce({
         data: {
           id: 'inv-acc',
@@ -315,6 +324,7 @@ describe('InvoiceNinjaService', () => {
         customerProfilesService as unknown as CustomerProfilesService,
       );
       const result = await service.getInvoiceDetailsForSync('inv-1');
+
       expect(result?.balance).toBe(99.99);
     });
 
@@ -331,6 +341,7 @@ describe('InvoiceNinjaService', () => {
         customerProfilesService as unknown as CustomerProfilesService,
       );
       const result = await service.getInvoiceDetailsForSync('inv-1');
+
       expect(result?.balance).toBe(42.5);
     });
   });
@@ -350,6 +361,7 @@ describe('InvoiceNinjaService', () => {
         customerProfilesService as unknown as CustomerProfilesService,
       );
       const result = await service.getInvoiceClientLink('inv-1');
+
       expect(result).toBe('https://app.invoiceninja.com/client/invoice/abc123');
     });
 
@@ -360,6 +372,7 @@ describe('InvoiceNinjaService', () => {
         customerProfilesService as unknown as CustomerProfilesService,
       );
       const result = await service.getInvoiceClientLink('inv-missing');
+
       expect(result).toBeNull();
     });
   });

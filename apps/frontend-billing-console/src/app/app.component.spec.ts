@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
+
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
@@ -22,6 +23,7 @@ describe('AppComponent', () => {
   it(`should have as title 'frontend-billing-console'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
+
     expect(app.title).toEqual('frontend-billing-console');
   });
 });

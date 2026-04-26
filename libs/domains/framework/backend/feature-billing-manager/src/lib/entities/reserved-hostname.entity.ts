@@ -1,4 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { SubscriptionItemEntity } from './subscription-item.entity';
 
 /**

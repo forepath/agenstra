@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
+
 import { ConfigService } from './config.service';
 
 describe('ConfigService', () => {
   let service: ConfigService;
   let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
-
   const mockProvider = {
     getType: jest.fn().mockReturnValue('cursor'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
@@ -25,7 +26,6 @@ describe('ConfigService', () => {
     getModelsListCommand: jest.fn().mockReturnValue(undefined),
     toModelsList: jest.fn().mockReturnValue(undefined),
   };
-
   const mockAgentProviderFactory = {
     getRegisteredTypes: jest.fn(),
     getProvider: jest.fn().mockReturnValue(mockProvider),
@@ -72,6 +72,7 @@ describe('ConfigService', () => {
   describe('getAvailableAgentTypes', () => {
     it('should return array of agent types with display names', () => {
       const agentTypes = ['cursor'];
+
       agentProviderFactory.getRegisteredTypes.mockReturnValue(agentTypes);
 
       const result = service.getAvailableAgentTypes();
@@ -122,8 +123,8 @@ describe('ConfigService', () => {
         getModelsListCommand: jest.fn().mockReturnValue(undefined),
         toModelsList: jest.fn().mockReturnValue(undefined),
       };
-
       const agentTypes = ['cursor', 'openai', 'anthropic'];
+
       agentProviderFactory.getRegisteredTypes.mockReturnValue(agentTypes);
       agentProviderFactory.getProvider
         .mockReturnValueOnce(mockProvider)

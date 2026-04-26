@@ -3,6 +3,7 @@ import { TicketAutomationEntity, TicketVerifierProfileJson } from './ticket-auto
 describe('TicketAutomationEntity', () => {
   it('should create an instance', () => {
     const entity = new TicketAutomationEntity();
+
     expect(entity).toBeDefined();
   });
 
@@ -11,6 +12,7 @@ describe('TicketAutomationEntity', () => {
       commands: [{ cmd: 'npm test', cwd: '/app' }],
     };
     const entity = new TicketAutomationEntity();
+
     entity.ticketId = 'ticket-uuid';
     entity.eligible = true;
     entity.allowedAgentIds = ['agent-uuid'];

@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+
 import {
   clearSelectedClientAgent,
   createClientAgent,
@@ -125,7 +126,6 @@ function updateClientState(
     restarting: state.restarting[clientId] || false,
     error: state.errors[clientId] || null,
   };
-
   const updates = updater(clientState);
 
   return {
@@ -223,6 +223,7 @@ export const agentsReducer = createReducer(
         existingIndex >= 0
           ? clientState.agents.map((a) => (a.id === agent.id ? agent : a))
           : [...clientState.agents, agent];
+
       return {
         agents,
         selectedAgent: agent,
@@ -239,6 +240,7 @@ export const agentsReducer = createReducer(
   ),
   on(loadClientAgentModels, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loadingAgentModels: { ...state.loadingAgentModels, [key]: true },
@@ -247,6 +249,7 @@ export const agentsReducer = createReducer(
   }),
   on(loadClientAgentModelsSuccess, (state, { clientId, agentId, models }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       agentModels: { ...state.agentModels, [key]: models },
@@ -256,6 +259,7 @@ export const agentsReducer = createReducer(
   }),
   on(loadClientAgentModelsFailure, (state, { clientId, agentId, error }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loadingAgentModels: { ...state.loadingAgentModels, [key]: false },
@@ -272,7 +276,8 @@ export const agentsReducer = createReducer(
   ),
   on(createClientAgentSuccess, (state, { clientId, agent }) => {
     // Strip password from CreateAgentResponseDto to store as AgentResponseDto
-    const { password, ...agentResponse } = agent;
+    const { ...agentResponse } = agent;
+
     return updateClientState(state, clientId, (clientState) => ({
       agents: [...clientState.agents, agentResponse],
       selectedAgent: agentResponse,
@@ -327,6 +332,7 @@ export const agentsReducer = createReducer(
     const { [key]: _removedModels, ...agentModels } = next.agentModels;
     const { [key]: _removedLoading, ...loadingAgentModels } = next.loadingAgentModels;
     const { [key]: _removedErrors, ...agentModelsErrors } = next.agentModelsErrors;
+
     return { ...next, agentModels, loadingAgentModels, agentModelsErrors };
   }),
   on(deleteClientAgentFailure, (state, { clientId, error }) =>
@@ -411,6 +417,7 @@ export const agentsReducer = createReducer(
   // Load Client Agent Commands
   on(loadClientAgentCommands, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loadingCommands: { ...state.loadingCommands, [key]: true },
@@ -418,6 +425,7 @@ export const agentsReducer = createReducer(
   }),
   on(loadClientAgentCommandsSuccess, (state, { clientId, agentId, commands }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       commands: { ...state.commands, [key]: commands },
@@ -426,6 +434,7 @@ export const agentsReducer = createReducer(
   }),
   on(loadClientAgentCommandsFailure, (state, { clientId, agentId }) => {
     const key = getClientAgentKey(clientId, agentId);
+
     return {
       ...state,
       loadingCommands: { ...state.loadingCommands, [key]: false },

@@ -1,5 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { ENVIRONMENT, loadRuntimeEnvironment } from '@forepath/framework/frontend/util-configuration';
+
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 
@@ -11,10 +12,10 @@ const getWorkerUrl = (relativePath: string): URL => {
   const currentDir = new URL('.', import.meta.url);
   // Go up to workspace root: ../../
   const workspaceRoot = new URL('../../', currentDir);
+
   // Go into node_modules/monaco-editor/esm/vs/
   return new URL(`node_modules/monaco-editor/esm/vs/${relativePath}`, workspaceRoot);
 };
-
 // Lazy worker cache to avoid creating workers until they're actually needed
 const workerCache: Record<string, Worker> = {};
 
@@ -39,8 +40,8 @@ self.MonacoEnvironment = {
         html: 'language/html/html.worker.js',
         json: 'language/json/json.worker.js',
       };
-
       const workerPath = workerPaths[label] || workerPaths['editorWorkerService'];
+
       workerCache[label] = new Worker(getWorkerUrl(workerPath), { type: 'module' });
     }
 

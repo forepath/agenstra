@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import {
-  ClientAgentAutonomyResponseDto,
   TicketAutomationResponseDto,
   TicketAutomationRunResponseDto,
   TicketAutomationRunStepResponseDto,
@@ -23,8 +23,8 @@ import {
 } from '../dto/ticket-automation';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease.entity';
-import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
+import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import {
   TicketAutomationCancellationReason,
@@ -34,14 +34,15 @@ import {
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
-import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
 import {
   DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
   type TicketAutomationBranchStrategy,
 } from '../utils/ticket-automation-branch.constants';
+import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
 import { parseAndValidateVerifierProfile } from '../utils/verifier-profile.validation';
-import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
+
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
+import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
 
@@ -62,7 +63,9 @@ function normalizeDefaultBranch(value: string | null | undefined): string | null
   if (value === null || value === undefined) {
     return null;
   }
+
   const t = value.trim();
+
   return t === '' ? null : t;
 }
 
@@ -100,23 +103,29 @@ export class TicketAutomationService {
 
   private async assertTicketAccess(ticketId: string, req?: RequestWithUser): Promise<TicketEntity> {
     const ticket = await this.ticketRepo.findOne({ where: { id: ticketId } });
+
     if (!ticket) {
       throw new NotFoundException(`Ticket with ID ${ticketId} not found`);
     }
+
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, ticket.clientId, req);
+
     return ticket;
   }
 
   private resolveActor(req?: RequestWithUser): { actorType: TicketActorType; actorUserId?: string | null } {
     const info = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (info.userId) {
       return { actorType: TicketActorType.HUMAN, actorUserId: info.userId };
     }
+
     return { actorType: TicketActorType.SYSTEM, actorUserId: null };
   }
 
   async ensureRow(ticketId: string): Promise<TicketAutomationEntity> {
     let row = await this.automationRepo.findOne({ where: { ticketId } });
+
     if (!row) {
       row = await this.automationRepo.save(
         this.automationRepo.create({
@@ -129,6 +138,7 @@ export class TicketAutomationService {
         }),
       );
     }
+
     return row;
   }
 
@@ -161,6 +171,7 @@ export class TicketAutomationService {
   async getAutomation(ticketId: string, req?: RequestWithUser): Promise<TicketAutomationResponseDto> {
     await this.assertTicketAccess(ticketId, req);
     const row = await this.ensureRow(ticketId);
+
     return this.mapAutomation(row);
   }
 
@@ -171,7 +182,6 @@ export class TicketAutomationService {
   ): Promise<TicketAutomationResponseDto> {
     const ticket = await this.assertTicketAccess(ticketId, req);
     const row = await this.ensureRow(ticketId);
-
     const prevEligible = row.eligible;
     const prevRequiresApproval = row.requiresApproval;
     const prevApprovedAt = row.approvedAt;
@@ -181,43 +191,51 @@ export class TicketAutomationService {
     const prevStrategy: TicketAutomationBranchStrategy =
       row.automationBranchStrategy ?? DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY;
     const prevForce = row.forceNewAutomationBranchNextRun === true;
-
     const actuallyChanged: string[] = [];
 
     if (dto.eligible !== undefined && dto.eligible !== prevEligible) {
       row.eligible = dto.eligible;
       actuallyChanged.push('eligible');
     }
+
     if (dto.requiresApproval !== undefined && dto.requiresApproval !== prevRequiresApproval) {
       row.requiresApproval = dto.requiresApproval;
       actuallyChanged.push('requiresApproval');
     }
+
     if (dto.allowedAgentIds !== undefined) {
       const nextSorted = sortUuidList(dto.allowedAgentIds);
+
       if (JSON.stringify(nextSorted) !== JSON.stringify(prevAllowedSorted)) {
         row.allowedAgentIds = dto.allowedAgentIds;
         actuallyChanged.push('allowedAgentIds');
       }
     }
+
     if (dto.verifierProfile !== undefined) {
       const parsed = parseAndValidateVerifierProfile(dto.verifierProfile);
       const nextJson = JSON.stringify(parsed);
+
       if (nextJson !== prevVerifierJson) {
         row.verifierProfile = parsed;
         actuallyChanged.push('verifierProfile');
       }
     }
+
     if (dto.defaultBranchOverride !== undefined) {
       const nextBranch = normalizeDefaultBranch(dto.defaultBranchOverride);
+
       if (nextBranch !== prevDefaultBranch) {
         row.defaultBranchOverride = nextBranch;
         actuallyChanged.push('defaultBranchOverride');
       }
     }
+
     if (dto.automationBranchStrategy !== undefined && dto.automationBranchStrategy !== prevStrategy) {
       row.automationBranchStrategy = dto.automationBranchStrategy;
       actuallyChanged.push('automationBranchStrategy');
     }
+
     if (dto.forceNewAutomationBranchNextRun !== undefined && dto.forceNewAutomationBranchNextRun !== prevForce) {
       row.forceNewAutomationBranchNextRun = dto.forceNewAutomationBranchNextRun;
       actuallyChanged.push('forceNewAutomationBranchNextRun');
@@ -228,6 +246,7 @@ export class TicketAutomationService {
     }
 
     const shouldInvalidateState = actuallyChanged.some((k) => APPROVAL_RELEVANT_AUTOMATION_FIELDS.has(k));
+
     if (shouldInvalidateState) {
       row.approvedAt = null;
       row.approvedByUserId = null;
@@ -235,11 +254,9 @@ export class TicketAutomationService {
     }
 
     const saved = await this.automationRepo.save(row);
-
     const hadMeaningfulApproval = prevRequiresApproval === true && prevApprovedAt != null;
     const onlyDisabledApprovalRequirement =
       actuallyChanged.length === 1 && actuallyChanged[0] === 'requiresApproval' && saved.requiresApproval === false;
-
     const shouldLogApprovalInvalidated =
       hadMeaningfulApproval && shouldInvalidateState && !onlyDisabledApprovalRequirement;
 
@@ -251,6 +268,7 @@ export class TicketAutomationService {
         req,
       );
     }
+
     if (actuallyChanged.includes('requiresApproval')) {
       await this.appendActivity(
         ticketId,
@@ -259,6 +277,7 @@ export class TicketAutomationService {
         req,
       );
     }
+
     const settingsDetailFields = actuallyChanged.filter(
       (k) =>
         k === 'allowedAgentIds' ||
@@ -267,6 +286,7 @@ export class TicketAutomationService {
         k === 'automationBranchStrategy' ||
         k === 'forceNewAutomationBranchNextRun',
     );
+
     if (settingsDetailFields.length > 0) {
       await this.appendActivity(
         ticketId,
@@ -291,7 +311,9 @@ export class TicketAutomationService {
     await this.cancelRunningIfApprovalLost(ticketId, req, shouldLogApprovalInvalidated);
 
     const automationDto = this.mapAutomation(saved);
+
     this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationUpsert, automationDto);
+
     return automationDto;
   }
 
@@ -312,6 +334,7 @@ export class TicketAutomationService {
       }),
     );
     const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+
     if (t) {
       this.ticketBoardRealtime.emitToClient(
         t.clientId,
@@ -332,10 +355,13 @@ export class TicketAutomationService {
     if (!changedKeys.some((k) => TICKET_APPROVAL_INVALIDATION_FIELDS.has(k))) {
       return;
     }
+
     const row = await this.automationRepo.findOne({ where: { ticketId } });
+
     if (!row?.approvedAt) {
       return;
     }
+
     row.approvedAt = null;
     row.approvedByUserId = null;
     row.approvalBaselineTicketUpdatedAt = null;
@@ -351,8 +377,10 @@ export class TicketAutomationService {
     );
     await this.cancelRunningIfApprovalLost(ticketId, req, true);
     const refreshed = await this.automationRepo.findOne({ where: { ticketId } });
+
     if (refreshed) {
       const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+
       if (t) {
         this.ticketBoardRealtime.emitToClient(
           t.clientId,
@@ -371,9 +399,11 @@ export class TicketAutomationService {
     if (!didInvalidate) {
       return;
     }
+
     const running = await this.runRepo.find({
       where: { ticketId, status: TicketAutomationRunStatus.RUNNING },
     });
+
     for (const r of running) {
       await this.cancelRun(ticketId, r.id, req, TicketAutomationCancellationReason.APPROVAL_INVALIDATED);
     }
@@ -382,13 +412,17 @@ export class TicketAutomationService {
   async approve(ticketId: string, req?: RequestWithUser): Promise<TicketAutomationResponseDto> {
     const ticket = await this.assertTicketAccess(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!info.userId) {
       throw new ForbiddenException('Only interactive users can approve automation');
     }
+
     const row = await this.ensureRow(ticketId);
+
     if (!row.requiresApproval) {
       throw new BadRequestException('This ticket does not require approval');
     }
+
     await this.automationRepo.manager.query(
       `
       UPDATE ticket_automation ta
@@ -402,25 +436,33 @@ export class TicketAutomationService {
       [ticketId, info.userId],
     );
     const saved = await this.automationRepo.findOne({ where: { ticketId } });
+
     if (!saved) {
       throw new NotFoundException('Automation settings not found');
     }
+
     await this.appendActivity(ticketId, TicketActionType.AUTOMATION_APPROVED, { approvedByUserId: info.userId }, req);
     const dto = this.mapAutomation(saved);
+
     this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationUpsert, dto);
+
     return dto;
   }
 
   async unapprove(ticketId: string, req?: RequestWithUser): Promise<TicketAutomationResponseDto> {
     const ticket = await this.assertTicketAccess(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
+
     if (!info.userId) {
       throw new ForbiddenException('Only interactive users can unapprove automation');
     }
+
     const row = await this.ensureRow(ticketId);
+
     if (!row.requiresApproval) {
       throw new BadRequestException('This ticket does not require approval');
     }
+
     if (!row.approvedAt) {
       return this.mapAutomation(row);
     }
@@ -429,6 +471,7 @@ export class TicketAutomationService {
     row.approvedByUserId = null;
     row.approvalBaselineTicketUpdatedAt = null;
     const saved = await this.automationRepo.save(row);
+
     await this.appendActivity(
       ticketId,
       TicketActionType.AUTOMATION_UNAPPROVED,
@@ -437,7 +480,9 @@ export class TicketAutomationService {
     );
     await this.cancelRunningIfApprovalLost(ticketId, req, true);
     const dto = this.mapAutomation(saved);
+
     this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationUpsert, dto);
+
     return dto;
   }
 
@@ -447,21 +492,26 @@ export class TicketAutomationService {
       where: { ticketId },
       order: { startedAt: 'DESC' },
     });
+
     return rows.map((r) => this.mapRun(r));
   }
 
   async getRun(ticketId: string, runId: string, req?: RequestWithUser): Promise<TicketAutomationRunResponseDto> {
     await this.assertTicketAccess(ticketId, req);
     const run = await this.runRepo.findOne({ where: { id: runId, ticketId } });
+
     if (!run) {
       throw new NotFoundException('Run not found');
     }
+
     const steps = await this.stepRepo.find({
       where: { runId },
       order: { stepIndex: 'ASC' },
     });
     const dto = this.mapRun(run);
+
     dto.steps = steps.map((s) => this.mapStep(s));
+
     return dto;
   }
 
@@ -474,15 +524,19 @@ export class TicketAutomationService {
     const ticket = await this.assertTicketAccess(ticketId, req);
     const info = getUserFromRequest(req || ({} as RequestWithUser));
     const run = await this.runRepo.findOne({ where: { id: runId, ticketId } });
+
     if (!run) {
       throw new NotFoundException('Run not found');
     }
+
     if (run.status !== TicketAutomationRunStatus.PENDING && run.status !== TicketAutomationRunStatus.RUNNING) {
       return this.mapRun(run);
     }
+
     if (reason === TicketAutomationCancellationReason.USER_REQUEST && !info.userId) {
       throw new ForbiddenException('User context required to cancel');
     }
+
     run.status = TicketAutomationRunStatus.CANCELLED;
     run.finishedAt = new Date();
     run.cancellationReason = reason;
@@ -491,6 +545,7 @@ export class TicketAutomationService {
     await this.runRepo.save(run);
 
     const lease = await this.leaseRepo.findOne({ where: { ticketId } });
+
     if (lease && lease.status === TicketAutomationLeaseStatus.ACTIVE) {
       lease.status = TicketAutomationLeaseStatus.RELEASED;
       await this.leaseRepo.save(lease);
@@ -500,8 +555,10 @@ export class TicketAutomationService {
       ticket.status = run.ticketStatusBefore as TicketStatus;
       await this.ticketRepo.save(ticket);
       const automationRow = await this.automationRepo.findOne({ where: { ticketId } });
+
       if (automationRow?.approvedAt) {
         const u = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['updatedAt'] });
+
         if (u) {
           await this.automationRepo.update({ ticketId }, { approvalBaselineTicketUpdatedAt: u.updatedAt });
         }
@@ -517,6 +574,7 @@ export class TicketAutomationService {
     );
     this.ticketAutomationChatSync.emitLiveRunUpdateFromEntity(run);
     const autoFresh = await this.automationRepo.findOne({ where: { ticketId } });
+
     if (autoFresh) {
       this.ticketBoardRealtime.emitToClient(
         ticket.clientId,
@@ -524,6 +582,7 @@ export class TicketAutomationService {
         this.mapAutomation(autoFresh),
       );
     }
+
     await this.ticketsService.emitBoardTicketSnapshotInternal(ticketId);
 
     return this.mapRun(run);

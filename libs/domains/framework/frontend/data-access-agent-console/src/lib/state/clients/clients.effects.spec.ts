@@ -4,7 +4,9 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { of, throwError } from 'rxjs';
+
 import { ClientsService } from '../../services/clients.service';
+
 import {
   addClientUser,
   addClientUserFailure,
@@ -62,7 +64,6 @@ describe('ClientsEffects', () => {
   let actions$: Actions;
   let clientsService: jest.Mocked<ClientsService>;
   let store: jest.Mocked<Store>;
-
   const mockClient: ClientResponseDto = {
     id: 'client-1',
     name: 'Test Client',
@@ -78,13 +79,11 @@ describe('ClientsEffects', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockAutoProvisionedClient: ClientResponseDto = {
     ...mockClient,
     id: 'client-2',
     isAutoProvisioned: true,
   };
-
   const mockCreateClientResponse: CreateClientResponseDto = {
     ...mockClient,
     apiKey: 'generated-api-key',
@@ -583,8 +582,10 @@ describe('ClientsEffects', () => {
         // selectClientById creates a selector that finds a client by id
         if (typeof selector === 'function') {
           const result = selector(mockState);
+
           return of(result);
         }
+
         return of(null);
       });
 
@@ -592,6 +593,7 @@ describe('ClientsEffects', () => {
         if (clientId === 'client-2') {
           return of(mockServerInfo2);
         }
+
         return of(mockServerInfo);
       });
 
@@ -604,6 +606,7 @@ describe('ClientsEffects', () => {
       loadServerInfo$(actions$, clientsService, store).subscribe({
         next: (result) => {
           results.push(result);
+
           if (results.length === 2) {
             expect(results).toContainEqual(outcomes[0]);
             expect(results).toContainEqual(outcomes[1]);

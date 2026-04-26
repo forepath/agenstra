@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
+
 import { ServiceTypeEntity } from './service-type.entity';
 
 /** Ordered icon + text line for catalog / ordering UIs (icon is an opaque client-defined key). */

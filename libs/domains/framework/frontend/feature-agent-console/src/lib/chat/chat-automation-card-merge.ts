@@ -16,9 +16,11 @@ function pickNewerChatRunSummary(
 ): TicketAutomationRunChatRunSummary {
   const baseT = Date.parse(base.updatedAt);
   const cacheT = Date.parse(cached.updatedAt);
+
   if (!Number.isNaN(cacheT) && (Number.isNaN(baseT) || cacheT >= baseT)) {
     return ticketAutomationRunResponseDtoToChatRunSummary(cached);
   }
+
   return base;
 }
 
@@ -63,5 +65,6 @@ export function mergeTicketAutomationChatCardPayload(
   if (chatTicketSummaryEqual(ticket, base.ticket) && chatRunSummaryEqual(run, base.run)) {
     return base;
   }
+
   return { ...base, ticket, run };
 }

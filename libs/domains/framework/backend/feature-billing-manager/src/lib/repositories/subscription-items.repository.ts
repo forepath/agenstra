@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { SubscriptionItemEntity } from '../entities/subscription-item.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
 
@@ -13,24 +14,31 @@ export class SubscriptionItemsRepository {
 
   async create(dto: Partial<SubscriptionItemEntity>): Promise<SubscriptionItemEntity> {
     const entity = this.repository.create(dto);
+
     return await this.repository.save(entity);
   }
 
   async updateProviderReference(id: string, providerReference: string): Promise<SubscriptionItemEntity> {
     const entity = await this.repository.findOne({ where: { id } });
+
     if (!entity) {
       throw new Error(`Subscription item ${id} not found`);
     }
+
     entity.providerReference = providerReference;
+
     return await this.repository.save(entity);
   }
 
   async updateProvisioningStatus(id: string, status: 'pending' | 'active' | 'failed'): Promise<SubscriptionItemEntity> {
     const entity = await this.repository.findOne({ where: { id } });
+
     if (!entity) {
       throw new Error(`Subscription item ${id} not found`);
     }
+
     entity.provisioningStatus = status as any;
+
     return await this.repository.save(entity);
   }
 
@@ -50,28 +58,37 @@ export class SubscriptionItemsRepository {
 
   async updateServerInfoSnapshot(id: string, snapshot: Record<string, unknown>): Promise<SubscriptionItemEntity> {
     const entity = await this.repository.findOne({ where: { id } });
+
     if (!entity) {
       throw new Error(`Subscription item ${id} not found`);
     }
+
     entity.serverInfoSnapshot = snapshot;
+
     return await this.repository.save(entity);
   }
 
   async updateHostname(id: string, hostname: string | null): Promise<SubscriptionItemEntity> {
     const entity = await this.repository.findOne({ where: { id } });
+
     if (!entity) {
       throw new Error(`Subscription item ${id} not found`);
     }
+
     entity.hostname = hostname ?? undefined;
+
     return await this.repository.save(entity);
   }
 
   async updateSshPrivateKey(id: string, privateKeyPlain: string): Promise<SubscriptionItemEntity> {
     const entity = await this.repository.findOne({ where: { id } });
+
     if (!entity) {
       throw new Error(`Subscription item ${id} not found`);
     }
+
     entity.sshPrivateKey = privateKeyPlain;
+
     return await this.repository.save(entity);
   }
 

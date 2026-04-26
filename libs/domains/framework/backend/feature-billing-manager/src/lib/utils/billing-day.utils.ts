@@ -8,7 +8,9 @@ export function getEffectiveBillingDay(createdAt: Date, billingDayOfMonth?: numb
   if (billingDayOfMonth != null && billingDayOfMonth >= 1 && billingDayOfMonth <= MAX_BILLING_DAY) {
     return billingDayOfMonth;
   }
+
   const day = createdAt.getUTCDate();
+
   return day > MAX_BILLING_DAY ? MAX_BILLING_DAY : day;
 }
 
@@ -18,5 +20,6 @@ export function getEffectiveBillingDay(createdAt: Date, billingDayOfMonth?: numb
 export function getTodayBillingDay(): number {
   const now = new Date();
   const day = now.getUTCDate();
+
   return day > MAX_BILLING_DAY ? MAX_BILLING_DAY : day;
 }

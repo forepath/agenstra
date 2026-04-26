@@ -1,17 +1,20 @@
 jest.mock('@forepath/identity/backend', () => {
   const actual = jest.requireActual('@forepath/identity/backend') as Record<string, unknown>;
+
   return {
     ...actual,
     getUserFromRequest: jest.fn(),
   };
 });
 
-import { ForbiddenException } from '@nestjs/common';
 import * as identity from '@forepath/identity/backend';
+import { ForbiddenException } from '@nestjs/common';
+
 import { CreateFilterRuleDto } from '../dto/filter-rules/create-filter-rule.dto';
 import { FilterRuleResponseDto } from '../dto/filter-rules/filter-rule-response.dto';
 import { UpdateFilterRuleDto } from '../dto/filter-rules/update-filter-rule.dto';
 import { FilterRulesService } from '../services/filter-rules.service';
+
 import { FilterRulesController } from './filter-rules.controller';
 
 const getUserFromRequestMock = identity.getUserFromRequest as jest.MockedFunction<typeof identity.getUserFromRequest>;
@@ -24,11 +27,8 @@ describe('FilterRulesController', () => {
     update: jest.fn(),
     delete: jest.fn(),
   } as unknown as FilterRulesService;
-
   let controller: FilterRulesController;
-
   const adminReq = {} as Parameters<FilterRulesController['list']>[0];
-
   const sampleRule: FilterRuleResponseDto = {
     id: '11111111-1111-1111-1111-111111111111',
     pattern: 'x',
@@ -80,6 +80,7 @@ describe('FilterRulesController', () => {
     it('uses default limit and offset', async () => {
       (mockService.findAll as jest.Mock).mockResolvedValue([sampleRule]);
       const result = await controller.list(adminReq, undefined, undefined);
+
       expect(result).toEqual([sampleRule]);
       expect(mockService.findAll).toHaveBeenCalledWith(10, 0);
     });
@@ -95,6 +96,7 @@ describe('FilterRulesController', () => {
     it('returns a single rule', async () => {
       (mockService.findOne as jest.Mock).mockResolvedValue(sampleRule);
       const result = await controller.getOne(sampleRule.id, adminReq);
+
       expect(result).toEqual(sampleRule);
       expect(mockService.findOne).toHaveBeenCalledWith(sampleRule.id);
     });
@@ -108,8 +110,10 @@ describe('FilterRulesController', () => {
         filterType: 'none',
         isGlobal: true,
       };
+
       (mockService.create as jest.Mock).mockResolvedValue(sampleRule);
       const result = await controller.create(dto, adminReq);
+
       expect(result).toEqual(sampleRule);
       expect(mockService.create).toHaveBeenCalledWith(dto);
     });
@@ -119,8 +123,10 @@ describe('FilterRulesController', () => {
     it('delegates to service', async () => {
       const dto: UpdateFilterRuleDto = { enabled: false };
       const updated = { ...sampleRule, enabled: false };
+
       (mockService.update as jest.Mock).mockResolvedValue(updated);
       const result = await controller.update(sampleRule.id, dto, adminReq);
+
       expect(result).toEqual(updated);
       expect(mockService.update).toHaveBeenCalledWith(sampleRule.id, dto);
     });

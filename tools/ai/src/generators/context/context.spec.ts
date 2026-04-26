@@ -1,7 +1,9 @@
-import { addProjectConfiguration } from '@nx/devkit';
-import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { addProjectConfiguration } from '@nx/devkit';
+import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
+
 import { contextGenerator } from './context';
 
 describe('context generator', () => {
@@ -9,6 +11,7 @@ describe('context generator', () => {
     const base = path.join(process.cwd(), 'tmp-context-gen-' + Date.now());
     const agenstraDir = path.join(base, '.agenstra');
     const rulesDir = path.join(agenstraDir, 'rules');
+
     fs.mkdirSync(rulesDir, { recursive: true });
     fs.writeFileSync(
       path.join(agenstraDir, 'metadata.json'),
@@ -19,6 +22,7 @@ describe('context generator', () => {
 
     const tree = createTreeWithEmptyWorkspace();
     const relativeBase = path.relative(process.cwd(), base);
+
     tree.write(
       path.join(relativeBase, '.agenstra/metadata.json'),
       JSON.stringify({ version: '1.0', appName: 'test-app' }),
@@ -39,6 +43,7 @@ describe('context generator', () => {
     const base = path.join(process.cwd(), 'tmp-context-gen-' + Date.now());
     const agenstraDir = path.join(base, '.agenstra');
     const rulesDir = path.join(agenstraDir, 'rules');
+
     fs.mkdirSync(rulesDir, { recursive: true });
     fs.writeFileSync(
       path.join(agenstraDir, 'metadata.json'),
@@ -49,6 +54,7 @@ describe('context generator', () => {
 
     const tree = createTreeWithEmptyWorkspace();
     const relativeBase = path.relative(process.cwd(), base);
+
     tree.write(
       path.join(relativeBase, '.agenstra/metadata.json'),
       JSON.stringify({ version: '1.0', appName: 'test-app' }),
@@ -62,6 +68,7 @@ describe('context generator', () => {
     });
 
     const cursorRulePath = path.join(relativeBase, 'generated/.cursor/rules/main.mdc');
+
     expect(tree.exists(cursorRulePath)).toBe(true);
     expect(tree.read(cursorRulePath, 'utf-8')).toContain('# Main');
 
@@ -77,6 +84,7 @@ describe('context generator', () => {
   it('should default to all targets when project is set and target omitted', async () => {
     const base = path.join(process.cwd(), 'tmp-context-gen-project-' + Date.now());
     const agenstraDir = path.join(base, '.agenstra');
+
     fs.mkdirSync(agenstraDir, { recursive: true });
     fs.writeFileSync(
       path.join(agenstraDir, 'metadata.json'),
@@ -86,6 +94,7 @@ describe('context generator', () => {
 
     const tree = createTreeWithEmptyWorkspace();
     const relativeBase = path.relative(process.cwd(), base);
+
     addProjectConfiguration(tree, 'backend-api', {
       root: relativeBase,
       projectType: 'application',
@@ -108,6 +117,7 @@ describe('context generator', () => {
 
   it('should throw when project is set but .agenstra is missing', async () => {
     const tree = createTreeWithEmptyWorkspace();
+
     addProjectConfiguration(tree, 'backend-api', {
       root: 'apps/backend-api',
       projectType: 'application',
@@ -119,6 +129,7 @@ describe('context generator', () => {
 
   it('should pass with dryRun when .agenstra exists', async () => {
     const tree = createTreeWithEmptyWorkspace();
+
     tree.write('libs/foo/.agenstra/metadata.json', JSON.stringify({ version: '1.0', appName: 'foo' }));
 
     await expect(contextGenerator(tree, { path: 'libs/foo', dryRun: true })).resolves.toBeUndefined();

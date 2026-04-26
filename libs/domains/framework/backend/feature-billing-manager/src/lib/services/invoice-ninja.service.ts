@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError, AxiosInstance } from 'axios';
+
 import { getInvoiceNinjaCountryId } from '../maps/invoice-ninja-country-id.map';
 import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
+
 import { CustomerProfilesService } from './customer-profiles.service';
 
 interface InvoiceNinjaInvoiceResponse {
@@ -56,6 +58,7 @@ export class InvoiceNinjaService {
 
   async fetchInvoiceDetails(invoiceId: string) {
     const response = await this.client.get(`/api/v1/invoices/${invoiceId}`);
+
     return response.data;
   }
 
@@ -65,6 +68,7 @@ export class InvoiceNinjaService {
    */
   async getInvoiceClientLink(invoiceNinjaId: string): Promise<string | null> {
     const details = await this.getInvoiceDetailsForSync(invoiceNinjaId);
+
     return details?.preAuthUrl ?? null;
   }
 
@@ -80,15 +84,20 @@ export class InvoiceNinjaService {
     dueDate?: Date;
   } | null> {
     let raw: unknown;
+
     try {
       const response = await this.client.get(`/api/v1/invoices/${invoiceId}`);
+
       raw = response.data;
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
+
       if (axiosError.response?.status === 404) {
         return null;
       }
+
       this.logger.warn(`Invoice Ninja get invoice failed for ${invoiceId}: ${(error as Error).message}`);
+
       return null;
     }
 
@@ -96,7 +105,6 @@ export class InvoiceNinjaService {
       raw && typeof raw === 'object' && 'data' in raw
         ? (raw as { data?: InvoiceNinjaInvoiceResponse }).data
         : (raw as InvoiceNinjaInvoiceResponse);
-
     const status = data?.status_id != null ? String(data.status_id) : undefined;
     const invoiceNumber = data?.number != null ? String(data.number) : undefined;
     const preAuthUrl = this.resolveInvoiceClientUrl(data);
@@ -106,15 +114,18 @@ export class InvoiceNinjaService {
           ? data.balance
           : parseFloat(String(data.balance))
         : undefined;
+
     if (balance !== undefined && Number.isNaN(balance)) {
       this.logger.warn(`Invoice Ninja invoice ${invoiceId} returned invalid balance: ${data?.balance}`);
     }
+
     const balanceNum = balance !== undefined && !Number.isNaN(balance) ? balance : undefined;
     const dueDateRaw = data?.due_date;
     const dueDate =
       dueDateRaw != null && typeof dueDateRaw === 'string'
         ? (() => {
             const d = new Date(dueDateRaw);
+
             return Number.isNaN(d.getTime()) ? undefined : d;
           })()
         : undefined;
@@ -124,6 +135,7 @@ export class InvoiceNinjaService {
 
   async createInvoiceForSubscription(subscriptionId: string, userId: string, amount: number, description?: string) {
     const clientId = await this.syncCustomerProfile(userId);
+
     if (!clientId) {
       throw new Error('InvoiceNinja client not available');
     }
@@ -139,8 +151,8 @@ export class InvoiceNinjaService {
         },
       ],
     };
-
     let rawResponse: unknown;
+
     try {
       const response = await this.client.post<{ data?: InvoiceNinjaInvoiceResponse } | InvoiceNinjaInvoiceResponse>(
         '/api/v1/invoices',
@@ -151,6 +163,7 @@ export class InvoiceNinjaService {
           },
         },
       );
+
       rawResponse = response.data;
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
@@ -162,6 +175,7 @@ export class InvoiceNinjaService {
           : body?.errors
             ? JSON.stringify(body.errors)
             : axiosError.message;
+
       this.logger.warn(
         `Invoice Ninja create invoice failed: status=${status} message=${message}${body ? ` body=${JSON.stringify(body)}` : ''}`,
       );
@@ -172,9 +186,9 @@ export class InvoiceNinjaService {
       rawResponse && typeof rawResponse === 'object' && 'data' in rawResponse
         ? (rawResponse as { data?: InvoiceNinjaInvoiceResponse }).data
         : (rawResponse as InvoiceNinjaInvoiceResponse);
-
     const invoiceId = data?.id;
     const preAuthUrl = this.resolveInvoiceClientUrl(data);
+
     if (!invoiceId || !preAuthUrl) {
       this.logger.warn(
         `Invoice Ninja create response missing id or client URL (hasId=${Boolean(invoiceId)} hasInvitations=${Boolean(data?.invitations?.length)})`,
@@ -185,6 +199,7 @@ export class InvoiceNinjaService {
     const statusId = data?.status_id != null ? String(data.status_id) : undefined;
     const invoiceNumber = data?.number != null ? String(data.number) : undefined;
     const ref = await this.createInvoiceRef(subscriptionId, invoiceId, preAuthUrl, statusId, invoiceNumber);
+
     return { invoiceId, preAuthUrl, invoiceRefId: ref.id };
   }
 
@@ -198,6 +213,7 @@ export class InvoiceNinjaService {
     primarySubscriptionId: string,
   ): Promise<{ invoiceId: string; preAuthUrl: string; invoiceRefId: string }> {
     const clientId = await this.syncCustomerProfile(userId);
+
     if (!clientId) {
       throw new Error('InvoiceNinja client not available');
     }
@@ -211,8 +227,8 @@ export class InvoiceNinjaService {
         quantity: 1,
       })),
     };
-
     let rawResponse: unknown;
+
     try {
       const response = await this.client.post<{ data?: InvoiceNinjaInvoiceResponse } | InvoiceNinjaInvoiceResponse>(
         '/api/v1/invoices',
@@ -223,6 +239,7 @@ export class InvoiceNinjaService {
           },
         },
       );
+
       rawResponse = response.data;
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
@@ -234,6 +251,7 @@ export class InvoiceNinjaService {
           : body?.errors
             ? JSON.stringify(body.errors)
             : axiosError.message;
+
       this.logger.warn(
         `Invoice Ninja create invoice failed: status=${status} message=${message}${body ? ` body=${JSON.stringify(body)}` : ''}`,
       );
@@ -244,9 +262,9 @@ export class InvoiceNinjaService {
       rawResponse && typeof rawResponse === 'object' && 'data' in rawResponse
         ? (rawResponse as { data?: InvoiceNinjaInvoiceResponse }).data
         : (rawResponse as InvoiceNinjaInvoiceResponse);
-
     const invoiceId = data?.id;
     const preAuthUrl = this.resolveInvoiceClientUrl(data);
+
     if (!invoiceId || !preAuthUrl) {
       this.logger.warn(
         `Invoice Ninja create response missing id or client URL (hasId=${Boolean(invoiceId)} hasInvitations=${Boolean(data?.invitations?.length)})`,
@@ -257,6 +275,7 @@ export class InvoiceNinjaService {
     const statusId = data?.status_id != null ? String(data.status_id) : undefined;
     const invoiceNumber = data?.number != null ? String(data.number) : undefined;
     const ref = await this.createInvoiceRef(primarySubscriptionId, invoiceId, preAuthUrl, statusId, invoiceNumber);
+
     return { invoiceId, preAuthUrl, invoiceRefId: ref.id };
   }
 
@@ -264,22 +283,29 @@ export class InvoiceNinjaService {
     if (!data || typeof data !== 'object') {
       return undefined;
     }
+
     if (typeof data.url === 'string' && data.url.length > 0) {
       return data.url;
     }
+
     const firstInvitation = data.invitations?.[0];
+
     if (firstInvitation?.link && typeof firstInvitation.link === 'string' && firstInvitation.link.length > 0) {
       return firstInvitation.link;
     }
+
     if (firstInvitation?.key && typeof firstInvitation.key === 'string') {
       const base = this.baseURL.replace(/\/$/, '');
+
       return `${base}/client/invoice/${firstInvitation.key}`;
     }
+
     return undefined;
   }
 
   async syncCustomerProfile(userId: string) {
     const profile = await this.customerProfilesService.getByUserId(userId);
+
     if (!profile) {
       return null;
     }
@@ -306,6 +332,7 @@ export class InvoiceNinjaService {
         },
       ],
     };
+
     if (countryId != null) {
       payload.country_id = countryId;
     }
@@ -313,10 +340,12 @@ export class InvoiceNinjaService {
     if (profile.invoiceNinjaClientId) {
       try {
         await this.client.put(`/api/v1/clients/${profile.invoiceNinjaClientId}`, payload);
+
         return profile.invoiceNinjaClientId;
       } catch (error) {
         const axiosError = error as AxiosError;
         const response = axiosError.response;
+
         if (!response) {
           throw error;
         }
@@ -329,7 +358,6 @@ export class InvoiceNinjaService {
             : typeof (data as { message?: unknown })?.message === 'string'
               ? ((data as { message?: string }).message as string)
               : '';
-
         const isMissingRemoteClient =
           status === 404 ||
           (status === 400 && typeof message === 'string' && message.includes('No query results for model'));
@@ -343,10 +371,13 @@ export class InvoiceNinjaService {
 
     const response = await this.client.post('/api/v1/clients', payload);
     const clientId = response.data?.data?.id as string | undefined;
+
     if (clientId) {
       await this.customerProfilesService.updateInvoiceNinjaClientId(userId, clientId);
+
       return clientId;
     }
+
     return null;
   }
 }

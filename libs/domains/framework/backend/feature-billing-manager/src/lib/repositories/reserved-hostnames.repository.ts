@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { ReservedHostnameEntity } from '../entities/reserved-hostname.entity';
 
 @Injectable()
@@ -12,11 +13,13 @@ export class ReservedHostnamesRepository {
 
   async existsByHostname(hostname: string): Promise<boolean> {
     const count = await this.repository.count({ where: { hostname } });
+
     return count > 0;
   }
 
   async create(hostname: string, subscriptionItemId: string): Promise<ReservedHostnameEntity> {
     const entity = this.repository.create({ hostname, subscriptionItemId });
+
     return await this.repository.save(entity);
   }
 

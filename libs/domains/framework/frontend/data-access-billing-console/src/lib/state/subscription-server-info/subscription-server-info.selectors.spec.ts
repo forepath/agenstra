@@ -1,3 +1,5 @@
+import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
+
 import {
   initialSubscriptionServerInfoState,
   type SubscriptionServerInfoState,
@@ -10,14 +12,12 @@ import {
   selectServerInfoBySubscriptionId,
   selectSubscriptionsWithServerInfo,
 } from './subscription-server-info.selectors';
-import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
 
 describe('Subscription Server Info Selectors', () => {
   const createServerInfoState = (overrides?: Partial<SubscriptionServerInfoState>): SubscriptionServerInfoState => ({
     ...initialSubscriptionServerInfoState,
     ...overrides,
   });
-
   const mockSubscription: SubscriptionResponse = {
     id: 'sub-1',
     number: 'SUB-001',
@@ -27,7 +27,6 @@ describe('Subscription Server Info Selectors', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockServerInfo: ServerInfoResponse = {
     name: 'server-1',
     publicIp: '1.2.3.4',
@@ -39,6 +38,7 @@ describe('Subscription Server Info Selectors', () => {
       const serverInfoBySubscriptionId = { 'sub-1': mockServerInfo };
       const state = createServerInfoState({ serverInfoBySubscriptionId });
       const rootState = { subscriptionServerInfo: state };
+
       expect(selectServerInfoBySubscriptionId(rootState as never)).toEqual(serverInfoBySubscriptionId);
     });
   });
@@ -47,6 +47,7 @@ describe('Subscription Server Info Selectors', () => {
     it('should return loading', () => {
       const state = createServerInfoState({ loading: true });
       const rootState = { subscriptionServerInfo: state };
+
       expect(selectOverviewServerInfoLoading(rootState as never)).toBe(true);
     });
   });
@@ -55,6 +56,7 @@ describe('Subscription Server Info Selectors', () => {
     it('should return error', () => {
       const state = createServerInfoState({ error: 'Test error' });
       const rootState = { subscriptionServerInfo: state };
+
       expect(selectOverviewServerInfoError(rootState as never)).toBe('Test error');
     });
   });
@@ -63,6 +65,7 @@ describe('Subscription Server Info Selectors', () => {
     it('should return actionInProgress map', () => {
       const state = createServerInfoState({ actionInProgress: { 'sub-1': 'start' } });
       const rootState = { subscriptionServerInfo: state };
+
       expect(selectServerActionInProgress(rootState as never)).toEqual({ 'sub-1': 'start' });
     });
   });
@@ -71,11 +74,13 @@ describe('Subscription Server Info Selectors', () => {
     it('should return action for subscription', () => {
       const state = createServerInfoState({ actionInProgress: { 'sub-1': 'restart' } });
       const rootState = { subscriptionServerInfo: state };
+
       expect(selectServerActionInProgressForSubscriptionId('sub-1')(rootState as never)).toBe('restart');
     });
     it('should return undefined when no action in progress', () => {
       const state = createServerInfoState({ actionInProgress: {} });
       const rootState = { subscriptionServerInfo: state };
+
       expect(selectServerActionInProgressForSubscriptionId('sub-1')(rootState as never)).toBeUndefined();
     });
   });
@@ -101,6 +106,7 @@ describe('Subscription Server Info Selectors', () => {
         subscriptionServerInfo: serverInfoState,
       };
       const result = selectSubscriptionsWithServerInfo(rootState as never);
+
       expect(result).toHaveLength(1);
       expect(result[0].subscription).toEqual(mockSubscription);
       expect(result[0].serverInfo).toEqual(mockServerInfo);
@@ -128,6 +134,7 @@ describe('Subscription Server Info Selectors', () => {
         subscriptionServerInfo: serverInfoState,
       };
       const result = selectSubscriptionsWithServerInfo(rootState as never);
+
       expect(result).toHaveLength(1);
       expect(result[0].subscription.id).toBe('sub-1');
     });
@@ -152,6 +159,7 @@ describe('Subscription Server Info Selectors', () => {
         subscriptionServerInfo: serverInfoState,
       };
       const result = selectSubscriptionsWithServerInfo(rootState as never);
+
       expect(result).toHaveLength(0);
     });
 
@@ -179,6 +187,7 @@ describe('Subscription Server Info Selectors', () => {
         subscriptionServerInfo: serverInfoState,
       };
       const result = selectSubscriptionsWithServerInfo(rootState as never);
+
       expect(result).toHaveLength(1);
       expect(result[0].subscription.id).toBe('sub-1');
       expect(result[0].subscription.status).toBe('active');

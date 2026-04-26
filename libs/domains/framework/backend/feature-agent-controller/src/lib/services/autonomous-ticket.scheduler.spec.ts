@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.service';
 import { AutonomousTicketScheduler } from './autonomous-ticket.scheduler';
 
@@ -9,6 +10,7 @@ describe('AutonomousTicketScheduler', () => {
       providers: [AutonomousTicketScheduler, { provide: AutonomousRunOrchestratorService, useValue: orchestrator }],
     }).compile();
     const scheduler = module.get(AutonomousTicketScheduler);
+
     await scheduler.tick();
     expect(orchestrator.processBatch).toHaveBeenCalled();
     await module.close();
@@ -28,6 +30,7 @@ describe('AutonomousTicketScheduler', () => {
     const scheduler = module.get(AutonomousTicketScheduler);
     const first = scheduler.tick();
     const second = scheduler.tick();
+
     expect(orchestrator.processBatch).toHaveBeenCalledTimes(1);
     releaseBatch!();
     await first;
@@ -42,6 +45,7 @@ describe('AutonomousTicketScheduler', () => {
       providers: [AutonomousTicketScheduler, { provide: AutonomousRunOrchestratorService, useValue: orchestrator }],
     }).compile();
     const scheduler = module.get(AutonomousTicketScheduler);
+
     await scheduler.tick();
     await scheduler.tick();
     expect(orchestrator.processBatch).toHaveBeenCalledTimes(2);

@@ -1,14 +1,17 @@
 import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
+
 import { ProvisioningReferenceEntity } from './provisioning-reference.entity';
 
 describe('ProvisioningReferenceEntity', () => {
   it('should create an instance', () => {
     const reference = new ProvisioningReferenceEntity();
+
     expect(reference).toBeDefined();
   });
 
   it('should have all required properties', () => {
     const client = new ClientEntity();
+
     client.id = 'client-uuid';
     client.name = 'Test Client';
     client.endpoint = 'https://example.com/api';
@@ -17,6 +20,7 @@ describe('ProvisioningReferenceEntity', () => {
     client.updatedAt = new Date();
 
     const reference = new ProvisioningReferenceEntity();
+
     reference.id = 'ref-uuid';
     reference.clientId = 'client-uuid';
     reference.client = client;
@@ -44,6 +48,7 @@ describe('ProvisioningReferenceEntity', () => {
 
   it('should allow optional properties', () => {
     const reference = new ProvisioningReferenceEntity();
+
     reference.id = 'ref-uuid';
     reference.clientId = 'client-uuid';
     reference.providerType = 'hetzner';
@@ -59,6 +64,7 @@ describe('ProvisioningReferenceEntity', () => {
 
   it('should support different provider types', () => {
     const reference = new ProvisioningReferenceEntity();
+
     reference.id = 'ref-uuid';
     reference.clientId = 'client-uuid';
     reference.providerType = 'aws';
@@ -72,6 +78,7 @@ describe('ProvisioningReferenceEntity', () => {
 
   it('should handle encrypted provider metadata', () => {
     const reference = new ProvisioningReferenceEntity();
+
     reference.id = 'ref-uuid';
     reference.clientId = 'client-uuid';
     reference.providerType = 'hetzner';

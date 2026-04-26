@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { ServerInfo } from '../utils/provisioning.utils';
+
 import { DigitaloceanProvisioningService } from './digitalocean-provisioning.service';
 import { HetznerProvisioningService } from './hetzner-provisioning.service';
 
@@ -29,24 +31,30 @@ export class ProvisioningService {
     initial: ServerInfo | null | undefined,
   ): Promise<string | undefined> {
     let info = initial ?? (await this.getServerInfo(provider, serverId));
+
     if (info?.publicIp) {
       return info.publicIp;
     }
+
     if (provider !== 'digital-ocean') {
       return undefined;
     }
+
     for (let attempt = 1; attempt < DIGITALOCEAN_PUBLIC_IP_MAX_ATTEMPTS; attempt++) {
       await this.delay(DIGITALOCEAN_PUBLIC_IP_POLL_INTERVAL_MS);
       info = await this.getServerInfo(provider, serverId);
+
       if (info?.publicIp) {
         return info.publicIp;
       }
     }
+
     this.logger.warn(
       `Timed out waiting for public IPv4 on DigitalOcean droplet ${serverId} after approximately ${
         DIGITALOCEAN_PUBLIC_IP_MAX_ATTEMPTS * DIGITALOCEAN_PUBLIC_IP_POLL_INTERVAL_MS
       }ms`,
     );
+
     return undefined;
   }
 
@@ -54,6 +62,7 @@ export class ProvisioningService {
     if (provider === 'hetzner') {
       return await this.hetznerProvisioningService.provisionServer(config as never);
     }
+
     if (provider === 'digital-ocean') {
       return await this.digitaloceanProvisioningService.provisionServer(config as never);
     }
@@ -65,6 +74,7 @@ export class ProvisioningService {
     if (provider === 'hetzner') {
       await this.hetznerProvisioningService.deprovisionServer(serverId);
     }
+
     if (provider === 'digital-ocean') {
       await this.digitaloceanProvisioningService.deprovisionServer(serverId);
     }
@@ -74,6 +84,7 @@ export class ProvisioningService {
     if (provider === 'hetzner') {
       return await this.hetznerProvisioningService.getServerInfo(serverId);
     }
+
     if (provider === 'digital-ocean') {
       return await this.digitaloceanProvisioningService.getServerInfo(serverId);
     }
@@ -85,6 +96,7 @@ export class ProvisioningService {
     if (provider === 'hetzner') {
       await this.hetznerProvisioningService.startServer(serverId);
     }
+
     if (provider === 'digital-ocean') {
       await this.digitaloceanProvisioningService.startServer(serverId);
     }
@@ -94,6 +106,7 @@ export class ProvisioningService {
     if (provider === 'hetzner') {
       await this.hetznerProvisioningService.stopServer(serverId);
     }
+
     if (provider === 'digital-ocean') {
       await this.digitaloceanProvisioningService.stopServer(serverId);
     }
@@ -103,6 +116,7 @@ export class ProvisioningService {
     if (provider === 'hetzner') {
       await this.hetznerProvisioningService.restartServer(serverId);
     }
+
     if (provider === 'digital-ocean') {
       await this.digitaloceanProvisioningService.restartServer(serverId);
     }

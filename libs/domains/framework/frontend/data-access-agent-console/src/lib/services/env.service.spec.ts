@@ -1,11 +1,13 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import type {
   CreateEnvironmentVariableDto,
   EnvironmentVariableResponseDto,
   UpdateEnvironmentVariableDto,
 } from '../state/env/env.types';
+
 import { EnvService } from './env.service';
 
 describe('EnvService', () => {
@@ -14,7 +16,6 @@ describe('EnvService', () => {
   const apiUrl = 'http://localhost:3100/api';
   const clientId = 'client-1';
   const agentId = 'agent-1';
-
   const mockEnvironmentVariable: EnvironmentVariableResponseDto = {
     id: 'env-var-1',
     agentId: agentId,
@@ -61,6 +62,7 @@ describe('EnvService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/environment`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockEnvVars);
     });
@@ -75,6 +77,7 @@ describe('EnvService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/environment?limit=10&offset=20`);
+
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
@@ -92,6 +95,7 @@ describe('EnvService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/environment/count`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockCount);
     });
@@ -110,6 +114,7 @@ describe('EnvService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/environment`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
       req.flush(mockEnvironmentVariable);
@@ -130,6 +135,7 @@ describe('EnvService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/environment/${envVarId}`);
+
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(updateDto);
       req.flush(mockEnvironmentVariable);
@@ -145,6 +151,7 @@ describe('EnvService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/environment/${envVarId}`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -160,6 +167,7 @@ describe('EnvService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/environment`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(mockResponse);
     });

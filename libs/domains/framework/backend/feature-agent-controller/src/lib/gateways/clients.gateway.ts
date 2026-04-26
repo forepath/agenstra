@@ -19,6 +19,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
+
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
@@ -103,11 +104,14 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       // Auth from headers (polling) or handshake.auth (WebSocket - browser cannot send custom headers)
       const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
       const userInfo = await this.socketAuthService.validateAndGetUser(authHeader);
+
       if (!userInfo) {
         this.logger.warn(`WebSocket connection rejected: missing or invalid authorization for socket ${socket.id}`);
         next(new Error('Unauthorized'));
+
         return;
       }
+
       (socket as Socket & { data: { userInfo: typeof userInfo } }).data = { userInfo };
       next();
     });
@@ -122,11 +126,14 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.logger.log(`Client disconnected: ${socket.id}`);
     this.localSocketById.delete(socket.id);
     const prevClient = this.selectedClientBySocket.get(socket.id);
+
     if (prevClient) {
       void socket.leave(TicketBoardRealtimeService.clientRoom(prevClient));
     }
+
     this.selectedClientBySocket.delete(socket.id);
     const remote = this.remoteSocketBySocket.get(socket.id);
+
     if (remote) {
       try {
         remote.removeAllListeners();
@@ -134,8 +141,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       } catch {
         // ignore
       }
+
       this.remoteSocketBySocket.delete(socket.id);
     }
+
     this.loggedInAgentsBySocket.delete(socket.id);
     this.settingClientBySocket.delete(socket.id);
     this.remoteReconnectionState.delete(socket.id);
@@ -154,9 +163,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('setClient')
   async handleSetClient(@MessageBody() data: SetClientPayload, @ConnectedSocket() socket: Socket) {
     const clientId = data?.clientId;
+
     if (!clientId) {
       // SECURITY: Error sent only to the initiating socket, not broadcast
       socket.emit('error', { message: 'clientId is required' });
+
       return;
     }
 
@@ -167,6 +178,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     // Skip if already setting this clientId for this socket
     if (currentSettingClientId === clientId) {
       this.logger.debug(`setClient already in progress for socket ${socket.id} and clientId ${clientId}`);
+
       return;
     }
 
@@ -176,6 +188,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       void socket.join(TicketBoardRealtimeService.clientRoom(clientId));
       // Still emit success to acknowledge the request
       socket.emit('setClientSuccess', { message: 'Client context already set', clientId });
+
       return;
     }
 
@@ -185,11 +198,14 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     try {
       const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
         .data?.userInfo;
+
       if (!userInfo) {
         this.settingClientBySocket.delete(socket.id);
         socket.emit('error', { message: 'Unauthorized' });
+
         return;
       }
+
       await ensureClientAccess(
         this.clientsRepository,
         this.clientUsersRepository,
@@ -198,24 +214,30 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       );
 
       const previousSelectedClientId = this.selectedClientBySocket.get(socket.id);
+
       if (previousSelectedClientId && previousSelectedClientId !== clientId) {
         await socket.leave(TicketBoardRealtimeService.clientRoom(previousSelectedClientId));
       }
+
       await socket.join(TicketBoardRealtimeService.clientRoom(clientId));
 
       const client = await this.clientsRepository.findByIdOrThrow(clientId as string);
+
       this.selectedClientBySocket.set(socket.id, clientId);
 
       // Clean up any existing remote socket for this local socket before creating a new one
       const existingRemote = this.remoteSocketBySocket.get(socket.id);
+
       if (existingRemote) {
         this.logger.debug(`Cleaning up existing remote socket for socket ${socket.id} before creating new one`);
+
         try {
           existingRemote.removeAllListeners();
           existingRemote.disconnect();
         } catch {
           // ignore cleanup errors
         }
+
         this.remoteSocketBySocket.delete(socket.id);
       }
 
@@ -234,6 +256,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         reconnectionDelayMax: 5000,
         randomizationFactor: 0.5,
       });
+
       // Log when remote socket is created for debugging
       this.logger.debug(`Created remote socket for clientId ${clientId}, socket.id ${socket.id}`);
       // Log socket configuration
@@ -264,6 +287,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         'ping',
         'pong',
       ]);
+
       // Handle Socket.IO internal error events separately (don't forward to avoid disconnection)
       // Internal errors are Error instances, application errors are plain objects
       remote.on('error', () => {
@@ -278,6 +302,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         if (event === 'error' && args.length > 0 && args[0] instanceof Error) {
           return;
         }
+
         // Record statistics for chat events before forwarding
         const currentClientId = this.clientIdBySocket.get(socket.id);
         const lastAgentId = this.lastAgentIdBySocket.get(socket.id);
@@ -287,10 +312,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         if (event === 'chatEnhanceResult' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+
           if (payload?.success === true && typeof payload.enhancedText === 'string') {
             const text = payload.enhancedText;
             const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
             const charCount = text.length;
+
             this.statisticsService
               .recordChatOutput(
                 currentClientId,
@@ -305,10 +332,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         } else if (event === 'ticketBodyResult' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+
           if (payload?.success === true && typeof payload.enhancedText === 'string') {
             const text = payload.enhancedText;
             const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
             const charCount = text.length;
+
             this.statisticsService
               .recordChatOutput(
                 currentClientId,
@@ -323,11 +352,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         } else if (event === 'chatMessage' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+
           if (payload?.from === 'agent') {
             const resp = payload.response;
             const text = (payload.text as string) ?? (typeof resp === 'string' ? resp : JSON.stringify(resp ?? ''));
             const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
             const charCount = text.length;
+
             this.statisticsService
               .recordChatOutput(currentClientId, lastAgentId, wordCount, charCount, userId)
               .catch(() => undefined);
@@ -335,6 +366,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         } else if (event === 'messageFilterResult' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
+
           if (payload?.status === 'dropped') {
             const direction =
               payload.direction === 'outgoing' ? FilterDropDirection.OUTGOING : FilterDropDirection.INCOMING;
@@ -344,12 +376,15 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             // For incoming drops we have the message from our forward; for outgoing we don't
             let wordCount = 0;
             let charCount = 0;
+
             if (direction === FilterDropDirection.INCOMING) {
               const lastMessage = this.lastChatMessageBySocket.get(socket.id);
+
               wordCount = lastMessage ? lastMessage.trim().split(/\s+/).filter(Boolean).length : 0;
               charCount = lastMessage?.length ?? 0;
               this.lastChatMessageBySocket.delete(socket.id);
             }
+
             this.statisticsService
               .recordChatFilterDrop(
                 currentClientId,
@@ -372,16 +407,19 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             let wordCount = 0;
             let charCount = 0;
             const msg = (payload?.message as string) ?? '';
+
             if (msg) {
               wordCount = msg.trim().split(/\s+/).filter(Boolean).length;
               charCount = msg.length;
             } else if (flagDirection === FilterFlagDirection.INCOMING) {
               const lastMessage = this.lastChatMessageBySocket.get(socket.id);
+
               if (lastMessage) {
                 wordCount = lastMessage.trim().split(/\s+/).filter(Boolean).length;
                 charCount = lastMessage.length;
               }
             }
+
             this.statisticsService
               .recordChatFilterFlag(
                 currentClientId,
@@ -404,6 +442,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           if (!socket.connected) {
             return;
           }
+
           try {
             // SECURITY: Emit only to the specific local socket (not broadcast to all clients)
             socket.emit(event, ...args);
@@ -419,6 +458,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         const reconnectionEnabled = remote.io?.opts?.reconnection !== false;
         const currentClientId = this.clientIdBySocket.get(socket.id);
         const state = this.remoteReconnectionState.get(socket.id);
+
         this.logger.debug(
           `connect_error handler: socket.id=${socket.id}, reconnectionEnabled=${reconnectionEnabled}, remote.connected=${remote.connected}, remote.disconnected=${remote.disconnected}, state.reconnecting=${state?.reconnecting}`,
         );
@@ -429,6 +469,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         if (reconnectionEnabled && remote.disconnected && !remote.connected && currentClientId) {
           // Ensure state exists
           let reconnectionState = state;
+
           if (!reconnectionState) {
             reconnectionState = {
               reconnecting: false,
@@ -442,10 +483,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           // Increment attempt counter and emit reconnecting event
           reconnectionState.reconnectAttempts = (reconnectionState.reconnectAttempts || 0) + 1;
           const wasReconnecting = reconnectionState.reconnecting;
+
           reconnectionState.reconnecting = true;
           this.logger.debug(
             `Treating connect_error as reconnection attempt ${reconnectionState.reconnectAttempts} for socket ${socket.id}, clientId ${currentClientId}, wasReconnecting=${wasReconnecting}`,
           );
+
           // Emit remoteReconnecting on first attempt or when attempt number changes
           if (!wasReconnecting || reconnectionState.reconnectAttempts === 1) {
             if (socket.connected) {
@@ -466,8 +509,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               );
             }
           }
+
           // Store error for potential reconnect_failed
           reconnectionState.lastError = err.message;
+
           if (socket.connected) {
             try {
               socket.emit('remoteReconnectError', { clientId: currentClientId, error: err.message });
@@ -475,6 +520,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               // Ignore if socket disconnected during emit
             }
           }
+
           return; // Don't emit error, we're handling it as reconnection
         }
 
@@ -495,6 +541,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         // Remote disconnected - log but don't disconnect local socket
         // This allows the local socket to remain connected even if remote disconnects
         const currentClientId = this.clientIdBySocket.get(socket.id);
+
         this.logger.warn(
           `Remote socket disconnected for socket ${socket.id}, clientId ${currentClientId || 'unknown'}, reason: ${reason}`,
         );
@@ -505,9 +552,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           active: (remote as { active?: boolean }).active,
           reconnecting: (remote as { reconnecting?: boolean }).reconnecting,
         };
+
         this.logger.debug(`Remote socket state after disconnect: ${JSON.stringify(socketState)}`);
         // Ensure state exists (it should, but be defensive)
         let state = this.remoteReconnectionState.get(socket.id);
+
         if (!state && currentClientId) {
           // Re-initialize state if it doesn't exist (shouldn't happen, but be safe)
           state = {
@@ -517,11 +566,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           this.remoteReconnectionState.set(socket.id, state);
           this.logger.debug(`Re-initialized reconnection state for socket ${socket.id}, clientId ${currentClientId}`);
         }
+
         if (state) {
           // Reset reconnection state on disconnect (will be set on reconnect_attempt)
           state.reconnecting = false;
           state.reconnectAttempts = 0;
         }
+
         // Emit event to frontend to update connection state
         // Always try to emit, even if socket appears disconnected, as it might be reconnecting
         // The emit will fail gracefully if the socket is truly disconnected
@@ -534,6 +585,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               this.logger.warn(
                 `Local socket ${socket.id} is not connected, but attempting to emit remoteDisconnected for clientId ${currentClientId}`,
               );
+
               // Try to emit anyway - it will fail gracefully if socket is truly disconnected
               // This handles the case where the frontend reconnected but the socket state check is stale
               try {
@@ -559,9 +611,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.logger.debug(`reconnect_attempt event fired: attempt=${attempt}, socket.id=${socket.id}`);
         const currentClientId = this.clientIdBySocket.get(socket.id);
         let state = this.remoteReconnectionState.get(socket.id);
+
         this.logger.debug(
           `reconnect_attempt handler: socket.id=${socket.id}, clientId=${currentClientId || 'null'}, state=${!!state}`,
         );
+
         // Ensure state exists (it should, but be defensive)
         if (!state && currentClientId) {
           // Re-initialize state if it doesn't exist (shouldn't happen, but be safe)
@@ -574,12 +628,14 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             `Re-initialized reconnection state for socket ${socket.id}, clientId ${currentClientId} during reconnect_attempt`,
           );
         }
+
         if (state && currentClientId) {
           state.reconnecting = true;
           state.reconnectAttempts = attempt;
           this.logger.debug(
             `Remote socket reconnection attempt ${attempt} for socket ${socket.id}, clientId ${currentClientId}`,
           );
+
           if (socket.connected) {
             try {
               this.logger.debug(
@@ -604,10 +660,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.logger.debug(`reconnecting event fired: attempt=${attempt}, socket.id=${socket.id}`);
         const state = this.remoteReconnectionState.get(socket.id);
         const currentClientId = this.clientIdBySocket.get(socket.id);
+
         if (state) {
           state.reconnecting = true;
           state.reconnectAttempts = attempt;
         }
+
         // Also emit remoteReconnecting when reconnecting fires (this is a fallback)
         if (state && currentClientId && socket.connected) {
           try {
@@ -623,14 +681,17 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       remote.on('reconnect', () => {
         const state = this.remoteReconnectionState.get(socket.id);
         const currentClientId = this.clientIdBySocket.get(socket.id);
+
         if (state && currentClientId) {
           state.reconnecting = false;
           state.reconnectAttempts = 0;
           state.lastError = undefined;
           this.logger.log(`Remote socket reconnected for socket ${socket.id}, clientId ${currentClientId}`);
+
           if (socket.connected) {
             try {
               socket.emit('remoteReconnected', { clientId: currentClientId });
+
               // If setClient was in progress and this is a reconnection after initial failure,
               // emit setClientSuccess to complete the operation
               if (this.settingClientBySocket.get(socket.id) === currentClientId) {
@@ -646,11 +707,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       remote.on('reconnect_error', (error: Error) => {
         const state = this.remoteReconnectionState.get(socket.id);
         const currentClientId = this.clientIdBySocket.get(socket.id);
+
         if (state && currentClientId) {
           state.lastError = error.message;
           this.logger.warn(
             `Remote socket reconnection error for socket ${socket.id}, clientId ${currentClientId}: ${error.message}`,
           );
+
           if (socket.connected) {
             try {
               socket.emit('remoteReconnectError', { clientId: currentClientId, error: error.message });
@@ -663,13 +726,17 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       remote.on('reconnect_failed', () => {
         const state = this.remoteReconnectionState.get(socket.id);
         const currentClientId = this.clientIdBySocket.get(socket.id);
+
         if (state && currentClientId) {
           state.reconnecting = false;
           const errorMessage = state.lastError || 'Reconnection failed after all attempts';
+
           this.logger.error(`Remote socket reconnection failed for socket ${socket.id}, clientId ${currentClientId}`);
+
           if (socket.connected) {
             try {
               socket.emit('remoteReconnectFailed', { clientId: currentClientId, error: errorMessage });
+
               // If setClient was in progress and reconnection failed, emit error to complete the operation
               if (this.settingClientBySocket.get(socket.id) === currentClientId) {
                 this.settingClientBySocket.delete(socket.id);
@@ -685,6 +752,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       remote.on('connect', async () => {
         const currentClientId = this.clientIdBySocket.get(socket.id);
         const state = this.remoteReconnectionState.get(socket.id);
+
         this.logger.debug(
           `Remote socket connect event fired for socket ${socket.id}, clientId ${currentClientId}, state.reconnecting=${state?.reconnecting}, state.reconnectAttempts=${state?.reconnectAttempts}`,
         );
@@ -698,9 +766,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           this.logger.log(
             `Remote socket reconnected (via connect event) for socket ${socket.id}, clientId ${currentClientId}`,
           );
+
           if (socket.connected) {
             try {
               socket.emit('remoteReconnected', { clientId: currentClientId });
+
               // If setClient was in progress and this is a reconnection after initial failure,
               // emit setClientSuccess to complete the operation
               if (this.settingClientBySocket.get(socket.id) === currentClientId) {
@@ -716,6 +786,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           this.logger.debug(
             `Remote socket connected (recovered from reconnection) for socket ${socket.id}, clientId ${currentClientId}`,
           );
+
           // Still emit remoteReconnected to clear the reconnecting state
           if (socket.connected && currentClientId) {
             try {
@@ -732,6 +803,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         // If this is a reconnection, automatically restore all logged-in agents
         if (isReconnection && currentClientId && socket.connected && remote.connected) {
           const loggedInAgents = this.loggedInAgentsBySocket.get(socket.id);
+
           if (loggedInAgents && loggedInAgents.size > 0) {
             this.logger.log(
               `Restoring ${loggedInAgents.size} agent login(s) after remote reconnection for socket ${socket.id}, clientId ${currentClientId}`,
@@ -744,6 +816,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         }
       });
       this.remoteSocketBySocket.set(socket.id, remote);
+
       // Wait for remote connection to be established before emitting setClientSuccess
       // SECURITY: setClientSuccess is sent only to the initiating socket
       // Check if already connected (socket.io-client can connect synchronously in some cases)
@@ -762,6 +835,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           // Only emit error if reconnection is disabled or will fail immediately
           // If reconnection is enabled, it will attempt to reconnect and emit reconnect_failed if all attempts fail
           const reconnectionEnabled = remote.io?.opts?.reconnection !== false;
+
           if (socket.connected && !reconnectionEnabled) {
             try {
               // SECURITY: Error sent only to the initiating socket
@@ -776,6 +850,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
     } catch (err) {
       const message = (err as { message?: string }).message || 'Failed to set client';
+
       // Clear setting flag on error
       this.settingClientBySocket.delete(socket.id);
       // SECURITY: Error sent only to the initiating socket
@@ -794,39 +869,52 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   @SubscribeMessage('forward')
   async handleForward(@MessageBody() data: ForwardPayload, @ConnectedSocket() socket: Socket) {
     const clientId = this.selectedClientBySocket.get(socket.id);
+
     if (!clientId) {
       // SECURITY: Error sent only to the initiating socket
       socket.emit('error', { message: 'No client selected. Call setClient first.' });
+
       return;
     }
+
     const remote = this.remoteSocketBySocket.get(socket.id);
+
     if (!remote) {
       // SECURITY: Error sent only to the initiating socket
       socket.emit('error', { message: 'Remote connection not established' });
+
       return;
     }
+
     // Wait for remote socket to be connected (with timeout)
     if (remote.disconnected || !remote.connected) {
       // Wait up to 5 seconds for the remote socket to connect
       const maxWaitTime = 5000;
       const startTime = Date.now();
+
       while ((remote.disconnected || !remote.connected) && Date.now() - startTime < maxWaitTime) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
+
       // If still not connected after waiting, return error
       if (remote.disconnected || !remote.connected) {
         // SECURITY: Error sent only to the initiating socket
         socket.emit('error', { message: 'Remote connection not established' });
+
         return;
       }
     }
+
     try {
       const { event, payload } = data || ({} as ForwardPayload);
+
       if (!event) {
         throw new BadRequestException('event is required');
       }
+
       const agentId = data?.agentId;
       let loggedIn = this.loggedInAgentsBySocket.get(socket.id);
+
       if (!loggedIn) {
         loggedIn = new Set<string>();
         this.loggedInAgentsBySocket.set(socket.id, loggedIn);
@@ -837,13 +925,17 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       // only to the local socket that initiated the login, maintaining isolation.
       if (event === 'login' && agentId) {
         const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(clientId, agentId);
+
         if (!creds?.password) {
           // SECURITY: Error sent only to the initiating socket
           socket.emit('error', { message: `No stored credentials for agent ${agentId}` });
+
           return;
         }
+
         // Always override payload with credentials from database, regardless of login status
         const loginPayload = { agentId, password: creds.password };
+
         // Wait for login to complete
         await new Promise<void>((resolve, reject) => {
           const loginTimeout = setTimeout(() => {
@@ -851,7 +943,6 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             remote.off('loginError', onLoginError);
             reject(new Error('Login timeout'));
           }, 5000);
-
           const onLoginSuccess = () => {
             clearTimeout(loginTimeout);
             remote.off('loginSuccess', onLoginSuccess);
@@ -859,12 +950,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             loggedIn.add(agentId);
             resolve();
           };
-
           const onLoginError = (errorData: unknown) => {
             clearTimeout(loginTimeout);
             remote.off('loginSuccess', onLoginSuccess);
             remote.off('loginError', onLoginError);
             const error = errorData as { error?: { message?: string } };
+
             reject(new Error(error?.error?.message || 'Login failed'));
           };
 
@@ -876,13 +967,16 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         // Login event already emitted, don't forward again
         // SECURITY: Acknowledgement sent only to the initiating socket
         socket.emit('forwardAck', { received: true, event });
+
         return;
       }
 
       // Auto-login for other events if agentId is provided and not yet logged in
       let performedFreshAutoLogin = false;
+
       if (agentId && !loggedIn.has(agentId)) {
         const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(clientId, agentId);
+
         if (creds?.password) {
           // Wait for login to complete before emitting the event
           await new Promise<void>((resolve, reject) => {
@@ -891,7 +985,6 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               remote.off('loginError', onLoginError);
               reject(new Error('Login timeout'));
             }, 5000);
-
             const onLoginSuccess = () => {
               clearTimeout(loginTimeout);
               remote.off('loginSuccess', onLoginSuccess);
@@ -899,12 +992,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               loggedIn.add(agentId);
               resolve();
             };
-
             const onLoginError = (errorData: unknown) => {
               clearTimeout(loginTimeout);
               remote.off('loginSuccess', onLoginSuccess);
               remote.off('loginError', onLoginError);
               const error = errorData as { error?: { message?: string } };
+
               reject(new Error(error?.error?.message || 'Login failed'));
             };
 
@@ -917,14 +1010,17 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           this.logger.warn(`No stored credentials for client ${clientId}, agent ${agentId}; skipping auto-login`);
         }
       }
+
       if (performedFreshAutoLogin && agentId) {
         this.scheduleTicketAutomationChatHydrate(socket, clientId, agentId);
       }
+
       if (event === 'chat' && agentId) {
         const message = (payload as { message?: string })?.message ?? '';
         const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
         const charCount = message.length;
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
+
         this.statisticsService
           .recordChatInput(clientId, agentId, wordCount, charCount, userInfo?.userId)
           .catch(() => undefined);
@@ -935,6 +1031,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
         const charCount = message.length;
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
+
         this.statisticsService
           .recordChatInput(
             clientId,
@@ -951,6 +1048,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
         const charCount = title.length;
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
+
         this.statisticsService
           .recordChatInput(
             clientId,
@@ -971,6 +1069,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       socket.emit('forwardAck', { received: true, event });
     } catch (error) {
       const message = (error as { message?: string }).message || 'Forwarding failed';
+
       // SECURITY: Error sent only to the initiating socket
       socket.emit('error', { message });
     }
@@ -993,13 +1092,16 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     for (const agentId of agentIds) {
       try {
         const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(clientId, agentId);
+
         if (!creds?.password) {
           this.logger.warn(`Cannot restore login for agent ${agentId} on socket ${socketId}: no stored credentials`);
           // Remove from logged-in set since we can't restore it
           const loggedIn = this.loggedInAgentsBySocket.get(socketId);
+
           if (loggedIn) {
             loggedIn.delete(agentId);
           }
+
           continue;
         }
 
@@ -1010,7 +1112,6 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             remote.off('loginError', onLoginError);
             reject(new Error('Login timeout'));
           }, 5000);
-
           const onLoginSuccess = () => {
             clearTimeout(loginTimeout);
             remote.off('loginSuccess', onLoginSuccess);
@@ -1018,21 +1119,23 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.logger.log(`Restored login for agent ${agentId} on socket ${socketId} after reconnection`);
             resolve();
           };
-
           const onLoginError = (errorData: unknown) => {
             clearTimeout(loginTimeout);
             remote.off('loginSuccess', onLoginSuccess);
             remote.off('loginError', onLoginError);
             const error = errorData as { error?: { message?: string } };
             const errorMessage = error?.error?.message || 'Login failed';
+
             this.logger.warn(
               `Failed to restore login for agent ${agentId} on socket ${socketId} after reconnection: ${errorMessage}`,
             );
             // Remove from logged-in set since login failed
             const loggedIn = this.loggedInAgentsBySocket.get(socketId);
+
             if (loggedIn) {
               loggedIn.delete(agentId);
             }
+
             reject(new Error(errorMessage));
           };
 
@@ -1041,11 +1144,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           remote.emit('login', { agentId, password: creds.password });
         });
         const localSocket = this.localSocketById.get(socketId);
+
         if (localSocket) {
           this.scheduleTicketAutomationChatHydrate(localSocket, clientId, agentId);
         }
       } catch (error) {
         const errorMessage = (error as { message?: string }).message || 'Unknown error';
+
         this.logger.error(`Error restoring login for agent ${agentId} on socket ${socketId}: ${errorMessage}`);
         // Continue with other agents even if one fails
       }
@@ -1055,20 +1160,26 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   private scheduleTicketAutomationChatHydrate(socket: Socket, clientId: string, agentId: string): void {
     void this.ticketAutomationChatSync.hydrateForAgentClient(socket, clientId, agentId).catch((err) => {
       const message = err instanceof Error ? err.message : String(err);
+
       this.logger.warn(`Ticket automation chat hydrate failed for agent ${agentId}: ${message}`);
     });
   }
 
   private async getAuthHeader(clientId: string): Promise<string> {
     const client = await this.clientsRepository.findByIdOrThrow(clientId);
+
     if (client.authenticationType === AuthenticationType.API_KEY) {
       if (!client.apiKey) throw new BadRequestException('API key not configured for client');
+
       return `Bearer ${client.apiKey}`;
     }
+
     if (client.authenticationType === AuthenticationType.KEYCLOAK) {
       const token = await this.clientsService.getAccessToken(clientId);
+
       return `Bearer ${token}`;
     }
+
     throw new BadRequestException(`Unsupported authentication type`);
   }
 
@@ -1078,6 +1189,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     // Use HTTP(S) scheme for Socket.IO client, not WS(S)
     const protocol = url.protocol === 'https:' ? 'https' : 'http';
     const host = url.hostname;
+
     return `${protocol}://${host}:${effectivePort}/agents`;
   }
 }

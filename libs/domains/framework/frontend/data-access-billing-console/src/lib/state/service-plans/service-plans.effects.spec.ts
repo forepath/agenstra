@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
+
 import { ServicePlansService } from '../../services/service-plans.service';
+import type { ServicePlanResponse } from '../../types/billing.types';
+
 import {
   createServicePlan,
   createServicePlanFailure,
@@ -29,12 +32,10 @@ import {
   loadServicePlansBatch$,
   updateServicePlan$,
 } from './service-plans.effects';
-import type { ServicePlanResponse } from '../../types/billing.types';
 
 describe('ServicePlansEffects', () => {
   let actions$: Actions;
   let servicePlansService: jest.Mocked<ServicePlansService>;
-
   const mockPlan: ServicePlanResponse = {
     id: 'sp-1',
     serviceTypeId: 'st-1',
@@ -93,6 +94,7 @@ describe('ServicePlansEffects', () => {
   describe('loadServicePlansBatch$', () => {
     it('should return loadServicePlansSuccess when batch is empty', (done) => {
       const accumulated = [mockPlan];
+
       actions$ = of(loadServicePlansBatch({ offset: 10, accumulatedServicePlans: accumulated }));
       servicePlansService.listServicePlans.mockReturnValue(of([]));
 
@@ -150,6 +152,7 @@ describe('ServicePlansEffects', () => {
   describe('updateServicePlan$', () => {
     it('should return updateServicePlanSuccess on success', (done) => {
       const updated = { ...mockPlan, name: 'Updated' };
+
       actions$ = of(updateServicePlan({ id: 'sp-1', servicePlan: { name: 'Updated' } }));
       servicePlansService.updateServicePlan.mockReturnValue(of(updated));
 

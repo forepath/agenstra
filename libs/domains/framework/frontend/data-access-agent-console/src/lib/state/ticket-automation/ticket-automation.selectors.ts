@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { TicketAutomationState } from './ticket-automation.reducer';
 
 export const selectTicketAutomationState = createFeatureSelector<TicketAutomationState>('ticketAutomation');

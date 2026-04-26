@@ -1,7 +1,9 @@
 import { IDENTITY_STATISTICS_SERVICE } from '@forepath/identity/backend';
 import { Global, Module } from '@nestjs/common';
-import { StatisticsModule } from './statistics.module';
+
 import { StatisticsService } from '../services/statistics.service';
+
+import { StatisticsModule } from './statistics.module';
 
 /**
  * Global bridge module that wires the identity library's optional

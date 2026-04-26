@@ -88,10 +88,12 @@ export class CreateStatisticsFilterFlagsTable1766100000000 implements MigrationI
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const table = await queryRunner.getTable('statistics_chat_filter_flags');
+
     if (table) {
       for (const fk of table.foreignKeys) {
         await queryRunner.dropForeignKey('statistics_chat_filter_flags', fk);
       }
+
       await queryRunner.dropIndex(
         'statistics_chat_filter_flags',
         'IDX_statistics_chat_filter_flags_filter_type_occurred_at',

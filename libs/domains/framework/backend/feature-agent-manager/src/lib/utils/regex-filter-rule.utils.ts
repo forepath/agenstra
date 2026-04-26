@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+
 import type { RegexFilterRuleEntity, RegexFilterRuleType } from '../entities/regex-filter-rule.entity';
 
 const ALLOWED_FLAG_CHARS = new Set(['g', 'i', 'm', 's', 'u', 'y', 'd']);
@@ -8,20 +9,25 @@ const ALLOWED_FLAG_CHARS = new Set(['g', 'i', 'm', 's', 'u', 'y', 'd']);
  */
 export function normalizeRegexFlags(flags: string | undefined | null): string {
   const raw = (flags ?? 'g').trim();
+
   if (raw.length > 16) {
     throw new BadRequestException('regexFlags is too long');
   }
+
   const seen = new Set<string>();
   let out = '';
+
   for (const c of raw) {
     if (!ALLOWED_FLAG_CHARS.has(c)) {
       throw new BadRequestException(`Invalid regex flag character: ${c}`);
     }
+
     if (!seen.has(c)) {
       seen.add(c);
       out += c;
     }
   }
+
   return out;
 }
 
@@ -42,6 +48,7 @@ export function compileRegexOrThrow(pattern: string, flags: string): RegExp {
 export function ruleMatchesMessage(rule: RegexFilterRuleEntity, message: string): boolean {
   const flags = normalizeRegexFlags(rule.regexFlags);
   const re = compileRegexOrThrow(rule.pattern, flags);
+
   return re.test(message);
 }
 
@@ -52,6 +59,7 @@ export function applyReplace(rule: RegexFilterRuleEntity, message: string): stri
   const flags = normalizeRegexFlags(rule.regexFlags);
   const re = compileRegexOrThrow(rule.pattern, flags);
   const replacement = rule.replaceContent ?? '';
+
   return message.replace(re, replacement);
 }
 

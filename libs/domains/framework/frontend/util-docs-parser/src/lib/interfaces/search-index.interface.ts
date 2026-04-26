@@ -1,5 +1,3 @@
-import { DocMetadata } from './doc-metadata.interface';
-
 /**
  * Search index entry for a documentation page
  */

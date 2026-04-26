@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
+import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
+
 import { loadOverviewServerInfo, restartServer, startServer, stopServer } from './subscription-server-info.actions';
 import { SubscriptionServerInfoFacade } from './subscription-server-info.facade';
-import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
 
 describe('SubscriptionServerInfoFacade', () => {
   let facade: SubscriptionServerInfoFacade;
   let store: jest.Mocked<Store>;
-
   const mockSubscription: SubscriptionResponse = {
     id: 'sub-1',
     number: 'SUB-001',
@@ -18,13 +19,11 @@ describe('SubscriptionServerInfoFacade', () => {
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
-
   const mockServerInfo: ServerInfoResponse = {
     name: 'server-1',
     publicIp: '1.2.3.4',
     status: 'running',
   };
-
   const mockWithServerInfo = [
     { subscription: mockSubscription, serverInfo: mockServerInfo, itemId: 'item-1', service: 'controller' as const },
   ];
@@ -74,6 +73,7 @@ describe('SubscriptionServerInfoFacade', () => {
 
     it('should return server action in progress map', (done) => {
       const map = { 'sub-1': 'restart' as const };
+
       store.select.mockReturnValue(of(map));
       facade.getServerActionInProgressMap$().subscribe((result) => {
         expect(result).toEqual(map);

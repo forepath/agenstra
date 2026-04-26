@@ -1,4 +1,5 @@
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
+
 import { CustomerProfilesService } from './customer-profiles.service';
 
 describe('CustomerProfilesService', () => {
@@ -22,6 +23,7 @@ describe('CustomerProfilesService', () => {
     } as any;
     const service = new CustomerProfilesService(repository);
     const result = await service.upsert('user-1', { firstName: 'Jane' });
+
     expect(result.id).toBe('p1');
   });
 
@@ -29,6 +31,7 @@ describe('CustomerProfilesService', () => {
     it('returns false when profile is null', () => {
       const repository = { findByUserId: jest.fn(), create: jest.fn(), update: jest.fn() } as any;
       const service = new CustomerProfilesService(repository);
+
       expect(service.isProfileComplete(null)).toBe(false);
     });
 
@@ -36,6 +39,7 @@ describe('CustomerProfilesService', () => {
       const repository = { findByUserId: jest.fn(), create: jest.fn(), update: jest.fn() } as any;
       const service = new CustomerProfilesService(repository);
       const profile = createCompleteProfile();
+
       profile.firstName = undefined;
       expect(service.isProfileComplete(profile)).toBe(false);
     });
@@ -44,6 +48,7 @@ describe('CustomerProfilesService', () => {
       const repository = { findByUserId: jest.fn(), create: jest.fn(), update: jest.fn() } as any;
       const service = new CustomerProfilesService(repository);
       const profile = createCompleteProfile();
+
       profile.country = '';
       expect(service.isProfileComplete(profile)).toBe(false);
     });
@@ -51,6 +56,7 @@ describe('CustomerProfilesService', () => {
     it('returns true when all required fields are non-empty', () => {
       const repository = { findByUserId: jest.fn(), create: jest.fn(), update: jest.fn() } as any;
       const service = new CustomerProfilesService(repository);
+
       expect(service.isProfileComplete(createCompleteProfile())).toBe(true);
     });
   });

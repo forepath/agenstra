@@ -1,12 +1,12 @@
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
+
 import { ClientsRepository } from './clients.repository';
 
 describe('ClientsRepository', () => {
   let repository: ClientsRepository;
-
   const mockClient: ClientEntity = {
     id: 'test-uuid',
     name: 'Test Client',
@@ -20,7 +20,6 @@ describe('ClientsRepository', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const mockTypeOrmRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
@@ -101,6 +100,7 @@ describe('ClientsRepository', () => {
   describe('findAll', () => {
     it('should return array of clients with pagination', async () => {
       const clients = [mockClient];
+
       mockTypeOrmRepository.find.mockResolvedValue(clients);
 
       const result = await repository.findAll(10, 0);
@@ -115,6 +115,7 @@ describe('ClientsRepository', () => {
 
     it('should use default pagination values', async () => {
       const clients = [mockClient];
+
       mockTypeOrmRepository.find.mockResolvedValue(clients);
 
       await repository.findAll();
@@ -188,6 +189,7 @@ describe('ClientsRepository', () => {
         apiKey: 'new-api-key',
       };
       const createdClient = { ...mockClient, ...createData };
+
       mockTypeOrmRepository.create.mockReturnValue(createdClient);
       mockTypeOrmRepository.save.mockResolvedValue(createdClient);
 
@@ -213,6 +215,7 @@ describe('ClientsRepository', () => {
         ...createData,
         apiKey: undefined,
       };
+
       mockTypeOrmRepository.create.mockReturnValue(createdClient);
       mockTypeOrmRepository.save.mockResolvedValue(createdClient);
 
@@ -228,6 +231,7 @@ describe('ClientsRepository', () => {
     it('should update existing client', async () => {
       const updateData = { name: 'Updated Client' };
       const updatedClient = { ...mockClient, ...updateData };
+
       mockTypeOrmRepository.findOne.mockResolvedValue(mockClient);
       mockTypeOrmRepository.save.mockResolvedValue(updatedClient);
 

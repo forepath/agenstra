@@ -5,11 +5,13 @@ import {
   MoveFileDto,
   WriteFileDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import axios, { AxiosError } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentFileSystemProxyService } from './client-agent-file-system-proxy.service';
 import { ClientsService } from './clients.service';
 
@@ -21,12 +23,10 @@ describe('ClientAgentFileSystemProxyService', () => {
   let service: ClientAgentFileSystemProxyService;
   let clientsService: jest.Mocked<ClientsService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
-
   const mockClientId = 'test-client-uuid';
   const mockAgentId = 'test-agent-uuid';
   const mockFilePath = 'test-file.txt';
   const mockDirectoryPath = 'test-directory';
-
   const mockClientEntity: ClientEntity = {
     id: mockClientId,
     name: 'Test Client',
@@ -37,12 +37,10 @@ describe('ClientAgentFileSystemProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockFileContent: FileContentDto = {
     content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
     encoding: 'utf-8',
   };
-
   const mockFileNodes: FileNodeDto[] = [
     {
       name: 'file1.txt',
@@ -57,11 +55,9 @@ describe('ClientAgentFileSystemProxyService', () => {
       path: 'dir1',
     },
   ];
-
   const mockClientsService = {
     getAccessToken: jest.fn(),
   };
-
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
@@ -134,6 +130,7 @@ describe('ClientAgentFileSystemProxyService', () => {
         authenticationType: AuthenticationType.KEYCLOAK,
         apiKey: undefined,
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
       clientsService.getAccessToken.mockResolvedValue('keycloak-jwt-token');
       mockedAxios.request.mockResolvedValue({
@@ -212,6 +209,7 @@ describe('ClientAgentFileSystemProxyService', () => {
       const writeDto: WriteFileDto = {
         content: Buffer.from('x', 'utf-8').toString('base64'),
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
 
@@ -377,6 +375,7 @@ describe('ClientAgentFileSystemProxyService', () => {
         authenticationType: AuthenticationType.KEYCLOAK,
         apiKey: undefined,
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(keycloakClient);
       clientsService.getAccessToken.mockResolvedValue('keycloak-jwt-token');
       mockedAxios.request.mockResolvedValue({
@@ -401,6 +400,7 @@ describe('ClientAgentFileSystemProxyService', () => {
       const moveDto: MoveFileDto = {
         destination: 'new-location/file.txt',
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 404,
@@ -416,6 +416,7 @@ describe('ClientAgentFileSystemProxyService', () => {
       const moveDto: MoveFileDto = {
         destination: 'new-location/file.txt',
       };
+
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 400,
@@ -435,6 +436,7 @@ describe('ClientAgentFileSystemProxyService', () => {
         request: {},
         message: 'Network error',
       } as AxiosError;
+
       mockedAxios.request.mockRejectedValue(axiosError);
 
       await expect(service.readFile(mockClientId, mockAgentId, mockFilePath)).rejects.toThrow(BadRequestException);
@@ -449,6 +451,7 @@ describe('ClientAgentFileSystemProxyService', () => {
         },
         message: 'Request failed',
       } as AxiosError;
+
       mockedAxios.request.mockRejectedValue(axiosError);
 
       await expect(service.readFile(mockClientId, mockAgentId, mockFilePath)).rejects.toThrow(BadRequestException);

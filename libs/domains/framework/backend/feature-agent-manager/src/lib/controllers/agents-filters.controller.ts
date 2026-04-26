@@ -12,6 +12,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+
 import { CreateRegexFilterRuleDto } from '../dto/create-regex-filter-rule.dto';
 import { RegexFilterRuleResponseDto } from '../dto/regex-filter-rule-response.dto';
 import { UpdateRegexFilterRuleDto } from '../dto/update-regex-filter-rule.dto';
@@ -31,18 +32,21 @@ export class AgentsFiltersController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<RegexFilterRuleResponseDto[]> {
     const rows = await this.agentsFiltersService.list(limit ?? 100, offset ?? 0);
+
     return rows.map((r) => this.toDto(r));
   }
 
   @Get('count')
   async count(): Promise<{ count: number }> {
     const count = await this.agentsFiltersService.count();
+
     return { count };
   }
 
   @Get(':id')
   async getOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<RegexFilterRuleResponseDto> {
     const row = await this.agentsFiltersService.getById(id);
+
     return this.toDto(row);
   }
 
@@ -50,6 +54,7 @@ export class AgentsFiltersController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateRegexFilterRuleDto): Promise<RegexFilterRuleResponseDto> {
     const row = await this.agentsFiltersService.create(dto);
+
     return this.toDto(row);
   }
 
@@ -59,6 +64,7 @@ export class AgentsFiltersController {
     @Body() dto: UpdateRegexFilterRuleDto,
   ): Promise<RegexFilterRuleResponseDto> {
     const row = await this.agentsFiltersService.update(id, dto);
+
     return this.toDto(row);
   }
 

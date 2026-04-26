@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { StatisticsState } from './statistics.reducer';
 
 export const selectStatisticsState = createFeatureSelector<StatisticsState>('statistics');

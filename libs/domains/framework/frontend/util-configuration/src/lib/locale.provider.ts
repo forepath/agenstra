@@ -1,4 +1,5 @@
 import { PLATFORM_ID, Provider } from '@angular/core';
+
 import { ENVIRONMENT } from './environment.token';
 import { LocaleService } from './locale.service';
 

@@ -19,11 +19,14 @@ export function isUsablePartialPrototype(input: UsablePartialPrototypeInput): bo
   if (!input.branchName?.trim()) {
     return false;
   }
+
   if (!input.hasNonZeroDiffAgainstMergeBase) {
     return false;
   }
+
   if (input.iterationCount < 1) {
     return false;
   }
+
   return input.hasAgentStepWithNonEmptyExcerpt;
 }

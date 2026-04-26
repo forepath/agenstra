@@ -1,5 +1,5 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 
 /**
  * DTO for provisioning a new server through a cloud provider.

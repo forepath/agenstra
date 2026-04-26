@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { BillingIntervalType } from '../entities/service-plan.entity';
 
 export interface BillingSchedule {
@@ -25,6 +26,7 @@ export class BillingScheduleService {
       periodEnd.setDate(periodEnd.getDate() + intervalValue);
     } else {
       const targetDay = billingDayOfMonth ?? 1;
+
       periodEnd = this.nextMonthlyDate(periodStart, targetDay);
     }
 
@@ -41,6 +43,7 @@ export class BillingScheduleService {
     const nextMonthDate = new Date(year, month + 1, 1, reference.getHours(), reference.getMinutes(), 0, 0);
     const daysInMonth = new Date(nextMonthDate.getFullYear(), nextMonthDate.getMonth() + 1, 0).getDate();
     const safeDay = Math.min(Math.max(dayOfMonth, 1), daysInMonth);
+
     return new Date(
       nextMonthDate.getFullYear(),
       nextMonthDate.getMonth(),

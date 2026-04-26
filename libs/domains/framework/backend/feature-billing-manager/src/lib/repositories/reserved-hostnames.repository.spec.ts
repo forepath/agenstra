@@ -1,7 +1,9 @@
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { ReservedHostnameEntity } from '../entities/reserved-hostname.entity';
+
 import { ReservedHostnamesRepository } from './reserved-hostnames.repository';
 
 describe('ReservedHostnamesRepository', () => {
@@ -40,9 +42,11 @@ describe('ReservedHostnamesRepository', () => {
 
   it('create saves entity with hostname and subscriptionItemId', async () => {
     const entity = { id: 'e1', hostname: 'bar', subscriptionItemId: 'sub-1' };
+
     repository.create.mockReturnValue(entity as never);
     repository.save.mockResolvedValue(entity as never);
     const result = await reservedHostnamesRepository.create('bar', 'sub-1');
+
     expect(repository.create).toHaveBeenCalledWith({ hostname: 'bar', subscriptionItemId: 'sub-1' });
     expect(repository.save).toHaveBeenCalledWith(entity);
     expect(result).toEqual(entity);
@@ -56,6 +60,7 @@ describe('ReservedHostnamesRepository', () => {
 
   it('findBySubscriptionItemId returns entity when found', async () => {
     const entity = { id: 'e1', hostname: 'bar', subscriptionItemId: 'sub-1' };
+
     repository.findOne.mockResolvedValue(entity as never);
     expect(await reservedHostnamesRepository.findBySubscriptionItemId('sub-1')).toEqual(entity);
     expect(repository.findOne).toHaveBeenCalledWith({ where: { subscriptionItemId: 'sub-1' } });

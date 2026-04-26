@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { TicketsBoardSocketState } from './tickets-board-socket.reducer';
 
 export const selectTicketsBoardSocketState = createFeatureSelector<TicketsBoardSocketState>('ticketsBoardSocket');

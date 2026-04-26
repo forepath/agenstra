@@ -1,6 +1,7 @@
 import { TicketAutomationRunChatEventPayload } from '@forepath/framework/frontend/data-access-agent-console';
 import { TicketAutomationRunResponseDto } from '@forepath/framework/frontend/data-access-agent-console';
 import { TicketResponseDto } from '@forepath/framework/frontend/data-access-agent-console';
+
 import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
 
 describe('mergeTicketAutomationChatCardPayload', () => {
@@ -47,6 +48,7 @@ describe('mergeTicketAutomationChatCardPayload', () => {
       tasks: { open: 0, done: 0, children: { open: 0, done: 0 } },
     };
     const merged = mergeTicketAutomationChatCardPayload(basePayload(), live, undefined);
+
     expect(merged.ticket.title).toBe('New title');
     expect(merged.ticket.status).toBe('in_progress');
     expect(merged.ticket.priority).toBe('high');
@@ -77,6 +79,7 @@ describe('mergeTicketAutomationChatCardPayload', () => {
       cancellationReason: null,
     };
     const merged = mergeTicketAutomationChatCardPayload(basePayload(), undefined, cached);
+
     expect(merged.run.status).toBe('succeeded');
     expect(merged.run.phase).toBe('finalize');
   });

@@ -1,3 +1,4 @@
+import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -12,7 +13,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
 
@@ -38,6 +39,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.getConfiguration(clientId, agentId);
   }
 
@@ -52,6 +54,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.upsertConfiguration(clientId, agentId, dto);
   }
 
@@ -79,6 +82,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.listRepositories(clientId, agentId);
   }
 
@@ -93,6 +97,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.listBranches(clientId, agentId, repositoryId);
   }
 
@@ -108,6 +113,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.listWorkflows(clientId, agentId, repositoryId, branch);
   }
 
@@ -122,6 +128,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.triggerWorkflow(clientId, agentId, dto);
   }
 
@@ -137,6 +144,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.listRuns(clientId, agentId, limit, offset);
   }
 
@@ -151,6 +159,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.getRunStatus(clientId, agentId, runId);
   }
 
@@ -165,6 +174,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<{ logs: string }> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.getRunLogs(clientId, agentId, runId);
   }
 
@@ -179,6 +189,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<unknown[]> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.listRunJobs(clientId, agentId, runId);
   }
 
@@ -194,6 +205,7 @@ export class ClientsDeploymentsController {
     @Req() req?: RequestWithUser,
   ): Promise<{ logs: string }> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.proxyService.getJobLogs(clientId, agentId, runId, jobId);
   }
 

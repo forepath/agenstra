@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import type { PublicServicePlanOffering } from '../../types/portal-service-plans.types';
+
 import { loadCheapestServicePlanOffering, loadServicePlans } from './service-plans.actions';
 import { ServicePlansFacade } from './service-plans.facade';
 
 describe('ServicePlansFacade', () => {
   let facade: ServicePlansFacade;
   let store: jest.Mocked<Store>;
-
   const mockOffering: PublicServicePlanOffering = {
     id: 'sp-1',
     name: 'Basic',

@@ -1,16 +1,18 @@
+import { PasswordService } from '@forepath/identity/backend';
 import { BadRequestException, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as sshpk from 'sshpk';
+
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
+
 import { AgentsService } from './agents.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
-import { PasswordService } from '@forepath/identity/backend';
 
 describe('AgentsService', () => {
   let service: AgentsService;
@@ -19,7 +21,6 @@ describe('AgentsService', () => {
   let dockerService: jest.Mocked<DockerService>;
   let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
   let deploymentsService: jest.Mocked<DeploymentsService>;
-
   const mockAgent: AgentEntity = {
     id: 'test-uuid',
     name: 'Test Agent',
@@ -32,7 +33,6 @@ describe('AgentsService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-
   const mockRepository = {
     findByIdOrThrow: jest.fn(),
     findById: jest.fn(),
@@ -43,12 +43,10 @@ describe('AgentsService', () => {
     update: jest.fn(),
     delete: jest.fn(),
   };
-
   const mockPasswordService = {
     hashPassword: jest.fn(),
     verifyPassword: jest.fn(),
   };
-
   const mockDockerService = {
     createContainer: jest.fn(),
     deleteContainer: jest.fn(),
@@ -60,7 +58,6 @@ describe('AgentsService', () => {
     stopContainer: jest.fn(),
     restartContainer: jest.fn(),
   };
-
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
     getType: jest.fn().mockReturnValue('cursor'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
@@ -82,14 +79,12 @@ describe('AgentsService', () => {
     getBasePath: jest.fn().mockReturnValue('/app'),
     getConfigBasePath: jest.fn().mockReturnValue('~/.cursor'),
   };
-
   const mockAgentProviderFactory = {
     getProvider: jest.fn().mockReturnValue(mockAgentProvider),
     registerProvider: jest.fn(),
     hasProvider: jest.fn(),
     getRegisteredTypes: jest.fn(),
   } as unknown as jest.Mocked<AgentProviderFactory>;
-
   const mockDeploymentsService = {
     upsertConfiguration: jest.fn(),
     deleteConfiguration: jest.fn(),
@@ -534,7 +529,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
-
       // Generate a test SSH key using sshpk (Ed25519 is supported for generation)
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
@@ -633,7 +627,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
-
       // Generate a test SSH key using sshpk (Ed25519 is supported for generation)
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
@@ -660,6 +653,7 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getRepositoryPath).toHaveBeenCalled();
       // Verify git clone uses basePath + repositoryPath for SSH repository
       const expectedPath = basePath + repositoryPath;
+
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         8,
         containerId,
@@ -893,6 +887,7 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getRepositoryPath).toHaveBeenCalled();
       // Verify git clone uses basePath + repositoryPath
       const expectedPath = basePath + repositoryPath;
+
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
@@ -956,6 +951,7 @@ describe('AgentsService', () => {
       });
       // Verify git clone uses basePath + repositoryPath
       const expectedPath = customBasePath + repositoryPath;
+
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
@@ -1330,9 +1326,7 @@ describe('AgentsService', () => {
           },
         ],
       }).compile();
-
       const serviceWithoutDeployments = moduleWithoutDeployments.get<AgentsService>(AgentsService);
-
       const createDto: CreateAgentDto = {
         name: 'New Agent',
         deploymentConfiguration: {
@@ -1437,6 +1431,7 @@ describe('AgentsService', () => {
   describe('findAll', () => {
     it('should return array of agents', async () => {
       const agents = [mockAgent];
+
       mockRepository.findAll.mockResolvedValue(agents);
 
       const result = await service.findAll(10, 0);
@@ -1449,6 +1444,7 @@ describe('AgentsService', () => {
 
     it('should use default pagination values', async () => {
       const agents = [mockAgent];
+
       mockRepository.findAll.mockResolvedValue(agents);
 
       await service.findAll();
@@ -1503,6 +1499,7 @@ describe('AgentsService', () => {
 
     it('should return empty object without calling docker when agent has no containerId', async () => {
       const agentWithoutContainer = { ...mockAgent, containerId: undefined };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(agentWithoutContainer);
 
       const result = await service.listModels('test-uuid');
@@ -1518,6 +1515,7 @@ describe('AgentsService', () => {
         getModelsListCommand: undefined,
         toModelsList: undefined,
       } as unknown as AgentProvider;
+
       agentProviderFactory.getProvider.mockReturnValueOnce(unsupported);
 
       await expect(service.listModels('test-uuid')).rejects.toThrow(BadRequestException);
@@ -1526,6 +1524,7 @@ describe('AgentsService', () => {
 
     it('should return empty object and log when docker command fails', async () => {
       const logError = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
       mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
       dockerService.sendCommandToContainer.mockRejectedValue(new Error('container not running'));
 
@@ -1656,6 +1655,7 @@ describe('AgentsService', () => {
 
     it('should delete agent without container', async () => {
       const agentWithoutContainer = { ...mockAgent, containerId: undefined };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(agentWithoutContainer);
       repository.delete.mockResolvedValue(undefined);
 
@@ -1668,6 +1668,7 @@ describe('AgentsService', () => {
 
     it('should delete agent when containerId is null', async () => {
       const agentWithNullContainer = { ...mockAgent, containerId: null as string | undefined };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(agentWithNullContainer);
       repository.delete.mockResolvedValue(undefined);
 
@@ -1699,6 +1700,7 @@ describe('AgentsService', () => {
         vncContainerId: 'vnc-container-id',
         sshContainerId: 'ssh-container-id',
       };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
       dockerService.startContainer.mockResolvedValue(undefined);
 
@@ -1713,6 +1715,7 @@ describe('AgentsService', () => {
 
     it('should throw when agent not found', async () => {
       const notFoundError = new Error('Agent not found');
+
       mockRepository.findByIdOrThrow.mockRejectedValue(notFoundError);
 
       await expect(service.start('non-existent')).rejects.toThrow('Agent not found');
@@ -1747,6 +1750,7 @@ describe('AgentsService', () => {
         vncContainerId: 'vnc-container-id',
         sshContainerId: 'ssh-container-id',
       };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
       dockerService.stopContainer.mockResolvedValue(undefined);
 
@@ -1794,6 +1798,7 @@ describe('AgentsService', () => {
         vncContainerId: 'vnc-container-id',
         sshContainerId: 'ssh-container-id',
       };
+
       mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
       dockerService.restartContainer.mockResolvedValue(undefined);
 
@@ -1883,36 +1888,42 @@ describe('AgentsService', () => {
     it('should extract domain from https URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('https://github.com/user/repo.git');
+
       expect(domain).toBe('github.com');
     });
 
     it('should extract domain from http URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('http://gitlab.com/user/repo.git');
+
       expect(domain).toBe('gitlab.com');
     });
 
     it('should extract domain from git@ URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('git@github.com:user/repo.git');
+
       expect(domain).toBe('github.com');
     });
 
     it('should extract domain from URL with port', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('https://git.example.com:8443/user/repo.git');
+
       expect(domain).toBe('git.example.com');
     });
 
     it('should return default github.com for invalid URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('invalid-url');
+
       expect(domain).toBe('github.com');
     });
 
     it('should extract domain from URL with path', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('https://bitbucket.org/workspace/repo.git');
+
       expect(domain).toBe('bitbucket.org');
     });
   });
@@ -1926,6 +1937,7 @@ describe('AgentsService', () => {
 
     it('should create .netrc file with correct format', async () => {
       const containerId = 'container-id-123';
+
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1946,6 +1958,7 @@ describe('AgentsService', () => {
       const base64Call = dockerService.sendCommandToContainer.mock.calls[0];
       const base64Content = base64Call[2] as string;
       const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
+
       expect(decodedContent).toContain('machine github.com');
       expect(decodedContent).toContain('login testuser');
       expect(decodedContent).toContain('password test-token-123');
@@ -1953,6 +1966,7 @@ describe('AgentsService', () => {
 
     it('should escape special characters in credentials', async () => {
       const containerId = 'container-id-123';
+
       process.env.GIT_USERNAME = "user'name";
       process.env.GIT_TOKEN = "token'with'quotes";
       process.env.GIT_REPOSITORY_URL = 'https://github.com/user/repo.git';
@@ -1965,6 +1979,7 @@ describe('AgentsService', () => {
       const base64Call = dockerService.sendCommandToContainer.mock.calls[0];
       const base64Content = base64Call[2] as string;
       const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
+
       expect(decodedContent).toContain("user'name");
       expect(decodedContent).toContain("token'with'quotes");
 
@@ -1979,6 +1994,7 @@ describe('AgentsService', () => {
 
     it('should throw BadRequestException when GIT_USERNAME is missing', async () => {
       const containerId = 'container-id-123';
+
       delete process.env.GIT_USERNAME;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1987,6 +2003,7 @@ describe('AgentsService', () => {
 
     it('should throw BadRequestException when GIT_TOKEN and GIT_PASSWORD are missing', async () => {
       const containerId = 'container-id-123';
+
       delete process.env.GIT_TOKEN;
       delete process.env.GIT_PASSWORD;
 
@@ -1996,6 +2013,7 @@ describe('AgentsService', () => {
 
     it('should throw BadRequestException when GIT_REPOSITORY_URL is missing', async () => {
       const containerId = 'container-id-123';
+
       delete process.env.GIT_REPOSITORY_URL;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2004,6 +2022,7 @@ describe('AgentsService', () => {
 
     it('should use GIT_PASSWORD when GIT_TOKEN is not available', async () => {
       const containerId = 'container-id-123';
+
       delete process.env.GIT_TOKEN;
       process.env.GIT_PASSWORD = 'test-password';
       process.env.GIT_REPOSITORY_URL = 'https://github.com/user/repo.git';
@@ -2017,6 +2036,7 @@ describe('AgentsService', () => {
       const base64Call = dockerService.sendCommandToContainer.mock.calls[0];
       const base64Content = base64Call[2] as string;
       const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
+
       expect(decodedContent).toContain('password test-password');
     });
   });
@@ -2025,24 +2045,28 @@ describe('AgentsService', () => {
     it('should escape strings with single quotes', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell("test'string");
+
       expect(result).toBe("'test'\\''string'");
     });
 
     it('should wrap simple strings in single quotes', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell('simple-string');
+
       expect(result).toBe("'simple-string'");
     });
 
     it('should handle empty strings', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell('');
+
       expect(result).toBe("''");
     });
 
     it('should handle strings with multiple single quotes', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell("a'b'c");
+
       expect(result).toBe("'a'\\''b'\\''c'");
     });
   });
@@ -2051,36 +2075,42 @@ describe('AgentsService', () => {
     it('should return true for git@ URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('git@github.com:user/repo.git');
+
       expect(result).toBe(true);
     });
 
     it('should return true for ssh:// URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('ssh://git@github.com/user/repo.git');
+
       expect(result).toBe(true);
     });
 
     it('should return false for https:// URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('https://github.com/user/repo.git');
+
       expect(result).toBe(false);
     });
 
     it('should return false for http:// URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('http://github.com/user/repo.git');
+
       expect(result).toBe(false);
     });
 
     it('should return false for undefined URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository(undefined);
+
       expect(result).toBe(false);
     });
 
     it('should return false for empty string', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('');
+
       expect(result).toBe(false);
     });
   });
@@ -2089,24 +2119,28 @@ describe('AgentsService', () => {
     it('should extract host from ssh:// URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('ssh://git@github.com:22/user/repo.git');
+
       expect(result).toEqual({ host: 'github.com', port: 22 });
     });
 
     it('should extract host from ssh:// URL without port', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('ssh://git@github.com/user/repo.git');
+
       expect(result).toEqual({ host: 'github.com' });
     });
 
     it('should extract host from git@ URL', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('git@github.com:user/repo.git');
+
       expect(result).toEqual({ host: 'github.com' });
     });
 
     it('should fallback to extractGitDomain for other formats', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('https://gitlab.com/user/repo.git');
+
       expect(result).toEqual({ host: 'gitlab.com' });
     });
   });
@@ -2115,36 +2149,42 @@ describe('AgentsService', () => {
     it('should return id_rsa for RSA keys', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('rsa');
+
       expect(result).toBe('id_rsa');
     });
 
     it('should return id_ed25519 for Ed25519 keys', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('ed25519');
+
       expect(result).toBe('id_ed25519');
     });
 
     it('should return id_ecdsa for ECDSA keys', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('ecdsa');
+
       expect(result).toBe('id_ecdsa');
     });
 
     it('should return id_dsa for DSA keys', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('dsa');
+
       expect(result).toBe('id_dsa');
     });
 
     it('should handle uppercase key types', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('RSA');
+
       expect(result).toBe('id_rsa');
     });
 
     it('should default to id_rsa for unknown key types', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('unknown');
+
       expect(result).toBe('id_rsa');
     });
   });
@@ -2154,7 +2194,6 @@ describe('AgentsService', () => {
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
       const publicKey = key.toPublic().toString('ssh');
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).prepareSshKeyPair(privateKeyPem);
 
@@ -2170,7 +2209,6 @@ describe('AgentsService', () => {
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
       const publicKey = key.toPublic().toString('ssh');
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).prepareSshKeyPair(privateKeyPem);
 
@@ -2204,7 +2242,6 @@ describe('AgentsService', () => {
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
       const publicKey = key.toPublic().toString('ssh');
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).prepareSshKeyPair(`  ${privateKeyPem}  `);
 
@@ -2227,12 +2264,14 @@ describe('AgentsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(1);
       const callArgs = dockerService.sendCommandToContainer.mock.calls[0];
+
       expect(callArgs[0]).toBe(containerId);
       expect(callArgs[1]).toContain('echo');
       expect(callArgs[1]).toContain('base64 -d');
       expect(callArgs[1]).toContain(filePath);
       // Verify base64 encoding
       const base64Content = Buffer.from(contents, 'utf-8').toString('base64');
+
       expect(callArgs[1]).toContain(base64Content);
     });
 
@@ -2247,6 +2286,7 @@ describe('AgentsService', () => {
       await (service as any).writeFileToContainer(containerId, filePath, contents);
 
       const callArgs = dockerService.sendCommandToContainer.mock.calls[0];
+
       // Base64 content should be escaped
       expect(callArgs[1]).toMatch(/echo '.*' \| base64 -d >/);
     });
@@ -2318,9 +2358,9 @@ describe('AgentsService', () => {
 
     it('should throw BadRequestException for invalid private key', async () => {
       const containerId = 'container-id-123';
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const serviceAny = service as any;
+
       await expect(
         serviceAny.configureSshAccess(containerId, 'git@github.com:user/repo.git', 'invalid-key'),
       ).rejects.toThrow(BadRequestException);

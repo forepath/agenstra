@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { AuthenticationState } from './authentication.types';
 
 export const selectAuthenticationState = createFeatureSelector<AuthenticationState>('authentication');

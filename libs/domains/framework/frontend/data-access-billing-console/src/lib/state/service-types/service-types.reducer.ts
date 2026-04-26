@@ -1,4 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
+import type { ProviderDetail, ServiceTypeResponse } from '../../types/billing.types';
+
 import {
   clearSelectedServiceType,
   createServiceType,
@@ -21,7 +24,6 @@ import {
   updateServiceTypeFailure,
   updateServiceTypeSuccess,
 } from './service-types.actions';
-import type { ProviderDetail, ServiceTypeResponse } from '../../types/billing.types';
 
 export interface ServiceTypesState {
   entities: ServiceTypeResponse[];
@@ -106,6 +108,7 @@ export const serviceTypesReducer = createReducer(
       existingIndex >= 0
         ? state.entities.map((st) => (st.id === serviceType.id ? serviceType : st))
         : [...state.entities, serviceType];
+
     return {
       ...state,
       entities,

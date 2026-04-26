@@ -1,4 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { StatisticsAgentEntity } from './statistics-agent.entity';
 import { StatisticsClientEntity } from './statistics-client.entity';
 import { StatisticsUserEntity } from './statistics-user.entity';

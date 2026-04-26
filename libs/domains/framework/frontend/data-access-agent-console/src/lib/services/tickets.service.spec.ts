@@ -1,14 +1,15 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+
 import { EMPTY_TICKET_TASKS, type TicketResponseDto } from '../state/tickets/tickets.types';
+
 import { TicketsService } from './tickets.service';
 
 describe('TicketsService', () => {
   let service: TicketsService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3100/api';
-
   const mockTicket: TicketResponseDto = {
     id: 'ticket-1',
     clientId: 'client-1',
@@ -52,6 +53,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne((r) => r.url === `${apiUrl}/tickets`);
+
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('clientId')).toBe('c1');
       expect(req.request.params.get('parentId')).toBe('null');
@@ -64,6 +66,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets`);
+
       expect(req.request.params.keys().length).toBe(0);
       req.flush([]);
     });
@@ -74,6 +77,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne((r) => r.url === `${apiUrl}/tickets`);
+
       expect(req.request.params.get('clientId')).toBe('c1');
       expect(req.request.params.get('parentId')).toBeNull();
       req.flush([mockTicket]);
@@ -83,11 +87,13 @@ describe('TicketsService', () => {
   describe('createTicket', () => {
     it('should POST body to /tickets', (done) => {
       const dto = { clientId: 'c1', title: 'New', status: 'todo' as const, priority: 'high' as const };
+
       service.createTicket(dto).subscribe((t) => {
         expect(t).toEqual(mockTicket);
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockTicket);
@@ -97,12 +103,14 @@ describe('TicketsService', () => {
       const dto = { clientId: 'c1', title: 'Epic', creationTemplate: 'specification' as const };
       const child = { ...mockTicket, id: 'child-1', parentId: mockTicket.id, title: 'Proposal' };
       const res = { ...mockTicket, createdChildTickets: [child] };
+
       service.createTicket(dto).subscribe((t) => {
         expect(t.createdChildTickets).toEqual([child]);
         expect(t.id).toBe(mockTicket.id);
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets`);
+
       expect(req.request.body).toEqual(dto);
       req.flush(res);
     });
@@ -111,11 +119,13 @@ describe('TicketsService', () => {
   describe('updateTicket', () => {
     it('should PATCH /tickets/:id', (done) => {
       const patch = { status: 'done' as const };
+
       service.updateTicket('ticket-1', patch).subscribe((t) => {
         expect(t).toEqual(mockTicket);
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1`);
+
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(patch);
       req.flush(mockTicket);
@@ -140,7 +150,6 @@ describe('TicketsService', () => {
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
     };
-
     const mockRun = {
       id: 'run-1',
       ticketId: 'ticket-1',
@@ -171,17 +180,20 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockAutomation);
     });
 
     it('patchTicketAutomation PATCHes body', (done) => {
       const dto = { eligible: false };
+
       service.patchTicketAutomation('ticket-1', dto).subscribe((row) => {
         expect(row).toEqual(mockAutomation);
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation`);
+
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(dto);
       req.flush(mockAutomation);
@@ -193,6 +205,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/approve`);
+
       expect(req.request.method).toBe('POST');
       req.flush(mockAutomation);
     });
@@ -203,6 +216,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/unapprove`);
+
       expect(req.request.method).toBe('POST');
       req.flush(mockAutomation);
     });
@@ -213,6 +227,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/runs`);
+
       expect(req.request.method).toBe('GET');
       req.flush([mockRun]);
     });
@@ -223,6 +238,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/runs/run-1`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockRun);
     });
@@ -233,6 +249,7 @@ describe('TicketsService', () => {
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/automation/runs/run-1/cancel`);
+
       expect(req.request.method).toBe('POST');
       req.flush({ ...mockRun, status: 'cancelled' });
     });
@@ -241,11 +258,13 @@ describe('TicketsService', () => {
   describe('migrateTicket', () => {
     it('POSTs /tickets/:id/migrate with body', (done) => {
       const body = { targetClientId: 'client-2' };
+
       service.migrateTicket('ticket-1', body).subscribe((res) => {
         expect(res).toEqual({ ticket: { ...mockTicket, clientId: 'client-2' } });
         done();
       });
       const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/migrate`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(body);
       req.flush({ ticket: { ...mockTicket, clientId: 'client-2' } });

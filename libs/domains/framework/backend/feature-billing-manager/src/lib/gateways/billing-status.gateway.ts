@@ -11,6 +11,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { SubscriptionItemServerService } from '../services/subscription-item-server.service';
 import { SubscriptionService } from '../services/subscription.service';
@@ -21,17 +22,21 @@ const MAX_POLL_MS = 120_000;
 
 function defaultPollIntervalMs(): number {
   const raw = parseInt(process.env.STATUS_POLL_INTERVAL || '15000', 10);
+
   if (Number.isNaN(raw)) {
     return 15_000;
   }
+
   return Math.min(MAX_POLL_MS, Math.max(MIN_POLL_MS, raw));
 }
 
 function clampPollIntervalMs(requested: number | undefined): number {
   const base = defaultPollIntervalMs();
+
   if (requested === undefined || Number.isNaN(requested)) {
     return base;
   }
+
   return Math.min(MAX_POLL_MS, Math.max(MIN_POLL_MS, requested));
 }
 
@@ -90,11 +95,14 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
       const userInfo = await this.socketAuthService.validateAndGetUser(
         typeof authHeader === 'string' ? authHeader : undefined,
       );
+
       if (!userInfo) {
         this.logger.warn(`Billing WebSocket rejected: invalid authorization for socket ${socket.id}`);
         next(new Error('Unauthorized'));
+
         return;
       }
+
       (socket as BillingSocket).data = { userInfo };
       next();
     });
@@ -117,8 +125,10 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
   ): Promise<void> {
     const userInfo = (socket as BillingSocket).data?.userInfo;
     const userId = getBillingUserIdFromSocketUser(userInfo);
+
     if (!userId) {
       socket.emit('error', { message: 'User not authenticated' });
+
       return;
     }
 
@@ -130,6 +140,7 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
     const timer = setInterval(() => {
       void this.runStatusTick(socket as BillingSocket);
     }, intervalMs);
+
     this.pollTimerBySocketId.set(socket.id, timer);
   }
 
@@ -140,6 +151,7 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
 
   private clearPollTimer(socketId: string): void {
     const existing = this.pollTimerBySocketId.get(socketId);
+
     if (existing) {
       clearInterval(existing);
       this.pollTimerBySocketId.delete(socketId);
@@ -150,14 +162,17 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
     if (this.tickInFlight.has(socket.id)) {
       return;
     }
+
     this.tickInFlight.add(socket.id);
 
     const userInfo = socket.data?.userInfo;
     const currentUserId = getBillingUserIdFromSocketUser(userInfo);
+
     if (!currentUserId) {
       this.tickInFlight.delete(socket.id);
       this.clearPollTimer(socket.id);
       socket.emit('error', { message: 'User not authenticated' });
+
       return;
     }
 
@@ -170,10 +185,13 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
         try {
           const subItems = await this.subscriptionItemServerService.listItems(sub.id, currentUserId);
           const activeItem = subItems.find((i) => i.provisioningStatus === 'active');
+
           if (!activeItem) {
             continue;
           }
+
           const info = await this.subscriptionItemServerService.getServerInfo(sub.id, activeItem.id, currentUserId);
+
           items.push({
             subscriptionId: sub.id,
             itemId: activeItem.id,
@@ -195,9 +213,11 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
         generatedAt: new Date().toISOString(),
         items,
       };
+
       socket.emit('dashboardStatusUpdate', payload);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Status update failed';
+
       this.logger.warn(`Billing status tick failed for socket ${socket.id}: ${message}`);
       socket.emit('error', { message: 'Failed to load dashboard status' });
     } finally {

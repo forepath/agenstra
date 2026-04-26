@@ -2,8 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { combineLatest, map, take } from 'rxjs';
-import { filter, pairwise } from 'rxjs';
 import {
   ServicePlansFacade,
   ServiceTypesFacade,
@@ -17,6 +15,8 @@ import {
   type ServiceTypeResponse,
   type UpdateServicePlanDto,
 } from '@forepath/framework/frontend/data-access-billing-console';
+import { combineLatest, map, take } from 'rxjs';
+import { filter, pairwise } from 'rxjs';
 
 /** Schema property: type, description, and optional enum for pre-defined values. */
 interface ConfigSchemaProperty {
@@ -71,7 +71,9 @@ export class ServicePlansPageComponent implements OnInit {
 
   serviceTypeNameById(types: ServiceTypeResponse[] | null, id: string): string {
     if (!types) return id;
+
     const t = types.find((x) => x.id === id);
+
     return t?.name ?? id;
   }
 
@@ -100,10 +102,14 @@ export class ServicePlansPageComponent implements OnInit {
     serviceTypeId: string,
   ): ConfigSchemaProperties | null {
     if (!serviceTypeId?.trim() || !serviceTypes?.length || !providerDetails?.length) return null;
+
     const serviceType = serviceTypes.find((st) => st.id === serviceTypeId);
+
     if (!serviceType?.provider) return null;
+
     const detail = providerDetails.find((p) => p.id === serviceType.provider);
     const schema = detail?.configSchema as { properties?: ConfigSchemaProperties } | undefined;
+
     return schema?.properties ?? null;
   }
 
@@ -118,14 +124,21 @@ export class ServicePlansPageComponent implements OnInit {
   ): boolean {
     const full = this.getProviderSchemaFull(serviceTypes, providerDetails, serviceTypeId);
     const props = full?.['properties'] as ConfigSchemaProperties | undefined;
+
     if (!props) return false;
+
     const ok = (key: 'region' | 'location'): boolean => {
       const p = props[key];
+
       if (!p || typeof p !== 'object') return false;
+
       if (String(p.type) !== 'string') return false;
+
       const e = p.enum;
+
       return Array.isArray(e) && e.length > 0 && e.every((x) => typeof x === 'string');
     };
+
     return ok('region') || ok('location');
   }
 
@@ -135,9 +148,13 @@ export class ServicePlansPageComponent implements OnInit {
     serviceTypeId: string,
   ): Record<string, unknown> | null {
     if (!serviceTypeId?.trim() || !serviceTypes?.length || !providerDetails?.length) return null;
+
     const serviceType = serviceTypes.find((st) => st.id === serviceTypeId);
+
     if (!serviceType?.provider) return null;
+
     const detail = providerDetails.find((p) => p.id === serviceType.provider);
+
     return (detail?.configSchema as Record<string, unknown>) ?? null;
   }
 
@@ -149,13 +166,16 @@ export class ServicePlansPageComponent implements OnInit {
   ): string | null {
     const schema = this.getProviderSchemaFull(serviceTypes, providerDetails, serviceTypeId);
     const field = schema?.['basePriceFromField'];
+
     return typeof field === 'string' && field ? field : null;
   }
 
   /** Provider id for the given service type. */
   getProviderId(serviceTypes: ServiceTypeResponse[] | null, serviceTypeId: string): string | null {
     if (!serviceTypeId?.trim() || !serviceTypes?.length) return null;
+
     const st = serviceTypes.find((s) => s.id === serviceTypeId);
+
     return st?.provider ?? null;
   }
 
@@ -166,11 +186,13 @@ export class ServicePlansPageComponent implements OnInit {
   getProviderConfigPropertyType(schema: ConfigSchemaProperties | null, key: string): 'string' | 'number' {
     const prop = schema?.[key];
     const t = prop && typeof prop === 'object' && 'type' in prop ? String(prop.type) : 'string';
+
     return t === 'number' ? 'number' : 'string';
   }
 
   getProviderConfigPropertyDescription(schema: ConfigSchemaProperties | null, key: string): string {
     const prop = schema?.[key];
+
     return prop && typeof prop === 'object' && 'description' in prop ? String(prop.description) : '';
   }
 
@@ -180,23 +202,31 @@ export class ServicePlansPageComponent implements OnInit {
    */
   getProviderConfigEnum(schema: ConfigSchemaProperties | null, key: string): (string | number)[] | null {
     const prop = schema?.[key];
+
     if (!prop || typeof prop !== 'object' || !Array.isArray(prop.enum)) return null;
+
     const arr = prop.enum.filter((v) => v !== undefined && v !== null);
+
     return arr.length > 0 ? arr : null;
   }
 
   /** When create form service type changes, init providerConfigDefaults from schema and load server types if needed. */
   onCreateServiceTypeIdChange(serviceTypes: ServiceTypeResponse[], providerDetails: ProviderDetail[]): void {
     const schema = this.getProviderSchema(serviceTypes, providerDetails, this.createForm.serviceTypeId);
+
     this.createForm.providerConfigDefaults = this.createForm.providerConfigDefaults ?? {};
+
     if (schema) {
       const basePriceField = this.getBasePriceFromField(serviceTypes, providerDetails, this.createForm.serviceTypeId);
+
       for (const key of Object.keys(schema)) {
         if (this.createForm.providerConfigDefaults[key] === undefined) {
           if (key === basePriceField) {
             continue;
           }
+
           const enumValues = this.getProviderConfigEnum(schema, key);
+
           if (enumValues && enumValues.length > 0) {
             this.createForm.providerConfigDefaults[key] = enumValues[0];
           } else {
@@ -205,8 +235,10 @@ export class ServicePlansPageComponent implements OnInit {
           }
         }
       }
+
       if (basePriceField) {
         const providerId = this.getProviderId(serviceTypes, this.createForm.serviceTypeId);
+
         if (providerId) this.loadServerTypes(providerId);
       } else {
         this.currentServerTypes = [];
@@ -214,6 +246,7 @@ export class ServicePlansPageComponent implements OnInit {
     } else {
       this.currentServerTypes = [];
     }
+
     if (!this.supportsCustomerLocationSelection(serviceTypes, providerDetails, this.createForm.serviceTypeId)) {
       this.createForm.allowCustomerLocationSelection = false;
     }
@@ -237,6 +270,7 @@ export class ServicePlansPageComponent implements OnInit {
   /** When user selects a server type in create form, set base price from selection. */
   onServerTypeSelectCreate(serverTypeId: string): void {
     const st = this.currentServerTypes.find((s) => s.id === serverTypeId);
+
     if (st?.priceMonthly != null) {
       this.createForm.basePrice = String(st.priceMonthly);
     }
@@ -245,6 +279,7 @@ export class ServicePlansPageComponent implements OnInit {
   /** When user selects a server type in edit form, set base price from selection. */
   onServerTypeSelectEdit(serverTypeId: string): void {
     const st = this.currentServerTypes.find((s) => s.id === serverTypeId);
+
     if (st?.priceMonthly != null) {
       this.editForm.basePrice = String(st.priceMonthly);
     }
@@ -252,6 +287,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   addOrderingHighlight(form: 'create' | 'edit'): void {
     const row: ServicePlanOrderingHighlight = { icon: '', text: '' };
+
     if (form === 'create') {
       this.createForm.orderingHighlights = [...(this.createForm.orderingHighlights ?? []), row];
     } else {
@@ -262,10 +298,12 @@ export class ServicePlansPageComponent implements OnInit {
   removeOrderingHighlight(form: 'create' | 'edit', index: number): void {
     if (form === 'create') {
       const list = [...(this.createForm.orderingHighlights ?? [])];
+
       list.splice(index, 1);
       this.createForm.orderingHighlights = list;
     } else {
       const list = [...(this.editForm.orderingHighlights ?? [])];
+
       list.splice(index, 1);
       this.editForm.orderingHighlights = list;
     }
@@ -275,7 +313,9 @@ export class ServicePlansPageComponent implements OnInit {
     const formRef = form === 'create' ? this.createForm : this.editForm;
     const list = [...(formRef.orderingHighlights ?? [])];
     const next = index + direction;
+
     if (next < 0 || next >= list.length) return;
+
     [list[index], list[next]] = [list[next], list[index]];
     formRef.orderingHighlights = list;
   }
@@ -284,6 +324,7 @@ export class ServicePlansPageComponent implements OnInit {
     highlights: ServicePlanOrderingHighlight[] | undefined,
   ): ServicePlanOrderingHighlight[] {
     if (!highlights?.length) return [];
+
     return highlights
       .map((h) => ({ icon: h.icon?.trim() ?? '', text: h.text?.trim() ?? '' }))
       .filter((h) => h.icon.length > 0 && h.text.length > 0);
@@ -299,23 +340,30 @@ export class ServicePlansPageComponent implements OnInit {
     const memory = st.memory ?? 0;
     const disk = st.disk ?? 0;
     const parts = [name, `- ${cores} vCPU, ${memory}GB RAM, ${disk}GB Disk`];
+
     if (st.priceMonthly != null) {
       parts.push(`- €${this.formatPrice(st.priceMonthly)}/month`);
     }
+
     const label = parts.join(' ').trim();
+
     return label || String(st.id ?? '');
   }
 
   private formatPrice(value: number | string): string {
     const n = typeof value === 'number' ? value : Number(value);
+
     if (Number.isNaN(n)) return String(value);
+
     return Number.isInteger(n) ? String(n) : n.toFixed(2);
   }
 
   /** Parses form value to number; returns 0 for empty/invalid. */
   private parseFormNumber(value: string | number | undefined): number {
     if (value === undefined || value === null) return 0;
+
     const n = typeof value === 'number' ? value : Number(String(value).trim());
+
     return Number.isFinite(n) ? n : 0;
   }
 
@@ -329,15 +377,19 @@ export class ServicePlansPageComponent implements OnInit {
     marginFixed: string | number | undefined,
   ): number | null {
     const base = this.parseFormNumber(basePrice);
+
     if (base <= 0) return null;
+
     const marginPct = this.parseFormNumber(marginPercent);
     const marginFix = this.parseFormNumber(marginFixed);
+
     return base + base * (marginPct / 100) + marginFix;
   }
 
   /** Formats estimated price for display (e.g. "€4.51" or "—"). */
   formatEstimatedPrice(total: number | null): string {
     if (total === null) return '—';
+
     return `€${this.formatPrice(total)}`;
   }
 
@@ -459,6 +511,7 @@ export class ServicePlansPageComponent implements OnInit {
     this.typesAndProviders$.pipe(take(1)).subscribe((data) => {
       const basePriceField = this.getBasePriceFromField(data.serviceTypes, data.providerDetails, plan.serviceTypeId);
       const providerId = this.getProviderId(data.serviceTypes, plan.serviceTypeId);
+
       if (basePriceField && providerId) this.loadServerTypes(providerId);
     });
     this.showModal(this.editModal);
@@ -471,8 +524,10 @@ export class ServicePlansPageComponent implements OnInit {
 
   onSubmitCreate(): void {
     if (!this.createForm.serviceTypeId?.trim() || !this.createForm.name?.trim()) return;
+
     const providerConfigDefaults = this.coerceProviderConfigDefaults(this.createForm.providerConfigDefaults);
     const orderingHighlights = this.sanitizeOrderingHighlights(this.createForm.orderingHighlights);
+
     this.plansFacade.createServicePlan({
       serviceTypeId: this.createForm.serviceTypeId.trim(),
       name: this.createForm.name.trim(),
@@ -496,8 +551,10 @@ export class ServicePlansPageComponent implements OnInit {
 
   onSubmitEdit(): void {
     if (!this.editForm.id) return;
+
     const providerConfigDefaults = this.coerceProviderConfigDefaults(this.editForm.providerConfigDefaults);
     const orderingHighlights = this.sanitizeOrderingHighlights(this.editForm.orderingHighlights);
+
     this.plansFacade.updateServicePlan(this.editForm.id, {
       name: this.editForm.name,
       description: this.editForm.description,
@@ -526,12 +583,17 @@ export class ServicePlansPageComponent implements OnInit {
   /** Coerce providerConfigDefaults values to number where schema says number. */
   private coerceProviderConfigDefaults(defaults: Record<string, unknown> | undefined): Record<string, unknown> {
     if (!defaults || typeof defaults !== 'object') return {};
+
     const result: Record<string, unknown> = {};
+
     for (const [key, value] of Object.entries(defaults)) {
       if (value === undefined || value === null || value === '') continue;
+
       const num = Number(value);
+
       result[key] = Number.isNaN(num) ? value : num;
     }
+
     return result;
   }
 
@@ -551,6 +613,7 @@ export class ServicePlansPageComponent implements OnInit {
           bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => { show: () => void } } };
         }
       ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) modal.show();
     }
   }
@@ -562,6 +625,7 @@ export class ServicePlansPageComponent implements OnInit {
           bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
         }
       ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) modal.hide();
     }
   }

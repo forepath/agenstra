@@ -4,10 +4,12 @@ import type {
   RegexFilterRuleResponseDto,
   UpdateRegexFilterRuleDto,
 } from '@forepath/framework/backend';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientsService } from './clients.service';
 
 /**
@@ -24,21 +26,27 @@ export class AgentManagerFilterRulesClientService {
 
   private async getAuthHeader(clientId: string): Promise<string> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
     if (clientEntity.authenticationType === AuthenticationType.API_KEY) {
       if (!clientEntity.apiKey) {
         throw new BadRequestException('API key is not configured for this client');
       }
+
       return `Bearer ${clientEntity.apiKey}`;
     }
+
     if (clientEntity.authenticationType === AuthenticationType.KEYCLOAK) {
       const token = await this.clientsService.getAccessToken(clientId);
+
       return `Bearer ${token}`;
     }
+
     throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
   }
 
   private buildBaseUrl(endpoint: string): string {
     const baseUrl = endpoint.replace(/\/$/, '');
+
     return `${baseUrl}/api/agents-filters`;
   }
 
@@ -46,6 +54,7 @@ export class AgentManagerFilterRulesClientService {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildBaseUrl(clientEntity.endpoint);
+
     try {
       this.logger.debug(`Filter rules ${config.method} ${baseUrl}${config.url || ''} for client ${clientId}`);
       const response = await axios.request<T>({
@@ -61,27 +70,36 @@ export class AgentManagerFilterRulesClientService {
           ? new (require('https').Agent)({ rejectUnauthorized: false })
           : undefined,
       });
+
       if (response.status >= 400) {
         const errorMessage = (response.data as { message?: string })?.message || 'Request failed';
+
         if (response.status === 404) {
           throw new NotFoundException(errorMessage);
         }
+
         throw new BadRequestException(errorMessage);
       }
+
       return response.data;
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
+
       const axiosError = error as AxiosError;
+
       if (axiosError.response) {
         const errorMessage =
           (axiosError.response.data as { message?: string })?.message || axiosError.message || 'Request failed';
+
         if (axiosError.response.status === 404) {
           throw new NotFoundException(errorMessage);
         }
+
         throw new BadRequestException(errorMessage);
       }
+
       throw new BadRequestException(axiosError.message || 'Request failed');
     }
   }

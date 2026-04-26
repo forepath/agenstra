@@ -1,7 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import axios, { AxiosError } from 'axios';
+
 import { PipelineProviderCredentials } from '../pipeline-provider.interface';
+
 import { GitHubProvider } from './github.provider';
 
 // Mock axios
@@ -14,11 +16,9 @@ describe('GitHubProvider', () => {
     get: jest.Mock;
     post: jest.Mock;
   };
-
   const mockCredentials: PipelineProviderCredentials = {
     token: 'ghp_test-token',
   };
-
   const mockCredentialsWithBaseUrl: PipelineProviderCredentials = {
     token: 'ghp_test-token',
     baseUrl: 'https://github.example.com/api',
@@ -98,6 +98,7 @@ describe('GitHubProvider', () => {
 
     it('should handle errors', async () => {
       const error = new Error('API Error') as AxiosError;
+
       mockAxiosInstance.get.mockRejectedValue(error);
 
       await expect(provider.listRepositories(mockCredentials)).rejects.toThrow(BadRequestException);
@@ -197,6 +198,7 @@ describe('GitHubProvider', () => {
       // Use fake timers to handle setTimeout
       jest.useFakeTimers();
       const resultPromise = provider.triggerWorkflow(mockCredentials, 'owner/repo', '123', 'main');
+
       jest.advanceTimersByTime(1000);
       jest.useRealTimers();
 
@@ -243,6 +245,7 @@ describe('GitHubProvider', () => {
       const resultPromise = provider.triggerWorkflow(mockCredentials, 'owner/repo', '123', 'main', {
         environment: 'production',
       });
+
       jest.advanceTimersByTime(1000);
       jest.useRealTimers();
 
@@ -398,7 +401,6 @@ describe('GitHubProvider', () => {
           },
         ],
       };
-
       // Mock branch validation check fails with 500 (non-404), but we continue
       const branchError = {
         response: { status: 500 },
@@ -414,6 +416,7 @@ describe('GitHubProvider', () => {
       // Use fake timers to handle setTimeout
       jest.useFakeTimers();
       const resultPromise = provider.triggerWorkflow(mockCredentials, 'owner/repo', '123', 'main');
+
       jest.advanceTimersByTime(1000);
       jest.useRealTimers();
 
@@ -455,6 +458,7 @@ describe('GitHubProvider', () => {
   describe('getRunLogs', () => {
     it('should get run logs successfully', async () => {
       const mockJobs = { jobs: [{ id: 1 }, { id: 2 }] };
+
       mockAxiosInstance.get.mockResolvedValueOnce({ data: mockJobs });
 
       // Mock getJobLogs

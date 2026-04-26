@@ -32,6 +32,7 @@ export class DocsTableOfContentsComponent {
    */
   scrollToHeading(headingId: string): void {
     const element = document.getElementById(headingId);
+
     if (!element) {
       return;
     }
@@ -44,7 +45,6 @@ export class DocsTableOfContentsComponent {
       const containerRect = scrollableContainer.getBoundingClientRect();
       const elementRect = element.getBoundingClientRect();
       const offset = 80; // Account for sticky header
-
       // Calculate the scroll position: element position relative to container + current scroll position - offset
       const scrollPosition = elementRect.top - containerRect.top + scrollableContainer.scrollTop - offset;
 

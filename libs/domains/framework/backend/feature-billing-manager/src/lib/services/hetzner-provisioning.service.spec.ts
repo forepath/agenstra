@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import axios from 'axios';
+
 import { HetznerProvisioningService } from './hetzner-provisioning.service';
 
 jest.mock('axios');
@@ -72,6 +73,7 @@ describe('HetznerProvisioningService', () => {
     mockedAxios.post.mockResolvedValueOnce({ data: {} });
 
     const service = new HetznerProvisioningService();
+
     await expect(
       service.provisionServer({
         name: 'test-server',
@@ -86,6 +88,7 @@ describe('HetznerProvisioningService', () => {
     delete process.env.HETZNER_API_TOKEN;
 
     const service = new HetznerProvisioningService();
+
     await expect(
       service.provisionServer({
         name: 'test-server',
@@ -100,6 +103,7 @@ describe('HetznerProvisioningService', () => {
     mockedAxios.delete.mockResolvedValueOnce({});
 
     const service = new HetznerProvisioningService();
+
     await service.deprovisionServer('12345');
 
     expect(mockedAxios.delete).toHaveBeenCalledWith('https://api.hetzner.cloud/v1/servers/12345', {
@@ -111,6 +115,7 @@ describe('HetznerProvisioningService', () => {
     delete process.env.HETZNER_API_TOKEN;
 
     const service = new HetznerProvisioningService();
+
     await service.deprovisionServer('12345');
 
     expect(mockedAxios.delete).not.toHaveBeenCalled();
@@ -120,6 +125,7 @@ describe('HetznerProvisioningService', () => {
     mockedAxios.delete.mockRejectedValueOnce({ message: 'Not found' });
 
     const service = new HetznerProvisioningService();
+
     await expect(service.deprovisionServer('12345')).rejects.toThrow(BadRequestException);
   });
 
@@ -184,6 +190,7 @@ describe('HetznerProvisioningService', () => {
       delete process.env.HETZNER_API_TOKEN;
 
       const service = new HetznerProvisioningService();
+
       await expect(service.getServerInfo('12345')).rejects.toThrow('HETZNER_API_TOKEN environment variable is not set');
       expect(mockedAxios.get).not.toHaveBeenCalled();
     });
@@ -192,9 +199,11 @@ describe('HetznerProvisioningService', () => {
       const notFoundError = Object.assign(new Error('Request failed with status code 404'), {
         response: { status: 404 },
       });
+
       mockedAxios.get.mockRejectedValue(notFoundError);
 
       const service = new HetznerProvisioningService();
+
       await expect(service.getServerInfo('99999')).rejects.toThrow(BadRequestException);
       await expect(service.getServerInfo('99999')).rejects.toThrow('Server 99999 not found');
     });
@@ -203,6 +212,7 @@ describe('HetznerProvisioningService', () => {
       mockedAxios.get.mockResolvedValue({ data: {} });
 
       const service = new HetznerProvisioningService();
+
       await expect(service.getServerInfo('12345')).rejects.toThrow(BadRequestException);
       await expect(service.getServerInfo('12345')).rejects.toThrow('Invalid response from Hetzner API');
     });
@@ -211,6 +221,7 @@ describe('HetznerProvisioningService', () => {
       mockedAxios.get.mockRejectedValue({ message: 'Network error' });
 
       const service = new HetznerProvisioningService();
+
       await expect(service.getServerInfo('12345')).rejects.toThrow(BadRequestException);
       await expect(service.getServerInfo('12345')).rejects.toThrow('Failed to get server info');
     });
@@ -221,6 +232,7 @@ describe('HetznerProvisioningService', () => {
       mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
 
       const service = new HetznerProvisioningService();
+
       await service.startServer('12345');
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -233,6 +245,7 @@ describe('HetznerProvisioningService', () => {
     it('throws when API token not set', async () => {
       delete process.env.HETZNER_API_TOKEN;
       const service = new HetznerProvisioningService();
+
       await expect(service.startServer('12345')).rejects.toThrow(BadRequestException);
       await expect(service.startServer('12345')).rejects.toThrow('HETZNER_API_TOKEN');
     });
@@ -240,6 +253,7 @@ describe('HetznerProvisioningService', () => {
     it('throws on API error', async () => {
       mockedAxios.post.mockRejectedValue({ message: 'Conflict' });
       const service = new HetznerProvisioningService();
+
       await expect(service.startServer('12345')).rejects.toThrow(BadRequestException);
       await expect(service.startServer('12345')).rejects.toThrow('Failed to start server');
     });
@@ -250,6 +264,7 @@ describe('HetznerProvisioningService', () => {
       mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
 
       const service = new HetznerProvisioningService();
+
       await service.stopServer('12345');
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -262,12 +277,14 @@ describe('HetznerProvisioningService', () => {
     it('throws when API token not set', async () => {
       delete process.env.HETZNER_API_TOKEN;
       const service = new HetznerProvisioningService();
+
       await expect(service.stopServer('12345')).rejects.toThrow(BadRequestException);
     });
 
     it('throws on API error', async () => {
       mockedAxios.post.mockRejectedValue({ message: 'Server not found' });
       const service = new HetznerProvisioningService();
+
       await expect(service.stopServer('12345')).rejects.toThrow(BadRequestException);
       await expect(service.stopServer('12345')).rejects.toThrow('Failed to stop server');
     });
@@ -278,6 +295,7 @@ describe('HetznerProvisioningService', () => {
       mockedAxios.post.mockResolvedValueOnce({ data: { action: { id: 1 } } });
 
       const service = new HetznerProvisioningService();
+
       await service.restartServer('12345');
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -290,12 +308,14 @@ describe('HetznerProvisioningService', () => {
     it('throws when API token not set', async () => {
       delete process.env.HETZNER_API_TOKEN;
       const service = new HetznerProvisioningService();
+
       await expect(service.restartServer('12345')).rejects.toThrow(BadRequestException);
     });
 
     it('throws on API error', async () => {
       mockedAxios.post.mockRejectedValue({ message: 'Timeout' });
       const service = new HetznerProvisioningService();
+
       await expect(service.restartServer('12345')).rejects.toThrow(BadRequestException);
       await expect(service.restartServer('12345')).rejects.toThrow('Failed to restart server');
     });

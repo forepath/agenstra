@@ -1,8 +1,8 @@
 import { inject } from '@angular/core';
-import { ActivatedRoute, type ActivatedRouteSnapshot, Router, type CanActivateFn } from '@angular/router';
+import { ActivatedRoute, Router, type ActivatedRouteSnapshot, type CanActivateFn } from '@angular/router';
 // Avoid data-access barrel: it re-exports identity (Keycloak), which breaks lightweight Jest runs.
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { ClientsFacade } from '../../../../data-access-agent-console/src/lib/state/clients/clients.facade';
+import { ClientsFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import { map, take } from 'rxjs';
 
 /**
@@ -20,6 +20,7 @@ export const ticketsRequireActiveClientGuard: CanActivateFn = (route: ActivatedR
 
   if (clientIdFromUrl) {
     clientsFacade.setActiveClient(clientIdFromUrl);
+
     return true;
   }
 
@@ -29,6 +30,7 @@ export const ticketsRequireActiveClientGuard: CanActivateFn = (route: ActivatedR
       if (activeId) {
         return router.createUrlTree(['tickets', activeId], { relativeTo });
       }
+
       return true;
     }),
   );

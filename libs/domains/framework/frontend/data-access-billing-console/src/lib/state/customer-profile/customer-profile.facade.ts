@@ -1,6 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+
+import type { CustomerProfileDto, CustomerProfileResponse } from '../../types/billing.types';
+
 import { clearCustomerProfile, loadCustomerProfile, updateCustomerProfile } from './customer-profile.actions';
 import {
   selectCustomerProfile,
@@ -11,7 +14,6 @@ import {
   selectHasCustomerProfile,
   selectIsCustomerProfileComplete,
 } from './customer-profile.selectors';
-import type { CustomerProfileDto, CustomerProfileResponse } from '../../types/billing.types';
 
 @Injectable({
   providedIn: 'root',

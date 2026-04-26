@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { IDENTITY_AUTH_ENVIRONMENT, USERS_JWT_STORAGE_KEY } from '@forepath/identity/frontend';
 import { Store } from '@ngrx/store';
 import { catchError, throwError } from 'rxjs';
+
 import { logout } from '../state/authentication/authentication.actions';
 
 /**
@@ -19,12 +20,15 @@ const SESSION_TERMINATION_MESSAGES = new Set([
 
 function getApiErrorMessage(error: HttpErrorResponse): string {
   const message = error.error?.message;
+
   if (typeof message === 'string') {
     return message;
   }
+
   if (Array.isArray(message)) {
     return message.join(' ');
   }
+
   return '';
 }
 
@@ -32,10 +36,13 @@ function isSessionTerminationError(error: HttpErrorResponse): boolean {
   if (error.status !== 401) {
     return false;
   }
+
   const text = getApiErrorMessage(error);
+
   if (!text) {
     return false;
   }
+
   return SESSION_TERMINATION_MESSAGES.has(text);
 }
 
@@ -45,6 +52,7 @@ function requestMatchesAuthApi(
   additionalApiUrls: readonly string[] | undefined,
 ): boolean {
   const bases = [apiUrl, ...(additionalApiUrls ?? [])].filter((b): b is string => !!b);
+
   return bases.some((base) => url.startsWith(base));
 }
 
@@ -75,6 +83,7 @@ export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next)
       if (authEnv.authentication.type === 'users') {
         localStorage.removeItem(USERS_JWT_STORAGE_KEY);
       }
+
       if (store) {
         store.dispatch(logout());
       } else if (router) {

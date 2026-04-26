@@ -1,3 +1,5 @@
+import type { InvoiceResponse } from '../../types/billing.types';
+
 import {
   clearInvoices,
   createInvoice,
@@ -17,7 +19,6 @@ import {
   refreshInvoiceLinkSuccess,
 } from './invoices.actions';
 import { invoicesReducer, initialInvoicesState, type InvoicesState } from './invoices.reducer';
-import type { InvoiceResponse } from '../../types/billing.types';
 
 describe('invoicesReducer', () => {
   const subscriptionId = 'sub-1';
@@ -33,6 +34,7 @@ describe('invoicesReducer', () => {
   describe('initial state', () => {
     it('should return the initial state', () => {
       const action = { type: 'UNKNOWN' };
+
       expect(invoicesReducer(undefined, action as never)).toEqual(initialInvoicesState);
     });
   });
@@ -44,6 +46,7 @@ describe('invoicesReducer', () => {
         error: 'Previous error',
       };
       const newState = invoicesReducer(state, loadInvoices({ subscriptionId }));
+
       expect(newState.loading).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -57,6 +60,7 @@ describe('invoicesReducer', () => {
       };
       const invoices = [mockInvoice];
       const newState = invoicesReducer(state, loadInvoicesSuccess({ subscriptionId, invoices }));
+
       expect(newState.entities[subscriptionId]).toEqual(invoices);
       expect(newState.loading).toBe(false);
       expect(newState.error).toBeNull();
@@ -68,6 +72,7 @@ describe('invoicesReducer', () => {
         entities: { 'sub-other': [mockInvoice] },
       };
       const newState = invoicesReducer(state, loadInvoicesSuccess({ subscriptionId, invoices: [mockInvoice] }));
+
       expect(newState.entities['sub-other']).toEqual([mockInvoice]);
       expect(newState.entities[subscriptionId]).toEqual([mockInvoice]);
     });
@@ -77,6 +82,7 @@ describe('invoicesReducer', () => {
     it('should set error and set loading to false', () => {
       const state: InvoicesState = { ...initialInvoicesState, loading: true };
       const newState = invoicesReducer(state, loadInvoicesFailure({ error: 'Load failed' }));
+
       expect(newState.error).toBe('Load failed');
       expect(newState.loading).toBe(false);
     });
@@ -86,6 +92,7 @@ describe('invoicesReducer', () => {
     it('should set creating to true and clear error', () => {
       const state: InvoicesState = { ...initialInvoicesState, error: 'Previous error' };
       const newState = invoicesReducer(state, createInvoice({ subscriptionId }));
+
       expect(newState.creating).toBe(true);
       expect(newState.error).toBeNull();
     });
@@ -101,6 +108,7 @@ describe('invoicesReducer', () => {
           response: { invoiceId: 'inv-1', preAuthUrl: 'https://example.com' },
         }),
       );
+
       expect(newState.creating).toBe(false);
       expect(newState.error).toBeNull();
     });
@@ -110,6 +118,7 @@ describe('invoicesReducer', () => {
     it('should set error and set creating to false', () => {
       const state: InvoicesState = { ...initialInvoicesState, creating: true };
       const newState = invoicesReducer(state, createInvoiceFailure({ error: 'Create failed' }));
+
       expect(newState.error).toBe('Create failed');
       expect(newState.creating).toBe(false);
     });
@@ -119,6 +128,7 @@ describe('invoicesReducer', () => {
     it('should set summaryLoading to true and clear summaryError', () => {
       const state: InvoicesState = { ...initialInvoicesState, summaryError: 'Previous error' };
       const newState = invoicesReducer(state, loadInvoicesSummary());
+
       expect(newState.summaryLoading).toBe(true);
       expect(newState.summaryError).toBeNull();
     });
@@ -129,6 +139,7 @@ describe('invoicesReducer', () => {
       const state: InvoicesState = { ...initialInvoicesState, summaryLoading: true };
       const summary = { openOverdueCount: 3, openOverdueTotal: 200, billingDayOfMonth: 15, unbilledTotal: 50 };
       const newState = invoicesReducer(state, loadInvoicesSummarySuccess({ summary }));
+
       expect(newState.summary).toEqual(summary);
       expect(newState.summaryLoading).toBe(false);
       expect(newState.summaryError).toBeNull();
@@ -139,6 +150,7 @@ describe('invoicesReducer', () => {
     it('should set summaryError and clear summaryLoading', () => {
       const state: InvoicesState = { ...initialInvoicesState, summaryLoading: true };
       const newState = invoicesReducer(state, loadInvoicesSummaryFailure({ error: 'Summary failed' }));
+
       expect(newState.summaryLoading).toBe(false);
       expect(newState.summaryError).toBe('Summary failed');
     });
@@ -148,6 +160,7 @@ describe('invoicesReducer', () => {
     it('should set openOverdueListLoading to true and clear openOverdueListError', () => {
       const state: InvoicesState = { ...initialInvoicesState, openOverdueListError: 'Previous error' };
       const newState = invoicesReducer(state, loadOpenOverdueInvoices());
+
       expect(newState.openOverdueListLoading).toBe(true);
       expect(newState.openOverdueListError).toBeNull();
     });
@@ -158,6 +171,7 @@ describe('invoicesReducer', () => {
       const state: InvoicesState = { ...initialInvoicesState, openOverdueListLoading: true };
       const invoices = [mockInvoice];
       const newState = invoicesReducer(state, loadOpenOverdueInvoicesSuccess({ invoices }));
+
       expect(newState.openOverdueList).toEqual(invoices);
       expect(newState.openOverdueListLoading).toBe(false);
       expect(newState.openOverdueListError).toBeNull();
@@ -168,6 +182,7 @@ describe('invoicesReducer', () => {
     it('should set openOverdueListError and clear loading', () => {
       const state: InvoicesState = { ...initialInvoicesState, openOverdueListLoading: true };
       const newState = invoicesReducer(state, loadOpenOverdueInvoicesFailure({ error: 'Open overdue load failed' }));
+
       expect(newState.openOverdueListLoading).toBe(false);
       expect(newState.openOverdueListError).toBe('Open overdue load failed');
     });
@@ -177,6 +192,7 @@ describe('invoicesReducer', () => {
     it('should set refreshingInvoiceRefId and clear error', () => {
       const state: InvoicesState = { ...initialInvoicesState, error: 'Previous error' };
       const newState = invoicesReducer(state, refreshInvoiceLink({ subscriptionId, invoiceRefId: 'ref-1' }));
+
       expect(newState.refreshingInvoiceRefId).toBe('ref-1');
       expect(newState.error).toBeNull();
     });
@@ -197,6 +213,7 @@ describe('invoicesReducer', () => {
           preAuthUrl: 'https://example.com/new-link',
         }),
       );
+
       expect(newState.entities[subscriptionId][0].preAuthUrl).toBe('https://example.com/new-link');
       expect(newState.refreshingInvoiceRefId).toBeNull();
       expect(newState.error).toBeNull();
@@ -221,6 +238,7 @@ describe('invoicesReducer', () => {
           preAuthUrl: 'https://example.com/new-link',
         }),
       );
+
       expect(newState.entities[subscriptionId][0].preAuthUrl).toBe('https://example.com/new-link');
       expect(newState.entities[subscriptionId][1].preAuthUrl).toBe('https://other.com');
     });
@@ -240,6 +258,7 @@ describe('invoicesReducer', () => {
           preAuthUrl: 'https://example.com/new-link',
         }),
       );
+
       expect(newState.openOverdueList[0].preAuthUrl).toBe('https://example.com/new-link');
     });
   });
@@ -251,6 +270,7 @@ describe('invoicesReducer', () => {
         refreshingInvoiceRefId: 'ref-1',
       };
       const newState = invoicesReducer(state, refreshInvoiceLinkFailure({ error: 'Refresh failed' }));
+
       expect(newState.refreshingInvoiceRefId).toBeNull();
       expect(newState.error).toBe('Refresh failed');
     });
@@ -264,6 +284,7 @@ describe('invoicesReducer', () => {
         loading: true,
       };
       const newState = invoicesReducer(state, clearInvoices());
+
       expect(newState).toEqual(initialInvoicesState);
     });
   });

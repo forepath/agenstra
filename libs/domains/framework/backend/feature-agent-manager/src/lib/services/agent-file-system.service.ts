@@ -1,13 +1,16 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
 import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 import type { AgentFileManagerContext } from '../utils/agent-file-manager-context';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
+
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
@@ -70,8 +73,10 @@ export class AgentFileSystemService {
   private getBasePath(agentType: string): string {
     try {
       const provider = this.agentProviderFactory.getProvider(agentType);
+
       if (provider.getBasePath) {
         const basePath = provider.getBasePath();
+
         if (basePath) {
           return basePath;
         }
@@ -79,6 +84,7 @@ export class AgentFileSystemService {
     } catch (error) {
       this.logger.warn(`Failed to get provider for agent type '${agentType}', using default base path: ${error}`);
     }
+
     return this.DEFAULT_BASE_PATH;
   }
 
@@ -102,20 +108,26 @@ export class AgentFileSystemService {
     if (context === 'app') {
       return this.getBasePath(agentType);
     }
+
     try {
       const provider = this.agentProviderFactory.getProvider(agentType);
+
       if (!provider.getConfigBasePath) {
         throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
       }
+
       const raw = provider.getConfigBasePath();
+
       if (!raw?.trim()) {
         throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
       }
+
       return await this.expandTildeInProviderPath(raw.trim(), containerId);
     } catch (error: unknown) {
       if (error instanceof BadRequestException) {
         throw error;
       }
+
       this.logger.warn(`Failed to resolve config base for agent type '${agentType}': ${error}`);
       throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
     }
@@ -132,6 +144,7 @@ export class AgentFileSystemService {
   ): Promise<string> {
     const sanitized = this.sanitizePath(relativePath);
     const root = (await this.resolveFilesystemRoot(agentType, context, containerId)).replace(/\/+$/, '');
+
     return `${root}/${sanitized}`;
   }
 
@@ -166,6 +179,7 @@ export class AgentFileSystemService {
       // Create a temporary file path
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-file-read-'));
       const fileName = path.basename(filePath) || 'file';
+
       tempFilePath = path.join(tempDir, fileName);
 
       // Copy file from container to temporary location using docker cp
@@ -178,28 +192,31 @@ export class AgentFileSystemService {
 
       // Get file stats to check size
       const stats = fs.statSync(tempFilePath);
+
       if (stats.size > this.MAX_FILE_SIZE) {
         throw new BadRequestException(`File size exceeds maximum allowed size of ${this.MAX_FILE_SIZE} bytes`);
       }
 
       // Read file as binary buffer
       const fileBuffer = fs.readFileSync(tempFilePath);
-
       // Encode to base64
       const base64Content = fileBuffer.toString('base64');
-
       // Try to determine if it's text by attempting to decode as UTF-8
       // If it decodes successfully and has reasonable text content, mark as utf-8
       let encoding: 'utf-8' | 'base64' = 'base64';
+
       try {
         const textContent = fileBuffer.toString('utf-8');
         // Check if it's likely text: low percentage of control characters (excluding common whitespace)
         const sampleSize = Math.min(512, textContent.length);
+
         if (sampleSize > 0) {
           const sample = textContent.substring(0, sampleSize);
           let controlCharCount = 0;
+
           for (let i = 0; i < sample.length; i++) {
             const charCode = sample.charCodeAt(i);
+
             // Count control characters (excluding common whitespace: tab, LF, CR)
             if (
               (charCode >= 0 && charCode <= 8) || // Null, bell, backspace, etc.
@@ -214,6 +231,7 @@ export class AgentFileSystemService {
 
           // If less than 10% are control characters, it's likely text
           const controlCharThreshold = 0.1;
+
           if (controlCharCount / sampleSize <= controlCharThreshold) {
             encoding = 'utf-8';
             this.logger.debug(`File ${filePath} detected as text (${stats.size} bytes)`);
@@ -237,10 +255,13 @@ export class AgentFileSystemService {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
+
       const err = error as { message?: string };
+
       if (err.message?.includes('No such file') || err.message?.includes('not found')) {
         throw new NotFoundException(`File not found: ${filePath}`);
       }
+
       this.logger.error(`Error reading file ${filePath} for agent ${agentId}: ${err.message}`);
       throw error;
     } finally {
@@ -248,12 +269,15 @@ export class AgentFileSystemService {
       if (tempFilePath && fs.existsSync(tempFilePath)) {
         try {
           const tempDir = path.dirname(tempFilePath);
+
           fs.unlinkSync(tempFilePath);
+
           if (fs.existsSync(tempDir)) {
             fs.rmSync(tempDir, { recursive: true, force: true });
           }
         } catch (cleanupError: unknown) {
           const cleanupErr = cleanupError as { message?: string };
+
           this.logger.warn(`Failed to clean up temporary file ${tempFilePath}: ${cleanupErr.message}`);
         }
       }
@@ -271,6 +295,7 @@ export class AgentFileSystemService {
     if (!str || typeof str !== 'string') {
       return '';
     }
+
     // Keep only alphanumeric, dots, dashes, underscores, slashes, and spaces
     // Remove everything else (control characters, shell special chars, etc.)
     return str.replace(/[^a-zA-Z0-9.\-_/ ]/g, '').trim();
@@ -307,16 +332,17 @@ export class AgentFileSystemService {
       context,
       agentEntity.containerId,
     );
-
     // Content is already base64-encoded, so we check the approximate decoded size
     // Base64 is ~33% larger: original_size ≈ base64_length * 3/4
     const approximateOriginalSize = (content.length * 3) / 4;
+
     if (approximateOriginalSize > this.MAX_FILE_SIZE) {
       throw new BadRequestException(`File content size exceeds maximum allowed size of ${this.MAX_FILE_SIZE} bytes`);
     }
 
     try {
       const escapedPath = this.escapeForShell(containerPath);
+
       this.logger.debug(`Escaped path: ${escapedPath}`);
       this.logger.debug(`Content: ${content}`);
 
@@ -333,6 +359,7 @@ export class AgentFileSystemService {
       this.logger.debug(`File written: ${filePath} for agent ${agentId} (encoding: ${encoding || 'utf-8'})`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error writing file ${filePath} for agent ${agentId}: ${err.message}`);
       throw error;
     }
@@ -370,7 +397,6 @@ export class AgentFileSystemService {
       // Use a simpler approach: ls to list, then process with find for each item
       // This avoids the complex while loop that might fail silently
       const escapedPath = this.escapeForShell(containerPath);
-
       // Get list of items using ls -1 (one per line)
       const listCommand = `sh -c "ls -a -1 ${escapedPath} 2>/dev/null"`;
       let output = await this.dockerService.sendCommandToContainer(agentEntity.containerId, listCommand);
@@ -390,6 +416,7 @@ export class AgentFileSystemService {
       // If no items found, return empty array
       if (items.length === 0) {
         this.logger.debug(`No items found in ${containerPath}`);
+
         return [];
       }
 
@@ -404,8 +431,8 @@ export class AgentFileSystemService {
           echo \\"file|\\$item|\\$(stat -c %s \\"\\$fullpath\\" 2>/dev/null || echo 0)|\\$(stat -c %Y \\"\\$fullpath\\" 2>/dev/null || echo 0)\\"
         fi
       done"`;
-
       let processOutput = await this.dockerService.sendCommandToContainer(agentEntity.containerId, processCommand);
+
       // Remove invalid characters that might come from Docker protocol parsing
       // Keep pipe separator (|) for parsing, newlines, and valid filename characters
       processOutput = processOutput.replace(/[^a-zA-Z0-9.\-_/ |\n]/g, '').trim();
@@ -427,11 +454,11 @@ export class AgentFileSystemService {
           // Sanitize type and name, but be less aggressive - only remove truly invalid characters
           const rawType = parts[0].trim();
           const rawName = parts[1].trim();
-
           // Normalize type: extract "file" or "directory" from rawType, handling cases like "1file" or "directory"
           // This handles shell artifacts or prefixes that might appear before the actual type
           let type: 'file' | 'directory' | null = null;
           const normalizedRawType = rawType.toLowerCase();
+
           if (normalizedRawType.includes('directory')) {
             type = 'directory';
           } else if (normalizedRawType.includes('file')) {
@@ -480,15 +507,18 @@ export class AgentFileSystemService {
         if (a.type !== b.type) {
           return a.type === 'directory' ? -1 : 1;
         }
+
         return a.name.localeCompare(b.name);
       });
 
       return nodes;
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       if (err.message?.includes('No such file') || err.message?.includes('not found')) {
         throw new NotFoundException(`Directory not found: ${directoryPath}`);
       }
+
       this.logger.error(`Error listing directory ${directoryPath} for agent ${agentId}: ${err.message}`);
       throw error;
     }
@@ -549,6 +579,7 @@ export class AgentFileSystemService {
       this.logger.debug(`Created ${type}: ${filePath} for agent ${agentId}`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error creating ${type} ${filePath} for agent ${agentId}: ${err.message}`);
       throw error;
     }
@@ -591,9 +622,11 @@ export class AgentFileSystemService {
       this.logger.debug(`Deleted: ${filePath} for agent ${agentId}`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       if (err.message?.includes('No such file') || err.message?.includes('not found')) {
         throw new NotFoundException(`File or directory not found: ${filePath}`);
       }
+
       this.logger.error(`Error deleting ${filePath} for agent ${agentId}: ${err.message}`);
       throw error;
     }
@@ -644,9 +677,11 @@ export class AgentFileSystemService {
       this.logger.debug(`Moved: ${sourcePath} to ${destinationPath} for agent ${agentId}`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       if (err.message?.includes('No such file') || err.message?.includes('not found')) {
         throw new NotFoundException(`Source file or directory not found: ${sourcePath}`);
       }
+
       this.logger.error(`Error moving ${sourcePath} to ${destinationPath} for agent ${agentId}: ${err.message}`);
       throw error;
     }

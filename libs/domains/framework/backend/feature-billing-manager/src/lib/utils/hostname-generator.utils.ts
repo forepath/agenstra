@@ -30,7 +30,6 @@ const ADJECTIVES = [
   'young',
   'zesty',
 ];
-
 const NOUNS = [
   'armadillo',
   'bear',
@@ -58,7 +57,6 @@ const NOUNS = [
   'yak',
   'zebra',
 ];
-
 const SUFFIX_LENGTH = 5;
 const ALPHANUMERIC = [...'abcdefghijklmnopqrstuvwxyz0123456789'];
 
@@ -74,9 +72,11 @@ function pick<T>(arr: readonly T[]): T {
  */
 function randomSuffix(length: number): string {
   let result = '';
+
   for (let i = 0; i < length; i++) {
     result += pick(ALPHANUMERIC);
   }
+
   return result;
 }
 
@@ -88,6 +88,7 @@ export function generateHostnameCandidate(): string {
   const adjective = pick(ADJECTIVES);
   const noun = pick(NOUNS);
   const suffix = randomSuffix(SUFFIX_LENGTH);
+
   return `${adjective}-${noun}-${suffix}`;
 }
 
@@ -98,5 +99,6 @@ export function isValidSubdomainHostname(hostname: string): boolean {
   if (typeof hostname !== 'string' || hostname.length === 0 || hostname.length > 128) {
     return false;
   }
+
   return !hostname.includes('.') && /^[a-z0-9-]+$/.test(hostname);
 }

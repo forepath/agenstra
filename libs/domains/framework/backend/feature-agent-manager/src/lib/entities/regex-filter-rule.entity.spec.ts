@@ -7,6 +7,7 @@ describe('RegexFilterRuleEntity', () => {
 
   it('supports persisted fields', () => {
     const row = new RegexFilterRuleEntity();
+
     row.id = 'rule-uuid';
     row.pattern = '\\d+';
     row.regexFlags = 'g';

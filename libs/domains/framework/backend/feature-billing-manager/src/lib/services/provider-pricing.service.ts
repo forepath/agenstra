@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { ProviderPriceSnapshotsRepository } from '../repositories/provider-price-snapshots.repository';
 
 @Injectable()

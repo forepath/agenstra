@@ -1,5 +1,6 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
+import { UnauthorizedException } from '@nestjs/common';
+
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -9,20 +10,16 @@ describe('AuthService', () => {
     count: jest.fn(),
     findByIdOrThrow: jest.fn(),
   };
-
   const mockUsersService = {
     create: jest.fn(),
     validatePassword: jest.fn(),
   };
-
   const mockEmailService = {
     send: jest.fn(),
   };
-
   const mockJwtService = {
     sign: jest.fn().mockReturnValue('jwt-token'),
   };
-
   let service: AuthService;
 
   beforeEach(() => {

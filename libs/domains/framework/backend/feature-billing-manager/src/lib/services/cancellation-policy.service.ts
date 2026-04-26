@@ -17,6 +17,7 @@ export class CancellationPolicyService {
     now: Date = new Date(),
   ): CancellationDecision {
     const commitmentEnd = new Date(createdAt);
+
     commitmentEnd.setDate(commitmentEnd.getDate() + minCommitmentDays);
 
     if (now < commitmentEnd) {
@@ -25,6 +26,7 @@ export class CancellationPolicyService {
 
     const effectiveAt = cancelAtPeriodEnd && currentPeriodEnd ? currentPeriodEnd : now;
     const noticeStart = new Date(effectiveAt);
+
     noticeStart.setDate(noticeStart.getDate() - noticeDays);
 
     if (now < noticeStart) {

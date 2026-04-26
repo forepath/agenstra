@@ -1,14 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
-import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
-import { StatisticsClientEntity } from '../entities/statistics-client.entity';
-import { StatisticsProvisioningReferenceEntity } from '../entities/statistics-provisioning-reference.entity';
 import { StatisticsClientUserEntity } from '../entities/statistics-client-user.entity';
+import { StatisticsClientEntity } from '../entities/statistics-client.entity';
+import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
+import { StatisticsProvisioningReferenceEntity } from '../entities/statistics-provisioning-reference.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
+
 import { StatisticsRepository } from './statistics.repository';
 
 const createMockQb = () => ({
@@ -26,7 +28,6 @@ const createMockQb = () => ({
   getRawOne: jest.fn().mockResolvedValue(null),
   getRawMany: jest.fn().mockResolvedValue([]),
 });
-
 const createMockRepo = (qb: ReturnType<typeof createMockQb>) => ({
   createQueryBuilder: jest.fn().mockReturnValue(qb),
   find: jest.fn(),
@@ -34,7 +35,6 @@ const createMockRepo = (qb: ReturnType<typeof createMockQb>) => ({
   create: jest.fn(),
   save: jest.fn(),
 });
-
 const entities = [
   StatisticsUserEntity,
   StatisticsClientEntity,
@@ -63,12 +63,10 @@ describe('StatisticsRepository', () => {
       create: jest.fn(),
       save: jest.fn(),
     };
-
     const providers = entities.map((entity) => ({
       provide: getRepositoryToken(entity),
       useValue: entity === StatisticsClientEntity ? mockRepo : mockBaseRepo,
     }));
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [StatisticsRepository, ...providers],
     }).compile();

@@ -6,6 +6,7 @@ import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-a
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
+
 import { ThemeService } from '../theme.service';
 
 @Component({
@@ -75,8 +76,11 @@ export class BillingConsoleContainerComponent implements OnInit {
   ]).pipe(
     map(([isAuthenticated, authType, user]) => {
       if (!isAuthenticated) return null;
+
       if (authType === 'api-key') return 'Admin';
+
       const role = user?.role;
+
       return role ? role.charAt(0).toUpperCase() + role.slice(1) : null;
     }),
   );
@@ -106,6 +110,7 @@ export class BillingConsoleContainerComponent implements OnInit {
     // Check initial query params immediately
     const initialParams = this.route.snapshot.queryParams;
     const isStandalone = !!initialParams['standalone'];
+
     if (isStandalone) {
       this.standaloneLoadingService.setLoading(true);
     }
@@ -113,6 +118,7 @@ export class BillingConsoleContainerComponent implements OnInit {
     // Watch for query parameter changes
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const isStandalone = !!params['standalone'];
+
       if (isStandalone) {
         this.standaloneLoadingService.setLoading(true);
       } else {

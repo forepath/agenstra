@@ -2,8 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
+import { KeycloakService } from 'keycloak-angular';
 import { of } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+
 import {
   connectSocket,
   connectSocketFailure,
@@ -37,14 +39,11 @@ jest.mock('keycloak-angular', () => ({
   KeycloakService: jest.fn(),
 }));
 
-import { KeycloakService } from 'keycloak-angular';
-
 describe('SocketsEffects', () => {
   let actions$: Actions;
   let mockSocket: jest.Mocked<Partial<Socket>>;
   let mockEnvironment: any;
   let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
-
   const mockForwardedPayload: ForwardedEventPayload = {
     success: true,
     data: {
@@ -130,6 +129,7 @@ describe('SocketsEffects', () => {
       });
 
       const action = connectSocket();
+
       actions$ = of(action);
 
       connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
@@ -140,6 +140,7 @@ describe('SocketsEffects', () => {
 
     it('should create socket connection with API key authentication', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       // Mock connect event
@@ -148,6 +149,7 @@ describe('SocketsEffects', () => {
           // Simulate immediate connection
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -193,6 +195,7 @@ describe('SocketsEffects', () => {
       });
 
       const action = connectSocket();
+
       actions$ = of(action);
 
       // Mock connect event
@@ -200,6 +203,7 @@ describe('SocketsEffects', () => {
         if (event === 'connect') {
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -221,6 +225,7 @@ describe('SocketsEffects', () => {
 
     it('should return socketReconnectError on connection error (with reconnection enabled)', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       // Mock connect_error event
@@ -228,6 +233,7 @@ describe('SocketsEffects', () => {
         if (event === 'connect_error') {
           setTimeout(() => handler(new Error('Connection failed')), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -241,6 +247,7 @@ describe('SocketsEffects', () => {
 
     it('should handle setClientSuccess event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       const setClientSuccessData = { message: 'Client set', clientId: 'client-1' };
@@ -250,9 +257,11 @@ describe('SocketsEffects', () => {
         if (event === 'setClientSuccess') {
           setTimeout(() => handler(setClientSuccessData), 0);
         }
+
         if (event === 'connect') {
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -266,6 +275,7 @@ describe('SocketsEffects', () => {
 
     it('should handle forwardAck event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       const forwardAckData = { received: true, event: 'chat' };
@@ -275,9 +285,11 @@ describe('SocketsEffects', () => {
         if (event === 'forwardAck') {
           setTimeout(() => handler(forwardAckData), 0);
         }
+
         if (event === 'connect') {
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -291,6 +303,7 @@ describe('SocketsEffects', () => {
 
     it('should handle error event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       const errorData = { message: 'Socket error' };
@@ -300,9 +313,11 @@ describe('SocketsEffects', () => {
         if (event === 'error') {
           setTimeout(() => handler(errorData), 0);
         }
+
         if (event === 'connect') {
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -316,6 +331,7 @@ describe('SocketsEffects', () => {
 
     it('should handle forwarded events and filter out internal events', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let onAnyHandler: (event: string, ...args: unknown[]) => void;
@@ -323,6 +339,7 @@ describe('SocketsEffects', () => {
       // Mock onAny handler
       (mockSocket.onAny as jest.Mock).mockImplementation((handler: (event: string, ...args: unknown[]) => void) => {
         onAnyHandler = handler;
+
         return mockSocket as any;
       });
 
@@ -331,12 +348,14 @@ describe('SocketsEffects', () => {
         if (event === 'connect') {
           setTimeout(() => {
             handler();
+
             // Simulate forwarded event
             if (onAnyHandler) {
               onAnyHandler('chatMessage', mockForwardedPayload);
             }
           }, 0);
         }
+
         return mockSocket as any;
       });
 
@@ -350,6 +369,7 @@ describe('SocketsEffects', () => {
 
     it('should not forward internal Socket.IO events', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let onAnyHandler: (event: string, ...args: unknown[]) => void;
@@ -358,6 +378,7 @@ describe('SocketsEffects', () => {
       // Mock onAny handler
       (mockSocket.onAny as jest.Mock).mockImplementation((handler: (event: string, ...args: unknown[]) => void) => {
         onAnyHandler = handler;
+
         return mockSocket as any;
       });
 
@@ -366,6 +387,7 @@ describe('SocketsEffects', () => {
         if (event === 'connect') {
           setTimeout(() => {
             handler();
+
             // Simulate internal events (should be filtered out)
             if (onAnyHandler) {
               onAnyHandler('connect', {});
@@ -376,6 +398,7 @@ describe('SocketsEffects', () => {
             }
           }, 0);
         }
+
         return mockSocket as any;
       });
 
@@ -394,6 +417,7 @@ describe('SocketsEffects', () => {
     it('should disconnect socket and return disconnectSocketSuccess', (done) => {
       // First connect to create socket instance
       const connectAction = connectSocket();
+
       actions$ = of(connectAction);
 
       // Mock connect event to establish connection
@@ -401,6 +425,7 @@ describe('SocketsEffects', () => {
         if (event === 'connect') {
           setTimeout(() => handler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -408,6 +433,7 @@ describe('SocketsEffects', () => {
       connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe(() => {
         // Now test disconnect
         const disconnectAction = disconnectSocket();
+
         actions$ = of(disconnectAction);
 
         disconnectSocket$(actions$).subscribe((result) => {
@@ -420,6 +446,7 @@ describe('SocketsEffects', () => {
 
     it('should handle case when socket is null', (done) => {
       const action = disconnectSocket();
+
       actions$ = of(action);
 
       disconnectSocket$(actions$).subscribe((result) => {
@@ -432,17 +459,21 @@ describe('SocketsEffects', () => {
   describe('Main Socket Reconnection Events', () => {
     it('should handle reconnect_attempt event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'reconnect_attempt') {
           setTimeout(() => handler(2), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -456,17 +487,21 @@ describe('SocketsEffects', () => {
 
     it('should handle reconnecting event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'reconnecting') {
           setTimeout(() => handler(3), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -480,17 +515,21 @@ describe('SocketsEffects', () => {
 
     it('should handle reconnect event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'reconnect') {
           setTimeout(() => handler(), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -504,17 +543,21 @@ describe('SocketsEffects', () => {
 
     it('should handle reconnect_error event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'reconnect_error') {
           setTimeout(() => handler(new Error('Reconnection error')), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -528,17 +571,21 @@ describe('SocketsEffects', () => {
 
     it('should handle reconnect_failed event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'reconnect_failed') {
           setTimeout(() => handler(), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -554,17 +601,21 @@ describe('SocketsEffects', () => {
   describe('Remote Connection Reconnection Events', () => {
     it('should handle remoteDisconnected event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'remoteDisconnected') {
           setTimeout(() => handler({ clientId: 'client-1' }), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -578,17 +629,21 @@ describe('SocketsEffects', () => {
 
     it('should handle remoteReconnecting event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'remoteReconnecting') {
           setTimeout(() => handler({ clientId: 'client-1', attempt: 2 }), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -602,17 +657,21 @@ describe('SocketsEffects', () => {
 
     it('should handle remoteReconnected event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'remoteReconnected') {
           setTimeout(() => handler({ clientId: 'client-1' }), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -626,17 +685,21 @@ describe('SocketsEffects', () => {
 
     it('should handle remoteReconnectError event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'remoteReconnectError') {
           setTimeout(() => handler({ clientId: 'client-1', error: 'Timeout' }), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 
@@ -650,17 +713,21 @@ describe('SocketsEffects', () => {
 
     it('should handle remoteReconnectFailed event', (done) => {
       const action = connectSocket();
+
       actions$ = of(action);
 
       let connectHandler: () => void;
+
       (mockSocket.on as jest.Mock).mockImplementation((event: string, handler: any) => {
         if (event === 'remoteReconnectFailed') {
           setTimeout(() => handler({ clientId: 'client-1', error: 'Failed' }), 0);
         }
+
         if (event === 'connect') {
           connectHandler = handler;
           setTimeout(() => connectHandler(), 0);
         }
+
         return mockSocket as any;
       });
 

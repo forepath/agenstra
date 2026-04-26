@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import type { ServiceTypesState } from './service-types.reducer';
 
 export const selectServiceTypesState = createFeatureSelector<ServiceTypesState>('serviceTypes');

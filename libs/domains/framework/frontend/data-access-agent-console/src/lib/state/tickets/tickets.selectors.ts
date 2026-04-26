@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+
 import {
   BOARD_LANE_STATUSES,
   isBoardLaneStatus,
@@ -43,32 +44,41 @@ export const selectRootTicketsByStatus = createSelector(selectTicketsList, (list
     in_progress: [],
     prototype: [],
   };
+
   for (const t of roots) {
     if (isTerminalTicketStatus(t.status)) {
       continue;
     }
+
     if (isBoardLaneStatus(t.status)) {
       byStatus[t.status].push(t);
     }
   }
+
   return byStatus;
 });
 
 function buildChildrenByParent(list: TicketResponseDto[]): Map<string | null, TicketResponseDto[]> {
   const byParent = new Map<string | null, TicketResponseDto[]>();
+
   for (const t of list) {
     const p = t.parentId ?? null;
+
     if (!byParent.has(p)) {
       byParent.set(p, []);
     }
+
     const siblings = byParent.get(p);
+
     if (siblings) {
       siblings.push(t);
     }
   }
+
   for (const arr of byParent.values()) {
     arr.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }
+
   return byParent;
 }
 
@@ -84,16 +94,20 @@ export const selectTicketsBoardRowsByStatus = createSelector(selectTicketsList, 
     in_progress: [],
     prototype: [],
   };
+
   for (const lane of BOARD_LANE_STATUSES) {
     const roots = (byParent.get(null) ?? []).filter((t) => t.status === lane);
     const out = byStatus[lane];
+
     for (const r of roots) {
       out.push({ ticket: r, depth: 0 });
+
       for (const child of byParent.get(r.id) ?? []) {
         out.push({ ticket: child, depth: 1 });
       }
     }
   }
+
   return byStatus;
 });
 
@@ -102,16 +116,20 @@ export const selectDetailBreadcrumb = createSelector(selectTicketsList, selectTi
   if (!detail) {
     return [] as TicketResponseDto[];
   }
+
   const byId = new Map(list.map((t) => [t.id, t]));
   const chain: TicketResponseDto[] = [];
   let cur: TicketResponseDto | undefined = detail;
   const visited = new Set<string>();
+
   while (cur && !visited.has(cur.id)) {
     visited.add(cur.id);
     chain.unshift(cur);
     const parentId: string | null | undefined = cur.parentId;
+
     cur = parentId != null && parentId !== '' ? byId.get(parentId) : undefined;
   }
+
   return chain;
 });
 

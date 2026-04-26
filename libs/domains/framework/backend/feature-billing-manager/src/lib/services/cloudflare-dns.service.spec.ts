@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { CloudflareDnsService } from './cloudflare-dns.service';
 
 jest.mock('axios');
@@ -18,24 +19,28 @@ describe('CloudflareDnsService', () => {
 
   it('isConfigured returns true when token and zone are set', () => {
     const service = new CloudflareDnsService();
+
     expect(service.isConfigured()).toBe(true);
   });
 
   it('isConfigured returns false when token is missing', () => {
     delete process.env.CLOUDFLARE_API_TOKEN;
     const service = new CloudflareDnsService();
+
     expect(service.isConfigured()).toBe(false);
   });
 
   it('getFqdn returns subdomain.baseDomain', () => {
     process.env.DNS_BASE_DOMAIN = 'spirde.com';
     const service = new CloudflareDnsService();
+
     expect(service.getFqdn('awesome-armadillo-abc12')).toBe('awesome-armadillo-abc12.spirde.com');
   });
 
   it('getFqdn uses default base domain when DNS_BASE_DOMAIN not set', () => {
     delete process.env.DNS_BASE_DOMAIN;
     const service = new CloudflareDnsService();
+
     expect(service.getFqdn('foo')).toBe('foo.spirde.com');
   });
 
@@ -63,12 +68,14 @@ describe('CloudflareDnsService', () => {
   it('createARecord does not throw when not configured', async () => {
     delete process.env.CLOUDFLARE_API_TOKEN;
     const service = new CloudflareDnsService();
+
     await expect(service.createARecord('sub', '1.2.3.4')).resolves.toBeUndefined();
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
   it('createARecord skips invalid hostname (contains dot)', async () => {
     const service = new CloudflareDnsService();
+
     await expect(service.createARecord('sub.domain', '1.2.3.4')).resolves.toBeUndefined();
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
@@ -95,6 +102,7 @@ describe('CloudflareDnsService', () => {
   it('deleteRecord does not throw when not configured', async () => {
     delete process.env.CLOUDFLARE_API_TOKEN;
     const service = new CloudflareDnsService();
+
     await expect(service.deleteRecord('sub')).resolves.toBeUndefined();
     expect(mockedAxios.get).not.toHaveBeenCalled();
   });

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 
 /**
@@ -22,9 +23,11 @@ export class AgentMessagesRepository {
    */
   async findByIdOrThrow(id: string): Promise<AgentMessageEntity> {
     const message = await this.repository.findOne({ where: { id } });
+
     if (!message) {
       throw new NotFoundException(`Message with ID ${id} not found`);
     }
+
     return message;
   }
 
@@ -93,6 +96,7 @@ export class AgentMessagesRepository {
    */
   async create(dto: Partial<AgentMessageEntity>): Promise<AgentMessageEntity> {
     const message = this.repository.create(dto);
+
     return await this.repository.save(message);
   }
 
@@ -103,6 +107,7 @@ export class AgentMessagesRepository {
    */
   async delete(id: string): Promise<void> {
     const message = await this.findByIdOrThrow(id);
+
     await this.repository.remove(message);
   }
 
@@ -113,6 +118,7 @@ export class AgentMessagesRepository {
    */
   async deleteByAgentId(agentId: string): Promise<number> {
     const result = await this.repository.delete({ agentId });
+
     return result.affected || 0;
   }
 }

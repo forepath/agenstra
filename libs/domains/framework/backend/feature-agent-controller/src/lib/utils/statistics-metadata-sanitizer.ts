@@ -14,7 +14,6 @@ const SECRET_KEYS = new Set([
   'secret',
   'password',
 ]);
-
 const SECRET_KEY_PATTERNS = [/password/i, /token/i, /secret/i, /key$/i, /credential/i];
 
 /**
@@ -24,6 +23,7 @@ function isSecretKey(key: string): boolean {
   if (SECRET_KEYS.has(key)) {
     return true;
   }
+
   return SECRET_KEY_PATTERNS.some((pattern) => pattern.test(key));
 }
 
@@ -32,10 +32,12 @@ function isSecretKey(key: string): boolean {
  */
 function sanitizeObject(obj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
+
   for (const [key, value] of Object.entries(obj)) {
     if (isSecretKey(key)) {
       continue;
     }
+
     if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
       result[key] = sanitizeObject(value as Record<string, unknown>);
     } else if (Array.isArray(value)) {
@@ -48,6 +50,7 @@ function sanitizeObject(obj: Record<string, unknown>): Record<string, unknown> {
       result[key] = value;
     }
   }
+
   return result;
 }
 
@@ -63,12 +66,16 @@ export function sanitizeProviderMetadata(metadataJson: string | undefined): stri
   if (!metadataJson || metadataJson.trim() === '') {
     return '{}';
   }
+
   try {
     const parsed = JSON.parse(metadataJson) as unknown;
+
     if (typeof parsed !== 'object' || parsed === null) {
       return '{}';
     }
+
     const sanitized = sanitizeObject(parsed as Record<string, unknown>);
+
     return JSON.stringify(sanitized);
   } catch {
     return '{}';

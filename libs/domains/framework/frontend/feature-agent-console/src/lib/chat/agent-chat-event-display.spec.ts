@@ -1,4 +1,5 @@
 import type { AgentEventEnvelope, SuccessResponse } from '@forepath/framework/frontend/data-access-agent-console';
+
 import {
   consolidateConsecutiveThinkingTimelineRows,
   mapForwardedChatEventToDisplayRow,
@@ -110,6 +111,7 @@ describe('agent-chat-event-display', () => {
         displayTimestampMs: 3,
       },
     ]);
+
     expect(merged).toHaveLength(2);
     expect(merged[0]?.kind).toBe('thinking');
     expect(merged[0]?.summaryBody).toContain('First chunk');
@@ -137,6 +139,7 @@ describe('agent-chat-event-display', () => {
         timestamp: 11,
       },
     ]);
+
     expect(rows.length).toBe(1);
     expect(rows[0].kind).toBe('status');
   });

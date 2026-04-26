@@ -23,6 +23,7 @@ import {
   type ListDirectoryParams,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { combineLatest, filter, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
+
 import { GitBranchModalComponent } from '../git-branch-modal/git-branch-modal.component';
 
 interface TreeNode {
@@ -102,6 +103,7 @@ export class FileTreeComponent implements OnInit {
 
   private listParams(path: string): ListDirectoryParams {
     const c = this.fileManagerContext();
+
     return c === 'app' ? { path } : { path, context: c };
   }
 
@@ -114,9 +116,11 @@ export class FileTreeComponent implements OnInit {
     const clientId = this.clientId();
     const agentId = this.agentId();
     const context = this.fileManagerContext();
+
     if (!clientId || !agentId) {
       return null;
     }
+
     return { clientId, agentId, context };
   });
 
@@ -125,6 +129,7 @@ export class FileTreeComponent implements OnInit {
       if (!config) {
         return of(null);
       }
+
       return this.filesFacade.getDirectoryListing$(config.clientId, config.agentId, '.', config.context);
     }),
   );
@@ -133,9 +138,11 @@ export class FileTreeComponent implements OnInit {
     const clientId = this.clientId();
     const agentId = this.agentId();
     const context = this.fileManagerContext();
+
     if (!clientId || !agentId) {
       return false;
     }
+
     return { clientId, agentId, context };
   });
 
@@ -144,6 +151,7 @@ export class FileTreeComponent implements OnInit {
       if (!config || typeof config === 'boolean') {
         return of(false);
       }
+
       // Only show loading if we don't have cached data (silent refresh)
       return combineLatest([
         this.filesFacade.isListingDirectory$(config.clientId, config.agentId, '.', config.context),
@@ -162,6 +170,7 @@ export class FileTreeComponent implements OnInit {
       if (!clientId) {
         return of(null);
       }
+
       return this.clientsFacade.getClientById$(clientId);
     }),
     map((client) => this.parseGitRepository(client?.config?.gitRepositoryUrl)),
@@ -236,12 +245,14 @@ export class FileTreeComponent implements OnInit {
     effect(() => {
       const clientId = this.clientId();
       const agentId = this.agentId();
+
       if (clientId && agentId) {
         // Reset flags when client/agent changes (new agent = first load)
         this.hasLoadedContent.set(false);
         this.hasHadOperation.set(false);
         this.isReloadingAfterOperation.set(false);
         this.filesFacade.listDirectory(clientId, agentId, this.listParams('.'));
+
         if (this.fileManagerContext() === 'app') {
           this.vcsFacade.loadStatus(clientId, agentId);
         }
@@ -251,6 +262,7 @@ export class FileTreeComponent implements OnInit {
     // Reset hasHadOperation when panel closes
     effect(() => {
       const visible = this.gitManagerVisible();
+
       if (!visible) {
         // Panel is closed - reset operation flag so spinner doesn't show on next open
         this.hasHadOperation.set(false);
@@ -325,6 +337,7 @@ export class FileTreeComponent implements OnInit {
         // Clean up all subscriptions if client/agent is not available
         this.expandedDirectorySubscriptions.forEach((subscription) => subscription.unsubscribe());
         this.expandedDirectorySubscriptions.clear();
+
         return;
       }
 
@@ -355,6 +368,7 @@ export class FileTreeComponent implements OnInit {
                 this.rebuildTree();
               }
             });
+
           this.expandedDirectorySubscriptions.set(path, subscription);
         }
       }
@@ -376,6 +390,7 @@ export class FileTreeComponent implements OnInit {
 
   onFileClick(node: TreeNode, event: MouseEvent): void {
     event.stopPropagation();
+
     if (node.type === 'file') {
       this.fileSelect.emit(node.path);
     } else {
@@ -396,6 +411,7 @@ export class FileTreeComponent implements OnInit {
     } else {
       // Expand - load directory if not cached
       const hasCachedData = this.treeCache().has(node.path);
+
       if (!hasCachedData) {
         // Only show loading if we don't have cached data (silent refresh)
         node.loading = true;
@@ -418,6 +434,7 @@ export class FileTreeComponent implements OnInit {
         // We have cached data, but still reload to get fresh data (silent)
         this.listDirectoryRel(node.path);
       }
+
       this.directoryExpand.emit(node.path);
     }
   }
@@ -432,6 +449,7 @@ export class FileTreeComponent implements OnInit {
   onCopyFileLink(path: string): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (!clientId || !agentId) {
       return;
     }
@@ -440,6 +458,7 @@ export class FileTreeComponent implements OnInit {
     const baseUrl = window.location.origin;
     const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
+
     queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(path));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
@@ -464,6 +483,7 @@ export class FileTreeComponent implements OnInit {
    */
   private fallbackCopyToClipboard(text: string): void {
     const textArea = document.createElement('textarea');
+
     textArea.value = text;
     textArea.style.position = 'fixed';
     textArea.style.left = '-999999px';
@@ -474,6 +494,7 @@ export class FileTreeComponent implements OnInit {
 
     try {
       const successful = document.execCommand('copy');
+
       if (successful) {
         console.log('File link copied to clipboard (fallback):', text);
       } else {
@@ -489,6 +510,7 @@ export class FileTreeComponent implements OnInit {
   onOpenInNewWindow(path: string): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+
     if (!clientId || !agentId) {
       return;
     }
@@ -497,16 +519,15 @@ export class FileTreeComponent implements OnInit {
     const baseUrl = window.location.origin;
     const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
+
     queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(path));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
-
     // Open new window with minimal controls and maximize if possible
     // Note: Modern browsers have restrictions on window features, but we try to minimize what's possible
     // Use screen dimensions to maximize the window
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
-
     const windowFeatures = [
       'menubar=no',
       'toolbar=no',
@@ -519,7 +540,6 @@ export class FileTreeComponent implements OnInit {
       `left=0`,
       `top=0`,
     ].join(',');
-
     const newWindow = window.open(url, '_blank', windowFeatures);
 
     // Try to maximize after window opens (may be blocked by browser security)
@@ -529,10 +549,12 @@ export class FileTreeComponent implements OnInit {
         try {
           newWindow.moveTo(0, 0);
           newWindow.resizeTo(screenWidth, screenHeight);
+
           // Try to maximize if the browser supports it
           if (newWindow.screen && 'availWidth' in newWindow.screen) {
             const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
             const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+
             if (availWidth && availHeight) {
               newWindow.resizeTo(availWidth, availHeight);
             }
@@ -551,14 +573,18 @@ export class FileTreeComponent implements OnInit {
     if (!event.dataTransfer) {
       return;
     }
+
     this.draggedItem.set({ path: node.path, type: node.type, name: node.name });
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', node.path);
+
     // Set drag image to show what's being dragged
     if (event.currentTarget instanceof HTMLElement) {
       const treeNodeContent = event.currentTarget.querySelector('.tree-node-content');
+
       if (treeNodeContent) {
         const dragImage = treeNodeContent.cloneNode(true) as HTMLElement;
+
         dragImage.style.position = 'absolute';
         dragImage.style.top = '-1000px';
         dragImage.style.opacity = '0.8';
@@ -588,6 +614,7 @@ export class FileTreeComponent implements OnInit {
     event.stopPropagation();
 
     const dragged = this.draggedItem();
+
     if (!dragged) {
       return;
     }
@@ -627,6 +654,7 @@ export class FileTreeComponent implements OnInit {
     event.stopPropagation();
 
     const dragged = this.draggedItem();
+
     if (!dragged) {
       return;
     }
@@ -660,6 +688,7 @@ export class FileTreeComponent implements OnInit {
 
     // Only clear if we're actually leaving the node (not just moving to a child)
     const relatedTarget = event.relatedTarget as HTMLElement | null;
+
     if (relatedTarget && event.currentTarget instanceof HTMLElement) {
       if (event.currentTarget.contains(relatedTarget)) {
         return; // Still within the node or its children
@@ -678,6 +707,7 @@ export class FileTreeComponent implements OnInit {
     event.stopPropagation();
 
     const dragged = this.draggedItem();
+
     if (!dragged) {
       return;
     }
@@ -702,6 +732,7 @@ export class FileTreeComponent implements OnInit {
     // Don't move if source and destination are the same
     if (dragged.path === destinationPath) {
       this.draggedItem.set(null);
+
       return;
     }
 
@@ -720,6 +751,7 @@ export class FileTreeComponent implements OnInit {
 
     // Refresh source parent directory
     const sourceParentPath = this.getParentPath(dragged.path);
+
     setTimeout(() => {
       this.listDirectoryRel(sourceParentPath);
     }, 100);
@@ -738,12 +770,14 @@ export class FileTreeComponent implements OnInit {
     event.stopPropagation();
 
     const dragged = this.draggedItem();
+
     if (!dragged) {
       return;
     }
 
     // Prevent dropping root items on root (they're already there)
     const sourceParentPath = this.getParentPath(dragged.path);
+
     if (sourceParentPath === '.') {
       return;
     }
@@ -761,12 +795,14 @@ export class FileTreeComponent implements OnInit {
     event.stopPropagation();
 
     const dragged = this.draggedItem();
+
     if (!dragged) {
       return;
     }
 
     // Prevent dropping root items on root (they're already there)
     const sourceParentPath = this.getParentPath(dragged.path);
+
     if (sourceParentPath === '.') {
       return;
     }
@@ -780,6 +816,7 @@ export class FileTreeComponent implements OnInit {
 
     // Only clear if we're actually leaving the root container
     const relatedTarget = event.relatedTarget as HTMLElement | null;
+
     if (relatedTarget && event.currentTarget instanceof HTMLElement) {
       if (event.currentTarget.contains(relatedTarget)) {
         return; // Still within the root container
@@ -797,15 +834,18 @@ export class FileTreeComponent implements OnInit {
     event.stopPropagation();
 
     const dragged = this.draggedItem();
+
     if (!dragged) {
       return;
     }
 
     // Prevent dropping root items on root (they're already there)
     const sourceParentPath = this.getParentPath(dragged.path);
+
     if (sourceParentPath === '.') {
       this.draggedItem.set(null);
       this.dragOverPath.set(null);
+
       return;
     }
 
@@ -819,6 +859,7 @@ export class FileTreeComponent implements OnInit {
     // Don't move if source and destination are the same
     if (dragged.path === destinationPath) {
       this.draggedItem.set(null);
+
       return;
     }
 
@@ -873,10 +914,12 @@ export class FileTreeComponent implements OnInit {
         this.directoryExpand.emit(path);
         // Load directory if not cached
         const hasCachedData = this.treeCache().has(path);
+
         if (!hasCachedData) {
           this.listDirectoryRel(path);
         }
       }
+
       this.hoverTimeout = null;
     }, 1000); // 1 second delay
   }
@@ -898,12 +941,14 @@ export class FileTreeComponent implements OnInit {
 
   onCreateItem(type: 'file' | 'directory', parentPath?: string): void {
     const path = parentPath || '.';
+
     this.creatingItem.set({ path, type });
     this.newItemName.set('');
   }
 
   onConfirmCreate(): void {
     const creating = this.creatingItem();
+
     if (!creating || !this.newItemName().trim()) {
       return;
     }
@@ -933,6 +978,7 @@ export class FileTreeComponent implements OnInit {
   onDeleteItem(path: string): void {
     // Find the node to get its type
     const node = this.findNodeByPath(path);
+
     if (node) {
       this.itemToDelete.set({ path, type: node.type });
       this.showModal(this.deleteFileModal);
@@ -943,6 +989,7 @@ export class FileTreeComponent implements OnInit {
   onRenameItem(path: string): void {
     // Find the node to get its type and name
     const node = this.findNodeByPath(path);
+
     if (node) {
       this.itemToRename.set({ path, type: node.type, name: node.name });
       this.renameNewName.set(node.name);
@@ -954,10 +1001,12 @@ export class FileTreeComponent implements OnInit {
   onMoveItem(path: string): void {
     // Find the node to get its type and name
     const node = this.findNodeByPath(path);
+
     if (node) {
       this.itemToMove.set({ path, type: node.type, name: node.name });
       // Set initial destination to parent directory
       const parentPath = this.getParentPath(path);
+
       this.moveDestinationPath.set(parentPath);
       this.showModal(this.moveFileModal);
       this.onCloseContextMenu();
@@ -966,6 +1015,7 @@ export class FileTreeComponent implements OnInit {
 
   confirmDeleteItem(): void {
     const item = this.itemToDelete();
+
     if (item) {
       this.fileDelete.emit(item.path);
       this.hideModal(this.deleteFileModal);
@@ -985,13 +1035,13 @@ export class FileTreeComponent implements OnInit {
   confirmRenameItem(): void {
     const item = this.itemToRename();
     const newName = this.renameNewName().trim();
+
     if (!item || !newName || newName === item.name) {
       return;
     }
 
     // Get parent path
     const parentPath = this.getParentPath(item.path);
-
     // Build destination path: parentPath/newName
     const destinationPath = parentPath === '.' ? newName : `${parentPath}/${newName}`;
 
@@ -1019,6 +1069,7 @@ export class FileTreeComponent implements OnInit {
   confirmMoveItem(): void {
     const item = this.itemToMove();
     const destinationPath = this.moveDestinationPath().trim();
+
     if (!item || !destinationPath) {
       return;
     }
@@ -1031,6 +1082,7 @@ export class FileTreeComponent implements OnInit {
       this.hideModal(this.moveFileModal);
       this.itemToMove.set(null);
       this.moveDestinationPath.set('');
+
       return;
     }
 
@@ -1051,12 +1103,14 @@ export class FileTreeComponent implements OnInit {
 
     // Refresh source parent directory
     const sourceParentPath = this.getParentPath(item.path);
+
     setTimeout(() => {
       this.listDirectoryRel(sourceParentPath);
     }, 100);
 
     // Refresh destination directory and expand target path in the tree
     const destinationParentPath = this.getParentPath(fullDestinationPath);
+
     setTimeout(() => {
       this.listDirectoryRel(destinationParentPath);
     }, 200);
@@ -1088,9 +1142,11 @@ export class FileTreeComponent implements OnInit {
     // Extract all parent directory paths
     while (currentPath && currentPath !== '.') {
       const parentPath = this.getParentPath(currentPath);
+
       if (parentPath !== '.' && !pathsToExpand.includes(parentPath)) {
         pathsToExpand.unshift(parentPath); // Add to beginning to expand from root to target
       }
+
       currentPath = parentPath;
     }
 
@@ -1101,6 +1157,7 @@ export class FileTreeComponent implements OnInit {
           this.directoryExpand.emit(path);
           // Load directory if not cached
           const hasCachedData = this.treeCache().has(path);
+
           if (!hasCachedData) {
             this.listDirectoryRel(path);
           }
@@ -1113,21 +1170,25 @@ export class FileTreeComponent implements OnInit {
     if (path === '.' || !path.includes('/')) {
       return '.';
     }
+
     const lastSlashIndex = path.lastIndexOf('/');
+
     if (lastSlashIndex === -1) {
       return '.';
     }
+
     return path.substring(0, lastSlashIndex) || '.';
   }
 
   private removeFromCache(path: string): void {
     const cache = new Map(this.treeCache());
-
     // Remove the deleted item from its parent directory's cache
     const parentPath = this.getParentPath(path);
     const parentListing = cache.get(parentPath);
+
     if (parentListing) {
       const updatedListing = parentListing.filter((node) => node.path !== path);
+
       cache.set(parentPath, updatedListing);
     }
 
@@ -1139,12 +1200,14 @@ export class FileTreeComponent implements OnInit {
     if (path !== '.') {
       const pathPrefix = `${path}/`;
       const keysToDelete: string[] = [];
+
       for (const cacheKey of cache.keys()) {
         // Remove all cache entries that start with the deleted path (its children)
         if (cacheKey.startsWith(pathPrefix)) {
           keysToDelete.push(cacheKey);
         }
       }
+
       keysToDelete.forEach((key) => cache.delete(key));
     }
 
@@ -1165,21 +1228,25 @@ export class FileTreeComponent implements OnInit {
       if (gitUrl.startsWith('http://') || gitUrl.startsWith('https://')) {
         const urlObj = new URL(gitUrl);
         const pathParts = urlObj.pathname.split('/').filter((part) => part.length > 0);
+
         if (pathParts.length >= 2) {
           const owner = pathParts[0];
           const repo = pathParts[1].replace(/\.git$/, '');
+
           return `${owner}/${repo}`;
         }
       }
 
       if (gitUrl.startsWith('git@')) {
         const match = gitUrl.match(/git@[^:]+:(.+?)(?:\.git)?$/);
+
         if (match && match[1]) {
           return match[1];
         }
       }
 
       const match = gitUrl.match(/(?:[/:])([^/]+)\/([^/]+?)(?:\.git)?$/);
+
       if (match && match[1] && match[2]) {
         return `${match[1]}/${match[2]}`;
       }
@@ -1196,15 +1263,19 @@ export class FileTreeComponent implements OnInit {
         if (node.path === path) {
           return node;
         }
+
         if (node.children) {
           const found = findInNodes(node.children);
+
           if (found) {
             return found;
           }
         }
       }
+
       return null;
     };
+
     return findInNodes(this.treeNodes());
   }
 
@@ -1213,12 +1284,14 @@ export class FileTreeComponent implements OnInit {
       // Use Bootstrap 5 Modal API
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.show();
       } else {
         // Fallback: create new modal instance
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const Modal = (window as any).bootstrap?.Modal;
+
         if (Modal) {
           new Modal(modalElement.nativeElement).show();
         }
@@ -1230,6 +1303,7 @@ export class FileTreeComponent implements OnInit {
     if (modalElement?.nativeElement) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
+
       if (modal) {
         modal.hide();
       }
@@ -1238,6 +1312,7 @@ export class FileTreeComponent implements OnInit {
 
   private updateTreeCache(path: string, nodes: FileNodeDto[]): void {
     const cache = new Map(this.treeCache());
+
     cache.set(path, nodes);
     this.treeCache.set(cache);
   }
@@ -1246,6 +1321,7 @@ export class FileTreeComponent implements OnInit {
     const rootNodes = this.treeCache().get('.') || [];
     const expanded = this.expandedPaths();
     const tree = this.buildTree(rootNodes, '.', expanded);
+
     this.treeNodes.set(tree);
   }
 
@@ -1259,6 +1335,7 @@ export class FileTreeComponent implements OnInit {
       // If directory is expanded, load its children
       if (node.type === 'directory' && isExpanded) {
         const childNodes = this.treeCache().get(node.path) || [];
+
         children.push(...this.buildTree(childNodes, node.path, expandedPaths));
       }
 
@@ -1278,6 +1355,7 @@ export class FileTreeComponent implements OnInit {
       if (a.type !== b.type) {
         return a.type === 'directory' ? -1 : 1;
       }
+
       return a.name.localeCompare(b.name);
     });
 
@@ -1288,6 +1366,7 @@ export class FileTreeComponent implements OnInit {
     if (node.type === 'directory') {
       return node.expanded ? 'bi-folder2-open' : 'bi-folder';
     }
+
     // File icons based on extension
     const ext = node.name.split('.').pop()?.toLowerCase();
     const iconMap: Record<string, string> = {
@@ -1310,6 +1389,7 @@ export class FileTreeComponent implements OnInit {
       rs: 'bi-filetype-rs',
       vue: 'bi-filetype-vue',
     };
+
     return iconMap[ext || ''] || 'bi-file-earmark';
   }
 
@@ -1319,7 +1399,9 @@ export class FileTreeComponent implements OnInit {
 
   getCreateItemPlaceholder(): string {
     const item = this.creatingItem();
+
     if (!item) return '';
+
     return item.type === 'file'
       ? $localize`:@@featureFileTree-enterFileName:Enter file name...`
       : $localize`:@@featureFileTree-enterFolderName:Enter folder name...`;
@@ -1344,7 +1426,9 @@ export class FileTreeComponent implements OnInit {
 
   getDeleteModalTitle(): string {
     const item = this.itemToDelete();
+
     if (!item) return '';
+
     return item.type === 'directory'
       ? $localize`:@@featureFileTree-deleteDirectoryTitle:Delete Directory`
       : $localize`:@@featureFileTree-deleteFileTitle:Delete File`;
@@ -1352,8 +1436,11 @@ export class FileTreeComponent implements OnInit {
 
   getDeleteModalMessage(): string {
     const item = this.itemToDelete();
+
     if (!item) return '';
+
     const path = item.path;
+
     return item.type === 'directory'
       ? $localize`:@@featureFileTree-deleteDirectoryMessage:Are you sure you want to delete the directory ${path}?:path:`
       : $localize`:@@featureFileTree-deleteFileMessage:Are you sure you want to delete the file ${path}?:path:`;
@@ -1361,8 +1448,11 @@ export class FileTreeComponent implements OnInit {
 
   getRenameModalMessage(): string {
     const item = this.itemToRename();
+
     if (!item) return '';
+
     const path = item.path;
+
     return item.type === 'directory'
       ? $localize`:@@featureFileTree-renameDirectoryMessage:Enter a new name for the directory ${path}:path:`
       : $localize`:@@featureFileTree-renameFileMessage:Enter a new name for the file ${path}:path:`;
@@ -1370,7 +1460,9 @@ export class FileTreeComponent implements OnInit {
 
   getRenameModalTitle(): string {
     const item = this.itemToRename();
+
     if (!item) return '';
+
     return item.type === 'directory'
       ? $localize`:@@featureFileTree-renameDirectoryTitle:Rename Directory`
       : $localize`:@@featureFileTree-renameFileTitle:Rename File`;
@@ -1378,7 +1470,9 @@ export class FileTreeComponent implements OnInit {
 
   getMoveModalTitle(): string {
     const item = this.itemToMove();
+
     if (!item) return '';
+
     return item.type === 'directory'
       ? $localize`:@@featureFileTree-moveDirectoryTitle:Move Directory`
       : $localize`:@@featureFileTree-moveFileTitle:Move File`;
@@ -1386,8 +1480,11 @@ export class FileTreeComponent implements OnInit {
 
   getMoveModalMessage(): string {
     const item = this.itemToMove();
+
     if (!item) return '';
+
     const path = item.path;
+
     return item.type === 'directory'
       ? $localize`:@@featureFileTree-moveDirectoryMessage:Move the directory ${path} to::path:`
       : $localize`:@@featureFileTree-moveFileMessage:Move the file ${path} to::path:`;
@@ -1395,10 +1492,13 @@ export class FileTreeComponent implements OnInit {
 
   getMoveDestinationLabel(): string {
     const item = this.itemToMove();
+
     if (!item) return '';
+
     const dest = this.moveDestinationPath();
     const name = item.name;
     const result = dest === '.' ? name : dest + '/' + name;
+
     return item.type === 'directory'
       ? $localize`:@@featureFileTree-moveDirectoryDestination:The directory will be moved to: ${result}:result:`
       : $localize`:@@featureFileTree-moveFileDestination:The file will be moved to: ${result}:result:`;
@@ -1421,6 +1521,7 @@ export class FileTreeComponent implements OnInit {
 
     // Refresh all paths with small delays to prevent cancellation
     const pathsArray = Array.from(pathsToRefresh);
+
     pathsArray.forEach((path, index) => {
       setTimeout(() => {
         this.listDirectoryRel(path);
@@ -1453,6 +1554,7 @@ export class FileTreeComponent implements OnInit {
 
     // Find all expanded subdirectories under this folder
     const folderPrefix = folderPath === '.' ? '' : `${folderPath}/`;
+
     expanded.forEach((path) => {
       // Include if it's a subdirectory of the folder
       if (path !== folderPath && (folderPath === '.' || path.startsWith(folderPrefix))) {
@@ -1466,6 +1568,7 @@ export class FileTreeComponent implements OnInit {
       // Sort by depth (shorter paths first) to refresh parents before children
       const depthA = a === '.' ? 0 : a.split('/').length;
       const depthB = b === '.' ? 0 : b.split('/').length;
+
       return depthA - depthB;
     });
 
@@ -1478,10 +1581,12 @@ export class FileTreeComponent implements OnInit {
 
   onUploadFile(parentPath?: string): void {
     const targetPath = parentPath || '.';
+
     this.uploadTargetPath.set(targetPath);
 
     // Use root input for root, folder input for folders
     const fileInput = targetPath === '.' ? this.rootFileInput : this.folderFileInput;
+
     if (fileInput?.nativeElement) {
       fileInput.nativeElement.click();
     }
@@ -1490,6 +1595,7 @@ export class FileTreeComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files = input.files;
+
     if (!files || files.length === 0) {
       return;
     }
@@ -1501,11 +1607,11 @@ export class FileTreeComponent implements OnInit {
     fileArray.forEach((file) => {
       // Convert file to base64
       const reader = new FileReader();
+
       reader.onload = () => {
         const result = reader.result as string;
         // Remove data URL prefix if present (data:...;base64,)
         const base64Content = result.includes(',') ? result.split(',')[1] : result;
-
         // Build full file path
         const fullPath = targetPath === '.' ? file.name : `${targetPath}/${file.name}`;
 
@@ -1530,6 +1636,7 @@ export class FileTreeComponent implements OnInit {
             this.directoryExpand.emit(targetPath);
             // Load directory if not cached
             const hasCachedData = this.treeCache().has(targetPath);
+
             if (!hasCachedData) {
               this.listDirectoryRel(targetPath);
             }
@@ -1551,6 +1658,7 @@ export class FileTreeComponent implements OnInit {
           if (fileArray.length === 1) {
             setTimeout(() => {
               const lastFilePath = targetPath === '.' ? fileArray[0].name : `${targetPath}/${fileArray[0].name}`;
+
               this.fileSelect.emit(lastFilePath);
             }, 500);
           }

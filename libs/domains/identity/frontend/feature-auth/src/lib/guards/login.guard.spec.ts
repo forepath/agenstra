@@ -4,6 +4,7 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { KeycloakService } from 'keycloak-angular';
+
 import { loginGuard } from './login.guard';
 
 // Mock keycloak-angular to avoid ES module import issues with keycloak-js in Jest.
@@ -19,7 +20,6 @@ describe('loginGuard', () => {
   let mockState: RouterStateSnapshot;
   let mockEnvironment: IdentityAuthEnvironment;
   let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
-
   const setupTestBed = (
     environmentOverrides?: Partial<IdentityAuthEnvironment>,
     keycloakServiceOverride?: Partial<KeycloakService> | null,
@@ -41,6 +41,7 @@ describe('loginGuard', () => {
         },
       ],
     });
+
     return TestBed.inject(Injector);
   };
 
@@ -102,6 +103,7 @@ describe('loginGuard', () => {
         isLoggedIn: mockIsLoggedIn,
       });
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -118,7 +120,6 @@ describe('loginGuard', () => {
         isLoggedIn: mockIsLoggedIn,
         login: mockLogin,
       });
-
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(true);
@@ -129,7 +130,6 @@ describe('loginGuard', () => {
 
     it('should allow access if KeycloakService is not available', () => {
       const injector = setupTestBed(undefined, null);
-
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(true);
@@ -155,6 +155,7 @@ describe('loginGuard', () => {
         },
       });
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -169,8 +170,10 @@ describe('loginGuard', () => {
           type: 'api-key',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue('stored-api-key');
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -187,8 +190,10 @@ describe('loginGuard', () => {
           apiKey: 'env-api-key',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue('stored-api-key');
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -204,6 +209,7 @@ describe('loginGuard', () => {
           type: 'api-key',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -220,6 +226,7 @@ describe('loginGuard', () => {
           apiKey: '',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue('');
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -248,10 +255,12 @@ describe('loginGuard', () => {
       const exp = Math.floor((Date.now() + 3600000) / 1000);
       const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
       const jwt = `header.${payload}.signature`;
+
       (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
         key === 'agent-controller-users-jwt' ? jwt : null,
       );
       const mockUrlTree = {} as UrlTree;
+
       mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -266,6 +275,7 @@ describe('loginGuard', () => {
           type: 'users',
         },
       });
+
       (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
 
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
@@ -283,6 +293,7 @@ describe('loginGuard', () => {
       const exp = Math.floor((Date.now() - 3600000) / 1000);
       const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp }));
       const jwt = `header.${payload}.signature`;
+
       (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
         key === 'agent-controller-users-jwt' ? jwt : null,
       );
@@ -301,7 +312,6 @@ describe('loginGuard', () => {
           type: 'unknown' as never,
         } as IdentityAuthEnvironment['authentication'],
       });
-
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(true);

@@ -9,25 +9,24 @@ import {
   StageFilesDto,
   UnstageFilesDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { ClientUsersRepository } from '@forepath/identity/backend';
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientUsersRepository } from '@forepath/identity/backend';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
+
 import { ClientsVcsController } from './clients-vcs.controller';
 
 describe('ClientsVcsController', () => {
   let controller: ClientsVcsController;
   let proxyService: jest.Mocked<ClientAgentVcsProxyService>;
-
   const mockClientsRepository = {
     findById: jest.fn(),
   };
-
   const mockClientUsersRepository = {
     findUserClientAccess: jest.fn(),
   };
-
   const mockProxyService = {
     getStatus: jest.fn(),
     getBranches: jest.fn(),
@@ -160,6 +159,7 @@ describe('ClientsVcsController', () => {
       proxyService.stageFiles.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.stageFiles('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(proxyService.stageFiles).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);
@@ -175,6 +175,7 @@ describe('ClientsVcsController', () => {
       proxyService.unstageFiles.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.unstageFiles('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(proxyService.unstageFiles).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);
@@ -190,6 +191,7 @@ describe('ClientsVcsController', () => {
       proxyService.commit.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.commit('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(proxyService.commit).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);
@@ -203,6 +205,7 @@ describe('ClientsVcsController', () => {
       proxyService.push.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.push('client-uuid', 'agent-uuid', pushOptions, mockReq);
 
       expect(proxyService.push).toHaveBeenCalledWith('client-uuid', 'agent-uuid', pushOptions);
@@ -212,6 +215,7 @@ describe('ClientsVcsController', () => {
       proxyService.push.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.push('client-uuid', 'agent-uuid', undefined, mockReq);
 
       expect(proxyService.push).toHaveBeenCalledWith('client-uuid', 'agent-uuid', {});
@@ -223,6 +227,7 @@ describe('ClientsVcsController', () => {
       proxyService.pull.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.pull('client-uuid', 'agent-uuid', mockReq);
 
       expect(proxyService.pull).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
@@ -234,6 +239,7 @@ describe('ClientsVcsController', () => {
       proxyService.fetch.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.fetch('client-uuid', 'agent-uuid', mockReq);
 
       expect(proxyService.fetch).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
@@ -249,6 +255,7 @@ describe('ClientsVcsController', () => {
       proxyService.rebase.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.rebase('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(proxyService.rebase).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);
@@ -260,6 +267,7 @@ describe('ClientsVcsController', () => {
       proxyService.switchBranch.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.switchBranch('client-uuid', 'agent-uuid', 'develop', mockReq);
 
       expect(proxyService.switchBranch).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'develop');
@@ -276,6 +284,7 @@ describe('ClientsVcsController', () => {
       proxyService.createBranch.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.createBranch('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(proxyService.createBranch).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);
@@ -287,6 +296,7 @@ describe('ClientsVcsController', () => {
       proxyService.deleteBranch.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.deleteBranch('client-uuid', 'agent-uuid', 'feature-branch', mockReq);
 
       expect(proxyService.deleteBranch).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'feature-branch');
@@ -303,6 +313,7 @@ describe('ClientsVcsController', () => {
       proxyService.resolveConflict.mockResolvedValue(undefined);
 
       const mockReq = { apiKeyAuthenticated: true } as any;
+
       await controller.resolveConflict('client-uuid', 'agent-uuid', dto, mockReq);
 
       expect(proxyService.resolveConflict).toHaveBeenCalledWith('client-uuid', 'agent-uuid', dto);

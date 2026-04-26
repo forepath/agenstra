@@ -14,7 +14,6 @@ describe('provider-location.utils', () => {
       region: { type: 'string', enum: ['a', 'b'] },
     },
   };
-
   const schemaWithLocation = {
     properties: {
       location: { type: 'string', enum: ['fsn1'] },
@@ -55,6 +54,7 @@ describe('provider-location.utils', () => {
 
   it('mirrorGeographyInConfig sets both keys', () => {
     const c: Record<string, unknown> = { serverType: 'x' };
+
     mirrorGeographyInConfig(c, 'fsn1');
     expect(c['region']).toBe('fsn1');
     expect(c['location']).toBe('fsn1');
@@ -62,6 +62,7 @@ describe('provider-location.utils', () => {
 
   it('stripGeographyFromRequestedConfig removes region and location', () => {
     const out = stripGeographyFromRequestedConfig({ region: 'a', location: 'b', x: 1 });
+
     expect(out).toEqual({ x: 1 });
   });
 
@@ -72,6 +73,7 @@ describe('provider-location.utils', () => {
 
   it('effectiveSchemaSupportsLocationSelection prefers service type schema when present', () => {
     const st = { properties: { region: { type: 'string', enum: ['a'] } } };
+
     expect(effectiveSchemaSupportsLocationSelection(st, undefined)).toBe(true);
   });
 });

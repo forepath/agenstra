@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+
 import { OpenPositionsRepository } from './open-positions.repository';
 
 describe('OpenPositionsRepository', () => {
@@ -29,6 +30,7 @@ describe('OpenPositionsRepository', () => {
         skipIfNoBillableAmount: true,
       };
       const created = { id: 'pos-1', ...dto, createdAt: new Date() };
+
       mockRepository.create.mockReturnValue(created);
       mockRepository.save.mockResolvedValue(created);
 
@@ -52,6 +54,7 @@ describe('OpenPositionsRepository', () => {
           createdAt: new Date(),
         },
       ];
+
       mockRepository.find.mockResolvedValue(positions);
 
       const repository = new OpenPositionsRepository(mockRepository as never);
@@ -72,6 +75,7 @@ describe('OpenPositionsRepository', () => {
         userId: 'user-1',
         invoiceRefId: undefined as string | undefined,
       };
+
       mockRepository.findOne.mockResolvedValue(entity);
       mockRepository.save.mockImplementation((e) => Promise.resolve({ ...e }));
 

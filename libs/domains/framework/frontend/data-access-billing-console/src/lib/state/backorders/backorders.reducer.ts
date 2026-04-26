@@ -1,4 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
+import type { BackorderResponse } from '../../types/billing.types';
+
 import {
   cancelBackorder,
   cancelBackorderFailure,
@@ -12,7 +15,6 @@ import {
   retryBackorderFailure,
   retryBackorderSuccess,
 } from './backorders.actions';
-import type { BackorderResponse } from '../../types/billing.types';
 
 export interface BackordersState {
   entities: BackorderResponse[];

@@ -11,6 +11,7 @@ import {
   StageFilesDto,
   UnstageFilesDto,
 } from '@forepath/framework/backend/feature-agent-manager';
+import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -25,7 +26,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
+
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 
@@ -54,6 +55,7 @@ export class ClientsVcsController {
     @Req() req?: RequestWithUser,
   ): Promise<GitStatusDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.clientAgentVcsProxyService.getStatus(clientId, agentId);
   }
 
@@ -70,6 +72,7 @@ export class ClientsVcsController {
     @Req() req?: RequestWithUser,
   ): Promise<GitBranchDto[]> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.clientAgentVcsProxyService.getBranches(clientId, agentId);
   }
 
@@ -90,7 +93,9 @@ export class ClientsVcsController {
     if (!filePath) {
       throw new BadRequestException('File path is required');
     }
+
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
     return await this.clientAgentVcsProxyService.getFileDiff(clientId, agentId, filePath);
   }
 

@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
+
 import type { SubscriptionResponse } from '../../types/billing.types';
+
 import {
   cancelSubscription,
   cancelSubscriptionFailure,
@@ -80,6 +82,7 @@ export const subscriptionsReducer = createReducer(
       existingIndex >= 0
         ? state.entities.map((s) => (s.id === subscription.id ? subscription : s))
         : [...state.entities, subscription];
+
     return {
       ...state,
       entities,

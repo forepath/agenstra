@@ -3,8 +3,10 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { of, throwError } from 'rxjs';
+
 import { EnvService } from '../../services/env.service';
 import { clearChatHistory } from '../sockets/sockets.actions';
+
 import {
   createEnvironmentVariable,
   createEnvironmentVariableFailure,
@@ -50,7 +52,6 @@ describe('EnvEffects', () => {
   const clientId = 'client-1';
   const agentId = 'agent-1';
   const envVarId = 'env-var-1';
-
   const mockEnvironmentVariable: EnvironmentVariableResponseDto = {
     id: envVarId,
     agentId: agentId,

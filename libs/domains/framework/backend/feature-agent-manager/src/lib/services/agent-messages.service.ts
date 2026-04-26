@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 
@@ -28,6 +29,7 @@ export class AgentMessagesService {
     });
 
     this.logger.debug(`Persisted user message for agent ${agentId}${filtered ? ' (filtered)' : ''}`);
+
     return messageEntity;
   }
 
@@ -41,6 +43,7 @@ export class AgentMessagesService {
   async createAgentMessage(agentId: string, response: unknown, filtered = false): Promise<AgentMessageEntity> {
     // Convert response to string representation
     let messageContent: string;
+
     if (typeof response === 'string') {
       messageContent = response;
     } else if (typeof response === 'object' && response !== null) {
@@ -48,6 +51,7 @@ export class AgentMessagesService {
         messageContent = JSON.stringify(response);
       } catch (error) {
         const err = error as { message?: string };
+
         this.logger.warn(`Failed to stringify agent response: ${err.message}`);
         messageContent = String(response);
       }
@@ -63,6 +67,7 @@ export class AgentMessagesService {
     });
 
     this.logger.debug(`Persisted agent message for agent ${agentId}${filtered ? ' (filtered)' : ''}`);
+
     return messageEntity;
   }
 
@@ -93,7 +98,9 @@ export class AgentMessagesService {
    */
   async deleteAllMessages(agentId: string): Promise<number> {
     const deletedCount = await this.agentMessagesRepository.deleteByAgentId(agentId);
+
     this.logger.log(`Deleted ${deletedCount} messages for agent ${agentId}`);
+
     return deletedCount;
   }
 }

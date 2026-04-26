@@ -1,4 +1,5 @@
 import type { AgenstraContext } from '../types';
+
 import { CursorTransformer } from './cursor.transformer';
 
 describe('CursorTransformer', () => {
@@ -26,10 +27,9 @@ describe('CursorTransformer', () => {
       },
       mcpDefinitions: { 'file-system': { id: 'file-system' } },
     };
-
     const out = transformer.transform(context);
-
     const ruleContent = out.get('.cursor/rules/coding-standards.mdc') as string;
+
     expect(ruleContent).toContain('name:');
     expect(ruleContent).toContain('description:');
     expect(ruleContent).toContain('globs: []');
@@ -40,12 +40,15 @@ describe('CursorTransformer', () => {
     expect(out.get('.cursor/commands/refactor.md') as string).toContain('Refactor this');
 
     const skillContent = out.get('.cursor/skills/design-patterns/SKILL.md') as string;
+
     expect(skillContent).toContain('name:');
     expect(skillContent).toContain('# Design Patterns');
 
     expect(out.get('.cursor/agents/architect.md')).toBeDefined();
     expect(out.get('.cursor/agents/general.md')).toBeDefined();
+
     const mcpContent = out.get('.cursor/mcp.json') as string;
+
     expect(mcpContent).toBeDefined();
     expect(JSON.parse(mcpContent)).toHaveProperty('mcpServers');
     expect(out.size).toBe(6);

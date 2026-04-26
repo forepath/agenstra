@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ChatFilterFactory } from './chat-filter.factory';
 import { ChatFilter, FilterDirection } from './chat-filter.interface';
 

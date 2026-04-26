@@ -18,6 +18,7 @@ export class ComponentReuseStrategy implements RouteReuseStrategy {
       .flatMap((r) => r.url.map((s) => s.path))
       .filter(Boolean)
       .join('/');
+
     return path === 'editor' || path.endsWith('/editor');
   }
 
@@ -35,6 +36,7 @@ export class ComponentReuseStrategy implements RouteReuseStrategy {
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle | null): void {
     if (handle) {
       const key = this.getRouteKey(route);
+
       this.storedRoutes.set(key, handle);
     }
   }
@@ -50,6 +52,7 @@ export class ComponentReuseStrategy implements RouteReuseStrategy {
     }
 
     const key = this.getRouteKey(route);
+
     return this.storedRoutes.has(key);
   }
 
@@ -60,7 +63,9 @@ export class ComponentReuseStrategy implements RouteReuseStrategy {
     if (!this.isEditorRoute(route)) {
       return null;
     }
+
     const key = this.getRouteKey(route);
+
     return this.storedRoutes.get(key) || null;
   }
 
@@ -104,6 +109,7 @@ export class ComponentReuseStrategy implements RouteReuseStrategy {
     // Use component name/constructor as the primary key
     if (route.component) {
       const componentName = route.component.name || route.component.toString();
+
       // Include route path in the key to ensure routes with same component but different paths
       // don't reuse each other (though this shouldn't happen with our current routes)
       return `${componentName}:${routePath}`;

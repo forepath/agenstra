@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
+
 import {
   clearDirectoryListing,
   clearFileContent,
@@ -23,17 +24,14 @@ import type { CreateFileDto, FileContentDto, FileNodeDto, MoveFileDto, WriteFile
 describe('FilesFacade', () => {
   let facade: FilesFacade;
   let store: jest.Mocked<Store>;
-
   const clientId = 'client-1';
   const agentId = 'agent-1';
   const filePath = 'test-file.txt';
   const directoryPath = '.';
-
   const mockFileContent: FileContentDto = {
     content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
     encoding: 'utf-8',
   };
-
   const mockFileNodes: FileNodeDto[] = [
     {
       name: 'file1.txt',
@@ -179,6 +177,7 @@ describe('FilesFacade', () => {
   describe('Error Observable', () => {
     it('should return file error observable', (done) => {
       const error = 'Test error';
+
       store.select.mockReturnValue(of(error));
 
       facade.getFileError$(clientId, agentId, filePath).subscribe((result) => {
@@ -215,6 +214,7 @@ describe('FilesFacade', () => {
         content: Buffer.from('New content', 'utf-8').toString('base64'),
         encoding: 'utf-8',
       };
+
       facade.writeFile(clientId, agentId, filePath, writeDto);
 
       expect(store.dispatch).toHaveBeenCalledWith(writeFile({ clientId, agentId, filePath, writeFileDto: writeDto }));
@@ -228,6 +228,7 @@ describe('FilesFacade', () => {
 
     it('should dispatch listDirectory action with params', () => {
       const params = { path: 'subdirectory' };
+
       facade.listDirectory(clientId, agentId, params);
 
       expect(store.dispatch).toHaveBeenCalledWith(listDirectory({ clientId, agentId, params }));
@@ -238,6 +239,7 @@ describe('FilesFacade', () => {
         type: 'file',
         content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
+
       facade.createFileOrDirectory(clientId, agentId, filePath, createDto);
 
       expect(store.dispatch).toHaveBeenCalledWith(
@@ -255,6 +257,7 @@ describe('FilesFacade', () => {
       const moveDto: MoveFileDto = {
         destination: 'dest-file.txt',
       };
+
       facade.moveFileOrDirectory(clientId, agentId, filePath, moveDto);
 
       expect(store.dispatch).toHaveBeenCalledWith(
@@ -281,6 +284,7 @@ describe('FilesFacade', () => {
         { filePath: 'file1.txt', pinned: false },
         { filePath: 'file2.txt', pinned: true },
       ];
+
       store.select.mockReturnValue(of(mockTabs));
 
       facade.getOpenTabs$(clientId, agentId).subscribe((result) => {
@@ -353,6 +357,7 @@ describe('FilesFacade', () => {
         content: Buffer.from('Other content', 'utf-8').toString('base64'),
         encoding: 'utf-8',
       };
+
       store.select.mockReturnValueOnce(of(mockFileContent2));
       facade.getFileContent$(clientId2, agentId2, filePath2).subscribe((result) => {
         expect(result).toEqual(mockFileContent2);

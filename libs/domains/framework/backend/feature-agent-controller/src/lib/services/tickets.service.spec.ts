@@ -1,23 +1,26 @@
+import { ClientUsersRepository, UsersRepository } from '@forepath/identity/backend';
+import { ensureWorkspaceManagementAccess } from '@forepath/identity/backend';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ClientUsersRepository, UsersRepository } from '@forepath/identity/backend';
+
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
+import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
-import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketCreationTemplate, TicketPriority, TicketStatus } from '../entities/ticket.enums';
-import { ensureWorkspaceManagementAccess } from '@forepath/identity/backend';
 import { ClientsRepository } from '../repositories/clients.repository';
+
+import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { ClientsService } from './clients.service';
 import { TicketAutomationService } from './ticket-automation.service';
-import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
 
 jest.mock('@forepath/identity/backend', () => {
   const actual = jest.requireActual('@forepath/identity/backend');
+
   return {
     ...actual,
     ensureClientAccess: jest.fn().mockResolvedValue(undefined),
@@ -28,17 +31,13 @@ jest.mock('@forepath/identity/backend', () => {
 
 describe('TicketsService', () => {
   let service: TicketsService;
-
   const ticketId = '00000000-0000-4000-8000-000000000001';
   const clientId = '00000000-0000-4000-8000-0000000000c1';
   const agentA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const agentB = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
-
   let ticket: TicketEntity;
-
   const commentRepo = {};
   const bodySessionRepo = {};
-
   const activityRepo = {
     save: jest.fn(),
     create: jest.fn((x: unknown) => x),
@@ -61,12 +60,15 @@ describe('TicketsService', () => {
         if (entity === TicketEntity) {
           return { save: jest.fn().mockResolvedValue(undefined) };
         }
+
         if (entity === TicketActivityEntity) {
           return activityRepo;
         }
+
         throw new Error(`Unexpected repository for ${String(entity)}`);
       },
     };
+
     return fn(em);
   }
 
@@ -78,20 +80,16 @@ describe('TicketsService', () => {
       transaction: jest.fn(defaultManagerTransaction),
     },
   };
-
   const ticketAutomationService = {
     invalidateAfterTicketFieldChanges: jest.fn().mockResolvedValue(undefined),
   };
-
   const ticketAutomationRepo = {
     find: jest.fn().mockResolvedValue([]),
     findOne: jest.fn().mockResolvedValue(null),
   };
-
   const usersRepository = {
     findById: jest.fn().mockResolvedValue(null),
   };
-
   const clientsService = {};
 
   beforeEach(async () => {
@@ -136,6 +134,7 @@ describe('TicketsService', () => {
   describe('update preferredChatAgentId', () => {
     it('persists and returns preferredChatAgentId', async () => {
       const dto = await service.update(ticketId, { preferredChatAgentId: agentA }, undefined);
+
       expect(dto.preferredChatAgentId).toBe(agentA);
       expect(ticket.preferredChatAgentId).toBe(agentA);
       expect(ticketRepo.manager.transaction).toHaveBeenCalled();
@@ -145,6 +144,7 @@ describe('TicketsService', () => {
     it('clears preferredChatAgentId when set to null', async () => {
       ticket.preferredChatAgentId = agentA;
       const dto = await service.update(ticketId, { preferredChatAgentId: null }, undefined);
+
       expect(dto.preferredChatAgentId).toBeNull();
       expect(ticket.preferredChatAgentId).toBeNull();
     });
@@ -152,6 +152,7 @@ describe('TicketsService', () => {
     it('skips transaction when value unchanged', async () => {
       ticket.preferredChatAgentId = agentB;
       const dto = await service.update(ticketId, { preferredChatAgentId: agentB }, undefined);
+
       expect(dto.preferredChatAgentId).toBe(agentB);
       expect(ticketRepo.manager.transaction).not.toHaveBeenCalled();
     });
@@ -161,6 +162,7 @@ describe('TicketsService', () => {
     it('returns false when no ticket_automation row exists', async () => {
       ticketAutomationRepo.find.mockResolvedValue([]);
       const dto = await service.update(ticketId, { preferredChatAgentId: agentB }, undefined);
+
       expect(dto.automationEligible).toBe(false);
       expect(ticketAutomationRepo.find).toHaveBeenCalled();
     });
@@ -168,6 +170,7 @@ describe('TicketsService', () => {
     it('returns eligible from ticket_automation when present', async () => {
       ticketAutomationRepo.find.mockResolvedValue([{ ticketId, eligible: true }]);
       const dto = await service.update(ticketId, { preferredChatAgentId: agentB }, undefined);
+
       expect(dto.automationEligible).toBe(true);
     });
   });
@@ -180,6 +183,7 @@ describe('TicketsService', () => {
       ticketAutomationRepo.find.mockResolvedValue([]);
       activityRepo.find.mockImplementation(async (opts: { where: { ticketId: string } }) => {
         const tid = opts.where.ticketId;
+
         return [
           {
             id: '00000000-0000-4000-8000-00000000a099',
@@ -201,6 +205,7 @@ describe('TicketsService', () => {
                 save: jest.fn(async (entity: TicketEntity) => {
                   ticketSeq += 1;
                   const id = `00000000-0000-4000-8000-${String(ticketSeq).padStart(12, '0')}`;
+
                   return {
                     ...entity,
                     id,
@@ -210,12 +215,15 @@ describe('TicketsService', () => {
                 }),
               };
             }
+
             if (entity === TicketActivityEntity) {
               return activityRepo;
             }
+
             throw new Error(`Unexpected repository for ${String(entity)}`);
           },
         };
+
         return fn(em);
       });
     });
@@ -237,6 +245,7 @@ describe('TicketsService', () => {
 
     it('creates a single ticket when creationTemplate is empty', async () => {
       const result = await service.create({ clientId, title: 'Root', creationTemplate: undefined }, undefined);
+
       expect(result.title).toBe('Root');
       expect(result).not.toHaveProperty('createdChildTickets');
       expect(activityRepo.save).toHaveBeenCalledTimes(1);
@@ -252,6 +261,7 @@ describe('TicketsService', () => {
         },
         undefined,
       );
+
       expect(result.title).toBe('Feature');
       expect(result.createdChildTickets).toHaveLength(4);
       expect(result.createdChildTickets?.map((c) => c.title)).toEqual([
@@ -317,15 +327,19 @@ describe('TicketsService', () => {
       ticketRepo.findOne.mockResolvedValue({ ...ticket });
       ticketRepo.find.mockImplementation(async (opts?: { where?: Record<string, unknown> }) => {
         const w = opts?.where;
+
         if (w && w.clientId === clientId) {
           return [{ id: ticketId, parentId: null } as TicketEntity];
         }
+
         if (w && w.clientId === targetClientId) {
           return [{ ...ticket, clientId: targetClientId } as TicketEntity];
         }
+
         if (w && Object.prototype.hasOwnProperty.call(w, 'id')) {
           return [{ ...ticket, clientId: targetClientId } as TicketEntity];
         }
+
         return [];
       });
       ticketRepo.manager.transaction.mockImplementation(async (fn: (em: unknown) => Promise<unknown>) => {
@@ -334,12 +348,15 @@ describe('TicketsService', () => {
             if (entity === TicketEntity) {
               return { update: jest.fn().mockResolvedValue({ affected: 1 }) };
             }
+
             if (entity === TicketActivityEntity) {
               return activityRepo;
             }
+
             throw new Error(`Unexpected entity ${String(entity)}`);
           },
         };
+
         return fn(em);
       });
 

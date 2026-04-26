@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { DockerService } from '../../services/docker.service';
+
 import { OpenCodeAgentProvider } from './opencode-agent.provider';
 
 describe('OpenCodeAgentProvider', () => {
   let provider: OpenCodeAgentProvider;
   let dockerService: jest.Mocked<DockerService>;
-
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
     execCommandStream: jest.fn(),
@@ -173,6 +174,7 @@ model-b
 
     it('should send message to container without model option', async () => {
       const expectedResponse = 'Hello from agent!';
+
       dockerService.sendCommandToContainer.mockResolvedValue(expectedResponse);
 
       const response = await provider.sendMessage(agentId, containerId, message);
@@ -188,6 +190,7 @@ model-b
     it('should send message to container with model option', async () => {
       const expectedResponse = 'Hello from agent!';
       const model = 'gpt-4';
+
       dockerService.sendCommandToContainer.mockResolvedValue(expectedResponse);
 
       const response = await provider.sendMessage(agentId, containerId, message, { model });
@@ -202,6 +205,7 @@ model-b
 
     it('should send message without continue flag when continue is false', async () => {
       const expectedResponse = 'Hello from agent!';
+
       dockerService.sendCommandToContainer.mockResolvedValue(expectedResponse);
 
       const response = await provider.sendMessage(agentId, containerId, message, { continue: false });
@@ -217,6 +221,7 @@ model-b
     it('should retry without continue flag when Session not found error occurs', async () => {
       const sessionNotFoundResponse = 'Session not found';
       const expectedResponse = 'Hello from agent!';
+
       dockerService.sendCommandToContainer
         .mockResolvedValueOnce(sessionNotFoundResponse)
         .mockResolvedValueOnce(expectedResponse);
@@ -243,6 +248,7 @@ model-b
       const sessionNotFoundResponse = 'Session not found';
       const expectedResponse = 'Hello from agent!';
       const model = 'gpt-4';
+
       dockerService.sendCommandToContainer
         .mockResolvedValueOnce(sessionNotFoundResponse)
         .mockResolvedValueOnce(expectedResponse);
@@ -267,6 +273,7 @@ model-b
 
     it('should handle errors from docker service', async () => {
       const error = new Error('Container not found');
+
       dockerService.sendCommandToContainer.mockRejectedValue(error);
 
       await expect(provider.sendMessage(agentId, containerId, message)).rejects.toThrow('Container not found');
@@ -283,9 +290,11 @@ model-b
         yield { stream: 'stdout', chunk: '{"type":"text",' };
         yield { stream: 'stdout', chunk: '"part":{"type":"text","text":"Hi"}}\n' };
       }
+
       dockerService.execCommandStream.mockImplementation(mockStream);
 
       const chunks: string[] = [];
+
       for await (const chunk of provider.sendMessageStream(agentId, containerId, message)) {
         chunks.push(chunk);
       }
@@ -300,14 +309,18 @@ model-b
 
     it('should retry without continue when output contains Session not found', async () => {
       let call = 0;
+
       async function* firstSessionMissing(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
         yield { stream: 'stdout', chunk: 'Session not found\n' };
       }
+
       async function* secondOk(): AsyncGenerator<{ stream: 'stdout' | 'stderr'; chunk: string }> {
         yield { stream: 'stdout', chunk: '{"ok":true}\n' };
       }
+
       dockerService.execCommandStream.mockImplementation(async function* () {
         call += 1;
+
         if (call === 1) {
           yield* firstSessionMissing();
         } else {
@@ -316,6 +329,7 @@ model-b
       });
 
       const chunks: string[] = [];
+
       for await (const chunk of provider.sendMessageStream(agentId, containerId, message)) {
         chunks.push(chunk);
       }
@@ -348,6 +362,7 @@ model-b
 
     it('should return immediately even with model option', async () => {
       const model = 'gpt-4';
+
       await provider.sendInitialization(agentId, containerId, { model });
 
       expect(dockerService.sendCommandToContainer).not.toHaveBeenCalled();
@@ -436,6 +451,7 @@ model-b
         name?: string;
         status?: string;
       };
+
       expect(call.type).toBe('tool_call');
       expect(call.toolCallId).toBe('c1');
       expect(call.name).toBe('bash');

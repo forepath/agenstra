@@ -10,6 +10,7 @@ describe('PricingService', () => {
       marginFixed: '2',
     } as any;
     const result = service.calculate(plan);
+
     expect(result.totalPrice).toBe(10 + 1 + 2);
   });
 });

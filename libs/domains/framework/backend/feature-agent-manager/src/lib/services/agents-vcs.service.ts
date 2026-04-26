@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
 import { CreateBranchDto } from '../dto/create-branch.dto';
 import { GitBranchDto } from '../dto/git-branch.dto';
 import { GitDiffDto } from '../dto/git-diff.dto';
 import { GitFileStatusDto, GitStatusDto } from '../dto/git-status.dto';
 import { ResolveConflictDto } from '../dto/resolve-conflict.dto';
 import { AgentsRepository } from '../repositories/agents.repository';
+
 import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
@@ -48,6 +50,7 @@ export class AgentsVcsService {
       .split('')
       .filter((char) => {
         const code = char.charCodeAt(0);
+
         // Keep printable ASCII (32-126) and newlines/tabs
         return (code >= 32 && code <= 126) || code === 9 || code === 10;
       })
@@ -71,7 +74,6 @@ export class AgentsVcsService {
 
     // Ensure exactly 2 characters
     const normalized = statusCode.padEnd(2, ' ').substring(0, 2);
-
     // Valid git status characters
     const validChars = new Set([' ', 'M', 'A', 'D', 'R', 'C', 'U', '?', 'T']);
 
@@ -100,9 +102,9 @@ export class AgentsVcsService {
   ): Promise<string> {
     // Escape the command for shell execution
     const escapedCommand = command.replace(/'/g, "'\\''");
-
     // Set environment variables to disable interactive prompts if requested
     let envPrefix = '';
+
     if (disablePrompts) {
       // GIT_TERMINAL_PROMPT=0: Disable terminal prompts (Git will fail instead of prompting)
       // GIT_ASKPASS='false': Use 'false' command which always exits with error code 1
@@ -117,6 +119,7 @@ export class AgentsVcsService {
       undefined,
       checkExitCode,
     );
+
     return this.cleanOutput(output, !preserveLeadingSpaces);
   }
 
@@ -137,7 +140,6 @@ export class AgentsVcsService {
       // Get current branch
       const currentBranchOutput = await this.executeGitCommand(agentEntity.containerId, 'rev-parse --abbrev-ref HEAD');
       const currentBranch = this.cleanBranchName(currentBranchOutput);
-
       // Get branch tracking info
       // First check if remote branch exists
       let aheadCount = 0;
@@ -160,18 +162,21 @@ export class AgentsVcsService {
             .trim()
             .split(/\s+/)
             .map((n) => parseInt(n, 10) || 0);
+
           aheadCount = ahead;
           behindCount = behind;
         } else {
           // Remote branch doesn't exist - count commits not on remote default branch
           // Try to find the default branch (main or master)
           let defaultBranch = 'main';
+
           try {
             const defaultBranchOutput = await this.executeGitCommand(
               agentEntity.containerId,
               `symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main"`,
             );
             const detectedDefault = this.cleanBranchName(defaultBranchOutput);
+
             if (detectedDefault) {
               defaultBranch = detectedDefault;
             }
@@ -184,6 +189,7 @@ export class AgentsVcsService {
             agentEntity.containerId,
             `rev-list --count ${this.escapePath(currentBranch)} --not origin/${this.escapePath(defaultBranch)} 2>/dev/null || echo "0"`,
           );
+
           aheadCount = parseInt(commitCountOutput.trim(), 10) || 0;
           behindCount = 0;
         }
@@ -200,12 +206,10 @@ export class AgentsVcsService {
         this.BASE_PATH,
         true,
       );
-
       // Git porcelain format: "XY path" where XY are exactly 2 characters
       // Examples: " M file.txt" (unstaged), "M  file.txt" (staged), "MM file.txt" (both)
       const files: GitFileStatusDto[] = [];
       const lines = statusOutput.split('\n').filter((line) => line.length > 0);
-
       // Valid git status characters for porcelain format
       const validGitStatusChars = new Set([' ', 'M', 'A', 'D', 'R', 'C', 'U', '?', 'T']);
 
@@ -215,9 +219,11 @@ export class AgentsVcsService {
         // Find where the git status code starts (may have shell artifacts like "- " prefix)
         // Git porcelain format: exactly 2 valid status characters followed by whitespace and path
         let statusCodeStart = -1;
+
         for (let i = 0; i <= line.length - 2; i++) {
           const char1 = line[i];
           const char2 = line[i + 1];
+
           // Check if both characters are valid git status characters
           if (validGitStatusChars.has(char1) && validGitStatusChars.has(char2)) {
             // Check if next character is whitespace (indicating start of path)
@@ -236,10 +242,12 @@ export class AgentsVcsService {
 
         // Extract the status code (exactly 2 characters)
         const rawStatusCode = line.substring(statusCodeStart, statusCodeStart + 2);
+
         this.logger.debug(`Found status code at position ${statusCodeStart}: "${rawStatusCode}"`);
 
         // Find path start (skip whitespace after status code)
         let pathStart = statusCodeStart + 2;
+
         while (pathStart < line.length && (line[pathStart] === ' ' || line[pathStart] === '\t')) {
           pathStart++;
         }
@@ -249,6 +257,7 @@ export class AgentsVcsService {
         }
 
         const path = line.substring(pathStart).trim();
+
         if (!path) {
           continue;
         }
@@ -257,9 +266,9 @@ export class AgentsVcsService {
         // Use raw code to detect type, as normalization might affect valid status codes
         const stagedStatus = rawStatusCode[0] || ' ';
         const unstagedStatus = rawStatusCode[1] || ' ';
-
         // Determine file type based on raw status code
         let type: 'staged' | 'unstaged' | 'untracked' | 'both';
+
         if (stagedStatus === '?' && unstagedStatus === '?') {
           type = 'untracked';
         } else if (stagedStatus !== ' ' && unstagedStatus !== ' ') {
@@ -272,7 +281,6 @@ export class AgentsVcsService {
 
         // Normalize status code for the response (to clean invalid characters)
         const normalizedStatusCode = this.normalizeStatusCode(rawStatusCode);
-
         // Check if binary file
         const isBinary = await this.isBinaryFile(agentEntity.containerId, path);
 
@@ -297,6 +305,7 @@ export class AgentsVcsService {
       };
     } catch (error: unknown) {
       const err = error as { message?: string; stderr?: string };
+
       this.logger.error(`Error getting git status for agent ${agentId}: ${err.message}`, err.stderr);
       throw new BadRequestException(`Failed to get git status: ${err.message || 'Unknown error'}`);
     }
@@ -308,6 +317,7 @@ export class AgentsVcsService {
   private async isBinaryFile(containerId: string, filePath: string): Promise<boolean> {
     try {
       const output = await this.executeGitCommand(containerId, `check-attr -z binary -- ${this.escapePath(filePath)}`);
+
       return output.includes('binary: set');
     } catch {
       // If check-attr fails, try diff --check
@@ -316,6 +326,7 @@ export class AgentsVcsService {
           containerId,
           `diff --check --quiet -- ${this.escapePath(filePath)} 2>&1 || true`,
         );
+
         return diffOutput.includes('Binary files differ');
       } catch {
         return false;
@@ -349,6 +360,7 @@ export class AgentsVcsService {
     // Valid characters: alphanumeric, dots, hyphens, underscores, forward slashes
     // Exclude: backticks, spaces, control characters, and other special chars
     const validBranchNamePattern = /^[a-zA-Z0-9._\-/]+$/;
+
     if (!validBranchNamePattern.test(branchName)) return false;
 
     // Additional checks: no leading/trailing spaces (should be caught by pattern, but double-check)
@@ -373,10 +385,10 @@ export class AgentsVcsService {
       .replace(/^[\s*]+/, '') // Remove leading whitespace and asterisks
       .replace(/[\s*]+$/, '') // Remove trailing whitespace and asterisks
       .trim();
-
     // Check if the cleaned name (before removing invalid chars) contains invalid characters
     // If it does, reject the branch entirely - don't try to sanitize it
     const hasInvalidChars = /[^a-zA-Z0-9._\-/]/.test(cleaned);
+
     if (hasInvalidChars) {
       // Branch name contains invalid characters - reject it
       return '';
@@ -414,21 +426,18 @@ export class AgentsVcsService {
       // Get current branch
       const currentBranchOutput = await this.executeGitCommand(agentEntity.containerId, 'rev-parse --abbrev-ref HEAD');
       const currentBranch = this.cleanBranchName(currentBranchOutput);
-
       // Get local branches
       const localBranchesOutput = await this.executeGitCommand(agentEntity.containerId, 'branch');
       const localBranchNames = localBranchesOutput
         .split('\n')
         .map((line) => this.cleanBranchName(line))
         .filter((line) => line.length > 0);
-
       // Get remote branches
       const remoteBranchesOutput = await this.executeGitCommand(agentEntity.containerId, 'branch -r');
       const remoteBranchRefs = remoteBranchesOutput
         .split('\n')
         .map((line) => this.cleanBranchName(line))
         .filter((line) => line.length > 0 && !line.includes('HEAD'));
-
       const branches: GitBranchDto[] = [];
 
       // Process local branches
@@ -437,6 +446,7 @@ export class AgentsVcsService {
 
         // Clean branch name to ensure no leading/trailing whitespace or special chars
         const cleanBranchName = this.cleanBranchName(branchName);
+
         // Skip invalid branch names (empty or containing invalid characters)
         if (!cleanBranchName || !this.isValidBranchName(cleanBranchName)) {
           this.logger.warn(`Skipping invalid branch name: ${JSON.stringify(branchName)}`);
@@ -444,7 +454,6 @@ export class AgentsVcsService {
         }
 
         const isCurrent = cleanBranchName === currentBranch;
-
         // Get commit info - use single quotes to prevent shell interpretation of %s
         const commitOutput = await this.executeGitCommand(
           agentEntity.containerId,
@@ -452,7 +461,6 @@ export class AgentsVcsService {
         );
         const [commit, ...messageParts] = commitOutput.split('|');
         const message = this.cleanOutput(messageParts.join('|') || '');
-
         // Get tracking info
         let aheadCount: number | undefined;
         let behindCount: number | undefined;
@@ -474,18 +482,21 @@ export class AgentsVcsService {
               .trim()
               .split(/\s+/)
               .map((n) => parseInt(n, 10) || 0);
+
             aheadCount = ahead;
             behindCount = behind;
           } else {
             // Remote branch doesn't exist - count commits not on remote default branch
             // Try to find the default branch (main or master)
             let defaultBranch = 'main';
+
             try {
               const defaultBranchOutput = await this.executeGitCommand(
                 agentEntity.containerId,
                 `symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main"`,
               );
               const detectedDefault = this.cleanBranchName(defaultBranchOutput);
+
               if (detectedDefault) {
                 defaultBranch = detectedDefault;
               }
@@ -498,6 +509,7 @@ export class AgentsVcsService {
               agentEntity.containerId,
               `rev-list --count ${this.escapePath(cleanBranchName)} --not origin/${this.escapePath(defaultBranch)} 2>/dev/null || echo "0"`,
             );
+
             aheadCount = parseInt(commitCountOutput.trim(), 10) || 0;
             behindCount = 0;
           }
@@ -525,9 +537,11 @@ export class AgentsVcsService {
 
         // Handle both formats: "origin/branch" and "remotes/origin/branch"
         let match = remoteRef.match(/^remotes\/([^/]+)\/(.+)$/);
+
         if (!match) {
           match = remoteRef.match(/^([^/]+)\/(.+)$/);
         }
+
         if (!match) continue;
 
         const [, remoteName, branchName] = match;
@@ -565,6 +579,7 @@ export class AgentsVcsService {
       return branches;
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error getting branches for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to get branches: ${err.message || 'Unknown error'}`);
     }
@@ -607,11 +622,13 @@ export class AgentsVcsService {
       // For text files, get actual diff content
       // Get original content from HEAD
       let originalContent = '';
+
       try {
         const originalOutput = await this.executeGitCommand(
           agentEntity.containerId,
           `show HEAD:${this.escapePath(filePath)} 2>/dev/null || echo ""`,
         );
+
         originalContent = Buffer.from(originalOutput).toString('base64');
       } catch {
         // File doesn't exist in HEAD (new file)
@@ -631,6 +648,7 @@ export class AgentsVcsService {
       };
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error getting diff for file ${filePath} in agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to get file diff: ${err.message || 'Unknown error'}`);
     }
@@ -642,20 +660,25 @@ export class AgentsVcsService {
   private async getFileSize(containerId: string, filePath: string, revision: string): Promise<number | undefined> {
     try {
       let output: string;
+
       if (revision === 'WORKING') {
         const escapedPath = this.escapePath(filePath);
+
         output = await this.dockerService.sendCommandToContainer(
           containerId,
           `sh -c "cd '${this.BASE_PATH}' && stat -c %s '${escapedPath}' 2>/dev/null || echo '0'"`,
         );
       } else {
         const escapedPath = this.escapePath(filePath);
+
         output = await this.executeGitCommand(
           containerId,
           `cat-file -s ${revision}:${escapedPath} 2>/dev/null || echo "0"`,
         );
       }
+
       const size = parseInt(output.trim(), 10);
+
       return isNaN(size) ? undefined : size;
     } catch {
       return undefined;
@@ -682,10 +705,12 @@ export class AgentsVcsService {
       } else {
         // Stage specific files
         const escapedFiles = files.map((f) => this.escapePath(f)).join(' ');
+
         await this.executeGitCommand(agentEntity.containerId, `add ${escapedFiles}`);
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error staging files for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to stage files: ${err.message || 'Unknown error'}`);
     }
@@ -711,10 +736,12 @@ export class AgentsVcsService {
       } else {
         // Unstage specific files
         const escapedFiles = files.map((f) => this.escapePath(f)).join(' ');
+
         await this.executeGitCommand(agentEntity.containerId, `reset HEAD ${escapedFiles}`);
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error unstaging files for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to unstage files: ${err.message || 'Unknown error'}`);
     }
@@ -740,12 +767,14 @@ export class AgentsVcsService {
     try {
       // Escape commit message for shell
       const escapedMessage = message.replace(/'/g, "'\\''");
+
       await this.executeGitCommand(
         agentEntity.containerId,
         `-c user.name='${this.commitAuthorName}' -c user.email='${this.commitAuthorEmail}' commit -m '${escapedMessage}'`,
       );
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error committing changes for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to commit: ${err.message || 'Unknown error'}`);
     }
@@ -767,18 +796,18 @@ export class AgentsVcsService {
       // Get current branch
       const currentBranchOutput = await this.executeGitCommand(agentEntity.containerId, 'rev-parse --abbrev-ref HEAD');
       const currentBranch = this.cleanBranchName(currentBranchOutput);
-
       // Check if remote branch exists
       const remoteBranchExists = await this.executeGitCommand(
         agentEntity.containerId,
         `ls-remote --heads origin ${this.escapePath(currentBranch)} 2>/dev/null || echo ""`,
       );
-
       // If remote branch doesn't exist, use -u to set up tracking
       const pushFlags: string[] = [];
+
       if (force) {
         pushFlags.push('--force-with-lease');
       }
+
       if (!remoteBranchExists.trim()) {
         pushFlags.push('-u');
       }
@@ -791,10 +820,12 @@ export class AgentsVcsService {
       await this.executeGitCommand(agentEntity.containerId, pushCommand, this.BASE_PATH, false, true, true);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error ${force ? 'force ' : ''}pushing changes for agent ${agentId}: ${err.message}`);
 
       // Check if error is related to authentication
       const errorMessage = err.message || '';
+
       if (
         errorMessage.includes('Authentication failed') ||
         errorMessage.includes('fatal: could not read Username') ||
@@ -842,10 +873,12 @@ export class AgentsVcsService {
       );
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error pulling changes for agent ${agentId}: ${err.message}`);
 
       // Check if error is related to authentication
       const errorMessage = err.message || '';
+
       if (
         errorMessage.includes('Authentication failed') ||
         errorMessage.includes('fatal: could not read Username') ||
@@ -880,10 +913,12 @@ export class AgentsVcsService {
       await this.executeGitCommand(agentEntity.containerId, 'fetch origin', this.BASE_PATH, false, true, true);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error fetching changes for agent ${agentId}: ${err.message}`);
 
       // Check if error is related to authentication
       const errorMessage = err.message || '';
+
       if (
         errorMessage.includes('Authentication failed') ||
         errorMessage.includes('fatal: could not read Username') ||
@@ -915,9 +950,11 @@ export class AgentsVcsService {
 
     try {
       const cleanBranchName = this.cleanBranchName(branch);
+
       await this.executeGitCommand(agentEntity.containerId, `rebase ${this.escapePath(cleanBranchName)}`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error rebasing for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to rebase: ${err.message || 'Unknown error'}`);
     }
@@ -938,9 +975,11 @@ export class AgentsVcsService {
 
     try {
       const cleanBranchName = this.cleanBranchName(branch);
+
       await this.executeGitCommand(agentEntity.containerId, `checkout ${this.escapePath(cleanBranchName)}`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       this.logger.error(`Error switching branch for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to switch branch: ${err.message || 'Unknown error'}`);
     }
@@ -965,6 +1004,7 @@ export class AgentsVcsService {
       // Apply conventional commit prefix if requested
       if (dto.useConventionalPrefix && dto.conventionalType) {
         const prefix = `${dto.conventionalType}/`;
+
         if (!branchName.startsWith(prefix)) {
           branchName = `${prefix}${branchName}`;
         }
@@ -977,12 +1017,15 @@ export class AgentsVcsService {
 
       // Create branch from base branch if specified
       const baseBranch = dto.baseBranch || 'HEAD';
+
       await this.executeGitCommand(agentEntity.containerId, `checkout -b ${this.escapePath(branchName)} ${baseBranch}`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       if (error instanceof BadRequestException) {
         throw error;
       }
+
       this.logger.error(`Error creating branch for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to create branch: ${err.message || 'Unknown error'}`);
     }
@@ -1014,9 +1057,11 @@ export class AgentsVcsService {
       await this.executeGitCommand(agentEntity.containerId, `branch -D ${this.escapePath(cleanBranchName)}`);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       if (error instanceof BadRequestException) {
         throw error;
       }
+
       this.logger.error(`Error deleting branch for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to delete branch: ${err.message || 'Unknown error'}`);
     }
@@ -1059,9 +1104,11 @@ export class AgentsVcsService {
       }
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       if (error instanceof BadRequestException) {
         throw error;
       }
+
       this.logger.error(`Error resolving conflict for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to resolve conflict: ${err.message || 'Unknown error'}`);
     }
@@ -1080,6 +1127,7 @@ export class AgentsVcsService {
     }
 
     const b = baseBranch.trim();
+
     if (!/^[a-zA-Z0-9/_-]+$/.test(b)) {
       throw new BadRequestException('Invalid base branch name');
     }
@@ -1094,9 +1142,11 @@ export class AgentsVcsService {
       await this.executeGitCommand(containerId, 'clean -fd', this.BASE_PATH, false, true, true);
     } catch (error: unknown) {
       const err = error as { message?: string };
+
       if (error instanceof BadRequestException || error instanceof NotFoundException) {
         throw error;
       }
+
       this.logger.error(`prepareCleanWorkspace failed for agent ${agentId}: ${err.message}`);
       throw new BadRequestException(`Failed to prepare clean workspace: ${err.message || 'Unknown error'}`);
     }

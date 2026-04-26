@@ -1,7 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
+
 import { InvoicesService } from '../../services/invoices.service';
+
 import {
   createInvoice,
   createInvoiceFailure,
@@ -19,8 +21,11 @@ import {
 
 function normalizeError(error: unknown): string {
   if (error instanceof Error) return error.message;
+
   if (typeof error === 'string') return error;
+
   if (error && typeof error === 'object' && 'message' in error) return String(error.message);
+
   return 'An unexpected error occurred';
 }
 

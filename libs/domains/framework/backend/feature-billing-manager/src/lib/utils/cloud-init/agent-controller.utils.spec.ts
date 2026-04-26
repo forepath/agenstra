@@ -13,6 +13,7 @@ describe('cloud-init.utils', () => {
         'awesome-armadillo-abc12',
         'spirde.com',
       );
+
       expect(config.host.hostname).toBe('awesome-armadillo-abc12');
       expect(config.host.fqdn).toBe('awesome-armadillo-abc12.spirde.com');
       expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
@@ -20,12 +21,14 @@ describe('cloud-init.utils', () => {
 
     it('defaults baseDomain to spirde.com when not provided', () => {
       const config = buildCloudInitConfigFromRequest({}, 'foo');
+
       expect(config.host.fqdn).toBe('foo.spirde.com');
     });
 
     it('generates random encryptionKey and jwtSecret', () => {
       const config1 = buildCloudInitConfigFromRequest({}, 'host1');
       const config2 = buildCloudInitConfigFromRequest({}, 'host2');
+
       expect(config1.backend.encryption.encryptionKey).toBeTruthy();
       expect(config1.backend.encryption.jwtSecret).toBeTruthy();
       expect(config1.backend.encryption.encryptionKey).not.toBe(config2.backend.encryption.encryptionKey);
@@ -40,12 +43,14 @@ describe('cloud-init.utils', () => {
         },
         'host1',
       );
+
       expect(config.backend.provisioning?.hetznerApiToken).toBe('secret-hetzner');
       expect(config.backend.provisioning?.digitaloceanApiToken).toBe('secret-do');
     });
 
     it('defaults provisioning tokens to empty string when not provided', () => {
       const config = buildCloudInitConfigFromRequest({}, 'host1');
+
       expect(config.backend.provisioning?.hetznerApiToken).toBe('');
       expect(config.backend.provisioning?.digitaloceanApiToken).toBe('');
     });
@@ -55,11 +60,13 @@ describe('cloud-init.utils', () => {
         { sshPublicKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIexample user@host' },
         'host1',
       );
+
       expect(config.ssh.publicKey).toBe('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIexample user@host');
     });
 
     it('defaults ssh.publicKey to empty string when not provided', () => {
       const config = buildCloudInitConfigFromRequest({}, 'host1');
+
       expect(config.ssh.publicKey).toBe('');
     });
   });
@@ -103,6 +110,7 @@ describe('cloud-init.utils', () => {
       };
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('location /api/');
       expect(script).toContain('agent-controller-api');
     });
@@ -139,6 +147,7 @@ describe('cloud-init.utils', () => {
       };
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('certbot certonly --webroot');
       expect(script).toContain('/opt/certbot');
       expect(script).toContain('/.well-known/acme-challenge/');
@@ -179,6 +188,7 @@ describe('cloud-init.utils', () => {
       };
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('/root/.ssh/authorized_keys');
       expect(script).toContain(key);
     });
@@ -212,6 +222,7 @@ describe('cloud-init.utils', () => {
       };
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
+
       expect(script).toContain('/etc/ssh/sshd_config');
       expect(script).toContain('PermitRootLogin yes');
       expect(script).toContain('PasswordAuthentication no');
@@ -223,6 +234,7 @@ describe('cloud-init.utils', () => {
   describe('buildAgentControllerUpdateCommand', () => {
     it('returns a command that logs to agent-controller-update.log and runs docker compose up -d --pull=always', () => {
       const cmd = buildAgentControllerUpdateCommand();
+
       expect(cmd).toContain('/var/log/agent-controller-update.log');
       expect(cmd).toContain('cd /opt/agent-controller');
       expect(cmd).toContain('docker compose up -d --pull=always');
