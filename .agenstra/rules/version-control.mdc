@@ -33,6 +33,12 @@ alwaysApply: true
 - **Atomic Commits:** One logical change per commit
 - **Conventional Commits:** Use format: `type(scope): description`
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+  - Scopes:
+    - Prefer the Nx project `name` from the touched `project.json` when a single project changes
+    - Domain libraries under `libs/domains/<domain>/...` often use `{domain}-{scope}-{type}-{name}`
+    - Exact literals and app naming: follow schemas in your workspace Nx plugin (e.g. `tools/<plugin>/`, `tools/code`)
+    - Typical generated app prefixes (when those generators exist): `backend-*`, `frontend-*`, `mcp-*`, `keycloak-theme-*`
+    - Multi-project or workspace-wide changes: Nx tags `backend`, `frontend`, `keycloak`, `shared`, or `repo`, `ci`, `deps`, `nx`, `tools`
 - **Descriptive Messages:** First line ≤50 chars; body explains why, not what
 - **Frequency:** Commit frequently; small, logical units
 - **No Merge Commits:** Use rebase or squash to keep history clean
