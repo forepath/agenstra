@@ -1,3 +1,5 @@
+import { createHash } from 'crypto';
+
 import {
   ClientUsersRepository,
   ensureClientAccess,
@@ -141,6 +143,10 @@ export class TicketsService {
 
   private boardEmitTicketRemoved(clientId: string, id: string): void {
     this.ticketBoardRealtime.emitToClient(clientId, TICKETS_BOARD_EVENTS.ticketRemoved, { id, clientId });
+  }
+
+  private deriveTicketLongSha(ticketId: string): string {
+    return createHash('sha1').update(ticketId).digest('hex');
   }
 
   private async boardEmitTicketActivityMapped(clientId: string, row: TicketActivityEntity): Promise<void> {
@@ -378,6 +384,10 @@ export class TicketsService {
     const aRepo = em.getRepository(TicketActivityEntity);
     const ticket = tRepo.create(fields);
     const inserted = await tRepo.save(ticket);
+    const longSha = this.deriveTicketLongSha(inserted.id);
+
+    inserted.longSha = longSha;
+    await tRepo.save(inserted);
 
     await aRepo.save(
       aRepo.create({
@@ -820,6 +830,53 @@ export class TicketsService {
 
   async getPrototypePrompt(ticketId: string, req?: RequestWithUser): Promise<PrototypePromptResponseDto> {
     const ticket = await this.assertTicketReadable(ticketId, req);
+    const body = await this.buildPrototypePromptBody(ticket);
+    const actor = this.resolveActor(req);
+    const activityRow = await this.activityRepo.save(
+      this.activityRepo.create({
+        ticketId,
+        actorType: actor.actorType,
+        actorUserId: actor.actorUserId ?? null,
+        actionType: TicketActionType.PROTOTYPE_PROMPT_GENERATED,
+        payload: { rootTicketId: ticketId },
+      }),
+    );
+
+    await this.boardEmitTicketActivityMapped(ticket.clientId, activityRow);
+
+    return { prompt: body };
+  }
+
+  async getPrototypePromptByClientSha(clientId: string, sha: string): Promise<PrototypePromptResponseDto | null> {
+    const normalized = sha.trim().toLowerCase();
+
+    if (!normalized) {
+      return null;
+    }
+
+    let ticket: TicketEntity | null = null;
+
+    if (normalized.length >= 40) {
+      ticket = await this.ticketRepo.findOne({
+        where: { clientId, longSha: normalized.slice(0, 40) },
+      });
+    } else {
+      ticket = await this.ticketRepo
+        .createQueryBuilder('t')
+        .where('t.client_id = :clientId', { clientId })
+        .andWhere('t.long_sha LIKE :prefix', { prefix: `${normalized}%` })
+        .orderBy('t.created_at', 'DESC')
+        .getOne();
+    }
+
+    if (!ticket) {
+      return null;
+    }
+
+    return { prompt: await this.buildPrototypePromptBody(ticket) };
+  }
+
+  private async buildPrototypePromptBody(ticket: TicketEntity): Promise<string> {
     const parentChain = await this.loadParentChainEntities(ticket);
     const tree = await this.buildPromptNode(ticket);
     let body = buildPrototypePromptPreamble();
@@ -844,20 +901,8 @@ export class TicketsService {
     }
 
     body += buildPrototypePrompt(tree);
-    const actor = this.resolveActor(req);
-    const activityRow = await this.activityRepo.save(
-      this.activityRepo.create({
-        ticketId,
-        actorType: actor.actorType,
-        actorUserId: actor.actorUserId ?? null,
-        actionType: TicketActionType.PROTOTYPE_PROMPT_GENERATED,
-        payload: { rootTicketId: ticketId },
-      }),
-    );
 
-    await this.boardEmitTicketActivityMapped(ticket.clientId, activityRow);
-
-    return { prompt: body };
+    return body;
   }
 
   /** Root-first chain of parents (excludes `ticket` itself). */
@@ -1063,9 +1108,14 @@ export class TicketsService {
 
     const own = countMarkdownCheckboxTasks(row.content);
     const child = descendantTotals.get(row.id) ?? { open: 0, done: 0 };
+    const longSha = row.longSha ?? this.deriveTicketLongSha(row.id);
 
     return {
       id: row.id,
+      shas: {
+        short: longSha.slice(0, 7),
+        long: longSha,
+      },
       clientId: row.clientId,
       parentId: row.parentId,
       title: row.title,

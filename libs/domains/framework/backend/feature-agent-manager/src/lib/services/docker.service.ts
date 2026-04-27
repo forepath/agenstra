@@ -22,6 +22,8 @@ interface TerminalSession {
 export class DockerService {
   private readonly logger = new Logger(DockerService.name);
   private readonly docker = new Docker({ socketPath: '/var/run/docker.sock' });
+  private static readonly WORKSPACE_CONTEXT_BIND_SOURCE = '/opt/agents';
+  private static readonly WORKSPACE_CONTEXT_BIND_TARGET = '/opt/workspace';
   // Store active terminal sessions: sessionId -> TerminalSession
   private readonly terminalSessions = new Map<string, TerminalSession>();
 
@@ -233,6 +235,16 @@ export class DockerService {
           return null;
         })
         .filter((bind): bind is string => bind !== null);
+      const hasWorkspaceContextBind = mounts.some(
+        (mount) =>
+          mount.Source === DockerService.WORKSPACE_CONTEXT_BIND_SOURCE &&
+          mount.Destination === DockerService.WORKSPACE_CONTEXT_BIND_TARGET,
+      );
+
+      if (!hasWorkspaceContextBind) {
+        binds.push(`${DockerService.WORKSPACE_CONTEXT_BIND_SOURCE}:${DockerService.WORKSPACE_CONTEXT_BIND_TARGET}:ro`);
+      }
+
       // Recreate container with updated environment variables
       const newContainer = await this.docker.createContainer({
         name: containerName,

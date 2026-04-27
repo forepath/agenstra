@@ -34,6 +34,8 @@ describe('ticketAutomationReducer', () => {
     ticketId: 't1',
     eligible: true,
     allowedAgentIds: ['a1'],
+    includeWorkspaceContext: true,
+    contextEnvironmentIds: [],
     verifierProfile: null,
     requiresApproval: false,
     approvedAt: null,

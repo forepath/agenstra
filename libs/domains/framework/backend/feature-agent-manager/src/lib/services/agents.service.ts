@@ -26,6 +26,8 @@ import { DockerService } from './docker.service';
 export class AgentsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(AgentsService.name);
   private readonly PASSWORD_LENGTH = 16;
+  private static readonly WORKSPACE_CONTEXT_HOST_PATH = '/opt/agents';
+  private static readonly WORKSPACE_CONTEXT_CONTAINER_PATH = '/opt/workspace';
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
@@ -318,6 +320,11 @@ export class AgentsService implements OnApplicationBootstrap {
           containerPath: basePath,
           readOnly: false,
         },
+        {
+          hostPath: AgentsService.WORKSPACE_CONTEXT_HOST_PATH,
+          containerPath: AgentsService.WORKSPACE_CONTEXT_CONTAINER_PATH,
+          readOnly: true,
+        },
       ],
     });
 
@@ -365,6 +372,11 @@ export class AgentsService implements OnApplicationBootstrap {
               containerPath: basePath,
               readOnly: false,
             },
+            {
+              hostPath: AgentsService.WORKSPACE_CONTEXT_HOST_PATH,
+              containerPath: AgentsService.WORKSPACE_CONTEXT_CONTAINER_PATH,
+              readOnly: true,
+            },
           ],
           ports: [
             {
@@ -410,6 +422,11 @@ export class AgentsService implements OnApplicationBootstrap {
               hostPath: agentVolumePath,
               containerPath: '/root/context',
               readOnly: false,
+            },
+            {
+              hostPath: AgentsService.WORKSPACE_CONTEXT_HOST_PATH,
+              containerPath: AgentsService.WORKSPACE_CONTEXT_CONTAINER_PATH,
+              readOnly: true,
             },
           ],
           ports: [

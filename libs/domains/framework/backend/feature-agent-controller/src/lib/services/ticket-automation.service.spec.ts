@@ -122,6 +122,8 @@ describe('TicketAutomationService', () => {
         ticketId: tid,
         eligible: false,
         allowedAgentIds: [] as string[],
+        includeWorkspaceContext: true,
+        contextEnvironmentIds: [] as string[],
         verifierProfile: null as { commands: Array<{ cmd: string; cwd?: string }> } | null,
         requiresApproval: false,
         approvedAt: null as Date | null,

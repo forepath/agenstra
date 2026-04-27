@@ -286,6 +286,10 @@ export class AutonomousRunOrchestratorService {
     });
     await this.runRepo.update(run.id, { branchName, baseBranch });
     await this.emitRunSummaryNow(ticket.clientId, run.id);
+    const contextInjection = {
+      includeWorkspace: automation.includeWorkspaceContext !== false,
+      environmentIds: [...new Set([agentId, ...(automation.contextEnvironmentIds ?? [])])],
+    };
 
     if (autonomy.preImproveTicket) {
       await this.remoteChat.sendChatSync({
@@ -296,6 +300,7 @@ export class AutonomousRunOrchestratorService {
         continue: false,
         resumeSessionSuffix: '-ticket-auto-pre',
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
+        contextInjection,
       });
     }
 
@@ -315,6 +320,7 @@ export class AutonomousRunOrchestratorService {
         continue: iteration > 1,
         resumeSessionSuffix: '-ticket-auto-loop',
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
+        contextInjection,
       });
 
       await this.persistStep(run.id, stepIdx++, TicketAutomationRunPhase.AGENT_LOOP, 'agent_turn', { iteration }, text);
@@ -360,7 +366,7 @@ export class AutonomousRunOrchestratorService {
       this.logger.log(`Run ${run.id}: no verifier commands configured, skipping verification`);
     }
 
-    const finalized = await this.finalizeGitCommitStep(run, ticket, agentId, stepIdx);
+    const finalized = await this.finalizeGitCommitStep(run, ticket, agentId, stepIdx, contextInjection);
 
     if (!finalized.ok) {
       return;
@@ -415,6 +421,7 @@ export class AutonomousRunOrchestratorService {
     ticket: TicketEntity,
     agentId: string,
     stepIdx: number,
+    contextInjection: { includeWorkspace: boolean; environmentIds: string[] },
   ): Promise<{ ok: true; nextStepIndex: number } | { ok: false }> {
     await this.runRepo.update(run.id, { phase: TicketAutomationRunPhase.FINALIZE });
     const status = await this.vcsProxy.getStatus(ticket.clientId, agentId);
@@ -430,7 +437,7 @@ export class AutonomousRunOrchestratorService {
     }
 
     await this.vcsProxy.stageFiles(ticket.clientId, agentId, { files: [] });
-    const { message, source } = await this.resolveCommitMessageWithAiFallback(run, ticket, agentId);
+    const { message, source } = await this.resolveCommitMessageWithAiFallback(run, ticket, agentId, contextInjection);
 
     try {
       await this.vcsProxy.commit(ticket.clientId, agentId, { message });
@@ -468,6 +475,7 @@ export class AutonomousRunOrchestratorService {
     run: TicketAutomationRunEntity,
     ticket: TicketEntity,
     agentId: string,
+    contextInjection: { includeWorkspace: boolean; environmentIds: string[] },
   ): Promise<{ message: string; source: 'ai' | 'fallback' }> {
     const timeoutMs = parseInt(process.env.REMOTE_AGENT_COMMIT_MESSAGE_TIMEOUT_MS || '120000', 10);
 
@@ -481,6 +489,7 @@ export class AutonomousRunOrchestratorService {
         resumeSessionSuffix: '-ticket-auto-commit-msg',
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_COMMIT_MESSAGE,
         chatTimeoutMs: timeoutMs,
+        contextInjection,
       });
       const sanitized = sanitizeConventionalCommitSubject(raw);
 

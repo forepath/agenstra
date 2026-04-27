@@ -167,6 +167,7 @@ export function mapAgentResponseObjectToDisplayRow(
     const toolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : '—';
     const status = typeof r['status'] === 'string' ? r['status'] : 'unknown';
     let summaryBody = `${status} · ${toolCallId}`;
+    const summaryTitle = name === 'enrichment' ? 'Enrichment' : `Tool call · ${name}`;
 
     if (r['args'] !== undefined) {
       summaryBody += ` · ${previewUnknown(r['args'], 160)}`;
@@ -176,7 +177,7 @@ export function mapAgentResponseObjectToDisplayRow(
       trackId,
       kind: 'toolCall',
       kindLabel: 'Tool',
-      summaryTitle: `Tool call · ${name}`,
+      summaryTitle,
       summaryBody,
       badgeClass: 'bg-warning text-dark',
       detailJson: JSON.stringify(r, null, 2),
@@ -188,12 +189,13 @@ export function mapAgentResponseObjectToDisplayRow(
     const name = typeof r['name'] === 'string' ? r['name'] : 'tool';
     const toolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : '—';
     const isError = Boolean(r['isError'] ?? r['is_error']);
+    const summaryTitle = name === 'enrichment' ? 'Enrichment result' : `Tool result · ${name}`;
 
     return {
       trackId,
       kind: 'toolResult',
       kindLabel: 'Result',
-      summaryTitle: `Tool result · ${name}`,
+      summaryTitle,
       summaryBody: `${isError ? 'Failed' : 'Success'} · ${toolCallId} · ${previewUnknown(r['result'], 200)}`,
       badgeClass: isError ? 'bg-danger' : 'bg-success',
       detailJson: JSON.stringify(r, null, 2),

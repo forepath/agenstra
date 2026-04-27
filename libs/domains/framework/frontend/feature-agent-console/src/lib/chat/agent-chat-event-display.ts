@@ -170,7 +170,7 @@ function summarizeEnvelope(
       const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '—';
       const status = typeof p.status === 'string' ? p.status : 'unknown';
 
-      summaryTitle = `Tool call · ${name}`;
+      summaryTitle = name === 'enrichment' ? 'Enrichment' : `Tool call · ${name}`;
       summaryBody = `${status} · ${toolCallId}`;
 
       if (p.args !== undefined) {
@@ -192,7 +192,7 @@ function summarizeEnvelope(
       const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '—';
       const isError = Boolean(p.isError);
 
-      summaryTitle = `Tool result · ${name}`;
+      summaryTitle = name === 'enrichment' ? 'Enrichment result' : `Tool result · ${name}`;
       summaryBody = `${isError ? 'Failed' : 'Success'} · ${toolCallId} · ${previewUnknown(p.result, 200)}`;
       badgeClass = isError ? 'bg-danger' : 'bg-success';
       break;

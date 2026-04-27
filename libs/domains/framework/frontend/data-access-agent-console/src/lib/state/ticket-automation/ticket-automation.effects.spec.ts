@@ -47,6 +47,8 @@ describe('TicketAutomationEffects', () => {
     ticketId: 't1',
     eligible: false,
     allowedAgentIds: [],
+    includeWorkspaceContext: true,
+    contextEnvironmentIds: [],
     verifierProfile: null,
     requiresApproval: true,
     approvedAt: null,

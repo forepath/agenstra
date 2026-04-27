@@ -35,6 +35,8 @@ describe('TicketsService', () => {
   const clientId = '00000000-0000-4000-8000-0000000000c1';
   const agentA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const agentB = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  const ticketLongSha = '329ec4f443e9dd75319f770816c5c1ee337f2134';
+  const ticketShortSha = '329ec4f';
   let ticket: TicketEntity;
   const commentRepo = {};
   const bodySessionRepo = {};
@@ -72,10 +74,21 @@ describe('TicketsService', () => {
     return fn(em);
   }
 
+  function makeTicketQueryBuilder() {
+    return {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+      getOne: jest.fn().mockResolvedValue(null),
+    };
+  }
+
   const ticketRepo = {
     findOne: jest.fn(),
     find: jest.fn().mockResolvedValue([]),
     count: jest.fn(),
+    createQueryBuilder: jest.fn().mockImplementation(() => makeTicketQueryBuilder()),
     manager: {
       transaction: jest.fn(defaultManagerTransaction),
     },
@@ -100,6 +113,7 @@ describe('TicketsService', () => {
       parentId: null,
       title: 'Example',
       content: null,
+      longSha: ticketLongSha,
       priority: TicketPriority.MEDIUM,
       status: TicketStatus.DRAFT,
       createdByUserId: null,
@@ -156,6 +170,15 @@ describe('TicketsService', () => {
       expect(dto.preferredChatAgentId).toBe(agentB);
       expect(ticketRepo.manager.transaction).not.toHaveBeenCalled();
     });
+
+    it('returns derived short and long shas', async () => {
+      const dto = await service.update(ticketId, { preferredChatAgentId: agentA }, undefined);
+
+      expect(dto.shas).toEqual({
+        short: ticketShortSha,
+        long: ticketLongSha,
+      });
+    });
   });
 
   describe('automationEligible on ticket response', () => {
@@ -203,6 +226,14 @@ describe('TicketsService', () => {
               return {
                 create: (fields: Partial<TicketEntity>) => ({ ...fields }) as TicketEntity,
                 save: jest.fn(async (entity: TicketEntity) => {
+                  if (entity.id) {
+                    return {
+                      ...entity,
+                      createdAt: entity.createdAt ?? new Date('2024-01-01T00:00:00.000Z'),
+                      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+                    } as TicketEntity;
+                  }
+
                   ticketSeq += 1;
                   const id = `00000000-0000-4000-8000-${String(ticketSeq).padStart(12, '0')}`;
 
@@ -270,6 +301,14 @@ describe('TicketsService', () => {
         'Technical design',
         'Implementation plan',
       ]);
+      expect(result.shas.short).toHaveLength(7);
+      expect(result.shas.long).toHaveLength(40);
+      expect(result.shas.long.startsWith(result.shas.short)).toBe(true);
+      for (const child of result.createdChildTickets ?? []) {
+        expect(child.shas.short).toHaveLength(7);
+        expect(child.shas.long).toHaveLength(40);
+        expect(child.shas.long.startsWith(child.shas.short)).toBe(true);
+      }
       expect(activityRepo.save).toHaveBeenCalledTimes(5);
     });
 
@@ -297,6 +336,68 @@ describe('TicketsService', () => {
           undefined,
         ),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('getPrototypePromptByClientSha', () => {
+    const prototypeLeafTicket = {
+      id: ticketId,
+      clientId,
+      parentId: null,
+      title: 'Example',
+      content: null,
+      longSha: ticketLongSha,
+      priority: TicketPriority.MEDIUM,
+      status: TicketStatus.DRAFT,
+      createdByUserId: null,
+      preferredChatAgentId: null,
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+    } as TicketEntity;
+
+    beforeEach(() => {
+      ticketRepo.findOne.mockReset();
+      ticketRepo.find.mockResolvedValue([]);
+      ticketRepo.findOne.mockImplementation(async (opts?: unknown) => {
+        const serialized = JSON.stringify(opts ?? {});
+
+        if (serialized.includes(ticketLongSha) && serialized.includes(clientId)) {
+          return prototypeLeafTicket;
+        }
+
+        return null;
+      });
+    });
+
+    afterEach(() => {
+      ticketRepo.find.mockResolvedValue([ticket]);
+      ticketRepo.findOne.mockReset();
+      ticketRepo.findOne.mockResolvedValue(ticket);
+    });
+
+    it('returns prompt for exact long sha', async () => {
+      const result = await service.getPrototypePromptByClientSha(clientId, ticketLongSha);
+
+      expect(result).not.toBeNull();
+      expect(result?.prompt).toContain(prototypeLeafTicket.title);
+    });
+
+    it('returns prompt when resolving by short sha prefix via query builder', async () => {
+      const qb = makeTicketQueryBuilder();
+
+      (qb.getOne as jest.Mock).mockResolvedValue(prototypeLeafTicket);
+      ticketRepo.createQueryBuilder.mockReturnValueOnce(qb as never);
+      const result = await service.getPrototypePromptByClientSha(clientId, ticketShortSha);
+
+      expect(ticketRepo.createQueryBuilder).toHaveBeenCalledWith('t');
+      expect(result).not.toBeNull();
+      expect(result?.prompt).toContain(prototypeLeafTicket.title);
+    });
+
+    it('returns null for missing sha', async () => {
+      const result = await service.getPrototypePromptByClientSha(clientId, 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef');
+
+      expect(result).toBeNull();
     });
   });
 

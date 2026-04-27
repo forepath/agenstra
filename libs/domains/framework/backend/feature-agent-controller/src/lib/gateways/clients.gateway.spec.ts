@@ -12,6 +12,7 @@ import { ClientAutomationChatRealtimeService } from '../services/client-automati
 import { ClientsService } from '../services/clients.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
+import { TicketsService } from '../services/tickets.service';
 
 import { ClientsGateway } from './clients.gateway';
 
@@ -136,6 +137,9 @@ describe('ClientsGateway', () => {
   const mockTicketAutomationChatSync = {
     hydrateForAgentClient: jest.fn().mockResolvedValue(undefined),
   };
+  const mockTicketsService = {
+    getPrototypePromptByClientSha: jest.fn().mockResolvedValue(null),
+  };
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -164,6 +168,7 @@ describe('ClientsGateway', () => {
         { provide: StatisticsService, useValue: mockStatisticsService },
         { provide: ClientAutomationChatRealtimeService, useValue: mockClientAutomationChatRealtime },
         { provide: TicketAutomationChatSyncService, useValue: mockTicketAutomationChatSync },
+        { provide: TicketsService, useValue: mockTicketsService },
       ],
     }).compile();
 
@@ -199,6 +204,52 @@ describe('ClientsGateway', () => {
       'http://localhost:8099/agents',
       expect.objectContaining({
         extraHeaders: expect.objectContaining({ Authorization: expect.stringMatching(/^Bearer /) }),
+      }),
+    );
+  });
+
+  it('should enrich forwarded chat context with ticket prompt trees by sha', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+      agentWsPort: 8099,
+    } as any);
+    mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({ password: 'pw' });
+    mockTicketsService.getPrototypePromptByClientSha.mockResolvedValue({
+      prompt: 'Parent tickets...\nThis ticket and its subtasks:\n...',
+    });
+
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    const forwardPromise = gateway.handleForward(
+      {
+        event: 'chat',
+        agentId: 'agent-uuid',
+        payload: {
+          message: 'hello',
+          contextInjection: { includeWorkspace: true, ticketShas: ['329ec4f'] },
+        },
+      },
+      socket,
+    );
+
+    await new Promise((resolve) => setImmediate(resolve));
+    remote.triggerEvent('loginSuccess');
+    await forwardPromise;
+
+    expect(mockTicketsService.getPrototypePromptByClientSha).toHaveBeenCalledWith('client-uuid', '329ec4f');
+    expect(remote.emit).toHaveBeenCalledWith(
+      'chat',
+      expect.objectContaining({
+        contextInjection: expect.objectContaining({
+          ticketShas: ['329ec4f'],
+          ticketContexts: ['Parent tickets...\nThis ticket and its subtasks:\n...'],
+        }),
       }),
     );
   });

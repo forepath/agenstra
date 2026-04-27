@@ -108,6 +108,10 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
     return false;
   }
 
+  if ((dto.includeWorkspaceContext ?? true) !== (cfg.includeWorkspaceContext !== false)) {
+    return false;
+  }
+
   if (dto.requiresApproval !== cfg.requiresApproval) {
     return false;
   }
@@ -116,6 +120,13 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
   const cAgents = normalizeAllowedAgentIdList(cfg.allowedAgentIds);
 
   if (dAgents.length !== cAgents.length || dAgents.some((id, i) => id !== cAgents[i])) {
+    return false;
+  }
+
+  const dContextAgents = normalizeAllowedAgentIdList(dto.contextEnvironmentIds);
+  const cContextAgents = normalizeAllowedAgentIdList(cfg.contextEnvironmentIds);
+
+  if (dContextAgents.length !== cContextAgents.length || dContextAgents.some((id, i) => id !== cContextAgents[i])) {
     return false;
   }
 
@@ -415,6 +426,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   automationDraftRequiresApproval = signal(false);
   /** Sorted unique agent UUIDs allowed to run automation for this ticket. */
   automationDraftAllowedAgentIds = signal<string[]>([]);
+  automationDraftIncludeWorkspaceContext = signal(true);
+  automationDraftContextEnvironmentIds = signal<string[]>([]);
   automationDraftDefaultBranch = signal('');
   automationDraftBranchStrategy = signal<TicketAutomationBranchStrategy>('reuse_per_ticket');
   automationDraftForceNewBranchNextRun = signal(false);
@@ -572,7 +585,10 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       }
 
       this.selectedAgentForAi.set(pick);
-      queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
+      queueMicrotask(() => {
+        this.ensureChatAgentInAutomationAllowedList();
+        this.ensureChatAgentInAutomationContextEnvironmentList();
+      });
     });
 
     effect(() => {
@@ -614,6 +630,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
       this.automationDraftRequiresApproval.set(cfg.requiresApproval);
       this.automationDraftAllowedAgentIds.set(normalizeAllowedAgentIdList(cfg.allowedAgentIds));
+      this.automationDraftIncludeWorkspaceContext.set(cfg.includeWorkspaceContext !== false);
+      this.automationDraftContextEnvironmentIds.set(normalizeAllowedAgentIdList(cfg.contextEnvironmentIds ?? []));
       this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
       this.automationDraftBranchStrategy.set(cfg.automationBranchStrategy ?? 'reuse_per_ticket');
       this.automationDraftForceNewBranchNextRun.set(cfg.forceNewAutomationBranchNextRun === true);
@@ -622,7 +640,10 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         : [{ cmd: '', cwd: '' }];
 
       this.automationVerifierRows.set(cmds);
-      queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
+      queueMicrotask(() => {
+        this.ensureChatAgentInAutomationAllowedList();
+        this.ensureChatAgentInAutomationContextEnvironmentList();
+      });
     });
 
     effect(() => {
@@ -641,7 +662,10 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         return;
       }
 
-      queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
+      queueMicrotask(() => {
+        this.ensureChatAgentInAutomationAllowedList();
+        this.ensureChatAgentInAutomationContextEnvironmentList();
+      });
     });
 
     toObservable(this.automationAutosaveFingerprint)
@@ -1462,6 +1486,44 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Parse git repository URL to `owner/repo`.
+   */
+  parseGitRepository(gitUrl: string | null | undefined): string | null {
+    if (!gitUrl) {
+      return null;
+    }
+
+    try {
+      const trimmed = gitUrl.trim();
+
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        const url = new URL(trimmed);
+        const pathParts = url.pathname.split('/').filter(Boolean);
+
+        if (pathParts.length >= 2) {
+          const owner = pathParts[0];
+          const repo = pathParts[1].replace(/\.git$/, '');
+
+          return `${owner}/${repo}`;
+        }
+      }
+
+      const sshMatch = trimmed.match(/^[^@]+@[^:]+:([^/]+)\/(.+)$/);
+
+      if (sshMatch && sshMatch[1] && sshMatch[2]) {
+        const owner = sshMatch[1];
+        const repo = sshMatch[2].replace(/\.git$/, '');
+
+        return `${owner}/${repo}`;
+      }
+    } catch {
+      // ignore parse errors and keep label fallback
+    }
+
+    return null;
+  }
+
   private buildTicketAutomationPatchDto(): UpdateTicketAutomationDto {
     const commands = this.automationVerifierRows()
       .map((r) => ({
@@ -1475,11 +1537,31 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       eligible: this.automationDraftEligible(),
       requiresApproval: this.automationDraftRequiresApproval(),
       allowedAgentIds: this.automationDraftAllowedAgentIds(),
+      includeWorkspaceContext: this.automationDraftIncludeWorkspaceContext(),
+      contextEnvironmentIds: this.automationDraftContextEnvironmentIds(),
       defaultBranchOverride: branch.length > 0 ? branch : null,
       automationBranchStrategy: this.automationDraftBranchStrategy(),
       forceNewAutomationBranchNextRun: this.automationDraftForceNewBranchNextRun(),
       verifierProfile: { commands },
     };
+  }
+
+  isAutomationContextEnvironmentSelected(agentId: string): boolean {
+    return this.automationDraftContextEnvironmentIds().includes(agentId);
+  }
+
+  /**
+   * Mirrors allowlist locking: when context environments include the same agent as "Agent for chat / AI",
+   * that row stays checked and cannot be cleared until chat selection changes.
+   */
+  isAutomationContextEnvironmentLockedToChat(agentId: string): boolean {
+    const chatId = this.selectedAgentForAi();
+
+    if (!chatId || chatId !== agentId) {
+      return false;
+    }
+
+    return this.isAutomationContextEnvironmentSelected(agentId);
   }
 
   isAutomationAgentAllowed(agentId: string): boolean {
@@ -1529,6 +1611,25 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     queueMicrotask(() => this.ensureChatAgentInAutomationAllowedList());
   }
 
+  onAutomationContextEnvironmentToggle(agentId: string, checked: boolean): void {
+    if (!checked && this.isAutomationContextEnvironmentLockedToChat(agentId)) {
+      return;
+    }
+
+    this.automationDraftContextEnvironmentIds.update((ids) => {
+      const next = new Set(ids);
+
+      if (checked) {
+        next.add(agentId);
+      } else {
+        next.delete(agentId);
+      }
+
+      return [...next].sort();
+    });
+    queueMicrotask(() => this.ensureChatAgentInAutomationContextEnvironmentList());
+  }
+
   /**
    * Ensures the "Agent for chat / AI" agent is checked in the automation allowlist when that agent appears in the
    * allowed-agents checkbox list (prototype autonomy enabled). Runs regardless of ticket automation `eligible`.
@@ -1552,6 +1653,36 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     }
 
     this.automationDraftAllowedAgentIds.update((ids) => {
+      if (ids.includes(chatId)) {
+        return ids;
+      }
+
+      return normalizeAllowedAgentIdList([...ids, chatId]);
+    });
+  }
+
+  /**
+   * Ensures the "Agent for chat / AI" agent is checked in context enrichment environments when it exists
+   * in the current workspace agent choices.
+   */
+  private ensureChatAgentInAutomationContextEnvironmentList(): void {
+    const tid = this.detail()?.id;
+
+    if (!tid || this.automationDraftSyncTicketId !== tid) {
+      return;
+    }
+
+    const chatId = this.selectedAgentForAi();
+
+    if (!chatId) {
+      return;
+    }
+
+    if (!this.automationAgentChoices().some((a) => a.id === chatId)) {
+      return;
+    }
+
+    this.automationDraftContextEnvironmentIds.update((ids) => {
       if (ids.includes(chatId)) {
         return ids;
       }
@@ -2204,7 +2335,20 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
     this.ticketsService.getPrototypePrompt(ticketId).subscribe({
       next: ({ prompt }) => {
-        storeAgentConsoleChatDraft(prompt);
+        const ticketAutomation = this.ticketAutomationConfig();
+        const shouldApplyAutomationContext =
+          !!ticketAutomation && ticketAutomation.ticketId === ticketId && ticketAutomation.eligible === true;
+
+        storeAgentConsoleChatDraft(prompt, {
+          ...(shouldApplyAutomationContext
+            ? {
+                contextInjection: {
+                  includeWorkspaceContext: ticketAutomation.includeWorkspaceContext !== false,
+                  selectedEnvironmentContextIds: normalizeAllowedAgentIdList(ticketAutomation.contextEnvironmentIds),
+                },
+              }
+            : {}),
+        });
         this.ticketDetailSuspendedForAutomationRun = false;
         this.ticketDetailSuspendedForCreateSubtask = false;
         this.ticketDetailSuspendedForMigration = false;

@@ -40,6 +40,10 @@ export class TicketEntity {
   @Column({ type: 'text', nullable: true })
   content?: string | null;
 
+  /** Stable full ticket reference hash (sha1 of ticket id). */
+  @Column({ type: 'varchar', length: 40, nullable: true, name: 'long_sha' })
+  longSha?: string | null;
+
   @Column({
     type: 'enum',
     enum: TicketPriority,

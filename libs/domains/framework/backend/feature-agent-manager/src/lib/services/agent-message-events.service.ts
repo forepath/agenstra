@@ -31,4 +31,25 @@ export class AgentMessageEventsService {
       this.logger.warn(`Failed to persist agent event: ${err.message}`);
     }
   }
+
+  async listRecentEvents(
+    agentId: string,
+    limit = 200,
+    opts?: { kinds?: string[]; since?: Date },
+  ): Promise<AgentEventEnvelope[]> {
+    const rows = await this.repository.listRecent(agentId, limit, opts);
+
+    return rows.map(
+      (row) =>
+        ({
+          eventId: row.id,
+          kind: row.kind as AgentEventEnvelope['kind'],
+          agentId: row.agentId,
+          correlationId: row.correlationId,
+          sequence: row.sequence,
+          timestamp: row.eventTimestamp.toISOString(),
+          payload: row.payload as AgentEventEnvelope['payload'],
+        }) as AgentEventEnvelope,
+    );
+  }
 }

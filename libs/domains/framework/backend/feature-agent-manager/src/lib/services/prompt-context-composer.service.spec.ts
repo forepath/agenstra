@@ -1,0 +1,67 @@
+import { PromptContextComposerService } from './prompt-context-composer.service';
+
+describe('PromptContextComposerService', () => {
+  let service: PromptContextComposerService;
+
+  beforeEach(() => {
+    service = new PromptContextComposerService();
+  });
+
+  it('should keep message unchanged without context injection', () => {
+    expect(service.composeChatMessage('hello')).toBe('hello');
+  });
+
+  it('should prepend hidden workspace and environment context', () => {
+    const result = service.composeChatMessage('Implement this', {
+      includeWorkspace: true,
+      environmentIds: ['env-1'],
+    });
+
+    expect(result).toContain('<hidden-context>');
+    expect(result).toContain('/opt/workspace');
+    expect(result).toContain('env-1');
+    expect(result).toContain('Implement this');
+  });
+
+  it('should include ticket sha references in hidden context', () => {
+    const result = service.composeChatMessage('Implement this', {
+      ticketShas: ['329ec4f', '329ec4f443e9dd75319f770816c5c1ee337f2134'],
+    });
+
+    expect(result).toContain('Relevant ticket references for context');
+    expect(result).toContain('329ec4f');
+    expect(result).toContain('329ec4f443e9dd75319f770816c5c1ee337f2134');
+  });
+
+  it('should include full ticket contexts when provided', () => {
+    const result = service.composeChatMessage('Implement this', {
+      ticketContexts: ['Parent tickets...\nThis ticket and its subtasks:\n- [ ] Task'],
+    });
+
+    expect(result).toContain('Detailed ticket hierarchy context is provided below');
+    expect(result).toContain('Ticket context #1:');
+    expect(result).toContain('This ticket and its subtasks');
+  });
+
+  it('composeEnhanceMessage wraps draft after composing context', () => {
+    const result = service.composeEnhanceMessage('Fix the bug', {
+      includeWorkspace: true,
+      environmentIds: ['env-a'],
+    });
+
+    expect(result).toContain('<<<DRAFT>>>');
+    expect(result).toContain('/opt/workspace');
+    expect(result).toContain('env-a');
+    expect(result).toContain('Fix the bug');
+  });
+
+  it('composeTicketBodyMessage includes hierarchy when provided', () => {
+    const result = service.composeTicketBodyMessage('My feature', '- [ ] Subtask', { ticketShas: ['abc1234'] });
+
+    expect(result).toContain('<<<TITLE>>>');
+    expect(result).toContain('My feature');
+    expect(result).toContain('<<<TICKET_TREE>>>');
+    expect(result).toContain('- [ ] Subtask');
+    expect(result).toContain('abc1234');
+  });
+});

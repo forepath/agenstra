@@ -347,6 +347,12 @@
       <trans-unit id="featureChat-typeMessagePlaceholder" datatype="html">
         <source>Type a message...</source>
         </trans-unit>
+      <trans-unit id="featureChat-selectContextTitle" datatype="html">
+        <source>Select context</source>
+        </trans-unit>
+      <trans-unit id="featureChat-selectContextAria" datatype="html">
+        <source>Select context</source>
+        </trans-unit>
       <trans-unit id="featureChat-enhancePromptTitle" datatype="html">
         <source>Enhance prompt with AI</source>
         </trans-unit>
@@ -407,11 +413,26 @@
       <trans-unit id="featureChat-gatewayQuickstartStep4Intro" datatype="html">
         <source> You are all set. Say hello to your new bot in the chat, try a question, or start a task. Have fun! </source>
         </trans-unit>
-      <trans-unit id="featureChat-deleteWorkspaceModalTitle" datatype="html">
-        <source> Delete Workspace </source>
+      <trans-unit id="featureChat-selectContextModalTitle" datatype="html">
+        <source> Select context </source>
         </trans-unit>
       <trans-unit id="featureChat-closeAriaLabel" datatype="html">
         <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureChat-includeWorkspaceContextLabel" datatype="html">
+        <source>Include workspace context</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentContextLabel" datatype="html">
+        <source>Environment context</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentContextHint" datatype="html">
+        <source> Select additional environments to enrich context more specifically. The active environment is included automatically. </source>
+        </trans-unit>
+      <trans-unit id="featureChat-done" datatype="html">
+        <source> Done </source>
+        </trans-unit>
+      <trans-unit id="featureChat-deleteWorkspaceModalTitle" datatype="html">
+        <source> Delete Workspace </source>
         </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceConfirm" datatype="html">
         <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
@@ -629,6 +650,18 @@
         </trans-unit>
       <trans-unit id="featureChat-openTicketFromAutomationCard" datatype="html">
         <source>Open ticket</source>
+        </trans-unit>
+      <trans-unit id="featureChat-contextToolbarWorkspace" datatype="html">
+        <source>Workspace</source>
+        </trans-unit>
+      <trans-unit id="featureChat-contextToolbarWorkspaceTitle" datatype="html">
+        <source>Include workspace files and metadata</source>
+        </trans-unit>
+      <trans-unit id="featureChat-contextToolbarEnvTitle" datatype="html">
+        <source>Environment context: <x id="agentName" equiv-text="agent.name"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-contextToolbarEnvUnknownTitle" datatype="html">
+        <source>Environment: <x id="agentId" equiv-text="id"/></source>
         </trans-unit>
       <trans-unit id="featureChat-hideFileTree" datatype="html">
         <source>Hide File Tree</source>
@@ -1759,23 +1792,11 @@
       <trans-unit id="featureTicketsBoard-migrateWorkspaceTitle" datatype="html">
         <source>Move ticket to another workspace</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateModalTitle" datatype="html">
-        <source>Move ticket to workspace</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateModalIntro" datatype="html">
-        <source>The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace admin in both places.</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateTargetLabel" datatype="html">
-        <source>Target workspace</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateCancel" datatype="html">
-        <source>Cancel</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateConfirm" datatype="html">
-        <source>Move ticket</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-detailLoading" datatype="html">
         <source>Loading ticket…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-fieldShas" datatype="html">
+        <source>SHAs</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-fieldStatus" datatype="html">
         <source>Status</source>
@@ -1861,6 +1882,18 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationOrphanAgentsHeading" datatype="html">
         <source> Allowed agents not listed above—uncheck to remove (e.g. autonomy off or agent removed) </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContextHeading" datatype="html">
+        <source> Context enrichment </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationIncludeWorkspaceContext" datatype="html">
+        <source> Include workspace context </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContextHint" datatype="html">
+        <source> Select additional environments to enrich context more specifically. The active run environment is included automatically. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContextNoEnvironments" datatype="html">
+        <source> No environments available for context enrichment. </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationDefaultBranch" datatype="html">
         <source>Default branch override</source>
@@ -1966,6 +1999,21 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-close" datatype="html">
         <source> Close </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateModalTitle" datatype="html">
+        <source> Move ticket to workspace </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateModalIntro" datatype="html">
+        <source> The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace admin in both places. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateTargetLabel" datatype="html">
+        <source>Target workspace</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateCancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-migrateConfirm" datatype="html">
+        <source> Move ticket </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunModalTitle" datatype="html">
         <source> Automation run </source>

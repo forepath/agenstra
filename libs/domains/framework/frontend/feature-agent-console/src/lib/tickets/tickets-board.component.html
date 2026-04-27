@@ -150,6 +150,9 @@
                     <div class="tickets-board__card-content">
                       <div class="d-flex align-items-center gap-2 min-width-0 w-100">
                         <div class="fw-medium text-truncate flex-grow-1 min-width-0" [title]="row.ticket.title">
+                          @if (row.ticket.shas.short) {
+                            <small class="text-muted small">{{ row.ticket.shas.short }}</small>
+                          }
                           {{ row.ticket.title }}
                         </div>
                         @if (row.ticket.automationEligible) {
@@ -231,6 +234,9 @@
             id="ticketDetailModalLabel"
           >
             @if (detail(); as det) {
+              @if (det.shas.short) {
+                <small class="text-muted small flex-shrink-0">{{ det.shas.short }}</small>
+              }
               @if (detailTitleEditing()) {
                 <input
                   #detailTitleInput
@@ -343,6 +349,23 @@
             <div class="row g-0 w-100 overflow-hidden">
               <div class="col-lg-7 h-100 overflow-hidden overflow-y-auto p-3">
                 <dl class="row small mb-2 align-items-center">
+                  @if (d.shas.short || d.shas.long) {
+                    <dt class="col-sm-3 mb-2" i18n="@@featureTicketsBoard-fieldShas">SHAs</dt>
+                    <dd class="col-sm-9 mb-2 d-flex align-items-center gap-2">
+                      @if (d.shas.short) {
+                        <small
+                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded tickets-board__chip--activity-muted"
+                          >{{ d.shas.short }}</small
+                        >
+                      }
+                      @if (d.shas.long) {
+                        <small
+                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded tickets-board__chip--activity-muted"
+                          >{{ d.shas.long }}</small
+                        >
+                      }
+                    </dd>
+                  }
                   <dt class="col-sm-3" i18n="@@featureTicketsBoard-fieldStatus">Status</dt>
                   <dd class="col-sm-9 mb-0">
                     <select
@@ -503,6 +526,11 @@
                           title="Open subtask"
                         >
                           <span class="d-flex align-items-center gap-2 w-100 min-width-0">
+                            @if (row.ticket.shas.short) {
+                              <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                row.ticket.shas.short
+                              }}</small>
+                            }
                             <span class="fw-medium text-break flex-grow-1 min-width-0">{{ row.ticket.title }}</span>
                             @if (row.ticket.automationEligible) {
                               <small class="flex-shrink-0">
@@ -703,7 +731,7 @@
                                       />
                                       <label class="form-check-label w-100" [for]="'ticketAutomationAgent' + a.id">
                                         <span class="fw-medium">{{ a.name }}</span>
-                                        <span class="text-muted ms-1">({{ a.agentType }})</span>
+                                        <small class="text-muted small ms-1">({{ a.agentType }})</small>
                                       </label>
                                     </div>
                                   </li>
@@ -741,6 +769,80 @@
                                   </div>
                                 }
                               </div>
+                            }
+                          </div>
+                          <div class="mb-3">
+                            <span class="form-label d-block mb-1" i18n="@@featureTicketsBoard-automationContextHeading">
+                              Context enrichment
+                            </span>
+                            <div class="form-check form-switch mb-2">
+                              <input
+                                class="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                id="ticketAutomationIncludeWorkspaceContext"
+                                [ngModel]="automationDraftIncludeWorkspaceContext()"
+                                (ngModelChange)="automationDraftIncludeWorkspaceContext.set($event)"
+                              />
+                              <label
+                                class="form-check-label"
+                                for="ticketAutomationIncludeWorkspaceContext"
+                                i18n="@@featureTicketsBoard-automationIncludeWorkspaceContext"
+                              >
+                                Include workspace context
+                              </label>
+                            </div>
+                            <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationContextHint">
+                              Select additional environments to enrich context more specifically. The active run
+                              environment is included automatically.
+                            </p>
+                            @if (automationAgentChoices().length === 0) {
+                              <div
+                                class="text-muted small"
+                                role="status"
+                                i18n="@@featureTicketsBoard-automationContextNoEnvironments"
+                              >
+                                No environments available for context enrichment.
+                              </div>
+                            } @else {
+                              <ul class="list-group list-group-flush border rounded small mb-0">
+                                @for (a of automationAgentChoices(); track a.id) {
+                                  <li class="list-group-item py-2">
+                                    <div class="form-check mb-0 mh-0">
+                                      <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        [id]="'ticketAutomationContextEnvironment' + a.id"
+                                        [checked]="isAutomationContextEnvironmentSelected(a.id)"
+                                        [disabled]="isAutomationContextEnvironmentLockedToChat(a.id)"
+                                        [attr.title]="
+                                          isAutomationContextEnvironmentLockedToChat(a.id)
+                                            ? ticketAutomationChatAgentLockTitle
+                                            : null
+                                        "
+                                        (change)="
+                                          onAutomationContextEnvironmentToggle(a.id, $any($event.target).checked)
+                                        "
+                                      />
+                                      <label
+                                        class="form-check-label w-100"
+                                        [for]="'ticketAutomationContextEnvironment' + a.id"
+                                      >
+                                        <span class="fw-medium">{{ a.name }}</span>
+                                        @if (
+                                          parseGitRepository(
+                                            a.git?.repositoryUrl ??
+                                              effectiveWorkspace()?.client?.config?.gitRepositoryUrl
+                                          );
+                                          as repo
+                                        ) {
+                                          <small class="text-muted small ms-1">({{ repo }})</small>
+                                        }
+                                      </label>
+                                    </div>
+                                  </li>
+                                }
+                              </ul>
                             }
                           </div>
                           <div class="mb-3">
@@ -1618,7 +1720,10 @@
                 class="list-group-item list-group-item-action d-flex flex-column align-items-start gap-1 text-start"
                 (click)="onGlobalSearchResultClick(hit)"
               >
-                <div class="d-flex flex-wrap align-items-center gap-2 w-100 min-width-0">
+                <div class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
+                  @if (hit.ticket.shas?.short) {
+                    <span class="font-monospace text-muted small flex-shrink-0">{{ hit.ticket.shas.short }}</span>
+                  }
                   <span class="fw-medium text-break flex-grow-1 min-width-0">{{ hit.ticket.title }}</span>
                   @if (hit.ticket.automationEligible) {
                     <small class="flex-shrink-0">

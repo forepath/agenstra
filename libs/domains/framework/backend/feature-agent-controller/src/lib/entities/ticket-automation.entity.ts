@@ -29,6 +29,18 @@ export class TicketAutomationEntity {
   @Column({ type: 'jsonb', name: 'allowed_agent_ids', default: () => "'[]'" })
   allowedAgentIds!: string[];
 
+  /**
+   * Adds shared workspace context (`/opt/workspace`) for autonomous prompt enrichment when true.
+   */
+  @Column({ type: 'boolean', name: 'include_workspace_context', default: true })
+  includeWorkspaceContext!: boolean;
+
+  /**
+   * Optional environment ids to emphasize in autonomous prompt enrichment.
+   */
+  @Column({ type: 'jsonb', name: 'context_environment_ids', default: () => "'[]'" })
+  contextEnvironmentIds!: string[];
+
   @Column({ type: 'jsonb', name: 'verifier_profile', nullable: true })
   verifierProfile?: TicketVerifierProfileJson | null;
 

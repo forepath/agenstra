@@ -61,6 +61,7 @@ export interface ChatPayload {
   model?: string;
   correlationId?: string;
   responseMode?: AgentResponseMode;
+  contextInjection?: ContextInjectionPayload;
 }
 
 export type AgentResponseMode = 'single' | 'stream';
@@ -95,6 +96,7 @@ export interface EnhanceChatPayload {
   message: string;
   model?: string;
   correlationId: string;
+  contextInjection?: ContextInjectionPayload;
 }
 
 /**
@@ -106,6 +108,13 @@ export interface GenerateTicketBodyPayload {
   correlationId: string;
   /** Parent chain + subtasks for richer body generation (optional). */
   hierarchyContext?: string;
+  contextInjection?: ContextInjectionPayload;
+}
+
+export interface ContextInjectionPayload {
+  includeWorkspace?: boolean;
+  environmentIds?: string[];
+  ticketShas?: string[];
 }
 
 /**
@@ -420,6 +429,7 @@ export interface TicketAutomationRunChatEventPayload {
   ticket: TicketAutomationRunChatTicketSummary;
   run: TicketAutomationRunChatRunSummary;
   actions: TicketAutomationRunChatOpenAction[];
+  contextInjection?: ContextInjectionPayload;
 }
 
 /**

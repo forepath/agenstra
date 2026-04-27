@@ -30,6 +30,10 @@ export interface TicketSubtaskCountsDto {
 
 export interface TicketResponseDto {
   id: string;
+  shas: {
+    short: string;
+    long: string;
+  };
   clientId: string;
   parentId?: string | null;
   title: string;

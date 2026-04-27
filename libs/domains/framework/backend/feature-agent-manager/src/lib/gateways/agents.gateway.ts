@@ -26,15 +26,10 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
-import {
-  buildPromptEnhancementMessage,
-  PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX,
-} from '../utils/chat-enhancement-prompt.utils';
+import { PromptContextComposerService } from '../services/prompt-context-composer.service';
+import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
 import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
-import {
-  buildTicketBodyFromTitleMessage,
-  PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX,
-} from '../utils/ticket-body-prompt.utils';
+import { PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX } from '../utils/ticket-body-prompt.utils';
 
 interface LoginPayload {
   agentId: string;
@@ -50,12 +45,14 @@ interface ChatPayload {
   ephemeral?: boolean;
   continue?: boolean;
   resumeSessionSuffix?: string;
+  contextInjection?: ContextInjectionPayload;
 }
 
 interface EnhanceChatPayload {
   model?: string;
   message: string;
   correlationId: string;
+  contextInjection?: ContextInjectionPayload;
 }
 
 interface GenerateTicketBodyPayload {
@@ -64,6 +61,14 @@ interface GenerateTicketBodyPayload {
   correlationId: string;
   /** Parent chain + subtasks (plain text), same convention as ticket prototype prompts. */
   hierarchyContext?: string;
+  contextInjection?: ContextInjectionPayload;
+}
+
+interface ContextInjectionPayload {
+  includeWorkspace?: boolean;
+  environmentIds?: string[];
+  ticketShas?: string[];
+  ticketContexts?: string[];
 }
 
 interface ChatEnhanceSuccessData {
@@ -253,6 +258,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly agentMessageEventsService: AgentMessageEventsService,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly chatFilterFactory: ChatFilterFactory,
+    private readonly promptContextComposer: PromptContextComposerService,
   ) {}
 
   /**
@@ -470,6 +476,69 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return null;
   }
 
+  private buildEnrichmentTranscriptParts(
+    contextInjection: ContextInjectionPayload | undefined,
+    correlationId: string,
+  ): AgentResponseObject[] {
+    if (!contextInjection) {
+      return [];
+    }
+
+    const toolCallId = `enrichment-${correlationId}`;
+
+    const enrichmentArgs = {
+      includeWorkspace: contextInjection.includeWorkspace === true,
+      environmentIds: contextInjection.environmentIds ?? [],
+      ticketShas: contextInjection.ticketShas ?? [],
+      ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+    };
+
+    return [
+      {
+        type: 'tool_call',
+        toolCallId,
+        name: 'enrichment',
+        args: enrichmentArgs,
+        status: 'succeeded',
+      },
+      {
+        type: 'tool_result',
+        toolCallId,
+        name: 'enrichment',
+        result: {
+          applied: true,
+          includeWorkspace: contextInjection.includeWorkspace === true,
+          environmentIds: contextInjection.environmentIds ?? [],
+          ticketShas: contextInjection.ticketShas ?? [],
+          ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+        },
+        isError: false,
+      },
+    ];
+  }
+
+  private mergeTranscriptPartsIntoFinalResponse(
+    finalResponse: AgentResponseObject | null,
+    prependParts: AgentResponseObject[],
+  ): AgentResponseObject | null {
+    if (!finalResponse || prependParts.length === 0) {
+      return finalResponse;
+    }
+
+    if (finalResponse.type === 'agenstra_turn' && Array.isArray(finalResponse.parts)) {
+      return {
+        ...finalResponse,
+        parts: [...prependParts, ...finalResponse.parts],
+      };
+    }
+
+    return {
+      type: 'agenstra_turn',
+      subtype: 'success',
+      parts: [...prependParts, finalResponse],
+    };
+  }
+
   private async persistFilteredAgentChatResponse(
     agentUuid: string,
     agentResponseTimestamp: string,
@@ -560,6 +629,51 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const collapsed = text.replace(/\s+/g, ' ').trim();
 
     return collapsed.length <= 120 ? collapsed : `${collapsed.slice(0, 119)}…`;
+  }
+
+  private async normalizeContextInjection(
+    agentUuid: string,
+    contextInjection?: ContextInjectionPayload,
+  ): Promise<ContextInjectionPayload | undefined> {
+    if (!contextInjection) {
+      return undefined;
+    }
+
+    const includeWorkspace = contextInjection.includeWorkspace === true;
+    const requestedIds = Array.from(
+      new Set((contextInjection.environmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
+    );
+    const ticketShas = Array.from(
+      new Set((contextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
+    );
+    const ticketContexts = Array.from(
+      new Set((contextInjection.ticketContexts ?? []).map((ctx) => ctx.trim()).filter((ctx) => ctx.length > 0)),
+    );
+    const allowedIds: string[] = [];
+
+    for (const environmentId of requestedIds) {
+      if (environmentId === agentUuid) {
+        allowedIds.push(environmentId);
+        continue;
+      }
+
+      const entity = await this.agentsRepository.findById(environmentId);
+
+      if (entity) {
+        allowedIds.push(environmentId);
+      }
+    }
+
+    if (!includeWorkspace && allowedIds.length === 0 && ticketShas.length === 0 && ticketContexts.length === 0) {
+      return undefined;
+    }
+
+    return {
+      includeWorkspace,
+      environmentIds: allowedIds,
+      ticketShas,
+      ticketContexts,
+    };
   }
 
   private agentResponseToChatEvents(
@@ -862,6 +976,18 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       }
 
+      // Restore persisted tool events for the same visible history window.
+      // This keeps enrichment/tool indicators after reload without duplicating user/assistant chat messages.
+      const since = chatHistory[0]?.createdAt;
+      const persistedToolEvents = await this.agentMessageEventsService.listRecentEvents(agentUuid, 400, {
+        kinds: ['toolCall', 'toolResult'],
+        ...(since ? { since } : {}),
+      });
+
+      for (const event of persistedToolEvents) {
+        socket.emit('chatEvent', createSuccessResponse<AgentEventEnvelope>(event));
+      }
+
       this.logger.debug(`Successfully restored ${chatHistory.length} messages for agent ${agentUuid}`);
     } catch (error) {
       const err = error as { message?: string; stack?: string };
@@ -961,7 +1087,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Use modified message if filter provided one, otherwise use original
-    const messageToUse = incomingFilterResult.modifiedMessage ?? message;
+    const filteredMessage = incomingFilterResult.modifiedMessage ?? message;
+    const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
+    const messageToUse = this.promptContextComposer.composeChatMessage(filteredMessage, contextInjection);
+    const enrichmentTranscriptParts = this.buildEnrichmentTranscriptParts(contextInjection, correlationId);
 
     this.emitChatPayloadToViewers(
       agentUuid,
@@ -970,7 +1099,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       'chatMessage',
       createSuccessResponse<ChatMessageData>({
         from: ChatActor.USER,
-        text: messageToUse,
+        text: filteredMessage,
         timestamp: chatTimestamp,
       }),
     );
@@ -978,8 +1107,42 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, {
       ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
       kind: 'userMessage',
-      payload: { text: messageToUse },
+      payload: { text: filteredMessage },
     });
+
+    if (contextInjection) {
+      this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, {
+        ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
+        kind: 'toolCall',
+        payload: {
+          toolCallId: `enrichment-${correlationId}`,
+          name: 'enrichment',
+          args: {
+            includeWorkspace: contextInjection.includeWorkspace === true,
+            environmentIds: contextInjection.environmentIds ?? [],
+            ticketShas: contextInjection.ticketShas ?? [],
+            ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+          },
+          status: 'succeeded',
+        },
+      });
+      this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, {
+        ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
+        kind: 'toolResult',
+        payload: {
+          toolCallId: `enrichment-${correlationId}`,
+          name: 'enrichment',
+          result: {
+            applied: true,
+            includeWorkspace: contextInjection.includeWorkspace === true,
+            environmentIds: contextInjection.environmentIds ?? [],
+            ticketShas: contextInjection.ticketShas ?? [],
+            ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+          },
+          isError: false,
+        },
+      });
+    }
 
     this.emitOrPersistChatEvent(agentUuid, ephemeral, socket, {
       ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
@@ -1035,7 +1198,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         try {
           await this.agentMessagesService.createUserMessage(
             agentUuid,
-            messageToUse,
+            filteredMessage,
             incomingFilterResult.status === 'filtered',
           );
         } catch (persistError) {
@@ -1096,7 +1259,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                   }
 
                   if (!ephemeral && !streamingTurnPersisted && this.isStreamingTerminalUnifiedResponse(parsed)) {
-                    const built = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+                    const built = this.mergeTranscriptPartsIntoFinalResponse(
+                      this.buildFinalStreamingResponse(streamedUnified, aggregatedText),
+                      enrichmentTranscriptParts,
+                    );
 
                     if (built) {
                       await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, built);
@@ -1149,7 +1315,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             }
 
             if (!ephemeral && !streamingTurnPersisted) {
-              const finalResponse = this.buildFinalStreamingResponse(streamedUnified, aggregatedText);
+              const finalResponse = this.mergeTranscriptPartsIntoFinalResponse(
+                this.buildFinalStreamingResponse(streamedUnified, aggregatedText),
+                enrichmentTranscriptParts,
+              );
 
               if (finalResponse) {
                 await this.persistFilteredAgentChatResponse(agentUuid, agentResponseTimestamp, finalResponse);
@@ -1459,7 +1628,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const messageToUse = incomingFilterResult.modifiedMessage ?? message;
-    const composed = buildPromptEnhancementMessage(messageToUse);
+    const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
+    const composed = this.promptContextComposer.composeEnhanceMessage(messageToUse, contextInjection);
     const timeoutMs = parseInt(process.env.CHAT_ENHANCE_TIMEOUT_MS || '120000', 10);
     const runWithTimeout = <T>(promise: Promise<T>): Promise<T> =>
       new Promise((resolve, reject) => {
@@ -1679,7 +1849,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       typeof data?.hierarchyContext === 'string' && data.hierarchyContext.trim() !== ''
         ? data.hierarchyContext.trim()
         : undefined;
-    const composed = buildTicketBodyFromTitleMessage(titleToUse, hierarchyContext);
+    const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
+    const composed = this.promptContextComposer.composeTicketBodyMessage(
+      titleToUse,
+      hierarchyContext,
+      contextInjection,
+    );
     const timeoutMs = parseInt(process.env.CHAT_ENHANCE_TIMEOUT_MS || '120000', 10);
     const runWithTimeout = <T>(promise: Promise<T>): Promise<T> =>
       new Promise((resolve, reject) => {

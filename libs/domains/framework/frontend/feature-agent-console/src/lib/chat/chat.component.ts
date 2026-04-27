@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   DestroyRef,
+  computed,
   effect,
   ElementRef,
   inject,
@@ -29,6 +30,8 @@ import {
   StatsFacade,
   TicketAutomationFacade,
   TicketsFacade,
+  filterTicketsForTicketContextSuggestions,
+  findPermittedTicketByExactSha,
   type AddClientUserDto,
   type AgentModelsMap,
   type AgentResponseDto,
@@ -49,6 +52,7 @@ import {
   type ForwardedEventPayload,
   type ProvisionServerDto,
   type TicketAutomationRunChatEventPayload,
+  type TicketResponseDto,
   type UpdateAgentDto,
   type UpdateClientDto,
   type UpdateEnvironmentVariableDto,
@@ -96,6 +100,13 @@ import { buildMergedChatDisplayThread, type ChatDisplayThreadItem } from './chat
 // Type declaration for marked library
 interface Marked {
   parse(markdown: string, options?: { breaks?: boolean; gfm?: boolean }): string;
+}
+
+/** Labels for context chips next to the chat “Select context” control. */
+interface ContextToolbarChip {
+  readonly trackKey: string;
+  readonly label: string;
+  readonly title: string;
 }
 
 // Type for messages with filter results attached
@@ -181,6 +192,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   @ViewChild('ticketAutonomyModal', { static: false })
   private ticketAutonomyModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('contextSelectionModal', { static: false })
+  private contextSelectionModal!: ElementRef<HTMLDivElement>;
 
   @ViewChild('clientUsersModal', { static: false })
   private clientUsersModal!: ElementRef<HTMLDivElement>;
@@ -502,6 +515,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   selectedChatModel = signal<string | null>('auto');
   selectedCommand = signal<string | null>(null);
   selectedAgentId = signal<string | null>(null);
+  includeWorkspaceContext = signal<boolean>(true);
+  selectedEnvironmentContextIds = signal<string[]>([]);
+  selectedTicketContextShas = signal<string[]>([]);
+  ticketContextInput = signal<string>('');
+  ticketContextInputError = signal<string | null>(null);
+  /** Keeps suggestion menu open while interacting (blur closes with delay for mousedown). */
+  ticketContextSuggestionsOpen = signal<boolean>(false);
   editorOpen = signal<boolean>(false);
   /** Active file editor API root from the current route (`/editor` vs `/config`). */
   fileManagerContext = signal<FileManagerContext>('app');
@@ -524,6 +544,86 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   // Convert signals to observables (must be in field initializer for injection context)
   private readonly standaloneMode$ = toObservable(this.standaloneMode);
   private readonly fileManagerContext$ = toObservable(this.fileManagerContext);
+  private readonly ticketsSnapshot = toSignal(this.ticketsFacade.tickets$, {
+    initialValue: [] as TicketResponseDto[],
+  });
+
+  private readonly activeClientIdSignal = toSignal(this.clientsFacade.activeClientId$, {
+    initialValue: null as string | null,
+  });
+
+  /** Tickets the user may use as chat context: current board only, with SHA materialized. */
+  readonly ticketContextPermittedTickets = computed(() => {
+    const clientId = this.activeClientIdSignal();
+
+    if (!clientId) {
+      return [] as TicketResponseDto[];
+    }
+
+    return (this.ticketsSnapshot() ?? []).filter((row) => row.clientId === clientId && !!row.shas?.long);
+  });
+
+  readonly ticketContextSuggestions = computed(() =>
+    filterTicketsForTicketContextSuggestions(this.ticketContextPermittedTickets(), this.ticketContextInput(), {
+      limit: 20,
+    }),
+  );
+
+  private readonly agentsSnapshot = toSignal(this.agents$, {
+    initialValue: [] as AgentResponseDto[],
+  });
+
+  readonly contextSelectionToolbarChips = computed((): ContextToolbarChip[] => {
+    const chips: ContextToolbarChip[] = [];
+
+    if (this.includeWorkspaceContext()) {
+      chips.push({
+        trackKey: 'workspace',
+        label: $localize`:@@featureChat-contextToolbarWorkspace:Workspace`,
+        title: $localize`:@@featureChat-contextToolbarWorkspaceTitle:Include workspace files and metadata`,
+      });
+    }
+
+    const agents = this.agentsSnapshot() ?? [];
+    const byId = new Map(agents.map((a) => [a.id, a]));
+
+    for (const rawId of this.selectedEnvironmentContextIds()) {
+      const id = rawId.trim();
+
+      if (!id) {
+        continue;
+      }
+
+      const agent = byId.get(id);
+      const name = agent?.name?.trim() ? agent.name.trim() : id;
+
+      chips.push({
+        trackKey: `env:${id}`,
+        label: name,
+        title: agent
+          ? $localize`:@@featureChat-contextToolbarEnvTitle:Environment context: ${agent.name}:agentName:`
+          : $localize`:@@featureChat-contextToolbarEnvUnknownTitle:Environment: ${id}:agentId:`,
+      });
+    }
+
+    for (const rawSha of this.selectedTicketContextShas()) {
+      const longSha = rawSha.trim();
+
+      if (!longSha) {
+        continue;
+      }
+
+      const display = this.ticketContextChipDisplay(longSha);
+
+      chips.push({
+        trackKey: `ticket:${longSha}`,
+        label: display,
+        title: display,
+      });
+    }
+
+    return chips;
+  });
 
   // Expose ContainerType enum for template use
   readonly ContainerType = ContainerType;
@@ -1842,7 +1942,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         const draft = readAndClearAgentConsoleChatDraft();
 
         if (draft) {
-          this.chatMessage.set(draft);
+          this.chatMessage.set(draft.message);
+
+          if (draft.contextInjection) {
+            this.includeWorkspaceContext.set(draft.contextInjection.includeWorkspaceContext === true);
+            this.selectedEnvironmentContextIds.set(draft.contextInjection.selectedEnvironmentContextIds);
+            this.selectedTicketContextShas.set(draft.contextInjection.selectedTicketContextShas ?? []);
+          }
+
           this.enhanceErrorMessage.set(null);
         }
       }
@@ -1919,7 +2026,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     // agentId is required for routing the event to the correct agent
-    this.socketsFacade.forwardChat(message, agentId, this.selectedChatModel());
+    this.socketsFacade.forwardChat(message, agentId, this.selectedChatModel(), this.buildContextInjection(agentId));
 
     // Track when we sent the message to show loading indicator
     this.lastUserMessageTimestamp.set(Date.now());
@@ -1979,6 +2086,167 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (value === 'stream' || value === 'single') {
       this.socketsFacade.setChatResponseMode(value);
     }
+  }
+
+  onWorkspaceContextToggle(enabled: boolean): void {
+    this.includeWorkspaceContext.set(enabled);
+  }
+
+  onOpenContextSelectionModal(): void {
+    this.ticketContextInputError.set(null);
+    const clientId = this.activeClientIdSignal();
+
+    if (clientId) {
+      this.ticketsFacade.loadTickets({ clientId });
+    }
+
+    this.showModal(this.contextSelectionModal);
+  }
+
+  onCloseContextSelectionModal(): void {
+    this.ticketContextInputError.set(null);
+    this.ticketContextInput.set('');
+    this.ticketContextSuggestionsOpen.set(false);
+    this.hideModal(this.contextSelectionModal);
+  }
+
+  isEnvironmentContextSelected(environmentId: string): boolean {
+    return this.selectedEnvironmentContextIds().includes(environmentId);
+  }
+
+  onEnvironmentContextToggle(environmentId: string, enabled: boolean): void {
+    const current = this.selectedEnvironmentContextIds();
+
+    if (enabled) {
+      if (!current.includes(environmentId)) {
+        this.selectedEnvironmentContextIds.set([...current, environmentId]);
+      }
+
+      return;
+    }
+
+    this.selectedEnvironmentContextIds.set(current.filter((id) => id !== environmentId));
+  }
+
+  onTicketContextInputChange(value: string): void {
+    this.ticketContextInput.set(value);
+
+    if (this.ticketContextInputError()) {
+      this.ticketContextInputError.set(null);
+    }
+
+    if (value.trim().length > 0) {
+      this.ticketContextSuggestionsOpen.set(true);
+    }
+  }
+
+  onTicketContextShaInputFocus(): void {
+    if (this.ticketContextInput().trim().length > 0 && this.ticketContextSuggestions().length > 0) {
+      this.ticketContextSuggestionsOpen.set(true);
+    }
+  }
+
+  onTicketContextShaInputBlur(): void {
+    setTimeout(() => this.ticketContextSuggestionsOpen.set(false), 180);
+  }
+
+  onPickTicketContextSuggestion(ticket: TicketResponseDto, event?: Event): void {
+    event?.preventDefault();
+    this.addTicketToContextIfPermitted(ticket);
+    this.ticketContextInput.set('');
+    this.ticketContextInputError.set(null);
+    this.ticketContextSuggestionsOpen.set(false);
+  }
+
+  onAddTicketContextBySha(): void {
+    const raw = this.ticketContextInput();
+    const input = raw.trim().toLowerCase();
+
+    if (!input) {
+      this.ticketContextInputError.set('Enter a ticket SHA.');
+
+      return;
+    }
+
+    const permitted = this.ticketContextPermittedTickets();
+    const ticket = findPermittedTicketByExactSha(permitted, raw);
+
+    if (!ticket?.shas?.long) {
+      this.ticketContextInputError.set(null);
+
+      return;
+    }
+
+    this.addTicketToContextIfPermitted(ticket);
+    this.ticketContextInput.set('');
+    this.ticketContextInputError.set(null);
+    this.ticketContextSuggestionsOpen.set(false);
+  }
+
+  private addTicketToContextIfPermitted(ticket: TicketResponseDto): void {
+    const longSha = ticket.shas?.long;
+
+    if (!longSha) {
+      return;
+    }
+
+    const clientId = this.activeClientIdSignal();
+
+    if (clientId && ticket.clientId !== clientId) {
+      return;
+    }
+
+    const current = this.selectedTicketContextShas();
+
+    if (!current.includes(longSha)) {
+      this.selectedTicketContextShas.set([...current, longSha]);
+    }
+  }
+
+  ticketContextChipLabel(longSha: string): { shortSha: string; title: string } {
+    const clientId = this.activeClientIdSignal();
+    const ticket = (this.ticketsSnapshot() ?? []).find(
+      (row) => row.shas?.long === longSha && (!clientId || row.clientId === clientId),
+    );
+
+    if (ticket?.shas?.short) {
+      return { shortSha: ticket.shas.short, title: ticket.title ?? '' };
+    }
+
+    return { shortSha: longSha.slice(0, 7), title: 'Unavailable ticket' };
+  }
+
+  ticketContextChipDisplay(longSha: string): string {
+    const { shortSha, title } = this.ticketContextChipLabel(longSha);
+
+    return `${shortSha} · ${title}`;
+  }
+
+  onRemoveTicketContextSha(longSha: string): void {
+    this.selectedTicketContextShas.set(this.selectedTicketContextShas().filter((sha) => sha !== longSha));
+  }
+
+  private buildContextInjection(
+    agentId: string,
+  ): { includeWorkspace?: boolean; environmentIds?: string[]; ticketShas?: string[] } | undefined {
+    const includeWorkspace = this.includeWorkspaceContext() === true;
+    const selected = this.selectedEnvironmentContextIds()
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    const environmentIds = selected.includes(agentId) ? selected : [agentId, ...selected];
+    const ticketShas = [
+      ...new Set(
+        this.selectedTicketContextShas()
+          .map((sha) => sha.trim())
+          .filter((sha) => sha),
+      ),
+    ];
+
+    if (!includeWorkspace && environmentIds.length === 0 && ticketShas.length === 0) {
+      return undefined;
+    }
+
+    return { includeWorkspace, environmentIds, ticketShas };
   }
 
   onCommandChange(value: string): void {
