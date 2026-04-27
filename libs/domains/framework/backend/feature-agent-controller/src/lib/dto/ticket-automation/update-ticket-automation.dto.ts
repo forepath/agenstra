@@ -44,6 +44,15 @@ export class UpdateTicketAutomationDto {
   allowedAgentIds?: string[];
 
   @IsOptional()
+  @IsBoolean()
+  includeWorkspaceContext?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  contextEnvironmentIds?: string[];
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => TicketVerifierProfileDto)
   verifierProfile?: TicketVerifierProfileDto;

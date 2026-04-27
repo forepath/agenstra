@@ -24,6 +24,11 @@ export interface TicketAutomationRunChatOpenActionDto {
 
 export type TicketAutomationRunChatActionDto = TicketAutomationRunChatOpenActionDto;
 
+export interface ContextInjectionDto {
+  includeWorkspace?: boolean;
+  environmentIds?: string[];
+}
+
 /**
  * Server → client payload on namespace `clients`, event {@link CLIENT_CHAT_AUTOMATION_EVENTS.ticketAutomationRunChatUpsert}.
  * `timelineAt` is ISO-8601: hydrate rows use `run.startedAt`; live updates use `run.updatedAt` for ordering.
@@ -34,4 +39,5 @@ export interface TicketAutomationRunChatEventDto {
   ticket: TicketAutomationRunChatTicketSummaryDto;
   run: TicketAutomationRunResponseDto;
   actions: TicketAutomationRunChatActionDto[];
+  contextInjection?: ContextInjectionDto;
 }

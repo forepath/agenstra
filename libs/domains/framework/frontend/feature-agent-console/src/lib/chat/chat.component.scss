@@ -162,6 +162,7 @@
   z-index: 10;
   pointer-events: auto; // Allow interaction with select
   width: calc(100% - 2.25rem - 2px);
+  border-radius: 0.25rem;
 }
 
 .chat-textarea-container {
@@ -510,4 +511,18 @@ span {
     max-height: 22rem;
     overflow: auto;
   }
+}
+
+.context-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.125rem;
+  max-width: 100%;
+}
+
+.context-toolbar-chip {
+  border-radius: 0.25rem;
+  background-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
 }

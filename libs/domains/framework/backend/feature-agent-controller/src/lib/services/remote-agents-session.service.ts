@@ -20,6 +20,10 @@ export interface RemoteChatSyncParams {
   statisticsInteractionKind?: StatisticsInteractionKind;
   /** Overrides `REMOTE_AGENT_CHAT_TIMEOUT_MS` for the agent response wait (e.g. shorter commit-message generation). */
   chatTimeoutMs?: number;
+  contextInjection?: {
+    includeWorkspace?: boolean;
+    environmentIds?: string[];
+  };
 }
 
 /**
@@ -186,6 +190,7 @@ export class RemoteAgentsSessionService {
           ephemeral: true,
           continue: params.continue ?? false,
           resumeSessionSuffix: params.resumeSessionSuffix,
+          contextInjection: params.contextInjection,
         });
       });
       const outWords = output.trim().split(/\s+/).filter(Boolean).length;

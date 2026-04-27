@@ -11,6 +11,7 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
+import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 
 import { AgentsGateway } from './agents.gateway';
 
@@ -105,6 +106,11 @@ describe('AgentsGateway', () => {
     getRegisteredTypes: jest.fn(),
     registerFilter: jest.fn(),
   } as unknown as jest.Mocked<ChatFilterFactory>;
+  const mockPromptContextComposerService = {
+    composeChatMessage: jest.fn((message: string) => message),
+    composeEnhanceMessage: jest.fn((message: string) => message),
+    composeTicketBodyMessage: jest.fn((title: string) => title),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -137,6 +143,10 @@ describe('AgentsGateway', () => {
         {
           provide: ChatFilterFactory,
           useValue: mockChatFilterFactory,
+        },
+        {
+          provide: PromptContextComposerService,
+          useValue: mockPromptContextComposerService,
         },
       ],
     }).compile();

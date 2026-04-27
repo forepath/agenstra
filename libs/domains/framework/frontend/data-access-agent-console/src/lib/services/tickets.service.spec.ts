@@ -137,6 +137,8 @@ describe('TicketsService', () => {
       ticketId: 'ticket-1',
       eligible: true,
       allowedAgentIds: ['agent-1'],
+      includeWorkspaceContext: true,
+      contextEnvironmentIds: [],
       verifierProfile: null,
       requiresApproval: false,
       approvedAt: null,

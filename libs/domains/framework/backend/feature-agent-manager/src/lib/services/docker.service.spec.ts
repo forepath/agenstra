@@ -467,7 +467,7 @@ describe('DockerService', () => {
           ExposedPorts: { '8080/tcp': {} },
           Labels: { 'com.example.label': 'value' },
           HostConfig: expect.objectContaining({
-            Binds: ['/host/path:/container/path'],
+            Binds: ['/host/path:/container/path', '/opt/agents:/opt/workspace:ro'],
             AutoRemove: false,
           }),
         }),

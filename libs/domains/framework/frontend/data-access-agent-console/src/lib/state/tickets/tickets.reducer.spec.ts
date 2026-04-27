@@ -480,6 +480,8 @@ describe('ticketsReducer', () => {
       ticketId: 'ticket-1',
       eligible: true,
       allowedAgentIds: [] as string[],
+      includeWorkspaceContext: true,
+      contextEnvironmentIds: [] as string[],
       verifierProfile: null,
       requiresApproval: false,
       approvedAt: null,

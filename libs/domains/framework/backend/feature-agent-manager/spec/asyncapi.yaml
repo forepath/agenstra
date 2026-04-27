@@ -420,6 +420,18 @@ components:
           resumeSessionSuffix:
             type: string
             description: Optional suffix to isolate or resume session routing for this chat turn.
+          contextInjection:
+            type: object
+            description: Optional hidden context references for prompt enrichment.
+            properties:
+              includeWorkspace:
+                type: boolean
+                description: Include shared workspace context mounted at /opt/workspace.
+              environmentIds:
+                type: array
+                description: Optional related environment ids to reference in hidden preamble.
+                items:
+                  type: string
     EnhanceChat:
       name: EnhanceChat
       title: Prompt enhancement command
@@ -437,6 +449,16 @@ components:
           model:
             type: string
             description: Optional model override for this request
+          contextInjection:
+            type: object
+            description: Optional hidden context references for prompt enrichment.
+            properties:
+              includeWorkspace:
+                type: boolean
+              environmentIds:
+                type: array
+                items:
+                  type: string
     ChatEnhanceResult:
       name: ChatEnhanceResult
       title: Prompt enhancement result (unicast)
@@ -501,6 +523,16 @@ components:
           hierarchyContext:
             type: string
             description: Optional parent chain and subtask tree (plain text) for richer body generation
+          contextInjection:
+            type: object
+            description: Optional hidden context references for prompt enrichment.
+            properties:
+              includeWorkspace:
+                type: boolean
+              environmentIds:
+                type: array
+                items:
+                  type: string
     TicketBodyResult:
       name: TicketBodyResult
       title: Ticket body generation result (unicast)

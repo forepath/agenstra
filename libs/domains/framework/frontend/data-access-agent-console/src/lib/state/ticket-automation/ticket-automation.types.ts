@@ -8,6 +8,8 @@ export type TicketAutomationBranchStrategy = 'reuse_per_ticket' | 'new_per_run';
 export interface UpdateTicketAutomationDto {
   eligible?: boolean;
   allowedAgentIds?: string[];
+  includeWorkspaceContext?: boolean;
+  contextEnvironmentIds?: string[];
   verifierProfile?: TicketVerifierProfileJson;
   requiresApproval?: boolean;
   defaultBranchOverride?: string | null;
@@ -30,6 +32,8 @@ export interface TicketAutomationResponseDto {
   ticketId: string;
   eligible: boolean;
   allowedAgentIds: string[];
+  includeWorkspaceContext: boolean;
+  contextEnvironmentIds: string[];
   verifierProfile: TicketVerifierProfileJson | null;
   requiresApproval: boolean;
   approvedAt: string | null;

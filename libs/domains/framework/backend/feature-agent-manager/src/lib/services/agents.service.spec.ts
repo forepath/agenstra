@@ -208,6 +208,11 @@ describe('AgentsService', () => {
             containerPath: '/app',
             readOnly: false,
           },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
+          },
         ],
       });
       // Verify .netrc file creation commands were called (2 commands: base64 write + chmod), then config dir, then git clone
@@ -295,6 +300,11 @@ describe('AgentsService', () => {
             hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
             containerPath: '/app',
             readOnly: false,
+          },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
           },
         ],
       });
@@ -570,6 +580,11 @@ describe('AgentsService', () => {
             containerPath: '/app',
             readOnly: false,
           },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
+          },
         ],
       });
       // Verify SSH setup commands, provider config mkdir, then git clone
@@ -840,6 +855,11 @@ describe('AgentsService', () => {
             containerPath: customBasePath,
             readOnly: false,
           },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
+          },
         ],
       });
       // Verify git clone uses the custom base path (escaped for shell)
@@ -947,6 +967,11 @@ describe('AgentsService', () => {
             containerPath: customBasePath,
             readOnly: false,
           },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
+          },
         ],
       });
       // Verify git clone uses basePath + repositoryPath
@@ -1049,6 +1074,11 @@ describe('AgentsService', () => {
             containerPath: '/app',
             readOnly: false,
           },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
+          },
         ],
       });
       // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
@@ -1107,6 +1137,11 @@ describe('AgentsService', () => {
             hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
             containerPath: '/app',
             readOnly: false,
+          },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
           },
         ],
       });
@@ -1173,6 +1208,11 @@ describe('AgentsService', () => {
             containerPath: '/app',
             readOnly: false,
           },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
+          },
         ],
       });
     });
@@ -1227,6 +1267,11 @@ describe('AgentsService', () => {
             hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
             containerPath: '/app',
             readOnly: false,
+          },
+          {
+            hostPath: '/opt/agents',
+            containerPath: '/opt/workspace',
+            readOnly: true,
           },
         ],
       });

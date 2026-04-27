@@ -50,6 +50,7 @@ import { AgentsService } from '../services/agents.service';
 import { ConfigService } from '../services/config.service';
 import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
+import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
 import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
 
@@ -83,6 +84,7 @@ import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-
     AgentsGateway,
     AgentsService,
     AgentMessagesService,
+    PromptContextComposerService,
     AgentMessageEventsService,
     AgentEnvironmentVariablesService,
     AgentFileSystemService,

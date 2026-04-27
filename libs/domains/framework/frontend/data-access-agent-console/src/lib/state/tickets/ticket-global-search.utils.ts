@@ -46,6 +46,80 @@ export function buildTicketBreadcrumbTitles(list: TicketResponseDto[], ticketId:
 }
 
 /**
+ * Whether the ticket matches a non-empty needle for context picker suggestions
+ * (title substring, short SHA substring, long SHA substring). Case-insensitive.
+ */
+export function matchesTicketContextSuggestionQuery(ticket: TicketResponseDto, needleLower: string): boolean {
+  if (!needleLower) {
+    return false;
+  }
+
+  const title = ticket.title?.toLowerCase() ?? '';
+
+  if (title.includes(needleLower)) {
+    return true;
+  }
+
+  const shortSha = ticket.shas?.short?.toLowerCase() ?? '';
+  const longSha = ticket.shas?.long?.toLowerCase() ?? '';
+
+  return shortSha.includes(needleLower) || longSha.includes(needleLower);
+}
+
+/**
+ * Suggestion list for ticket chat context: `permittedTickets` should already be
+ * scoped to boards/workspaces the user may access (e.g. API-loaded list for active client).
+ */
+export function filterTicketsForTicketContextSuggestions(
+  permittedTickets: TicketResponseDto[],
+  query: string,
+  options?: { limit?: number },
+): TicketResponseDto[] {
+  const needle = normalizeNeedle(query);
+
+  if (!needle) {
+    return [];
+  }
+
+  const limit = options?.limit ?? 20;
+  const hits = permittedTickets.filter((ticket) => matchesTicketContextSuggestionQuery(ticket, needle));
+
+  hits.sort((a, b) => {
+    const ta = a.title.toLowerCase();
+    const tb = b.title.toLowerCase();
+
+    if (ta !== tb) {
+      return ta.localeCompare(tb);
+    }
+
+    return (a.shas?.short ?? '').localeCompare(b.shas?.short ?? '');
+  });
+
+  return hits.slice(0, limit);
+}
+
+/**
+ * Exact short- or long-SHA match within an allowlisted ticket set (permitted workspace tickets).
+ */
+export function findPermittedTicketByExactSha(
+  permittedTickets: TicketResponseDto[],
+  rawInput: string,
+): TicketResponseDto | undefined {
+  const input = rawInput.trim().toLowerCase();
+
+  if (!input) {
+    return undefined;
+  }
+
+  return permittedTickets.find((row) => {
+    const shortSha = row.shas?.short?.toLowerCase() ?? '';
+    const longSha = row.shas?.long?.toLowerCase() ?? '';
+
+    return shortSha === input || longSha === input;
+  });
+}
+
+/**
  * Tickets matching `query` in the given workspace list. Empty/whitespace `query` yields no hits.
  * When `clientId` is set, only tickets for that client are considered.
  */

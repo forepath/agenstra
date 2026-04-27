@@ -15,8 +15,16 @@ export class TicketTasksDto {
   children!: TicketTasksChildrenDto;
 }
 
+export class TicketShasDto {
+  /** Stable short ticket reference (derived from internal ticket id). */
+  short!: string;
+  /** Stable full ticket reference hash (derived from internal ticket id). */
+  long!: string;
+}
+
 export class TicketResponseDto {
   id!: string;
+  shas!: TicketShasDto;
   clientId!: string;
   parentId?: string | null;
   title!: string;

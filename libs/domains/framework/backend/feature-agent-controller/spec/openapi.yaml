@@ -4663,11 +4663,22 @@ components:
           description: |
             Sums of open/done checkboxes on all descendant tickets (direct and nested), excluding this ticket's body.
           $ref: '#/components/schemas/TicketMarkdownCheckboxTaskCountsDto'
+    TicketShasDto:
+      type: object
+      required: [short, long]
+      properties:
+        short:
+          type: string
+          description: Stable short ticket reference derived from ticket id hash.
+        long:
+          type: string
+          description: Stable full ticket reference derived from ticket id hash.
     TicketResponseDto:
       type: object
       required:
         [
           id,
+          shas,
           clientId,
           title,
           priority,
@@ -4681,6 +4692,8 @@ components:
         id:
           type: string
           format: uuid
+        shas:
+          $ref: '#/components/schemas/TicketShasDto'
         clientId:
           type: string
           format: uuid
@@ -4873,6 +4886,13 @@ components:
           items:
             type: string
             format: uuid
+        includeWorkspaceContext:
+          type: boolean
+        contextEnvironmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
         verifierProfile:
           $ref: '#/components/schemas/TicketVerifierProfileDto'
         requiresApproval:
@@ -4897,6 +4917,8 @@ components:
         - ticketId
         - eligible
         - allowedAgentIds
+        - includeWorkspaceContext
+        - contextEnvironmentIds
         - verifierProfile
         - requiresApproval
         - approvedAt
@@ -4916,6 +4938,13 @@ components:
         eligible:
           type: boolean
         allowedAgentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        includeWorkspaceContext:
+          type: boolean
+        contextEnvironmentIds:
           type: array
           items:
             type: string
@@ -5127,6 +5156,15 @@ components:
         label:
           type: string
           description: Suggested button label (UI may use i18n instead).
+    ContextInjectionDto:
+      type: object
+      properties:
+        includeWorkspace:
+          type: boolean
+        environmentIds:
+          type: array
+          items:
+            type: string
     TicketAutomationRunChatEventDto:
       type: object
       description: >
@@ -5148,6 +5186,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TicketAutomationRunChatOpenActionDto'
+        contextInjection:
+          $ref: '#/components/schemas/ContextInjectionDto'
     PrototypePromptResponseDto:
       type: object
       required: [prompt]

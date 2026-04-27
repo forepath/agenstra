@@ -49,6 +49,8 @@ import { TicketsService } from './tickets.service';
 const APPROVAL_RELEVANT_AUTOMATION_FIELDS = new Set([
   'eligible',
   'allowedAgentIds',
+  'includeWorkspaceContext',
+  'contextEnvironmentIds',
   'verifierProfile',
   'requiresApproval',
   'defaultBranchOverride',
@@ -132,6 +134,8 @@ export class TicketAutomationService {
           ticketId,
           eligible: false,
           allowedAgentIds: [],
+          includeWorkspaceContext: true,
+          contextEnvironmentIds: [],
           requiresApproval: false,
           automationBranchStrategy: DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
           forceNewAutomationBranchNextRun: false,
@@ -152,6 +156,8 @@ export class TicketAutomationService {
       ticketId: row.ticketId,
       eligible: row.eligible,
       allowedAgentIds: row.allowedAgentIds ?? [],
+      includeWorkspaceContext: row.includeWorkspaceContext !== false,
+      contextEnvironmentIds: sortUuidList(row.contextEnvironmentIds ?? []),
       verifierProfile: row.verifierProfile ?? null,
       requiresApproval: row.requiresApproval,
       approvedAt: row.approvedAt ?? null,
@@ -186,6 +192,8 @@ export class TicketAutomationService {
     const prevRequiresApproval = row.requiresApproval;
     const prevApprovedAt = row.approvedAt;
     const prevAllowedSorted = sortUuidList(row.allowedAgentIds ?? []);
+    const prevIncludeWorkspace = row.includeWorkspaceContext !== false;
+    const prevContextEnvSorted = sortUuidList(row.contextEnvironmentIds ?? []);
     const prevVerifierJson = JSON.stringify(parseAndValidateVerifierProfile(row.verifierProfile ?? { commands: [] }));
     const prevDefaultBranch = normalizeDefaultBranch(row.defaultBranchOverride);
     const prevStrategy: TicketAutomationBranchStrategy =
@@ -209,6 +217,20 @@ export class TicketAutomationService {
       if (JSON.stringify(nextSorted) !== JSON.stringify(prevAllowedSorted)) {
         row.allowedAgentIds = dto.allowedAgentIds;
         actuallyChanged.push('allowedAgentIds');
+      }
+    }
+
+    if (dto.includeWorkspaceContext !== undefined && dto.includeWorkspaceContext !== prevIncludeWorkspace) {
+      row.includeWorkspaceContext = dto.includeWorkspaceContext;
+      actuallyChanged.push('includeWorkspaceContext');
+    }
+
+    if (dto.contextEnvironmentIds !== undefined) {
+      const nextSorted = sortUuidList(dto.contextEnvironmentIds);
+
+      if (JSON.stringify(nextSorted) !== JSON.stringify(prevContextEnvSorted)) {
+        row.contextEnvironmentIds = nextSorted;
+        actuallyChanged.push('contextEnvironmentIds');
       }
     }
 
@@ -281,6 +303,8 @@ export class TicketAutomationService {
     const settingsDetailFields = actuallyChanged.filter(
       (k) =>
         k === 'allowedAgentIds' ||
+        k === 'includeWorkspaceContext' ||
+        k === 'contextEnvironmentIds' ||
         k === 'verifierProfile' ||
         k === 'defaultBranchOverride' ||
         k === 'automationBranchStrategy' ||

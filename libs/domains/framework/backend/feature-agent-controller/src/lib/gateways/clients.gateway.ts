@@ -29,6 +29,7 @@ import { ClientsService } from '../services/clients.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
+import { TicketsService } from '../services/tickets.service';
 // socket.io-client is required at runtime when forwarding; avoid static import to keep optional dependency for tests
 // Using type-only import for ClientSocket to avoid runtime dependency
 
@@ -40,6 +41,13 @@ interface ForwardPayload {
   event: string;
   payload: unknown;
   agentId?: string;
+}
+
+interface ContextInjectionPayload {
+  includeWorkspace?: boolean;
+  environmentIds?: string[];
+  ticketShas?: string[];
+  ticketContexts?: string[];
 }
 
 /**
@@ -94,6 +102,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly statisticsService: StatisticsService,
     private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
+    private readonly ticketsService: TicketsService,
   ) {}
 
   afterInit(server: Server): void {
@@ -913,6 +922,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       const agentId = data?.agentId;
+      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(clientId, payload);
       let loggedIn = this.loggedInAgentsBySocket.get(socket.id);
 
       if (!loggedIn) {
@@ -1016,7 +1026,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       if (event === 'chat' && agentId) {
-        const message = (payload as { message?: string })?.message ?? '';
+        const message =
+          (payloadWithContext as { message?: string; contextInjection?: ContextInjectionPayload })?.message ?? '';
         const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
         const charCount = message.length;
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
@@ -1027,7 +1038,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.lastAgentIdBySocket.set(socket.id, agentId);
         this.lastChatMessageBySocket.set(socket.id, message);
       } else if (event === 'enhanceChat' && agentId) {
-        const message = (payload as { message?: string })?.message ?? '';
+        const message = (payloadWithContext as { message?: string })?.message ?? '';
         const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
         const charCount = message.length;
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
@@ -1044,7 +1055,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           .catch(() => undefined);
         this.lastAgentIdBySocket.set(socket.id, agentId);
       } else if (event === 'generateTicketBody' && agentId) {
-        const title = (payload as { title?: string })?.title ?? '';
+        const title = (payloadWithContext as { title?: string })?.title ?? '';
         const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
         const charCount = title.length;
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
@@ -1064,7 +1075,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.lastAgentIdBySocket.set(socket.id, agentId);
       }
 
-      remote.emit(event, payload);
+      remote.emit(event, payloadWithContext);
       // SECURITY: Acknowledgement sent only to the initiating socket
       socket.emit('forwardAck', { received: true, event });
     } catch (error) {
@@ -1073,6 +1084,52 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       // SECURITY: Error sent only to the initiating socket
       socket.emit('error', { message });
     }
+  }
+
+  private async enrichForwardPayloadWithTicketContext(clientId: string, payload: unknown): Promise<unknown> {
+    if (!payload || typeof payload !== 'object') {
+      return payload;
+    }
+
+    const typed = payload as { contextInjection?: ContextInjectionPayload };
+    const contextInjection = typed.contextInjection;
+
+    if (!contextInjection) {
+      return payload;
+    }
+
+    const ticketShas = Array.from(
+      new Set((contextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
+    );
+
+    if (ticketShas.length === 0) {
+      return payload;
+    }
+
+    const ticketContexts: string[] = [];
+
+    for (const sha of ticketShas) {
+      try {
+        const prompt = await this.ticketsService.getPrototypePromptByClientSha(clientId, sha);
+
+        if (prompt?.prompt) {
+          ticketContexts.push(prompt.prompt);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        this.logger.warn(`Failed to resolve ticket context for SHA ${sha} in client ${clientId}: ${message}`);
+      }
+    }
+
+    return {
+      ...typed,
+      contextInjection: {
+        ...contextInjection,
+        ticketShas,
+        ticketContexts,
+      },
+    };
   }
 
   /**

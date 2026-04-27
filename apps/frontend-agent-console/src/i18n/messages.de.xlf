@@ -3610,6 +3610,70 @@
         <source>Repository setup</source>
         <target>Repository-Einrichtung</target>
       </trans-unit>
+      <trans-unit id="featureChat-selectContextTitle" datatype="html">
+        <source>Select context</source>
+        <target>Kontext auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-selectContextAria" datatype="html">
+        <source>Select context</source>
+        <target>Kontext auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-selectContextModalTitle" datatype="html">
+        <source> Select context </source>
+        <target> Kontext auswählen </target>
+      </trans-unit>
+      <trans-unit id="featureChat-includeWorkspaceContextLabel" datatype="html">
+        <source>Include workspace context</source>
+        <target>Workspace-Kontext einbeziehen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentContextLabel" datatype="html">
+        <source>Environment context</source>
+        <target>Umgebungskontext</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentContextHint" datatype="html">
+        <source> Select additional environments to enrich context more specifically. The active environment is included automatically. </source>
+        <target> Wähle zusätzliche Umgebungen aus, um den Kontext gezielter anzureichern. Die aktive Umgebung wird automatisch einbezogen. </target>
+      </trans-unit>
+      <trans-unit id="featureChat-done" datatype="html">
+        <source> Done </source>
+        <target> Fertig </target>
+      </trans-unit>
+      <trans-unit id="featureChat-contextToolbarWorkspace" datatype="html">
+        <source>Workspace</source>
+        <target>Workspace</target>
+      </trans-unit>
+      <trans-unit id="featureChat-contextToolbarWorkspaceTitle" datatype="html">
+        <source>Include workspace files and metadata</source>
+        <target>Workspace-Dateien und Metadaten einbeziehen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-contextToolbarEnvTitle" datatype="html">
+        <source>Environment context: <x id="agentName" equiv-text="agent.name"/></source>
+        <target>Umgebungskontext: <x id="agentName" equiv-text="agent.name"/></target>
+      </trans-unit>
+      <trans-unit id="featureChat-contextToolbarEnvUnknownTitle" datatype="html">
+        <source>Environment: <x id="agentId" equiv-text="id"/></source>
+        <target>Umgebung: <x id="agentId" equiv-text="id"/></target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-fieldShas" datatype="html">
+        <source>SHAs</source>
+        <target>SHAs</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContextHeading" datatype="html">
+        <source> Context enrichment </source>
+        <target> Kontextanreicherung </target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationIncludeWorkspaceContext" datatype="html">
+        <source> Include workspace context </source>
+        <target> Workspace-Kontext einbeziehen </target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContextHint" datatype="html">
+        <source> Select additional environments to enrich context more specifically. The active run environment is included automatically. </source>
+        <target> Wähle zusätzliche Umgebungen aus, um den Kontext gezielter anzureichern. Die aktive Laufzeitumgebung wird automatisch einbezogen. </target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationContextNoEnvironments" datatype="html">
+        <source> No environments available for context enrichment. </source>
+        <target> Keine Umgebungen für die Kontextanreicherung verfügbar. </target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

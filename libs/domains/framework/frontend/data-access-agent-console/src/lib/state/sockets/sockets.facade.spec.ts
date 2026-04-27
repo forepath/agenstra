@@ -373,6 +373,20 @@ describe('SocketsFacade', () => {
       });
     });
 
+    it('should include contextInjection when forwarding chat', () => {
+      const message = 'Hello world';
+      const agentId = 'agent-1';
+      const contextInjection = { includeWorkspace: true, environmentIds: ['agent-2'] };
+
+      facade.forwardChat(message, agentId, null, contextInjection);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith('forward', {
+        event: ForwardableEvent.CHAT,
+        payload: { message, responseMode: 'stream', contextInjection },
+        agentId,
+      });
+    });
+
     it('should dispatch setChatResponseMode', () => {
       facade.setChatResponseMode('single');
       expect(store.dispatch).toHaveBeenCalledWith(setChatResponseMode({ mode: 'single' }));

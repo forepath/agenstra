@@ -48,6 +48,7 @@ import {
 import {
   ForwardableEvent,
   type AgentResponseMode,
+  type ContextInjectionPayload,
   type ForwardableEventPayload,
   type ForwardedEventPayload,
 } from './sockets.types';
@@ -194,13 +195,19 @@ export class SocketsFacade {
    * @param message - The chat message text
    * @param agentId - Agent UUID (required for routing the event to the correct agent)
    */
-  forwardChat(message: string, agentId: string, model?: string | null): void {
+  forwardChat(
+    message: string,
+    agentId: string,
+    model?: string | null,
+    contextInjection?: ContextInjectionPayload,
+  ): void {
     const effectiveModel = model ?? this.currentChatModel ?? undefined;
     const responseMode = this.currentChatResponseMode;
+    const contextPart = contextInjection ? { contextInjection } : {};
     const payload =
       effectiveModel !== undefined && effectiveModel !== null
-        ? { message, model: effectiveModel, responseMode }
-        : { message, responseMode };
+        ? { message, model: effectiveModel, responseMode, ...contextPart }
+        : { message, responseMode, ...contextPart };
 
     this.forwardEvent(ForwardableEvent.CHAT, payload, agentId);
   }
