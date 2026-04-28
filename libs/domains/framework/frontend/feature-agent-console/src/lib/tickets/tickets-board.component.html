@@ -562,6 +562,71 @@
                   </ul>
                 }
 
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2 mt-3">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    (click)="openTicketRelationsModal()"
+                    i18n="@@featureTicketsBoard-addRelations"
+                  >
+                    Add relations
+                  </button>
+                </div>
+                @if (ticketRelationsLoading()) {
+                  <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-loadingRelations">
+                    Loading relations...
+                  </p>
+                } @else if (ticketRelations().length > 0) {
+                  <div class="list-group list-group-flush border rounded small mb-3">
+                    @for (relation of ticketRelations(); track relation.id) {
+                      @let relationNode = ticketRelationNodeById(relation.targetNodeId);
+                      <div
+                        class="list-group-item d-flex justify-content-between align-items-center gap-2 cursor-pointer"
+                        role="button"
+                        tabindex="0"
+                        (click)="onTicketRelationClick(relation)"
+                        (keydown.enter)="onTicketRelationClick(relation)"
+                        (keydown.space)="$event.preventDefault(); onTicketRelationClick(relation)"
+                      >
+                        <div class="d-flex flex-column min-width-0">
+                          <div class="d-flex align-items-center gap-2 min-width-0">
+                            <span class="badge text-bg-light">{{
+                              relation.targetType === 'folder'
+                                ? 'Folder'
+                                : relation.targetType === 'page'
+                                  ? 'Page'
+                                  : 'Ticket'
+                            }}</span>
+                            <span>
+                              @if (relation.targetType === 'ticket') {
+                                <small class="text-muted small fw-medium me-1">{{
+                                  ticketRelationTicketShortSha(relation.targetTicketLongSha)
+                                }}</small>
+                              } @else if (relationNode?.shas?.short) {
+                                <small class="text-muted small fw-medium me-1">{{ relationNode?.shas?.short }}</small>
+                              }
+                              <span class="fw-medium text-truncate">{{
+                                relation.targetType === 'ticket'
+                                  ? ticketRelationTicketTitle(relation.targetTicketLongSha)
+                                  : (relationNode?.title ?? relation.targetNodeId)
+                              }}</span>
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger flex-shrink-0"
+                          (click)="$event.stopPropagation(); onRemoveTicketRelation(relation)"
+                          i18n-title="@@featureTicketsBoard-removeRelationTitle"
+                          title="Remove relation"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+
                 <div class="accordion mb-3 mt-2" id="ticketAutomationAccordion">
                   <div class="accordion-item">
                     <h3 class="accordion-header">
@@ -1215,6 +1280,137 @@
           i18n="@@featureTicketsBoard-close"
         >
           Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="ticketRelationsModal"
+  tabindex="-1"
+  aria-labelledby="ticketRelationsModalLabel"
+  aria-hidden="true"
+  #ticketRelationsModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="ticketRelationsModalLabel" i18n="@@featureTicketsBoard-relationsModalTitle">
+          Add relations
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
+          (click)="onCloseTicketRelationsModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <label
+          class="visually-hidden"
+          for="ticketRelationsSearchInput"
+          i18n="@@featureTicketsBoard-relationsSearchLabel"
+        >
+          Search relations
+        </label>
+        <div class="position-relative mb-2">
+          <div class="input-group">
+            <input
+              #ticketRelationsSearchInput
+              id="ticketRelationsSearchInput"
+              type="text"
+              class="form-control"
+              autocomplete="off"
+              [ngModel]="ticketRelationsSearchQuery()"
+              (ngModelChange)="onTicketRelationInputChange($event)"
+              (focus)="onTicketRelationInputFocus()"
+              (blur)="onTicketRelationInputBlur()"
+              i18n-placeholder="@@featureTicketsBoard-relationsSearchPlaceholder"
+              placeholder="Title or short/long SHA"
+            />
+            <button type="button" class="btn btn-outline-secondary" (click)="onAddTicketRelationBySearch()">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+          @if (ticketRelationsSuggestionsOpen() && ticketRelationCandidates().length > 0) {
+            <ul
+              class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
+              style="z-index: 1070; max-height: 240px; overflow-y: auto"
+            >
+              @for (
+                candidate of ticketRelationCandidates();
+                track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
+              ) {
+                <li>
+                  <button
+                    type="button"
+                    class="dropdown-item py-2 text-start"
+                    (mousedown)="onPickTicketRelationCandidate(candidate, $event)"
+                  >
+                    <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                      <span class="font-monospace text-muted small flex-shrink-0">{{
+                        candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
+                      }}</span>
+                      <span class="text-truncate small flex-grow-1 min-width-0">
+                        {{
+                          candidate.kind === 'knowledge'
+                            ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
+                            : 'Ticket · ' + candidate.ticket.title
+                        }}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+        @if (ticketRelationsSearchError()) {
+          <div class="form-text text-danger mb-2">{{ ticketRelationsSearchError() }}</div>
+        }
+        @if (selectedTicketRelationTargets().length > 0) {
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            @for (target of selectedTicketRelationTargets(); track ticketRelationTrackId(target)) {
+              <small
+                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
+                style="max-width: min(100%, 24rem)"
+              >
+                <span class="text-truncate small">{{ ticketRelationChipDisplay(target) }}</span>
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
+                  (click)="onRemovePendingTicketRelation(target)"
+                >
+                  <i class="bi bi-x"></i>
+                </button>
+              </small>
+            }
+          </div>
+        } @else {
+          <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-relationsSearchHint">
+            Search by title or SHA and add one or more relation targets.
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="onCloseTicketRelationsModal()"
+          i18n="@@featureTicketsBoard-relationsCancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="selectedTicketRelationTargets().length === 0"
+          (click)="onAddSelectedTicketRelations()"
+        >
+          <span i18n="@@featureTicketsBoard-relationsAddSelected">Add selected</span>
         </button>
       </div>
     </div>

@@ -1,0 +1,18 @@
+flowchart LR
+    %% Source types
+    SRC_TICKET["Ticket (sourceType=ticket)"]
+    SRC_PAGE["Knowledge Page (sourceType=page)"]
+
+    %% Target types
+    TGT_TICKET["Ticket (targetType=ticket)"]
+    TGT_FOLDER["Knowledge Folder (targetType=folder)"]
+    TGT_PAGE["Knowledge Page (targetType=page)"]
+
+    %% Allowed links (as implemented by enums + createRelation validation)
+    SRC_TICKET --> TGT_TICKET
+    SRC_TICKET --> TGT_FOLDER
+    SRC_TICKET --> TGT_PAGE
+
+    SRC_PAGE --> TGT_TICKET
+    SRC_PAGE --> TGT_FOLDER
+    SRC_PAGE --> TGT_PAGE

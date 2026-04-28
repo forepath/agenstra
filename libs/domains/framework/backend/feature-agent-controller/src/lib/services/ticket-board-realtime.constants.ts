@@ -4,6 +4,7 @@ export const TICKETS_BOARD_EVENTS = {
   ticketRemoved: 'ticketRemoved',
   ticketCommentCreated: 'ticketCommentCreated',
   ticketActivityCreated: 'ticketActivityCreated',
+  knowledgeRelationChanged: 'knowledgeRelationChanged',
   ticketAutomationUpsert: 'ticketAutomationUpsert',
   ticketAutomationRunUpsert: 'ticketAutomationRunUpsert',
   ticketAutomationRunStepAppended: 'ticketAutomationRunStepAppended',

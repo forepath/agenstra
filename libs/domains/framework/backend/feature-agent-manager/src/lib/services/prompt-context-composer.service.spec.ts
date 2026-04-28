@@ -43,6 +43,19 @@ describe('PromptContextComposerService', () => {
     expect(result).toContain('This ticket and its subtasks');
   });
 
+  it('should include knowledge references and contexts when provided', () => {
+    const result = service.composeChatMessage('Implement this', {
+      knowledgeShas: ['9f9fae1', '9f9fae13243d3a45ca4d48f2a57eb67fdf111111'],
+      knowledgeContexts: ['Knowledge Page: Product Brief\nImportant details'],
+    });
+
+    expect(result).toContain('Relevant knowledge references for context');
+    expect(result).toContain('9f9fae1');
+    expect(result).toContain('Detailed knowledge page context is provided below');
+    expect(result).toContain('Knowledge context #1:');
+    expect(result).toContain('Knowledge Page: Product Brief');
+  });
+
   it('composeEnhanceMessage wraps draft after composing context', () => {
     const result = service.composeEnhanceMessage('Fix the bug', {
       includeWorkspace: true,
@@ -63,5 +76,17 @@ describe('PromptContextComposerService', () => {
     expect(result).toContain('<<<TICKET_TREE>>>');
     expect(result).toContain('- [ ] Subtask');
     expect(result).toContain('abc1234');
+  });
+
+  it('ignores empty context values and keeps message unchanged', () => {
+    const result = service.composeChatMessage('Plain message', {
+      environmentIds: ['   '],
+      ticketShas: [''],
+      ticketContexts: ['   '],
+      knowledgeShas: [''],
+      knowledgeContexts: ['   '],
+    });
+
+    expect(result).toBe('Plain message');
   });
 });

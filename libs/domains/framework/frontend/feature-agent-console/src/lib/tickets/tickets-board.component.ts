@@ -31,6 +31,7 @@ import {
   deleteTicketFailure,
   deleteTicketSuccess,
   filterTicketsForGlobalSearch,
+  KnowledgeFacade,
   loadTickets,
   loadTicketsFailure,
   loadTicketsSuccess,
@@ -47,6 +48,8 @@ import {
   type AgentResponseDto,
   type BoardLaneStatus,
   type ClientResponseDto,
+  type KnowledgeNodeDto,
+  type KnowledgeRelationDto,
   type TicketAutomationBranchStrategy,
   type TicketAutomationResponseDto,
   type TicketAutomationRunResponseDto,
@@ -182,10 +185,13 @@ interface TicketDetailSubtaskRow {
   styleUrls: ['./tickets-board.component.scss'],
 })
 export class TicketsBoardComponent implements OnInit, AfterViewInit {
+  private readonly RELATION_TARGET_KIND_KNOWLEDGE = 'knowledge';
+  private readonly RELATION_TARGET_KIND_TICKET = 'ticket';
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly clientsService = inject(ClientsService);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
+  private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly ticketsService = inject(TicketsService);
   private readonly socketsFacade = inject(SocketsFacade);
   private readonly ticketsBoardSocketFacade = inject(TicketsBoardSocketFacade);
@@ -216,6 +222,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
    * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
    */
   private ticketDetailSuspendedForCreateSubtask = false;
+  private ticketDetailSuspendedForRelations = false;
   /**
    * Ticket detail was hidden so the delete confirmation modal can show alone; when delete closes without confirming,
    * show ticket again.
@@ -239,6 +246,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   @ViewChild('globalSearchInput', { static: false })
   private globalSearchInput?: ElementRef<HTMLInputElement>;
+
+  @ViewChild('ticketRelationsModal', { static: false })
+  private ticketRelationsModal?: ElementRef<HTMLDivElement>;
+
+  @ViewChild('ticketRelationsSearchInput', { static: false })
+  private ticketRelationsSearchInput?: ElementRef<HTMLInputElement>;
 
   @ViewChild('ticketAutomationRunModal', { static: false })
   private ticketAutomationRunModal?: ElementRef<HTMLDivElement>;
@@ -309,6 +322,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly detail = toSignal(this.ticketsFacade.detail$, { initialValue: null });
   readonly detailBreadcrumb = toSignal(this.ticketsFacade.detailBreadcrumb$, { initialValue: [] });
   readonly ticketsList = toSignal(this.ticketsFacade.tickets$, { initialValue: [] });
+  readonly knowledgeTree = toSignal(this.knowledgeFacade.tree$, { initialValue: [] as KnowledgeNodeDto[] });
+  readonly ticketRelations = toSignal(this.knowledgeFacade.relations$, { initialValue: [] as KnowledgeRelationDto[] });
+  readonly ticketRelationsLoading = toSignal(this.knowledgeFacade.relationsLoading$, { initialValue: false });
 
   globalSearchQuery = signal('');
   readonly globalSearchHits = computed(() =>
@@ -366,6 +382,68 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   bodyGenError = signal<string | null>(null);
   bodyGenInProgress = signal(false);
   pendingBodyCorrelation = signal<string | null>(null);
+  ticketRelationsSearchQuery = signal('');
+  ticketRelationsSuggestionsOpen = signal(false);
+  ticketRelationsSearchError = signal<string | null>(null);
+  selectedTicketRelationTargets = signal<
+    Array<{ kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string }>
+  >([]);
+
+  readonly ticketRelationCandidates = computed(() => {
+    const detail = this.detail();
+    const clientId = this.effectiveClientId();
+    const query = this.ticketRelationsSearchQuery().trim().toLowerCase();
+
+    if (!detail || !clientId || !query.length) {
+      return [];
+    }
+
+    const existingNodeIds = new Set(
+      this.ticketRelations()
+        .map((relation) => relation.targetNodeId ?? null)
+        .filter((id): id is string => id !== null),
+    );
+    const existingTicketShas = new Set(
+      this.ticketRelations()
+        .map((relation) => relation.targetTicketLongSha ?? null)
+        .filter((sha): sha is string => sha !== null),
+    );
+    const candidates: Array<
+      { kind: 'knowledge'; node: KnowledgeNodeDto } | { kind: 'ticket'; ticket: TicketResponseDto }
+    > = [];
+    const walk = (nodes: KnowledgeNodeDto[]) => {
+      for (const node of nodes) {
+        const matchesQuery = node.title.toLowerCase().includes(query) || node.shas.short.toLowerCase().includes(query);
+
+        if (matchesQuery && !existingNodeIds.has(node.id)) {
+          candidates.push({ kind: this.RELATION_TARGET_KIND_KNOWLEDGE, node });
+        }
+
+        walk(node.children ?? []);
+      }
+    };
+
+    walk(this.knowledgeTree());
+
+    for (const ticket of this.ticketsList()) {
+      if (ticket.clientId !== clientId || ticket.id === detail.id || !ticket.shas?.long) {
+        continue;
+      }
+
+      const shortSha = ticket.shas.short.toLowerCase();
+      const longSha = ticket.shas.long.toLowerCase();
+      const title = (ticket.title ?? '').toLowerCase();
+      const matchesQuery = title.includes(query) || shortSha.includes(query) || longSha.includes(query);
+
+      if (!matchesQuery || existingTicketShas.has(ticket.shas.long)) {
+        continue;
+      }
+
+      candidates.push({ kind: this.RELATION_TARGET_KIND_TICKET, ticket });
+    }
+
+    return candidates;
+  });
   private activeGenerationId: string | null = null;
 
   readonly ticketAutomationConfig = toSignal(this.ticketAutomationFacade.config$, { initialValue: null });
@@ -478,6 +556,27 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private chatAgentForAiLastSyncedDetailUpdatedAt: string | null = null;
 
   constructor() {
+    effect(() => {
+      const clientId = this.effectiveClientId();
+
+      if (!clientId) {
+        return;
+      }
+
+      this.knowledgeFacade.loadTree(clientId);
+    });
+
+    effect(() => {
+      const clientId = this.effectiveClientId();
+      const detail = this.detail();
+
+      if (!clientId || !detail?.id) {
+        return;
+      }
+
+      this.knowledgeFacade.loadRelations(clientId, 'ticket', detail.id);
+    });
+
     effect(() => {
       const id = this.detail()?.id ?? null;
 
@@ -1137,6 +1236,294 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.openTicketDetailFlow(ticket.id);
   }
 
+  openTicketRelationsModal(): void {
+    this.ticketRelationsSearchQuery.set('');
+    this.ticketRelationsSearchError.set(null);
+    this.ticketRelationsSuggestionsOpen.set(false);
+    this.selectedTicketRelationTargets.set([]);
+    const relationsEl = this.ticketRelationsModal?.nativeElement;
+
+    if (relationsEl?.classList.contains('show')) {
+      return;
+    }
+
+    if (this.ticketDetailSuspendedForRelations) {
+      return;
+    }
+
+    const ticketEl = this.ticketDetailModal?.nativeElement;
+
+    if (!ticketEl || !ticketEl.classList.contains('show')) {
+      queueMicrotask(() => this.showTicketRelationsModalEl());
+
+      return;
+    }
+
+    this.ticketDetailSuspendedForRelations = true;
+
+    const onTicketHidden = (): void => {
+      queueMicrotask(() => {
+        const modalEl = this.ticketRelationsModal?.nativeElement;
+
+        if (!modalEl) {
+          this.ticketDetailSuspendedForRelations = false;
+          this.showModal();
+
+          return;
+        }
+
+        this.showTicketRelationsModalEl();
+        this.registerReopenTicketDetailAfterRelationsModal();
+      });
+    };
+
+    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
+    this.hideModal();
+  }
+
+  onCloseTicketRelationsModal(): void {
+    this.hideTicketRelationsModalEl();
+    this.ticketRelationsSearchQuery.set('');
+    this.ticketRelationsSearchError.set(null);
+    this.ticketRelationsSuggestionsOpen.set(false);
+    this.selectedTicketRelationTargets.set([]);
+  }
+
+  onTicketRelationInputChange(value: string): void {
+    this.ticketRelationsSearchQuery.set(value);
+    this.ticketRelationsSearchError.set(null);
+    this.ticketRelationsSuggestionsOpen.set(value.trim().length > 0);
+  }
+
+  onTicketRelationInputFocus(): void {
+    if (this.ticketRelationsSearchQuery().trim().length > 0 && this.ticketRelationCandidates().length > 0) {
+      this.ticketRelationsSuggestionsOpen.set(true);
+    }
+  }
+
+  onTicketRelationInputBlur(): void {
+    setTimeout(() => this.ticketRelationsSuggestionsOpen.set(false), 180);
+  }
+
+  onPickTicketRelationCandidate(
+    candidate: { kind: 'knowledge'; node: KnowledgeNodeDto } | { kind: 'ticket'; ticket: TicketResponseDto },
+    event?: Event,
+  ): void {
+    event?.preventDefault();
+    this.addTicketRelationCandidate(candidate);
+    this.ticketRelationsSearchQuery.set('');
+    this.ticketRelationsSearchError.set(null);
+    this.ticketRelationsSuggestionsOpen.set(false);
+  }
+
+  onAddTicketRelationBySearch(): void {
+    const query = this.ticketRelationsSearchQuery().trim().toLowerCase();
+
+    if (!query) {
+      this.ticketRelationsSearchError.set('Enter a ticket, page, or folder SHA.');
+
+      return;
+    }
+
+    const candidate = this.ticketRelationCandidates().find((item) => {
+      if (item.kind === this.RELATION_TARGET_KIND_KNOWLEDGE) {
+        const shortSha = item.node.shas.short.toLowerCase();
+        const longSha = item.node.shas.long.toLowerCase();
+
+        return shortSha === query || longSha === query || item.node.title.toLowerCase() === query;
+      }
+
+      const shortSha = item.ticket.shas.short.toLowerCase();
+      const longSha = item.ticket.shas.long.toLowerCase();
+      const title = (item.ticket.title ?? '').toLowerCase();
+
+      return shortSha === query || longSha === query || title === query;
+    });
+
+    if (!candidate) {
+      this.ticketRelationsSearchError.set('No matching ticket, page, or folder found.');
+
+      return;
+    }
+
+    this.addTicketRelationCandidate(candidate);
+    this.ticketRelationsSearchQuery.set('');
+    this.ticketRelationsSearchError.set(null);
+    this.ticketRelationsSuggestionsOpen.set(false);
+  }
+
+  onAddSelectedTicketRelations(): void {
+    const detail = this.detail();
+    const clientId = this.effectiveClientId();
+    const targets = this.selectedTicketRelationTargets();
+
+    if (!detail?.id || !clientId || !targets.length) {
+      return;
+    }
+
+    for (const target of targets) {
+      if (target.kind === this.RELATION_TARGET_KIND_TICKET) {
+        this.knowledgeFacade.createRelation({
+          clientId,
+          sourceType: 'ticket',
+          sourceId: detail.id,
+          targetType: 'ticket',
+          targetTicketSha: target.ticketLongSha,
+        });
+
+        continue;
+      }
+
+      const targetNode = this.ticketRelationNodeById(target.nodeId);
+
+      if (!targetNode) {
+        continue;
+      }
+
+      this.knowledgeFacade.createRelation({
+        clientId,
+        sourceType: 'ticket',
+        sourceId: detail.id,
+        targetType: targetNode.nodeType,
+        targetNodeId: targetNode.id,
+      });
+    }
+
+    this.onCloseTicketRelationsModal();
+  }
+
+  onRemoveTicketRelation(relation: KnowledgeRelationDto): void {
+    this.knowledgeFacade.deleteRelation(relation.id);
+  }
+
+  ticketRelationNodeById(nodeId?: string | null): KnowledgeNodeDto | null {
+    if (!nodeId) {
+      return null;
+    }
+
+    const find = (nodes: KnowledgeNodeDto[]): KnowledgeNodeDto | null => {
+      for (const node of nodes) {
+        if (node.id === nodeId) {
+          return node;
+        }
+
+        const child = find(node.children ?? []);
+
+        if (child) {
+          return child;
+        }
+      }
+
+      return null;
+    };
+
+    return find(this.knowledgeTree());
+  }
+
+  ticketRelationTrackId(
+    target: { kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string },
+  ): string {
+    return target.kind === this.RELATION_TARGET_KIND_KNOWLEDGE
+      ? `knowledge:${target.nodeId}`
+      : `ticket:${target.ticketLongSha}`;
+  }
+
+  ticketRelationChipDisplay(
+    target: { kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string },
+  ): string {
+    if (target.kind === this.RELATION_TARGET_KIND_TICKET) {
+      const ticket = this.ticketByLongSha(target.ticketLongSha);
+
+      if (!ticket) {
+        return `${target.ticketLongSha.slice(0, 7)} · Ticket: Unavailable ticket`;
+      }
+
+      return `${ticket.shas.short} · Ticket: ${ticket.title ?? ''}`;
+    }
+
+    const node = this.ticketRelationNodeById(target.nodeId);
+
+    if (!node) {
+      return `${target.nodeId.slice(0, 7)} · Unavailable knowledge`;
+    }
+
+    const type = node.nodeType === 'folder' ? 'Folder' : 'Page';
+
+    return `${node.shas.short} · ${type}: ${node.title}`;
+  }
+
+  onRemovePendingTicketRelation(
+    target: { kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string },
+  ): void {
+    const trackId = this.ticketRelationTrackId(target);
+
+    this.selectedTicketRelationTargets.set(
+      this.selectedTicketRelationTargets().filter((item) => this.ticketRelationTrackId(item) !== trackId),
+    );
+  }
+
+  ticketRelationTicketShortSha(longSha?: string | null): string {
+    if (!longSha) {
+      return '';
+    }
+
+    const ticket = this.ticketByLongSha(longSha);
+
+    if (!ticket?.shas?.short) {
+      return longSha.slice(0, 7);
+    }
+
+    return ticket.shas.short;
+  }
+
+  ticketRelationTicketTitle(longSha?: string | null): string {
+    if (!longSha) {
+      return 'Unavailable ticket';
+    }
+
+    const ticket = this.ticketByLongSha(longSha);
+
+    if (!ticket) {
+      return 'Unavailable ticket';
+    }
+
+    return ticket.title ?? 'Untitled ticket';
+  }
+
+  onTicketRelationClick(relation: KnowledgeRelationDto): void {
+    if (relation.targetType === 'ticket') {
+      const longSha = relation.targetTicketLongSha ?? null;
+
+      if (!longSha) {
+        return;
+      }
+
+      const ticket = this.ticketByLongSha(longSha);
+
+      if (!ticket) {
+        return;
+      }
+
+      this.openTicketDetailFlow(ticket.id);
+
+      return;
+    }
+
+    const clientId = this.effectiveClientId();
+    const targetNodeId = relation.targetNodeId;
+
+    if (!clientId || !targetNodeId) {
+      return;
+    }
+
+    this.closeTicketModalStackForCrossRouteNavigation();
+    setTimeout(() => {
+      void this.router.navigate(['/knowledge', clientId], {
+        queryParams: { openNodeId: targetNodeId },
+      });
+    }, 0);
+  }
+
   /** Open detail modal for a ticket (board card, breadcrumb, or nested row). */
   openTicketDetailFlow(ticketId: string): void {
     this.prototypeError.set(null);
@@ -1251,10 +1638,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.pendingDetailTitleRename.set(null);
     this.ticketDetailSuspendedForAutomationRun = false;
     this.ticketDetailSuspendedForCreateSubtask = false;
+    this.ticketDetailSuspendedForRelations = false;
     this.ticketDetailSuspendedForMigration = false;
     this.ticketDetailSuspendedForDeleteConfirm = false;
     this.hideModal();
     this.hideAutomationRunDetailModal();
+    this.hideTicketRelationsModalEl();
     this.hideTicketMigrateModalEl();
     this.hideDeleteTicketConfirmModal();
     this.ticketPendingDelete.set(null);
@@ -1872,6 +2261,99 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     };
 
     el.addEventListener('hidden.bs.modal', onHidden, { once: true });
+  }
+
+  /** One-time: after relations modal hides, restore ticket detail if it was swapped out for this flow. */
+  private registerReopenTicketDetailAfterRelationsModal(): void {
+    const el = this.ticketRelationsModal?.nativeElement;
+
+    if (!el) {
+      return;
+    }
+
+    const onHidden = (): void => {
+      if (!this.ticketDetailSuspendedForRelations) {
+        return;
+      }
+
+      this.ticketDetailSuspendedForRelations = false;
+      queueMicrotask(() => this.showModal());
+    };
+
+    el.addEventListener('hidden.bs.modal', onHidden, { once: true });
+  }
+
+  private addTicketRelationCandidate(
+    candidate: { kind: 'knowledge'; node: KnowledgeNodeDto } | { kind: 'ticket'; ticket: TicketResponseDto },
+  ): void {
+    const current = this.selectedTicketRelationTargets();
+    const nextTarget =
+      candidate.kind === this.RELATION_TARGET_KIND_KNOWLEDGE
+        ? ({ kind: this.RELATION_TARGET_KIND_KNOWLEDGE, nodeId: candidate.node.id } as const)
+        : ({ kind: this.RELATION_TARGET_KIND_TICKET, ticketLongSha: candidate.ticket.shas.long } as const);
+    const nextTargetId = this.ticketRelationTrackId(nextTarget);
+
+    if (!current.some((item) => this.ticketRelationTrackId(item) === nextTargetId)) {
+      this.selectedTicketRelationTargets.set([...current, nextTarget]);
+    }
+  }
+
+  private ticketByLongSha(longSha: string): TicketResponseDto | null {
+    return this.ticketsList().find((ticket) => ticket.shas?.long === longSha) ?? null;
+  }
+
+  private showTicketRelationsModalEl(): void {
+    const el = this.ticketRelationsModal?.nativeElement;
+
+    if (!el) return;
+
+    const win = window as unknown as {
+      bootstrap?: {
+        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
+      };
+    };
+    const Modal = win.bootstrap?.Modal;
+
+    if (!Modal) return;
+
+    const focusSearchInput = (): void => {
+      this.ticketRelationsSearchInput?.nativeElement?.focus({ preventScroll: true });
+    };
+
+    el.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
+    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
+
+    inst.show();
+  }
+
+  private hideTicketRelationsModalEl(): void {
+    const el = this.ticketRelationsModal?.nativeElement;
+
+    if (!el) return;
+
+    const win = window as unknown as {
+      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
+    };
+
+    win.bootstrap?.Modal?.getInstance(el)?.hide();
+  }
+
+  private closeTicketModalStackForCrossRouteNavigation(): void {
+    this.ticketDetailSuspendedForAutomationRun = false;
+    this.ticketDetailSuspendedForCreateSubtask = false;
+    this.ticketDetailSuspendedForRelations = false;
+    this.ticketDetailSuspendedForMigration = false;
+    this.ticketDetailSuspendedForDeleteConfirm = false;
+    this.hideTicketRelationsModalEl();
+    this.hideModal();
+    this.hideAutomationRunDetailModal();
+    this.hideTicketMigrateModalEl();
+    this.hideCreateModalEl();
+    this.hideDeleteTicketConfirmModal();
+    this.hideGlobalSearchModalEl();
+    this.ticketPendingDelete.set(null);
+    this.ticketsFacade.closeDetail();
+    this.ticketAutomationFacade.clear();
   }
 
   private showTicketMigrateModalEl(): void {

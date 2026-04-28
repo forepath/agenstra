@@ -24,10 +24,14 @@ import { ClientsAgentAutomationProxyController } from '../controllers/clients-ag
 import { ClientsDeploymentsController } from '../controllers/clients-deployments.controller';
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
+import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
 import { TicketsController } from '../controllers/tickets.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
+import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
+import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease.entity';
@@ -38,6 +42,7 @@ import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-gener
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
+import { KnowledgeBoardGateway } from '../gateways/knowledge-board.gateway';
 import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
 import { DigitalOceanProvider } from '../providers/digital-ocean.provider';
 import { HetznerProvider } from '../providers/hetzner.provider';
@@ -54,6 +59,8 @@ import { ClientAgentProxyService } from '../services/client-agent-proxy.service'
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientsService } from '../services/clients.service';
+import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
+import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { RemoteAgentsSessionService } from '../services/remote-agents-session.service';
 import { StatisticsAgentSyncService } from '../services/statistics-agent-sync.service';
@@ -88,6 +95,9 @@ const authMethod = getAuthenticationMethod();
       TicketAutomationLeaseEntity,
       TicketAutomationRunStepEntity,
       ClientAgentAutonomyEntity,
+      KnowledgeNodeEntity,
+      KnowledgePageActivityEntity,
+      KnowledgeRelationEntity,
     ]),
     StatisticsModule,
     forwardRef(() => FilterRulesModule),
@@ -101,6 +111,7 @@ const authMethod = getAuthenticationMethod();
     ClientStatisticsController,
     StatisticsController,
     TicketsController,
+    KnowledgeTreeController,
     TicketAutomationController,
     ClientAgentAutonomyController,
     ClientAgentAutonomyDirectoryController,
@@ -109,6 +120,7 @@ const authMethod = getAuthenticationMethod();
   providers: [
     ClientsService,
     TicketsService,
+    KnowledgeTreeService,
     TicketAutomationService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,
@@ -129,9 +141,11 @@ const authMethod = getAuthenticationMethod();
     SocketAuthService,
     ClientsGateway,
     TicketBoardRealtimeService,
+    KnowledgeBoardRealtimeService,
     ClientAutomationChatRealtimeService,
     TicketAutomationChatSyncService,
     TicketsBoardGateway,
+    KnowledgeBoardGateway,
     ProvisioningService,
     ProvisioningProviderFactory,
     ProvisioningReferencesRepository,

@@ -1,0 +1,100 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.knowledge-tree-container {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+.search-input-container {
+  position: relative;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.search-input {
+  padding-left: 0;
+  box-shadow: none;
+}
+
+.tree-node {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 32px;
+
+  &:hover {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  .btn-group {
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  &:hover .btn-group {
+    opacity: 1;
+  }
+}
+
+.tree-node.selected {
+  background-color: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary-text-emphasis);
+}
+
+.tree-node-wrapper {
+  position: relative;
+}
+
+.tree-indent {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.tree-node-content {
+  min-width: 0;
+}
+
+.tree-node-icon {
+  flex-shrink: 0;
+}
+
+.tree-node-name {
+  font-size: 0.875rem;
+}
+
+.create-item-input {
+  background-color: var(--bs-secondary-bg);
+  border-radius: 0.25rem;
+  margin: 0.25rem 0;
+}
+
+.context-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+}

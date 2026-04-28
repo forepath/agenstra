@@ -10,6 +10,7 @@ import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientsService } from '../services/clients.service';
+import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketsService } from '../services/tickets.service';
@@ -139,6 +140,12 @@ describe('ClientsGateway', () => {
   };
   const mockTicketsService = {
     getPrototypePromptByClientSha: jest.fn().mockResolvedValue(null),
+    resolveTicketIdByClientSha: jest.fn().mockResolvedValue(null),
+  };
+  const mockKnowledgeTreeService = {
+    collectPromptContextsByHashes: jest.fn().mockResolvedValue({ promptSections: [] }),
+    collectPromptContextsForSource: jest.fn().mockResolvedValue({ promptSections: [] }),
+    findNodeBySha: jest.fn().mockResolvedValue(null),
   };
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
@@ -169,6 +176,7 @@ describe('ClientsGateway', () => {
         { provide: ClientAutomationChatRealtimeService, useValue: mockClientAutomationChatRealtime },
         { provide: TicketAutomationChatSyncService, useValue: mockTicketAutomationChatSync },
         { provide: TicketsService, useValue: mockTicketsService },
+        { provide: KnowledgeTreeService, useValue: mockKnowledgeTreeService },
       ],
     }).compile();
 

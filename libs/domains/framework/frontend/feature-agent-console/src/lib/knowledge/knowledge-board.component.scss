@@ -1,0 +1,121 @@
+@use '../section.scss';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section__content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.section__column {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.knowledge-tree-sidebar {
+  flex: 0 0 300px;
+  min-width: 150px;
+  max-width: 600px;
+}
+
+.resize-handle {
+  flex: 0 0 4px;
+  cursor: col-resize;
+  background-color: transparent;
+  position: relative;
+  z-index: 10;
+  transition: background-color 0.15s ease-in-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -2px;
+    right: -2px;
+    z-index: 10;
+  }
+
+  &:hover,
+  &:active {
+    background-color: var(--bs-primary);
+  }
+}
+
+.knowledge-editor-area {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.knowledge-board__detail-title-clickable {
+  cursor: text;
+  line-height: 1.5;
+}
+
+.knowledge-board__detail-title-clickable:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+.search-input-container {
+  position: relative;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.search-input {
+  padding-left: 0;
+  box-shadow: none;
+}
+
+@mixin knowledge-board-chip-tint($mix-color, $text-color) {
+  background-color: color-mix(in srgb, $mix-color 24%, var(--bs-tertiary-bg)) !important;
+  color: $text-color !important;
+}
+
+.info-badge.knowledge-board__chip--activity-created {
+  @include knowledge-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
+}
+
+.info-badge.knowledge-board__chip--activity-deleted {
+  @include knowledge-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
+}
+
+.info-badge.knowledge-board__chip--activity-comment {
+  @include knowledge-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
+}
+
+.info-badge.knowledge-board__chip--activity-status {
+  @include knowledge-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
+}
+
+.info-badge.knowledge-board__chip--activity-muted {
+  @include knowledge-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
+}

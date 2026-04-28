@@ -43,7 +43,8 @@ export class AgentConsoleContainerComponent implements OnInit {
               url.includes('/users') ||
               url.includes('/filters') ||
               url.includes('/audit') ||
-              url.includes('/tickets')) &&
+              url.includes('/tickets') ||
+              url.includes('/knowledge')) &&
             !url.includes('/editor') &&
             !url.includes('/config') &&
             !url.includes('/deployments'),
@@ -55,7 +56,8 @@ export class AgentConsoleContainerComponent implements OnInit {
           this.router.url.includes('/users') ||
           this.router.url.includes('/filters') ||
           this.router.url.includes('/audit') ||
-          this.router.url.includes('/tickets')) &&
+          this.router.url.includes('/tickets') ||
+          this.router.url.includes('/knowledge')) &&
         !this.router.url.includes('/editor') &&
         !this.router.url.includes('/config') &&
         !this.router.url.includes('/deployments'),
@@ -74,6 +76,11 @@ export class AgentConsoleContainerComponent implements OnInit {
   readonly ticketsSidebarLink = toSignal(
     this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/tickets', id] : ['/tickets']))),
     { initialValue: ['/tickets'] },
+  );
+
+  readonly knowledgeSidebarLink = toSignal(
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/knowledge', id] : ['/knowledge']))),
+    { initialValue: ['/knowledge'] },
   );
 
   /**

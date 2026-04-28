@@ -1,0 +1,518 @@
+<div class="section__content-wrapper d-flex flex-column border-top">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex align-items-center flex-wrap gap-2 min-width-0">
+      <h5 class="mb-0 fw-semibold" i18n="@@featureKnowledgeBoard-title">Knowledge</h5>
+      @if (effectiveWorkspace(); as ew) {
+        <button
+          type="button"
+          class="btn btn-link text-decoration-none p-0 border-0 text-body"
+          (click)="openWorkspaceSwitchModal()"
+          i18n-title="@@featureKnowledgeBoard-switchWorkspaceTitle"
+          title="Switch workspace"
+        >
+          <small class="info-badge text-muted mt-0 bg-body-secondary py-1 px-2 rounded">
+            <i class="bi bi-building me-1"></i>
+            <span class="text-truncate">{{ ew.name || ew.id }}</span>
+          </small>
+        </button>
+      }
+    </div>
+    @if (activeClientId() !== null) {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        (click)="openGlobalSearchModal()"
+        i18n-title="@@featureKnowledgeBoard-searchPagesTitle"
+        title="Search pages"
+      >
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </button>
+    }
+  </div>
+
+  @if (activeClientId() === null) {
+    <div class="alert alert-primary m-3" role="status">
+      <span i18n="@@featureKnowledgeBoard-selectSpacePrefix">Select a space from</span>&nbsp;
+      <a routerLink="/clients" i18n="@@featureKnowledgeBoard-selectSpaceLink">Spaces</a>&nbsp;
+      <span i18n="@@featureKnowledgeBoard-selectSpaceSuffix">to load pages.</span>
+      <div class="mt-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="openWorkspaceSwitchModal()">
+          <span i18n="@@featureKnowledgeBoard-chooseWorkspace">Choose workspace…</span>
+        </button>
+      </div>
+    </div>
+  } @else {
+    @if (error()) {
+      <div class="alert alert-danger m-3 mb-0">{{ error() }}</div>
+    }
+
+    <section class="section__row flex-grow-1 d-flex">
+      <div
+        #knowledgeTreeSidebar
+        class="section__column knowledge-tree-sidebar border-end"
+        [style.flex-basis.px]="sidebarWidth()"
+      >
+        <framework-knowledge-tree
+          [workspaceId]="activeClientId()"
+          [nodes]="tree()"
+          [selectedNodeId]="selectedNode()?.id ?? null"
+          [loading]="loading()"
+          (selectNode)="onSelectNode($event)"
+          (refreshTree)="onRefreshTree()"
+          (createNode)="onCreateNode($event)"
+          (renameNode)="onRenameNode($event)"
+          (moveNode)="onMoveNode($event)"
+          (duplicateNode)="onDuplicateNode($event)"
+          (deleteNode)="onDeleteNode($event)"
+        ></framework-knowledge-tree>
+      </div>
+
+      <div class="resize-handle" (mousedown)="onResizeStart($event)" (touchstart)="onResizeStart($event)"></div>
+
+      <div class="section__column d-flex flex-column flex-grow-1">
+        @if (selectedNode()?.nodeType === 'page') {
+          <div class="p-3 border-bottom bg-body-tertiary d-flex align-items-center gap-2">
+            <h2 class="modal-title h5 mb-0 d-flex align-items-center gap-2 min-width-0 flex-grow-1">
+              @if (selectedNode()?.shas?.short) {
+                <small class="text-muted small flex-shrink-0">{{ selectedNode()?.shas?.short }}</small>
+              }
+              @if (selectedNodeTitleEditing()) {
+                <input
+                  #selectedNodeTitleInput
+                  type="text"
+                  class="form-control form-control-sm flex-grow-1 min-width-0"
+                  [ngModel]="selectedNodeTitleDraft()"
+                  (ngModelChange)="selectedNodeTitleDraft.set($event)"
+                  (blur)="onSavePageTitle()"
+                  (keydown.enter)="onSavePageTitle()"
+                  (keydown.escape)="onSelectedNodeTitleCancel()"
+                />
+              } @else {
+                <span
+                  class="text-truncate min-width-0 knowledge-board__detail-title-clickable flex-grow-1"
+                  role="button"
+                  tabindex="0"
+                  [attr.title]="selectedNode()?.title"
+                  (click)="onSelectedNodeTitleClick()"
+                  (keydown.enter)="onSelectedNodeTitleClick()"
+                  (keydown.space)="$event.preventDefault(); onSelectedNodeTitleClick()"
+                  >{{ selectedNode()?.title }}</span
+                >
+              }
+            </h2>
+          </div>
+          <div class="flex-grow-1 p-3 knowledge-editor-area">
+            <framework-knowledge-editor
+              [markdown]="editContent()"
+              (markdownChange)="editContent.set($event)"
+              (blurred)="onSavePage()"
+            ></framework-knowledge-editor>
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2 mt-3">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="openRelationsModal()"
+                i18n="@@featureKnowledgeBoard-addRelations"
+              >
+                Add relations
+              </button>
+            </div>
+            @if (relationsLoading()) {
+              <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingRelations">Loading relations...</p>
+            } @else if (relations().length > 0) {
+              <div class="list-group list-group-flush border rounded">
+                @for (relation of relations(); track relation.id) {
+                  @let relationNode = relationNodeById(relation.targetNodeId);
+                  <div
+                    class="list-group-item d-flex justify-content-between align-items-center gap-2 cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    (click)="onRelationClick(relation)"
+                    (keydown.enter)="onRelationClick(relation)"
+                    (keydown.space)="$event.preventDefault(); onRelationClick(relation)"
+                  >
+                    <div class="d-flex flex-column min-width-0">
+                      <div class="d-flex align-items-center gap-2 min-width-0">
+                        <span class="badge text-bg-light">{{
+                          relation.targetType === 'folder'
+                            ? 'Folder'
+                            : relation.targetType === 'page'
+                              ? 'Page'
+                              : 'Ticket'
+                        }}</span>
+                        <span>
+                          @if (relation.targetType === 'ticket') {
+                            <small class="text-muted small fw-medium me-1">{{
+                              relationTicketShortSha(relation.targetTicketLongSha)
+                            }}</small>
+                          } @else if (relationNode?.shas?.short) {
+                            <small class="text-muted small fw-medium me-1">{{ relationNode?.shas?.short }}</small>
+                          }
+                          <span class="fw-medium text-truncate">{{
+                            relation.targetType === 'ticket'
+                              ? relationTicketDisplay(relation.targetTicketLongSha)
+                              : (relationNode?.title ?? relation.targetNodeId)
+                          }}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger flex-shrink-0"
+                      (click)="$event.stopPropagation(); onRemoveRelation(relation)"
+                      i18n-title="@@featureKnowledgeBoard-removeRelationTitle"
+                      title="Remove relation"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="d-flex align-items-center justify-content-between mb-2 mt-3">
+              <h2 class="h6 mb-0" i18n="@@featureKnowledgeBoard-activityHeading">Activity</h2>
+            </div>
+            @if (activity().length > 0) {
+              <ul class="list-unstyled small mb-0">
+                @for (ev of activity(); track ev.id) {
+                  <li class="mb-2 pb-2 border-bottom border-opacity-50">
+                    <div class="d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small">
+                      <small
+                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                        [ngClass]="activityActionBadgeClass(ev.actionType)"
+                        [attr.title]="ev.actionType"
+                        >{{ activityActionLabel(ev.actionType) }}</small
+                      >
+                      <span class="text-body-secondary">{{ ev.occurredAt | date: 'MMM d, y · h:mm a' }}</span>
+                      @if (ev.actorEmail) {
+                        <span class="text-body-secondary text-truncate">{{ ev.actorEmail }}</span>
+                      } @else {
+                        <span class="text-body-secondary text-truncate fst-italic">{{ ev.actorType }}</span>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            } @else if (activityLoading()) {
+              <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingActivity">Loading activity...</p>
+            } @else {
+              <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-noActivity">No activity yet</p>
+            }
+          </div>
+        } @else {
+          <div class="alert alert-secondary m-3" i18n="@@featureKnowledgeBoard-selectPageHint">
+            Select a page from the tree to start editing.
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+<div
+  class="modal fade"
+  id="globalSearchModal"
+  tabindex="-1"
+  aria-labelledby="globalSearchModalLabel"
+  aria-hidden="true"
+  #globalSearchModal
+>
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="globalSearchModalLabel" i18n="@@featureKnowledgeBoard-searchPagesModalTitle">
+          Search pages
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureKnowledgeBoard-closeAria"
+          (click)="onCloseGlobalSearchModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <label class="visually-hidden" for="globalSearchInput" i18n="@@featureKnowledgeBoard-searchPagesLabel">
+          Search pages
+        </label>
+        <div class="input-group search-input-container border rounded mb-3">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input
+            #globalSearchInput
+            id="globalSearchInput"
+            type="search"
+            class="form-control border-0 search-input"
+            [ngModel]="globalSearchQuery()"
+            (ngModelChange)="globalSearchQuery.set($event)"
+            i18n-placeholder="@@featureKnowledgeBoard-searchPagesPlaceholder"
+            placeholder="Search by title or id"
+          />
+        </div>
+        @if (globalSearchQuery().trim() === '') {
+          <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-searchPagesHint">
+            Type to search all pages and folders in this workspace.
+          </p>
+        } @else if (globalSearchHits().length === 0) {
+          <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-noMatchingNodes">
+            No matching pages or folders
+          </p>
+        } @else {
+          <div class="list-group list-group-flush border rounded">
+            @for (hit of globalSearchHits(); track hit.node.id) {
+              <button
+                type="button"
+                class="list-group-item list-group-item-action d-flex flex-column align-items-start gap-1 text-start"
+                (click)="onGlobalSearchResultClick(hit)"
+              >
+                <div class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
+                  @if (hit.node.shas.short) {
+                    <span class="font-monospace text-muted small flex-shrink-0">{{ hit.node.shas.short }}</span>
+                  }
+                  <span class="fw-medium text-break flex-grow-1 min-width-0">{{ hit.node.title }}</span>
+                  <small class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded flex-shrink-0">{{
+                    hit.node.nodeType
+                  }}</small>
+                </div>
+                @if (globalSearchPathDisplay(hit)) {
+                  <small class="text-muted text-truncate w-100">{{ globalSearchPathDisplay(hit) }}</small>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="onCloseGlobalSearchModal()"
+          i18n="@@featureKnowledgeBoard-close"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="relationsModal"
+  tabindex="-1"
+  aria-labelledby="relationsModalLabel"
+  aria-hidden="true"
+  #relationsModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="relationsModalLabel" i18n="@@featureKnowledgeBoard-relationsModalTitle">
+          Add relations
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureKnowledgeBoard-closeAria"
+          (click)="onCloseRelationsModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <label class="visually-hidden" for="relationsSearchInput" i18n="@@featureKnowledgeBoard-searchRelationsLabel">
+          Search relations
+        </label>
+        <div class="position-relative mb-2">
+          <div class="input-group">
+            <input
+              #relationsSearchInput
+              id="relationsSearchInput"
+              type="text"
+              class="form-control"
+              autocomplete="off"
+              [ngModel]="relationsSearchQuery()"
+              (ngModelChange)="onRelationInputChange($event)"
+              (focus)="onRelationInputFocus()"
+              (blur)="onRelationInputBlur()"
+              i18n-placeholder="@@featureKnowledgeBoard-searchRelationsPlaceholder"
+              placeholder="Title or short/long SHA"
+            />
+            <button type="button" class="btn btn-outline-secondary" (click)="onAddRelationBySearch()">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+          @if (relationSuggestionsOpen() && relationCandidates().length > 0) {
+            <ul
+              class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
+              style="z-index: 1070; max-height: 240px; overflow-y: auto"
+            >
+              @for (
+                candidate of relationCandidates();
+                track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
+              ) {
+                <li>
+                  <button
+                    type="button"
+                    class="dropdown-item py-2 text-start"
+                    (mousedown)="onPickRelationCandidate(candidate, $event)"
+                  >
+                    <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                      <span class="font-monospace text-muted small flex-shrink-0">{{
+                        candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
+                      }}</span>
+                      <span class="text-truncate small flex-grow-1 min-width-0">
+                        {{
+                          candidate.kind === 'knowledge'
+                            ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
+                            : 'Ticket · ' + candidate.ticket.title
+                        }}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+        @if (relationSearchError()) {
+          <div class="form-text text-danger mb-2">{{ relationSearchError() }}</div>
+        }
+        @if (selectedRelationTargets().length > 0) {
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            @for (target of selectedRelationTargets(); track relationTargetTrackId(target)) {
+              <small
+                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
+                style="max-width: min(100%, 24rem)"
+              >
+                <span class="text-truncate small">{{ relationCandidateChipDisplay(target) }}</span>
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
+                  (click)="onRemovePendingRelation(target)"
+                >
+                  <i class="bi bi-x"></i>
+                </button>
+              </small>
+            }
+          </div>
+        } @else {
+          <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-searchRelationsHint">
+            Search by title or SHA and add one or more relation targets.
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="onCloseRelationsModal()"
+          i18n="@@featureKnowledgeBoard-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="selectedRelationTargets().length === 0"
+          (click)="onAddSelectedRelations()"
+        >
+          <span i18n="@@featureKnowledgeBoard-addSelectedRelations">Add selected</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="workspaceSwitchModal"
+  tabindex="-1"
+  aria-labelledby="workspaceSwitchModalLabel"
+  aria-hidden="true"
+  #workspaceSwitchModal
+>
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2
+          class="modal-title h5"
+          id="workspaceSwitchModalLabel"
+          i18n="@@featureKnowledgeBoard-switchWorkspaceModalTitle"
+        >
+          Switch workspace
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureKnowledgeBoard-closeAria"
+          (click)="onCloseWorkspaceSwitchModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (clients().length === 0) {
+          <p class="text-muted small mb-2 text-center" i18n="@@featureKnowledgeBoard-noWorkspaces">
+            You don't have any workspaces yet.
+          </p>
+          <a
+            routerLink="/clients"
+            class="btn btn-primary btn-sm d-block w-100"
+            (click)="onCloseWorkspaceSwitchModal()"
+            i18n="@@featureKnowledgeBoard-goToSpaces"
+            >Go to Spaces</a
+          >
+        } @else {
+          <div class="input-group search-input-container border rounded mb-3">
+            <i class="bi bi-search"></i>
+            <input
+              id="workspaceSwitchSearch"
+              type="search"
+              class="form-control border-0 search-input"
+              [ngModel]="workspaceSwitchSearch()"
+              (ngModelChange)="workspaceSwitchSearch.set($event)"
+              i18n-placeholder="@@featureKnowledgeBoard-searchWorkspacesPlaceholder"
+              placeholder="Search workspaces"
+            />
+          </div>
+          @let filteredClients = filteredClientsForWorkspaceSwitch(clients());
+          @if (filteredClients.length === 0) {
+            <p class="text-muted small mb-0 text-center py-3" i18n="@@featureKnowledgeBoard-noMatchingWorkspaces">
+              No matching workspaces
+            </p>
+          } @else {
+            <div class="list-group list-group-flush border rounded">
+              @for (c of filteredClients; track c.id) {
+                <button
+                  type="button"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2"
+                  [class.active]="c.id === activeClientId()"
+                  (click)="onSelectWorkspaceForKnowledge(c)"
+                >
+                  <span class="text-truncate text-start">{{ c.name || c.id }}</span>
+                  @if (c.id === activeClientId()) {
+                    <span
+                      class="badge rounded-pill text-bg-light flex-shrink-0"
+                      i18n="@@featureKnowledgeBoard-currentWorkspace"
+                    >
+                      Current
+                    </span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="onCloseWorkspaceSwitchModal()"
+          i18n="@@featureKnowledgeBoard-close"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

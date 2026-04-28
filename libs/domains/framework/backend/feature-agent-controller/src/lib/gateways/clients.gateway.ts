@@ -20,12 +20,14 @@ import {
 import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
 
+import { KnowledgeRelationSourceType } from '../entities/knowledge-node.enums';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientsService } from '../services/clients.service';
+import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
@@ -48,6 +50,8 @@ interface ContextInjectionPayload {
   environmentIds?: string[];
   ticketShas?: string[];
   ticketContexts?: string[];
+  knowledgeShas?: string[];
+  knowledgeContexts?: string[];
 }
 
 /**
@@ -103,6 +107,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
     private readonly ticketsService: TicketsService,
+    private readonly knowledgeTreeService: KnowledgeTreeService,
   ) {}
 
   afterInit(server: Server): void {
@@ -1101,12 +1106,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     const ticketShas = Array.from(
       new Set((contextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
-
-    if (ticketShas.length === 0) {
-      return payload;
-    }
-
     const ticketContexts: string[] = [];
+    const autoInjectedRelationContexts: string[] = [];
 
     for (const sha of ticketShas) {
       try {
@@ -1115,10 +1116,63 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         if (prompt?.prompt) {
           ticketContexts.push(prompt.prompt);
         }
+
+        const ticketId = await this.ticketsService.resolveTicketIdByClientSha(clientId, sha);
+
+        if (ticketId) {
+          const related = await this.knowledgeTreeService.collectPromptContextsForSource(
+            clientId,
+            KnowledgeRelationSourceType.TICKET,
+            ticketId,
+          );
+
+          autoInjectedRelationContexts.push(...related.promptSections);
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
         this.logger.warn(`Failed to resolve ticket context for SHA ${sha} in client ${clientId}: ${message}`);
+      }
+    }
+
+    const knowledgeShas = Array.from(
+      new Set((contextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
+    );
+
+    if (ticketShas.length === 0 && knowledgeShas.length === 0) {
+      return payload;
+    }
+
+    let knowledgeContexts: string[] = [];
+
+    if (knowledgeShas.length > 0) {
+      try {
+        const knowledgeContextResponse = await this.knowledgeTreeService.collectPromptContextsByHashes(
+          clientId,
+          knowledgeShas,
+        );
+
+        knowledgeContexts = knowledgeContextResponse.promptSections;
+
+        for (const sha of knowledgeShas) {
+          const node = await this.knowledgeTreeService.findNodeBySha(clientId, sha);
+
+          if (!node || node.nodeType !== 'page') {
+            continue;
+          }
+
+          const related = await this.knowledgeTreeService.collectPromptContextsForSource(
+            clientId,
+            KnowledgeRelationSourceType.PAGE,
+            node.id,
+          );
+
+          autoInjectedRelationContexts.push(...related.promptSections);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        this.logger.warn(`Failed to resolve knowledge context for client ${clientId}: ${message}`);
       }
     }
 
@@ -1128,6 +1182,14 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         ...contextInjection,
         ticketShas,
         ticketContexts,
+        knowledgeShas,
+        knowledgeContexts: Array.from(
+          new Set(
+            [...knowledgeContexts, ...autoInjectedRelationContexts]
+              .map((ctx) => ctx.trim())
+              .filter((ctx) => ctx.length > 0),
+          ),
+        ),
       },
     };
   }

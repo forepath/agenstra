@@ -876,6 +876,33 @@ export class TicketsService {
     return { prompt: await this.buildPrototypePromptBody(ticket) };
   }
 
+  async resolveTicketIdByClientSha(clientId: string, sha: string): Promise<string | null> {
+    const normalized = sha.trim().toLowerCase();
+
+    if (!normalized) {
+      return null;
+    }
+
+    let ticket: Pick<TicketEntity, 'id'> | null = null;
+
+    if (normalized.length >= 40) {
+      ticket = await this.ticketRepo.findOne({
+        where: { clientId, longSha: normalized.slice(0, 40) },
+        select: ['id'],
+      });
+    } else {
+      ticket = await this.ticketRepo
+        .createQueryBuilder('t')
+        .select(['t.id'])
+        .where('t.client_id = :clientId', { clientId })
+        .andWhere('t.long_sha LIKE :prefix', { prefix: `${normalized}%` })
+        .orderBy('t.created_at', 'DESC')
+        .getOne();
+    }
+
+    return ticket?.id ?? null;
+  }
+
   private async buildPrototypePromptBody(ticket: TicketEntity): Promise<string> {
     const parentChain = await this.loadParentChainEntities(ticket);
     const tree = await this.buildPromptNode(ticket);
