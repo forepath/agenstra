@@ -12,9 +12,14 @@ import {
 } from '../dto/workspace-configuration-setting-response.dto';
 import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
 
+import { AgentEnvironmentVariablesService } from './agent-environment-variables.service';
+
 @Injectable()
 export class WorkspaceConfigurationOverridesService implements OnModuleInit {
-  constructor(private readonly repository: WorkspaceConfigurationOverridesRepository) {}
+  constructor(
+    private readonly repository: WorkspaceConfigurationOverridesRepository,
+    private readonly agentEnvironmentVariablesService: AgentEnvironmentVariablesService,
+  ) {}
 
   async onModuleInit(): Promise<void> {
     await this.applyOverridesToProcessEnv();
@@ -52,6 +57,7 @@ export class WorkspaceConfigurationOverridesService implements OnModuleInit {
 
     await this.repository.upsert(settingKey, value);
     process.env[envVarName] = value;
+    await this.agentEnvironmentVariablesService.reconcileWorkspaceConfigurationOverrides({ [envVarName]: value });
 
     return {
       settingKey,
@@ -68,6 +74,7 @@ export class WorkspaceConfigurationOverridesService implements OnModuleInit {
 
     await this.repository.deleteBySettingKey(settingKey);
     delete process.env[envVarName];
+    await this.agentEnvironmentVariablesService.reconcileWorkspaceConfigurationOverrides({ [envVarName]: undefined });
   }
 
   private validateSettingKey(settingKeyRaw: string): WorkspaceConfigurationSettingKey {

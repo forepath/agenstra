@@ -10,6 +10,7 @@ import {
 } from './workspace-config.actions';
 import {
   selectWorkspaceConfigurationError,
+  selectWorkspaceConfigurationMutationInProgress,
   selectWorkspaceConfigurationLoading,
   selectWorkspaceConfigurationSettingDeleting,
   selectWorkspaceConfigurationSettingError,
@@ -45,6 +46,10 @@ export class WorkspaceConfigFacade {
 
   isDeletingSetting$(clientId: string, settingKey: WorkspaceConfigurationSettingKey): Observable<boolean> {
     return this.store.select(selectWorkspaceConfigurationSettingDeleting(clientId, settingKey));
+  }
+
+  isMutationInProgress$(clientId: string): Observable<boolean> {
+    return this.store.select(selectWorkspaceConfigurationMutationInProgress(clientId));
   }
 
   getSettingError$(clientId: string, settingKey: WorkspaceConfigurationSettingKey): Observable<string | null> {

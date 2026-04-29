@@ -1057,6 +1057,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return this.workspaceConfigFacade.getError$(clientId);
     }),
   );
+  readonly workspaceConfigurationMutating$: Observable<boolean> = this.managingWorkspaceConfigurationClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) {
+        return of(false);
+      }
+
+      return this.workspaceConfigFacade.isMutationInProgress$(clientId);
+    }),
+  );
 
   // Client users modal state (for managing workspace users)
   readonly managingClientUsersClientId = signal<string | null>(null);

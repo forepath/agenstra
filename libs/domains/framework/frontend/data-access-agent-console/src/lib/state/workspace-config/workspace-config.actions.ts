@@ -8,7 +8,7 @@ import type {
 
 export const loadWorkspaceConfigurationOverrides = createAction(
   '[Workspace Config] Load Overrides',
-  props<{ clientId: string }>(),
+  props<{ clientId: string; silent?: boolean }>(),
 );
 
 export const loadWorkspaceConfigurationOverridesSuccess = createAction(

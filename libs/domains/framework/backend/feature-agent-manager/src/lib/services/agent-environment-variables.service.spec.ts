@@ -47,6 +47,7 @@ describe('AgentEnvironmentVariablesService', () => {
   };
   const mockAgentsRepository = {
     findByIdOrThrow: jest.fn(),
+    findAllWithContainers: jest.fn(),
     update: jest.fn(),
   };
   const mockAgentMessagesRepository = {
@@ -69,6 +70,7 @@ describe('AgentEnvironmentVariablesService', () => {
   };
   const mockDockerService = {
     updateContainer: jest.fn(),
+    getContainerEnvironmentMap: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -532,6 +534,33 @@ describe('AgentEnvironmentVariablesService', () => {
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
       expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
+    });
+  });
+
+  describe('reconcileWorkspaceConfigurationOverrides', () => {
+    it('recreates containers only for agents where changed keys are present', async () => {
+      const secondAgent: AgentEntity = {
+        ...mockAgent,
+        id: 'agent-uuid-456',
+        containerId: 'container-id-456',
+      } as AgentEntity;
+
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([mockAgent, secondAgent]);
+      mockDockerService.getContainerEnvironmentMap
+        .mockResolvedValueOnce({ GIT_TOKEN: 'old-token', OTHER: 'x' })
+        .mockResolvedValueOnce({ OTHER: 'x' });
+      mockDockerService.updateContainer.mockResolvedValue('new-container-id-123');
+      mockAgentsRepository.update.mockResolvedValue({ ...mockAgent, containerId: 'new-container-id-123' });
+
+      await service.reconcileWorkspaceConfigurationOverrides({ GIT_TOKEN: 'new-token' });
+
+      expect(mockDockerService.updateContainer).toHaveBeenCalledTimes(1);
+      expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', {
+        env: { GIT_TOKEN: 'new-token' },
+      });
+      expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', {
+        containerId: 'new-container-id-123',
+      });
     });
   });
 });

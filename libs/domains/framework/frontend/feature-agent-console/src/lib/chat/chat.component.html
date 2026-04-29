@@ -2935,6 +2935,7 @@
 </div>
 
 <!-- Workspace Configuration Modal -->
+@let mutationInProgress = (workspaceConfigurationMutating$ | async) === true;
 <div
   class="modal fade"
   id="workspaceConfigurationModal"
@@ -2956,6 +2957,7 @@
           (click)="onCloseWorkspaceConfigurationModal()"
           i18n-aria-label="@@featureChat-closeAriaLabel"
           aria-label="Close"
+          [disabled]="mutationInProgress"
         ></button>
       </div>
       <div class="modal-body">
@@ -3021,42 +3023,41 @@
                             />
                           }
                         </div>
-                        @let cannotSave =
-                          (getWorkspaceConfigurationSettingSaving$(setting.settingKey) | async) === true;
-                        @let cannotDelete =
-                          !setting.hasOverride ||
+                        @let isSaving = (getWorkspaceConfigurationSettingSaving$(setting.settingKey) | async) === true;
+                        @let isDeleting =
                           (getWorkspaceConfigurationSettingDeleting$(setting.settingKey) | async) === true;
+                        @let saveDisabled =
+                          mutationInProgress || getEditingWorkspaceConfigurationValue(setting).trim().length === 0;
+                        @let deleteDisabled = mutationInProgress || !setting.hasOverride;
                         <div class="btn-group">
-                          @if (!cannotSave) {
-                            <button
-                              type="button"
-                              class="btn btn-outline-primary btn-sm"
-                              (click)="onSaveWorkspaceConfigurationOverride(setting)"
-                              i18n-title="@@featureChat-saveWorkspaceConfigurationTitle"
-                              title="Save override"
-                            >
-                              @if ((getWorkspaceConfigurationSettingSaving$(setting.settingKey) | async) === true) {
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                              } @else {
-                                <i class="bi bi-check-lg"></i>
-                              }
-                            </button>
-                          }
-                          @if (!cannotDelete) {
-                            <button
-                              type="button"
-                              class="btn btn-outline-danger btn-sm"
-                              (click)="onDeleteWorkspaceConfigurationOverride(setting.settingKey)"
-                              i18n-title="@@featureChat-deleteWorkspaceConfigurationOverrideTitle"
-                              title="Delete override"
-                            >
-                              @if ((getWorkspaceConfigurationSettingDeleting$(setting.settingKey) | async) === true) {
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                              } @else {
-                                <i class="bi bi-trash"></i>
-                              }
-                            </button>
-                          }
+                          <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            [disabled]="saveDisabled"
+                            (click)="onSaveWorkspaceConfigurationOverride(setting)"
+                            i18n-title="@@featureChat-saveWorkspaceConfigurationTitle"
+                            title="Save override"
+                          >
+                            @if (isSaving) {
+                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            } @else {
+                              <i class="bi bi-check-lg"></i>
+                            }
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            [disabled]="deleteDisabled"
+                            (click)="onDeleteWorkspaceConfigurationOverride(setting.settingKey)"
+                            i18n-title="@@featureChat-deleteWorkspaceConfigurationOverrideTitle"
+                            title="Delete override"
+                          >
+                            @if (isDeleting) {
+                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            } @else {
+                              <i class="bi bi-trash"></i>
+                            }
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -3066,6 +3067,24 @@
             }
           </div>
         </div>
+
+        <div class="alert alert-warning mt-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <span i18n="@@featureChat-envVarsWarning"
+            >Changing the environment variables will re-create the agent's container. Context may be lost.</span
+          >
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="onCloseWorkspaceConfigurationModal()"
+          [disabled]="mutationInProgress"
+        >
+          <span i18n="@@featureChat-close">Close</span>
+        </button>
       </div>
     </div>
   </div>

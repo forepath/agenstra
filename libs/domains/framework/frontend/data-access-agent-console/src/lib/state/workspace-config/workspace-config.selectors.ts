@@ -42,3 +42,12 @@ export const selectWorkspaceConfigurationSettingError = (
   clientId: string,
   settingKey: WorkspaceConfigurationSettingKey,
 ) => createSelector(selectWorkspaceConfigErrors, (errors) => errors[getSettingKey(clientId, settingKey)] ?? null);
+
+export const selectWorkspaceConfigurationMutationInProgress = (clientId: string) =>
+  createSelector(
+    selectWorkspaceConfigSaving,
+    selectWorkspaceConfigDeleting,
+    (saving, deleting) =>
+      Object.entries(saving).some(([key, isSaving]) => key.startsWith(`${clientId}:`) && isSaving) ||
+      Object.entries(deleting).some(([key, isDeleting]) => key.startsWith(`${clientId}:`) && isDeleting),
+  );

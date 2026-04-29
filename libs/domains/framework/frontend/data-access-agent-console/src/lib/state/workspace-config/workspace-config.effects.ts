@@ -87,7 +87,7 @@ export const reloadWorkspaceConfigurationAfterMutation$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
       ofType(upsertWorkspaceConfigurationOverrideSuccess, deleteWorkspaceConfigurationOverrideSuccess),
-      map(({ clientId }) => loadWorkspaceConfigurationOverrides({ clientId })),
+      map(({ clientId }) => loadWorkspaceConfigurationOverrides({ clientId, silent: true })),
     );
   },
   { functional: true },

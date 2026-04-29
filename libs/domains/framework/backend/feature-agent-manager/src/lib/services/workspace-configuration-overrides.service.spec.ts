@@ -2,11 +2,13 @@ import { BadRequestException } from '@nestjs/common';
 
 import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
 
+import { AgentEnvironmentVariablesService } from './agent-environment-variables.service';
 import { WorkspaceConfigurationOverridesService } from './workspace-configuration-overrides.service';
 
 describe('WorkspaceConfigurationOverridesService', () => {
   let service: WorkspaceConfigurationOverridesService;
   let repository: jest.Mocked<WorkspaceConfigurationOverridesRepository>;
+  let agentEnvironmentVariablesService: jest.Mocked<AgentEnvironmentVariablesService>;
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -16,7 +18,10 @@ describe('WorkspaceConfigurationOverridesService', () => {
       upsert: jest.fn(),
       deleteBySettingKey: jest.fn(),
     } as unknown as jest.Mocked<WorkspaceConfigurationOverridesRepository>;
-    service = new WorkspaceConfigurationOverridesService(repository);
+    agentEnvironmentVariablesService = {
+      reconcileWorkspaceConfigurationOverrides: jest.fn(),
+    } as unknown as jest.Mocked<AgentEnvironmentVariablesService>;
+    service = new WorkspaceConfigurationOverridesService(repository, agentEnvironmentVariablesService);
     process.env = { ...originalEnv };
   });
 
@@ -62,6 +67,9 @@ describe('WorkspaceConfigurationOverridesService', () => {
 
     expect(repository.upsert).toHaveBeenCalledWith('cursorApiKey', 'sk-123');
     expect(process.env.CURSOR_API_KEY).toBe('sk-123');
+    expect(agentEnvironmentVariablesService.reconcileWorkspaceConfigurationOverrides).toHaveBeenCalledWith({
+      CURSOR_API_KEY: 'sk-123',
+    });
   });
 
   it('loads persisted overrides into process.env on module init', async () => {
@@ -96,6 +104,9 @@ describe('WorkspaceConfigurationOverridesService', () => {
 
     expect(repository.deleteBySettingKey).toHaveBeenCalledWith('gitToken');
     expect(process.env.GIT_TOKEN).toBeUndefined();
+    expect(agentEnvironmentVariablesService.reconcileWorkspaceConfigurationOverrides).toHaveBeenCalledWith({
+      GIT_TOKEN: undefined,
+    });
   });
 
   it('rejects unknown setting keys', async () => {

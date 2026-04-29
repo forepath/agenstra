@@ -36,9 +36,9 @@ function getSettingKey(clientId: string, settingKey: string): string {
 
 export const workspaceConfigReducer = createReducer(
   initialWorkspaceConfigState,
-  on(loadWorkspaceConfigurationOverrides, (state, { clientId }) => ({
+  on(loadWorkspaceConfigurationOverrides, (state, { clientId, silent }) => ({
     ...state,
-    loading: { ...state.loading, [clientId]: true },
+    loading: { ...state.loading, [clientId]: silent ? (state.loading[clientId] ?? false) : true },
     errors: { ...state.errors, [clientId]: null },
   })),
   on(loadWorkspaceConfigurationOverridesSuccess, (state, { clientId, settings }) => ({

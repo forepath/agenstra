@@ -239,4 +239,44 @@ export class AgentEnvironmentVariablesService {
       throw error;
     }
   }
+
+  async reconcileWorkspaceConfigurationOverrides(changedEnv: Record<string, string | undefined>): Promise<void> {
+    const changedKeys = Object.keys(changedEnv);
+
+    if (changedKeys.length === 0) {
+      return;
+    }
+
+    const agents = await this.agentsRepository.findAllWithContainers();
+
+    for (const agent of agents) {
+      if (!agent.containerId) {
+        continue;
+      }
+
+      const currentContainerEnv = await this.dockerService.getContainerEnvironmentMap(agent.containerId);
+      const relevantOverrides: Record<string, string | undefined> = {};
+
+      for (const key of changedKeys) {
+        if (key in currentContainerEnv) {
+          relevantOverrides[key] = changedEnv[key];
+        }
+      }
+
+      if (Object.keys(relevantOverrides).length === 0) {
+        continue;
+      }
+
+      const summary = await this.buildHydrationSummary(agent.id, agent.containerId, agent.agentType);
+
+      this.agentSessionHydrationService.storePendingSummary(agent.id, summary);
+
+      const newContainerId = await this.dockerService.updateContainer(agent.containerId, { env: relevantOverrides });
+
+      await this.agentsRepository.update(agent.id, { containerId: newContainerId });
+      this.logger.log(
+        `Reconciled workspace configuration overrides for agent ${agent.id} (container ${agent.containerId} -> ${newContainerId})`,
+      );
+    }
+  }
 }
