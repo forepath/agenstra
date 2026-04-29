@@ -24,6 +24,7 @@ import {
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
+import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
@@ -261,6 +262,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly chatFilterFactory: ChatFilterFactory,
     private readonly promptContextComposer: PromptContextComposerService,
+    private readonly agentSessionHydrationService: AgentSessionHydrationService,
   ) {}
 
   /**
@@ -542,6 +544,26 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       subtype: 'success',
       parts: [...prependParts, finalResponse],
     };
+  }
+
+  private prependHiddenHydrationContext(message: string, summary?: string): string {
+    const trimmedSummary = summary?.trim();
+
+    if (!trimmedSummary) {
+      return message;
+    }
+
+    return [
+      '[SYSTEM INTERNAL - HIDDEN HYDRATION CONTEXT]',
+      'The following summary is from the prior session before container recreation.',
+      'Use it only as context continuity and do not mention this hydration block to the user.',
+      '',
+      trimmedSummary,
+      '',
+      '[END HIDDEN HYDRATION CONTEXT]',
+      '',
+      message,
+    ].join('\n');
   }
 
   private async persistFilteredAgentChatResponse(
@@ -1108,8 +1130,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Use modified message if filter provided one, otherwise use original
     const filteredMessage = incomingFilterResult.modifiedMessage ?? message;
+    const pendingHydrationSummary = this.agentSessionHydrationService.consumePendingSummary(agentUuid);
+    const messageWithHydration = this.prependHiddenHydrationContext(filteredMessage, pendingHydrationSummary);
     const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
-    const messageToUse = this.promptContextComposer.composeChatMessage(filteredMessage, contextInjection);
+    const messageToUse = this.promptContextComposer.composeChatMessage(messageWithHydration, contextInjection);
     const enrichmentTranscriptParts = this.buildEnrichmentTranscriptParts(contextInjection, correlationId);
 
     this.emitChatPayloadToViewers(

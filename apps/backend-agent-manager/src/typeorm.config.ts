@@ -6,6 +6,7 @@ import {
   DeploymentConfigurationEntity,
   DeploymentRunEntity,
   RegexFilterRuleEntity,
+  WorkspaceConfigurationOverrideEntity,
 } from '@forepath/framework/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
@@ -32,6 +33,7 @@ export const typeormConfig: DataSourceOptions = {
     DeploymentConfigurationEntity,
     DeploymentRunEntity,
     RegexFilterRuleEntity,
+    WorkspaceConfigurationOverrideEntity,
   ],
   // Migration paths:
   // - In development with TypeScript: use path from workspace root
@@ -45,6 +47,11 @@ export const typeormConfig: DataSourceOptions = {
   ],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
+};
+
+export const typeormConfigForConfigurationOverrides: DataSourceOptions = {
+  ...typeormConfig,
+  entities: [WorkspaceConfigurationOverrideEntity],
 };
 
 /**

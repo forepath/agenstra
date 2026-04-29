@@ -1,10 +1,8 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { catchError, exhaustMap, map, of, switchMap, tap } from 'rxjs';
+import { catchError, exhaustMap, map, of, switchMap } from 'rxjs';
 
 import { EnvService } from '../../services/env.service';
-import { clearChatHistory } from '../sockets/sockets.actions';
 
 import {
   createEnvironmentVariable,
@@ -166,16 +164,6 @@ export const createEnvironmentVariable$ = createEffect(
   { functional: true },
 );
 
-export const clearChatHistoryOnCreateSuccess$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) => {
-    return actions$.pipe(
-      ofType(createEnvironmentVariableSuccess),
-      tap(() => store.dispatch(clearChatHistory())),
-    );
-  },
-  { functional: true, dispatch: false },
-);
-
 export const updateEnvironmentVariable$ = createEffect(
   (actions$ = inject(Actions), envService = inject(EnvService)) => {
     return actions$.pipe(
@@ -191,16 +179,6 @@ export const updateEnvironmentVariable$ = createEffect(
     );
   },
   { functional: true },
-);
-
-export const clearChatHistoryOnUpdateSuccess$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) => {
-    return actions$.pipe(
-      ofType(updateEnvironmentVariableSuccess),
-      tap(() => store.dispatch(clearChatHistory())),
-    );
-  },
-  { functional: true, dispatch: false },
 );
 
 export const deleteEnvironmentVariable$ = createEffect(
@@ -220,16 +198,6 @@ export const deleteEnvironmentVariable$ = createEffect(
   { functional: true },
 );
 
-export const clearChatHistoryOnDeleteSuccess$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) => {
-    return actions$.pipe(
-      ofType(deleteEnvironmentVariableSuccess),
-      tap(() => store.dispatch(clearChatHistory())),
-    );
-  },
-  { functional: true, dispatch: false },
-);
-
 export const deleteAllEnvironmentVariables$ = createEffect(
   (actions$ = inject(Actions), envService = inject(EnvService)) => {
     return actions$.pipe(
@@ -247,14 +215,4 @@ export const deleteAllEnvironmentVariables$ = createEffect(
     );
   },
   { functional: true },
-);
-
-export const clearChatHistoryOnDeleteAllSuccess$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) => {
-    return actions$.pipe(
-      ofType(deleteAllEnvironmentVariablesSuccess),
-      tap(() => store.dispatch(clearChatHistory())),
-    );
-  },
-  { functional: true, dispatch: false },
 );

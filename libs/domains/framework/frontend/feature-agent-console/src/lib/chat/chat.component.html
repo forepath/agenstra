@@ -221,6 +221,15 @@
                           <button
                             type="button"
                             class="btn btn-sm btn-outline-primary"
+                            (click)="onManageWorkspaceConfigurationClick(client); $event.stopPropagation()"
+                            i18n-title="@@featureChat-manageWorkspaceConfigurationTitle"
+                            title="Manage workspace configuration"
+                          >
+                            <i class="bi bi-sliders"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
                             (click)="onEditClientClick(client); $event.stopPropagation()"
                             [disabled]="(clientsUpdating$ | async) === true"
                             i18n-title="@@featureChat-editWorkspaceTitle"
@@ -2921,6 +2930,162 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Workspace Configuration Modal -->
+@let mutationInProgress = (workspaceConfigurationMutating$ | async) === true;
+<div
+  class="modal fade"
+  id="workspaceConfigurationModal"
+  tabindex="-1"
+  aria-labelledby="workspaceConfigurationModalLabel"
+  aria-hidden="true"
+  #workspaceConfigurationModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="workspaceConfigurationModalLabel" i18n="@@featureChat-manageWorkspaceConfiguration">
+          Manage Workspace Configuration
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          (click)="onCloseWorkspaceConfigurationModal()"
+          i18n-aria-label="@@featureChat-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="mutationInProgress"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (workspaceConfigurationError$ | async; as error) {
+          <div class="alert alert-danger mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ error }}
+          </div>
+        }
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0" i18n="@@featureChat-workspaceConfigurationSettings">Workspace Configuration Settings</h6>
+            @if (workspaceConfigurationLoading$ | async) {
+              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            }
+          </div>
+          <div class="card-body p-0">
+            @if (workspaceConfigurationLoading$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading workspace configuration...</span>
+                </div>
+              </div>
+            } @else {
+              @if (workspaceConfigurationSettings$ | async; as settings) {
+                <div class="list-group list-group-flush">
+                  @for (setting of settings; track setting.settingKey) {
+                    <div class="list-group-item border-bottom">
+                      <div class="mb-2 d-flex justify-content-between align-items-center">
+                        <div class="fw-semibold">{{ setting.settingKey }}</div>
+                        <span class="badge rounded-pill" [class]="getWorkspaceConfigurationSourceBadgeClass(setting)">
+                          {{ getWorkspaceConfigurationSourceLabel(setting) }}
+                        </span>
+                      </div>
+                      <div class="text-muted small mb-2">
+                        <code>{{ setting.envVarName }}</code>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="input-group input-group-sm">
+                          @if (setting.settingKey === 'gitPrivateKey') {
+                            <textarea
+                              class="form-control"
+                              rows="5"
+                              [value]="getEditingWorkspaceConfigurationValue(setting)"
+                              (input)="
+                                onWorkspaceConfigurationValueChange(setting.settingKey, $any($event.target).value)
+                              "
+                              i18n-placeholder="@@featureChat-workspaceConfigurationValuePlaceholder"
+                              placeholder="Enter override value"
+                            ></textarea>
+                          } @else {
+                            <input
+                              type="text"
+                              class="form-control"
+                              [value]="getEditingWorkspaceConfigurationValue(setting)"
+                              (input)="
+                                onWorkspaceConfigurationValueChange(setting.settingKey, $any($event.target).value)
+                              "
+                              i18n-placeholder="@@featureChat-workspaceConfigurationValuePlaceholder"
+                              placeholder="Enter override value"
+                            />
+                          }
+                        </div>
+                        @let isSaving = (getWorkspaceConfigurationSettingSaving$(setting.settingKey) | async) === true;
+                        @let isDeleting =
+                          (getWorkspaceConfigurationSettingDeleting$(setting.settingKey) | async) === true;
+                        @let saveDisabled =
+                          mutationInProgress || getEditingWorkspaceConfigurationValue(setting).trim().length === 0;
+                        @let deleteDisabled = mutationInProgress || !setting.hasOverride;
+                        <div class="btn-group">
+                          <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            [disabled]="saveDisabled"
+                            (click)="onSaveWorkspaceConfigurationOverride(setting)"
+                            i18n-title="@@featureChat-saveWorkspaceConfigurationTitle"
+                            title="Save override"
+                          >
+                            @if (isSaving) {
+                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            } @else {
+                              <i class="bi bi-check-lg"></i>
+                            }
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            [disabled]="deleteDisabled"
+                            (click)="onDeleteWorkspaceConfigurationOverride(setting.settingKey)"
+                            i18n-title="@@featureChat-deleteWorkspaceConfigurationOverrideTitle"
+                            title="Delete override"
+                          >
+                            @if (isDeleting) {
+                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            } @else {
+                              <i class="bi bi-trash"></i>
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+        <div class="alert alert-warning mt-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <span i18n="@@featureChat-envVarsWarning"
+            >Changing the environment variables will re-create the agent's container. Context may be lost.</span
+          >
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="onCloseWorkspaceConfigurationModal()"
+          [disabled]="mutationInProgress"
+        >
+          <span i18n="@@featureChat-close">Close</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

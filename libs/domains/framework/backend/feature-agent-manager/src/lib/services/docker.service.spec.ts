@@ -390,14 +390,14 @@ describe('DockerService', () => {
       );
     });
 
-    it('should set empty string when env value is undefined', async () => {
+    it('should remove env variable when env value is undefined', async () => {
       await service.updateContainer(containerId, {
         env: { EMPTY: undefined },
       });
 
       expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
         expect.objectContaining({
-          Env: ['EMPTY='],
+          Env: [],
         }),
       );
     });
@@ -2198,6 +2198,20 @@ describe('DockerService', () => {
 
       await expect(service.getContainerStatus(containerId)).rejects.toThrow('Docker daemon error');
       expect(mockContainer.inspect).toHaveBeenCalled();
+    });
+  });
+
+  describe('getContainerEnvironmentMap', () => {
+    it('returns parsed environment variables as key-value map', async () => {
+      mockContainer.inspect.mockResolvedValue({
+        Config: {
+          Env: ['FOO=bar', 'COMPLEX=a=b=c'],
+        },
+      });
+
+      const result = await service.getContainerEnvironmentMap('test-container-id');
+
+      expect(result).toEqual({ FOO: 'bar', COMPLEX: 'a=b=c' });
     });
   });
 

@@ -21,6 +21,7 @@ import { ClientAgentAutonomyDirectoryController } from '../controllers/client-ag
 import { ClientAgentAutonomyController } from '../controllers/client-agent-autonomy.controller';
 import { ClientStatisticsController } from '../controllers/client-statistics.controller';
 import { ClientsAgentAutomationProxyController } from '../controllers/clients-agent-automation-proxy.controller';
+import { ClientsConfigurationOverridesController } from '../controllers/clients-configuration-overrides.controller';
 import { ClientsDeploymentsController } from '../controllers/clients-deployments.controller';
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
@@ -58,6 +59,7 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
+import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
@@ -106,6 +108,7 @@ const authMethod = getAuthenticationMethod();
   ],
   controllers: [
     ClientsController,
+    ClientsConfigurationOverridesController,
     ClientsVcsController,
     ClientsDeploymentsController,
     ClientStatisticsController,
@@ -136,6 +139,7 @@ const authMethod = getAuthenticationMethod();
     ClientAgentVcsProxyService,
     ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,
+    ClientWorkspaceConfigurationOverridesProxyService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
     SocketAuthService,
@@ -178,6 +182,7 @@ const authMethod = getAuthenticationMethod();
     ClientAgentVcsProxyService,
     ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,
+    ClientWorkspaceConfigurationOverridesProxyService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
     ClientsGateway,

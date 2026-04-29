@@ -172,11 +172,18 @@ export class DockerService {
         }
       }
 
-      // Merge new environment variables (new values override existing ones)
+      // Merge new environment variables (new values override existing ones).
+      // Undefined values explicitly remove keys from the recreated container env.
       const mergedEnv: Record<string, string | undefined> = { ...currentEnvMap };
 
       if (env) {
-        Object.assign(mergedEnv, env);
+        for (const [key, value] of Object.entries(env)) {
+          if (value === undefined) {
+            delete mergedEnv[key];
+          } else {
+            mergedEnv[key] = value;
+          }
+        }
       }
 
       // Convert merged env to array format
@@ -294,6 +301,23 @@ export class DockerService {
       this.logger.error(`Error updating container: ${err.message}`, err.stack);
       throw error;
     }
+  }
+
+  async getContainerEnvironmentMap(containerId: string): Promise<Record<string, string>> {
+    const container = this.docker.getContainer(containerId);
+    const inspectInfo = await container.inspect();
+    const currentEnvArray = inspectInfo.Config?.Env || [];
+    const currentEnvMap: Record<string, string> = {};
+
+    for (const envVar of currentEnvArray) {
+      const [key, ...valueParts] = envVar.split('=');
+
+      if (key) {
+        currentEnvMap[key] = valueParts.join('=');
+      }
+    }
+
+    return currentEnvMap;
   }
 
   /**

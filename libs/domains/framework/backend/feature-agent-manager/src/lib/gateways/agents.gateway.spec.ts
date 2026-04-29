@@ -9,6 +9,7 @@ import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface'
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
+import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
@@ -72,6 +73,7 @@ describe('AgentsGateway', () => {
   };
   const mockAgentMessageEventsService = {
     persistEvent: jest.fn(),
+    listRecentEvents: jest.fn().mockResolvedValue([]),
   };
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
     getType: jest.fn().mockReturnValue('cursor'),
@@ -111,6 +113,9 @@ describe('AgentsGateway', () => {
     composeEnhanceMessage: jest.fn((message: string) => message),
     composeTicketBodyMessage: jest.fn((title: string) => title),
   };
+  const mockAgentSessionHydrationService = {
+    consumePendingSummary: jest.fn().mockReturnValue(undefined),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -147,6 +152,10 @@ describe('AgentsGateway', () => {
         {
           provide: PromptContextComposerService,
           useValue: mockPromptContextComposerService,
+        },
+        {
+          provide: AgentSessionHydrationService,
+          useValue: mockAgentSessionHydrationService,
         },
       ],
     }).compile();
@@ -870,6 +879,52 @@ describe('AgentsGateway', () => {
   });
 
   describe('handleChat', () => {
+    it('injects hidden hydration summary once when pending summary exists', async () => {
+      const socketId = mockSocket.id || 'test-socket-id';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).socketById.set(socketId, mockSocket);
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findById.mockResolvedValue(mockAgent);
+      agentMessagesService.getChatHistory.mockResolvedValue([
+        {
+          id: 'msg-1',
+          agentId: mockAgent.id,
+          agent: mockAgent,
+          actor: 'user',
+          message: 'Previous message',
+          filtered: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+      mockAgentSessionHydrationService.consumePendingSummary
+        .mockReturnValueOnce('- preserve decision history')
+        .mockReturnValue(undefined);
+      mockAgentProvider.sendMessage.mockResolvedValue('');
+
+      await gateway.handleChat({ message: 'Hello, world!' }, mockSocket as Socket);
+      await gateway.handleChat({ message: 'Follow up' }, mockSocket as Socket);
+
+      expect(mockAgentProvider.sendMessage).toHaveBeenNthCalledWith(
+        1,
+        mockAgent.id,
+        'container-123',
+        expect.stringContaining('[SYSTEM INTERNAL - HIDDEN HYDRATION CONTEXT]'),
+        {},
+      );
+      expect(mockAgentProvider.sendMessage).toHaveBeenNthCalledWith(
+        1,
+        mockAgent.id,
+        'container-123',
+        expect.stringContaining('- preserve decision history'),
+        {},
+      );
+      expect(mockAgentProvider.sendMessage).toHaveBeenNthCalledWith(2, mockAgent.id, 'container-123', 'Follow up', {});
+    });
+
     it('should broadcast chat message for authenticated user and emit agent response', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 

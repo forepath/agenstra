@@ -2,6 +2,7 @@ import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
 import { loadKnowledgeRelations, loadKnowledgeTree } from '../knowledge/knowledge.actions';
+
 import {
   connectKnowledgeBoardSocket,
   connectKnowledgeBoardSocketSuccess,

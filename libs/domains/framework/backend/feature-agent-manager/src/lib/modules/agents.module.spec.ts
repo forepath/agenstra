@@ -11,6 +11,7 @@ import { AgentEntity } from '../entities/agent.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
+import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
@@ -67,6 +68,8 @@ describe('AgentsModule', () => {
       .overrideProvider(getRepositoryToken(DeploymentRunEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(RegexFilterRuleEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(WorkspaceConfigurationOverrideEntity))
       .useValue(mockRepository)
       .compile();
   });
