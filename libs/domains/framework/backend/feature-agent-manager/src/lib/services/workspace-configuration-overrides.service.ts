@@ -87,6 +87,7 @@ export class WorkspaceConfigurationOverridesService implements OnModuleInit {
       }
 
       const envVarName = WORKSPACE_CONFIGURATION_ENV_BY_SETTING[override.settingKey];
+
       process.env[envVarName] = override.value;
     }
   }

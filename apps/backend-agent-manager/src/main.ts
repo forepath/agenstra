@@ -22,6 +22,7 @@ async function preloadWorkspaceConfigurationOverrides(logger: Logger): Promise<v
 
   try {
     await preloadDataSource.initialize();
+
     if (!typeormConfig.synchronize && typeormConfig.migrations?.length) {
       logger.log('🔄 Running pending config migrations...');
       await preloadDataSource.runMigrations();

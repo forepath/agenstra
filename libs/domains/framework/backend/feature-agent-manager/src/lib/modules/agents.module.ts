@@ -46,6 +46,7 @@ import { AgentEnvironmentVariablesService } from '../services/agent-environment-
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
+import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsFiltersService } from '../services/agents-filters.service';
 import { AgentsVcsService } from '../services/agents-vcs.service';
 import { AgentsVerificationService } from '../services/agents-verification.service';
@@ -92,6 +93,7 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     AgentMessagesService,
     PromptContextComposerService,
     AgentMessageEventsService,
+    AgentSessionHydrationService,
     AgentEnvironmentVariablesService,
     AgentFileSystemService,
     AgentsVcsService,

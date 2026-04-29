@@ -3,11 +3,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentEntity } from '../entities/agent.entity';
+import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentEnvironmentVariablesService } from './agent-environment-variables.service';
+import { AgentMessagesService } from './agent-messages.service';
+import { AgentSessionHydrationService } from './agent-session-hydration.service';
 import { DockerService } from './docker.service';
 
 describe('AgentEnvironmentVariablesService', () => {
@@ -49,6 +52,21 @@ describe('AgentEnvironmentVariablesService', () => {
   const mockAgentMessagesRepository = {
     deleteByAgentId: jest.fn(),
   };
+  const mockAgentMessagesService = {
+    countMessages: jest.fn(),
+    getChatHistory: jest.fn(),
+  };
+  const mockAgentProvider = {
+    sendMessage: jest.fn(),
+    toParseableStrings: jest.fn(),
+    toUnifiedResponse: jest.fn(),
+  };
+  const mockAgentProviderFactory = {
+    getProvider: jest.fn().mockReturnValue(mockAgentProvider),
+  };
+  const mockAgentSessionHydrationService = {
+    storePendingSummary: jest.fn(),
+  };
   const mockDockerService = {
     updateContainer: jest.fn(),
   };
@@ -70,6 +88,18 @@ describe('AgentEnvironmentVariablesService', () => {
           useValue: mockAgentMessagesRepository,
         },
         {
+          provide: AgentMessagesService,
+          useValue: mockAgentMessagesService,
+        },
+        {
+          provide: AgentProviderFactory,
+          useValue: mockAgentProviderFactory,
+        },
+        {
+          provide: AgentSessionHydrationService,
+          useValue: mockAgentSessionHydrationService,
+        },
+        {
           provide: DockerService,
           useValue: mockDockerService,
         },
@@ -77,6 +107,8 @@ describe('AgentEnvironmentVariablesService', () => {
     }).compile();
 
     service = module.get<AgentEnvironmentVariablesService>(AgentEnvironmentVariablesService);
+    mockAgentMessagesService.countMessages.mockResolvedValue(0);
+    mockAgentMessagesService.getChatHistory.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -117,7 +149,7 @@ describe('AgentEnvironmentVariablesService', () => {
         env: { API_KEY: 'secret-api-key-value' },
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
     });
 
     it('should handle empty content', async () => {
@@ -151,7 +183,7 @@ describe('AgentEnvironmentVariablesService', () => {
         env: { EMPTY_VAR: '' },
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
     });
   });
 
@@ -186,7 +218,10 @@ describe('AgentEnvironmentVariablesService', () => {
         env: { UPDATED_API_KEY: 'updated-secret-value' },
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith('agent-uuid-123');
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(
+        'agent-uuid-123',
+        expect.any(String),
+      );
     });
 
     it('should update only the content', async () => {
@@ -217,7 +252,10 @@ describe('AgentEnvironmentVariablesService', () => {
         env: { API_KEY: 'new-secret-value' },
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith('agent-uuid-123');
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(
+        'agent-uuid-123',
+        expect.any(String),
+      );
     });
 
     it('should update only the variable name', async () => {
@@ -248,7 +286,10 @@ describe('AgentEnvironmentVariablesService', () => {
         env: { NEW_VARIABLE_NAME: 'secret-api-key-value' },
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith('agent-uuid-123');
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(
+        'agent-uuid-123',
+        expect.any(String),
+      );
     });
   });
 
@@ -278,7 +319,10 @@ describe('AgentEnvironmentVariablesService', () => {
       expect(mockRepository.findAllByAgentId).toHaveBeenCalledWith('agent-uuid-123');
       expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', { env: {} });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith('agent-uuid-123');
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(
+        'agent-uuid-123',
+        expect.any(String),
+      );
     });
 
     it('should throw NotFoundException when environment variable not found', async () => {
@@ -372,7 +416,7 @@ describe('AgentEnvironmentVariablesService', () => {
       expect(mockRepository.findAllByAgentId).toHaveBeenCalledWith(agentId);
       expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', { env: {} });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
     });
 
     it('should return 0 when no environment variables are deleted', async () => {
@@ -392,7 +436,7 @@ describe('AgentEnvironmentVariablesService', () => {
       expect(mockRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
       expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', { env: {} });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
     });
   });
 
@@ -422,7 +466,7 @@ describe('AgentEnvironmentVariablesService', () => {
         },
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
     });
 
     it('should handle agent with no container ID', async () => {
@@ -439,7 +483,7 @@ describe('AgentEnvironmentVariablesService', () => {
       expect(mockAgentsRepository.findByIdOrThrow).toHaveBeenCalledWith(agentId);
       expect(mockRepository.findAllByAgentId).not.toHaveBeenCalled();
       expect(mockDockerService.updateContainer).not.toHaveBeenCalled();
-      expect(mockAgentMessagesRepository.deleteByAgentId).not.toHaveBeenCalled();
+      expect(mockAgentSessionHydrationService.storePendingSummary).not.toHaveBeenCalled();
     });
 
     it('should handle empty environment variables', async () => {
@@ -456,7 +500,7 @@ describe('AgentEnvironmentVariablesService', () => {
 
       expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', { env: {} });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
     });
 
     it('should throw NotFoundException when agent not found', async () => {
@@ -467,7 +511,7 @@ describe('AgentEnvironmentVariablesService', () => {
       await expect(service.reconcileEnvironmentVariables(agentId)).rejects.toThrow(NotFoundException);
       expect(mockRepository.findAllByAgentId).not.toHaveBeenCalled();
       expect(mockDockerService.updateContainer).not.toHaveBeenCalled();
-      expect(mockAgentMessagesRepository.deleteByAgentId).not.toHaveBeenCalled();
+      expect(mockAgentSessionHydrationService.storePendingSummary).not.toHaveBeenCalled();
     });
 
     it('should handle environment variables with undefined content', async () => {
@@ -487,7 +531,7 @@ describe('AgentEnvironmentVariablesService', () => {
         env: { API_KEY: '' },
       });
       expect(mockAgentsRepository.update).toHaveBeenCalledWith(agentId, { containerId: newContainerId });
-      expect(mockAgentMessagesRepository.deleteByAgentId).toHaveBeenCalledWith(agentId);
+      expect(mockAgentSessionHydrationService.storePendingSummary).toHaveBeenCalledWith(agentId, expect.any(String));
     });
   });
 });

@@ -1,11 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { Store } from '@ngrx/store';
 import { of, throwError } from 'rxjs';
 
 import { EnvService } from '../../services/env.service';
-import { clearChatHistory } from '../sockets/sockets.actions';
 
 import {
   createEnvironmentVariable,
@@ -28,10 +26,6 @@ import {
   updateEnvironmentVariableSuccess,
 } from './env.actions';
 import {
-  clearChatHistoryOnCreateSuccess$,
-  clearChatHistoryOnDeleteAllSuccess$,
-  clearChatHistoryOnDeleteSuccess$,
-  clearChatHistoryOnUpdateSuccess$,
   createEnvironmentVariable$,
   deleteAllEnvironmentVariables$,
   deleteEnvironmentVariable$,
@@ -48,7 +42,6 @@ import type {
 describe('EnvEffects', () => {
   let actions$: Actions;
   let envService: jest.Mocked<EnvService>;
-  let store: jest.Mocked<Store>;
   const clientId = 'client-1';
   const agentId = 'agent-1';
   const envVarId = 'env-var-1';
@@ -71,20 +64,12 @@ describe('EnvEffects', () => {
       deleteAllEnvironmentVariables: jest.fn(),
     } as any;
 
-    store = {
-      dispatch: jest.fn(),
-    } as any;
-
     TestBed.configureTestingModule({
       providers: [
         provideMockActions(() => actions$),
         {
           provide: EnvService,
           useValue: envService,
-        },
-        {
-          provide: Store,
-          useValue: store,
         },
       ],
     });
@@ -303,70 +288,6 @@ describe('EnvEffects', () => {
 
       deleteAllEnvironmentVariables$(actions$, envService).subscribe((result) => {
         expect(result).toEqual(outcome);
-        done();
-      });
-    });
-  });
-
-  describe('clearChatHistoryOnCreateSuccess$', () => {
-    it('should dispatch clearChatHistory when createEnvironmentVariableSuccess is dispatched', (done) => {
-      const action = createEnvironmentVariableSuccess({
-        clientId,
-        agentId,
-        environmentVariable: mockEnvironmentVariable,
-      });
-
-      actions$ = of(action);
-      store.dispatch.mockClear();
-
-      clearChatHistoryOnCreateSuccess$(actions$, store).subscribe(() => {
-        expect(store.dispatch).toHaveBeenCalledWith(clearChatHistory());
-        done();
-      });
-    });
-  });
-
-  describe('clearChatHistoryOnUpdateSuccess$', () => {
-    it('should dispatch clearChatHistory when updateEnvironmentVariableSuccess is dispatched', (done) => {
-      const action = updateEnvironmentVariableSuccess({
-        clientId,
-        agentId,
-        environmentVariable: mockEnvironmentVariable,
-      });
-
-      actions$ = of(action);
-      store.dispatch.mockClear();
-
-      clearChatHistoryOnUpdateSuccess$(actions$, store).subscribe(() => {
-        expect(store.dispatch).toHaveBeenCalledWith(clearChatHistory());
-        done();
-      });
-    });
-  });
-
-  describe('clearChatHistoryOnDeleteSuccess$', () => {
-    it('should dispatch clearChatHistory when deleteEnvironmentVariableSuccess is dispatched', (done) => {
-      const action = deleteEnvironmentVariableSuccess({ clientId, agentId, envVarId });
-
-      actions$ = of(action);
-      store.dispatch.mockClear();
-
-      clearChatHistoryOnDeleteSuccess$(actions$, store).subscribe(() => {
-        expect(store.dispatch).toHaveBeenCalledWith(clearChatHistory());
-        done();
-      });
-    });
-  });
-
-  describe('clearChatHistoryOnDeleteAllSuccess$', () => {
-    it('should dispatch clearChatHistory when deleteAllEnvironmentVariablesSuccess is dispatched', (done) => {
-      const action = deleteAllEnvironmentVariablesSuccess({ clientId, agentId, deletedCount: 3 });
-
-      actions$ = of(action);
-      store.dispatch.mockClear();
-
-      clearChatHistoryOnDeleteAllSuccess$(actions$, store).subscribe(() => {
-        expect(store.dispatch).toHaveBeenCalledWith(clearChatHistory());
         done();
       });
     });
