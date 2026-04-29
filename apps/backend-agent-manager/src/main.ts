@@ -3,6 +3,11 @@
  * This is only a minimal backend to get started.
  */
 
+import {
+  WORKSPACE_CONFIGURATION_ENV_BY_SETTING,
+  WorkspaceConfigurationOverrideEntity,
+  type WorkspaceConfigurationSettingKey,
+} from '@forepath/framework/backend/feature-agent-manager';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -10,10 +15,47 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DataSource } from 'typeorm';
 
 import { AppModule } from './app/app.module';
-import { typeormConfig } from './typeorm.config';
+import { typeormConfig, typeormConfigForConfigurationOverrides } from './typeorm.config';
+
+async function preloadWorkspaceConfigurationOverrides(logger: Logger): Promise<void> {
+  const preloadDataSource = new DataSource(typeormConfigForConfigurationOverrides);
+
+  try {
+    await preloadDataSource.initialize();
+    if (!typeormConfig.synchronize && typeormConfig.migrations?.length) {
+      logger.log('🔄 Running pending config migrations...');
+      await preloadDataSource.runMigrations();
+      logger.log('✅ Config migrations completed successfully');
+    } else if (typeormConfig.synchronize) {
+      logger.log('ℹ️  Schema synchronization enabled - config migrations skipped');
+    }
+
+    logger.log('🔄 Loading config overrides...');
+
+    const overrides = await preloadDataSource.getRepository(WorkspaceConfigurationOverrideEntity).find();
+
+    for (const override of overrides) {
+      const settingKey = override.settingKey as WorkspaceConfigurationSettingKey;
+      const envVarName = WORKSPACE_CONFIGURATION_ENV_BY_SETTING[settingKey];
+
+      if (!envVarName) {
+        continue;
+      }
+
+      process.env[envVarName] = override.value;
+    }
+
+    logger.log(`✅ Loaded ${overrides.length} config override(s)`);
+  } finally {
+    if (preloadDataSource.isInitialized) {
+      await preloadDataSource.destroy();
+    }
+  }
+}
 
 async function bootstrap() {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
+  await preloadWorkspaceConfigurationOverrides(new Logger('WorkspaceConfigurationOverridesBootstrap'));
 
   const app = await NestFactory.create(AppModule);
   // Configure CORS

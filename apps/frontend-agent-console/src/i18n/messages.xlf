@@ -2955,6 +2955,24 @@
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
         </trans-unit>
+      <trans-unit id="featureChat-manageWorkspaceConfigurationTitle" datatype="html">
+        <source>Manage workspace configuration</source>
+        </trans-unit>
+      <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
+        <source>Manage Workspace Configuration</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationSettings" datatype="html">
+        <source>Workspace Configuration Settings</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationValuePlaceholder" datatype="html">
+        <source>Enter override value</source>
+        </trans-unit>
+      <trans-unit id="featureChat-saveWorkspaceConfigurationTitle" datatype="html">
+        <source>Save override</source>
+        </trans-unit>
+      <trans-unit id="featureChat-deleteWorkspaceConfigurationOverrideTitle" datatype="html">
+        <source>Delete override</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

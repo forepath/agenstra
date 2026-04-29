@@ -162,6 +162,12 @@ import {
   VcsFacade,
   vcsReducer,
   writeFile$,
+  WorkspaceConfigFacade,
+  workspaceConfigReducer,
+  loadWorkspaceConfigurationOverrides$,
+  upsertWorkspaceConfigurationOverride$,
+  deleteWorkspaceConfigurationOverride$,
+  reloadWorkspaceConfigurationAfterMutation$,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { adminGuard, authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
 import { provideEffects } from '@ngrx/effects';
@@ -288,6 +294,7 @@ export const agentConsoleRoutes: Route[] = [
       KnowledgeFacade,
       ClientAgentAutonomyFacade,
       FilterRulesFacade,
+      WorkspaceConfigFacade,
       // Feature states - registered at feature level for lazy loading
       provideState('clients', clientsReducer),
       provideState('agents', agentsReducer),
@@ -305,6 +312,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('knowledge', knowledgeReducer),
       provideState('clientAgentAutonomy', clientAgentAutonomyReducer),
       provideState('filterRules', filterRulesReducer),
+      provideState('workspaceConfig', workspaceConfigReducer),
       // Effects - only active when this feature route is loaded
       provideEffects({
         loadClients$,
@@ -437,6 +445,10 @@ export const agentConsoleRoutes: Route[] = [
         createFilterRule$,
         updateFilterRule$,
         deleteFilterRule$,
+        loadWorkspaceConfigurationOverrides$,
+        upsertWorkspaceConfigurationOverride$,
+        deleteWorkspaceConfigurationOverride$,
+        reloadWorkspaceConfigurationAfterMutation$,
       }),
       provideMonacoEditor(),
     ],

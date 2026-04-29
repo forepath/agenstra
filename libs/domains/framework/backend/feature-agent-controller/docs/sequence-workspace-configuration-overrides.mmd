@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Admin as WorkspaceOrGlobalAdmin
+    participant Controller as AgentController
+    participant Manager as AgentManager
+    participant Db as OverridesDb
+    participant Env as RuntimeProcessEnv
+
+    Admin->>Controller: PUT /clients/{id}/configuration-overrides/{settingKey}
+    Controller->>Controller: ensureWorkspaceManagementAccess
+    Controller->>Manager: PUT /api/configuration-overrides/{settingKey}
+    Manager->>Db: upsert encrypted override value
+    Manager->>Env: process.env[envVarName]=overrideValue
+    Manager-->>Controller: setting {source=override}
+    Controller-->>Admin: 200 response
+
+    Admin->>Controller: DELETE /clients/{id}/configuration-overrides/{settingKey}
+    Controller->>Controller: ensureWorkspaceManagementAccess
+    Controller->>Manager: DELETE /api/configuration-overrides/{settingKey}
+    Manager->>Db: delete override row
+    Manager->>Env: delete process.env[envVarName]
+    Manager-->>Controller: 204
+    Controller-->>Admin: 204

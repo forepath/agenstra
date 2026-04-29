@@ -3,8 +3,8 @@ import {
   AfterViewChecked,
   ChangeDetectorRef,
   Component,
-  DestroyRef,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -26,13 +26,14 @@ import {
   DeploymentsService,
   EnvFacade,
   FilesFacade,
+  filterTicketsForTicketContextSuggestions,
+  findPermittedTicketByExactSha,
   KnowledgeFacade,
   SocketsFacade,
   StatsFacade,
   TicketAutomationFacade,
   TicketsFacade,
-  filterTicketsForTicketContextSuggestions,
-  findPermittedTicketByExactSha,
+  WorkspaceConfigFacade,
   type AddClientUserDto,
   type AgentModelsMap,
   type AgentResponseDto,
@@ -59,6 +60,8 @@ import {
   type UpdateClientDto,
   type UpdateEnvironmentVariableDto,
   type UpsertClientAgentAutonomyDto,
+  type WorkspaceConfigurationSettingKey,
+  type WorkspaceConfigurationSettingResponseDto,
   type WriteFileDto,
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
@@ -159,6 +162,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
   private readonly filesFacade = inject(FilesFacade);
   private readonly envFacade = inject(EnvFacade);
+  private readonly workspaceConfigFacade = inject(WorkspaceConfigFacade);
   private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly autonomyFacade = inject(ClientAgentAutonomyFacade);
   private readonly deploymentsService = inject(DeploymentsService);
@@ -192,6 +196,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   @ViewChild('environmentVariablesModal', { static: false })
   private environmentVariablesModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('workspaceConfigurationModal', { static: false })
+  private workspaceConfigurationModal!: ElementRef<HTMLDivElement>;
 
   @ViewChild('ticketAutonomyModal', { static: false })
   private ticketAutonomyModal!: ElementRef<HTMLDivElement>;
@@ -1017,6 +1023,38 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       return this.envFacade.getEnvError$(clientId, agentId);
+    }),
+  );
+
+  readonly managingWorkspaceConfigurationClientId = signal<string | null>(null);
+  readonly editingWorkspaceConfigurationValues = signal<Partial<Record<WorkspaceConfigurationSettingKey, string>>>({});
+  readonly managingWorkspaceConfigurationClientId$ = toObservable(this.managingWorkspaceConfigurationClientId);
+  readonly workspaceConfigurationSettings$: Observable<WorkspaceConfigurationSettingResponseDto[]> =
+    this.managingWorkspaceConfigurationClientId$.pipe(
+      switchMap((clientId) => {
+        if (!clientId) {
+          return of([]);
+        }
+
+        return this.workspaceConfigFacade.getSettings$(clientId);
+      }),
+    );
+  readonly workspaceConfigurationLoading$: Observable<boolean> = this.managingWorkspaceConfigurationClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) {
+        return of(false);
+      }
+
+      return this.workspaceConfigFacade.getLoading$(clientId);
+    }),
+  );
+  readonly workspaceConfigurationError$: Observable<string | null> = this.managingWorkspaceConfigurationClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) {
+        return of(null);
+      }
+
+      return this.workspaceConfigFacade.getError$(clientId);
     }),
   );
 
@@ -4124,6 +4162,101 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       variable: '',
       content: '',
     });
+  }
+
+  onManageWorkspaceConfigurationClick(client: ClientResponseDto): void {
+    this.managingWorkspaceConfigurationClientId.set(client.id);
+    this.workspaceConfigFacade.loadSettings(client.id);
+    this.showModal(this.workspaceConfigurationModal);
+  }
+
+  getEditingWorkspaceConfigurationValue(setting: WorkspaceConfigurationSettingResponseDto): string {
+    const overrides = this.editingWorkspaceConfigurationValues();
+
+    return overrides[setting.settingKey] ?? setting.value ?? '';
+  }
+
+  getWorkspaceConfigurationSourceLabel(setting: WorkspaceConfigurationSettingResponseDto): string {
+    switch (setting.source) {
+      case 'override':
+        return $localize`:@@featureChat-workspaceConfigurationSourceLabel:Override`;
+      case 'default_env':
+        return $localize`:@@featureChat-workspaceConfigurationSourceLabelDefaultEnvironment:Default environment`;
+      default:
+        return $localize`:@@featureChat-workspaceConfigurationSourceLabelUnset:Unset`;
+    }
+  }
+
+  getWorkspaceConfigurationSourceBadgeClass(setting: WorkspaceConfigurationSettingResponseDto): string {
+    switch (setting.source) {
+      case 'override':
+        return 'bg-primary-subtle text-primary-emphasis';
+      case 'default_env':
+        return 'bg-info-subtle text-info-emphasis';
+      default:
+        return 'bg-secondary-subtle text-secondary-emphasis';
+    }
+  }
+
+  onWorkspaceConfigurationValueChange(settingKey: WorkspaceConfigurationSettingKey, value: string): void {
+    this.editingWorkspaceConfigurationValues.update((current) => ({ ...current, [settingKey]: value }));
+  }
+
+  onSaveWorkspaceConfigurationOverride(setting: WorkspaceConfigurationSettingResponseDto): void {
+    const clientId = this.managingWorkspaceConfigurationClientId();
+
+    if (!clientId) {
+      return;
+    }
+
+    const value = this.getEditingWorkspaceConfigurationValue(setting).trim();
+
+    if (!value) {
+      return;
+    }
+
+    this.workspaceConfigFacade.upsertSetting(clientId, setting.settingKey, value);
+  }
+
+  onDeleteWorkspaceConfigurationOverride(settingKey: WorkspaceConfigurationSettingKey): void {
+    const clientId = this.managingWorkspaceConfigurationClientId();
+
+    if (!clientId) {
+      return;
+    }
+
+    this.workspaceConfigFacade.deleteSettingOverride(clientId, settingKey);
+  }
+
+  getWorkspaceConfigurationSettingSaving$(settingKey: WorkspaceConfigurationSettingKey): Observable<boolean> {
+    const clientId = this.managingWorkspaceConfigurationClientId();
+
+    if (!clientId) {
+      return of(false);
+    }
+
+    return this.workspaceConfigFacade.isSavingSetting$(clientId, settingKey);
+  }
+
+  getWorkspaceConfigurationSettingDeleting$(settingKey: WorkspaceConfigurationSettingKey): Observable<boolean> {
+    const clientId = this.managingWorkspaceConfigurationClientId();
+
+    if (!clientId) {
+      return of(false);
+    }
+
+    return this.workspaceConfigFacade.isDeletingSetting$(clientId, settingKey);
+  }
+
+  onCloseWorkspaceConfigurationModal(): void {
+    const clientId = this.managingWorkspaceConfigurationClientId();
+
+    if (clientId) {
+      this.workspaceConfigFacade.clearSettings(clientId);
+    }
+
+    this.managingWorkspaceConfigurationClientId.set(null);
+    this.editingWorkspaceConfigurationValues.set({});
   }
 
   onManageClientUsersClick(client: ClientResponseDto): void {

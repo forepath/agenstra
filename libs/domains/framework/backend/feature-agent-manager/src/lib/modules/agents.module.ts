@@ -10,6 +10,7 @@ import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsVerificationController } from '../controllers/agents-verification.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { ConfigController } from '../controllers/config.controller';
+import { WorkspaceConfigurationOverridesController } from '../controllers/workspace-configuration-overrides.controller';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
 import { AgentMessageEntity } from '../entities/agent-message.entity';
@@ -17,6 +18,7 @@ import { AgentEntity } from '../entities/agent.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
+import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
@@ -39,6 +41,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
 import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.repository';
+import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
@@ -53,6 +56,7 @@ import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
 import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
+import { WorkspaceConfigurationOverridesService } from '../services/workspace-configuration-overrides.service';
 
 /**
  * Module for agent management feature.
@@ -68,6 +72,7 @@ import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-
       DeploymentConfigurationEntity,
       DeploymentRunEntity,
       RegexFilterRuleEntity,
+      WorkspaceConfigurationOverrideEntity,
     ]),
   ],
   controllers: [
@@ -79,6 +84,7 @@ import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-
     AgentsEnvironmentVariablesController,
     AgentsFiltersController,
     ConfigController,
+    WorkspaceConfigurationOverridesController,
   ],
   providers: [
     AgentsGateway,
@@ -116,6 +122,8 @@ import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-
     RegexFilterRulesCacheService,
     RegexFilterRulesEvaluateService,
     AgentsFiltersService,
+    WorkspaceConfigurationOverridesRepository,
+    WorkspaceConfigurationOverridesService,
     DatabaseRegexIncomingChatFilter,
     DatabaseRegexOutgoingChatFilter,
     {

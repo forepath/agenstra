@@ -3942,6 +3942,30 @@
         <source>Remove relation</source>
         <target>Beziehung entfernen</target>
       </trans-unit>
+      <trans-unit id="featureChat-manageWorkspaceConfigurationTitle" datatype="html">
+        <source>Manage workspace configuration</source>
+        <target>Workspace-Konfiguration verwalten</target>
+      </trans-unit>
+      <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
+        <source>Manage Workspace Configuration</source>
+        <target>Workspace-Konfiguration verwalten</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationSettings" datatype="html">
+        <source>Workspace Configuration Settings</source>
+        <target>Workspace-Konfigurationseinstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationValuePlaceholder" datatype="html">
+        <source>Enter override value</source>
+        <target>Override-Wert eingeben</target>
+      </trans-unit>
+      <trans-unit id="featureChat-saveWorkspaceConfigurationTitle" datatype="html">
+        <source>Save override</source>
+        <target>Override speichern</target>
+      </trans-unit>
+      <trans-unit id="featureChat-deleteWorkspaceConfigurationOverrideTitle" datatype="html">
+        <source>Delete override</source>
+        <target>Override löschen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

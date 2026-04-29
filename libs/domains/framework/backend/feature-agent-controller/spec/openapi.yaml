@@ -1863,6 +1863,93 @@ paths:
           description: No client access, or workspace management rights required
         '404':
           description: Client, agent, or environment variable not found
+  /clients/{id}/configuration-overrides:
+    get:
+      summary: List effective workspace configuration overrides (proxied)
+      description: Requires workspace management rights.
+      operationId: listClientWorkspaceConfigurationOverrides
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+      responses:
+        '200':
+          description: Effective workspace configuration settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceConfigurationSettingResponseDto'
+        '403':
+          description: Workspace management rights required
+        '404':
+          description: Client not found
+  /clients/{id}/configuration-overrides/{settingKey}:
+    put:
+      summary: Create or update a workspace configuration override (proxied)
+      description: Requires workspace management rights.
+      operationId: upsertClientWorkspaceConfigurationOverride
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: settingKey
+          required: true
+          schema:
+            $ref: '#/components/schemas/WorkspaceConfigurationSettingKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertWorkspaceConfigurationOverrideDto'
+      responses:
+        '200':
+          description: Updated effective workspace configuration setting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceConfigurationSettingResponseDto'
+        '400':
+          description: Invalid request or unsupported setting key
+        '403':
+          description: Workspace management rights required
+        '404':
+          description: Client not found
+    delete:
+      summary: Delete a workspace configuration override (proxied)
+      description: Requires workspace management rights.
+      operationId: deleteClientWorkspaceConfigurationOverride
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: settingKey
+          required: true
+          schema:
+            $ref: '#/components/schemas/WorkspaceConfigurationSettingKey'
+      responses:
+        '204':
+          description: Override deleted successfully
+        '403':
+          description: Workspace management rights required
+        '404':
+          description: Client not found
   /clients/{id}/agents/{agentId}/vcs/status:
     get:
       summary: Get git status (proxied)
@@ -4253,6 +4340,40 @@ components:
         updatedAt:
           type: string
           format: date-time
+    WorkspaceConfigurationSettingKey:
+      type: string
+      enum:
+        [
+          gitRepositoryUrl,
+          gitUsername,
+          gitToken,
+          gitPassword,
+          gitPrivateKey,
+          cursorApiKey,
+          agentDefaultImage,
+        ]
+    UpsertWorkspaceConfigurationOverrideDto:
+      type: object
+      required: [value]
+      properties:
+        value:
+          type: string
+          description: Override value
+    WorkspaceConfigurationSettingResponseDto:
+      type: object
+      required: [settingKey, envVarName, source, hasOverride]
+      properties:
+        settingKey:
+          $ref: '#/components/schemas/WorkspaceConfigurationSettingKey'
+        envVarName:
+          type: string
+        value:
+          type: string
+        source:
+          type: string
+          enum: [override, default_env, unset]
+        hasOverride:
+          type: boolean
     AddClientUserDto:
       type: object
       required: [email, role]

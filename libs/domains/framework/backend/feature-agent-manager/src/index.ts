@@ -27,6 +27,8 @@ export * from './lib/dto/unstage-files.dto';
 export * from './lib/dto/update-agent.dto';
 export * from './lib/dto/update-regex-filter-rule.dto';
 export * from './lib/dto/update-environment-variable.dto';
+export * from './lib/dto/upsert-workspace-configuration-override.dto';
+export * from './lib/dto/workspace-configuration-setting-response.dto';
 export * from './lib/dto/regex-filter-rule-response.dto';
 export * from './lib/dto/write-file.dto';
 export * from './lib/entities/agent-environment-variable.entity';
@@ -36,6 +38,7 @@ export * from './lib/entities/agent.entity';
 export * from './lib/entities/deployment-configuration.entity';
 export * from './lib/entities/deployment-run.entity';
 export * from './lib/entities/regex-filter-rule.entity';
+export * from './lib/entities/workspace-configuration-override.entity';
 export * from './lib/gateways/agents.gateway';
 export * from './lib/modules/agents.module';
 export * from './lib/repositories/agent-messages.repository';
@@ -45,8 +48,10 @@ export * from './lib/services/agents-vcs.service';
 export * from './lib/services/agents.service';
 export * from './lib/services/config.service';
 export * from './lib/services/docker.service';
+export * from './lib/services/workspace-configuration-overrides.service';
 export * from './lib/utils/agent-file-manager-context';
 export * from './lib/utils/regex-filter-rule.utils';
+export * from './lib/constants/workspace-configuration-settings';
 
 // Re-export PasswordService from identity for backward compatibility
 export { PasswordService } from '@forepath/identity/backend';

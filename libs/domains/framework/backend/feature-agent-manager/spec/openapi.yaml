@@ -666,6 +666,58 @@ paths:
           description: Environment variable deleted
         '404':
           description: Agent or environment variable not found
+  /configuration-overrides:
+    get:
+      summary: List effective workspace configuration overrides
+      operationId: listWorkspaceConfigurationOverrides
+      responses:
+        '200':
+          description: Effective workspace configuration settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceConfigurationSettingResponseDto'
+  /configuration-overrides/{settingKey}:
+    put:
+      summary: Create or update a workspace configuration override
+      operationId: upsertWorkspaceConfigurationOverride
+      parameters:
+        - in: path
+          name: settingKey
+          required: true
+          schema:
+            $ref: '#/components/schemas/WorkspaceConfigurationSettingKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertWorkspaceConfigurationOverrideDto'
+      responses:
+        '200':
+          description: Updated effective workspace configuration setting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceConfigurationSettingResponseDto'
+        '400':
+          description: Invalid request or unsupported setting key
+    delete:
+      summary: Delete a workspace configuration override
+      operationId: deleteWorkspaceConfigurationOverride
+      parameters:
+        - in: path
+          name: settingKey
+          required: true
+          schema:
+            $ref: '#/components/schemas/WorkspaceConfigurationSettingKey'
+      responses:
+        '204':
+          description: Override deleted successfully
+        '400':
+          description: Unsupported setting key
   /agents/{agentId}/vcs/status:
     get:
       summary: Get git status
@@ -2110,6 +2162,40 @@ components:
         updatedAt:
           type: string
           format: date-time
+    WorkspaceConfigurationSettingKey:
+      type: string
+      enum:
+        [
+          gitRepositoryUrl,
+          gitUsername,
+          gitToken,
+          gitPassword,
+          gitPrivateKey,
+          cursorApiKey,
+          agentDefaultImage,
+        ]
+    UpsertWorkspaceConfigurationOverrideDto:
+      type: object
+      required: [value]
+      properties:
+        value:
+          type: string
+          description: Override value
+    WorkspaceConfigurationSettingResponseDto:
+      type: object
+      required: [settingKey, envVarName, source, hasOverride]
+      properties:
+        settingKey:
+          $ref: '#/components/schemas/WorkspaceConfigurationSettingKey'
+        envVarName:
+          type: string
+        value:
+          type: string
+        source:
+          type: string
+          enum: [override, default_env, unset]
+        hasOverride:
+          type: boolean
     RegexFilterRuleResponseDto:
       type: object
       required:
