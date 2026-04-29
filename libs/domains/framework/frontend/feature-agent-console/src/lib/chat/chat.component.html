@@ -1765,6 +1765,80 @@
             </div>
           }
         </div>
+        <div class="mt-3">
+          <label
+            class="form-label text-muted small mb-2"
+            for="knowledgeContextShaInput"
+            i18n="@@featureChat-knowledgeContextLabel"
+            >Knowledge context (SHA)</label
+          >
+          <div class="position-relative">
+            <div class="input-group">
+              <input
+                id="knowledgeContextShaInput"
+                type="text"
+                class="form-control"
+                autocomplete="off"
+                [ngModel]="knowledgeContextInput()"
+                (ngModelChange)="onKnowledgeContextInputChange($event)"
+                (focus)="onKnowledgeContextShaInputFocus()"
+                (blur)="onKnowledgeContextShaInputBlur()"
+                i18n-placeholder="@@featureChat-knowledgeContextPlaceholder"
+                placeholder="Title or short/long SHA"
+              />
+              <button type="button" class="btn btn-outline-secondary" (click)="onAddKnowledgeContextBySha()">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+            @if (knowledgeContextSuggestionsOpen() && knowledgeContextSuggestions().length > 0) {
+              <ul
+                class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
+                style="z-index: 1070; max-height: 240px; overflow-y: auto"
+              >
+                @for (node of knowledgeContextSuggestions(); track node.id) {
+                  <li>
+                    <button
+                      type="button"
+                      class="dropdown-item py-2 text-start"
+                      (mousedown)="onPickKnowledgeContextSuggestion(node, $event)"
+                    >
+                      <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                        @if (node.shas?.short) {
+                          <span class="font-monospace text-muted small flex-shrink-0">{{ node.shas.short }}</span>
+                        }
+                        <span class="text-truncate small flex-grow-1 min-width-0">
+                          {{ node.nodeType === 'folder' ? 'Folder' : 'Page' }} · {{ node.title }}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          @if (knowledgeContextInputError(); as knowledgeContextError) {
+            <div class="form-text text-danger">{{ knowledgeContextError }}</div>
+          }
+          @if (selectedKnowledgeContextShas().length > 0) {
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              @for (sha of selectedKnowledgeContextShas(); track sha) {
+                <small
+                  class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
+                  style="max-width: min(100%, 22rem)"
+                >
+                  <span class="text-truncate small">{{ knowledgeContextChipDisplay(sha) }}</span>
+                  <button
+                    type="button"
+                    class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
+                    (click)="onRemoveKnowledgeContextSha(sha)"
+                  >
+                    <i class="bi bi-x"></i>
+                  </button>
+                </small>
+              }
+            </div>
+          }
+        </div>
       </div>
       <div class="modal-footer">
         <button

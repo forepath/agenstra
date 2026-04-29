@@ -13,6 +13,7 @@ export interface AgentConsoleChatDraftV2 {
     includeWorkspaceContext: boolean;
     selectedEnvironmentContextIds: string[];
     selectedTicketContextShas?: string[];
+    selectedKnowledgeContextShas?: string[];
   };
 }
 
@@ -23,6 +24,7 @@ export function storeAgentConsoleChatDraft(
       includeWorkspaceContext: boolean;
       selectedEnvironmentContextIds: string[];
       selectedTicketContextShas?: string[];
+      selectedKnowledgeContextShas?: string[];
     };
   },
 ): void {
@@ -39,6 +41,7 @@ export function storeAgentConsoleChatDraft(
             includeWorkspaceContext: options.contextInjection.includeWorkspaceContext === true,
             selectedEnvironmentContextIds: [...new Set(options.contextInjection.selectedEnvironmentContextIds ?? [])],
             selectedTicketContextShas: [...new Set(options.contextInjection.selectedTicketContextShas ?? [])],
+            selectedKnowledgeContextShas: [...new Set(options.contextInjection.selectedKnowledgeContextShas ?? [])],
           },
         }
       : {}),
@@ -56,6 +59,7 @@ export function readAndClearAgentConsoleChatDraft(): {
     includeWorkspaceContext: boolean;
     selectedEnvironmentContextIds: string[];
     selectedTicketContextShas?: string[];
+    selectedKnowledgeContextShas?: string[];
   };
 } | null {
   if (typeof sessionStorage === 'undefined') {
@@ -82,6 +86,7 @@ export function readAndClearAgentConsoleChatDraft(): {
                 includeWorkspaceContext: data.contextInjection.includeWorkspaceContext === true,
                 selectedEnvironmentContextIds: [...new Set(data.contextInjection.selectedEnvironmentContextIds ?? [])],
                 selectedTicketContextShas: [...new Set(data.contextInjection.selectedTicketContextShas ?? [])],
+                selectedKnowledgeContextShas: [...new Set(data.contextInjection.selectedKnowledgeContextShas ?? [])],
               },
             }
           : {}),

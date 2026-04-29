@@ -1,10 +1,11 @@
 asyncapi: 3.0.0
 info:
-  title: Agent controller WebSocket (clients + tickets)
+  title: Agent controller WebSocket (clients + tickets + pages)
   version: 1.0.0
   description: |
     Socket.IO events for the agent-controller WebSocket port: namespace **clients** (proxy to agent-manager)
-    and namespace **tickets** (ticket board / automation realtime). See channel `tickets/*` for board coherence.
+    and namespace **tickets** (ticket board / automation realtime), plus namespace **pages** for knowledge board realtime.
+    See channel `tickets/*` and `pages/*` for board coherence.
     Namespace **clients** also emits controller-originated `ticketAutomationRunChatUpsert` for chat UI timeline
     (see `clients/ticketAutomationRunChatUpsert` and OpenAPI `TicketAutomationRunChatEventDto`), and
     `ticketChatTicketUpsert` with the same payload shape as tickets-board `ticketUpsert` so chat clients can refresh
@@ -24,7 +25,8 @@ servers:
     protocol: ws
     description: |
       Socket.IO server (port from env WEBSOCKET_PORT, default 8081). Namespaces: **clients** (WEBSOCKET_NAMESPACE, default "clients")
-      and **tickets** (TICKETS_WEBSOCKET_NAMESPACE, default "tickets") on the same port and CORS (WEBSOCKET_CORS_ORIGIN).
+      **tickets** (TICKETS_WEBSOCKET_NAMESPACE, default "tickets"), and
+      **pages** (KNOWLEDGE_WEBSOCKET_NAMESPACE, default "pages") on the same port and CORS (WEBSOCKET_CORS_ORIGIN).
       Pass Authorization header in handshake (or handshake.auth.Authorization for browser WebSockets).
 channels:
   clients/setClient:
@@ -217,6 +219,45 @@ channels:
       ticketAutomationRunStepAppendedEvent:
         $ref: '#/components/messages/TicketBoardRunStepPayload'
     description: New run step row (e.g. agent_turn iteration)
+  pages/setClient:
+    address: pages/setClient
+    messages:
+      pagesSetClientCommand:
+        $ref: '#/components/messages/SetClient'
+    description: |
+      Select workspace for knowledge board realtime (Socket.IO namespace "pages"). Same auth and `ensureClientAccess`
+      rules as `clients/setClient`. Joins room `client:{clientId}`; server emits only to sockets in that room.
+  pages/setClientSuccess:
+    address: pages/setClientSuccess
+    messages:
+      pagesSetClientSuccessEvent:
+        $ref: '#/components/messages/SetClientSuccess'
+    description: Acknowledgement after pages namespace setClient
+  pages/error:
+    address: pages/error
+    messages:
+      pagesErrorEvent:
+        $ref: '#/components/messages/TicketsBoardError'
+    description: |
+      Errors for pages namespace (e.g. missing clientId, Unauthorized, forbidden client, or "Unable to set client context").
+  pages/knowledgeTreeChanged:
+    address: pages/knowledgeTreeChanged
+    messages:
+      pagesKnowledgeTreeChangedEvent:
+        $ref: '#/components/messages/KnowledgeBoardTreeChangedPayload'
+    description: Workspace-scoped signal to refresh the knowledge tree from REST.
+  pages/knowledgeRelationChanged:
+    address: pages/knowledgeRelationChanged
+    messages:
+      pagesKnowledgeRelationChangedEvent:
+        $ref: '#/components/messages/KnowledgeBoardRelationChangedPayload'
+    description: Workspace-scoped signal to refresh affected relations from REST.
+  pages/knowledgePageActivityCreated:
+    address: pages/knowledgePageActivityCreated
+    messages:
+      pagesKnowledgePageActivityCreatedEvent:
+        $ref: '#/components/messages/KnowledgePageActivityCreatedPayload'
+    description: Incremental page activity row for currently open page details.
 operations:
   clientSendsSetClient:
     action: send
@@ -290,6 +331,36 @@ operations:
       $ref: '#/channels/clients~1ticketChatTicketUpsert'
     messages:
       - $ref: '#/channels/clients~1ticketChatTicketUpsert/messages/ticketChatTicketUpsertEvent'
+  pagesClientSendsSetClient:
+    action: send
+    channel:
+      $ref: '#/channels/pages~1setClient'
+    messages:
+      - $ref: '#/channels/pages~1setClient/messages/pagesSetClientCommand'
+  pagesServerEmitsSetClientSuccess:
+    action: receive
+    channel:
+      $ref: '#/channels/pages~1setClientSuccess'
+    messages:
+      - $ref: '#/channels/pages~1setClientSuccess/messages/pagesSetClientSuccessEvent'
+  pagesServerEmitsKnowledgeTreeChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/pages~1knowledgeTreeChanged'
+    messages:
+      - $ref: '#/channels/pages~1knowledgeTreeChanged/messages/pagesKnowledgeTreeChangedEvent'
+  pagesServerEmitsKnowledgeRelationChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/pages~1knowledgeRelationChanged'
+    messages:
+      - $ref: '#/channels/pages~1knowledgeRelationChanged/messages/pagesKnowledgeRelationChangedEvent'
+  pagesServerEmitsKnowledgePageActivityCreated:
+    action: receive
+    channel:
+      $ref: '#/channels/pages~1knowledgePageActivityCreated'
+    messages:
+      - $ref: '#/channels/pages~1knowledgePageActivityCreated/messages/pagesKnowledgePageActivityCreatedEvent'
 components:
   messages:
     SetClient:
@@ -317,6 +388,61 @@ components:
           clientId:
             type: string
             description: Selected client UUID
+    KnowledgeBoardTreeChangedPayload:
+      name: KnowledgeBoardTreeChangedPayload
+      title: Knowledge tree changed
+      contentType: application/json
+      payload:
+        type: object
+        required: [clientId]
+        properties:
+          clientId:
+            type: string
+            description: Client UUID (v4)
+    KnowledgeBoardRelationChangedPayload:
+      name: KnowledgeBoardRelationChangedPayload
+      title: Knowledge relation changed
+      contentType: application/json
+      payload:
+        type: object
+        required: [clientId, sourceType, sourceId]
+        properties:
+          clientId:
+            type: string
+            description: Client UUID (v4)
+          sourceType:
+            type: string
+            enum: [ticket, page]
+          sourceId:
+            type: string
+    KnowledgePageActivityCreatedPayload:
+      name: KnowledgePageActivityCreatedPayload
+      title: Knowledge page activity created
+      contentType: application/json
+      payload:
+        type: object
+        required: [id, pageId, occurredAt, actorType, actionType, payload]
+        properties:
+          id:
+            type: string
+          pageId:
+            type: string
+          occurredAt:
+            type: string
+            format: date-time
+          actorType:
+            type: string
+            enum: [human, ai, system]
+          actorUserId:
+            type: string
+            nullable: true
+          actorEmail:
+            type: string
+            nullable: true
+          actionType:
+            type: string
+          payload:
+            type: object
     Forward:
       name: Forward
       title: Forward an event to agents namespace

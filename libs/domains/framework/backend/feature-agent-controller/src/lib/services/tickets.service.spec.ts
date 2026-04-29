@@ -304,11 +304,13 @@ describe('TicketsService', () => {
       expect(result.shas.short).toHaveLength(7);
       expect(result.shas.long).toHaveLength(40);
       expect(result.shas.long.startsWith(result.shas.short)).toBe(true);
+
       for (const child of result.createdChildTickets ?? []) {
         expect(child.shas.short).toHaveLength(7);
         expect(child.shas.long).toHaveLength(40);
         expect(child.shas.long.startsWith(child.shas.short)).toBe(true);
       }
+
       expect(activityRepo.save).toHaveBeenCalledTimes(5);
     });
 

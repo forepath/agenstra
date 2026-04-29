@@ -428,6 +428,12 @@
       <trans-unit id="featureChat-environmentContextHint" datatype="html">
         <source> Select additional environments to enrich context more specifically. The active environment is included automatically. </source>
         </trans-unit>
+      <trans-unit id="featureChat-knowledgeContextLabel" datatype="html">
+        <source>Knowledge context (SHA)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-knowledgeContextPlaceholder" datatype="html">
+        <source>Title or short/long SHA</source>
+        </trans-unit>
       <trans-unit id="featureChat-done" datatype="html">
         <source> Done </source>
         </trans-unit>
@@ -737,6 +743,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-tickets" datatype="html">
         <source>Tickets</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-pagesTitle" datatype="html">
+        <source>Pages</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-pages" datatype="html">
+        <source>Pages</source>
         </trans-unit>
       <trans-unit id="featureContainer-auditTitle" datatype="html">
         <source>Audit</source>
@@ -1459,6 +1471,168 @@
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
         <source>New Terminal</source>
         </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-title" datatype="html">
+        <source>Knowledge</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-switchWorkspaceTitle" datatype="html">
+        <source>Switch workspace</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchPagesTitle" datatype="html">
+        <source>Search pages</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-selectSpacePrefix" datatype="html">
+        <source>Select a space from</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-selectSpaceLink" datatype="html">
+        <source>Spaces</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-selectSpaceSuffix" datatype="html">
+        <source>to load pages.</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-chooseWorkspace" datatype="html">
+        <source>Choose workspace…</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-addRelations" datatype="html">
+        <source> Add relations </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-loadingRelations" datatype="html">
+        <source>Loading relations...</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-removeRelationTitle" datatype="html">
+        <source>Remove relation</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-activityHeading" datatype="html">
+        <source>Activity</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-loadingActivity" datatype="html">
+        <source>Loading activity...</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-noActivity" datatype="html">
+        <source>No activity yet</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-selectPageHint" datatype="html">
+        <source> Select a page from the tree to start editing. </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchPagesModalTitle" datatype="html">
+        <source> Search pages </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-closeAria" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchPagesLabel" datatype="html">
+        <source> Search pages </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchPagesPlaceholder" datatype="html">
+        <source>Search by title or id</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchPagesHint" datatype="html">
+        <source> Type to search all pages and folders in this workspace. </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-noMatchingNodes" datatype="html">
+        <source>No matching pages or folders</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-close" datatype="html">
+        <source> Close </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-relationsModalTitle" datatype="html">
+        <source> Add relations </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchRelationsLabel" datatype="html">
+        <source> Search relations </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchRelationsPlaceholder" datatype="html">
+        <source>Title or short/long SHA</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchRelationsHint" datatype="html">
+        <source> Search by title or SHA and add one or more relation targets. </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-addSelectedRelations" datatype="html">
+        <source>Add selected</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-switchWorkspaceModalTitle" datatype="html">
+        <source> Switch workspace </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-noWorkspaces" datatype="html">
+        <source> You don&apos;t have any workspaces yet. </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-goToSpaces" datatype="html">
+        <source>Go to Spaces</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-searchWorkspacesPlaceholder" datatype="html">
+        <source>Search workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-noMatchingWorkspaces" datatype="html">
+        <source> No matching workspaces </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-currentWorkspace" datatype="html">
+        <source> Current </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-pagesHeading" datatype="html">
+        <source>Pages</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-newPageTitle" datatype="html">
+        <source>New page</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-newFolderTitle" datatype="html">
+        <source>New folder</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-refreshTitle" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-noPages" datatype="html">
+        <source>No pages yet</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-titlePlaceholder" datatype="html">
+        <source>Title</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-duplicateTitle" datatype="html">
+        <source>Duplicate</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-deleteTitle" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-refreshAction" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-renameAction" datatype="html">
+        <source>Rename</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-moveAction" datatype="html">
+        <source>Move</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-deleteAction" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-renameModalTitle" datatype="html">
+        <source>Rename item</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-rename" datatype="html">
+        <source>Rename</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-moveModalTitle" datatype="html">
+        <source>Move item</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-destinationFolder" datatype="html">
+        <source> Destination folder </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-move" datatype="html">
+        <source> Move </source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-deleteModalTitle" datatype="html">
+        <source>Delete item</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-deleteConfirmText" datatype="html">
+        <source>Are you sure you want to delete this item?</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-delete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
       <trans-unit id="featureRuleManager-directionIncoming" datatype="html">
         <source>Incoming</source>
         </trans-unit>
@@ -1844,6 +2018,15 @@
       <trans-unit id="featureTicketsBoard-openSubtaskTitle" datatype="html">
         <source>Open subtask</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-addRelations" datatype="html">
+        <source> Add relations </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-loadingRelations" datatype="html">
+        <source>Loading relations...</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-removeRelationTitle" datatype="html">
+        <source>Remove relation</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-automationAccordionTitle" datatype="html">
         <source>Autonomous prototyping</source>
         </trans-unit>
@@ -1999,6 +2182,24 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-close" datatype="html">
         <source> Close </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsModalTitle" datatype="html">
+        <source> Add relations </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsSearchLabel" datatype="html">
+        <source> Search relations </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsSearchPlaceholder" datatype="html">
+        <source>Title or short/long SHA</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsSearchHint" datatype="html">
+        <source> Search by title or SHA and add one or more relation targets. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsCancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsAddSelected" datatype="html">
+        <source>Add selected</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-migrateModalTitle" datatype="html">
         <source> Move ticket to workspace </source>

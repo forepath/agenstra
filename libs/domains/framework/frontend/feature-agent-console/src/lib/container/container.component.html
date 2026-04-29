@@ -154,6 +154,17 @@
         <span class="small" i18n="@@featureContainer-tickets">Tickets</span>
       </a>
       <a
+        [routerLink]="knowledgeSidebarLink()"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-pagesTitle"
+        title="Pages"
+      >
+        <i class="bi bi-journal-richtext me-1"></i>
+        <span class="small" i18n="@@featureContainer-pages">Pages</span>
+      </a>
+      <a
         routerLink="/audit"
         routerLinkActive="active"
         class="sidebar__item"

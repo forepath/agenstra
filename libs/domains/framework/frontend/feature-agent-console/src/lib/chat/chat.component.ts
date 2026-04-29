@@ -26,6 +26,7 @@ import {
   DeploymentsService,
   EnvFacade,
   FilesFacade,
+  KnowledgeFacade,
   SocketsFacade,
   StatsFacade,
   TicketAutomationFacade,
@@ -50,6 +51,7 @@ import {
   type EnvironmentVariableResponseDto,
   type FileManagerContext,
   type ForwardedEventPayload,
+  type KnowledgeNodeDto,
   type ProvisionServerDto,
   type TicketAutomationRunChatEventPayload,
   type TicketResponseDto,
@@ -157,6 +159,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
   private readonly filesFacade = inject(FilesFacade);
   private readonly envFacade = inject(EnvFacade);
+  private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly autonomyFacade = inject(ClientAgentAutonomyFacade);
   private readonly deploymentsService = inject(DeploymentsService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -518,10 +521,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   includeWorkspaceContext = signal<boolean>(true);
   selectedEnvironmentContextIds = signal<string[]>([]);
   selectedTicketContextShas = signal<string[]>([]);
+  selectedKnowledgeContextShas = signal<string[]>([]);
   ticketContextInput = signal<string>('');
   ticketContextInputError = signal<string | null>(null);
+  knowledgeContextInput = signal<string>('');
+  knowledgeContextInputError = signal<string | null>(null);
   /** Keeps suggestion menu open while interacting (blur closes with delay for mousedown). */
   ticketContextSuggestionsOpen = signal<boolean>(false);
+  knowledgeContextSuggestionsOpen = signal<boolean>(false);
   editorOpen = signal<boolean>(false);
   /** Active file editor API root from the current route (`/editor` vs `/config`). */
   fileManagerContext = signal<FileManagerContext>('app');
@@ -547,6 +554,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly ticketsSnapshot = toSignal(this.ticketsFacade.tickets$, {
     initialValue: [] as TicketResponseDto[],
   });
+  private readonly knowledgeTreeSnapshot = toSignal(this.knowledgeFacade.tree$, {
+    initialValue: [] as KnowledgeNodeDto[],
+  });
 
   private readonly activeClientIdSignal = toSignal(this.clientsFacade.activeClientId$, {
     initialValue: null as string | null,
@@ -568,6 +578,54 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       limit: 20,
     }),
   );
+
+  private flattenKnowledgeTree(nodes: KnowledgeNodeDto[]): KnowledgeNodeDto[] {
+    const out: KnowledgeNodeDto[] = [];
+    const walk = (items: KnowledgeNodeDto[]) => {
+      for (const node of items) {
+        out.push(node);
+
+        if (node.children?.length) {
+          walk(node.children);
+        }
+      }
+    };
+
+    walk(nodes);
+
+    return out;
+  }
+
+  readonly knowledgeContextPermittedNodes = computed(() => {
+    const clientId = this.activeClientIdSignal();
+
+    if (!clientId) {
+      return [] as KnowledgeNodeDto[];
+    }
+
+    return this.flattenKnowledgeTree(this.knowledgeTreeSnapshot() ?? []).filter(
+      (row) => row.clientId === clientId && !!row.shas?.long,
+    );
+  });
+
+  readonly knowledgeContextSuggestions = computed(() => {
+    const q = this.knowledgeContextInput().trim().toLowerCase();
+    const rows = this.knowledgeContextPermittedNodes();
+
+    if (!q) {
+      return rows.slice(0, 20);
+    }
+
+    return rows
+      .filter((row) => {
+        const title = row.title?.toLowerCase() ?? '';
+        const shortSha = row.shas?.short?.toLowerCase() ?? '';
+        const longSha = row.shas?.long?.toLowerCase() ?? '';
+
+        return title.includes(q) || shortSha.startsWith(q) || longSha.startsWith(q);
+      })
+      .slice(0, 20);
+  });
 
   private readonly agentsSnapshot = toSignal(this.agents$, {
     initialValue: [] as AgentResponseDto[],
@@ -617,6 +675,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
       chips.push({
         trackKey: `ticket:${longSha}`,
+        label: display,
+        title: display,
+      });
+    }
+
+    for (const rawSha of this.selectedKnowledgeContextShas()) {
+      const longSha = rawSha.trim();
+
+      if (!longSha) {
+        continue;
+      }
+
+      const display = this.knowledgeContextChipDisplay(longSha);
+
+      chips.push({
+        trackKey: `knowledge:${longSha}`,
         label: display,
         title: display,
       });
@@ -1948,6 +2022,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             this.includeWorkspaceContext.set(draft.contextInjection.includeWorkspaceContext === true);
             this.selectedEnvironmentContextIds.set(draft.contextInjection.selectedEnvironmentContextIds);
             this.selectedTicketContextShas.set(draft.contextInjection.selectedTicketContextShas ?? []);
+            this.selectedKnowledgeContextShas.set(draft.contextInjection.selectedKnowledgeContextShas ?? []);
           }
 
           this.enhanceErrorMessage.set(null);
@@ -2094,10 +2169,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onOpenContextSelectionModal(): void {
     this.ticketContextInputError.set(null);
+    this.knowledgeContextInputError.set(null);
     const clientId = this.activeClientIdSignal();
 
     if (clientId) {
       this.ticketsFacade.loadTickets({ clientId });
+      this.knowledgeFacade.loadTree(clientId);
     }
 
     this.showModal(this.contextSelectionModal);
@@ -2107,6 +2184,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.ticketContextInputError.set(null);
     this.ticketContextInput.set('');
     this.ticketContextSuggestionsOpen.set(false);
+    this.knowledgeContextInputError.set(null);
+    this.knowledgeContextInput.set('');
+    this.knowledgeContextSuggestionsOpen.set(false);
     this.hideModal(this.contextSelectionModal);
   }
 
@@ -2226,9 +2306,105 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.selectedTicketContextShas.set(this.selectedTicketContextShas().filter((sha) => sha !== longSha));
   }
 
+  onKnowledgeContextInputChange(value: string): void {
+    this.knowledgeContextInput.set(value);
+
+    if (this.knowledgeContextInputError()) {
+      this.knowledgeContextInputError.set(null);
+    }
+
+    if (value.trim().length > 0) {
+      this.knowledgeContextSuggestionsOpen.set(true);
+    }
+  }
+
+  onKnowledgeContextShaInputFocus(): void {
+    if (this.knowledgeContextInput().trim().length > 0 && this.knowledgeContextSuggestions().length > 0) {
+      this.knowledgeContextSuggestionsOpen.set(true);
+    }
+  }
+
+  onKnowledgeContextShaInputBlur(): void {
+    setTimeout(() => this.knowledgeContextSuggestionsOpen.set(false), 180);
+  }
+
+  onPickKnowledgeContextSuggestion(node: KnowledgeNodeDto, event?: Event): void {
+    event?.preventDefault();
+    this.addKnowledgeToContextIfPermitted(node);
+    this.knowledgeContextInput.set('');
+    this.knowledgeContextInputError.set(null);
+    this.knowledgeContextSuggestionsOpen.set(false);
+  }
+
+  onAddKnowledgeContextBySha(): void {
+    const input = this.knowledgeContextInput().trim().toLowerCase();
+
+    if (!input) {
+      this.knowledgeContextInputError.set('Enter a page or folder SHA.');
+
+      return;
+    }
+
+    const node = this.knowledgeContextPermittedNodes().find((row) => {
+      const shortSha = row.shas?.short?.toLowerCase() ?? '';
+      const longSha = row.shas?.long?.toLowerCase() ?? '';
+
+      return shortSha === input || longSha === input;
+    });
+
+    if (!node?.shas?.long) {
+      this.knowledgeContextInputError.set(null);
+
+      return;
+    }
+
+    this.addKnowledgeToContextIfPermitted(node);
+    this.knowledgeContextInput.set('');
+    this.knowledgeContextInputError.set(null);
+    this.knowledgeContextSuggestionsOpen.set(false);
+  }
+
+  private addKnowledgeToContextIfPermitted(node: KnowledgeNodeDto): void {
+    const longSha = node.shas?.long;
+
+    if (!longSha) {
+      return;
+    }
+
+    const clientId = this.activeClientIdSignal();
+
+    if (clientId && node.clientId !== clientId) {
+      return;
+    }
+
+    const current = this.selectedKnowledgeContextShas();
+
+    if (!current.includes(longSha)) {
+      this.selectedKnowledgeContextShas.set([...current, longSha]);
+    }
+  }
+
+  knowledgeContextChipDisplay(longSha: string): string {
+    const node = this.knowledgeContextPermittedNodes().find((row) => row.shas?.long === longSha);
+
+    if (node?.shas?.short) {
+      const kind = node.nodeType === 'folder' ? 'Folder' : 'Page';
+
+      return `${node.shas.short} · ${kind}: ${node.title}`;
+    }
+
+    return `${longSha.slice(0, 7)} · Unavailable knowledge`;
+  }
+
+  onRemoveKnowledgeContextSha(longSha: string): void {
+    this.selectedKnowledgeContextShas.set(this.selectedKnowledgeContextShas().filter((sha) => sha !== longSha));
+  }
+
   private buildContextInjection(
     agentId: string,
-  ): { includeWorkspace?: boolean; environmentIds?: string[]; ticketShas?: string[] } | undefined {
+  ):
+    | { includeWorkspace?: boolean; environmentIds?: string[]; ticketShas?: string[]; knowledgeShas?: string[] }
+    | undefined {
     const includeWorkspace = this.includeWorkspaceContext() === true;
     const selected = this.selectedEnvironmentContextIds()
       .map((id) => id.trim())
@@ -2241,12 +2417,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           .filter((sha) => sha),
       ),
     ];
+    const knowledgeShas = [
+      ...new Set(
+        this.selectedKnowledgeContextShas()
+          .map((sha) => sha.trim())
+          .filter((sha) => sha),
+      ),
+    ];
 
-    if (!includeWorkspace && environmentIds.length === 0 && ticketShas.length === 0) {
+    if (!includeWorkspace && environmentIds.length === 0 && ticketShas.length === 0 && knowledgeShas.length === 0) {
       return undefined;
     }
 
-    return { includeWorkspace, environmentIds, ticketShas };
+    return { includeWorkspace, environmentIds, ticketShas, knowledgeShas };
   }
 
   onCommandChange(value: string): void {

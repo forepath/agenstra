@@ -1,0 +1,348 @@
+<div class="knowledge-tree-container d-flex flex-column h-100">
+  <div class="p-2 border-bottom bg-body-tertiary">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-semibold" i18n="@@featureKnowledgeTree-pagesHeading">Pages</h6>
+      <div class="btn-group btn-group-sm">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [class.active]="creatingAt()?.parentId === null && creatingAt()?.nodeType === 'page'"
+          (click)="openCreate(null, 'page', $event)"
+          i18n-title="@@featureKnowledgeTree-newPageTitle"
+          title="New page"
+        >
+          <i class="bi bi-file-earmark-plus"></i>
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [class.active]="creatingAt()?.parentId === null && creatingAt()?.nodeType === 'folder'"
+          (click)="openCreate(null, 'folder', $event)"
+          i18n-title="@@featureKnowledgeTree-newFolderTitle"
+          title="New folder"
+        >
+          <i class="bi bi-folder-plus"></i>
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="onContextRefresh()"
+          i18n-title="@@featureKnowledgeTree-refreshTitle"
+          title="Refresh"
+        >
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-grow-1 overflow-auto p-2">
+    @if (shouldShowInitialLoadingSpinner()) {
+      <div class="d-flex justify-content-center p-4">
+        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+      </div>
+    } @else if (filteredRoots().length === 0) {
+      <div class="text-center text-muted p-4">
+        <i class="bi bi-journal-x fs-4 d-block mb-2"></i>
+        <p class="mb-0 small" i18n="@@featureKnowledgeTree-noPages">No pages yet</p>
+      </div>
+      @if (creatingAt() && creatingAt()?.parentId === null) {
+        <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
+          <div class="input-group input-group-sm">
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              [ngModel]="newNodeTitle()"
+              (ngModelChange)="newNodeTitle.set($event)"
+              (keydown.enter)="confirmCreate($event)"
+              (keydown.escape)="cancelCreate($event)"
+              i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
+              placeholder="Title"
+            />
+            <button class="btn btn-primary" type="button" (click)="confirmCreate($event)">
+              <i class="bi bi-check"></i>
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="cancelCreate($event)">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+      }
+    } @else {
+      <ul class="list-unstyled mb-0">
+        @if (creatingAt() && creatingAt()?.parentId === null) {
+          <li>
+            <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
+              <div class="input-group input-group-sm">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  [ngModel]="newNodeTitle()"
+                  (ngModelChange)="newNodeTitle.set($event)"
+                  (keydown.enter)="confirmCreate($event)"
+                  (keydown.escape)="cancelCreate($event)"
+                  i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
+                  placeholder="Title"
+                />
+                <button class="btn btn-primary" type="button" (click)="confirmCreate($event)">
+                  <i class="bi bi-check"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="cancelCreate($event)">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+          </li>
+        }
+        @for (node of filteredRoots(); track node.id) {
+          <li>
+            <ng-container
+              [ngTemplateOutlet]="treeNodeTemplate"
+              [ngTemplateOutletContext]="{ $implicit: node, level: 0 }"
+            ></ng-container>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
+
+<ng-template #treeNodeTemplate let-node let-level="level">
+  <div class="tree-node-wrapper">
+    <div
+      class="tree-node d-flex align-items-center py-1 px-2 rounded"
+      [class.selected]="selectedNodeId === node.id && node.nodeType === 'page'"
+      (click)="onSelectNode(node)"
+      (contextmenu)="onContextMenu($event, node)"
+    >
+      @if (level > 0) {
+        <div class="tree-indent" [style.width.px]="level * 20"></div>
+      }
+
+      <div class="tree-node-content d-flex align-items-center flex-grow-1 min-width-0">
+        @if (node.nodeType === 'folder') {
+          <i
+            class="bi me-2 tree-node-icon"
+            [class.bi-folder]="!isExpanded(node)"
+            [class.bi-folder2-open]="isExpanded(node)"
+          ></i>
+        } @else {
+          <i class="bi bi-file-earmark-text me-2 tree-node-icon"></i>
+        }
+
+        <span class="text-truncate flex-grow-1 tree-node-name" [title]="node.title">
+          @if (node.shas.short) {
+            <small class="text-muted">{{ node.shas.short }}</small>
+          }
+          {{ node.title }}
+        </span>
+
+        <div class="btn-group btn-group-sm ms-2">
+          @if (node.nodeType === 'folder') {
+            <button
+              type="button"
+              class="btn btn-outline-secondary py-0 px-1"
+              [class.active]="creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'page'"
+              (click)="openCreate(node.id, 'page', $event)"
+              i18n-title="@@featureKnowledgeTree-newPageTitle"
+              title="New page"
+            >
+              <i class="bi bi-file-earmark-plus"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary py-0 px-1"
+              [class.active]="creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'folder'"
+              (click)="openCreate(node.id, 'folder', $event)"
+              i18n-title="@@featureKnowledgeTree-newFolderTitle"
+              title="New folder"
+            >
+              <i class="bi bi-folder-plus"></i>
+            </button>
+          }
+          <button
+            type="button"
+            class="btn btn-outline-secondary py-0 px-1"
+            (click)="onDuplicate(node, $event)"
+            i18n-title="@@featureKnowledgeTree-duplicateTitle"
+            title="Duplicate"
+          >
+            <i class="bi bi-files"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-danger py-0 px-1"
+            (click)="onDelete(node, $event)"
+            i18n-title="@@featureKnowledgeTree-deleteTitle"
+            title="Delete"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (creatingAt()?.parentId === node.id) {
+    <div class="px-2 py-1" [style.padding-left.px]="(level + 1) * 16 + 38">
+      <div class="input-group input-group-sm">
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          [ngModel]="newNodeTitle()"
+          (ngModelChange)="newNodeTitle.set($event)"
+          (keydown.enter)="confirmCreate($event)"
+          (keydown.escape)="cancelCreate($event)"
+          i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
+          placeholder="Title"
+        />
+        <button class="btn btn-primary" type="button" (click)="confirmCreate($event)">
+          <i class="bi bi-check"></i>
+        </button>
+        <button class="btn btn-secondary" type="button" (click)="cancelCreate($event)"><i class="bi bi-x"></i></button>
+      </div>
+    </div>
+  }
+
+  @if (node.nodeType === 'folder' && isExpanded(node) && orderedChildren(node).length) {
+    <ul class="list-unstyled mb-0">
+      @for (child of orderedChildren(node); track child.id) {
+        <li>
+          <ng-container
+            [ngTemplateOutlet]="treeNodeTemplate"
+            [ngTemplateOutletContext]="{ $implicit: child, level: level + 1 }"
+          ></ng-container>
+        </li>
+      }
+    </ul>
+  }
+</ng-template>
+
+@if (contextMenuPosition(); as pos) {
+  @if (contextMenuNode()) {
+    <div class="context-menu-overlay" (click)="closeContextMenu()"></div>
+    <div class="context-menu dropdown-menu show" [style.left.px]="pos.x" [style.top.px]="pos.y">
+      @if (contextMenuNode()?.nodeType === 'folder') {
+        <button class="dropdown-item" type="button" (click)="onContextRefresh()">
+          <i class="bi bi-arrow-clockwise me-2"></i><span i18n="@@featureKnowledgeTree-refreshAction">Refresh</span>
+        </button>
+        <div class="dropdown-divider"></div>
+      }
+      <button class="dropdown-item" type="button" (click)="onContextRename()">
+        <i class="bi bi-pencil me-2"></i><span i18n="@@featureKnowledgeTree-renameAction">Rename</span>
+      </button>
+      <button class="dropdown-item" type="button" (click)="onContextMove()">
+        <i class="bi bi-arrow-right-circle me-2"></i><span i18n="@@featureKnowledgeTree-moveAction">Move</span>
+      </button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item text-danger" type="button" (click)="onContextDelete()">
+        <i class="bi bi-trash me-2"></i><span i18n="@@featureKnowledgeTree-deleteAction">Delete</span>
+      </button>
+    </div>
+  }
+}
+
+@if (renameTargetNodeId()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" i18n="@@featureKnowledgeTree-renameModalTitle">Rename item</h5>
+          <button type="button" class="btn-close" (click)="onCancelRename()"></button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            class="form-control"
+            [ngModel]="renameDraft()"
+            (ngModelChange)="renameDraft.set($event)"
+            (keydown.enter)="onConfirmRename()"
+            (keydown.escape)="onCancelRename()"
+            autofocus
+          />
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="onCancelRename()"
+            i18n="@@featureKnowledgeTree-cancel"
+          >
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" [disabled]="!renameDraft().trim()" (click)="onConfirmRename()">
+            <span i18n="@@featureKnowledgeTree-rename">Rename</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (moveTargetNodeId()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" i18n="@@featureKnowledgeTree-moveModalTitle">Move item</h5>
+          <button type="button" class="btn-close" (click)="onCancelMove()"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label" for="knowledgeMoveParentId" i18n="@@featureKnowledgeTree-destinationFolder">
+            Destination folder
+          </label>
+          <select
+            id="knowledgeMoveParentId"
+            class="form-select"
+            [ngModel]="moveTargetParentId()"
+            (ngModelChange)="moveTargetParentId.set($event)"
+          >
+            @for (opt of moveParentOptions(); track opt.id) {
+              <option [ngValue]="opt.id">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="onCancelMove()" i18n="@@featureKnowledgeTree-cancel">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" (click)="onConfirmMove()" i18n="@@featureKnowledgeTree-move">
+            Move
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (deleteTargetNodeId()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" i18n="@@featureKnowledgeTree-deleteModalTitle">Delete item</h5>
+          <button type="button" class="btn-close" (click)="onCancelDelete()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0" i18n="@@featureKnowledgeTree-deleteConfirmText">Are you sure you want to delete this item?</p>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="onCancelDelete()"
+            i18n="@@featureKnowledgeTree-cancel"
+          >
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger" (click)="onConfirmDelete()" i18n="@@featureKnowledgeTree-delete">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

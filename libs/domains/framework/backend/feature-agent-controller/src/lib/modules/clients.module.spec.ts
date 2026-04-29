@@ -17,6 +17,9 @@ import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-conne
 
 import { ClientsController } from '../controllers/clients.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
+import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
+import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
@@ -145,6 +148,12 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(TicketAutomationRunStepEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ClientAgentAutonomyEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(KnowledgeNodeEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(KnowledgeRelationEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(KnowledgePageActivityEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
       .useValue(mockRepository)

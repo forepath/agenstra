@@ -115,6 +115,7 @@ export interface ContextInjectionPayload {
   includeWorkspace?: boolean;
   environmentIds?: string[];
   ticketShas?: string[];
+  knowledgeShas?: string[];
 }
 
 /**

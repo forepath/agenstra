@@ -8,6 +8,8 @@ interface ContextInjectionPayload {
   environmentIds?: string[];
   ticketShas?: string[];
   ticketContexts?: string[];
+  knowledgeShas?: string[];
+  knowledgeContexts?: string[];
 }
 
 @Injectable()
@@ -26,6 +28,8 @@ export class PromptContextComposerService {
     const environmentIds = (contextInjection.environmentIds ?? []).filter((id) => id.trim().length > 0);
     const ticketShas = (contextInjection.ticketShas ?? []).filter((sha) => sha.trim().length > 0);
     const ticketContexts = (contextInjection.ticketContexts ?? []).filter((ctx) => ctx.trim().length > 0);
+    const knowledgeShas = (contextInjection.knowledgeShas ?? []).filter((sha) => sha.trim().length > 0);
+    const knowledgeContexts = (contextInjection.knowledgeContexts ?? []).filter((ctx) => ctx.trim().length > 0);
 
     if (environmentIds.length > 0) {
       lines.push(`- Relevant environment ids for context: ${environmentIds.join(', ')}`);
@@ -37,8 +41,22 @@ export class PromptContextComposerService {
 
     if (ticketContexts.length > 0) {
       lines.push('- Detailed ticket hierarchy context is provided below:');
+
       for (const [index, context] of ticketContexts.entries()) {
         lines.push(`Ticket context #${index + 1}:`);
+        lines.push(context.trim());
+      }
+    }
+
+    if (knowledgeShas.length > 0) {
+      lines.push(`- Relevant knowledge references for context: ${knowledgeShas.join(', ')}`);
+    }
+
+    if (knowledgeContexts.length > 0) {
+      lines.push('- Detailed knowledge page context is provided below:');
+
+      for (const [index, context] of knowledgeContexts.entries()) {
+        lines.push(`Knowledge context #${index + 1}:`);
         lines.push(context.trim());
       }
     }

@@ -432,6 +432,16 @@ components:
                 description: Optional related environment ids to reference in hidden preamble.
                 items:
                   type: string
+              ticketShas:
+                type: array
+                description: Optional ticket SHA references for prompt enrichment.
+                items:
+                  type: string
+              knowledgeShas:
+                type: array
+                description: Optional knowledge page/folder SHA references for prompt enrichment.
+                items:
+                  type: string
     EnhanceChat:
       name: EnhanceChat
       title: Prompt enhancement command
@@ -456,6 +466,14 @@ components:
               includeWorkspace:
                 type: boolean
               environmentIds:
+                type: array
+                items:
+                  type: string
+              ticketShas:
+                type: array
+                items:
+                  type: string
+              knowledgeShas:
                 type: array
                 items:
                   type: string
@@ -530,6 +548,14 @@ components:
               includeWorkspace:
                 type: boolean
               environmentIds:
+                type: array
+                items:
+                  type: string
+              ticketShas:
+                type: array
+                items:
+                  type: string
+              knowledgeShas:
                 type: array
                 items:
                   type: string

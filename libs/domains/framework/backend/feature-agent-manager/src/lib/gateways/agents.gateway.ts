@@ -69,6 +69,8 @@ interface ContextInjectionPayload {
   environmentIds?: string[];
   ticketShas?: string[];
   ticketContexts?: string[];
+  knowledgeShas?: string[];
+  knowledgeContexts?: string[];
 }
 
 interface ChatEnhanceSuccessData {
@@ -485,12 +487,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const toolCallId = `enrichment-${correlationId}`;
-
     const enrichmentArgs = {
       includeWorkspace: contextInjection.includeWorkspace === true,
       environmentIds: contextInjection.environmentIds ?? [],
       ticketShas: contextInjection.ticketShas ?? [],
       ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+      knowledgeShas: contextInjection.knowledgeShas ?? [],
+      knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
     };
 
     return [
@@ -511,6 +514,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           environmentIds: contextInjection.environmentIds ?? [],
           ticketShas: contextInjection.ticketShas ?? [],
           ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+          knowledgeShas: contextInjection.knowledgeShas ?? [],
+          knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
         },
         isError: false,
       },
@@ -649,6 +654,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const ticketContexts = Array.from(
       new Set((contextInjection.ticketContexts ?? []).map((ctx) => ctx.trim()).filter((ctx) => ctx.length > 0)),
     );
+    const knowledgeShas = Array.from(
+      new Set((contextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
+    );
+    const knowledgeContexts = Array.from(
+      new Set((contextInjection.knowledgeContexts ?? []).map((ctx) => ctx.trim()).filter((ctx) => ctx.length > 0)),
+    );
     const allowedIds: string[] = [];
 
     for (const environmentId of requestedIds) {
@@ -664,7 +675,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     }
 
-    if (!includeWorkspace && allowedIds.length === 0 && ticketShas.length === 0 && ticketContexts.length === 0) {
+    if (
+      !includeWorkspace &&
+      allowedIds.length === 0 &&
+      ticketShas.length === 0 &&
+      ticketContexts.length === 0 &&
+      knowledgeShas.length === 0 &&
+      knowledgeContexts.length === 0
+    ) {
       return undefined;
     }
 
@@ -673,6 +691,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       environmentIds: allowedIds,
       ticketShas,
       ticketContexts,
+      knowledgeShas,
+      knowledgeContexts,
     };
   }
 
@@ -1122,6 +1142,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             environmentIds: contextInjection.environmentIds ?? [],
             ticketShas: contextInjection.ticketShas ?? [],
             ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+            knowledgeShas: contextInjection.knowledgeShas ?? [],
+            knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
           },
           status: 'succeeded',
         },
@@ -1138,6 +1160,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             environmentIds: contextInjection.environmentIds ?? [],
             ticketShas: contextInjection.ticketShas ?? [],
             ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
+            knowledgeShas: contextInjection.knowledgeShas ?? [],
+            knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
           },
           isError: false,
         },

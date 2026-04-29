@@ -21,6 +21,7 @@ import {
 } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
+import { loadKnowledgeRelations } from '../knowledge/knowledge.actions';
 import {
   ticketBoardAutomationRunStepAppended,
   ticketBoardAutomationRunUpsert,
@@ -211,6 +212,25 @@ export const connectTicketsBoardSocket$ = createEffect(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketAutomationUpsert,
             ).pipe(map((payload) => ticketBoardAutomationUpsert({ config: payload as never })));
+            const knowledgeRelationChanged$ = fromEvent(
+              ticketsBoardSocketInstance,
+              TICKETS_BOARD_SOCKET_EVENTS.knowledgeRelationChanged,
+            ).pipe(
+              map((payload) => payload as { clientId?: string; sourceType?: 'ticket' | 'page'; sourceId?: string }),
+              filter(
+                (payload): payload is { clientId: string; sourceType: 'ticket' | 'page'; sourceId: string } =>
+                  typeof payload.clientId === 'string' &&
+                  typeof payload.sourceId === 'string' &&
+                  (payload.sourceType === 'ticket' || payload.sourceType === 'page'),
+              ),
+              map((payload) =>
+                loadKnowledgeRelations({
+                  clientId: payload.clientId,
+                  sourceType: payload.sourceType,
+                  sourceId: payload.sourceId,
+                }),
+              ),
+            );
             const runUpsert$ = fromEvent(
               ticketsBoardSocketInstance,
               TICKETS_BOARD_SOCKET_EVENTS.ticketAutomationRunUpsert,
@@ -249,6 +269,7 @@ export const connectTicketsBoardSocket$ = createEffect(
               ticketComment$,
               ticketActivity$,
               automationUpsert$,
+              knowledgeRelationChanged$,
               runUpsert$,
               runStep$,
             ).pipe(
