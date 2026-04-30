@@ -94,6 +94,12 @@
         }
       }
     },
+    "reindex-knowledge-embeddings": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx ts-node -r tsconfig-paths/register --project apps/backend-agent-controller/tsconfig.app.json apps/backend-agent-controller/src/scripts/reindex-knowledge-embeddings.ts"
+      }
+    },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

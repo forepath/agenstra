@@ -18,6 +18,7 @@ describe('TicketAutomationEntity', () => {
     entity.allowedAgentIds = ['agent-uuid'];
     entity.includeWorkspaceContext = true;
     entity.contextEnvironmentIds = ['context-agent-uuid'];
+    entity.autoEnrichmentEnabled = true;
     entity.verifierProfile = verifierProfile;
     entity.requiresApproval = true;
     entity.approvedAt = new Date();
@@ -34,6 +35,7 @@ describe('TicketAutomationEntity', () => {
     expect(entity.allowedAgentIds).toEqual(['agent-uuid']);
     expect(entity.includeWorkspaceContext).toBe(true);
     expect(entity.contextEnvironmentIds).toEqual(['context-agent-uuid']);
+    expect(entity.autoEnrichmentEnabled).toBe(true);
     expect(entity.verifierProfile).toEqual(verifierProfile);
     expect(entity.requiresApproval).toBe(true);
     expect(entity.approvedByUserId).toBe('user-uuid');

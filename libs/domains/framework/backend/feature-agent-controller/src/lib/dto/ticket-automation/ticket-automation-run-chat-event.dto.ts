@@ -27,6 +27,7 @@ export type TicketAutomationRunChatActionDto = TicketAutomationRunChatOpenAction
 export interface ContextInjectionDto {
   includeWorkspace?: boolean;
   environmentIds?: string[];
+  autoEnrichmentEnabled?: boolean;
 }
 
 /**

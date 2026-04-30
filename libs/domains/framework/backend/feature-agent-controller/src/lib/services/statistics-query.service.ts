@@ -43,6 +43,7 @@ const ALLOWED_INTERACTION_KINDS: ReadonlySet<string> = new Set([
   StatisticsInteractionKind.CHAT,
   StatisticsInteractionKind.PROMPT_ENHANCEMENT,
   StatisticsInteractionKind.TICKET_BODY_GENERATION,
+  StatisticsInteractionKind.AUTO_CONTEXT_ENRICHMENT,
   StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN,
   StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
   StatisticsInteractionKind.AUTONOMOUS_TICKET_COMMIT_MESSAGE,
@@ -82,6 +83,9 @@ export class StatisticsQueryService {
         totalWords: 0,
         totalChars: 0,
         avgWordsPerMessage: 0,
+        autoEnrichmentRuns: 0,
+        autoEnrichmentContexts: 0,
+        autoEnrichmentChars: 0,
         filterDropCount: 0,
         filterTypesBreakdown: [],
         filterFlagCount: 0,
@@ -89,12 +93,18 @@ export class StatisticsQueryService {
       };
     }
 
-    const [chatAgg, filterDropAgg, filterFlagAgg] = await Promise.all([
+    const [chatAgg, autoEnrichmentAgg, filterDropAgg, filterFlagAgg] = await Promise.all([
       this.statisticsRepository.queryChatIoAggregate({
         statisticsClientIds: ids,
         from,
         to,
         groupBy: params.groupBy,
+      }),
+      this.statisticsRepository.queryChatIoAggregate({
+        statisticsClientIds: ids,
+        from,
+        to,
+        interactionKind: StatisticsInteractionKind.AUTO_CONTEXT_ENRICHMENT,
       }),
       this.statisticsRepository.queryFilterDropsAggregate({ statisticsClientIds: ids, from, to }),
       this.statisticsRepository.queryFilterFlagsAggregate({ statisticsClientIds: ids, from, to }),
@@ -105,6 +115,9 @@ export class StatisticsQueryService {
       totalWords: chatAgg.totalWords,
       totalChars: chatAgg.totalChars,
       avgWordsPerMessage: chatAgg.avgWordsPerMessage,
+      autoEnrichmentRuns: autoEnrichmentAgg.totalMessages,
+      autoEnrichmentContexts: autoEnrichmentAgg.totalWords,
+      autoEnrichmentChars: autoEnrichmentAgg.totalChars,
       filterDropCount: filterDropAgg.filterDropCount,
       filterTypesBreakdown: filterDropAgg.filterTypesBreakdown,
       filterFlagCount: filterFlagAgg.filterFlagCount,
@@ -127,6 +140,9 @@ export class StatisticsQueryService {
         totalWords: 0,
         totalChars: 0,
         avgWordsPerMessage: 0,
+        autoEnrichmentRuns: 0,
+        autoEnrichmentContexts: 0,
+        autoEnrichmentChars: 0,
         filterDropCount: 0,
         filterTypesBreakdown: [],
         filterFlagCount: 0,
@@ -134,12 +150,18 @@ export class StatisticsQueryService {
       };
     }
 
-    const [chatAgg, filterDropAgg, filterFlagAgg] = await Promise.all([
+    const [chatAgg, autoEnrichmentAgg, filterDropAgg, filterFlagAgg] = await Promise.all([
       this.statisticsRepository.queryChatIoAggregate({
         statisticsClientIds: ids,
         from,
         to,
         groupBy: params.groupBy,
+      }),
+      this.statisticsRepository.queryChatIoAggregate({
+        statisticsClientIds: ids,
+        from,
+        to,
+        interactionKind: StatisticsInteractionKind.AUTO_CONTEXT_ENRICHMENT,
       }),
       this.statisticsRepository.queryFilterDropsAggregate({ statisticsClientIds: ids, from, to }),
       this.statisticsRepository.queryFilterFlagsAggregate({ statisticsClientIds: ids, from, to }),
@@ -150,6 +172,9 @@ export class StatisticsQueryService {
       totalWords: chatAgg.totalWords,
       totalChars: chatAgg.totalChars,
       avgWordsPerMessage: chatAgg.avgWordsPerMessage,
+      autoEnrichmentRuns: autoEnrichmentAgg.totalMessages,
+      autoEnrichmentContexts: autoEnrichmentAgg.totalWords,
+      autoEnrichmentChars: autoEnrichmentAgg.totalChars,
       filterDropCount: filterDropAgg.filterDropCount,
       filterTypesBreakdown: filterDropAgg.filterTypesBreakdown,
       filterFlagCount: filterFlagAgg.filterFlagCount,

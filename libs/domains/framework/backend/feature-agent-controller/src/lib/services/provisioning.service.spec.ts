@@ -299,6 +299,36 @@ describe('ProvisioningService', () => {
       expect(decodedUserData).toContain('agent-manager');
       expect(decodedUserData).toContain('docker-compose.yml');
     });
+
+    it('should embed AUTO_ENRICH_ENABLED_GLOBAL in user data when provided', async () => {
+      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
+      mockClientsService.create.mockResolvedValue(mockClient);
+      mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
+
+      await service.provisionServer({ ...provisionDto, autoEnrichEnabledGlobal: 'false' });
+
+      const provisionCall = (mockProvider.provisionServer as jest.Mock).mock.calls[0][0];
+      const decodedUserData = Buffer.from(provisionCall.userData, 'base64').toString('utf-8');
+
+      expect(decodedUserData).toContain('AUTO_ENRICH_ENABLED_GLOBAL: false');
+    });
+
+    it('should embed AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE in user data when provided', async () => {
+      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
+      mockClientsService.create.mockResolvedValue(mockClient);
+      mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
+
+      await service.provisionServer({ ...provisionDto, autoEnrichVectorMaxCosineDistance: 0.45 });
+
+      const provisionCall = (mockProvider.provisionServer as jest.Mock).mock.calls[0][0];
+      const decodedUserData = Buffer.from(provisionCall.userData, 'base64').toString('utf-8');
+
+      expect(decodedUserData).toContain('AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: 0.45');
+    });
   });
 
   describe('deleteProvisionedServer', () => {

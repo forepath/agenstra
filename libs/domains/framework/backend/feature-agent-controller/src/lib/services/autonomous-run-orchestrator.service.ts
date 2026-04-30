@@ -289,6 +289,7 @@ export class AutonomousRunOrchestratorService {
     const contextInjection = {
       includeWorkspace: automation.includeWorkspaceContext !== false,
       environmentIds: [...new Set([agentId, ...(automation.contextEnvironmentIds ?? [])])],
+      autoEnrichmentEnabled: automation.autoEnrichmentEnabled !== false,
     };
 
     if (autonomy.preImproveTicket) {
@@ -421,7 +422,7 @@ export class AutonomousRunOrchestratorService {
     ticket: TicketEntity,
     agentId: string,
     stepIdx: number,
-    contextInjection: { includeWorkspace: boolean; environmentIds: string[] },
+    contextInjection: { includeWorkspace: boolean; environmentIds: string[]; autoEnrichmentEnabled: boolean },
   ): Promise<{ ok: true; nextStepIndex: number } | { ok: false }> {
     await this.runRepo.update(run.id, { phase: TicketAutomationRunPhase.FINALIZE });
     const status = await this.vcsProxy.getStatus(ticket.clientId, agentId);
@@ -475,7 +476,7 @@ export class AutonomousRunOrchestratorService {
     run: TicketAutomationRunEntity,
     ticket: TicketEntity,
     agentId: string,
-    contextInjection: { includeWorkspace: boolean; environmentIds: string[] },
+    contextInjection: { includeWorkspace: boolean; environmentIds: string[]; autoEnrichmentEnabled: boolean },
   ): Promise<{ message: string; source: 'ai' | 'fallback' }> {
     const timeoutMs = parseInt(process.env.REMOTE_AGENT_COMMIT_MESSAGE_TIMEOUT_MS || '120000', 10);
 

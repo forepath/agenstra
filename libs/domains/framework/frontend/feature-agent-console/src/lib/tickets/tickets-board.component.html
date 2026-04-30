@@ -857,6 +857,19 @@
                                 Include workspace context
                               </label>
                             </div>
+                            <div class="form-check form-switch mb-2">
+                              <input
+                                class="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                id="ticketAutomationAutoEnrichmentEnabled"
+                                [ngModel]="automationDraftAutoEnrichmentEnabled()"
+                                (ngModelChange)="automationDraftAutoEnrichmentEnabled.set($event)"
+                              />
+                              <label class="form-check-label" for="ticketAutomationAutoEnrichmentEnabled">
+                                Auto-enrich context
+                              </label>
+                            </div>
                             <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationContextHint">
                               Select additional environments to enrich context more specifically. The active run
                               environment is included automatically.

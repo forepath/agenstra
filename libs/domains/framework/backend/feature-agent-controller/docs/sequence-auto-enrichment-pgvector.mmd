@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant UI as AgentConsoleChatUI
+    participant Ctl as ClientsGateway
+    participant Res as AutoContextResolver
+    participant Tix as TicketsService
+    participant KTree as KnowledgeTreeService
+    participant Vec as KnowledgeNodeEmbeddingsPgvector
+    participant Mgr as AgentManagerGateway
+    participant Comp as PromptContextComposer
+    participant Prov as AgentProvider
+
+    UI->>Ctl: forward(event=chat, payload.contextInjection)
+    Ctl->>Ctl: normalize manual context (ticketShas, knowledgeShas)
+    alt autoEnrichmentEnabled=true and global feature enabled
+        Ctl->>Res: resolve(clientId, prompt, contextInjection)
+        Res->>Tix: resolveTicketIdByClientSha(manual ticketShas)
+        Res->>KTree: findNodeBySha(manual knowledgeShas)
+        Res->>Vec: topK chunks by cosine distance (client scoped)
+        Res->>KTree: relation context expansion (ticket/page sources)
+        Res->>Res: dedupe by canonical entity id + apply section/char budgets
+        Res-->>Ctl: merged contextInjection (manual + auto knowledgeContexts)
+    else auto enrichment disabled
+        Ctl->>Ctl: keep manual-only contextInjection
+    end
+    Ctl->>Mgr: emit chat with enriched contextInjection
+    Mgr->>Comp: composeChatMessage(message, contextInjection)
+    Comp-->>Mgr: hidden preamble + user message
+    Mgr->>Prov: sendMessage/sendMessageStream
+    Prov-->>Mgr: response payload
+    Mgr-->>Ctl: chatMessage/chatEvent
+    Ctl-->>UI: forwardAck + response events

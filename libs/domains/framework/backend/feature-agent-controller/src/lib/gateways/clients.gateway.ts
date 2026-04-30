@@ -20,12 +20,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
 
-import { KnowledgeRelationSourceType } from '../entities/knowledge-node.enums';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
+import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
@@ -52,6 +53,7 @@ interface ContextInjectionPayload {
   ticketContexts?: string[];
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
+  autoEnrichmentEnabled?: boolean;
 }
 
 /**
@@ -96,6 +98,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   private lastChatMessageBySocket = new Map<string, string>();
   /** Local Socket.IO sockets by id (Namespace typings do not expose sockets.get). */
   private readonly localSocketById = new Map<string, Socket>();
+  private readonly workspaceAutoEnrichCacheTtlMs = 15_000;
+  private readonly workspaceAutoEnrichCache = new Map<
+    string,
+    { expiresAt: number; enabledGlobal?: boolean; vectorMaxCosineDistance?: number }
+  >();
 
   constructor(
     private readonly clientsService: ClientsService,
@@ -108,6 +115,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
     private readonly ticketsService: TicketsService,
     private readonly knowledgeTreeService: KnowledgeTreeService,
+    private readonly autoContextResolverService: AutoContextResolverService,
+    private readonly workspaceConfigurationOverridesProxy: ClientWorkspaceConfigurationOverridesProxyService,
   ) {}
 
   afterInit(server: Server): void {
@@ -1091,6 +1100,67 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
   }
 
+  private async resolveWorkspaceAutoEnrichSettings(clientId: string): Promise<{
+    enabledGlobal?: boolean;
+    vectorMaxCosineDistance?: number;
+  }> {
+    const now = Date.now();
+    const cached = this.workspaceAutoEnrichCache.get(clientId);
+
+    if (cached && cached.expiresAt > now) {
+      return {
+        enabledGlobal: cached.enabledGlobal,
+        vectorMaxCosineDistance: cached.vectorMaxCosineDistance,
+      };
+    }
+
+    try {
+      const settings = await this.workspaceConfigurationOverridesProxy.getConfigurationOverrides(clientId);
+      const globalRow = settings.find((entry) => entry.settingKey === 'autoEnrichEnabledGlobal');
+      const rawGlobal = globalRow?.value?.trim();
+      let enabledGlobal: boolean | undefined;
+
+      if (rawGlobal !== undefined && rawGlobal !== '') {
+        enabledGlobal = rawGlobal.toLowerCase() !== 'false' && rawGlobal !== '0';
+      } else {
+        enabledGlobal = undefined;
+      }
+
+      const distanceRow = settings.find((entry) => entry.settingKey === 'autoEnrichVectorMaxCosineDistance');
+      const rawDistance = distanceRow?.value?.trim();
+      let vectorMaxCosineDistance: number | undefined;
+
+      if (rawDistance !== undefined && rawDistance !== '') {
+        const parsed = Number.parseFloat(rawDistance);
+
+        if (Number.isFinite(parsed)) {
+          vectorMaxCosineDistance = Math.min(2, Math.max(0, parsed));
+        }
+      }
+
+      this.workspaceAutoEnrichCache.set(clientId, {
+        expiresAt: now + this.workspaceAutoEnrichCacheTtlMs,
+        enabledGlobal,
+        vectorMaxCosineDistance,
+      });
+
+      return { enabledGlobal, vectorMaxCosineDistance };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      this.logger.warn(
+        `Could not load workspace auto-enrich settings for client ${clientId}, using controller defaults: ${message}`,
+      );
+      this.workspaceAutoEnrichCache.set(clientId, {
+        expiresAt: now + this.workspaceAutoEnrichCacheTtlMs,
+        enabledGlobal: undefined,
+        vectorMaxCosineDistance: undefined,
+      });
+
+      return { enabledGlobal: undefined, vectorMaxCosineDistance: undefined };
+    }
+  }
+
   private async enrichForwardPayloadWithTicketContext(clientId: string, payload: unknown): Promise<unknown> {
     if (!payload || typeof payload !== 'object') {
       return payload;
@@ -1103,11 +1173,26 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       return payload;
     }
 
+    const promptForAutoContext = (
+      (typed as { message?: string; title?: string }).message ??
+      (typed as { message?: string; title?: string }).title ??
+      ''
+    ).trim();
+    const {
+      enabledGlobal: workspaceAutoEnrichEnabledGlobal,
+      vectorMaxCosineDistance: workspaceAutoEnrichVectorMaxCosineDistance,
+    } = await this.resolveWorkspaceAutoEnrichSettings(clientId);
+    const resolvedContextInjection = await this.autoContextResolverService.resolve({
+      clientId,
+      prompt: promptForAutoContext,
+      contextInjection,
+      workspaceAutoEnrichEnabledGlobal,
+      workspaceAutoEnrichVectorMaxCosineDistance,
+    });
     const ticketShas = Array.from(
-      new Set((contextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
+      new Set((resolvedContextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
     const ticketContexts: string[] = [];
-    const autoInjectedRelationContexts: string[] = [];
 
     for (const sha of ticketShas) {
       try {
@@ -1115,18 +1200,6 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
         if (prompt?.prompt) {
           ticketContexts.push(prompt.prompt);
-        }
-
-        const ticketId = await this.ticketsService.resolveTicketIdByClientSha(clientId, sha);
-
-        if (ticketId) {
-          const related = await this.knowledgeTreeService.collectPromptContextsForSource(
-            clientId,
-            KnowledgeRelationSourceType.TICKET,
-            ticketId,
-          );
-
-          autoInjectedRelationContexts.push(...related.promptSections);
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -1136,7 +1209,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     const knowledgeShas = Array.from(
-      new Set((contextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
+      new Set((resolvedContextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
 
     if (ticketShas.length === 0 && knowledgeShas.length === 0) {
@@ -1153,22 +1226,6 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         );
 
         knowledgeContexts = knowledgeContextResponse.promptSections;
-
-        for (const sha of knowledgeShas) {
-          const node = await this.knowledgeTreeService.findNodeBySha(clientId, sha);
-
-          if (!node || node.nodeType !== 'page') {
-            continue;
-          }
-
-          const related = await this.knowledgeTreeService.collectPromptContextsForSource(
-            clientId,
-            KnowledgeRelationSourceType.PAGE,
-            node.id,
-          );
-
-          autoInjectedRelationContexts.push(...related.promptSections);
-        }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
@@ -1179,13 +1236,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     return {
       ...typed,
       contextInjection: {
-        ...contextInjection,
+        ...resolvedContextInjection,
         ticketShas,
         ticketContexts,
         knowledgeShas,
         knowledgeContexts: Array.from(
           new Set(
-            [...knowledgeContexts, ...autoInjectedRelationContexts]
+            [...knowledgeContexts, ...(resolvedContextInjection.knowledgeContexts ?? [])]
               .map((ctx) => ctx.trim())
               .filter((ctx) => ctx.length > 0),
           ),

@@ -116,6 +116,7 @@ export interface ContextInjectionPayload {
   environmentIds?: string[];
   ticketShas?: string[];
   knowledgeShas?: string[];
+  autoEnrichmentEnabled?: boolean;
 }
 
 /**

@@ -17,6 +17,7 @@ import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-conne
 
 import { ClientsController } from '../controllers/clients.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
@@ -44,6 +45,7 @@ import { AutonomousTicketScheduler } from '../services/autonomous-ticket.schedul
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { KnowledgeEmbeddingIndexScheduler } from '../services/knowledge-embedding-index.scheduler';
 
 import { ClientsModule } from './clients.module';
 import { FilterRulesModule } from './filter-rules.module';
@@ -151,6 +153,8 @@ describe('ClientsModule', () => {
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(KnowledgeNodeEntity))
       .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(KnowledgeNodeEmbeddingEntity))
+      .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(KnowledgeRelationEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(KnowledgePageActivityEntity))
@@ -158,6 +162,12 @@ describe('ClientsModule', () => {
       .overrideProvider(UsersRepository)
       .useValue(mockRepository)
       .overrideProvider(AutonomousTicketScheduler)
+      .useValue({
+        onModuleInit: jest.fn(),
+        onModuleDestroy: jest.fn(),
+        tick: jest.fn().mockResolvedValue(undefined),
+      })
+      .overrideProvider(KnowledgeEmbeddingIndexScheduler)
       .useValue({
         onModuleInit: jest.fn(),
         onModuleDestroy: jest.fn(),

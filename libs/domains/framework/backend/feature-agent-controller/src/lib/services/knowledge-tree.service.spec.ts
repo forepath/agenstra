@@ -44,6 +44,10 @@ describe('KnowledgeTreeService', () => {
   const knowledgeBoardRealtime: any = {
     emitToClient: jest.fn(),
   };
+  const knowledgeEmbeddingIndexService: any = {
+    reindexPage: jest.fn(),
+    deleteForNode: jest.fn(),
+  };
   const service = new KnowledgeTreeService(
     nodeRepo,
     relationRepo,
@@ -54,6 +58,7 @@ describe('KnowledgeTreeService', () => {
     ticketsService,
     ticketBoardRealtime,
     knowledgeBoardRealtime,
+    knowledgeEmbeddingIndexService,
   );
 
   beforeEach(() => {

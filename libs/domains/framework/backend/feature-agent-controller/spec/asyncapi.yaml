@@ -464,7 +464,7 @@ components:
               When event is "closeTerminal", the payload should contain {sessionId: string}.
               When event is "enhanceChat", the payload should contain { message: string, correlationId: string, model?: string }.
               When event is "generateTicketBody", the payload should contain { title: string, correlationId: string, model?: string }.
-              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string, contextInjection?: { includeWorkspace?: boolean, environmentIds?: string[] } }.
+              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string, contextInjection?: { includeWorkspace?: boolean, environmentIds?: string[], ticketShas?: string[], knowledgeShas?: string[], autoEnrichmentEnabled?: boolean } }.
               Response events forwarded from the agent-manager include "containerStats" (payload has status.running and optional stats).
           agentId:
             type: string

@@ -89,6 +89,26 @@ export class StatisticsService {
   }
 
   /**
+   * Record auto-context enrichment application counts per turn.
+   * Stores injected section count in wordCount and combined character volume in charCount.
+   */
+  async recordAutoContextEnrichment(
+    clientId: string,
+    agentId: string,
+    sectionsInjected: number,
+    charsInjected: number,
+  ): Promise<void> {
+    await this.recordChatOutput(
+      clientId,
+      agentId,
+      sectionsInjected,
+      charsInjected,
+      undefined,
+      StatisticsInteractionKind.AUTO_CONTEXT_ENRICHMENT,
+    );
+  }
+
+  /**
    * Record a chat message that was filtered/dropped. For outgoing drops,
    * wordCount/charCount may be 0 when not available from agent-manager.
    */

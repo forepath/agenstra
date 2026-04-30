@@ -72,6 +72,7 @@ interface ContextInjectionPayload {
   ticketContexts?: string[];
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
+  autoEnrichmentEnabled?: boolean;
 }
 
 interface ChatEnhanceSuccessData {
@@ -491,6 +492,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const toolCallId = `enrichment-${correlationId}`;
     const enrichmentArgs = {
       includeWorkspace: contextInjection.includeWorkspace === true,
+      autoEnrichmentEnabled: contextInjection.autoEnrichmentEnabled !== false,
       environmentIds: contextInjection.environmentIds ?? [],
       ticketShas: contextInjection.ticketShas ?? [],
       ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
@@ -513,6 +515,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         result: {
           applied: true,
           includeWorkspace: contextInjection.includeWorkspace === true,
+          autoEnrichmentEnabled: contextInjection.autoEnrichmentEnabled !== false,
           environmentIds: contextInjection.environmentIds ?? [],
           ticketShas: contextInjection.ticketShas ?? [],
           ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
@@ -667,6 +670,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const includeWorkspace = contextInjection.includeWorkspace === true;
+    const autoEnrichmentEnabled = contextInjection.autoEnrichmentEnabled !== false;
     const requestedIds = Array.from(
       new Set((contextInjection.environmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
     );
@@ -699,6 +703,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (
       !includeWorkspace &&
+      !autoEnrichmentEnabled &&
       allowedIds.length === 0 &&
       ticketShas.length === 0 &&
       ticketContexts.length === 0 &&
@@ -710,6 +715,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     return {
       includeWorkspace,
+      autoEnrichmentEnabled,
       environmentIds: allowedIds,
       ticketShas,
       ticketContexts,

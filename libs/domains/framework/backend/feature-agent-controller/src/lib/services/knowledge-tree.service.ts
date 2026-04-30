@@ -37,6 +37,7 @@ import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 
+import { KnowledgeEmbeddingIndexService } from './embeddings/knowledge-embedding-index.service';
 import { KNOWLEDGE_BOARD_EVENTS } from './knowledge-board-realtime.constants';
 import { KnowledgeBoardRealtimeService } from './knowledge-board-realtime.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
@@ -58,6 +59,7 @@ export class KnowledgeTreeService {
     private readonly ticketsService: TicketsService,
     private readonly ticketBoardRealtime: TicketBoardRealtimeService,
     private readonly knowledgeBoardRealtime: KnowledgeBoardRealtimeService,
+    private readonly knowledgeEmbeddingIndexService: KnowledgeEmbeddingIndexService,
   ) {}
 
   private async assertClientAccess(clientId: string, req?: RequestWithUser): Promise<void> {
@@ -290,6 +292,7 @@ export class KnowledgeTreeService {
     this.emitKnowledgeTreeChanged(saved.clientId);
 
     if (saved.nodeType === KnowledgeNodeType.PAGE) {
+      await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
       await this.appendPageActivity(saved.id, saved.clientId, KnowledgeActionType.CREATED, { title: saved.title }, req);
     }
 
@@ -379,6 +382,8 @@ export class KnowledgeTreeService {
     this.emitKnowledgeTreeChanged(saved.clientId);
 
     if (saved.nodeType === KnowledgeNodeType.PAGE) {
+      await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
+
       if (before.parentId !== (saved.parentId ?? null)) {
         await this.appendPageActivity(
           saved.id,
@@ -441,6 +446,7 @@ export class KnowledgeTreeService {
     }
 
     await this.knowledgeNodeRepo.delete(node.id);
+    await this.knowledgeEmbeddingIndexService.deleteForNode(node.id);
     this.emitKnowledgeTreeChanged(node.clientId);
   }
 
@@ -491,6 +497,12 @@ export class KnowledgeTreeService {
     this.emitKnowledgeTreeChanged(seed.clientId);
 
     if (duplicated.nodeType === KnowledgeNodeType.PAGE) {
+      await this.knowledgeEmbeddingIndexService.reindexPage(
+        duplicated.clientId,
+        duplicated.id,
+        duplicated.title,
+        duplicated.content ?? '',
+      );
       await this.appendPageActivity(
         duplicated.id,
         duplicated.clientId,

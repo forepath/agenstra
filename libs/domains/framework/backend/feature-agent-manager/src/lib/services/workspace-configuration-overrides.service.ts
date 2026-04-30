@@ -54,15 +54,39 @@ export class WorkspaceConfigurationOverridesService implements OnModuleInit {
   async upsertOverride(settingKeyRaw: string, value: string): Promise<WorkspaceConfigurationSettingResponseDto> {
     const settingKey = this.validateSettingKey(settingKeyRaw);
     const envVarName = WORKSPACE_CONFIGURATION_ENV_BY_SETTING[settingKey];
+    let storedValue = value;
 
-    await this.repository.upsert(settingKey, value);
-    process.env[envVarName] = value;
-    await this.agentEnvironmentVariablesService.reconcileWorkspaceConfigurationOverrides({ [envVarName]: value });
+    if (settingKey === 'autoEnrichEnabledGlobal') {
+      const normalized = value.trim().toLowerCase();
+
+      if (normalized !== 'true' && normalized !== 'false') {
+        throw new BadRequestException('autoEnrichEnabledGlobal must be "true" or "false"');
+      }
+
+      storedValue = normalized;
+    }
+
+    if (settingKey === 'autoEnrichVectorMaxCosineDistance') {
+      const trimmed = value.trim();
+      const parsed = Number.parseFloat(trimmed);
+
+      if (!Number.isFinite(parsed) || parsed < 0 || parsed > 2) {
+        throw new BadRequestException('autoEnrichVectorMaxCosineDistance must be a number between 0 and 2');
+      }
+
+      storedValue = trimmed;
+    }
+
+    await this.repository.upsert(settingKey, storedValue);
+    process.env[envVarName] = storedValue;
+    await this.agentEnvironmentVariablesService.reconcileWorkspaceConfigurationOverrides({
+      [envVarName]: storedValue,
+    });
 
     return {
       settingKey,
       envVarName,
-      value,
+      value: storedValue,
       source: 'override',
       hasOverride: true,
     };

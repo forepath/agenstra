@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: agent-controller-postgres
     environment:
       POSTGRES_USER: postgres
@@ -28,6 +28,16 @@ services:
       WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-clients}
       WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
       NODE_ENV: ${NODE_ENV:-development}
+      # Prompt auto-enrichment (Socket.IO → agent-manager; vector path uses controller env)
+      AUTO_ENRICH_ENABLED_GLOBAL: ${AUTO_ENRICH_ENABLED_GLOBAL:-true}
+      AUTO_ENRICH_VECTOR_ENABLED: ${AUTO_ENRICH_VECTOR_ENABLED:-true}
+      AUTO_ENRICH_MAX_SECTIONS: ${AUTO_ENRICH_MAX_SECTIONS:-6}
+      AUTO_ENRICH_MAX_CHARS: ${AUTO_ENRICH_MAX_CHARS:-12000}
+      AUTO_ENRICH_VECTOR_TOP_K: ${AUTO_ENRICH_VECTOR_TOP_K:-20}
+      # Max pgvector cosine distance (<=>) for knowledge chunks in vector auto-enrichment (0–2; default 1)
+      AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: ${AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE:-1}
+      # Full knowledge-embedding reindex interval (ms); set <= 0 to disable scheduler
+      KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: ${KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS:-3600000}
       # Database configuration
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: ${DB_PORT:-5432}

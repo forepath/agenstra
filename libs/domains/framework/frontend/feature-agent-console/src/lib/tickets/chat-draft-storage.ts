@@ -11,6 +11,7 @@ export interface AgentConsoleChatDraftV2 {
   message: string;
   contextInjection?: {
     includeWorkspaceContext: boolean;
+    autoEnrichmentEnabled: boolean;
     selectedEnvironmentContextIds: string[];
     selectedTicketContextShas?: string[];
     selectedKnowledgeContextShas?: string[];
@@ -22,6 +23,7 @@ export function storeAgentConsoleChatDraft(
   options?: {
     contextInjection?: {
       includeWorkspaceContext: boolean;
+      autoEnrichmentEnabled: boolean;
       selectedEnvironmentContextIds: string[];
       selectedTicketContextShas?: string[];
       selectedKnowledgeContextShas?: string[];
@@ -39,6 +41,7 @@ export function storeAgentConsoleChatDraft(
       ? {
           contextInjection: {
             includeWorkspaceContext: options.contextInjection.includeWorkspaceContext === true,
+            autoEnrichmentEnabled: options.contextInjection.autoEnrichmentEnabled !== false,
             selectedEnvironmentContextIds: [...new Set(options.contextInjection.selectedEnvironmentContextIds ?? [])],
             selectedTicketContextShas: [...new Set(options.contextInjection.selectedTicketContextShas ?? [])],
             selectedKnowledgeContextShas: [...new Set(options.contextInjection.selectedKnowledgeContextShas ?? [])],
@@ -57,6 +60,7 @@ export function readAndClearAgentConsoleChatDraft(): {
   message: string;
   contextInjection?: {
     includeWorkspaceContext: boolean;
+    autoEnrichmentEnabled: boolean;
     selectedEnvironmentContextIds: string[];
     selectedTicketContextShas?: string[];
     selectedKnowledgeContextShas?: string[];
@@ -84,6 +88,7 @@ export function readAndClearAgentConsoleChatDraft(): {
           ? {
               contextInjection: {
                 includeWorkspaceContext: data.contextInjection.includeWorkspaceContext === true,
+                autoEnrichmentEnabled: data.contextInjection.autoEnrichmentEnabled !== false,
                 selectedEnvironmentContextIds: [...new Set(data.contextInjection.selectedEnvironmentContextIds ?? [])],
                 selectedTicketContextShas: [...new Set(data.contextInjection.selectedTicketContextShas ?? [])],
                 selectedKnowledgeContextShas: [...new Set(data.contextInjection.selectedKnowledgeContextShas ?? [])],

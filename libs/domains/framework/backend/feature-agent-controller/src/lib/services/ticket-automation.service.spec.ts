@@ -124,6 +124,7 @@ describe('TicketAutomationService', () => {
         allowedAgentIds: [] as string[],
         includeWorkspaceContext: true,
         contextEnvironmentIds: [] as string[],
+        autoEnrichmentEnabled: true,
         verifierProfile: null as { commands: Array<{ cmd: string; cwd?: string }> } | null,
         requiresApproval: false,
         approvedAt: null as Date | null,

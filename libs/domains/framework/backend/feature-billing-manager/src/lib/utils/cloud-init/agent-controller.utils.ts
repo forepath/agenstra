@@ -235,7 +235,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
   };
   const dockerCompose = `services:
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: agent-controller-postgres
     environment:
       POSTGRES_USER: ${config.backend?.database?.username ?? 'postgres'}
