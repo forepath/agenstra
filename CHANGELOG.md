@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.51.0](https://github.com/forepath/agenstra/compare/v1.50.0...v1.51.0) (2026-05-01)
+
+
+### Features
+
+* ai feature prototyping skill ([#300](https://github.com/forepath/agenstra/issues/300)) ([5897aa9](https://github.com/forepath/agenstra/commit/5897aa97a672a15677b42cbe726d7b3bce85ee9a))
+* chat preservation and extended environment management ([#303](https://github.com/forepath/agenstra/issues/303)) ([f83a968](https://github.com/forepath/agenstra/commit/f83a968fb4fd8191aa605b6851542a90111d065e))
+* page content management and context injection ([#302](https://github.com/forepath/agenstra/issues/302)) ([52026b4](https://github.com/forepath/agenstra/commit/52026b4e85e30b3cd64051d068ac408c77fdf229))
+* support multi-repo workspace context injection ([#301](https://github.com/forepath/agenstra/issues/301)) ([387f86a](https://github.com/forepath/agenstra/commit/387f86a6f81c0449cd133e0646b26fa2e09491ac))
+
+
+### Chores
+
+* adapt landingpage content ([#305](https://github.com/forepath/agenstra/issues/305)) ([cc6cbf2](https://github.com/forepath/agenstra/commit/cc6cbf2e509e72af8d9a50997a7a4c01da970906))
+* vcs message scope rule ([#299](https://github.com/forepath/agenstra/issues/299)) ([4d02989](https://github.com/forepath/agenstra/commit/4d029893240641dd15a14f99e887d0a44ca8b0df))
+
+
+### Documentation
+
+* add missing licenses ([#296](https://github.com/forepath/agenstra/issues/296)) ([bafd339](https://github.com/forepath/agenstra/commit/bafd339d9346ebf1ccefabd6cdd9cd7855b89c62))
+
+
+### Code Refactoring
+
+* extended linting for cleaner code ([#298](https://github.com/forepath/agenstra/issues/298)) ([5ed41d3](https://github.com/forepath/agenstra/commit/5ed41d3384aa0db10face73b876dbd0f8f03feeb))
+
+
+### Continuous Integration
+
+* publish sboms to cloudflare r2 ([#297](https://github.com/forepath/agenstra/issues/297)) ([65cebc6](https://github.com/forepath/agenstra/commit/65cebc65e81368fdd9b02b1f33fdd0374a930919))
+
 ## [1.50.0](https://github.com/forepath/agenstra/compare/v1.49.0...v1.50.0) (2026-04-25)
 
 
