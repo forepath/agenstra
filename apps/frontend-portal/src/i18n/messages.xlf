@@ -639,7 +639,7 @@
         <source>Auth &amp; Access Control</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge8" datatype="html">
-        <source>Tickets &amp; Workspaces</source>
+        <source>Tickets, Knowledge &amp; Workspaces</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-getStartedHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>
@@ -705,7 +705,7 @@
         <source>Plan and track</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem5Desc" datatype="html">
-        <source> Run tickets and priorities per workspace so agent work stays tied to outcomes, not lost in side channels </source>
+        <source>Run tickets, priorities, and knowledge pages per workspace so agent work stays tied to outcomes and context</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem6Title" datatype="html">
         <source>Run code</source>
@@ -756,16 +756,16 @@
         <source>Generate audit logs that show what decisions an agent made and why</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Title" datatype="html">
-        <source>Project management</source>
+        <source>Planning and knowledge</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item1" datatype="html">
         <source>Track work per workspace with tickets, priorities, and status so agent initiatives stay visible next to execution</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item2" datatype="html">
-        <source>Break larger goals into subtasks and keep context linked when work moves between agents, tools, or people</source>
+        <source>Build structured knowledge with folders and markdown pages, then find what matters quickly with workspace search</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item3" datatype="html">
-        <source>Give leads one place to see what is queued, in progress, and ready for review instead of losing intent in chat threads</source>
+        <source>Link tickets and knowledge so context, decisions, and activity stay connected while work moves across agents and people</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability4Title" datatype="html">
         <source>Secure connectivity</source>
@@ -792,7 +792,7 @@
         <source>Keep all configuration in version control where reviews and history already live</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem3" datatype="html">
-        <source>Use environments, feature flags, and deployment flows similar to your application stack</source>
+        <source>Use environments, workspaces, and pipelines in your development workflow</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem4" datatype="html">
         <source>Expose safe surfaces for product and domain experts to adjust behavior without touching code</source>
