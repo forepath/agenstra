@@ -1,0 +1,95 @@
+<!-- Hero -->
+<section class="py-10 py-lg-6 bg-dark text-white" id="hero">
+  <div class="container">
+    <h1 class="display-5 fw-semibold mb-3 hero-title">
+      <span class="text-primary">{{ page.competitorDisplayName }}</span>
+      <span class="text-white" i18n="@@featurePortalComparison-heroVs"> vs. </span>
+      <span class="text-white">Agenstra</span>
+    </h1>
+    <p class="lead hero-lead max-w-750 mb-0">{{ page.heroSubtitle }}</p>
+  </div>
+</section>
+
+<!-- Overview -->
+<section class="py-5 bg-body-tertiary">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <h2 class="h4 fw-semibold text-dark mb-3">{{ page.competitorDisplayName }}</h2>
+        <p class="text-muted mb-0 lh-lg">{{ page.overviewCompetitorLead }}</p>
+      </div>
+      <div class="col-lg-6">
+        <h2 class="h4 fw-semibold text-dark mb-3" i18n="@@featurePortalComparison-overviewUsHeading">Agenstra</h2>
+        <p class="text-muted mb-0 lh-lg">{{ page.overviewAgenstraLead }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Matrix -->
+<section class="py-10 bg-white" id="matrix">
+  <div class="container">
+    <h2
+      class="h2 fw-semibold mb-4 text-center mx-auto section-title-lg text-dark"
+      i18n="@@featurePortalComparison-matrixHeading"
+    >
+      Feature comparison
+    </h2>
+    <p class="lead mb-5 text-center mx-auto text-muted section-lead" i18n="@@featurePortalComparison-matrixIntro">
+      The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics.
+    </p>
+    <framework-portal-comparison-matrix [slug]="page.slug" [competitorColumnLabel]="page.competitorDisplayName" />
+  </div>
+</section>
+
+<!-- Technology fit + cross-links -->
+<section class="py-10 bg-dark">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-primary rounded-4 text-white p-10 shadow-sm position-relative">
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalComparison-technologyFitHeading">
+                Build with technology that fits your needs
+              </h2>
+              <p class="lead mb-5 cta-lead-light">{{ page.technologyFitLead }}</p>
+            </div>
+            <div class="col-lg-4">
+              <div
+                class="bg-white text-dark px-5 pb-5 pt-10 shadow-sm rounded-3 rounded-top-0 position-absolute top-0 me-10 end-0 comparison-more-comparisons"
+              >
+                <h2 class="h6 fw-semibold mb-3" i18n="@@featurePortalComparison-moreHeading">More comparisons</h2>
+                <ul class="list-unstyled mb-0 small">
+                  @for (item of otherComparisons; track item.slug) {
+                    <li class="mb-2">
+                      <a [routerLink]="item.routerLink" class="text-decoration-none">{{ item.label }}</a>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex flex-wrap gap-3 mt-5">
+            <a
+              href="mailto:hi@agenstra.com"
+              class="btn btn-light btn-lg px-5 py-3 rounded-2 fw-semibold home-cta-btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featurePortalComparison-ctaDemo"
+            >
+              Book a demo
+            </a>
+            <a
+              routerLink="/pricing"
+              class="btn btn-outline-light btn-lg px-5 py-3 rounded-2 home-cta-btn-secondary"
+              i18n="@@featurePortalComparison-ctaPricing"
+            >
+              View pricing
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

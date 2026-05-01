@@ -221,6 +221,9 @@
       <trans-unit id="featureChat-manageClientUsersTitle" datatype="html">
         <source>Manage workspace users</source>
         </trans-unit>
+      <trans-unit id="featureChat-manageWorkspaceConfigurationTitle" datatype="html">
+        <source>Manage workspace configuration</source>
+        </trans-unit>
       <trans-unit id="featureChat-editWorkspaceTitle" datatype="html">
         <source>Edit workspace</source>
         </trans-unit>
@@ -549,6 +552,27 @@
       <trans-unit id="featureChat-updateEnvironment" datatype="html">
         <source>Update Environment</source>
         </trans-unit>
+      <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
+        <source> Manage Workspace Configuration </source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationSettings" datatype="html">
+        <source>Workspace Configuration Settings</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationValuePlaceholder" datatype="html">
+        <source>Enter override value</source>
+        </trans-unit>
+      <trans-unit id="featureChat-saveWorkspaceConfigurationTitle" datatype="html">
+        <source>Save override</source>
+        </trans-unit>
+      <trans-unit id="featureChat-deleteWorkspaceConfigurationOverrideTitle" datatype="html">
+        <source>Delete override</source>
+        </trans-unit>
+      <trans-unit id="featureChat-envVarsWarning" datatype="html">
+        <source>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-close" datatype="html">
+        <source>Close</source>
+        </trans-unit>
       <trans-unit id="featureChat-manageEnvVarsModalTitle" datatype="html">
         <source> Manage Environment Variables </source>
         </trans-unit>
@@ -584,12 +608,6 @@
         </trans-unit>
       <trans-unit id="featureChat-deleteTitle" datatype="html">
         <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureChat-envVarsWarning" datatype="html">
-        <source>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</source>
-        </trans-unit>
-      <trans-unit id="featureChat-close" datatype="html">
-        <source>Close</source>
         </trans-unit>
       <trans-unit id="featureChat-ticketAutonomyModalTitle" datatype="html">
         <source> Prototype autonomy </source>
@@ -716,6 +734,15 @@
         </trans-unit>
       <trans-unit id="featureChat-openDeploymentManager" datatype="html">
         <source>Open Deployment Manager</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationSourceLabel" datatype="html">
+        <source>Override</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationSourceLabelDefaultEnvironment" datatype="html">
+        <source>Default environment</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceConfigurationSourceLabelUnset" datatype="html">
+        <source>Unset</source>
         </trans-unit>
       <trans-unit id="featureContainer-loadingFile" datatype="html">
         <source>Loading file...</source>
@@ -1529,7 +1556,7 @@
         <source> Type to search all pages and folders in this workspace. </source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-noMatchingNodes" datatype="html">
-        <source>No matching pages or folders</source>
+        <source> No matching pages or folders </source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-close" datatype="html">
         <source> Close </source>
@@ -2022,7 +2049,7 @@
         <source> Add relations </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-loadingRelations" datatype="html">
-        <source>Loading relations...</source>
+        <source> Loading relations... </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-removeRelationTitle" datatype="html">
         <source>Remove relation</source>
@@ -2954,24 +2981,6 @@
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureChat-manageWorkspaceConfigurationTitle" datatype="html">
-        <source>Manage workspace configuration</source>
-        </trans-unit>
-      <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
-        <source>Manage Workspace Configuration</source>
-        </trans-unit>
-      <trans-unit id="featureChat-workspaceConfigurationSettings" datatype="html">
-        <source>Workspace Configuration Settings</source>
-        </trans-unit>
-      <trans-unit id="featureChat-workspaceConfigurationValuePlaceholder" datatype="html">
-        <source>Enter override value</source>
-        </trans-unit>
-      <trans-unit id="featureChat-saveWorkspaceConfigurationTitle" datatype="html">
-        <source>Save override</source>
-        </trans-unit>
-      <trans-unit id="featureChat-deleteWorkspaceConfigurationOverrideTitle" datatype="html">
-        <source>Delete override</source>
         </trans-unit>
     </body>
   </file>

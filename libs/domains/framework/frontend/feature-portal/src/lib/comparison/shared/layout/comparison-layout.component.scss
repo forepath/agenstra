@@ -1,0 +1,24 @@
+@import '../../../page.component.scss';
+
+.hero-lead.max-w-750 {
+  max-width: 750px;
+}
+
+.max-w-750 {
+  max-width: 750px;
+}
+
+.comparison-more-comparisons {
+  @media (max-width: 991px) {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    margin-top: 0 !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 3rem !important;
+    border-top-left-radius: var(--bs-border-radius-lg) !important;
+    border-top-right-radius: var(--bs-border-radius-lg) !important;
+  }
+}

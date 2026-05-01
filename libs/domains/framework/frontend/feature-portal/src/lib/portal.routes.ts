@@ -11,6 +11,13 @@ import { provideState } from '@ngrx/store';
 
 import { PortalAgentCtxComponent } from './agentctx/agentctx.component';
 import { PortalCloudComponent } from './cloud/cloud.component';
+import { PortalComparisonCodeiumWindsurfComponent } from './comparison/codeium-windsurf/codeium-windsurf.component';
+import { PortalComparisonCursorComponent } from './comparison/cursor/cursor.component';
+import { PortalComparisonDevinComponent } from './comparison/devin/devin.component';
+import { PortalComparisonGithubCopilotComponent } from './comparison/github-copilot/github-copilot.component';
+import { PortalComparisonOrqAiComponent } from './comparison/orq-ai/orq-ai.component';
+import { PortalComparisonPortkeyComponent } from './comparison/portkey/portkey.component';
+import { PortalComparisonTabnineEnterpriseComponent } from './comparison/tabnine-enterprise/tabnine-enterprise.component';
 import { PortalContainerComponent } from './container/container.component';
 import { PortalDesktopComponent } from './desktop/desktop.component';
 import { PortalHomeComponent } from './home/home.component';
@@ -52,6 +59,34 @@ export const portalRoutes: Route[] = [
       {
         path: 'pricing',
         component: PortalPricingComponent,
+      },
+      {
+        path: 'compare/devin',
+        component: PortalComparisonDevinComponent,
+      },
+      {
+        path: 'compare/cursor',
+        component: PortalComparisonCursorComponent,
+      },
+      {
+        path: 'compare/github-copilot',
+        component: PortalComparisonGithubCopilotComponent,
+      },
+      {
+        path: 'compare/codeium-windsurf',
+        component: PortalComparisonCodeiumWindsurfComponent,
+      },
+      {
+        path: 'compare/tabnine-enterprise',
+        component: PortalComparisonTabnineEnterpriseComponent,
+      },
+      {
+        path: 'compare/portkey',
+        component: PortalComparisonPortkeyComponent,
+      },
+      {
+        path: 'compare/orq-ai',
+        component: PortalComparisonOrqAiComponent,
       },
       {
         path: 'legal/disclosure',

@@ -1,0 +1,62 @@
+<div class="table-responsive comparison-matrix-table shadow-sm border rounded-3">
+  <table class="table table-hover mb-0 align-middle">
+    <thead>
+      <tr>
+        <th
+          scope="col"
+          class="comparison-matrix-col-capability p-3"
+          i18n="@@featurePortalComparison-matrixColCapability"
+        >
+          Capability
+        </th>
+        <th
+          scope="col"
+          class="text-center comparison-matrix-col-vendor bg-body-tertiary p-3"
+          i18n="@@featurePortalComparison-matrixColAgenstra"
+        >
+          Agenstra
+        </th>
+        <th scope="col" class="text-center comparison-matrix-col-vendor p-3">{{ competitorColumnLabel }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows; track row.dimension) {
+        <tr>
+          <td class="px-3 py-2">
+            <div class="fw-semibold">{{ row.dimension }}</div>
+            <div class="small text-secondary mt-1 comparison-matrix-question">{{ row.question }}</div>
+          </td>
+          <td class="text-center bg-body-tertiary px-3 py-2">
+            @let ag = matrixStrengthVisual(row.agenstra);
+            <span
+              class="comparison-matrix-icon d-inline-flex justify-content-center"
+              [attr.title]="row.agenstraTooltip"
+              role="img"
+              [attr.aria-label]="ag.label + '. Agenstra. ' + row.dimension"
+            >
+              <i class="bi fs-4" [ngClass]="[ag.iconClass, ag.colorClass]" aria-hidden="true"></i>
+            </span>
+          </td>
+          <td class="text-center px-3 py-2">
+            @let co = matrixStrengthVisual(row.competitor);
+            <span
+              class="comparison-matrix-icon d-inline-flex justify-content-center"
+              [attr.title]="row.competitorTooltip"
+              role="img"
+              [attr.aria-label]="co.label + '. ' + competitorColumnLabel + '. ' + row.dimension"
+            >
+              <i class="bi fs-4" [ngClass]="[co.iconClass, co.colorClass]" aria-hidden="true"></i>
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<p
+  class="small text-secondary mt-5 mb-0 comparison-matrix-legend text-center"
+  i18n="@@featurePortalComparison-matrixLegend"
+>
+  Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are
+  meant for orientation. They are not a substitute for your own procurement review.
+</p>

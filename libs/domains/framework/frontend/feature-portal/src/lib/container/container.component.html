@@ -36,46 +36,65 @@
         </button>
         <div class="collapse navbar-collapse mobile-navbar" [class.mobile-open]="mobileMenuOpen()" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item">
+            <li class="nav-item dropdown">
               <a
-                routerLink="/"
-                class="nav-link text-white"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: true }"
-                (click)="closeMobileMenu()"
-                i18n="@@featurePortal-navPlatform"
-                >Platform</a
+                class="nav-link dropdown-toggle text-white"
+                [class.active]="productDropdownActive()"
+                href="#"
+                id="productNavDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
               >
-            </li>
-            <li class="nav-item">
-              <a
-                routerLink="/agentctx"
-                class="nav-link text-white"
-                routerLinkActive="active"
-                (click)="closeMobileMenu()"
-                i18n="@@featurePortal-navAgentctx"
-                >AgentCTX</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                routerLink="/desktop"
-                class="nav-link text-white"
-                routerLinkActive="active"
-                (click)="closeMobileMenu()"
-                i18n="@@featurePortal-navDesktop"
-                >Desktop</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                routerLink="/cloud"
-                class="nav-link text-white"
-                routerLinkActive="active"
-                (click)="closeMobileMenu()"
-                i18n="@@featurePortal-navCloud"
-                >Cloud</a
-              >
+                <span i18n="@@featurePortal-navProduct">Product</span>
+                <i class="bi bi-chevron-down"></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="productNavDropdown">
+                <li>
+                  <a
+                    routerLink="/"
+                    class="dropdown-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featurePortal-navPlatform"
+                    >Platform</a
+                  >
+                </li>
+                <li>
+                  <a
+                    routerLink="/agentctx"
+                    class="dropdown-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featurePortal-navAgentctx"
+                    >AgentCTX</a
+                  >
+                </li>
+                <li>
+                  <a
+                    routerLink="/desktop"
+                    class="dropdown-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featurePortal-navDesktop"
+                    >Desktop</a
+                  >
+                </li>
+                <li>
+                  <a
+                    routerLink="/cloud"
+                    class="dropdown-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featurePortal-navCloud"
+                    >Cloud</a
+                  >
+                </li>
+              </ul>
             </li>
             <li class="nav-item">
               <a
@@ -86,6 +105,34 @@
                 i18n="@@featurePortal-navPricing"
                 >Pricing</a
               >
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle text-white"
+                [class.active]="comparisonDropdownActive()"
+                href="#"
+                id="comparisonNavDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span i18n="@@featurePortal-navComparison">Comparison</span>
+                <i class="bi bi-chevron-down"></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="comparisonNavDropdown">
+                @for (item of comparisonNavItems; track item.slug) {
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      [routerLink]="item.routerLink"
+                      routerLinkActive="active"
+                      [routerLinkActiveOptions]="{ exact: true }"
+                      (click)="closeMobileMenu()"
+                      >{{ item.label }}</a
+                    >
+                  </li>
+                }
+              </ul>
             </li>
             <li class="nav-item">
               <a
@@ -271,6 +318,14 @@
               >Documentation</a
             >
           </li>
+        </ul>
+        <h6 class="fw-bold mb-3 mt-4" i18n="@@featurePortal-footerComparison">Comparison</h6>
+        <ul class="list-unstyled mb-0">
+          @for (item of comparisonNavItems; track item.slug) {
+            <li class="mb-2">
+              <a [routerLink]="item.routerLink" class="text-decoration-none text-white small">{{ item.label }}</a>
+            </li>
+          }
         </ul>
       </div>
       <div class="col-md-3">
