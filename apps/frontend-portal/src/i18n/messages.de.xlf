@@ -851,8 +851,8 @@
         <target>Auth &amp; Zugriffskontrolle</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge8" datatype="html">
-        <source>Tickets &amp; Workspaces</source>
-        <target>Tickets &amp; Workspaces</target>
+        <source>Tickets, Knowledge &amp; Workspaces</source>
+        <target>Tickets, Wissen &amp; Workspaces</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-getStartedHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>
@@ -943,8 +943,8 @@
         <target>Planen und verfolgen</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem5Desc" datatype="html">
-        <source>Run tickets and priorities per workspace so agent work stays tied to outcomes, not lost in side channels</source>
-        <target>Führen Sie Tickets und Prioritäten pro Workspace, damit Agenten-Arbeit an Ergebnisse gebunden bleibt und nicht in Nebenkanälen verloren geht</target>
+        <source>Run tickets, priorities, and knowledge pages per workspace so agent work stays tied to outcomes and context</source>
+        <target>Führen Sie Tickets, Prioritäten und Wissensseiten pro Workspace, damit Agentenarbeit an Ergebnisse und Kontext gebunden bleibt</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem6Title" datatype="html">
         <source>Run code</source>
@@ -1011,20 +1011,20 @@
         <target>Generieren Sie Audit-Logs, die zeigen, welche Entscheidungen ein Agent getroffen hat und warum</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Title" datatype="html">
-        <source>Project management</source>
-        <target>Projektmanagement</target>
+        <source>Planning and knowledge</source>
+        <target>Planung und Wissen</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item1" datatype="html">
         <source>Track work per workspace with tickets, priorities, and status so agent initiatives stay visible next to execution</source>
         <target>Verfolgen Sie Arbeit pro Workspace mit Tickets, Prioritäten und Status, damit Agenten-Initiativen neben der Ausführung sichtbar bleiben</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item2" datatype="html">
-        <source>Break larger goals into subtasks and keep context linked when work moves between agents, tools, or people</source>
-        <target>Zerlegen Sie größere Ziele in Unteraufgaben und halten Sie den Kontext verknüpft, wenn Arbeit zwischen Agenten, Tools oder Personen wechselt</target>
+        <source>Build structured knowledge with folders and markdown pages, then find what matters quickly with workspace search</source>
+        <target>Bauen Sie strukturiertes Wissen mit Ordnern und Markdown Seiten auf und finden Sie Wichtiges schnell mit der Workspace Suche</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item3" datatype="html">
-        <source>Give leads one place to see what is queued, in progress, and ready for review instead of losing intent in chat threads</source>
-        <target>Geben Sie Leads einen Ort, an dem sie sehen, was warteschlangiert, in Bearbeitung und zur Review bereit ist – statt Absicht in Chat-Verläufen zu verlieren</target>
+        <source>Link tickets and knowledge so context, decisions, and activity stay connected while work moves across agents and people</source>
+        <target>Verknüpfen Sie Tickets und Wissen, damit Kontext, Entscheidungen und Aktivität verbunden bleiben, wenn Arbeit zwischen Agenten und Personen wechselt</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability4Title" datatype="html">
         <source>Secure connectivity</source>
@@ -1059,8 +1059,8 @@
         <target>Behalten Sie alle Konfigurationen in der Versionskontrolle, wo Reviews und History bereits existieren</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem3" datatype="html">
-        <source>Use environments, feature flags, and deployment flows similar to your application stack</source>
-        <target>Verwenden Sie Umgebungen, Feature Flags und Deployment-Flows ähnlich wie in Ihrem Application-Stack</target>
+        <source>Use environments, workspaces, and pipelines in your development workflow</source>
+        <target>Verwenden Sie Konfigurationen, Arbeitsbereiche und Pipelines in Ihrem Entwicklungs-Workflow</target>
         </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem4" datatype="html">
         <source>Expose safe surfaces for product and domain experts to adjust behavior without touching code</source>
