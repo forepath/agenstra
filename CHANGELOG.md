@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.52.0](https://github.com/forepath/agenstra/compare/v1.51.0...v1.52.0) (2026-05-02)
+
+
+### Features
+
+* product comparison pages ([#306](https://github.com/forepath/agenstra/issues/306)) ([12a9a4b](https://github.com/forepath/agenstra/commit/12a9a4b4ecc86c1c0552ee765b1a0d7bcef9f1bf))
+
 ## [1.51.0](https://github.com/forepath/agenstra/compare/v1.50.0...v1.51.0) (2026-05-01)
 
 
