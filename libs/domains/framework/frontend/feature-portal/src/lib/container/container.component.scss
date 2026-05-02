@@ -201,9 +201,13 @@
 }
 
 .dropdown-toggle {
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 0.5rem;
+
+  @media (max-width: 767.98px) {
+    justify-content: space-between !important;
+  }
 
   &:after {
     display: none;
@@ -220,6 +224,20 @@
   &:focus {
     i {
       transform: rotate(180deg);
+    }
+  }
+}
+
+.dropdown-menu {
+  @media (max-width: 767.98px) {
+    background-color: var(--bs-secondary-bg);
+    border: 0;
+    margin-top: 0.25rem;
+  }
+
+  .dropdown-item {
+    @media (max-width: 767.98px) {
+      color: var(--bs-link-color) !important;
     }
   }
 }
