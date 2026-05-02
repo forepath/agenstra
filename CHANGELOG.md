@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.52.1](https://github.com/forepath/agenstra/compare/v1.52.0...v1.52.1) (2026-05-02)
+
+
+### Bug Fixes
+
+* mobile dropdown navigation styling ([#307](https://github.com/forepath/agenstra/issues/307)) ([4589271](https://github.com/forepath/agenstra/commit/4589271a74b978485e059d86e8685875e8a2dde9))
+
 ## [1.52.0](https://github.com/forepath/agenstra/compare/v1.51.0...v1.52.0) (2026-05-02)
 
 
