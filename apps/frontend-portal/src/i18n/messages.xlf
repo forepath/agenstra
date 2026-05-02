@@ -359,11 +359,582 @@
       <trans-unit id="featurePortalCloud-planPriceDay" datatype="html">
         <source>/day</source>
         </trans-unit>
+      <trans-unit id="featurePortalComparison-codeium-metaTitle" datatype="html">
+        <source>Codeium &amp; Windsurf vs. Agenstra. AI agent platform comparison</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeium-metaDescription" datatype="html">
+        <source>Compare Codeium and Windsurf with Agenstra’s multi-workspace agent control plane and browser IDE.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeium-heroSubtitle" datatype="html">
+        <source>Broad IDE coverage and optional self-hosted backends versus a dedicated agent operations console.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeium-overviewCompetitor" datatype="html">
+        <source>Codeium reaches developers across many editors, while Windsurf offers a dedicated AI-native editing experience from the same vendor. Organizations choose them for broad rollout, inline help inside existing repos, and deployment options that keep sensitive workloads closer to home.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeium-overviewAgenstra" datatype="html">
+        <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursor-metaTitle" datatype="html">
+        <source>Cursor vs. Agenstra. AI agent platform comparison</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursor-metaDescription" datatype="html">
+        <source>Compare Cursor’s AI-native editor with Agenstra’s web console and multi-workspace agent control plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursor-heroSubtitle" datatype="html">
+        <source>IDE-first velocity versus an operations-focused console for distributed agent hosts.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursor-overviewCompetitor" datatype="html">
+        <source>Cursor is an AI-first coding environment built around autocomplete, chat, and agent modes in the editor developers already use every day. It focuses on speed and depth inside the desktop workflow rather than running a separate fleet of agent hosts under your own control plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursor-overviewAgenstra" datatype="html">
+        <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devin-metaTitle" datatype="html">
+        <source>Devin vs. Agenstra. AI agent platform comparison</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devin-metaDescription" datatype="html">
+        <source>Compare Devin’s cloud autonomous engineer with Agenstra’s self-hosted multi-workspace control plane, tickets, knowledge, and deployments.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devin-heroSubtitle" datatype="html">
+        <source>Cloud sessions from Cognition versus a control plane you run for many Docker-backed coding agents.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devin-overviewCompetitor" datatype="html">
+        <source>Devin gives you a cloud-hosted autonomous engineer that works in a browser with Git and connects to the tools your teams already use for issues and delivery. It fits when you want the vendor to run the workspace and you value a managed experience over operating your own agent infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devin-overviewAgenstra" datatype="html">
+        <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilot-metaTitle" datatype="html">
+        <source>GitHub Copilot vs. Agenstra. AI agent platform comparison</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilot-metaDescription" datatype="html">
+        <source>Compare GitHub Copilot and Copilot coding agent with Agenstra’s self-hosted agent control plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilot-heroSubtitle" datatype="html">
+        <source>GitHub-native AI assistance versus an infrastructure-first agent operations stack.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilot-overviewCompetitor" datatype="html">
+        <source>GitHub Copilot brings AI assistance into GitHub and popular editors, with enterprise-grade access controls aligned to repos and organizations you already manage there. It fits teams that want GitHub to stay the hub for review, identity, and automation while AI stays close to pull requests and CI.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilot-overviewAgenstra" datatype="html">
+        <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orq-metaTitle" datatype="html">
+        <source>Orq.ai vs. Agenstra. AI agent platform comparison</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orq-metaDescription" datatype="html">
+        <source>Compare Orq.ai’s agent lifecycle platform with Agenstra’s self-hosted coding agent control plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orq-heroSubtitle" datatype="html">
+        <source>Managed experimentation and deployments versus ops-owned Docker agent infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orq-overviewCompetitor" datatype="html">
+        <source>Orq.ai helps teams prototype, deploy, and monitor generative AI agents and experiments across projects with roles and workspaces built for collaboration. It appeals when you want a hosted lifecycle platform for many AI use cases and compliance-aware deployment options from the vendor.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orq-overviewAgenstra" datatype="html">
+        <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkey-metaTitle" datatype="html">
+        <source>Portkey vs. Agenstra. AI agent platform comparison</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkey-metaDescription" datatype="html">
+        <source>Compare Portkey’s LLM gateway with Agenstra’s workspace-oriented agent control plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkey-heroSubtitle" datatype="html">
+        <source>Centralized model traffic governance versus Docker agent hosts with IDE and ticket workflows.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkey-overviewCompetitor" datatype="html">
+        <source>Portkey gives you a central gateway for model and agent traffic so you can enforce guardrails, trace usage, and switch providers without rewriting every application. Its strength is unified governance of LLM calls rather than a full product surface for coding agents, Git, and delivery boards.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkey-overviewAgenstra" datatype="html">
+        <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-heroVs" datatype="html">
+        <source> vs. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-overviewUsHeading" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixHeading" datatype="html">
+        <source> Feature comparison </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixIntro" datatype="html">
+        <source> The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-technologyFitHeading" datatype="html">
+        <source> Build with technology that fits your needs </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-moreHeading" datatype="html">
+        <source>More comparisons</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-ctaDemo" datatype="html">
+        <source> Book a demo </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-ctaPricing" datatype="html">
+        <source> View pricing </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-metaKeywords" datatype="html">
+        <source>Agenstra comparison, AI agent platform, AI control plane, DevOps agents, self-hosted AI</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim1" datatype="html">
+        <source>Multi-workspace control plane</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ1" datatype="html">
+        <source>Can we manage many isolated agent backends from one console?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim2" datatype="html">
+        <source>Team RBAC per workspace</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ2" datatype="html">
+        <source>Can we invite teammates with roles per workspace or client?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim3" datatype="html">
+        <source>Self-hosted / VPC deployment</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ3" datatype="html">
+        <source>Can we run on our own infrastructure or private cloud?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim4" datatype="html">
+        <source>Real-time chat + execution environment</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ4" datatype="html">
+        <source>Does the assistant run in a controlled runtime with chat and logs?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim5" datatype="html">
+        <source>In-browser IDE + Git</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ5" datatype="html">
+        <source>Can we edit, commit, branch, and push inside the product?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim6" datatype="html">
+        <source>Ticket-centric workflow</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ6" datatype="html">
+        <source>Does the product center structured work items in addition to free-form chat?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim7" datatype="html">
+        <source>Organizational knowledge for agents</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ7" datatype="html">
+        <source>Can we curate reusable knowledge that agents draw on?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim8" datatype="html">
+        <source>CI/CD from the product</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ8" datatype="html">
+        <source>Can we trigger pipelines or track deployment runs alongside agents?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim9" datatype="html">
+        <source>Automated cloud provisioning</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ9" datatype="html">
+        <source>Can we automatically provision hosts for agent runtimes?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim10" datatype="html">
+        <source>Policy, filters, audit, telemetry</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ10" datatype="html">
+        <source>Can we enforce message policy and inspect drops, flags, or audits?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim11" datatype="html">
+        <source>Usage &amp; lifecycle observability</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ11" datatype="html">
+        <source>Can operators see usage, sessions, or lifecycle signals?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim12" datatype="html">
+        <source>Extensible providers / plugins</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ12" datatype="html">
+        <source>Can we plug in agent providers or chat filters without forking core?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixDim13" datatype="html">
+        <source>Enterprise SSO / IdP</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixQ13" datatype="html">
+        <source>Does it fit SAML/OIDC SSO and enterprise identity patterns?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT1" datatype="html">
+        <source>Controller + RBAC over many remote agent-manager endpoints from one console.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT2" datatype="html">
+        <source>Per-client users with admin/user roles; Keycloak or JWT users. API-key mode bypasses user checks.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT3" datatype="html">
+        <source>Dockerized controller and manager; you choose where they run. EU-friendly provider automation where offered.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT4" datatype="html">
+        <source>WebSocket chat to Docker-backed agents with logs and container lifecycle via agent-manager.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT5" datatype="html">
+        <source>Monaco editor plus proxied Git (status, branches, commit, push, pull, rebase, conflicts).</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT6" datatype="html">
+        <source>Ticket REST, realtime board, automation and migration APIs on the controller.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT7" datatype="html">
+        <source>Knowledge tree, relations, activity, and prompt-context endpoints.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT8" datatype="html">
+        <source>Deployments APIs cover configs, workflows, runs, logs, and cancel. All of that is scoped to agents.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT9" datatype="html">
+        <source>Documented automation for Hetzner and DigitalOcean to install agent-manager and register clients.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT10" datatype="html">
+        <source>Global regex filter rules, pluggable chat filters, statistics for drops/flags and entity events.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT11" datatype="html">
+        <source>Statistics REST for chat I/O, filter incidents, and entity lifecycle (per client and aggregate).</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT12" datatype="html">
+        <source>Plugin agent providers and chat filters in agent-manager.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-agenstraT13" datatype="html">
+        <source>Keycloak OIDC/SAML, built-in JWT users, or static API key. Federate corporate IdPs via Keycloak where needed.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT1" datatype="html">
+        <source>Multi-org enterprise APIs exist; focus is vendor-hosted sessions, not your fleet of independent runtimes.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT2" datatype="html">
+        <source>Enterprise RBAC and org APIs for members and audit.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT3" datatype="html">
+        <source>Public docs emphasize Cognition-hosted sandboxes; self-hosted/VPC not documented broadly.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT4" datatype="html">
+        <source>Browser workspace with shell, editor, and tests in a managed sandbox.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT5" datatype="html">
+        <source>Integrated editor, terminal, and Git flows inside Devin’s workspace.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT6" datatype="html">
+        <source>Strong Jira-centric triggers, comments, and status loops.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT7" datatype="html">
+        <source>Relies on repos, tickets, and workspace context rather than a dedicated knowledge tree product.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT8" datatype="html">
+        <source>API and GitHub Actions patterns for CI gating and delivery.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT9" datatype="html">
+        <source>Vendor provisions sandboxes; customers do not drive first-class “bring your own cloud host” automation.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT10" datatype="html">
+        <source>Enterprise consumption and audit APIs; fine-grained public policy docs may be thinner than gateway-first tools.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT11" datatype="html">
+        <source>Enterprise endpoints for consumption metrics and audit-oriented logs.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT12" datatype="html">
+        <source>Integrations and APIs exist; not positioned as an arbitrary multi-provider agent-plugin host.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-devinT13" datatype="html">
+        <source>Enterprise SSO and RBAC are typical for this category; confirm in your contract.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT1" datatype="html">
+        <source>Projects sit under one account. A multi-runtime agent control plane is not the model.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT2" datatype="html">
+        <source>Team billing and sharing; deep per-workspace RBAC is not the headline.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT3" datatype="html">
+        <source>Cloud-dependent assistant; local privacy modes differ from self-hosting the control plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT4" datatype="html">
+        <source>Agent and cloud-agent modes with commands in your environment or vendor infra.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT5" datatype="html">
+        <source>Primary surface is the desktop editor, not a dedicated browser IDE.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT6" datatype="html">
+        <source>No first-class ticket board; relies on external trackers.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT7" datatype="html">
+        <source>@-mentions and repo context apply. A curated org knowledge module is not included.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT8" datatype="html">
+        <source>Improves code that your existing CI builds; no native pipeline orchestration UI.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT9" datatype="html">
+        <source>Not an infrastructure provisioning product.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT10" datatype="html">
+        <source>Privacy modes and controls; not a central regex/guardrail gateway.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT11" datatype="html">
+        <source>Editor telemetry rather than a dedicated agent observability plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT12" datatype="html">
+        <source>Multiple models internally; not a pluggable provider framework you host.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-cursorT13" datatype="html">
+        <source>SSO on business tiers still means vendor SaaS. Your IdP is not fronting a self-hosted plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT1" datatype="html">
+        <source>GitHub orgs, repos, and Copilot settings apply. A separate agent control-plane product is not the positioning.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT2" datatype="html">
+        <source>GitHub Enterprise RBAC, SSO, and SCIM carry permissions.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT3" datatype="html">
+        <source>Microsoft/GitHub-hosted service; coding agent can use self-hosted runners for jobs.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT4" datatype="html">
+        <source>Copilot chat in IDE; coding agent runs in Actions-style environments.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT5" datatype="html">
+        <source>GitHub web UI and Codespaces exist, but Copilot is IDE/GitHub-centric.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT6" datatype="html">
+        <source>Issues and PRs anchor the workflow. A standalone agent ticket board is not included.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT7" datatype="html">
+        <source>Repositories and wikis hold knowledge; no separate knowledge tree feature.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT8" datatype="html">
+        <source>Tight GitHub Actions integration including coding agent on runners.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT9" datatype="html">
+        <source>General runner autoscaling exists. It is not the same as Agenstra-style agent-host provisioning.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT10" datatype="html">
+        <source>Enterprise audit logs, policies, and compliance packaging around GitHub.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT11" datatype="html">
+        <source>GitHub Enterprise and Actions telemetry; deep agent lifecycle dashboards are GitHub-shaped.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT12" datatype="html">
+        <source>Model routing is vendor-controlled. Customer plugin providers are not the model.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-copilotT13" datatype="html">
+        <source>Copilot Enterprise SSO/SCIM via GitHub Enterprise IdP integrations.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT1" datatype="html">
+        <source>Org/workspace for configuration; not a multi-runtime agent operations console.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT2" datatype="html">
+        <source>Enterprise roles, SSO, and self-hosted backends supported.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT3" datatype="html">
+        <source>Hybrid and on-prem enterprise deployments with compliance posture.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT4" datatype="html">
+        <source>IDE chat and agentic edits; not a generic remote container per workspace.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT5" datatype="html">
+        <source>Windsurf is desktop-first; not a browser IDE product.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT6" datatype="html">
+        <source>No native ticket system; uses your existing trackers.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT7" datatype="html">
+        <source>RAG and context features apply. A structured org knowledge tree is a different product shape.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT8" datatype="html">
+        <source>Changes land in Git; CI is external to the assistant.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT9" datatype="html">
+        <source>No agent-host provisioning module.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT10" datatype="html">
+        <source>Zero-retention and compliance emphasis; fewer policy-as-code gateways than LLM routers.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT11" datatype="html">
+        <source>Usage dashboards; lighter agent lifecycle observability.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT12" datatype="html">
+        <source>Multiple backends possible; plugin ecosystem differs from agent-manager style providers.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-codeiumT13" datatype="html">
+        <source>Enterprise SSO with major IdPs on self-hosted/hybrid plans.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT1" datatype="html">
+        <source>Central admin covers the Tabnine cluster. Many independent agent runtimes are out of scope.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT2" datatype="html">
+        <source>SSO groups and team management for enterprise installs.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT3" datatype="html">
+        <source>VPC and air-gapped private installs are a core pitch.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT4" datatype="html">
+        <source>Completions and chat inside the IDE; no separate remote agent sandbox product.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT5" datatype="html">
+        <source>IDE integration only.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT6" datatype="html">
+        <source>No ticketing product.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT7" datatype="html">
+        <source>Local code context applies. A curated knowledge base layer is not the focus.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT8" datatype="html">
+        <source>No deployment orchestration from Tabnine itself.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT9" datatype="html">
+        <source>You operate infrastructure; no cloud agent-host wizard.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT10" datatype="html">
+        <source>On-prem posture; detailed message-filter telemetry APIs are not the focus.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT11" datatype="html">
+        <source>Console usage views; narrower than gateway tracing.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT12" datatype="html">
+        <source>Assistant-focused; limited extensibility compared to plugin agent hosts.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnineT13" datatype="html">
+        <source>Documented SAML/OIDC SSO for enterprise clusters.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT1" datatype="html">
+        <source>Org and workspace hierarchy routes all model traffic. The product is a gateway control plane.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT2" datatype="html">
+        <source>Granular org and workspace roles for configs, keys, and logs.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT3" datatype="html">
+        <source>VPC / private deployment as an enterprise LLM gateway.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT4" datatype="html">
+        <source>Controls LLM/tool calls; execution stays in your apps or agents.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT5" datatype="html">
+        <source>This is an operations console. It is not an interactive coding IDE.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT6" datatype="html">
+        <source>Not a ticket system; integrates via surrounding tools.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT7" datatype="html">
+        <source>Central prompts, configs, and guardrail artifacts reused org-wide.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT8" datatype="html">
+        <source>CI/CD hooks documented for instrumenting pipelines at the gateway.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT9" datatype="html">
+        <source>You provision infra; gateway doesn’t specialize in VM agent-host setup.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT10" datatype="html">
+        <source>Guardrails, traces, and decision logs are core to the product.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT11" datatype="html">
+        <source>Deep LLM and agent call observability covers latency, cost, and errors.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT12" datatype="html">
+        <source>Many providers and MCP-style connectivity via configuration.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-portkeyT13" datatype="html">
+        <source>Enterprise SSO/IAM integrations for the gateway.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT1" datatype="html">
+        <source>Workspaces and projects for many agents and deployments.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT2" datatype="html">
+        <source>Teams with Admin/Developer/Researcher-style roles.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT3" datatype="html">
+        <source>Private cloud listings and compliance posture (e.g., SOC2, GDPR).</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT4" datatype="html">
+        <source>Orchestrates agents/tools; execution relies on connected infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT5" datatype="html">
+        <source>This is a lifecycle console. It is not a full browser IDE for repo work.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT6" datatype="html">
+        <source>Experiments/deployments focus; not a first-class ticket board.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT7" datatype="html">
+        <source>Projects aggregate prompts, models, and deployment knowledge.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT8" datatype="html">
+        <source>Deployment workflows and monitoring are first-class.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT9" datatype="html">
+        <source>No documented VM provisioning comparable to Agenstra’s host bootstrap.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT10" datatype="html">
+        <source>Monitoring, evaluation, and compliance emphasis.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT11" datatype="html">
+        <source>Agent monitoring across projects and deployments.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT12" datatype="html">
+        <source>Multiple models and custom tools/workflows.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-orqT13" datatype="html">
+        <source>Enterprise authentication patterns documented for workspaces.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixLabelStrong" datatype="html">
+        <source>Strong fit</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixLabelPartial" datatype="html">
+        <source>Partial / gaps</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixLabelWeak" datatype="html">
+        <source>Weak / not a focus</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixLabelNa" datatype="html">
+        <source>Not applicable</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixColCapability" datatype="html">
+        <source> Capability </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixColAgenstra" datatype="html">
+        <source> Agenstra </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixLegend" datatype="html">
+        <source> Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review.
+</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-navDevin" datatype="html">
+        <source>Devin</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-navCursor" datatype="html">
+        <source>Cursor</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-navCopilot" datatype="html">
+        <source>GitHub Copilot</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-navCodeium" datatype="html">
+        <source>Codeium / Windsurf</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-navTabnine" datatype="html">
+        <source>Tabnine Enterprise</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-navPortkey" datatype="html">
+        <source>Portkey</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-navOrq" datatype="html">
+        <source>Orq.ai</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-technologyFitBody" datatype="html">
+        <source>The future of your software depends on choices you make before the next sprint, not on buzzwords. Because choosing technology that fits your workflow is a crucial step towards a sustainable future of AI in software development. Do you think Agenstra could be a good fit for your workflow?</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnine-metaTitle" datatype="html">
+        <source>Tabnine Enterprise vs. Agenstra. AI agent platform comparison</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnine-metaDescription" datatype="html">
+        <source>Compare self-hosted Tabnine Enterprise with Agenstra’s agent control plane and browser IDE.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnine-heroSubtitle" datatype="html">
+        <source>Private assistant clusters versus containerized agent fleets with tickets and deployments.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnine-overviewCompetitor" datatype="html">
+        <source>Tabnine Enterprise keeps AI coding assistance inside your VPC or data center so completions and chat stay on infrastructure you operate. It suits teams whose priority is private assistant coverage in familiar editors rather than a full agent operations layer for remote workspaces.</source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-tabnine-overviewAgenstra" datatype="html">
+        <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
+        </trans-unit>
       <trans-unit id="featurePortal-brandAlt" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortal-toggleNavAriaLabel" datatype="html">
         <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-navProduct" datatype="html">
+        <source>Product</source>
         </trans-unit>
       <trans-unit id="featurePortal-navPlatform" datatype="html">
         <source>Platform</source>
@@ -379,6 +950,9 @@
         </trans-unit>
       <trans-unit id="featurePortal-navPricing" datatype="html">
         <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-navComparison" datatype="html">
+        <source>Comparison</source>
         </trans-unit>
       <trans-unit id="featurePortal-githubAriaLabel" datatype="html">
         <source>GitHub</source>
@@ -421,6 +995,9 @@
         </trans-unit>
       <trans-unit id="featurePortal-footerDocumentation" datatype="html">
         <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-footerComparison" datatype="html">
+        <source>Comparison</source>
         </trans-unit>
       <trans-unit id="featurePortal-footerLegal" datatype="html">
         <source>Legal</source>
@@ -705,7 +1282,7 @@
         <source>Plan and track</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem5Desc" datatype="html">
-        <source>Run tickets, priorities, and knowledge pages per workspace so agent work stays tied to outcomes and context</source>
+        <source> Run tickets, priorities, and knowledge pages per workspace so agent work stays tied to outcomes and context </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionItem6Title" datatype="html">
         <source>Run code</source>

@@ -199,3 +199,27 @@
 .made-in {
   padding-top: 0.125rem;
 }
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:after {
+    display: none;
+  }
+
+  i {
+    font-size: 0.75rem;
+    transition:
+      margin-top 0.3s ease-in-out,
+      transform 0.3s ease-in-out;
+  }
+
+  &:hover,
+  &:focus {
+    i {
+      transform: rotate(180deg);
+    }
+  }
+}
