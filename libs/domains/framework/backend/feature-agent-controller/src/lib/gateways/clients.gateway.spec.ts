@@ -8,7 +8,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
+import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
@@ -147,6 +149,12 @@ describe('ClientsGateway', () => {
     collectPromptContextsForSource: jest.fn().mockResolvedValue({ promptSections: [] }),
     findNodeBySha: jest.fn().mockResolvedValue(null),
   };
+  const mockAutoContextResolverService = {
+    resolve: jest.fn().mockImplementation(async ({ contextInjection }) => contextInjection),
+  };
+  const mockWorkspaceConfigurationOverridesProxy = {
+    getConfigurationOverrides: jest.fn().mockResolvedValue([]),
+  };
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -177,6 +185,11 @@ describe('ClientsGateway', () => {
         { provide: TicketAutomationChatSyncService, useValue: mockTicketAutomationChatSync },
         { provide: TicketsService, useValue: mockTicketsService },
         { provide: KnowledgeTreeService, useValue: mockKnowledgeTreeService },
+        { provide: AutoContextResolverService, useValue: mockAutoContextResolverService },
+        {
+          provide: ClientWorkspaceConfigurationOverridesProxyService,
+          useValue: mockWorkspaceConfigurationOverridesProxy,
+        },
       ],
     }).compile();
 
@@ -251,6 +264,14 @@ describe('ClientsGateway', () => {
     await forwardPromise;
 
     expect(mockTicketsService.getPrototypePromptByClientSha).toHaveBeenCalledWith('client-uuid', '329ec4f');
+    expect(mockWorkspaceConfigurationOverridesProxy.getConfigurationOverrides).toHaveBeenCalledWith('client-uuid');
+    expect(mockAutoContextResolverService.resolve).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clientId: 'client-uuid',
+        workspaceAutoEnrichEnabledGlobal: undefined,
+        workspaceAutoEnrichVectorMaxCosineDistance: undefined,
+      }),
+    );
     expect(remote.emit).toHaveBeenCalledWith(
       'chat',
       expect.objectContaining({

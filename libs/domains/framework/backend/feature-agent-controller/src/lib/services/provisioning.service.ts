@@ -54,6 +54,8 @@ export class ProvisioningService {
    * @param gitConfig - Git repository configuration
    * @param cursorApiKey - Cursor API key for agent configuration
    * @param agentDefaultImage - Default image for cursor agents
+   * @param autoEnrichEnabledGlobal - When set, written as AUTO_ENRICH_ENABLED_GLOBAL for agent-manager (`true`|`false`)
+   * @param autoEnrichVectorMaxCosineDistance - When set, written as AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE (0–2)
    * @returns User data script string
    */
   private generateAuthUserData(
@@ -63,6 +65,8 @@ export class ProvisioningService {
     gitConfig?: { repositoryUrl?: string; username?: string; token?: string; password?: string; privateKey?: string },
     cursorApiKey?: string,
     agentDefaultImage?: string,
+    autoEnrichEnabledGlobal?: string,
+    autoEnrichVectorMaxCosineDistance?: number,
   ): string {
     // Build authentication environment variables
     const authEnvVars: string[] = [];
@@ -119,6 +123,19 @@ export class ProvisioningService {
 
     if (agentDefaultImage) {
       cursorEnvVars.push(`AGENT_DEFAULT_IMAGE: ${agentDefaultImage}`);
+    }
+
+    if (autoEnrichEnabledGlobal === 'true' || autoEnrichEnabledGlobal === 'false') {
+      cursorEnvVars.push(`AUTO_ENRICH_ENABLED_GLOBAL: ${autoEnrichEnabledGlobal}`);
+    }
+
+    if (
+      autoEnrichVectorMaxCosineDistance !== undefined &&
+      Number.isFinite(autoEnrichVectorMaxCosineDistance) &&
+      autoEnrichVectorMaxCosineDistance >= 0 &&
+      autoEnrichVectorMaxCosineDistance <= 2
+    ) {
+      cursorEnvVars.push(`AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: ${autoEnrichVectorMaxCosineDistance}`);
     }
 
     // Combine all environment variables (dynamic variables take precedence)
@@ -360,6 +377,8 @@ DOCKER_COMPOSE_EOF
         : undefined,
       provisionServerDto.cursorApiKey,
       provisionServerDto.agentDefaultImage,
+      provisionServerDto.autoEnrichEnabledGlobal,
+      provisionServerDto.autoEnrichVectorMaxCosineDistance,
     );
     // Encode user data as base64 for passing to provider
     const encodedUserData = Buffer.from(authUserData).toString('base64');

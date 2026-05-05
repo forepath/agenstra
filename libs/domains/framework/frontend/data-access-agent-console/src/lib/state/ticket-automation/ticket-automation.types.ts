@@ -10,6 +10,7 @@ export interface UpdateTicketAutomationDto {
   allowedAgentIds?: string[];
   includeWorkspaceContext?: boolean;
   contextEnvironmentIds?: string[];
+  autoEnrichmentEnabled?: boolean;
   verifierProfile?: TicketVerifierProfileJson;
   requiresApproval?: boolean;
   defaultBranchOverride?: string | null;
@@ -34,6 +35,7 @@ export interface TicketAutomationResponseDto {
   allowedAgentIds: string[];
   includeWorkspaceContext: boolean;
   contextEnvironmentIds: string[];
+  autoEnrichmentEnabled: boolean;
   verifierProfile: TicketVerifierProfileJson | null;
   requiresApproval: boolean;
   approvedAt: string | null;

@@ -6,6 +6,7 @@ export class TicketAutomationResponseDto {
   allowedAgentIds!: string[];
   includeWorkspaceContext!: boolean;
   contextEnvironmentIds!: string[];
+  autoEnrichmentEnabled!: boolean;
   verifierProfile!: TicketVerifierProfileJson | null;
   requiresApproval!: boolean;
   approvedAt!: Date | null;

@@ -115,6 +115,10 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
     return false;
   }
 
+  if ((dto.autoEnrichmentEnabled ?? true) !== (cfg.autoEnrichmentEnabled !== false)) {
+    return false;
+  }
+
   if (dto.requiresApproval !== cfg.requiresApproval) {
     return false;
   }
@@ -505,6 +509,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   /** Sorted unique agent UUIDs allowed to run automation for this ticket. */
   automationDraftAllowedAgentIds = signal<string[]>([]);
   automationDraftIncludeWorkspaceContext = signal(true);
+  automationDraftAutoEnrichmentEnabled = signal(true);
   automationDraftContextEnvironmentIds = signal<string[]>([]);
   automationDraftDefaultBranch = signal('');
   automationDraftBranchStrategy = signal<TicketAutomationBranchStrategy>('reuse_per_ticket');
@@ -730,6 +735,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       this.automationDraftRequiresApproval.set(cfg.requiresApproval);
       this.automationDraftAllowedAgentIds.set(normalizeAllowedAgentIdList(cfg.allowedAgentIds));
       this.automationDraftIncludeWorkspaceContext.set(cfg.includeWorkspaceContext !== false);
+      this.automationDraftAutoEnrichmentEnabled.set(cfg.autoEnrichmentEnabled !== false);
       this.automationDraftContextEnvironmentIds.set(normalizeAllowedAgentIdList(cfg.contextEnvironmentIds ?? []));
       this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
       this.automationDraftBranchStrategy.set(cfg.automationBranchStrategy ?? 'reuse_per_ticket');
@@ -1927,6 +1933,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       requiresApproval: this.automationDraftRequiresApproval(),
       allowedAgentIds: this.automationDraftAllowedAgentIds(),
       includeWorkspaceContext: this.automationDraftIncludeWorkspaceContext(),
+      autoEnrichmentEnabled: this.automationDraftAutoEnrichmentEnabled(),
       contextEnvironmentIds: this.automationDraftContextEnvironmentIds(),
       defaultBranchOverride: branch.length > 0 ? branch : null,
       automationBranchStrategy: this.automationDraftBranchStrategy(),
@@ -2826,6 +2833,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
             ? {
                 contextInjection: {
                   includeWorkspaceContext: ticketAutomation.includeWorkspaceContext !== false,
+                  autoEnrichmentEnabled: ticketAutomation.autoEnrichmentEnabled !== false,
                   selectedEnvironmentContextIds: normalizeAllowedAgentIdList(ticketAutomation.contextEnvironmentIds),
                 },
               }

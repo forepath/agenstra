@@ -30,6 +30,7 @@ import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
 import { TicketsController } from '../controllers/tickets.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
@@ -50,6 +51,7 @@ import { HetznerProvider } from '../providers/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
+import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
 import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
 import { ClientAgentAutonomyService } from '../services/client-agent-autonomy.service';
@@ -61,7 +63,10 @@ import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.s
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge-embedding-index.service';
+import { LocalEmbeddingProvider } from '../services/embeddings/local-embedding.provider';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
+import { KnowledgeEmbeddingIndexScheduler } from '../services/knowledge-embedding-index.scheduler';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { RemoteAgentsSessionService } from '../services/remote-agents-session.service';
@@ -98,6 +103,7 @@ const authMethod = getAuthenticationMethod();
       TicketAutomationRunStepEntity,
       ClientAgentAutonomyEntity,
       KnowledgeNodeEntity,
+      KnowledgeNodeEmbeddingEntity,
       KnowledgePageActivityEntity,
       KnowledgeRelationEntity,
     ]),
@@ -124,6 +130,10 @@ const authMethod = getAuthenticationMethod();
     ClientsService,
     TicketsService,
     KnowledgeTreeService,
+    AutoContextResolverService,
+    KnowledgeEmbeddingIndexService,
+    KnowledgeEmbeddingIndexScheduler,
+    LocalEmbeddingProvider,
     TicketAutomationService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,

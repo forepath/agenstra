@@ -1660,6 +1660,17 @@
             >Include workspace context</label
           >
         </div>
+        <div class="form-check form-switch mb-3">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="autoEnrichmentEnabled"
+            [ngModel]="autoEnrichmentEnabled()"
+            (ngModelChange)="onAutoEnrichmentToggle($event)"
+          />
+          <label class="form-check-label" for="autoEnrichmentEnabled">Auto-enrich context</label>
+        </div>
         <p class="text-muted small mb-2" i18n="@@featureChat-environmentContextLabel">Environment context</p>
         <p class="text-muted small mb-2" i18n="@@featureChat-environmentContextHint">
           Select additional environments to enrich context more specifically. The active environment is included
@@ -2361,6 +2372,47 @@
                 <small class="form-text text-muted">Default Docker image for cursor agents</small>
               </div>
 
+              <div class="mb-3">
+                <label for="provisionAutoEnrichGlobal" class="form-label" i18n="@@featureChat-provisionAutoEnrichLabel"
+                  >Prompt auto-enrichment</label
+                >
+                <select
+                  class="form-select"
+                  id="provisionAutoEnrichGlobal"
+                  name="autoEnrichEnabledGlobal"
+                  [ngModel]="newClient().autoEnrichEnabledGlobal ?? 'true'"
+                  (ngModelChange)="updateClientField('autoEnrichEnabledGlobal', $event)"
+                  [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+                >
+                  <option value="true" i18n="@@featureChat-provisionAutoEnrichEnabled">Enabled</option>
+                  <option value="false" i18n="@@featureChat-provisionAutoEnrichDisabled">Disabled</option>
+                </select>
+                <small class="form-text text-muted" i18n="@@featureChat-provisionAutoEnrichHint"
+                  >Sets AUTO_ENRICH_ENABLED_GLOBAL on the new workspace agent-manager.</small
+                >
+              </div>
+
+              <div class="mb-3">
+                <label for="provisionVectorMaxCosine" class="form-label" i18n="@@featureChat-provisionVectorMaxCosLabel"
+                  >Vector auto-enrichment max cosine distance</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="provisionVectorMaxCosine"
+                  name="autoEnrichVectorMaxCosineDistance"
+                  min="0"
+                  max="2"
+                  step="0.01"
+                  [ngModel]="newClient().autoEnrichVectorMaxCosineDistance ?? 1"
+                  (ngModelChange)="updateClientProvisioningVectorMaxCos($event)"
+                  [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+                />
+                <small class="form-text text-muted" i18n="@@featureChat-provisionVectorMaxCosHint"
+                  >0–2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</small
+                >
+              </div>
+
               <!-- GIT Repository Configuration -->
               <div class="mb-3">
                 <label for="clientGitRepositoryUrl" class="form-label">Git Repository URL</label>
@@ -2989,7 +3041,7 @@
                   @for (setting of settings; track setting.settingKey) {
                     <div class="list-group-item border-bottom">
                       <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <div class="fw-semibold">{{ setting.settingKey }}</div>
+                        <div class="fw-semibold">{{ getWorkspaceConfigurationSettingTitle(setting.settingKey) }}</div>
                         <span class="badge rounded-pill" [class]="getWorkspaceConfigurationSourceBadgeClass(setting)">
                           {{ getWorkspaceConfigurationSourceLabel(setting) }}
                         </span>
@@ -2999,7 +3051,30 @@
                       </div>
                       <div class="d-flex align-items-center gap-2">
                         <div class="input-group input-group-sm">
-                          @if (setting.settingKey === 'gitPrivateKey') {
+                          @if (setting.settingKey === 'autoEnrichEnabledGlobal') {
+                            <select
+                              class="form-select"
+                              [name]="'wc-autoEnrich-' + setting.settingKey"
+                              [ngModel]="getEditingWorkspaceConfigurationValue(setting)"
+                              (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
+                              [attr.aria-label]="getWorkspaceConfigurationSettingTitle(setting.settingKey)"
+                            >
+                              <option value="true" i18n="@@featureChat-workspaceAutoEnrichEnabled">Enabled</option>
+                              <option value="false" i18n="@@featureChat-workspaceAutoEnrichDisabled">Disabled</option>
+                            </select>
+                          } @else if (setting.settingKey === 'autoEnrichVectorMaxCosineDistance') {
+                            <input
+                              type="number"
+                              class="form-control"
+                              [name]="'wc-vectorMaxCos-' + setting.settingKey"
+                              min="0"
+                              max="2"
+                              step="0.01"
+                              [ngModel]="getEditingWorkspaceConfigurationValue(setting)"
+                              (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
+                              [attr.aria-label]="getWorkspaceConfigurationSettingTitle(setting.settingKey)"
+                            />
+                          } @else if (setting.settingKey === 'gitPrivateKey') {
                             <textarea
                               class="form-control"
                               rows="5"

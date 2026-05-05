@@ -51,6 +51,7 @@ const APPROVAL_RELEVANT_AUTOMATION_FIELDS = new Set([
   'allowedAgentIds',
   'includeWorkspaceContext',
   'contextEnvironmentIds',
+  'autoEnrichmentEnabled',
   'verifierProfile',
   'requiresApproval',
   'defaultBranchOverride',
@@ -136,6 +137,7 @@ export class TicketAutomationService {
           allowedAgentIds: [],
           includeWorkspaceContext: true,
           contextEnvironmentIds: [],
+          autoEnrichmentEnabled: true,
           requiresApproval: false,
           automationBranchStrategy: DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
           forceNewAutomationBranchNextRun: false,
@@ -158,6 +160,7 @@ export class TicketAutomationService {
       allowedAgentIds: row.allowedAgentIds ?? [],
       includeWorkspaceContext: row.includeWorkspaceContext !== false,
       contextEnvironmentIds: sortUuidList(row.contextEnvironmentIds ?? []),
+      autoEnrichmentEnabled: row.autoEnrichmentEnabled !== false,
       verifierProfile: row.verifierProfile ?? null,
       requiresApproval: row.requiresApproval,
       approvedAt: row.approvedAt ?? null,
@@ -194,6 +197,7 @@ export class TicketAutomationService {
     const prevAllowedSorted = sortUuidList(row.allowedAgentIds ?? []);
     const prevIncludeWorkspace = row.includeWorkspaceContext !== false;
     const prevContextEnvSorted = sortUuidList(row.contextEnvironmentIds ?? []);
+    const prevAutoEnrichmentEnabled = row.autoEnrichmentEnabled !== false;
     const prevVerifierJson = JSON.stringify(parseAndValidateVerifierProfile(row.verifierProfile ?? { commands: [] }));
     const prevDefaultBranch = normalizeDefaultBranch(row.defaultBranchOverride);
     const prevStrategy: TicketAutomationBranchStrategy =
@@ -232,6 +236,11 @@ export class TicketAutomationService {
         row.contextEnvironmentIds = nextSorted;
         actuallyChanged.push('contextEnvironmentIds');
       }
+    }
+
+    if (dto.autoEnrichmentEnabled !== undefined && dto.autoEnrichmentEnabled !== prevAutoEnrichmentEnabled) {
+      row.autoEnrichmentEnabled = dto.autoEnrichmentEnabled;
+      actuallyChanged.push('autoEnrichmentEnabled');
     }
 
     if (dto.verifierProfile !== undefined) {
@@ -305,6 +314,7 @@ export class TicketAutomationService {
         k === 'allowedAgentIds' ||
         k === 'includeWorkspaceContext' ||
         k === 'contextEnvironmentIds' ||
+        k === 'autoEnrichmentEnabled' ||
         k === 'verifierProfile' ||
         k === 'defaultBranchOverride' ||
         k === 'automationBranchStrategy' ||

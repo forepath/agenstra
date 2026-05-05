@@ -5,7 +5,9 @@ export type WorkspaceConfigurationSettingKey =
   | 'gitPassword'
   | 'gitPrivateKey'
   | 'cursorApiKey'
-  | 'agentDefaultImage';
+  | 'agentDefaultImage'
+  | 'autoEnrichEnabledGlobal'
+  | 'autoEnrichVectorMaxCosineDistance';
 
 export type WorkspaceConfigurationValueSource = 'override' | 'default_env' | 'unset';
 

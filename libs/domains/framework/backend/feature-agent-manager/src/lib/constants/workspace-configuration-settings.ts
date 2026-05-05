@@ -6,6 +6,11 @@ export const WORKSPACE_CONFIGURATION_SETTINGS = [
   { settingKey: 'gitPrivateKey', envVarName: 'GIT_PRIVATE_KEY' },
   { settingKey: 'cursorApiKey', envVarName: 'CURSOR_API_KEY' },
   { settingKey: 'agentDefaultImage', envVarName: 'AGENT_DEFAULT_IMAGE' },
+  { settingKey: 'autoEnrichEnabledGlobal', envVarName: 'AUTO_ENRICH_ENABLED_GLOBAL' },
+  {
+    settingKey: 'autoEnrichVectorMaxCosineDistance',
+    envVarName: 'AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE',
+  },
 ] as const;
 
 export type WorkspaceConfigurationSetting = (typeof WORKSPACE_CONFIGURATION_SETTINGS)[number];

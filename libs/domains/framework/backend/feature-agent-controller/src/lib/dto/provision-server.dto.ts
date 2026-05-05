@@ -1,5 +1,6 @@
 import { AuthenticationType } from '@forepath/identity/backend';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 /**
  * DTO for provisioning a new server through a cloud provider.
@@ -82,4 +83,16 @@ export class ProvisionServerDto {
   @IsOptional()
   @IsString({ message: 'Agent default image must be a string' })
   agentDefaultImage?: string;
+
+  @IsOptional()
+  @IsString({ message: 'AUTO_ENRICH_ENABLED_GLOBAL must be a string' })
+  @IsIn(['true', 'false'], { message: 'autoEnrichEnabledGlobal must be "true" or "false"' })
+  autoEnrichEnabledGlobal?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 8 }, { message: 'autoEnrichVectorMaxCosineDistance must be a number' })
+  @Min(0, { message: 'autoEnrichVectorMaxCosineDistance must be between 0 and 2' })
+  @Max(2, { message: 'autoEnrichVectorMaxCosineDistance must be between 0 and 2' })
+  autoEnrichVectorMaxCosineDistance?: number;
 }

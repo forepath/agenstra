@@ -41,6 +41,12 @@ export class TicketAutomationEntity {
   @Column({ type: 'jsonb', name: 'context_environment_ids', default: () => "'[]'" })
   contextEnvironmentIds!: string[];
 
+  /**
+   * Enables prompt-based auto enrichment for autonomous runs when true.
+   */
+  @Column({ type: 'boolean', name: 'auto_enrichment_enabled', default: true })
+  autoEnrichmentEnabled!: boolean;
+
   @Column({ type: 'jsonb', name: 'verifier_profile', nullable: true })
   verifierProfile?: TicketVerifierProfileJson | null;
 

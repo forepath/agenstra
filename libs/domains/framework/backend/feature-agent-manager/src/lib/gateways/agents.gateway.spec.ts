@@ -3406,4 +3406,76 @@ describe('AgentsGateway', () => {
       expect(chatMessageCalls.length).toBe(1);
     });
   });
+
+  describe('Context injection normalization (auto enrichment)', () => {
+    it('returns undefined when nothing meaningful is requested', async () => {
+      const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
+        includeWorkspace: false,
+        autoEnrichmentEnabled: false,
+      });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('returns payload when only autoEnrichmentEnabled is true', async () => {
+      const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
+        includeWorkspace: false,
+        autoEnrichmentEnabled: true,
+      });
+
+      expect(result).toEqual({
+        includeWorkspace: false,
+        autoEnrichmentEnabled: true,
+        environmentIds: [],
+        ticketShas: [],
+        ticketContexts: [],
+        knowledgeShas: [],
+        knowledgeContexts: [],
+      });
+    });
+
+    it('allows the authenticated agent id in environmentIds without repository lookup', async () => {
+      agentsRepository.findById.mockClear();
+
+      const result = await (gateway as any).normalizeContextInjection(mockAgent.id, {
+        includeWorkspace: false,
+        autoEnrichmentEnabled: true,
+        environmentIds: [`  ${mockAgent.id}  `],
+      });
+
+      expect(result?.environmentIds).toEqual([mockAgent.id]);
+      expect(agentsRepository.findById).not.toHaveBeenCalled();
+    });
+
+    it('includes autoEnrichmentEnabled false in enrichment transcript parts when disabled', () => {
+      const parts = (gateway as any).buildEnrichmentTranscriptParts(
+        {
+          includeWorkspace: false,
+          autoEnrichmentEnabled: false,
+          environmentIds: [],
+          ticketShas: [],
+          knowledgeShas: [],
+        },
+        'corr-test',
+      );
+
+      expect(parts[0].args).toMatchObject({ autoEnrichmentEnabled: false });
+      expect(parts[1].result).toMatchObject({ autoEnrichmentEnabled: false });
+    });
+
+    it('defaults autoEnrichmentEnabled to true in enrichment transcript when omitted', () => {
+      const parts = (gateway as any).buildEnrichmentTranscriptParts(
+        {
+          includeWorkspace: true,
+          environmentIds: [],
+          ticketShas: [],
+          knowledgeShas: [],
+        },
+        'corr-test-2',
+      );
+
+      expect(parts[0].args).toMatchObject({ autoEnrichmentEnabled: true });
+      expect(parts[1].result).toMatchObject({ autoEnrichmentEnabled: true });
+    });
+  });
 });

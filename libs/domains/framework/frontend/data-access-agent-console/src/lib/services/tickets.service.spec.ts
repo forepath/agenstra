@@ -139,6 +139,7 @@ describe('TicketsService', () => {
       allowedAgentIds: ['agent-1'],
       includeWorkspaceContext: true,
       contextEnvironmentIds: [],
+      autoEnrichmentEnabled: true,
       verifierProfile: null,
       requiresApproval: false,
       approvedAt: null,

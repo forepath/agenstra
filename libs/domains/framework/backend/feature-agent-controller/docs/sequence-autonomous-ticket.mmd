@@ -20,7 +20,7 @@ sequenceDiagram
     end
     Note over Orch,Vcs: Default strategy reuses `automation/ticket-{ticketId}`; `new_per_run` or one-shot force uses ephemeral `automation/{runPrefix}`.
     loop maxIterations
-        Orch->>Chat: sendChatSync(sync, ephemeral)
+        Orch->>Chat: sendChatSync(sync, ephemeral, contextInjection)
         Chat->>Mgr: chat
         Mgr->>Prov: sendMessage(continue, resumeSessionSuffix)
         Prov-->>Mgr: NDJSON / text
@@ -28,6 +28,7 @@ sequenceDiagram
         Chat-->>Orch: assistant text
         Orch->>DB: append run step
     end
+    Note over Orch,Chat: contextInjection carries includeWorkspace, environmentIds, and autoEnrichmentEnabled.
     Orch->>Vcs: runVerifierCommands
     Orch->>Vcs: getStatus; if dirty: stage all
     Orch->>Chat: sendChatSync (conventional commit subject; autonomous_ticket_commit_message)

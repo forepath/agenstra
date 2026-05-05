@@ -2173,6 +2173,8 @@ components:
           gitPrivateKey,
           cursorApiKey,
           agentDefaultImage,
+          autoEnrichEnabledGlobal,
+          autoEnrichVectorMaxCosineDistance,
         ]
     UpsertWorkspaceConfigurationOverrideDto:
       type: object

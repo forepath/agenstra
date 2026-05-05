@@ -23,6 +23,7 @@ export interface RemoteChatSyncParams {
   contextInjection?: {
     includeWorkspace?: boolean;
     environmentIds?: string[];
+    autoEnrichmentEnabled?: boolean;
   };
 }
 

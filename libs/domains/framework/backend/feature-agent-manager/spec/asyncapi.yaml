@@ -442,6 +442,9 @@ components:
                 description: Optional knowledge page/folder SHA references for prompt enrichment.
                 items:
                   type: string
+              autoEnrichmentEnabled:
+                type: boolean
+                description: Enable prompt-based automatic enrichment (default true when omitted).
     EnhanceChat:
       name: EnhanceChat
       title: Prompt enhancement command
@@ -477,6 +480,8 @@ components:
                 type: array
                 items:
                   type: string
+              autoEnrichmentEnabled:
+                type: boolean
     ChatEnhanceResult:
       name: ChatEnhanceResult
       title: Prompt enhancement result (unicast)
@@ -559,6 +564,8 @@ components:
                 type: array
                 items:
                   type: string
+              autoEnrichmentEnabled:
+                type: boolean
     TicketBodyResult:
       name: TicketBodyResult
       title: Ticket body generation result (unicast)

@@ -525,6 +525,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   selectedCommand = signal<string | null>(null);
   selectedAgentId = signal<string | null>(null);
   includeWorkspaceContext = signal<boolean>(true);
+  autoEnrichmentEnabled = signal<boolean>(true);
   selectedEnvironmentContextIds = signal<string[]>([]);
   selectedTicketContextShas = signal<string[]>([]);
   selectedKnowledgeContextShas = signal<string[]>([]);
@@ -2067,6 +2068,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
           if (draft.contextInjection) {
             this.includeWorkspaceContext.set(draft.contextInjection.includeWorkspaceContext === true);
+            this.autoEnrichmentEnabled.set(draft.contextInjection.autoEnrichmentEnabled !== false);
             this.selectedEnvironmentContextIds.set(draft.contextInjection.selectedEnvironmentContextIds);
             this.selectedTicketContextShas.set(draft.contextInjection.selectedTicketContextShas ?? []);
             this.selectedKnowledgeContextShas.set(draft.contextInjection.selectedKnowledgeContextShas ?? []);
@@ -2212,6 +2214,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onWorkspaceContextToggle(enabled: boolean): void {
     this.includeWorkspaceContext.set(enabled);
+  }
+
+  onAutoEnrichmentToggle(enabled: boolean): void {
+    this.autoEnrichmentEnabled.set(enabled);
   }
 
   onOpenContextSelectionModal(): void {
@@ -2447,12 +2453,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.selectedKnowledgeContextShas.set(this.selectedKnowledgeContextShas().filter((sha) => sha !== longSha));
   }
 
-  private buildContextInjection(
-    agentId: string,
-  ):
-    | { includeWorkspace?: boolean; environmentIds?: string[]; ticketShas?: string[]; knowledgeShas?: string[] }
+  private buildContextInjection(agentId: string):
+    | {
+        includeWorkspace?: boolean;
+        environmentIds?: string[];
+        ticketShas?: string[];
+        knowledgeShas?: string[];
+        autoEnrichmentEnabled?: boolean;
+      }
     | undefined {
     const includeWorkspace = this.includeWorkspaceContext() === true;
+    const autoEnrichmentEnabled = this.autoEnrichmentEnabled() === true;
     const selected = this.selectedEnvironmentContextIds()
       .map((id) => id.trim())
       .filter((id) => id.length > 0);
@@ -2472,11 +2483,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       ),
     ];
 
-    if (!includeWorkspace && environmentIds.length === 0 && ticketShas.length === 0 && knowledgeShas.length === 0) {
+    if (
+      !includeWorkspace &&
+      !autoEnrichmentEnabled &&
+      environmentIds.length === 0 &&
+      ticketShas.length === 0 &&
+      knowledgeShas.length === 0
+    ) {
       return undefined;
     }
 
-    return { includeWorkspace, environmentIds, ticketShas, knowledgeShas };
+    return { includeWorkspace, environmentIds, ticketShas, knowledgeShas, autoEnrichmentEnabled };
   }
 
   onCommandChange(value: string): void {
@@ -3398,6 +3415,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       gitPrivateKey: undefined,
       cursorApiKey: undefined,
       agentDefaultImage: undefined,
+      autoEnrichEnabledGlobal: 'true',
+      autoEnrichVectorMaxCosineDistance: 1,
     });
     this.useProvisioning.set(false);
     this.selectedProvider.set('');
@@ -3558,6 +3577,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         provisionDto.agentDefaultImage = clientData.agentDefaultImage;
       }
 
+      const autoEnrich = (clientData.autoEnrichEnabledGlobal ?? 'true').trim();
+
+      if (autoEnrich === 'true' || autoEnrich === 'false') {
+        provisionDto.autoEnrichEnabledGlobal = autoEnrich;
+      }
+
+      const maxCos = clientData.autoEnrichVectorMaxCosineDistance;
+
+      if (maxCos !== undefined && maxCos !== null && Number.isFinite(maxCos) && maxCos >= 0 && maxCos <= 2) {
+        provisionDto.autoEnrichVectorMaxCosineDistance = maxCos;
+      }
+
       this.clientsFacade.provisionServer(provisionDto);
 
       // Subscribe to provisioning completion to close modal
@@ -3637,6 +3668,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakClientSecret: undefined,
       keycloakRealm: undefined,
       agentWsPort: undefined,
+      autoEnrichEnabledGlobal: 'true',
+      autoEnrichVectorMaxCosineDistance: 1,
     });
     this.useProvisioning.set(false);
     this.selectedProvider.set('');
@@ -3777,6 +3810,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const numValue = value === '' || value === null || value === undefined ? undefined : Number(value);
 
     this.newClient.update((current) => ({ ...current, [field]: numValue }));
+  }
+
+  updateClientProvisioningVectorMaxCos(value: string | number | null | undefined): void {
+    const numValue = value === '' || value === null || value === undefined ? 1 : Number(value);
+
+    this.updateClientField('autoEnrichVectorMaxCosineDistance', Number.isFinite(numValue) ? numValue : 1);
   }
 
   updateAgentField<K extends keyof CreateAgentDto>(field: K, value: CreateAgentDto[K]): void {
@@ -4181,8 +4220,58 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   getEditingWorkspaceConfigurationValue(setting: WorkspaceConfigurationSettingResponseDto): string {
     const overrides = this.editingWorkspaceConfigurationValues();
+    const fromOverride = overrides[setting.settingKey];
 
-    return overrides[setting.settingKey] ?? setting.value ?? '';
+    if (fromOverride !== undefined) {
+      return fromOverride;
+    }
+
+    if (setting.settingKey === 'autoEnrichEnabledGlobal') {
+      const raw = setting.value?.trim();
+
+      if (raw === undefined || raw === '') {
+        return 'true';
+      }
+
+      return raw.toLowerCase() === 'false' || raw === '0' ? 'false' : 'true';
+    }
+
+    if (setting.settingKey === 'autoEnrichVectorMaxCosineDistance') {
+      const raw = setting.value?.trim();
+
+      if (raw === undefined || raw === '') {
+        return '1';
+      }
+
+      return raw;
+    }
+
+    return setting.value ?? '';
+  }
+
+  getWorkspaceConfigurationSettingTitle(settingKey: WorkspaceConfigurationSettingKey): string {
+    switch (settingKey) {
+      case 'gitRepositoryUrl':
+        return $localize`:@@featureChat-workspaceSettingTitleGitRepo:Git repository URL`;
+      case 'gitUsername':
+        return $localize`:@@featureChat-workspaceSettingTitleGitUsername:Git username`;
+      case 'gitToken':
+        return $localize`:@@featureChat-workspaceSettingTitleGitToken:Git token`;
+      case 'gitPassword':
+        return $localize`:@@featureChat-workspaceSettingTitleGitPassword:Git password`;
+      case 'gitPrivateKey':
+        return $localize`:@@featureChat-workspaceSettingTitleGitPrivateKey:Git private key (SSH)`;
+      case 'cursorApiKey':
+        return $localize`:@@featureChat-workspaceSettingTitleCursorApiKey:Cursor API key`;
+      case 'agentDefaultImage':
+        return $localize`:@@featureChat-workspaceSettingTitleAgentImage:Agent default image`;
+      case 'autoEnrichEnabledGlobal':
+        return $localize`:@@featureChat-workspaceSettingTitleAutoEnrichGlobal:Prompt auto-enrichment (workspace)`;
+      case 'autoEnrichVectorMaxCosineDistance':
+        return $localize`:@@featureChat-workspaceSettingTitleVectorMaxCosineDistance:Vector auto-enrichment max cosine distance`;
+      default:
+        return settingKey;
+    }
   }
 
   getWorkspaceConfigurationSourceLabel(setting: WorkspaceConfigurationSettingResponseDto): string {

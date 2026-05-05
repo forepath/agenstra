@@ -3099,7 +3099,16 @@ paths:
           name: interactionKind
           schema:
             type: string
-            enum: [chat, prompt_enhancement]
+            enum:
+              [
+                chat,
+                prompt_enhancement,
+                ticket_body_generation,
+                auto_context_enrichment,
+                autonomous_ticket_run,
+                autonomous_ticket_run_turn,
+                autonomous_ticket_commit_message,
+              ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
           name: limit
@@ -3363,7 +3372,16 @@ paths:
           name: interactionKind
           schema:
             type: string
-            enum: [chat, prompt_enhancement]
+            enum:
+              [
+                chat,
+                prompt_enhancement,
+                ticket_body_generation,
+                auto_context_enrichment,
+                autonomous_ticket_run,
+                autonomous_ticket_run_turn,
+                autonomous_ticket_commit_message,
+              ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
           name: limit
@@ -4252,6 +4270,36 @@ components:
           minimum: 1
           maximum: 65535
           description: Optional Socket.IO port for the client's agents gateway (defaults to 8080 if not set)
+        gitRepositoryUrl:
+          type: string
+          description: Optional Git repository URL for agent workspace
+        gitUsername:
+          type: string
+        gitToken:
+          type: string
+        gitPassword:
+          type: string
+        gitPrivateKey:
+          type: string
+        cursorApiKey:
+          type: string
+        agentDefaultImage:
+          type: string
+        keycloakAuthServerUrl:
+          type: string
+        autoEnrichEnabledGlobal:
+          type: string
+          enum: ['true', 'false']
+          description: >
+            Sets AUTO_ENRICH_ENABLED_GLOBAL on the provisioned agent-manager (`false` disables prompt auto-enrichment
+            for that workspace unless a chat turn explicitly enables it).
+        autoEnrichVectorMaxCosineDistance:
+          type: number
+          minimum: 0
+          maximum: 2
+          description: >
+            Sets AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE on the provisioned agent-manager (pgvector cosine distance `<=>`;
+            only knowledge chunks with distance <= this value qualify for vector auto-enrichment; default on controller is 1).
     ProvisionedServerResponseDto:
       allOf:
         - $ref: '#/components/schemas/ClientResponseDto'
@@ -4351,6 +4399,8 @@ components:
           gitPrivateKey,
           cursorApiKey,
           agentDefaultImage,
+          autoEnrichEnabledGlobal,
+          autoEnrichVectorMaxCosineDistance,
         ]
     UpsertWorkspaceConfigurationOverrideDto:
       type: object
@@ -4424,6 +4474,9 @@ components:
           totalWords,
           totalChars,
           avgWordsPerMessage,
+          autoEnrichmentRuns,
+          autoEnrichmentContexts,
+          autoEnrichmentChars,
           filterDropCount,
           filterTypesBreakdown,
         ]
@@ -4436,6 +4489,15 @@ components:
           type: integer
         avgWordsPerMessage:
           type: number
+        autoEnrichmentRuns:
+          type: integer
+          description: Number of turns where auto-enrichment injected at least one context section
+        autoEnrichmentContexts:
+          type: integer
+          description: Total number of auto-injected context sections
+        autoEnrichmentChars:
+          type: integer
+          description: Total character volume of auto-injected context sections
         filterDropCount:
           type: integer
         filterTypesBreakdown:
@@ -4518,7 +4580,16 @@ components:
           enum: [input, output]
         interactionKind:
           type: string
-          enum: [chat, prompt_enhancement]
+          enum:
+            [
+              chat,
+              prompt_enhancement,
+              ticket_body_generation,
+              auto_context_enrichment,
+              autonomous_ticket_run,
+              autonomous_ticket_run_turn,
+              autonomous_ticket_commit_message,
+            ]
           description: Normal chat vs prompt enhancement (magic wand) metrics
         wordCount:
           type: integer
@@ -5014,6 +5085,8 @@ components:
           items:
             type: string
             format: uuid
+        autoEnrichmentEnabled:
+          type: boolean
         verifierProfile:
           $ref: '#/components/schemas/TicketVerifierProfileDto'
         requiresApproval:
@@ -5040,6 +5113,7 @@ components:
         - allowedAgentIds
         - includeWorkspaceContext
         - contextEnvironmentIds
+        - autoEnrichmentEnabled
         - verifierProfile
         - requiresApproval
         - approvedAt
@@ -5070,6 +5144,8 @@ components:
           items:
             type: string
             format: uuid
+        autoEnrichmentEnabled:
+          type: boolean
         verifierProfile:
           oneOf:
             - $ref: '#/components/schemas/TicketVerifierProfileDto'
@@ -5286,6 +5362,16 @@ components:
           type: array
           items:
             type: string
+        ticketShas:
+          type: array
+          items:
+            type: string
+        knowledgeShas:
+          type: array
+          items:
+            type: string
+        autoEnrichmentEnabled:
+          type: boolean
     TicketAutomationRunChatEventDto:
       type: object
       description: >

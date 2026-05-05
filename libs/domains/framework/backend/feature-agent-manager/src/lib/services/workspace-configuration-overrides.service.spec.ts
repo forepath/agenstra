@@ -113,4 +113,52 @@ describe('WorkspaceConfigurationOverridesService', () => {
     await expect(service.upsertOverride('unknownKey', 'v')).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.deleteOverride('unknownKey')).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  it('rejects autoEnrichEnabledGlobal values other than true or false', async () => {
+    await expect(service.upsertOverride('autoEnrichEnabledGlobal', 'maybe')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('normalizes autoEnrichEnabledGlobal to lowercase on upsert', async () => {
+    repository.upsert.mockResolvedValue({
+      id: '1',
+      settingKey: 'autoEnrichEnabledGlobal',
+      value: 'false',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
+
+    await service.upsertOverride('autoEnrichEnabledGlobal', 'FALSE');
+
+    expect(repository.upsert).toHaveBeenCalledWith('autoEnrichEnabledGlobal', 'false');
+    expect(process.env.AUTO_ENRICH_ENABLED_GLOBAL).toBe('false');
+  });
+
+  it('rejects autoEnrichVectorMaxCosineDistance outside 0..2', async () => {
+    await expect(service.upsertOverride('autoEnrichVectorMaxCosineDistance', '3')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    await expect(service.upsertOverride('autoEnrichVectorMaxCosineDistance', '-0.1')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    await expect(service.upsertOverride('autoEnrichVectorMaxCosineDistance', 'nan')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('accepts autoEnrichVectorMaxCosineDistance within 0..2', async () => {
+    repository.upsert.mockResolvedValue({
+      id: '1',
+      settingKey: 'autoEnrichVectorMaxCosineDistance',
+      value: '0.35',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
+
+    await service.upsertOverride('autoEnrichVectorMaxCosineDistance', ' 0.35 ');
+
+    expect(repository.upsert).toHaveBeenCalledWith('autoEnrichVectorMaxCosineDistance', '0.35');
+    expect(process.env.AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE).toBe('0.35');
+  });
 });

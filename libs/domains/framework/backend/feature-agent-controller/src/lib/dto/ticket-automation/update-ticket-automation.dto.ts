@@ -53,6 +53,10 @@ export class UpdateTicketAutomationDto {
   contextEnvironmentIds?: string[];
 
   @IsOptional()
+  @IsBoolean()
+  autoEnrichmentEnabled?: boolean;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => TicketVerifierProfileDto)
   verifierProfile?: TicketVerifierProfileDto;

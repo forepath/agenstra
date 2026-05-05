@@ -44,6 +44,10 @@ export interface CreateClientDto {
   gitPrivateKey?: string;
   cursorApiKey?: string;
   agentDefaultImage?: string;
+  /** Provision flow only; `true`|`false` for AUTO_ENRICH_ENABLED_GLOBAL on the new server. */
+  autoEnrichEnabledGlobal?: string;
+  /** 0–2; written as AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE on the new server (optional). */
+  autoEnrichVectorMaxCosineDistance?: number;
 }
 
 export interface UpdateClientDto {
@@ -104,6 +108,10 @@ export interface ProvisionServerDto {
   gitPrivateKey?: string;
   cursorApiKey?: string;
   agentDefaultImage?: string;
+  /** When set, written to provisioned server as AUTO_ENRICH_ENABLED_GLOBAL (`true`|`false`). */
+  autoEnrichEnabledGlobal?: string;
+  /** When set, written as AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE (0–2). */
+  autoEnrichVectorMaxCosineDistance?: number;
 }
 
 export interface ProvisionedServerResponseDto extends ClientResponseDto {
