@@ -61,7 +61,7 @@ The HTTP API also exposes operator-focused endpoints (on the manager and proxied
 - **`POST .../vcs/workspace/prepare-clean`** – Prepare a clean Git workspace for automated or manual workflows (see OpenAPI for semantics).
 - **`POST .../automation/verify-commands`** – Validate command configuration used by ticket automation and related flows.
 
-These complement everyday commit/push operations documented above.
+These complement everyday commit/push operations documented above. For how those commands and workspace prep fit into autonomous ticket runs, see [Ticket automation](./ticket-automation.md).
 
 ## Git Operation Flow
 
@@ -119,6 +119,7 @@ For detailed API documentation, see the application and API reference docs linke
 
 ## Related Documentation
 
+- **[Ticket automation](./ticket-automation.md)** - Autonomous runs using workspace prep and verify-commands
 - **[File Management](./file-management.md)** - File operations
 - **[Agent Management](./agent-management.md)** - Agent containers
 

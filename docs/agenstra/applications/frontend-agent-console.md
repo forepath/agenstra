@@ -17,7 +17,7 @@ This application provides:
 - **Container Statistics** - Real-time container resource monitoring (CPU, memory, network)
 - **Client Management** - Create, update, and delete clients (remote agent-manager instances)
 - **Agent Management** - Create, update, delete, start, stop, and restart agents; environment variables; models list
-- **Tickets** - Workspace ticket board with comments, activity, migration, and automation runs ([Tickets and Workspaces](../features/tickets-and-workspaces.md))
+- **Tickets** - Workspace ticket board with comments, activity, migration, and automation runs ([Tickets and Workspaces](../features/tickets-and-workspaces.md), [Ticket automation](../features/ticket-automation.md))
 - **Deployments** - CI/CD configuration and runs per agent ([Deployment](../features/deployment.md))
 - **Usage statistics** - Controller-backed analytics slices for operators ([Usage Statistics](../features/usage-statistics.md))
 - **Message filter rules** - Global admin rule manager ([Message Filter Rules](../features/message-filter-rules.md))
@@ -275,6 +275,7 @@ Before deploying to production:
 - **[File Management Feature](../features/file-management.md)** - File operations guide
 - **[Version Control Feature](../features/version-control.md)** - Git operations guide
 - **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** - Ticket board and automation
+- **[Ticket automation](../features/ticket-automation.md)** - Autonomous run scheduler and lifecycle
 - **[Deployment](../features/deployment.md)** - CI/CD from the console
 - **[Usage Statistics](../features/usage-statistics.md)** - Controller analytics
 - **[Message Filter Rules](../features/message-filter-rules.md)** - Global and per-agent filters

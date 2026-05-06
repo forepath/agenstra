@@ -67,6 +67,8 @@ Comprehensive feature documentation:
 - [Chat Interface](./features/chat-interface.md) - AI chat functionality and message flow
 - [VNC Browser Access](./features/vnc-browser-access.md) - Graphical browser access via VNC and noVNC
 - [Authentication](./features/authentication.md) - Multiple authentication methods with configurable user registration
+- [Tickets and Workspaces](./features/tickets-and-workspaces.md) - Ticket boards, migration, and automation APIs
+- [Ticket automation](./features/ticket-automation.md) - Autonomous prototyping scheduler and run lifecycle
 
 ### [Deployment](./deployment/README.md)
 
@@ -76,6 +78,16 @@ Deployment guides and configuration:
 - [Docker Deployment](./deployment/docker-deployment.md) - Containerized deployment guide
 - [Production Checklist](./deployment/production-checklist.md) - Production deployment guide
 - [Environment Configuration](./deployment/environment-configuration.md) - Complete environment variables reference
+
+### [Security](./security/README.md)
+
+Security, compliance, and hardening (EU CRA and BSI IT‑Grundschutz–oriented):
+
+- [Security overview](./security/README.md) - Risk register, operational controls, compliance framing
+- [Compliance and standards](./security/compliance-and-standards.md) - CRA and ISMS-oriented mapping
+- [Accepted risks](./security/accepted-risks.md) - Formal register AR-001–AR-003
+- [Operational hardening](./security/operational-hardening.md) - Correlation IDs, client endpoints, `/config`, CSP, WebSocket CORS
+- [Vulnerability reporting and artifacts](./security/vulnerability-reporting-and-artifacts.md) - Disclosure, SBOM, desktop integrity
 
 ### [API Reference](./api-reference/README.md)
 
@@ -130,23 +142,23 @@ For detailed architecture information, see the [Architecture Documentation](./ar
 
 ## Key Features
 
-### ✅ Distributed Agent Management
+### Distributed Agent Management
 
 Connect to and manage multiple remote agent-manager services from a single console. Each client represents a remote agent-manager instance that can be provisioned automatically or connected manually.
 
-### ✅ Real-time AI Chat
+### Real-time AI Chat
 
 WebSocket-based bidirectional communication with AI agents. Send messages, receive instant responses, and maintain chat history across reconnections.
 
-### ✅ Integrated Code Editor
+### Integrated Code Editor
 
 Monaco Editor integration allows you to edit files directly in agent containers. Read, write, and manage code in real-time with syntax highlighting and code completion.
 
-### ✅ Automated Server Provisioning
+### Automated Server Provisioning
 
 Provision cloud servers (Hetzner Cloud, DigitalOcean) with automated Docker installation and agent-manager deployment. Configure authentication, Git repositories, and agent settings during provisioning.
 
-### ✅ Version Control Integration
+### Version Control Integration
 
 Full Git operations directly from the web interface:
 
@@ -155,11 +167,11 @@ Full Git operations directly from the web interface:
 - Pull and rebase operations
 - Resolve merge conflicts
 
-### ✅ Container Management
+### Container Management
 
 Monitor agent containers, view logs, and manage container lifecycle. Real-time container statistics and health monitoring.
 
-### ✅ VNC Browser Access
+### VNC Browser Access
 
 Access a Chromium browser running in a virtual workspace container via VNC. XFCE4 desktop environment with auto-started browser, accessible through a web-based noVNC client.
 
@@ -171,6 +183,11 @@ For application-specific information, see the application documentation:
 
 - **[Backend Agent Controller Application](./applications/backend-agent-controller.md)** - Application deployment and configuration
 - **[Backend Agent Manager Application](./applications/backend-agent-manager.md)** - Application deployment and configuration
+
+### Security and compliance
+
+- **[Security documentation](./security/README.md)** - Hardening, accepted risks, CRA/BSI-oriented context
+- **[Vulnerability reporting and artifacts](./security/vulnerability-reporting-and-artifacts.md)** - Disclosure contacts, SBOM paths, desktop checksum verification
 
 ## External Resources
 

@@ -18,6 +18,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Deployment** - CI/CD pipeline management and deployment functionality
 - **Authentication** - Multiple authentication methods with configurable user registration
 - **Tickets and Workspaces** - Ticket boards, migration, and automation on the controller
+- **Ticket automation** - Background autonomous prototyping runs (scheduler, Git branch strategies, verification)
 - **Usage Statistics** - Controller-backed usage and filter metrics (distinct from container stats)
 - **Message Filter Rules** - Global and per-agent regex policies for chat traffic
 
@@ -167,6 +168,16 @@ Workspace-scoped tickets with collaboration, migration between clients, and tick
 - Automation configuration, approval, runs, and cancel
 - Optional assisted body generation flows (see OpenAPI)
 
+### [Ticket automation](./ticket-automation.md)
+
+Autonomous prototyping driven by the agent controller: eligibility, per-agent autonomy limits, scheduler tuning, Git branch strategies, completion marker, optional verifier commands, and success transition to **prototype** status.
+
+**Key Capabilities**:
+
+- Automatic batch scheduling (`AUTONOMOUS_TICKET_SCHEDULER_*`)
+- Approval gates and retry backoff after failures
+- Integration with VCS workspace prep, commit, and push on the agent container
+
 ### [Usage Statistics](./usage-statistics.md)
 
 Aggregated usage and filter metrics on the agent controller for reporting and operations.
@@ -203,6 +214,7 @@ graph TB
     DEP[Deployment]
     AUTH[Authentication]
     TK[Tickets and Workspaces]
+    TA[Ticket Automation]
     ST[Usage Statistics]
     FR[Message Filter Rules]
 
@@ -223,6 +235,9 @@ graph TB
     AUTH --> AM
     AUTH --> ST
     TK --> WS
+    TK --> TA
+    TA --> AM
+    TA --> VC
     FR --> Chat
     FR --> ST
     TK --> AM
@@ -234,6 +249,7 @@ graph TB
 - **[Architecture](../architecture/README.md)** - System architecture
 - **[Applications](../applications/README.md)** - Application documentation
 - **[Deployment](../deployment/README.md)** - Deployment guides
+- **[Security](../security/README.md)** - Hardening, compliance context, accepted risks
 
 ---
 

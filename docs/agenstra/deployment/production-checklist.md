@@ -6,41 +6,47 @@ Comprehensive checklist for deploying Agenstra to production.
 
 ### Environment Configuration
 
-- ✅ `NODE_ENV=production` is set for all applications
-- ✅ `CORS_ORIGIN` is configured with your production domain(s)
-- ✅ `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
-- ✅ `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- ✅ `STATIC_API_KEY` or Keycloak credentials are configured
-- ✅ Database credentials are secure and not using defaults
-- ✅ `ENCRYPTION_KEY` is set for sensitive data encryption (agent-controller)
+- `NODE_ENV=production` is set for all applications
+- `AUTHENTICATION_METHOD` is set **explicitly** on each backend to `api-key`, `keycloak`, or `users` (required in production; no inference from `STATIC_API_KEY` alone)
+- `CORS_ORIGIN` is configured with your production domain(s)
+- `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
+- `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
+- `STATIC_API_KEY` or Keycloak credentials are configured (as appropriate for the chosen method)
+- Database credentials are secure and not using defaults
+- `ENCRYPTION_KEY` is set for sensitive data encryption (agent-controller)
+- **Agent Controller:** `CLIENT_ENDPOINT_ALLOWED_HOSTS` is set to a **narrow** list of customer endpoint hostnames
+- **Agent Controller:** `WEBSOCKET_CORS_ORIGIN` lists your **frontend** origins (production defaults to no WS CORS if unset)
+- **Frontends:** If `CONFIG` is used, `CONFIG_ALLOWED_HOSTS` is set and the URL is **HTTPS**; review `CSP_ENFORCE` only after testing
 
 ### Security
 
-- ✅ All default passwords are changed
-- ✅ API keys are strong and unique
-- ✅ Keycloak is properly configured (if using)
-- ✅ HTTPS/WSS is enabled for all connections
-- ✅ CORS is restricted to specific origins
-- ✅ Rate limiting is enabled
-- ✅ Database connections use SSL/TLS
-- ✅ Docker socket permissions are restricted (if applicable)
+- All default passwords are changed
+- API keys are strong and unique
+- Keycloak is properly configured (if using)
+- HTTPS/WSS is enabled for all connections
+- CORS is restricted to specific origins
+- Rate limiting is enabled
+- Database connections use SSL/TLS
+- Docker socket permissions are restricted (if applicable)
+- Client endpoint TLS verification is **not** disabled (`CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED=false` is forbidden in production)
+- Documented **accepted risks** (provisioning SSH, desktop integrity, CSP) understood: see [Security — Accepted risks](../security/accepted-risks.md)
 
 ### Database
 
-- ✅ PostgreSQL is configured with proper credentials
-- ✅ Database backups are configured
-- ✅ Database connection pooling is optimized
-- ✅ Database migrations are tested
-- ✅ Database indexes are optimized
+- PostgreSQL is configured with proper credentials
+- Database backups are configured
+- Database connection pooling is optimized
+- Database migrations are tested
+- Database indexes are optimized
 
 ### Infrastructure
 
-- ✅ Docker is properly configured
-- ✅ Docker socket is securely mounted (agent-manager)
-- ✅ Container resource limits are set
-- ✅ Logging is configured
-- ✅ Monitoring is set up
-- ✅ Health checks are configured
+- Docker is properly configured
+- Docker socket is securely mounted (agent-manager)
+- Container resource limits are set
+- Logging is configured
+- Monitoring is set up
+- Health checks are configured
 
 ## Security Considerations
 

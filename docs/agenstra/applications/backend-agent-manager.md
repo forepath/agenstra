@@ -153,7 +153,7 @@ All HTTP endpoints are protected by Keycloak authentication by default. If `STAT
 **Keycloak Authentication**:
 
 - Include a valid Keycloak JWT bearer token in the `Authorization` header: `Bearer <keycloak-jwt-token>`
-- ⚠️ **Note**: The token must include the `agent_management` role to access agent-manager endpoints
+- **Note**: The token must include the `agent_management` role to access agent-manager endpoints
 
 **API Key Authentication**:
 
@@ -268,13 +268,13 @@ The `/var/run/docker.sock` mount is required for the application to manage agent
 
 Before deploying to production, ensure:
 
-- ✅ `NODE_ENV=production` is set
-- ✅ `CORS_ORIGIN` is configured with your production domain(s)
-- ✅ `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
-- ✅ `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- ✅ `STATIC_API_KEY` or Keycloak credentials are configured
-- ✅ Database credentials are secure
-- ✅ Docker socket is properly mounted for container management
+- `NODE_ENV=production` is set
+- `CORS_ORIGIN` is configured with your production domain(s)
+- `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
+- `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
+- `STATIC_API_KEY` or Keycloak credentials are configured
+- Database credentials are secure
+- Docker socket is properly mounted for container management
 
 ## Related Documentation
 

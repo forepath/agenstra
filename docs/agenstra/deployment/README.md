@@ -51,6 +51,14 @@ Complete environment variables reference:
 - Authentication configuration
 - CORS and rate limiting
 - Server provisioning
+- **Security-related variables** (client endpoint allowlists, runtime `CONFIG` proxy, CSP enforcement)
+
+### [Security documentation](../security/README.md)
+
+Compliance-oriented security narrative, accepted-risk register, and operational controls:
+
+- **[Security overview](../security/README.md)**
+- **[Operational hardening](../security/operational-hardening.md)**
 
 ## Deployment Architecture
 
@@ -116,6 +124,7 @@ nx serve frontend-agent-console
 - **[Getting Started](../getting-started.md)** - Quick start guide
 - **[Architecture](../architecture/README.md)** - System architecture
 - **[Applications](../applications/README.md)** - Application details
+- **[Security](../security/README.md)** - Hardening and risk register
 
 ---
 

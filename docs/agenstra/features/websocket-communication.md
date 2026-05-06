@@ -255,6 +255,7 @@ sequenceDiagram
 
 - **[Chat Interface](./chat-interface.md)** - Chat functionality details
 - **[Tickets and Workspaces](./tickets-and-workspaces.md)** - Ticket board and automation
+- **[Ticket automation](./ticket-automation.md)** - Autonomous runs and realtime run events
 - **[Agent Management](./agent-management.md)** - Agent authentication
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** - Controller WebSocket details
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** - Manager WebSocket details

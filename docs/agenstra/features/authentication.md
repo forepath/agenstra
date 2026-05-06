@@ -12,6 +12,8 @@ Agenstra supports three authentication methods:
 
 Each method has different use cases and can be configured via environment variables.
 
+**Production:** `AUTHENTICATION_METHOD` must be set **explicitly** to `api-key`, `keycloak`, or `users` on each backend (`NODE_ENV=production`). The stack does not infer the mode from `STATIC_API_KEY` alone. See [Environment configuration](../deployment/environment-configuration.md) and [Security — Operational hardening](../security/operational-hardening.md#authentication-mode-backends).
+
 ## Authentication Methods
 
 ### API Key Authentication

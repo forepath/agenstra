@@ -13,7 +13,7 @@ Project tickets are workspace-scoped work items stored on the **agent controller
 - **Board and filters** – List tickets by workspace (`clientId`), status, or parent (including root-only lists).
 - **Collaboration** – Comments and an activity trail per ticket.
 - **Migration** – Move a resolved root ticket and its descendants to another workspace (`targetClientId`); realtime emits removals on the source room and upserts on the target room.
-- **Automation** – Configure per-ticket automation, approve or revoke approval, start and inspect runs, cancel in-flight runs. The chat UI can also receive controller-originated automation snapshots on the **`clients`** namespace (see AsyncAPI).
+- **Automation** – Configure per-ticket automation, approve or revoke approval, inspect runs, and cancel in-flight runs. Eligible work is picked up by a **background scheduler** on the agent controller (no separate “start” REST call for autonomous runs). See [Ticket automation](./ticket-automation.md). The chat UI can also receive controller-originated automation snapshots on the **`clients`** namespace (see AsyncAPI).
 - **Chat integration** – Without joining `tickets`, chat clients on **`clients`** can still receive `ticketChatTicketUpsert` for ticket metadata updates broadcast to room `client:{clientId}`.
 
 ## Architecture
@@ -49,6 +49,7 @@ After `setClient` on namespace **`tickets`**, the socket joins room `client:{cli
 
 ## Related documentation
 
+- **[Ticket automation](./ticket-automation.md)** – Scheduler, eligibility, run phases, and operator settings
 - **[WebSocket Communication](./websocket-communication.md)** – `clients` and `tickets` namespaces
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** – HTTP and WebSocket surface
 - **[Authentication](./authentication.md)** – Access modes and roles

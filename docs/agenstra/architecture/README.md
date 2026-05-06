@@ -103,10 +103,11 @@ Agenstra uses a three-tier architecture:
 
 ### Security
 
-- **Authentication** - Multiple authentication methods (Keycloak, API key)
+- **Authentication** - Multiple authentication methods (Keycloak, API key, users); explicit `AUTHENTICATION_METHOD` in production
 - **Authorization** - Role-based access control
 - **Secure Communication** - HTTPS and WSS in production
 - **Credential Management** - Secure storage and encryption
+- **Documentation** - [Security documentation](../security/README.md) (CRA/BSI-oriented context, accepted risks, hardening)
 
 ### Reliability
 

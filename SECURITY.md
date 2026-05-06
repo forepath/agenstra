@@ -97,7 +97,7 @@ Some deployment flows in this repository generate **cloud-init** (or equivalent)
 | **Mitigations in generated config** | **Public-key authentication**; **password authentication disabled** for SSH (`PasswordAuthentication no` where the template applies).                                                                                                                         |
 | **What deployers should add**       | Network controls (firewall / security groups), bastion or jump hosts, key rotation, least privilege in the rest of the stack, and—when operational constraints allow—migrating to a **non-root** admin user with `PermitRootLogin no` and constrained `sudo`. |
 
-**Risk acceptance (organizational):** acceptance **2026-05-06** by the repository maintainer; **next review 2027-05-06** (or sooner if provisioning templates change). Full threat context and backlog: [`thread-analysis.md`](./thread-analysis.md) (section E and _Accepted risks_ register **AR-001**).
+**Risk acceptance (organizational):** acceptance **2026-05-06** by the repository maintainer; **next review 2027-05-06** (or sooner if provisioning templates change). Full register: [`docs/agenstra/security/accepted-risks.md`](./docs/agenstra/security/accepted-risks.md) (AR-001).
 
 ## Software Bill of Materials (SBOM)
 
@@ -120,7 +120,7 @@ The **`frontend-*`** Express servers set a **Content-Security-Policy** that incl
 | **Residual risk**      | A strict CSP baseline would reduce XSS impact; the current policy is **more permissive**; report-only does not enforce.          |
 | **Why it is accepted** | Tightening without a validated Monaco/worker strategy risks **breaking core behavior**; Monaco is integral to the agent console. |
 
-**Risk acceptance:** **2026-05-06** by the repository maintainer; **next review 2027-05-06** (or sooner if CSP or Monaco integration changes). Full register: [`thread-analysis.md`](./thread-analysis.md) (_Accepted risks_ **AR-003**, section G).
+**Risk acceptance:** **2026-05-06** by the repository maintainer; **next review 2027-05-06** (or sooner if CSP or Monaco integration changes). Full register: [`docs/agenstra/security/accepted-risks.md`](./docs/agenstra/security/accepted-risks.md) (AR-003).
 
 ## Desktop (Agent Console) distribution integrity
 
@@ -135,7 +135,7 @@ Published desktop installers/archives for **native-agent-console** ship with **S
 | **Residual risk**        | Without signing and auto-update, users depend on **manual verification** (`SHA256SUMS` / `integrity-manifest.json`) and a **trusted download source**; tampering or delayed patching is easier than for a signed, auto-updating desktop product. |
 | **Mitigations in place** | Published checksum manifests and documented `sha256sum -c` / `shasum -a 256 -c` steps (below).                                                                                                                                                   |
 
-**Risk acceptance:** **2026-05-06** by the repository maintainer; **next review 2027-05-06** (or sooner if native desktop becomes a primary channel or packaging changes). Full register: [`thread-analysis.md`](./thread-analysis.md) (_Accepted risks_ **AR-002**).
+**Risk acceptance:** **2026-05-06** by the repository maintainer; **next review 2027-05-06** (or sooner if native desktop becomes a primary channel or packaging changes). Full register: [`docs/agenstra/security/accepted-risks.md`](./docs/agenstra/security/accepted-risks.md) (AR-002).
 
 ### What we publish
 
@@ -211,4 +211,4 @@ Thank you for helping keep this framework and its users secure. Your responsible
 
 **Remember**: Security is everyone's responsibility. Together, we can build and maintain secure software that protects users and their data.
 
-_Last updated: January 2025_
+_Last updated: May 2026_

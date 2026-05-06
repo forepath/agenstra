@@ -26,6 +26,8 @@ The Agent Controller HTTP API provides:
 - Proxied version control operations (including workspace prepare-clean and automation verify-commands)
 - Server provisioning (Hetzner Cloud, DigitalOcean)
 
+Conceptual background for autonomous ticket runs (scheduler, eligibility, Git branches): [Ticket automation](../features/ticket-automation.md).
+
 ### WebSocket Gateway
 
 **AsyncAPI Specification**: [asyncapi.yaml](/spec/agent-controller/asyncapi.yaml)

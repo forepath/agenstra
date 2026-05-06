@@ -97,7 +97,7 @@ The console calls the controller; the controller proxies to each client’s agen
 
 ### Tickets and automation (controller-native)
 
-Tickets live on the controller database (not on the remote manager). See [Tickets and Workspaces](../features/tickets-and-workspaces.md).
+Tickets live on the controller database (not on the remote manager). See [Tickets and Workspaces](../features/tickets-and-workspaces.md) and [Ticket automation](../features/ticket-automation.md) for the autonomous run scheduler and lifecycle.
 
 - `GET/POST /api/tickets` - List and create tickets
 - `GET/PATCH/DELETE /api/tickets/:id` - Read, update, delete
@@ -299,7 +299,7 @@ CORS is configured via the `CORS_ORIGIN` environment variable:
 ### Behavior
 
 - **Production**: CORS is **disabled by default** (empty origins array)
-  - ⚠️ **Warning**: If `CORS_ORIGIN` is not set in production, the application will log a warning and CORS will be disabled
+  - **Warning**: If `CORS_ORIGIN` is not set in production, the application will log a warning and CORS will be disabled
   - **Required**: Set `CORS_ORIGIN` to allow specific origins in production
 
 - **Development**: CORS allows **all origins** (`*`) by default
@@ -386,13 +386,13 @@ docker run \
 
 Before deploying to production, ensure:
 
-- ✅ `NODE_ENV=production` is set
-- ✅ `CORS_ORIGIN` is configured with your production domain(s)
-- ✅ `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
-- ✅ `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- ✅ `STATIC_API_KEY` or Keycloak credentials are configured
-- ✅ Database credentials are secure
-- ✅ `ENCRYPTION_KEY` is set for sensitive data encryption
+- `NODE_ENV=production` is set
+- `CORS_ORIGIN` is configured with your production domain(s)
+- `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
+- `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
+- `STATIC_API_KEY` or Keycloak credentials are configured
+- Database credentials are secure
+- `ENCRYPTION_KEY` is set for sensitive data encryption
 
 ## Related Documentation
 
@@ -400,6 +400,7 @@ Before deploying to production, ensure:
 - **[Server Provisioning Feature](../features/server-provisioning.md)** - Server provisioning guide
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** - WebSocket communication guide
 - **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** - Tickets, migration, automation
+- **[Ticket automation](../features/ticket-automation.md)** - Autonomous prototyping scheduler and run lifecycle
 - **[Usage Statistics](../features/usage-statistics.md)** - Controller usage metrics
 - **[Message Filter Rules](../features/message-filter-rules.md)** - Global and per-agent filters
 - **[Deployment Feature](../features/deployment.md)** - CI/CD configuration (invoked via controller proxy from the console)
