@@ -13,6 +13,7 @@ ENV HOST=0.0.0.0
 ENV PORT=3200
 ENV WEBSOCKET_PORT=8082
 ENV WEBSOCKET_NAMESPACE=billing
+ENV WEBSOCKET_CORS_ORIGIN=
 ENV NODE_ENV=development
 
 # Environment variables for the database
@@ -49,8 +50,20 @@ ENV INVOICE_NINJA_API_TOKEN=
 # If STATIC_API_KEY is not set, Keycloak authentication is used
 ENV STATIC_API_KEY=
 
+# Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
+ENV JWT_SECRET=
+
 # Environment variables for encryption
 ENV ENCRYPTION_KEY=
+
+# Client endpoint env vars (copied from shared image template). The billing API does not validate
+# user-supplied agent URLs; these are unused here. Customer agent-controller VMs get allowlists from
+# billing-manager cloud-init (see feature-billing-manager agent-controller.utils).
+# CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: When set to "false", TLS verification is disabled (development only)
+ENV CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED=true
+# CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: When set to "true", http:// endpoints are allowed in production
+ENV CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP=false
+ENV CLIENT_ENDPOINT_ALLOWED_HOSTS=
 
 # Environment variables for email
 ENV SMTP_HOST=

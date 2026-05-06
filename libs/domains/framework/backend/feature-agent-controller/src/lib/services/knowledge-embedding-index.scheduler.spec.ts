@@ -33,8 +33,8 @@ describe('KnowledgeEmbeddingIndexScheduler', () => {
   });
 
   it('does not overlap ticks while the first is in flight', async () => {
-    let release: () => void;
-    const gate = new Promise<void>((resolve) => {
+    let release!: (value: { processed: number }) => void;
+    const gate = new Promise<{ processed: number }>((resolve) => {
       release = resolve;
     });
 
@@ -44,7 +44,7 @@ describe('KnowledgeEmbeddingIndexScheduler', () => {
     const second = scheduler.tick();
 
     expect(embeddingIndexService.reindexAllPages).toHaveBeenCalledTimes(1);
-    release!();
+    release({ processed: 0 });
     await first;
     await second;
     expect(embeddingIndexService.reindexAllPages).toHaveBeenCalledTimes(1);

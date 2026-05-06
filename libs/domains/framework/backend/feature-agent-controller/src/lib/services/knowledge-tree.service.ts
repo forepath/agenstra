@@ -1,6 +1,7 @@
 import {
   ClientUsersRepository,
   ensureClientAccess,
+  getAuthenticationMethod,
   getUserFromRequest,
   type RequestWithUser,
   UsersRepository,
@@ -196,9 +197,7 @@ export class KnowledgeTreeService {
   }
 
   private isApiKeyMode(): boolean {
-    const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
-
-    return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
+    return getAuthenticationMethod() === 'api-key';
   }
 
   private resolveActor(req?: RequestWithUser): { actorType: KnowledgeActorType; actorUserId?: string } {

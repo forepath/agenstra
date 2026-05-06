@@ -154,12 +154,15 @@ export function buildAgentControllerCloudInitConfigFromRequest(
 }
 
 export function buildAgentControllerCloudInitUserData(config: AgentControllerCloudInitConfig): string {
+  /** Public hostname for this stack; used for client-endpoint and /config proxy allowlists in production. */
+  const provisionedPublicHost = (config.host?.fqdn ?? config.host?.hostname ?? 'localhost').trim().toLowerCase();
   const backendEnv = formatEnv([
     // Backend web server configuration
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3100'}`,
     `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8081'}`,
     `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'websocket'}`,
+    `WEBSOCKET_CORS_ORIGIN: https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     // Database configuration
     `DB_HOST: ${config.backend?.database?.host ?? 'postgres'}`,
@@ -184,6 +187,10 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
     // Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
     `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
+    // Client endpoint security (SSRF + TLS policy; non-empty allowlist required in production)
+    `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true`,
+    `CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false`,
+    `CLIENT_ENDPOINT_ALLOWED_HOSTS: ${provisionedPublicHost}`,
     // SMTP / MailHog configuration (for email confirmation and password reset)
     `SMTP_HOST: ${config.backend?.smtp?.host ?? 'mailhog'}`,
     `SMTP_PORT: ${config.backend?.smtp?.port ?? '1025'}`,
@@ -203,6 +210,9 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `PORT: ${config.frontend?.port ?? '4200'}`,
     `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
     `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
+    `CSP_ENFORCE: false`,
+    // /config proxy: hostname allowlist must match CONFIG URL host (required when CONFIG is set in production)
+    `CONFIG_ALLOWED_HOSTS: ${provisionedPublicHost}`,
   ]);
   const frontendConfig: any = {
     production: true,

@@ -9,6 +9,8 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
 
@@ -52,22 +54,21 @@ export class AgentManagerFilterRulesClientService {
 
   private async request<T>(clientId: string, config: AxiosRequestConfig): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+    await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildBaseUrl(clientEntity.endpoint);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
       this.logger.debug(`Filter rules ${config.method} ${baseUrl}${config.url || ''} for client ${clientId}`);
       const response = await axios.request<T>({
         ...config,
         url: config.url ? `${baseUrl}${config.url}` : baseUrl,
-        headers: {
-          ...config.headers,
-          Authorization: authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers: buildClientProxyRequestHeaders(config.headers, authHeader),
         validateStatus: (status) => status < 500,
         httpsAgent: baseUrl.startsWith('https://')
-          ? new (require('https').Agent)({ rejectUnauthorized: false })
+          ? new (require('https').Agent)({ rejectUnauthorized: tlsPolicy.rejectUnauthorized })
           : undefined,
       });
 

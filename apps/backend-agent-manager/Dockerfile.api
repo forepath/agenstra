@@ -14,6 +14,7 @@ ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV WEBSOCKET_PORT=8080
 ENV WEBSOCKET_NAMESPACE=agents
+ENV WEBSOCKET_CORS_ORIGIN=
 ENV NODE_ENV=development
 
 # Environment variables for the cursor-agent
@@ -54,6 +55,9 @@ ENV STATIC_API_KEY=
 
 # Environment variables for encryption
 ENV ENCRYPTION_KEY=
+
+# Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
+ENV JWT_SECRET=
 
 # Environment variables for CORS
 # In production: CORS is disabled by default (most secure). Set CORS_ORIGIN to allow specific origins.

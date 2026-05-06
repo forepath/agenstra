@@ -26,7 +26,8 @@ services:
       PORT: ${PORT:-3100}
       WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8081}
       WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-clients}
-      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+      # WebSocket CORS allowlist (comma-separated). Avoid '*' in production.
+      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-http://localhost:4200,http://localhost:4300,http://localhost:4400,http://localhost:4500}
       NODE_ENV: ${NODE_ENV:-development}
       # Prompt auto-enrichment (Socket.IO → agent-manager; vector path uses controller env)
       AUTO_ENRICH_ENABLED_GLOBAL: ${AUTO_ENRICH_ENABLED_GLOBAL:-true}
@@ -55,10 +56,16 @@ services:
       STATIC_API_KEY: ${STATIC_API_KEY:-}
       # Environment variables for encryption
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      # Client endpoint security (SSRF + TLS policy). In production NODE_ENV, allowlist must be non-empty.
+      CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: ${CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED:-true}
+      CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: ${CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP:-false}
+      CLIENT_ENDPOINT_ALLOWED_HOSTS: ${CLIENT_ENDPOINT_ALLOWED_HOSTS:-}
+      # Optional: skip DNS resolution defense for client endpoints (tests / constrained networks only).
+      # CLIENT_ENDPOINT_SKIP_DNS_CHECK: ${CLIENT_ENDPOINT_SKIP_DNS_CHECK:-false}
       # CORS configuration (comma-separated list of allowed origins)
       # In production: CORS is disabled by default. Set CORS_ORIGIN to allow specific origins.
       # In development: CORS allows all origins by default.
-      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200,http://localhost:4300,http://localhost:4400,http://localhost:4500}
       # Rate limiting configuration
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
       RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}

@@ -165,6 +165,8 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3000'}`,
     `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8080'}`,
+    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'websocket'}`,
+    `WEBSOCKET_CORS_ORIGIN: https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     `DB_HOST: ${config.backend?.database?.host ?? 'postgres'}`,
     `DB_PORT: ${config.backend?.database?.port ?? '5432'}`,

@@ -40,6 +40,21 @@ function clampPollIntervalMs(requested: number | undefined): number {
   return Math.min(MAX_POLL_MS, Math.max(MIN_POLL_MS, requested));
 }
 
+function getWebsocketCorsOrigin(): string | string[] {
+  const raw = process.env.WEBSOCKET_CORS_ORIGIN;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (raw && raw.trim().length > 0) {
+    return raw.split(',').map((value) => value.trim());
+  }
+
+  if (isProduction) {
+    return [];
+  }
+
+  return '*';
+}
+
 export interface DashboardStatusItemPayload {
   subscriptionId: string;
   itemId: string;
@@ -72,7 +87,7 @@ type BillingSocket = Socket & { data: { userInfo?: SocketUserInfo } };
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8082', 10), {
   namespace: process.env.WEBSOCKET_NAMESPACE || 'billing',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: getWebsocketCorsOrigin(),
   },
 })
 export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

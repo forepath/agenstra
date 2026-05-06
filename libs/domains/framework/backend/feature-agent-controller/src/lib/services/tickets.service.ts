@@ -4,6 +4,7 @@ import {
   ClientUsersRepository,
   ensureClientAccess,
   ensureWorkspaceManagementAccess,
+  getAuthenticationMethod,
   getUserFromRequest,
   type RequestWithUser,
   UsersRepository,
@@ -162,9 +163,7 @@ export class TicketsService {
   }
 
   private isApiKeyMode(): boolean {
-    const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
-
-    return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
+    return getAuthenticationMethod() === 'api-key';
   }
 
   private resolveActor(req?: RequestWithUser): { actorType: TicketActorType; actorUserId?: string } {

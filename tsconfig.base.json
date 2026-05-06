@@ -61,16 +61,23 @@
       "@forepath/framework/frontend/util-docs-parser": [
         "libs/domains/framework/frontend/util-docs-parser/src/index.ts"
       ],
+      "@forepath/framework/frontend/util-runtime-config-server": [
+        "libs/domains/framework/frontend/util-runtime-config-server/src/index.ts"
+      ],
       "@forepath/identity/backend": ["libs/domains/identity/backend/index.ts"],
       "@forepath/identity/frontend": [
         "libs/domains/identity/frontend/index.ts"
       ],
       "@agenstra/ai": ["tools/ai/src/index.ts"],
+      "@agenstra/release-integrity": ["tools/release-integrity/src/index.ts"],
       "@agenstra/sbom": ["tools/sbom/src/index.ts"],
       "@forepath/shared/backend": ["libs/domains/shared/backend/index.ts"],
       "@forepath/shared/frontend": ["libs/domains/shared/frontend/index.ts"],
       "@forepath/shared/keycloak": ["libs/domains/shared/keycloak/index.ts"],
-      "@forepath/shared/shared": ["libs/domains/shared/shared/index.ts"]
+      "@forepath/shared/shared": ["libs/domains/shared/shared/index.ts"],
+      "@forepath/framework/backend/util-http-context": [
+        "libs/domains/framework/backend/util-http-context/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -33,6 +33,7 @@ import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 // socket.io-client is required at runtime when forwarding; avoid static import to keep optional dependency for tests
 // Using type-only import for ClientSocket to avoid runtime dependency
 
@@ -56,6 +57,21 @@ interface ContextInjectionPayload {
   autoEnrichmentEnabled?: boolean;
 }
 
+function getWebsocketCorsOrigin(): string | string[] {
+  const raw = process.env.WEBSOCKET_CORS_ORIGIN;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (raw && raw.trim().length > 0) {
+    return raw.split(',').map((value) => value.trim());
+  }
+
+  if (isProduction) {
+    return [];
+  }
+
+  return '*';
+}
+
 /**
  * WebSocket gateway for client context management.
  * Handles WebSocket connections, authentication, and client context setup.
@@ -64,7 +80,7 @@ interface ContextInjectionPayload {
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8081'), {
   namespace: process.env.WEBSOCKET_NAMESPACE || 'clients',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: getWebsocketCorsOrigin(),
   },
 })
 export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -266,13 +282,16 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
       // establish remote socket connection to the client's agents namespace
       const authHeader = await this.getAuthHeader(clientId);
+
+      await validateClientEndpointWithDnsOrThrow(client.endpoint);
       const remoteUrl = this.buildAgentsWsUrl(client.endpoint, client.agentWsPort);
+      const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { io } = require('socket.io-client');
       const remote = io(remoteUrl, {
         transports: ['websocket'],
         extraHeaders: { Authorization: authHeader },
-        rejectUnauthorized: false,
+        rejectUnauthorized: tlsPolicy.rejectUnauthorized,
         reconnection: true,
         reconnectionAttempts: parseInt(process.env.SOCKET_RECONNECTION_ATTEMPTS || '5'),
         reconnectionDelay: 1000,

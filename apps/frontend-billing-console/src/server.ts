@@ -2,40 +2,74 @@ import { existsSync, readdirSync, statSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
+import {
+  FetchRuntimeConfigEnv,
+  applyRuntimeConfigResponseCacheHeaders,
+  fetchRuntimeConfigFromEnv,
+} from '@forepath/framework/frontend/util-runtime-config-server';
 import express from 'express';
 
 const app = express();
 const port = parseInt(process.env['PORT'] || '4200', 10);
 
+function applySecurityHeaders() {
+  const enforceCsp = process.env['CSP_ENFORCE']?.trim().toLowerCase() === 'true';
+  const cspHeader = enforceCsp ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self' data:",
+    "connect-src 'self' https: wss:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+  ].join('; ');
+
+  app.use((_, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    res.setHeader(cspHeader, csp);
+
+    if (process.env['NODE_ENV'] === 'production') {
+      res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+      res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+    }
+
+    next();
+  });
+}
+
+applySecurityHeaders();
+
 /**
  * Runtime configuration endpoint.
- * If process.env.CONFIG is set to a URL, this endpoint will proxy the JSON from that URL.
+ * If process.env.CONFIG is set to a URL, this endpoint will proxy the JSON from that URL
+ * (allowlist, HTTPS, timeout, size, and JSON shape enforced — see util-runtime-config-server).
  * Otherwise, it returns an empty object so the frontend can safely fall back to defaults.
  */
-app.get('/config', async (req, res) => {
-  const configUrl = process.env['CONFIG'];
+app.get('/config', async (_req, res) => {
+  const env = process.env as FetchRuntimeConfigEnv;
+  const result = await fetchRuntimeConfigFromEnv(env);
 
-  if (!configUrl) {
+  if (result.kind === 'no_config') {
+    applyRuntimeConfigResponseCacheHeaders(res, 'success', env);
+
     return res.json({});
   }
 
-  try {
-    const response = await fetch(configUrl);
+  if (result.kind === 'error') {
+    console.error(result.log);
+    applyRuntimeConfigResponseCacheHeaders(res, 'error', env);
 
-    if (!response.ok) {
-      console.error(`Failed to fetch CONFIG from ${configUrl}: ${response.status} ${response.statusText}`);
-
-      return res.status(500).json({});
-    }
-
-    const json = await response.json();
-
-    return res.json(json);
-  } catch (error) {
-    console.error('Error fetching CONFIG URL:', error);
-
-    return res.status(500).json({});
+    return res.status(result.statusCode).json({});
   }
+
+  applyRuntimeConfigResponseCacheHeaders(res, 'success', env);
+
+  return res.json(result.value);
 });
 
 function getBaseDistPath(): string {

@@ -18,6 +18,9 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
+import { redactSensitive } from '../utils/redact-sensitive';
 
 import { ClientsService } from './clients.service';
 
@@ -86,8 +89,11 @@ export class ClientAgentVcsProxyService {
     resource: 'vcs' | 'automation' = 'vcs',
   ): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+    await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildAgentManagerResourceUrl(clientEntity.endpoint, agentId, resource);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
       this.logger.debug(
@@ -97,16 +103,12 @@ export class ClientAgentVcsProxyService {
       const response = await axios.request<T>({
         ...config,
         url: config.url ? `${baseUrl}${config.url}` : baseUrl,
-        headers: {
-          ...config.headers,
-          Authorization: authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers: buildClientProxyRequestHeaders(config.headers, authHeader),
         validateStatus: (status) => status < 500, // Don't throw on 4xx errors
         timeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT) : 600000, // 10 minutes timeout for long-running processes
         httpsAgent: baseUrl.startsWith('https://')
           ? new (require('https').Agent)({
-              rejectUnauthorized: false, // Ignore self-signed certificates
+              rejectUnauthorized: tlsPolicy.rejectUnauthorized,
             })
           : undefined,
       });
@@ -140,7 +142,10 @@ export class ClientAgentVcsProxyService {
         const errorMessage =
           (axiosError.response.data as { message?: string })?.message || axiosError.message || 'Request failed';
 
-        this.logger.error(`Request to ${baseUrl}${config.url || ''} failed: ${errorMessage}`, axiosError.response.data);
+        this.logger.error(
+          `Request to ${baseUrl}${config.url || ''} failed: ${errorMessage}`,
+          redactSensitive(axiosError.response.data),
+        );
 
         if (axiosError.response.status === 404) {
           throw new NotFoundException(errorMessage);

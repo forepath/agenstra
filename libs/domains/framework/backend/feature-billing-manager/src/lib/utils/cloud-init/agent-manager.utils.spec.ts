@@ -208,6 +208,8 @@ describe('agent-manager.utils', () => {
       expect(script).not.toContain('DISABLE_SIGNUP');
       expect(script).not.toContain('HETZNER_API_TOKEN');
       expect(script).not.toContain('JWT_SECRET');
+      expect(script).toContain('WEBSOCKET_NAMESPACE: websocket');
+      expect(script).toContain('WEBSOCKET_CORS_ORIGIN: https://test.spirde.com');
     });
 
     it('configures certbot webroot, letsencrypt paths and renewal for fqdn', () => {

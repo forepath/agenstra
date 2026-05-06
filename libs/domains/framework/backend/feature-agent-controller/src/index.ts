@@ -124,3 +124,4 @@ export * from './lib/services/ticket-automation.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/tickets.service';
 export * from './lib/services/statistics.service';
+export * from './lib/utils/client-endpoint-security';

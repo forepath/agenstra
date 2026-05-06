@@ -5,6 +5,7 @@ export * from './lib/keycloak.module';
 export * from './lib/keycloak.service';
 export * from './lib/keycloak.types';
 export * from './lib/rate-limit.config';
+export * from './lib/origin-allowlist.middleware';
 
 // Phase 2a: New exports
 export * from './lib/password.service';

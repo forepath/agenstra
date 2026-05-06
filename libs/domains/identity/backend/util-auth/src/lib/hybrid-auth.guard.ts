@@ -13,16 +13,30 @@ export const DEFAULT_AUTHENTICATION_METHOD: AuthenticationMethod = 'api-key';
 /**
  * Resolves the effective authentication method from environment variables.
  * - AUTHENTICATION_METHOD: explicit choice ('api-key' | 'keycloak' | 'users')
- * - Fallback when not set: STATIC_API_KEY set -> 'api-key', else -> 'keycloak' (backward compatibility)
+ * - Production: AUTHENTICATION_METHOD is required; no inference from STATIC_API_KEY or default keycloak.
+ * - Non-production fallback when not set: STATIC_API_KEY set -> 'api-key', else -> 'keycloak' (dev convenience)
  */
 export function getAuthenticationMethod(): AuthenticationMethod {
   const explicit = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
+  const isProduction = process.env.NODE_ENV === 'production';
 
   if (explicit === 'api-key' || explicit === 'keycloak' || explicit === 'users') {
     return explicit;
   }
 
-  // Backward compatibility: STATIC_API_KEY set -> api-key, else -> keycloak
+  if (isProduction) {
+    const raw = process.env.AUTHENTICATION_METHOD;
+
+    if (raw === undefined || raw.trim() === '') {
+      throw new Error(
+        'AUTHENTICATION_METHOD must be set explicitly in production to api-key, keycloak, or users. ' +
+          'Inferring authentication from STATIC_API_KEY alone is not permitted.',
+      );
+    }
+
+    throw new Error(`Invalid AUTHENTICATION_METHOD in production: "${raw}". Must be one of: api-key, keycloak, users.`);
+  }
+
   if (process.env.STATIC_API_KEY) {
     return 'api-key';
   }
@@ -32,7 +46,7 @@ export function getAuthenticationMethod(): AuthenticationMethod {
 
 /**
  * Guard that validates static API key authentication.
- * When AUTHENTICATION_METHOD is 'api-key' (or STATIC_API_KEY is set for backward compatibility),
+ * When AUTHENTICATION_METHOD is 'api-key' (or, outside production only, STATIC_API_KEY implies api-key),
  * only API key authentication is used (no Keycloak fallback, no anonymous access).
  * When 'keycloak' or 'users', this guard allows requests to proceed to the respective auth guards.
  */

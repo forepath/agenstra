@@ -7,6 +7,7 @@ import {
   checkClientAccess,
   ClientEntity,
   ClientUsersRepository,
+  getAuthenticationMethod,
   KeycloakTokenService,
   UserRole,
 } from '@forepath/identity/backend';
@@ -63,9 +64,7 @@ export class ClientsService {
    * @returns True if api-key mode is active
    */
   private isApiKeyMode(): boolean {
-    const authMethod = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
-
-    return authMethod === 'api-key' || (authMethod === undefined && !!process.env.STATIC_API_KEY);
+    return getAuthenticationMethod() === 'api-key';
   }
 
   /**

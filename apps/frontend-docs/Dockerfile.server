@@ -11,6 +11,9 @@ FROM docker.io/node:24.14.1-alpine
 # Environment variables for the frontend server
 ENV HOST=0.0.0.0
 ENV PORT=4000
+ENV NODE_ENV=production
+ENV DEFAULT_LOCALE=en
+ENV CSP_ENFORCE=false
 
 # Set working directory
 WORKDIR /app

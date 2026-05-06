@@ -3,6 +3,12 @@
  * This is only a minimal backend to get started.
  */
 
+import { assertProductionClientEndpointAllowlistConfigured } from '@forepath/framework/backend/feature-agent-controller';
+import {
+  CorrelationAwareConsoleLogger,
+  createCorrelationIdMiddleware,
+} from '@forepath/framework/backend/util-http-context';
+import { createOriginAllowlistMiddleware } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -14,8 +20,31 @@ import { typeormConfig } from './typeorm.config';
 
 async function bootstrap() {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
+  assertProductionClientEndpointAllowlistConfigured(new Logger('ClientEndpointAllowlist'));
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new CorrelationAwareConsoleLogger(),
+  });
+  const httpLogger = new Logger('HTTP');
+
+  app.use(
+    createCorrelationIdMiddleware({
+      log: (message: string) => httpLogger.log(message),
+    }),
+  );
+  app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+
+    if (process.env.NODE_ENV === 'production') {
+      res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+    }
+
+    next();
+  });
   // Configure CORS
   // In production: CORS is restricted by default (requires CORS_ORIGIN to be set)
   // In development: CORS allows all origins by default (can be restricted via CORS_ORIGIN)
@@ -43,8 +72,8 @@ async function bootstrap() {
     // credentials can only be true when origin is not '*'
     credentials: origin !== '*' && Array.isArray(origin) && origin.length > 0,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Request-Id'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Correlation-Id'],
   });
 
   if (Array.isArray(origin) && origin.length > 0) {

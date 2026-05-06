@@ -317,10 +317,12 @@ describe('HybridAuthGuard', () => {
 describe('getAuthenticationMethod', () => {
   let originalStaticApiKey: string | undefined;
   let originalAuthMethod: string | undefined;
+  let originalNodeEnv: string | undefined;
 
   beforeEach(() => {
     originalStaticApiKey = process.env.STATIC_API_KEY;
     originalAuthMethod = process.env.AUTHENTICATION_METHOD;
+    originalNodeEnv = process.env.NODE_ENV;
   });
 
   afterEach(() => {
@@ -329,6 +331,9 @@ describe('getAuthenticationMethod', () => {
 
     if (originalAuthMethod !== undefined) process.env.AUTHENTICATION_METHOD = originalAuthMethod;
     else delete process.env.AUTHENTICATION_METHOD;
+
+    if (originalNodeEnv !== undefined) process.env.NODE_ENV = originalNodeEnv;
+    else delete process.env.NODE_ENV;
   });
 
   it('should return api-key when AUTHENTICATION_METHOD=api-key', () => {
@@ -356,6 +361,32 @@ describe('getAuthenticationMethod', () => {
     delete process.env.AUTHENTICATION_METHOD;
     delete process.env.STATIC_API_KEY;
     expect(getAuthenticationMethod()).toBe('keycloak');
+  });
+
+  it('should throw in production when AUTHENTICATION_METHOD is unset even if STATIC_API_KEY is set', () => {
+    process.env.NODE_ENV = 'production';
+    delete process.env.AUTHENTICATION_METHOD;
+    process.env.STATIC_API_KEY = 'secret';
+    expect(() => getAuthenticationMethod()).toThrow(/AUTHENTICATION_METHOD must be set explicitly in production/);
+  });
+
+  it('should throw in production when AUTHENTICATION_METHOD is empty', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.AUTHENTICATION_METHOD = '   ';
+    delete process.env.STATIC_API_KEY;
+    expect(() => getAuthenticationMethod()).toThrow(/AUTHENTICATION_METHOD must be set explicitly in production/);
+  });
+
+  it('should throw in production when AUTHENTICATION_METHOD is invalid', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.AUTHENTICATION_METHOD = 'ldap';
+    expect(() => getAuthenticationMethod()).toThrow(/Invalid AUTHENTICATION_METHOD in production: "ldap"/);
+  });
+
+  it('should allow api-key in production when explicitly set', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.AUTHENTICATION_METHOD = 'api-key';
+    expect(getAuthenticationMethod()).toBe('api-key');
   });
 });
 

@@ -24,10 +24,25 @@ interface SetClientPayload {
   clientId?: string;
 }
 
+function getWebsocketCorsOrigin(): string | string[] {
+  const raw = process.env.WEBSOCKET_CORS_ORIGIN;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (raw && raw.trim().length > 0) {
+    return raw.split(',').map((value) => value.trim());
+  }
+
+  if (isProduction) {
+    return [];
+  }
+
+  return '*';
+}
+
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8081', 10), {
   namespace: process.env.KNOWLEDGE_WEBSOCKET_NAMESPACE || 'pages',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: getWebsocketCorsOrigin(),
   },
 })
 export class KnowledgeBoardGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

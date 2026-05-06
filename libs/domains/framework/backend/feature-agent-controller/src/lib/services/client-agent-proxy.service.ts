@@ -13,6 +13,9 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
+import { redactSensitive } from '../utils/redact-sensitive';
 
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -93,8 +96,11 @@ export class ClientAgentProxyService {
    */
   private async makeRequest<T>(clientId: string, config: AxiosRequestConfig): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+    await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildAgentApiUrl(clientEntity.endpoint);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
       this.logger.debug(`Proxying request to ${baseUrl}${config.url || ''} for client ${clientId}`);
@@ -102,16 +108,12 @@ export class ClientAgentProxyService {
       const response = await axios.request<T>({
         ...config,
         url: config.url ? `${baseUrl}${config.url}` : baseUrl,
-        headers: {
-          ...config.headers,
-          Authorization: authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers: buildClientProxyRequestHeaders(config.headers, authHeader),
         validateStatus: (status) => status < 500, // Don't throw on 4xx errors
         timeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT) : 600000, // 10 minutes timeout for long-running processes
         httpsAgent: baseUrl.startsWith('https://')
           ? new (require('https').Agent)({
-              rejectUnauthorized: false, // Ignore self-signed certificates
+              rejectUnauthorized: tlsPolicy.rejectUnauthorized,
             })
           : undefined,
       });
@@ -145,7 +147,10 @@ export class ClientAgentProxyService {
         const errorMessage =
           (axiosError.response.data as { message?: string })?.message || axiosError.message || 'Request failed';
 
-        this.logger.error(`Request to ${baseUrl}${config.url || ''} failed: ${errorMessage}`, axiosError.response.data);
+        this.logger.error(
+          `Request to ${baseUrl}${config.url || ''} failed: ${errorMessage}`,
+          redactSensitive(axiosError.response.data),
+        );
 
         if (axiosError.response.status === 404) {
           throw new NotFoundException(errorMessage);
@@ -355,8 +360,11 @@ export class ClientAgentProxyService {
   async getClientConfig(clientId: string): Promise<ConfigResponseDto | undefined> {
     try {
       const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+      await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
       const authHeader = await this.getAuthHeader(clientId);
       const baseUrl = this.buildConfigApiUrl(clientEntity.endpoint);
+      const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
       this.logger.debug(`Fetching config from ${baseUrl} for client ${clientId}`);
 
@@ -371,7 +379,7 @@ export class ClientAgentProxyService {
         timeout: 5000, // 5 second timeout
         httpsAgent: baseUrl.startsWith('https://')
           ? new (require('https').Agent)({
-              rejectUnauthorized: false, // Ignore self-signed certificates
+              rejectUnauthorized: tlsPolicy.rejectUnauthorized,
             })
           : undefined,
       });

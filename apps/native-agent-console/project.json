@@ -93,18 +93,22 @@
         },
         "production-linux": {
           "commands": [
+            "nx run release-integrity:build",
             "nx build native-agent-console --configuration=production",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/package.json",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/server/package.json",
-            "cd dist/apps/native-agent-console && npx electron-forge make --platform linux"
+            "cd dist/apps/native-agent-console && npx electron-forge make --platform linux",
+            "node tools/release-integrity/dist/src/cli.js --input dist/apps/native-agent-console/out/make"
           ]
         },
         "production-windows": {
           "commands": [
+            "nx run release-integrity:build",
             "nx build native-agent-console --configuration=production",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/package.json",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/native-agent-console/server/package.json",
-            "cd dist/apps/native-agent-console && npx electron-forge make --platform win32"
+            "cd dist/apps/native-agent-console && npx electron-forge make --platform win32",
+            "node tools/release-integrity/dist/src/cli.js --input dist/apps/native-agent-console/out/make"
           ]
         }
       },

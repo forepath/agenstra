@@ -37,6 +37,21 @@ interface LoginPayload {
   password: string;
 }
 
+function getWebsocketCorsOrigin(): string | string[] {
+  const raw = process.env.WEBSOCKET_CORS_ORIGIN;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (raw && raw.trim().length > 0) {
+    return raw.split(',').map((value) => value.trim());
+  }
+
+  if (isProduction) {
+    return [];
+  }
+
+  return '*';
+}
+
 interface ChatPayload {
   model?: string;
   message: string;
@@ -225,7 +240,7 @@ function toAgentEventEnvelopeBase(
 @WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8080'), {
   namespace: process.env.WEBSOCKET_NAMESPACE || 'agents',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: getWebsocketCorsOrigin(),
   },
   connectionStateRecovery: {
     maxDisconnectionDuration: parseInt(process.env.SOCKET_MAX_DISCONNECTION_DURATION || '120000'), // 2 minutes default
@@ -253,6 +268,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // Track stats intervals per agent UUID
   // Maps agent UUID -> NodeJS.Timeout
   private statsIntervalsByAgent = new Map<string, NodeJS.Timeout>();
+  private readonly loginAttemptsBySocketId = new Map<string, { count: number; resetAt: number }>();
 
   constructor(
     private readonly agentsService: AgentsService,
@@ -858,6 +874,22 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { agentId, password } = data;
 
     try {
+      // Simple per-socket rate limit for login attempts (WS is not covered by Nest Throttler by default)
+      const now = Date.now();
+      const windowMs = 60_000;
+      const maxAttempts = parseInt(process.env.WS_LOGIN_MAX_ATTEMPTS || '10', 10);
+      const entry = this.loginAttemptsBySocketId.get(socket.id);
+
+      if (!entry || entry.resetAt <= now) {
+        this.loginAttemptsBySocketId.set(socket.id, { count: 1, resetAt: now + windowMs });
+      } else if (entry.count >= maxAttempts) {
+        socket.emit('loginError', createErrorResponse('Too many attempts. Please wait and retry.', 'RATE_LIMIT'));
+
+        return;
+      } else {
+        entry.count += 1;
+      }
+
       // Find agent by UUID or name
       const agentUuid = await this.findAgentIdByIdentifier(agentId);
 
