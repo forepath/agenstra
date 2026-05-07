@@ -28,6 +28,9 @@
       "@forepath/framework/backend/feature-billing-manager": [
         "libs/domains/framework/backend/feature-billing-manager/src/index.ts"
       ],
+      "@forepath/framework/backend/util-http-context": [
+        "libs/domains/framework/backend/util-http-context/src/index.ts"
+      ],
       "@forepath/framework/frontend": [
         "libs/domains/framework/frontend/index.ts"
       ],

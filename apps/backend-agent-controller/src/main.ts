@@ -3,10 +3,14 @@
  * This is only a minimal backend to get started.
  */
 
+import {
+  CorrelationAwareConsoleLogger,
+  CorrelationAwareSocketIoAdapter,
+  createCorrelationIdMiddleware,
+} from '@forepath/framework/backend/util-http-context';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DataSource } from 'typeorm';
 
 import { AppModule } from './app/app.module';
@@ -15,7 +19,20 @@ import { typeormConfig } from './typeorm.config';
 async function bootstrap() {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
 
-  const app = await NestFactory.create(AppModule);
+  const appLogger = new CorrelationAwareConsoleLogger({ json: true, colors: false });
+
+  Logger.overrideLogger(appLogger);
+
+  const app = await NestFactory.create(AppModule, {
+    logger: appLogger,
+  });
+  const httpLogger = new Logger('HTTP');
+
+  app.use(
+    createCorrelationIdMiddleware({
+      log: (message: string) => httpLogger.log(message),
+    }),
+  );
   // Configure CORS
   // In production: CORS is restricted by default (requires CORS_ORIGIN to be set)
   // In development: CORS allows all origins by default (can be restricted via CORS_ORIGIN)
@@ -43,8 +60,8 @@ async function bootstrap() {
     // credentials can only be true when origin is not '*'
     credentials: origin !== '*' && Array.isArray(origin) && origin.length > 0,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Request-Id'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Correlation-Id'],
   });
 
   if (Array.isArray(origin) && origin.length > 0) {
@@ -56,7 +73,7 @@ async function bootstrap() {
   }
 
   // Configure WebSocket adapter for Socket.IO
-  app.useWebSocketAdapter(new IoAdapter(app));
+  app.useWebSocketAdapter(new CorrelationAwareSocketIoAdapter(app));
 
   // Run migrations automatically on startup if synchronize is disabled
   // Note: If synchronize: true, schema is auto-synced from entities and migrations won't run
