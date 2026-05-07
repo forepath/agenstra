@@ -22,6 +22,10 @@ describe('parseAllowedHosts', () => {
     expect(parseAllowedHosts(undefined)).toEqual([]);
     expect(parseAllowedHosts('  ')).toEqual([]);
   });
+
+  it('keeps "*" entry for explicit allow-all semantics', () => {
+    expect(parseAllowedHosts('*, Example.COM')).toEqual(['*', 'example.com']);
+  });
 });
 
 describe('assertConfigHostnameResolvesToPublicIps', () => {
@@ -136,6 +140,27 @@ describe('fetchRuntimeConfigFromEnv', () => {
         NODE_ENV: 'production',
       }),
     ).resolves.toMatchObject({ kind: 'error', log: expect.stringContaining('CONFIG_ALLOWED_HOSTS') });
+  });
+
+  it('allows any hostname when CONFIG_ALLOWED_HOSTS is "*" in production', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      text: async () => JSON.stringify({ production: true }),
+    });
+
+    await expect(
+      fetchRuntimeConfigFromEnv({
+        CONFIG: 'https://evil.example/x.json',
+        CONFIG_ALLOWED_HOSTS: '*',
+        NODE_ENV: 'production',
+      }),
+    ).resolves.toEqual({
+      kind: 'ok',
+      value: { production: true },
+    });
   });
 
   it('allows localhost in development without allowlist', async () => {

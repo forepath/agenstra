@@ -72,7 +72,7 @@ describe('cloud-init.utils', () => {
   });
 
   describe('provisioned host allowlists', () => {
-    it('lowercases FQDN in CLIENT_ENDPOINT_ALLOWED_HOSTS and CONFIG_ALLOWED_HOSTS', () => {
+    it('uses "*" defaults for CLIENT_ENDPOINT_ALLOWED_HOSTS and CONFIG_ALLOWED_HOSTS (billing-manager default)', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'h', fqdn: 'Sub.EXAMPLE.com' },
@@ -102,8 +102,56 @@ describe('cloud-init.utils', () => {
       const b64 = buildBillingCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: sub.example.com');
-      expect(script).toContain('CONFIG_ALLOWED_HOSTS: sub.example.com');
+      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: *');
+      expect(script).toContain('CONFIG_ALLOWED_HOSTS: *');
+    });
+
+    it('allows overriding allowlists from config.backend.security', () => {
+      const config: CloudInitConfig = {
+        ssh: { publicKey: '' },
+        host: { hostname: 'h', fqdn: 'Sub.EXAMPLE.com' },
+        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        backend: {
+          host: '0.0.0.0',
+          port: 3100,
+          websocketPort: 8081,
+          websocketNamespace: 'websocket',
+          nodeEnv: 'production',
+          defaultLocale: 'en',
+          database: {
+            host: 'postgres',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            database: 'postgres',
+          },
+          authentication: { authenticationMethod: 'users', disableSignup: false },
+          encryption: { encryptionKey: 'k', jwtSecret: 's' },
+          smtp: { host: 'm', port: 1025, user: '', password: '', from: 'n@l' },
+          cors: { origin: '' },
+          rateLimit: { enabled: false, ttl: 60, limit: 100 },
+          security: {
+            corsOrigin: 'https://portal.example.com',
+            websocketCorsOrigin: 'https://portal.example.com',
+            clientEndpointAllowedHosts: 'Manager.EXAMPLE.com,api.partner.test',
+            clientEndpointAllowInsecureHttp: false,
+            clientEndpointTlsRejectUnauthorized: true,
+            clientEndpointSkipDnsCheck: false,
+            configAllowedHosts: 'cfg.example.com',
+            configAllowInsecureHttp: false,
+            configSkipDnsCheck: false,
+            cspEnforce: false,
+          },
+        },
+      };
+      const b64 = buildBillingCloudInitUserData(config);
+      const script = Buffer.from(b64, 'base64').toString('utf-8');
+
+      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: manager.example.com,api.partner.test');
+      expect(script).toContain('CONFIG_ALLOWED_HOSTS: cfg.example.com');
+      expect(script).toContain('CORS_ORIGIN: https://portal.example.com');
+      expect(script).toContain('WEBSOCKET_CORS_ORIGIN: https://portal.example.com');
     });
   });
 
@@ -153,8 +201,8 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('WEBSOCKET_CORS_ORIGIN: https://test.spirde.com');
       expect(script).toContain('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true');
       expect(script).toContain('CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false');
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: test.spirde.com');
-      expect(script).toContain('CONFIG_ALLOWED_HOSTS: test.spirde.com');
+      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: *');
+      expect(script).toContain('CONFIG_ALLOWED_HOSTS: *');
       expect(script).toContain('CSP_ENFORCE: false');
     });
 
@@ -199,8 +247,8 @@ describe('cloud-init.utils', () => {
       expect(script).toContain("certbot renew -q --deploy-hook 'docker exec agent-controller-nginx nginx -s reload'");
       expect(script).toContain('subjectAltName=DNS:my-instance.example.com');
       expect(script).toContain('CN=my-instance.example.com');
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: my-instance.example.com');
-      expect(script).toContain('CONFIG_ALLOWED_HOSTS: my-instance.example.com');
+      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: *');
+      expect(script).toContain('CONFIG_ALLOWED_HOSTS: *');
     });
 
     it('includes ssh.publicKey in authorized_keys in the script when set', () => {

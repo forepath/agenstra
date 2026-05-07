@@ -14,12 +14,12 @@ Implementation: `libs/domains/identity/backend/util-auth/src/lib/hybrid-auth.gua
 
 Customer-configured **`client.endpoint`** values drive HTTP and WebSocket traffic from the controller to remote agent-managers.
 
-| Control                                       | Purpose                                                                                                        |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **`CLIENT_ENDPOINT_ALLOWED_HOSTS`**           | Comma-separated hostname allowlist. **Required in production** — the controller **exits** on startup if unset. |
-| **`CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP`**     | Set to `true` only if `http:` endpoints must be allowed (discouraged).                                         |
-| **`CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED`** | Defaults to TLS verification on. **`false` is forbidden in production.**                                       |
-| **`CLIENT_ENDPOINT_SKIP_DNS_CHECK`**          | Skips DNS resolution defense (private/loopback rebinding). Use only in controlled test scenarios.              |
+| Control                                       | Purpose                                                                                                                                                      |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`CLIENT_ENDPOINT_ALLOWED_HOSTS`**           | Comma-separated hostname allowlist. Use **`*`** to explicitly allow **any host**. **Required in production** — the controller **exits** on startup if unset. |
+| **`CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP`**     | Set to `true` only if `http:` endpoints must be allowed (discouraged).                                                                                       |
+| **`CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED`** | Defaults to TLS verification on. **`false` is forbidden in production.**                                                                                     |
+| **`CLIENT_ENDPOINT_SKIP_DNS_CHECK`**          | Skips DNS resolution defense (private/loopback rebinding). Use only in controlled test scenarios.                                                            |
 
 DNS validation resolves the endpoint hostname and rejects addresses in private/loopback space (unless skipped as above). Literal private IPs are rejected by URL validation.
 
@@ -50,6 +50,8 @@ When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches 
 - Timeout, max bytes, JSON object shape, content-type, redirect blocking, optional key count/depth limits.
 - DNS check against private/loopback resolution (skippable via **`CONFIG_SKIP_DNS_CHECK`** in exceptional cases).
 - Response **`Cache-Control`**: e.g. `private, max-age=60, stale-while-revalidate=300` in production on success; `no-store` on proxy errors.
+
+`CONFIG_ALLOWED_HOSTS` supports **`*`** to explicitly allow **any host** (accepted risk; see **AR-004**).
 
 See **[Environment configuration — Frontend (all `frontend-*` apps)](../deployment/environment-configuration.md)** for variable names.
 

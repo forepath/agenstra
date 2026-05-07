@@ -66,6 +66,10 @@ function getAllowedClientEndpointHosts(): string[] {
     .filter((value) => value.length > 0);
 }
 
+function isAllowAllHostsConfigured(allowedHosts: string[]): boolean {
+  return allowedHosts.includes('*');
+}
+
 export interface ClientEndpointTlsPolicy {
   rejectUnauthorized: boolean;
 }
@@ -140,7 +144,7 @@ export function assertSafeClientEndpointOrThrow(endpoint: string): URL {
 
   const allowedHosts = getAllowedClientEndpointHosts();
 
-  if (allowedHosts.length > 0 && !allowedHosts.includes(host)) {
+  if (allowedHosts.length > 0 && !isAllowAllHostsConfigured(allowedHosts) && !allowedHosts.includes(host)) {
     throw new BadRequestException('Client endpoint host is not in allowlist');
   }
 

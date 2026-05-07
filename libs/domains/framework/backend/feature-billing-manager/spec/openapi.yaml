@@ -2001,6 +2001,60 @@ components:
                 type: string,
                 description: 'From address (default noreply@localhost)',
               }
+        security:
+          type: object
+          description: Security configuration (optional; defaults applied by billing-manager).
+          properties:
+            corsOrigin:
+              {
+                type: string,
+                description: 'Override REST API CORS allowlist (comma-separated origins). Default is https://<fqdn>.',
+              }
+            websocketCorsOrigin:
+              {
+                type: string,
+                description: 'Override Socket.IO CORS allowlist (comma-separated origins). Default is https://<fqdn>.',
+              }
+            clientEndpointAllowedHosts:
+              {
+                type: string,
+                description: 'Comma-separated host allowlist for controller → client endpoints; use "*" to allow any host (default "*")',
+              }
+            clientEndpointAllowInsecureHttp:
+              {
+                type: boolean,
+                description: 'Allow http:// client endpoints (default false)',
+              }
+            clientEndpointTlsRejectUnauthorized:
+              {
+                type: boolean,
+                description: 'Verify TLS certificates for https:// client endpoints (default true; must be true in production)',
+              }
+            clientEndpointSkipDnsCheck:
+              {
+                type: boolean,
+                description: 'Skip DNS anti-rebinding check for client endpoints (default false)',
+              }
+            configAllowedHosts:
+              {
+                type: string,
+                description: 'Comma-separated host allowlist for frontend runtime CONFIG fetch; use "*" to allow any host (default "*")',
+              }
+            configAllowInsecureHttp:
+              {
+                type: boolean,
+                description: 'Allow http:// CONFIG URL in production (default false)',
+              }
+            configSkipDnsCheck:
+              {
+                type: boolean,
+                description: 'Skip DNS anti-rebinding check for CONFIG host (default false)',
+              }
+            cspEnforce:
+              {
+                type: boolean,
+                description: 'Send enforcing Content-Security-Policy header (default false; report-only otherwise)',
+              }
         keycloak:
           type: object
           description: Keycloak config when authenticationMethod is keycloak.

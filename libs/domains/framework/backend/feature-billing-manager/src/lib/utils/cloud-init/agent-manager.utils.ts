@@ -52,8 +52,11 @@ export interface AgentManagerCloudInitConfig {
       password: string;
       from: string;
     };
-    cors: {
-      origin: string;
+    security?: {
+      /** Override REST API CORS allowlist (comma-separated origins). */
+      corsOrigin: string;
+      /** Override Socket.IO CORS allowlist (comma-separated origins). */
+      websocketCorsOrigin: string;
     };
     /** Git configuration for agent-manager (optional). Passed as GIT_* env vars. */
     git?: {
@@ -67,6 +70,19 @@ export interface AgentManagerCloudInitConfig {
     };
     /** Cursor API key for agent-manager (optional). Passed as CURSOR_API_KEY env var. */
     cursorApiKey?: string;
+  };
+}
+
+function getSecurityConfigFromEffectiveConfig(
+  effectiveConfig: Record<string, unknown>,
+  fqdn: string,
+): { corsOrigin: string; websocketCorsOrigin: string } {
+  const raw = effectiveConfig.security as Record<string, unknown> | undefined;
+  const defaultOrigin = `https://${fqdn}`;
+
+  return {
+    corsOrigin: (raw?.corsOrigin as string) ?? defaultOrigin,
+    websocketCorsOrigin: (raw?.websocketCorsOrigin as string) ?? defaultOrigin,
   };
 }
 
@@ -87,6 +103,7 @@ export function buildAgentManagerCloudInitConfigFromRequest(
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
   const git = effectiveConfig.git as Record<string, unknown> | undefined;
+  const security = getSecurityConfigFromEffectiveConfig(effectiveConfig, fqdn);
   let authMethod = (effectiveConfig.authenticationMethod as string) ?? 'api-key';
 
   if (authMethod === 'users') {
@@ -141,7 +158,7 @@ export function buildAgentManagerCloudInitConfigFromRequest(
         password: (smtp?.password as string) ?? '',
         from: (smtp?.from as string) ?? 'noreply@localhost',
       },
-      cors: { origin: `https://${fqdn}` },
+      security,
       ...(git !== undefined && {
         git: {
           repositoryUrl: (git.repositoryUrl as string) ?? '',
@@ -161,12 +178,21 @@ export function buildAgentManagerCloudInitConfigFromRequest(
 }
 
 export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInitConfig): string {
+  const security = config.backend?.security;
+  const websocketCorsOrigin = (
+    security?.websocketCorsOrigin ?? `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`
+  )
+    .trim()
+    .toLowerCase();
+  const corsOrigin = (security?.corsOrigin ?? `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`)
+    .trim()
+    .toLowerCase();
   const backendEnv = formatEnvLines([
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3000'}`,
     `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8080'}`,
     `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'websocket'}`,
-    `WEBSOCKET_CORS_ORIGIN: https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
+    `WEBSOCKET_CORS_ORIGIN: ${websocketCorsOrigin}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     `DB_HOST: ${config.backend?.database?.host ?? 'postgres'}`,
     `DB_PORT: ${config.backend?.database?.port ?? '5432'}`,
@@ -186,7 +212,7 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     `SMTP_USER: ${config.backend?.smtp?.user ?? ''}`,
     `SMTP_PASSWORD: ${config.backend?.smtp?.password ?? ''}`,
     `EMAIL_FROM: ${config.backend?.smtp?.from ?? 'noreply@localhost'}`,
-    `CORS_ORIGIN: ${config.backend?.cors?.origin ?? ''}`,
+    `CORS_ORIGIN: ${corsOrigin}`,
     ...(config.backend?.cursorApiKey?.trim() ? [`CURSOR_API_KEY: ${config.backend.cursorApiKey.trim()}`] : []),
     ...(config.backend?.git
       ? [

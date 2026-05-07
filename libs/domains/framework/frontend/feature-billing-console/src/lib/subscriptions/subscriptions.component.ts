@@ -166,6 +166,18 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     staticApiKey: string;
     disableSignup: boolean;
     smtp: { host: string; port: number; user: string; password: string; from: string };
+    security: {
+      clientEndpointAllowedHosts: string;
+      clientEndpointAllowInsecureHttp: boolean;
+      clientEndpointTlsRejectUnauthorized: boolean;
+      clientEndpointSkipDnsCheck: boolean;
+      configAllowedHosts: string;
+      configAllowInsecureHttp: boolean;
+      configSkipDnsCheck: boolean;
+      cspEnforce: boolean;
+      corsOrigin: string;
+      websocketCorsOrigin: string;
+    };
     keycloak: { serverUrl: string; authServerUrl: string; realm: string; clientId: string; clientSecret: string };
     hetznerApiToken: string;
     digitaloceanApiToken: string;
@@ -190,6 +202,18 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       user: '',
       password: '',
       from: 'noreply@localhost',
+    },
+    security: {
+      clientEndpointAllowedHosts: '*',
+      clientEndpointAllowInsecureHttp: false,
+      clientEndpointTlsRejectUnauthorized: true,
+      clientEndpointSkipDnsCheck: false,
+      configAllowedHosts: '*',
+      configAllowInsecureHttp: false,
+      configSkipDnsCheck: false,
+      cspEnforce: false,
+      corsOrigin: '',
+      websocketCorsOrigin: '',
     },
     keycloak: {
       serverUrl: '',
@@ -466,6 +490,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       service: cfg.service,
       authenticationMethod: cfg.authenticationMethod,
       smtp: { ...cfg.smtp },
+      security: { ...cfg.security },
     };
 
     if (cfg.service === 'controller') {
@@ -638,6 +663,18 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         user: '',
         password: '',
         from: 'noreply@localhost',
+      },
+      security: {
+        clientEndpointAllowedHosts: '*',
+        clientEndpointAllowInsecureHttp: false,
+        clientEndpointTlsRejectUnauthorized: true,
+        clientEndpointSkipDnsCheck: false,
+        configAllowedHosts: '*',
+        configAllowInsecureHttp: false,
+        configSkipDnsCheck: false,
+        cspEnforce: false,
+        corsOrigin: '',
+        websocketCorsOrigin: '',
       },
       keycloak: {
         serverUrl: '',

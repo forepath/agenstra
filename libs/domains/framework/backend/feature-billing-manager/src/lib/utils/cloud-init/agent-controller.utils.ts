@@ -72,6 +72,56 @@ export interface AgentControllerCloudInitConfig {
       ttl: number;
       limit: number;
     };
+    security?: {
+      /** Override REST API CORS allowlist (comma-separated origins). */
+      corsOrigin: string;
+      /** Override Socket.IO CORS allowlist (comma-separated origins). */
+      websocketCorsOrigin: string;
+      /**
+       * Comma-separated hostname allowlist for controller → client endpoints.
+       * Use "*" to explicitly allow any host.
+       */
+      clientEndpointAllowedHosts: string;
+      clientEndpointAllowInsecureHttp: boolean;
+      clientEndpointTlsRejectUnauthorized: boolean;
+      clientEndpointSkipDnsCheck: boolean;
+      /**
+       * Comma-separated hostname allowlist for frontend Express runtime config proxy.
+       * Use "*" to explicitly allow any host.
+       */
+      configAllowedHosts: string;
+      configAllowInsecureHttp: boolean;
+      configSkipDnsCheck: boolean;
+      cspEnforce: boolean;
+    };
+  };
+}
+
+function getSecurityConfigFromEffectiveConfig(effectiveConfig: Record<string, unknown>): {
+  corsOrigin: string;
+  websocketCorsOrigin: string;
+  clientEndpointAllowedHosts: string;
+  clientEndpointAllowInsecureHttp: boolean;
+  clientEndpointTlsRejectUnauthorized: boolean;
+  clientEndpointSkipDnsCheck: boolean;
+  configAllowedHosts: string;
+  configAllowInsecureHttp: boolean;
+  configSkipDnsCheck: boolean;
+  cspEnforce: boolean;
+} {
+  const raw = effectiveConfig.security as Record<string, unknown> | undefined;
+
+  return {
+    corsOrigin: (raw?.corsOrigin as string) ?? '',
+    websocketCorsOrigin: (raw?.websocketCorsOrigin as string) ?? '',
+    clientEndpointAllowedHosts: (raw?.clientEndpointAllowedHosts as string) ?? '*',
+    clientEndpointAllowInsecureHttp: (raw?.clientEndpointAllowInsecureHttp as boolean) ?? false,
+    clientEndpointTlsRejectUnauthorized: (raw?.clientEndpointTlsRejectUnauthorized as boolean) ?? true,
+    clientEndpointSkipDnsCheck: (raw?.clientEndpointSkipDnsCheck as boolean) ?? false,
+    configAllowedHosts: (raw?.configAllowedHosts as string) ?? '*',
+    configAllowInsecureHttp: (raw?.configAllowInsecureHttp as boolean) ?? false,
+    configSkipDnsCheck: (raw?.configSkipDnsCheck as boolean) ?? false,
+    cspEnforce: (raw?.cspEnforce as boolean) ?? false,
   };
 }
 
@@ -90,6 +140,11 @@ export function buildAgentControllerCloudInitConfigFromRequest(
   const fqdn = `${hostname}.${baseDomain}`;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
+  const security = getSecurityConfigFromEffectiveConfig(effectiveConfig);
+
+  // Defaults that depend on the provisioned FQDN (applied when caller did not override).
+  security.corsOrigin = (security.corsOrigin || `https://${fqdn}`).trim();
+  security.websocketCorsOrigin = (security.websocketCorsOrigin || `https://${fqdn}`).trim();
 
   return {
     ssh: {
@@ -149,20 +204,28 @@ export function buildAgentControllerCloudInitConfigFromRequest(
         hetznerApiToken: (effectiveConfig.hetznerApiToken as string) ?? '',
         digitaloceanApiToken: (effectiveConfig.digitaloceanApiToken as string) ?? '',
       },
+      security,
     },
   };
 }
 
 export function buildAgentControllerCloudInitUserData(config: AgentControllerCloudInitConfig): string {
-  /** Public hostname for this stack; used for client-endpoint and /config proxy allowlists in production. */
-  const provisionedPublicHost = (config.host?.fqdn ?? config.host?.hostname ?? 'localhost').trim().toLowerCase();
+  const security = config.backend?.security;
+  const corsOrigin = (security?.corsOrigin ?? config.backend?.cors?.origin ?? '').trim().toLowerCase();
+  const websocketCorsOrigin = (
+    security?.websocketCorsOrigin ?? `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`
+  )
+    .trim()
+    .toLowerCase();
+  const clientEndpointAllowedHosts = (security?.clientEndpointAllowedHosts ?? '*').trim().toLowerCase() || '*';
+  const configAllowedHosts = (security?.configAllowedHosts ?? '*').trim().toLowerCase() || '*';
   const backendEnv = formatEnv([
     // Backend web server configuration
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3100'}`,
     `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8081'}`,
     `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'websocket'}`,
-    `WEBSOCKET_CORS_ORIGIN: https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
+    `WEBSOCKET_CORS_ORIGIN: ${websocketCorsOrigin}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     // Database configuration
     `DB_HOST: ${config.backend?.database?.host ?? 'postgres'}`,
@@ -188,9 +251,10 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     // Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
     `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
     // Client endpoint security (SSRF + TLS policy; non-empty allowlist required in production)
-    `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true`,
-    `CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false`,
-    `CLIENT_ENDPOINT_ALLOWED_HOSTS: ${provisionedPublicHost}`,
+    `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: ${security?.clientEndpointTlsRejectUnauthorized ?? true}`,
+    `CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: ${security?.clientEndpointAllowInsecureHttp ?? false}`,
+    `CLIENT_ENDPOINT_ALLOWED_HOSTS: ${clientEndpointAllowedHosts}`,
+    ...(security?.clientEndpointSkipDnsCheck ? [`CLIENT_ENDPOINT_SKIP_DNS_CHECK: true`] : []),
     // SMTP / MailHog configuration (for email confirmation and password reset)
     `SMTP_HOST: ${config.backend?.smtp?.host ?? 'mailhog'}`,
     `SMTP_PORT: ${config.backend?.smtp?.port ?? '1025'}`,
@@ -198,7 +262,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `SMTP_PASSWORD: ${config.backend?.smtp?.password ?? ''}`,
     `EMAIL_FROM: ${config.backend?.smtp?.from ?? 'noreply@localhost'}`,
     // CORS configuration (comma-separated list of allowed origins)
-    `CORS_ORIGIN: ${config.backend?.cors?.origin ?? ''}`,
+    `CORS_ORIGIN: ${corsOrigin}`,
     // Rate limiting configuration
     `RATE_LIMIT_ENABLED: ${config.backend?.rateLimit?.enabled ?? 'false'}`,
     `RATE_LIMIT_TTL: ${config.backend?.rateLimit?.ttl ?? '60'}`,
@@ -210,9 +274,11 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `PORT: ${config.frontend?.port ?? '4200'}`,
     `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
     `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
-    `CSP_ENFORCE: false`,
+    `CSP_ENFORCE: ${security?.cspEnforce ?? false}`,
     // /config proxy: hostname allowlist must match CONFIG URL host (required when CONFIG is set in production)
-    `CONFIG_ALLOWED_HOSTS: ${provisionedPublicHost}`,
+    `CONFIG_ALLOWED_HOSTS: ${configAllowedHosts}`,
+    `CONFIG_ALLOW_INSECURE_HTTP: ${security?.configAllowInsecureHttp ?? false}`,
+    ...(security?.configSkipDnsCheck ? [`CONFIG_SKIP_DNS_CHECK: true`] : []),
   ]);
   const frontendConfig: any = {
     production: true,

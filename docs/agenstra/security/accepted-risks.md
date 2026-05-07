@@ -65,6 +65,28 @@ Some deployment flows generate cloud-init that configures **SSH to `root`** and 
 
 ---
 
+## AR-004 — Allowlist wildcard (`*`) for host restrictions
+
+| Field                                      | Recorded value                                                                                                                                                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **ID**                                     | AR-004                                                                                                                                                                                                                   |
+| **Scope**                                  | Host allowlists that gate remote targets: **`CLIENT_ENDPOINT_ALLOWED_HOSTS`** (agent-controller SSRF guardrails) and **`CONFIG_ALLOWED_HOSTS`** (frontend runtime config proxy).                                         |
+| **Configuration**                          | Allowlists accept the literal entry **`*`** to explicitly mean **“allow any host”**. This is opt-in: operators must set the value intentionally (e.g. `CLIENT_ENDPOINT_ALLOWED_HOSTS=*`).                                |
+| **Residual risk**                          | Misconfiguration can allow remote calls to unintended hosts (wider SSRF impact surface). It also reduces the value of “narrow allowlist” as a compensating control, relying more heavily on other defenses.              |
+| **Mitigations in scope of this repo**      | Non-host guardrails remain: URL shape validation, credential stripping, HTTPS-by-default in production (unless explicitly relaxed), TLS verification enforced in production, DNS anti-rebinding checks (unless skipped). |
+| **Compensating controls (deployer / org)** | Restrict outbound egress (VPC/firewall), set narrow allowlists where possible, monitor logs and correlation IDs, rotate credentials, and avoid enabling `*_SKIP_DNS_CHECK` outside controlled testing.                   |
+| **Risk owner**                             | Maintaining party for this repository / product security documentation (Forepath).                                                                                                                                       |
+| **Acceptor**                               | Repository maintainer (personal acceptance recorded in project documentation).                                                                                                                                           |
+| **Acceptance date**                        | **2026-05-07**                                                                                                                                                                                                           |
+| **Next review date**                       | **2027-05-07**                                                                                                                                                                                                           |
+| **Rationale (business / technical)**       | Some deployments require linking across independently provisioned hosts; enforcing strictly enumerated hostnames can block valid operational workflows. Wildcard keeps security “explicit” rather than implicit.         |
+
+#### Operator summary (AR-004)
+
+Setting **`CLIENT_ENDPOINT_ALLOWED_HOSTS=*`** or **`CONFIG_ALLOWED_HOSTS=*`** explicitly opts into allowing **any host**. This restores operational flexibility (e.g. controller ↔ independently provisioned manager linking) at the cost of a larger SSRF configuration blast radius. Prefer narrow allowlists when feasible.
+
+---
+
 ## Related documentation
 
 - **[Compliance and standards](./compliance-and-standards.md)**

@@ -41,6 +41,14 @@ describe('client-endpoint-security', () => {
     it('rejects host not in allowlist', () => {
       expect(() => assertSafeClientEndpointOrThrow('https://evil.com/x')).toThrow(BadRequestException);
     });
+
+    it('accepts host when allowlist is "*" (explicit allow-all)', () => {
+      process.env.CLIENT_ENDPOINT_ALLOWED_HOSTS = '*';
+
+      const url = assertSafeClientEndpointOrThrow('https://evil.com/x');
+
+      expect(url.hostname).toBe('evil.com');
+    });
   });
 
   describe('assertClientEndpointHostnameResolvesToPublicIps', () => {

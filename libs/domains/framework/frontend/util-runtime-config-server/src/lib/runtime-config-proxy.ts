@@ -13,6 +13,10 @@ export function parseAllowedHosts(raw: string | undefined): string[] {
     .filter((value) => value.length > 0);
 }
 
+function isAllowAllHostsConfigured(allowedHosts: string[]): boolean {
+  return allowedHosts.includes('*');
+}
+
 function isPrivateOrLoopbackHost(hostname: string): boolean {
   const host = hostname.trim().toLowerCase();
 
@@ -202,6 +206,7 @@ export async function fetchRuntimeConfigFromEnv(env: FetchRuntimeConfigEnv): Pro
   }
 
   const allowedFromEnv = parseAllowedHosts(env.CONFIG_ALLOWED_HOSTS);
+  const allowAll = isAllowAllHostsConfigured(allowedFromEnv);
 
   if (isProduction) {
     if (allowedFromEnv.length === 0) {
@@ -212,11 +217,11 @@ export async function fetchRuntimeConfigFromEnv(env: FetchRuntimeConfigEnv): Pro
       };
     }
 
-    if (!allowedFromEnv.includes(host)) {
+    if (!allowAll && !allowedFromEnv.includes(host)) {
       return { kind: 'error', statusCode: 500, log: `CONFIG hostname "${host}" is not in CONFIG_ALLOWED_HOSTS` };
     }
   } else if (allowedFromEnv.length > 0) {
-    if (!allowedFromEnv.includes(host)) {
+    if (!allowAll && !allowedFromEnv.includes(host)) {
       return { kind: 'error', statusCode: 500, log: `CONFIG hostname "${host}" is not in CONFIG_ALLOWED_HOSTS` };
     }
   } else if (!isDevSelfHost(host)) {

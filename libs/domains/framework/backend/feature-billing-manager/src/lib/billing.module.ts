@@ -121,6 +121,52 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
         from: { type: 'string' },
       },
     },
+    security: {
+      type: 'object',
+      description: 'Security (optional)',
+      properties: {
+        corsOrigin: {
+          type: 'string',
+          description: 'Override REST API CORS allowlist (comma-separated origins). Default is https://<fqdn>.',
+        },
+        websocketCorsOrigin: {
+          type: 'string',
+          description: 'Override Socket.IO CORS allowlist (comma-separated origins). Default is https://<fqdn>.',
+        },
+        clientEndpointAllowedHosts: {
+          type: 'string',
+          description: 'Comma-separated host allowlist for controller → client endpoints; use "*" to allow any host',
+        },
+        clientEndpointAllowInsecureHttp: {
+          type: 'boolean',
+          description: 'Allow http:// client endpoints (discouraged; production defaults to https-only)',
+        },
+        clientEndpointTlsRejectUnauthorized: {
+          type: 'boolean',
+          description: 'Verify TLS certificates for https:// client endpoints (must be true in production)',
+        },
+        clientEndpointSkipDnsCheck: {
+          type: 'boolean',
+          description: 'Skip DNS anti-rebinding check for client endpoints (not recommended)',
+        },
+        configAllowedHosts: {
+          type: 'string',
+          description: 'Comma-separated host allowlist for frontend runtime CONFIG fetch; use "*" to allow any host',
+        },
+        configAllowInsecureHttp: {
+          type: 'boolean',
+          description: 'Allow http:// CONFIG URL in production (discouraged)',
+        },
+        configSkipDnsCheck: {
+          type: 'boolean',
+          description: 'Skip DNS anti-rebinding check for CONFIG host (not recommended)',
+        },
+        cspEnforce: {
+          type: 'boolean',
+          description: 'Send enforcing Content-Security-Policy header (default is report-only)',
+        },
+      },
+    },
     keycloak: {
       type: 'object',
       description: 'Keycloak configuration (when authenticationMethod is keycloak)',
@@ -195,6 +241,52 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
         user: { type: 'string' },
         password: { type: 'string' },
         from: { type: 'string' },
+      },
+    },
+    security: {
+      type: 'object',
+      description: 'Security (optional)',
+      properties: {
+        corsOrigin: {
+          type: 'string',
+          description: 'Override REST API CORS allowlist (comma-separated origins). Default is https://<fqdn>.',
+        },
+        websocketCorsOrigin: {
+          type: 'string',
+          description: 'Override Socket.IO CORS allowlist (comma-separated origins). Default is https://<fqdn>.',
+        },
+        clientEndpointAllowedHosts: {
+          type: 'string',
+          description: 'Comma-separated host allowlist for controller → client endpoints; use "*" to allow any host',
+        },
+        clientEndpointAllowInsecureHttp: {
+          type: 'boolean',
+          description: 'Allow http:// client endpoints (discouraged; production defaults to https-only)',
+        },
+        clientEndpointTlsRejectUnauthorized: {
+          type: 'boolean',
+          description: 'Verify TLS certificates for https:// client endpoints (must be true in production)',
+        },
+        clientEndpointSkipDnsCheck: {
+          type: 'boolean',
+          description: 'Skip DNS anti-rebinding check for client endpoints (not recommended)',
+        },
+        configAllowedHosts: {
+          type: 'string',
+          description: 'Comma-separated host allowlist for frontend runtime CONFIG fetch; use "*" to allow any host',
+        },
+        configAllowInsecureHttp: {
+          type: 'boolean',
+          description: 'Allow http:// CONFIG URL in production (discouraged)',
+        },
+        configSkipDnsCheck: {
+          type: 'boolean',
+          description: 'Skip DNS anti-rebinding check for CONFIG host (not recommended)',
+        },
+        cspEnforce: {
+          type: 'boolean',
+          description: 'Send enforcing Content-Security-Policy header (default is report-only)',
+        },
       },
     },
     keycloak: {

@@ -16,7 +16,8 @@ describe('agent-manager.utils', () => {
 
       expect(config.host.hostname).toBe('awesome-armadillo-abc12');
       expect(config.host.fqdn).toBe('awesome-armadillo-abc12.spirde.com');
-      expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
+      expect(config.backend.security?.corsOrigin).toBe('https://awesome-armadillo-abc12.spirde.com');
+      expect(config.backend.security?.websocketCorsOrigin).toBe('https://awesome-armadillo-abc12.spirde.com');
     });
 
     it('defaults baseDomain to spirde.com when not provided', () => {
@@ -163,7 +164,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
@@ -193,7 +194,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
@@ -212,6 +213,39 @@ describe('agent-manager.utils', () => {
       expect(script).toContain('WEBSOCKET_CORS_ORIGIN: https://test.spirde.com');
     });
 
+    it('supports overriding CORS_ORIGIN and WEBSOCKET_CORS_ORIGIN via backend.security', () => {
+      const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
+        host: { hostname: 'test', fqdn: 'test.spirde.com' },
+        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        backend: {
+          host: '0.0.0.0',
+          port: 3000,
+          websocketPort: 8080,
+          nodeEnv: 'production',
+          database: {
+            host: 'postgres',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            database: 'postgres',
+          },
+          authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
+          encryption: { encryptionKey: 'enc' },
+          smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
+          security: {
+            corsOrigin: 'https://portal.example.com,https://console.example.com',
+            websocketCorsOrigin: 'https://portal.example.com',
+          },
+        },
+      };
+      const b64 = buildAgentManagerCloudInitUserData(config);
+      const script = Buffer.from(b64, 'base64').toString('utf-8');
+
+      expect(script).toContain('CORS_ORIGIN: https://portal.example.com,https://console.example.com');
+      expect(script).toContain('WEBSOCKET_CORS_ORIGIN: https://portal.example.com');
+    });
+
     it('configures certbot webroot, letsencrypt paths and renewal for fqdn', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
@@ -225,7 +259,10 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key' },
           encryption: { encryptionKey: 'k' },
           smtp: { host: 'm', port: 1025, user: '', password: '', from: 'n@l' },
-          cors: { origin: '' },
+          security: {
+            corsOrigin: 'https://my-instance.example.com',
+            websocketCorsOrigin: 'https://my-instance.example.com',
+          },
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
@@ -261,7 +298,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
           git: {
             repositoryUrl: 'https://github.com/org/repo.git',
             username: 'gituser',
@@ -301,7 +338,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
@@ -331,7 +368,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
           cursorApiKey: 'sk-test-key',
         },
       };
@@ -361,7 +398,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
@@ -391,7 +428,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);
@@ -421,7 +458,7 @@ describe('agent-manager.utils', () => {
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
           encryption: { encryptionKey: 'enc' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
+          security: { corsOrigin: 'https://test.spirde.com', websocketCorsOrigin: 'https://test.spirde.com' },
         },
       };
       const b64 = buildAgentManagerCloudInitUserData(config);

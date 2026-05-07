@@ -648,6 +648,160 @@
                           />
                         </div>
                       </fieldset>
+                      @if (orderRequestedConfig.service === 'controller') {
+                        <fieldset class="mt-3 mb-0">
+                          <legend class="form-label fs-6">Security (optional)</legend>
+                          <div class="mb-2">
+                            <label for="orderClientEndpointAllowedHosts" class="form-label visually-hidden"
+                              >Client endpoint allowed hosts</label
+                            >
+                            <input
+                              type="text"
+                              id="orderClientEndpointAllowedHosts"
+                              name="clientEndpointAllowedHosts"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.security.clientEndpointAllowedHosts"
+                              placeholder="*"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="Client endpoint allowed hosts"
+                            />
+                            <p class="form-text text-body-secondary small mb-2">
+                              Restricts networking allowlists and transport security checks. Use "*" to explicitly allow
+                              any host.
+                            </p>
+                          </div>
+                          <div class="form-check mb-2">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="orderClientEndpointAllowInsecureHttp"
+                              name="clientEndpointAllowInsecureHttp"
+                              [(ngModel)]="orderRequestedConfig.security.clientEndpointAllowInsecureHttp"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                            />
+                            <label class="form-check-label" for="orderClientEndpointAllowInsecureHttp">
+                              Allow insecure http:// client endpoints
+                            </label>
+                          </div>
+                          <div class="form-check mb-2">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="orderClientEndpointTlsRejectUnauthorized"
+                              name="clientEndpointTlsRejectUnauthorized"
+                              [(ngModel)]="orderRequestedConfig.security.clientEndpointTlsRejectUnauthorized"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                            />
+                            <label class="form-check-label" for="orderClientEndpointTlsRejectUnauthorized">
+                              Reject unauthorized TLS certificates (recommended)
+                            </label>
+                          </div>
+                          <div class="form-check mb-2">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="orderClientEndpointSkipDnsCheck"
+                              name="clientEndpointSkipDnsCheck"
+                              [(ngModel)]="orderRequestedConfig.security.clientEndpointSkipDnsCheck"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                            />
+                            <label class="form-check-label" for="orderClientEndpointSkipDnsCheck">
+                              Skip DNS anti-rebinding check (not recommended)
+                            </label>
+                          </div>
+                          <div class="mb-2">
+                            <label for="orderConfigAllowedHosts" class="form-label visually-hidden"
+                              >CONFIG allowed hosts</label
+                            >
+                            <input
+                              type="text"
+                              id="orderConfigAllowedHosts"
+                              name="configAllowedHosts"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.security.configAllowedHosts"
+                              placeholder="*"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="CONFIG allowed hosts"
+                            />
+                            <p class="form-text text-body-secondary small mb-2">
+                              Restricts which hosts may serve runtime configuration via the config proxy. Use "*" to
+                              explicitly allow any host.
+                            </p>
+                          </div>
+                          <div class="form-check mb-2">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="orderConfigAllowInsecureHttp"
+                              name="configAllowInsecureHttp"
+                              [(ngModel)]="orderRequestedConfig.security.configAllowInsecureHttp"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                            />
+                            <label class="form-check-label" for="orderConfigAllowInsecureHttp">
+                              Allow insecure http:// CONFIG URL in production (discouraged)
+                            </label>
+                          </div>
+                          <div class="form-check mb-2">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="orderConfigSkipDnsCheck"
+                              name="configSkipDnsCheck"
+                              [(ngModel)]="orderRequestedConfig.security.configSkipDnsCheck"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                            />
+                            <label class="form-check-label" for="orderConfigSkipDnsCheck">
+                              Skip DNS anti-rebinding check for CONFIG host (not recommended)
+                            </label>
+                          </div>
+                          <div class="form-check">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="orderCspEnforce"
+                              name="cspEnforce"
+                              [(ngModel)]="orderRequestedConfig.security.cspEnforce"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                            />
+                            <label class="form-check-label" for="orderCspEnforce">Enforce CSP</label>
+                          </div>
+                        </fieldset>
+                      } @else {
+                        <fieldset class="mt-3 mb-0">
+                          <legend class="form-label fs-6">Security (optional)</legend>
+                          <p class="form-text text-body-secondary small mb-2">
+                            CORS settings for the manager API and websocket endpoint.
+                          </p>
+                          <div class="mb-2">
+                            <label for="orderManagerCorsOrigin" class="form-label visually-hidden">CORS origin</label>
+                            <input
+                              type="text"
+                              id="orderManagerCorsOrigin"
+                              name="managerCorsOrigin"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.security.corsOrigin"
+                              placeholder="https://your-console.example.com"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="CORS origin"
+                            />
+                          </div>
+                          <div>
+                            <label for="orderManagerWebsocketCorsOrigin" class="form-label visually-hidden"
+                              >Websocket CORS origin</label
+                            >
+                            <input
+                              type="text"
+                              id="orderManagerWebsocketCorsOrigin"
+                              name="managerWebsocketCorsOrigin"
+                              class="form-control"
+                              [(ngModel)]="orderRequestedConfig.security.websocketCorsOrigin"
+                              placeholder="https://your-console.example.com"
+                              [disabled]="(subscriptionsCreating$ | async) === true"
+                              aria-label="Websocket CORS origin"
+                            />
+                          </div>
+                        </fieldset>
+                      }
                       @if (orderRequestedConfig.service === 'manager') {
                         <div class="mt-3 mb-2">
                           <label for="orderCursorApiKey" class="form-label" i18n="@@featureSubscriptions-cursorApiKey">

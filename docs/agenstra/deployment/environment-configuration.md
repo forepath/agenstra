@@ -73,7 +73,7 @@ During finalize, the orchestrator may ask the remote agent for a Conventional Co
 
 These variables apply to **agent-controller** traffic toward customer-configured **`client.endpoint`** values (HTTP proxy and WebSocket to remote agent-managers).
 
-- `CLIENT_ENDPOINT_ALLOWED_HOSTS` - **Mandatory in production**: comma-separated **lowercase hostnames** allowed as `client.endpoint` hosts (e.g. `agent.example.com,customer2.example.org`). If unset in production, the controller **exits** on startup.
+- `CLIENT_ENDPOINT_ALLOWED_HOSTS` - **Mandatory in production**: comma-separated **lowercase hostnames** allowed as `client.endpoint` hosts (e.g. `agent.example.com,customer2.example.org`). Use `*` to explicitly allow **any host**. If unset in production, the controller **exits** on startup.
 - `CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP` - Set to `true` to allow `http:` client endpoints (not recommended for production).
 - `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED` - Defaults to TLS certificate verification. Setting to `false` disables verification (**not allowed** when `NODE_ENV=production`).
 - `CLIENT_ENDPOINT_SKIP_DNS_CHECK` - Set to `true` to skip DNS resolution checks that reject private/loopback addresses (**not recommended** except in controlled test environments).
@@ -166,20 +166,20 @@ The following apply to **`frontend-agent-console`**, **`frontend-billing-console
 - `CONFIG` - Optional URL to a remote **JSON object** merged at runtime (fetched server-side via `GET /config`).
   - If unset, `/config` returns `{}` and the app uses build-time defaults.
   - **Production** (`NODE_ENV=production`): URL must use **HTTPS** unless `CONFIG_ALLOW_INSECURE_HTTP=true`.
-  - When `CONFIG` is set in production, **`CONFIG_ALLOWED_HOSTS`** is **required** (comma-separated hostnames, lowercase).
+  - When `CONFIG` is set in production, **`CONFIG_ALLOWED_HOSTS`** is **required** (comma-separated hostnames, lowercase) or `*` to explicitly allow **any host**.
   - Fetches use a bounded timeout and size; responses must be `application/json` plain objects; redirects are rejected.
 
 **Defense-in-depth (DNS):** hostnames are resolved and must not point to private/loopback ranges unless skipped (see `CONFIG_SKIP_DNS_CHECK`). Literal IPs and dev hosts (`localhost`, `127.0.0.1`, `::1`) follow dedicated rules.
 
-| Variable                     | Purpose                                                                            |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
-| `CONFIG_ALLOWED_HOSTS`       | **Required** when `CONFIG` is set in production; hostname allowlist.               |
-| `CONFIG_ALLOW_INSECURE_HTTP` | Set `true` to allow `http:` URLs (discouraged in production).                      |
-| `CONFIG_FETCH_TIMEOUT_MS`    | Fetch timeout in ms (default **10000**).                                           |
-| `CONFIG_FETCH_MAX_BYTES`     | Max response body size (default **262144**).                                       |
-| `CONFIG_JSON_MAX_DEPTH`      | Max nesting depth for JSON object (guardrail).                                     |
-| `CONFIG_JSON_MAX_KEYS`       | Max total keys for JSON object (guardrail).                                        |
-| `CONFIG_SKIP_DNS_CHECK`      | Set `true` to skip DNS private/loopback check (**not recommended** in production). |
+| Variable                     | Purpose                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| `CONFIG_ALLOWED_HOSTS`       | **Required** when `CONFIG` is set in production; hostname allowlist. Use `*` to allow any host. |
+| `CONFIG_ALLOW_INSECURE_HTTP` | Set `true` to allow `http:` URLs (discouraged in production).                                   |
+| `CONFIG_FETCH_TIMEOUT_MS`    | Fetch timeout in ms (default **10000**).                                                        |
+| `CONFIG_FETCH_MAX_BYTES`     | Max response body size (default **262144**).                                                    |
+| `CONFIG_JSON_MAX_DEPTH`      | Max nesting depth for JSON object (guardrail).                                                  |
+| `CONFIG_JSON_MAX_KEYS`       | Max total keys for JSON object (guardrail).                                                     |
+| `CONFIG_SKIP_DNS_CHECK`      | Set `true` to skip DNS private/loopback check (**not recommended** in production).              |
 
 **Caching:** Successful `/config` responses set `Cache-Control` (e.g. production: `private, max-age=60, stale-while-revalidate=300`); errors use `no-store`.
 
