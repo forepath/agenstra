@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.53.1](https://github.com/forepath/agenstra/compare/v1.53.0...v1.53.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* outbound correlation id propagation ([#313](https://github.com/forepath/agenstra/issues/313)) ([0f59a83](https://github.com/forepath/agenstra/commit/0f59a83d1d2b9a34e6f97eaf1dc51c3fd82f51fd))
+* preserve correlation ids between backend services ([#312](https://github.com/forepath/agenstra/issues/312)) ([3cf2321](https://github.com/forepath/agenstra/commit/3cf23213c58be12b429bff19a1a26cce2c0cee2a))
+* public health endpoint access ([#311](https://github.com/forepath/agenstra/issues/311)) ([d874a94](https://github.com/forepath/agenstra/commit/d874a947d6c2f72f051f95ee84bafa945a96230b))
+
+
+### Chores
+
+* improved logging ([#310](https://github.com/forepath/agenstra/issues/310)) ([b39cf51](https://github.com/forepath/agenstra/commit/b39cf513c85d9e5281cd2391f24beb00d4a04b1b))
+
 ## [1.53.0](https://github.com/forepath/agenstra/compare/v1.52.1...v1.53.0) (2026-05-07)
 
 
