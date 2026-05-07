@@ -12,10 +12,12 @@ import {
   CorrelationAwareConsoleLogger,
   CorrelationAwareSocketIoAdapter,
   createCorrelationIdMiddleware,
+  registerAxiosCorrelationIdPropagation,
 } from '@forepath/framework/backend/util-http-context';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import axios from 'axios';
 import { DataSource } from 'typeorm';
 
 import { AppModule } from './app/app.module';
@@ -65,6 +67,7 @@ async function bootstrap() {
   const appLogger = new CorrelationAwareConsoleLogger({ json: true, colors: false });
 
   Logger.overrideLogger(appLogger);
+  registerAxiosCorrelationIdPropagation(axios);
 
   const app = await NestFactory.create(AppModule, {
     logger: appLogger,
