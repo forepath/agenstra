@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.53.0](https://github.com/forepath/agenstra/compare/v1.52.1...v1.53.0) (2026-05-07)
+
+
+### Features
+
+* automatic context embedding ([#304](https://github.com/forepath/agenstra/issues/304)) ([e0e8bc4](https://github.com/forepath/agenstra/commit/e0e8bc4626e69ae61c63292c3633d6761b63ba84))
+
+
+### Bug Fixes
+
+* docs styling ([#309](https://github.com/forepath/agenstra/issues/309)) ([48deb01](https://github.com/forepath/agenstra/commit/48deb017b2f07b83a087d5eba92af99eae5ff599))
+
 ## [1.52.1](https://github.com/forepath/agenstra/compare/v1.52.0...v1.52.1) (2026-05-02)
 
 
