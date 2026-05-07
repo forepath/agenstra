@@ -343,9 +343,6 @@ export class AgentFileSystemService {
     try {
       const escapedPath = this.escapeForShell(containerPath);
 
-      this.logger.debug(`Escaped path: ${escapedPath}`);
-      this.logger.debug(`Content: ${content}`);
-
       // Write file using base64 decode
       // The content is already base64-encoded, so we just decode it
       // Use sh -c to run the command in a shell so redirection works

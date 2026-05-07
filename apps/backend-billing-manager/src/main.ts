@@ -1,7 +1,11 @@
+import {
+  CorrelationAwareConsoleLogger,
+  CorrelationAwareSocketIoAdapter,
+  createCorrelationIdMiddleware,
+} from '@forepath/framework/backend/util-http-context';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DataSource } from 'typeorm';
 
 import { AppModule } from './app/app.module';
@@ -10,9 +14,22 @@ import { typeormConfig } from './typeorm.config';
 async function bootstrap() {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
 
-  const app = await NestFactory.create(AppModule);
+  const appLogger = new CorrelationAwareConsoleLogger({ json: true, colors: false });
 
-  app.useWebSocketAdapter(new IoAdapter(app));
+  Logger.overrideLogger(appLogger);
+
+  const app = await NestFactory.create(AppModule, {
+    logger: appLogger,
+  });
+  const httpLogger = new Logger('HTTP');
+
+  app.use(
+    createCorrelationIdMiddleware({
+      log: (message: string) => httpLogger.log(message),
+    }),
+  );
+
+  app.useWebSocketAdapter(new CorrelationAwareSocketIoAdapter(app));
 
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;
@@ -31,8 +48,8 @@ async function bootstrap() {
     origin,
     credentials: origin !== '*' && Array.isArray(origin) && origin.length > 0,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Request-Id'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Correlation-Id'],
   });
 
   if (Array.isArray(origin) && origin.length > 0) {

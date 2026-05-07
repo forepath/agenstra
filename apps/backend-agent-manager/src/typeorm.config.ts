@@ -8,7 +8,21 @@ import {
   RegexFilterRuleEntity,
   WorkspaceConfigurationOverrideEntity,
 } from '@forepath/framework/backend';
+import { CorrelationAwareTypeOrmLogger } from '@forepath/framework/backend/util-http-context';
 import { DataSource, DataSourceOptions } from 'typeorm';
+
+function parseTypeOrmLogLevelsFromEnv(
+  raw: string | undefined,
+): ('query' | 'schema' | 'error' | 'warn' | 'info' | 'log' | 'migration')[] {
+  const allow = new Set(['query', 'schema', 'error', 'warn', 'info', 'log', 'migration']);
+  const parts = (raw ?? '')
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .filter((v) => allow.has(v));
+
+  return parts as ('query' | 'schema' | 'error' | 'warn' | 'info' | 'log' | 'migration')[];
+}
 
 /**
  * Shared TypeORM configuration used by both NestJS app and CLI migrations.
@@ -46,7 +60,13 @@ export const typeormConfig: DataSourceOptions = {
     'apps/backend-agent-manager/src/migrations/*.ts',
   ],
   synchronize: false,
-  logging: process.env.NODE_ENV === 'development',
+  logging:
+    process.env.NODE_ENV === 'development'
+      ? parseTypeOrmLogLevelsFromEnv(process.env.TYPEORM_LOGGING).length
+        ? parseTypeOrmLogLevelsFromEnv(process.env.TYPEORM_LOGGING)
+        : ['warn', 'error']
+      : false,
+  logger: new CorrelationAwareTypeOrmLogger(),
 };
 
 export const typeormConfigForConfigurationOverrides: DataSourceOptions = {
