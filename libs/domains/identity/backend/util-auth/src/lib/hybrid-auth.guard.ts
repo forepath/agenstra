@@ -42,10 +42,12 @@ export class HybridAuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-    const path = request.url;
+    const rawUrl: unknown = request.originalUrl ?? request.url;
+    const url = typeof rawUrl === 'string' ? rawUrl : '';
+    const path = url.split('?')[0]?.replace(/\/+$/, '') ?? '';
 
     // Allow health check endpoint without authentication
-    if (path === '/api/health') {
+    if (path === '/api/health' || path === '/health') {
       return true;
     }
 
