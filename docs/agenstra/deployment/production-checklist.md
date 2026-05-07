@@ -6,41 +6,41 @@ Comprehensive checklist for deploying Agenstra to production.
 
 ### Environment Configuration
 
-- ✅ `NODE_ENV=production` is set for all applications
-- ✅ `CORS_ORIGIN` is configured with your production domain(s)
-- ✅ `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
-- ✅ `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- ✅ `STATIC_API_KEY` or Keycloak credentials are configured
-- ✅ Database credentials are secure and not using defaults
-- ✅ `ENCRYPTION_KEY` is set for sensitive data encryption (agent-controller)
+- `NODE_ENV=production` is set for all applications
+- `CORS_ORIGIN` is configured with your production domain(s)
+- `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
+- `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
+- `STATIC_API_KEY` or Keycloak credentials are configured
+- Database credentials are secure and not using defaults
+- `ENCRYPTION_KEY` is set for sensitive data encryption (agent-controller)
 
 ### Security
 
-- ✅ All default passwords are changed
-- ✅ API keys are strong and unique
-- ✅ Keycloak is properly configured (if using)
-- ✅ HTTPS/WSS is enabled for all connections
-- ✅ CORS is restricted to specific origins
-- ✅ Rate limiting is enabled
-- ✅ Database connections use SSL/TLS
-- ✅ Docker socket permissions are restricted (if applicable)
+- All default passwords are changed
+- API keys are strong and unique
+- Keycloak is properly configured (if using)
+- HTTPS/WSS is enabled for all connections
+- CORS is restricted to specific origins
+- Rate limiting is enabled
+- Database connections use SSL/TLS
+- Docker socket permissions are restricted (if applicable)
 
 ### Database
 
-- ✅ PostgreSQL is configured with proper credentials
-- ✅ Database backups are configured
-- ✅ Database connection pooling is optimized
-- ✅ Database migrations are tested
-- ✅ Database indexes are optimized
+- PostgreSQL is configured with proper credentials
+- Database backups are configured
+- Database connection pooling is optimized
+- Database migrations are tested
+- Database indexes are optimized
 
 ### Infrastructure
 
-- ✅ Docker is properly configured
-- ✅ Docker socket is securely mounted (agent-manager)
-- ✅ Container resource limits are set
-- ✅ Logging is configured
-- ✅ Monitoring is set up
-- ✅ Health checks are configured
+- Docker is properly configured
+- Docker socket is securely mounted (agent-manager)
+- Container resource limits are set
+- Logging is configured
+- Monitoring is set up
+- Health checks are configured
 
 ## Security Considerations
 
