@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import type { NextFunction, Request, Response } from 'express';
 
+import './express-request-augmentation';
 import { runWithCorrelationId } from './correlation-id.storage';
 import { redactSecretsInString, sanitizeRequestUrlForLog } from './sanitize-request-log';
 
