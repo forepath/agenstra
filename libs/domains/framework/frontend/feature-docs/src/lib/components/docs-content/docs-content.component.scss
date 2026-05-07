@@ -1,137 +1,158 @@
 @use '../../section.scss';
 
-.docs-content {
-  line-height: 1.6;
-  color: var(--bs-body-color);
+:host {
+  ::ng-deep {
+    .docs-content {
+      line-height: 1.6;
+      color: var(--bs-body-color);
 
-  // Headings
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-    line-height: 1.25;
-    scroll-margin-top: 80px; // Account for sticky header
+      // Headings
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        line-height: 1.25;
+        scroll-margin-top: 80px; // Account for sticky header
 
-    &:first-child {
-      margin-top: 0;
+        &:first-child {
+          margin-top: 0;
+        }
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        border-bottom: 2px solid var(--bs-border-color);
+        padding-bottom: 0.5rem;
+      }
+
+      h2 {
+        font-size: 2rem;
+        border-bottom: 1px solid var(--bs-border-color);
+        padding-bottom: 0.5rem;
+      }
+
+      h3 {
+        font-size: 1.5rem;
+      }
+
+      h4 {
+        font-size: 1.25rem;
+      }
+
+      // Paragraphs
+      p {
+        margin-bottom: 1rem;
+      }
+
+      // Links
+      a {
+        color: var(--bs-link-color);
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      // Lists
+      ul,
+      ol {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+      }
+
+      li {
+        margin-bottom: 0.5rem;
+      }
+
+      // Code blocks
+      pre {
+        background-color: var(--bs-secondary-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+        padding: 1rem;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+
+        code {
+          background: none;
+          padding: 0;
+          font-size: 0.875rem;
+        }
+      }
+
+      // Inline code
+      code {
+        background-color: var(--bs-secondary-bg);
+        padding: 0.125rem 0.25rem;
+        border-radius: var(--bs-border-radius-sm);
+        font-size: 0.875em;
+        font-family: 'Courier New', monospace;
+      }
+
+      // Blockquotes
+      blockquote {
+        border-left: 4px solid var(--bs-primary);
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: var(--bs-secondary-color);
+        font-style: italic;
+      }
+
+      // Tables
+      table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+
+        th,
+        td {
+          padding: 0.75rem;
+          border: 1px solid var(--bs-border-color);
+        }
+
+        th {
+          background-color: var(--bs-secondary-bg);
+          font-weight: 600;
+        }
+      }
+
+      // Images
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--bs-border-radius);
+        margin: 1rem 0;
+      }
+
+      // Horizontal rule
+      hr {
+        margin: 2rem 0;
+        border: none;
+        border-top: 1px solid var(--bs-border-color);
+      }
+
+      table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+
+        th,
+        td {
+          padding: 0.75rem;
+          border: 1px solid var(--bs-border-color);
+        }
+
+        th {
+          background-color: var(--bs-secondary-bg);
+          font-weight: 600;
+        }
+      }
     }
-  }
-
-  h1 {
-    font-size: 2.5rem;
-    border-bottom: 2px solid var(--bs-border-color);
-    padding-bottom: 0.5rem;
-  }
-
-  h2 {
-    font-size: 2rem;
-    border-bottom: 1px solid var(--bs-border-color);
-    padding-bottom: 0.5rem;
-  }
-
-  h3 {
-    font-size: 1.5rem;
-  }
-
-  h4 {
-    font-size: 1.25rem;
-  }
-
-  // Paragraphs
-  p {
-    margin-bottom: 1rem;
-  }
-
-  // Links
-  a {
-    color: var(--bs-link-color);
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  // Lists
-  ul,
-  ol {
-    margin-bottom: 1rem;
-    padding-left: 2rem;
-  }
-
-  li {
-    margin-bottom: 0.5rem;
-  }
-
-  // Code blocks
-  pre {
-    background-color: var(--bs-secondary-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    padding: 1rem;
-    overflow-x: auto;
-    margin-bottom: 1rem;
-
-    code {
-      background: none;
-      padding: 0;
-      font-size: 0.875rem;
-    }
-  }
-
-  // Inline code
-  code {
-    background-color: var(--bs-secondary-bg);
-    padding: 0.125rem 0.25rem;
-    border-radius: var(--bs-border-radius-sm);
-    font-size: 0.875em;
-    font-family: 'Courier New', monospace;
-  }
-
-  // Blockquotes
-  blockquote {
-    border-left: 4px solid var(--bs-primary);
-    padding-left: 1rem;
-    margin: 1rem 0;
-    color: var(--bs-secondary-color);
-    font-style: italic;
-  }
-
-  // Tables
-  table {
-    width: 100%;
-    margin-bottom: 1rem;
-    border-collapse: collapse;
-
-    th,
-    td {
-      padding: 0.75rem;
-      border: 1px solid var(--bs-border-color);
-    }
-
-    th {
-      background-color: var(--bs-secondary-bg);
-      font-weight: 600;
-    }
-  }
-
-  // Images
-  img {
-    max-width: 100%;
-    height: auto;
-    border-radius: var(--bs-border-radius);
-    margin: 1rem 0;
-  }
-
-  // Horizontal rule
-  hr {
-    margin: 2rem 0;
-    border: none;
-    border-top: 1px solid var(--bs-border-color);
   }
 }

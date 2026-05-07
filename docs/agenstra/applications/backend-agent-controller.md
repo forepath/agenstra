@@ -299,7 +299,7 @@ CORS is configured via the `CORS_ORIGIN` environment variable:
 ### Behavior
 
 - **Production**: CORS is **disabled by default** (empty origins array)
-  - ⚠️ **Warning**: If `CORS_ORIGIN` is not set in production, the application will log a warning and CORS will be disabled
+  - **Warning**: If `CORS_ORIGIN` is not set in production, the application will log a warning and CORS will be disabled
   - **Required**: Set `CORS_ORIGIN` to allow specific origins in production
 
 - **Development**: CORS allows **all origins** (`*`) by default
@@ -386,13 +386,13 @@ docker run \
 
 Before deploying to production, ensure:
 
-- ✅ `NODE_ENV=production` is set
-- ✅ `CORS_ORIGIN` is configured with your production domain(s)
-- ✅ `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
-- ✅ `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
-- ✅ `STATIC_API_KEY` or Keycloak credentials are configured
-- ✅ Database credentials are secure
-- ✅ `ENCRYPTION_KEY` is set for sensitive data encryption
+- `NODE_ENV=production` is set
+- `CORS_ORIGIN` is configured with your production domain(s)
+- `RATE_LIMIT_ENABLED=true` (or leave unset, defaults to `true` in production)
+- `RATE_LIMIT_LIMIT` is set to an appropriate value for your use case
+- `STATIC_API_KEY` or Keycloak credentials are configured
+- Database credentials are secure
+- `ENCRYPTION_KEY` is set for sensitive data encryption
 
 ## Related Documentation
 

@@ -7,6 +7,10 @@
     top: 0;
     height: 72px;
 
+    .brand-icon-container {
+      height: calc(40px + 2rem);
+    }
+
     .brand-icon {
       color: #fff;
       height: 39px;
