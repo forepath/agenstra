@@ -1,3 +1,4 @@
+import { createCorrelationAwareSocketIoClient } from '@forepath/framework/backend/util-http-context';
 import {
   AuthenticationType,
   ClientAgentCredentialsRepository,
@@ -33,8 +34,6 @@ import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
-// socket.io-client is required at runtime when forwarding; avoid static import to keep optional dependency for tests
-// Using type-only import for ClientSocket to avoid runtime dependency
 
 interface SetClientPayload {
   clientId: string;
@@ -267,9 +266,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       // establish remote socket connection to the client's agents namespace
       const authHeader = await this.getAuthHeader(clientId);
       const remoteUrl = this.buildAgentsWsUrl(client.endpoint, client.agentWsPort);
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { io } = require('socket.io-client');
-      const remote = io(remoteUrl, {
+      const remote = createCorrelationAwareSocketIoClient(remoteUrl, {
         transports: ['websocket'],
         extraHeaders: { Authorization: authHeader },
         rejectUnauthorized: false,

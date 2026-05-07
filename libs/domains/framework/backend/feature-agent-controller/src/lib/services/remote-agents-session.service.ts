@@ -1,5 +1,6 @@
-import { ClientAgentCredentialsRepository } from '@forepath/identity/backend';
+import { createCorrelationAwareSocketIoClient } from '@forepath/framework/backend/util-http-context';
 import { AuthenticationType } from '@forepath/identity/backend';
+import { ClientAgentCredentialsRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import type { Socket as ClientSocket } from 'socket.io-client';
 
@@ -104,9 +105,7 @@ export class RemoteAgentsSessionService {
     const client = await this.clientsRepository.findByIdOrThrow(params.clientId);
     const authHeader = await this.getAuthHeader(params.clientId);
     const remoteUrl = this.buildAgentsWsUrl(client.endpoint, client.agentWsPort);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { io } = require('socket.io-client');
-    const remote: ClientSocket = io(remoteUrl, {
+    const remote: ClientSocket = createCorrelationAwareSocketIoClient(remoteUrl, {
       transports: ['websocket'],
       extraHeaders: { Authorization: authHeader },
       rejectUnauthorized: false,
