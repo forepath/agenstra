@@ -2,6 +2,11 @@ import { existsSync, readdirSync, statSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
+import {
+  type FetchRuntimeConfigEnv,
+  applyRuntimeConfigResponseCacheHeaders,
+  fetchRuntimeConfigFromEnv,
+} from '@forepath/framework/frontend/util-runtime-config-server';
 import express from 'express';
 
 const app = express();
@@ -9,33 +14,30 @@ const port = parseInt(process.env['PORT'] || '4200', 10);
 
 /**
  * Runtime configuration endpoint.
- * If process.env.CONFIG is set to a URL, this endpoint will proxy the JSON from that URL.
+ * If process.env.CONFIG is set to a URL, this endpoint will proxy the JSON from that URL
+ * (allowlist, HTTPS, timeout, size, and JSON shape enforced — see util-runtime-config-server).
  * Otherwise, it returns an empty object so the frontend can safely fall back to defaults.
  */
-app.get('/config', async (req, res) => {
-  const configUrl = process.env['CONFIG'];
+app.get('/config', async (_req, res) => {
+  const env = process.env as FetchRuntimeConfigEnv;
+  const result = await fetchRuntimeConfigFromEnv(env);
 
-  if (!configUrl) {
+  if (result.kind === 'no_config') {
+    applyRuntimeConfigResponseCacheHeaders(res, 'success', env);
+
     return res.json({});
   }
 
-  try {
-    const response = await fetch(configUrl);
+  if (result.kind === 'error') {
+    console.error(result.log);
+    applyRuntimeConfigResponseCacheHeaders(res, 'error', env);
 
-    if (!response.ok) {
-      console.error(`Failed to fetch CONFIG from ${configUrl}: ${response.status} ${response.statusText}`);
-
-      return res.status(500).json({});
-    }
-
-    const json = await response.json();
-
-    return res.json(json);
-  } catch (error) {
-    console.error('Error fetching CONFIG URL:', error);
-
-    return res.status(500).json({});
+    return res.status(result.statusCode).json({});
   }
+
+  applyRuntimeConfigResponseCacheHeaders(res, 'success', env);
+
+  return res.json(result.value);
 });
 
 function getBaseDistPath(): string {
