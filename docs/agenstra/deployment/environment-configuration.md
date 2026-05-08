@@ -140,6 +140,22 @@ Complete reference for all environment variables used in Agenstra.
   - Example: `CONFIG=https://config.example.com/agenstra-config.json`
   - For users auth, include `authentication: { type: "users", disableSignup: true }` to hide the signup link and disable registration when backend has DISABLE_SIGNUP=true
 
+#### Runtime config proxy hardening (`/config`)
+
+When `CONFIG` is set, the frontend server fetches and validates the remote JSON with additional controls (SSRF/DNS rebinding defense, size limits, caching policy).
+
+- `CONFIG_ALLOWED_HOSTS` - Comma-separated hostname allowlist for `CONFIG`
+  - Production: **Required** when `CONFIG` is set
+  - If unset/empty outside production, **all hosts are allowed** (legacy behavior; not recommended)
+  - Set to `*` to allow any host (not recommended)
+  - Example: `CONFIG_ALLOWED_HOSTS=config.example.com,config2.example.com`
+- `CONFIG_ALLOW_INSECURE_HTTP` - When `true`, allows `http://` `CONFIG` URLs in production (default: `false`)
+- `CONFIG_ALLOW_INTERNAL_HOST` - When `true`, allows `CONFIG` targets that use/resolve to private or loopback addresses (default: `false`, not recommended)
+- `CONFIG_FETCH_TIMEOUT_MS` - Fetch timeout in milliseconds (default: `10000`, min: `1000`, max: `120000`)
+- `CONFIG_FETCH_MAX_BYTES` - Maximum response size in bytes (default: `262144` = 256 KiB, min: `1024`, max: `2097152` = 2 MiB)
+- `CONFIG_JSON_MAX_DEPTH` - Maximum JSON traversal depth for key counting (default: `12`, min: `1`, max: `32`)
+- `CONFIG_JSON_MAX_KEYS` - Maximum total JSON keys across all objects/arrays up to `CONFIG_JSON_MAX_DEPTH` (default: `512`, min: `1`, max: `10000`)
+
 ### API Configuration
 
 - `API_URL` - Backend API endpoint (default: `http://localhost:3100`)

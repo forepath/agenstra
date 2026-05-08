@@ -126,10 +126,24 @@ services:
   frontend:
     environment:
       - CONFIG=https://config.example.com/agenstra-config.json
+      # Production hardening (recommended):
+      # - CONFIG_ALLOWED_HOSTS=config.example.com
+      # - CONFIG_FETCH_TIMEOUT_MS=10000
+      # - CONFIG_FETCH_MAX_BYTES=262144
       - PORT=4200
 ```
 
 The `CONFIG` variable specifies a URL to a JSON configuration file that will be fetched at runtime and merged with build-time defaults. This allows you to configure frontend applications without rebuilding containers.
+
+When `CONFIG` is set, the frontend server also supports the following optional hardening variables:
+
+- `CONFIG_ALLOWED_HOSTS` - Comma-separated hostname allowlist for `CONFIG` (production: required when `CONFIG` is set; outside production, if unset/empty: allow all = legacy behavior; `*` allows all; not recommended)
+- `CONFIG_ALLOW_INSECURE_HTTP` - Allow `http://` `CONFIG` URLs in production when `true` (default: `false`)
+- `CONFIG_ALLOW_INTERNAL_HOST` - Allow `CONFIG` targets that use/resolve to private or loopback addresses when `true` (default: `false`, not recommended)
+- `CONFIG_FETCH_TIMEOUT_MS` - Fetch timeout in milliseconds (default: `10000`)
+- `CONFIG_FETCH_MAX_BYTES` - Max response size in bytes (default: `262144` = 256 KiB)
+- `CONFIG_JSON_MAX_DEPTH` - Max JSON traversal depth for key counting (default: `12`)
+- `CONFIG_JSON_MAX_KEYS` - Max total JSON keys (default: `512`)
 
 ## Running Containers
 

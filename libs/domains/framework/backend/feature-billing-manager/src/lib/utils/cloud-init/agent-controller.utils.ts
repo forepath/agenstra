@@ -203,6 +203,8 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `PORT: ${config.frontend?.port ?? '4200'}`,
     `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
     `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
+    // Runtime config proxy hardening: CONFIG_ALLOWED_HOSTS is required in production when CONFIG is set.
+    `CONFIG_ALLOWED_HOSTS: ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
   ]);
   const frontendConfig: any = {
     production: true,
