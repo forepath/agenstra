@@ -208,7 +208,7 @@ See [Authentication](../features/authentication.md) for environment variables an
 
 ## Environment Configuration
 
-Configure the application via environment variables:
+Configure the application via environment variables. The **Express** runtime (`/config` proxy, CSP, and related variables) is shared with **frontend-billing-console**, **frontend-portal**, and **frontend-docs**; see [Environment configuration](../deployment/environment-configuration.md) for the full list and billing-manager provisioning defaults.
 
 ### Runtime Configuration (Docker Containers)
 
@@ -233,6 +233,12 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `CONFIG_FETCH_MAX_BYTES` - Maximum response size in bytes (default: `262144` = 256 KiB, min: `1024`, max: `2097152` = 2 MiB)
 - `CONFIG_JSON_MAX_DEPTH` - Maximum JSON traversal depth for key counting (default: `12`, min: `1`, max: `32`)
 - `CONFIG_JSON_MAX_KEYS` - Maximum total JSON keys across all objects/arrays up to `CONFIG_JSON_MAX_DEPTH` (default: `512`, min: `1`, max: `10000`)
+
+#### Content Security Policy (Express)
+
+- `CSP_ENFORCE` - When `true`, sends enforcing `Content-Security-Policy`. Otherwise sends `Content-Security-Policy-Report-Only` (default).
+- **`connect-src`** - Includes `'self'`, `https:`, and `wss:`; non-production also includes `http:` and `ws:` scheme keywords. In **production**, plain HTTP backends need explicit origins via `CSP_CONNECT_SRC_EXTRA`.
+- `CSP_CONNECT_SRC_EXTRA` - Comma- or space-separated URLs (normalized to origins). Example: `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3100`
 
 ### API Configuration
 

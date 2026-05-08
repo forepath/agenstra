@@ -22,6 +22,7 @@ export interface AgentControllerCloudInitConfig {
     port: number;
     nodeEnv: string;
     defaultLocale: string;
+    cspEnforce?: string;
   };
   backend: {
     host: string;
@@ -205,6 +206,8 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
     // Runtime config proxy hardening: CONFIG_ALLOWED_HOSTS is required in production when CONFIG is set.
     `CONFIG_ALLOWED_HOSTS: ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
+    // Frontend security headers: enforce CSP by default for provisioned instances.
+    `CSP_ENFORCE: ${config.frontend?.cspEnforce ?? 'true'}`,
   ]);
   const frontendConfig: any = {
     production: true,

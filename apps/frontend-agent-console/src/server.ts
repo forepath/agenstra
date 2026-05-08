@@ -12,6 +12,76 @@ import express from 'express';
 const app = express();
 const port = parseInt(process.env['PORT'] || '4200', 10);
 
+function parseCspConnectSrcExtra(raw: string | undefined): string[] {
+  if (!raw?.trim()) {
+    return [];
+  }
+
+  const tokens = raw
+    .split(/[\s,]+/g)
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+  const origins: string[] = [];
+
+  for (const token of tokens) {
+    try {
+      const url = new URL(token);
+
+      if (url.protocol !== 'http:' && url.protocol !== 'https:' && url.protocol !== 'ws:' && url.protocol !== 'wss:') {
+        continue;
+      }
+
+      origins.push(url.origin);
+    } catch {
+      // Ignore invalid entries
+    }
+  }
+
+  return origins;
+}
+
+function applySecurityHeaders() {
+  const enforceCsp = process.env['CSP_ENFORCE']?.trim().toLowerCase() === 'true';
+  const cspHeader = enforceCsp ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+  const unencryptedProtocols = ['http:', 'ws:'];
+  const connectSrcExtra = parseCspConnectSrcExtra(process.env['CSP_CONNECT_SRC_EXTRA']);
+  const connectSrc = [
+    "'self'",
+    'https:',
+    'wss:',
+    ...(process.env['NODE_ENV'] === 'production' ? [] : unencryptedProtocols),
+    ...connectSrcExtra,
+  ].join(' ');
+  const csp = [
+    "default-src 'self'",
+    // Monaco and some tooling commonly require eval; keep report-only by default.
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+  ].join('; ');
+
+  app.use((_, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    res.setHeader(cspHeader, csp);
+
+    if (process.env['NODE_ENV'] === 'production') {
+      res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+      res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+    }
+
+    next();
+  });
+}
+
+applySecurityHeaders();
+
 /**
  * Runtime configuration endpoint.
  * If process.env.CONFIG is set to a URL, this endpoint will proxy the JSON from that URL
@@ -189,6 +259,22 @@ app.use((req, res, next) => {
   const monacoCssPattern = /\/assets\/monaco\/esm\/vs\/.*\.css$/;
 
   if (monacoCssPattern.test(req.path)) {
+    const fetchDest = req.headers['sec-fetch-dest'];
+    const acceptHeader = String(req.headers['accept'] ?? '').toLowerCase();
+    const expectsScript =
+      fetchDest === 'script' ||
+      fetchDest === 'worker' ||
+      acceptHeader.includes('javascript') ||
+      acceptHeader.includes('ecmascript') ||
+      acceptHeader.includes('text/javascript') ||
+      acceptHeader.includes('application/javascript');
+
+    // Only rewrite to JS module if the browser expects a script/module response.
+    // If this is a normal stylesheet request (e.g. <link rel="stylesheet">), serve the real CSS via static middleware.
+    if (!expectsScript) {
+      return next();
+    }
+
     // Determine locale from path
     let locale = DEFAULT_LOCALE;
     const pathSegments = req.path.split('/').filter(Boolean);
@@ -204,12 +290,14 @@ app.use((req, res, next) => {
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
 
+        const safeHref = JSON.stringify(pathWithoutLocale);
+
         return res.send(
           `
 // Dynamically load CSS file as stylesheet
 const link = document.createElement('link');
 link.rel = 'stylesheet';
-link.href = '${pathWithoutLocale}';
+link.href = ${safeHref};
 document.head.appendChild(link);
         `.trim(),
         );
@@ -225,12 +313,14 @@ document.head.appendChild(link);
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
 
+        const safeHref = JSON.stringify(req.path);
+
         return res.send(
           `
 // Dynamically load CSS file as stylesheet
 const link = document.createElement('link');
 link.rel = 'stylesheet';
-link.href = '${req.path}';
+link.href = ${safeHref};
 document.head.appendChild(link);
         `.trim(),
         );

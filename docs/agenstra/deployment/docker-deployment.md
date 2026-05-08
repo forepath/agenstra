@@ -145,6 +145,14 @@ When `CONFIG` is set, the frontend server also supports the following optional h
 - `CONFIG_JSON_MAX_DEPTH` - Max JSON traversal depth for key counting (default: `12`)
 - `CONFIG_JSON_MAX_KEYS` - Max total JSON keys (default: `512`)
 
+Frontend Express servers (agent console, billing console, portal, docs) also support:
+
+- `CSP_ENFORCE` - Set to `true` to enforce Content Security Policy (sends `Content-Security-Policy`), otherwise report-only (`Content-Security-Policy-Report-Only`).
+- **`connect-src`** - Allows `'self'`, `https:`, and `wss:`. Non-production adds `http:` and `ws:` scheme keywords. **Production** does not; use `CSP_CONNECT_SRC_EXTRA` for specific HTTP/WebSocket origins (for example `http://host.docker.internal:3100`).
+- `CSP_CONNECT_SRC_EXTRA` - Comma- or space-separated URLs; each becomes an origin. Example: `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3100`
+
+Billing manager–generated agent-controller cloud-init sets `CONFIG_ALLOWED_HOSTS` to the instance FQDN and `CSP_ENFORCE` to `true` by default for the frontend container. See [Environment configuration](./environment-configuration.md).
+
 ## Running Containers
 
 ### Using Docker Compose (Recommended)

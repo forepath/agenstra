@@ -114,6 +114,7 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('location /api/');
       expect(script).toContain('agent-controller-api');
       expect(script).toContain('CONFIG_ALLOWED_HOSTS: test.spirde.com');
+      expect(script).toContain('CSP_ENFORCE: true');
     });
 
     it('configures certbot webroot, letsencrypt paths and renewal for fqdn', () => {

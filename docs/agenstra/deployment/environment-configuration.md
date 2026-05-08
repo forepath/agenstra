@@ -129,7 +129,13 @@ Complete reference for all environment variables used in Agenstra.
 - `GIT_AUTHOR_NAME` - Git commit author name (default: `Agenstra`)
 - `GIT_AUTHOR_EMAIL` - Git commit author email (default: `noreply@agenstra.com`)
 
-## Frontend Agent Console
+## Frontend applications (Express SSR)
+
+The Angular apps **frontend-agent-console**, **frontend-billing-console**, **frontend-portal**, and **frontend-docs** use the same Express layer for `GET /config` (runtime JSON proxy) and security headers. The variables below are written with the agent console in mind; they apply to all four apps unless an app-specific doc says otherwise.
+
+### Billing manager (provisioned agent controller)
+
+When the billing manager generates cloud-init for a product that includes the agent-controller frontend container, it sets **`CONFIG_ALLOWED_HOSTS`** to the instance **FQDN** (so production `CONFIG` fetches stay allowlisted) and **`CSP_ENFORCE`** to **`true`** by default. Override the CSP default only if your provisioning pipeline sets `frontend.cspEnforce` in the cloud-init config.
 
 ### Runtime Configuration
 
@@ -155,6 +161,12 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `CONFIG_FETCH_MAX_BYTES` - Maximum response size in bytes (default: `262144` = 256 KiB, min: `1024`, max: `2097152` = 2 MiB)
 - `CONFIG_JSON_MAX_DEPTH` - Maximum JSON traversal depth for key counting (default: `12`, min: `1`, max: `32`)
 - `CONFIG_JSON_MAX_KEYS` - Maximum total JSON keys across all objects/arrays up to `CONFIG_JSON_MAX_DEPTH` (default: `512`, min: `1`, max: `10000`)
+
+### Content Security Policy (Express)
+
+- `CSP_ENFORCE` - When `true`, sends enforcing `Content-Security-Policy`. Otherwise sends `Content-Security-Policy-Report-Only` (default).
+- **`connect-src` behavior** - The policy always allows `'self'`, `https:`, and `wss:`. Outside production it also allows the `http:` and `ws:` **scheme keywords** (any host on those schemes). In **production**, unencrypted `http` / `ws` endpoints are **not** allowed unless you add their **origins** via `CSP_CONNECT_SRC_EXTRA`.
+- `CSP_CONNECT_SRC_EXTRA` - Extra `connect-src` entries: comma- or space-separated full URLs; each is normalized to an **origin** (`http`, `https`, `ws`, and `wss` accepted). **Required in production** for APIs on plain HTTP (for example `http://host.docker.internal:3100`). Example: `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3100`
 
 ### API Configuration
 
