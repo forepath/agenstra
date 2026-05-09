@@ -18,6 +18,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
 
@@ -97,11 +98,7 @@ export class ClientAgentVcsProxyService {
       const response = await axios.request<T>({
         ...config,
         url: config.url ? `${baseUrl}${config.url}` : baseUrl,
-        headers: {
-          ...config.headers,
-          Authorization: authHeader,
-          'Content-Type': 'application/json',
-        },
+        headers: buildClientProxyRequestHeaders(config.headers, authHeader),
         validateStatus: (status) => status < 500, // Don't throw on 4xx errors
         timeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT) : 600000, // 10 minutes timeout for long-running processes
         httpsAgent: baseUrl.startsWith('https://')
