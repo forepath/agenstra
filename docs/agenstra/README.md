@@ -77,6 +77,17 @@ Deployment guides and configuration:
 - [Production Checklist](./deployment/production-checklist.md) - Production deployment guide
 - [Environment Configuration](./deployment/environment-configuration.md) - Complete environment variables reference
 
+### [Security](./security/README.md)
+
+Public security and compliance-oriented documentation:
+
+- [Compliance and standards](./security/compliance-and-standards.md) - EU CRA and BSI IT-Grundschutz documentation themes (informative)
+- [Accepted risks](./security/accepted-risks.md) - Register AR-001 through AR-005 with mitigations and review dates
+- [Operational hardening](./security/operational-hardening.md) - Implemented controls and operator notes
+- [Vulnerability reporting and artifacts](./security/vulnerability-reporting-and-artifacts.md) - Disclosure process, SBOM paths, desktop integrity
+
+The repository root file `SECURITY.md` duplicates the vulnerability contact and supported-version summary for viewers on hosts that promote that file; the documentation copy lives under [Security](./security/README.md) above.
+
 ### [API Reference](./api-reference/README.md)
 
 Complete API specifications:

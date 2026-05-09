@@ -116,6 +116,7 @@ nx serve frontend-agent-console
 - **[Getting Started](../getting-started.md)** - Quick start guide
 - **[Architecture](../architecture/README.md)** - System architecture
 - **[Applications](../applications/README.md)** - Application details
+- **[Security](../security/README.md)** - Accepted risks, hardening, SBOM, and disclosure
 
 ---
 
