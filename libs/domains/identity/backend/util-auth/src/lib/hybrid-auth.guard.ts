@@ -12,8 +12,12 @@ export const DEFAULT_AUTHENTICATION_METHOD: AuthenticationMethod = 'api-key';
 
 /**
  * Resolves the effective authentication method from environment variables.
- * - AUTHENTICATION_METHOD: explicit choice ('api-key' | 'keycloak' | 'users')
- * - Fallback when not set: STATIC_API_KEY set -> 'api-key', else -> 'keycloak' (backward compatibility)
+ * - `AUTHENTICATION_METHOD`: explicit choice (`api-key` | `keycloak` | `users`).
+ * - When unset: if `STATIC_API_KEY` is set → `api-key` (backward compatibility); otherwise → `keycloak`.
+ *
+ * The implicit `keycloak` branch is intentional: Keycloak/OIDC is the IdP-integrated path and aligns
+ * with enterprise deployments using the customer’s identity provider. Endpoints are not anonymous;
+ * Keycloak- or users-mode guards still enforce authentication. See **AR-004** in `SECURITY.md`.
  */
 export function getAuthenticationMethod(): AuthenticationMethod {
   const explicit = process.env.AUTHENTICATION_METHOD?.toLowerCase().trim();
