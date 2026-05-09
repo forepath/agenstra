@@ -141,7 +141,8 @@ export function buildAgentManagerCloudInitConfigFromRequest(
         password: (smtp?.password as string) ?? '',
         from: (smtp?.from as string) ?? 'noreply@localhost',
       },
-      cors: { origin: `https://${fqdn}` },
+      // Open by default; restrict via CORS_ORIGIN on the provisioned host (compose/env) if needed.
+      cors: { origin: '*' },
       ...(git !== undefined && {
         git: {
           repositoryUrl: (git.repositoryUrl as string) ?? '',

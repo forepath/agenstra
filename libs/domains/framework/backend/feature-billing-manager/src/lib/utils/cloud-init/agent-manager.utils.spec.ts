@@ -7,7 +7,7 @@ import {
 
 describe('agent-manager.utils', () => {
   describe('buildAgentManagerCloudInitConfigFromRequest', () => {
-    it('sets host.fqdn and cors.origin from hostname and baseDomain', () => {
+    it('sets host.fqdn and defaults cors.origin to *', () => {
       const config = buildAgentManagerCloudInitConfigFromRequest(
         { authenticationMethod: 'api-key' },
         'awesome-armadillo-abc12',
@@ -16,7 +16,7 @@ describe('agent-manager.utils', () => {
 
       expect(config.host.hostname).toBe('awesome-armadillo-abc12');
       expect(config.host.fqdn).toBe('awesome-armadillo-abc12.spirde.com');
-      expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
+      expect(config.backend.cors.origin).toBe('*');
     });
 
     it('defaults baseDomain to spirde.com when not provided', () => {

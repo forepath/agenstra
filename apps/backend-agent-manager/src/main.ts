@@ -14,6 +14,7 @@ import {
   createCorrelationIdMiddleware,
   registerAxiosCorrelationIdPropagation,
 } from '@forepath/framework/backend/util-http-context';
+import { createOriginAllowlistMiddleware } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -79,6 +80,7 @@ async function bootstrap() {
       log: (message: string) => httpLogger.log(message),
     }),
   );
+  app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
   // Configure CORS
   // In production: CORS is restricted by default (requires CORS_ORIGIN to be set)
   // In development: CORS allows all origins by default (can be restricted via CORS_ORIGIN)
