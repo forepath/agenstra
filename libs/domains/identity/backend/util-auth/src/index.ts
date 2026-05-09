@@ -1,4 +1,5 @@
 // Existing exports
+export * from './lib/origin-allowlist.middleware';
 export * from './lib/hybrid-auth.guard';
 export * from './lib/keycloak.guard';
 export * from './lib/keycloak.module';

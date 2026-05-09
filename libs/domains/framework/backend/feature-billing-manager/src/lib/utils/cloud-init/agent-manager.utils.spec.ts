@@ -7,7 +7,7 @@ import {
 
 describe('agent-manager.utils', () => {
   describe('buildAgentManagerCloudInitConfigFromRequest', () => {
-    it('sets host.fqdn and cors.origin from hostname and baseDomain', () => {
+    it('sets host.fqdn and defaults cors.origin to *', () => {
       const config = buildAgentManagerCloudInitConfigFromRequest(
         { authenticationMethod: 'api-key' },
         'awesome-armadillo-abc12',
@@ -16,7 +16,7 @@ describe('agent-manager.utils', () => {
 
       expect(config.host.hostname).toBe('awesome-armadillo-abc12');
       expect(config.host.fqdn).toBe('awesome-armadillo-abc12.spirde.com');
-      expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
+      expect(config.backend.cors.origin).toBe('*');
     });
 
     it('defaults baseDomain to spirde.com when not provided', () => {
@@ -69,12 +69,14 @@ describe('agent-manager.utils', () => {
       expect((config.backend.authentication as Record<string, unknown>).disableSignup).toBeUndefined();
     });
 
-    it('generates random encryptionKey', () => {
+    it('generates random encryptionKey and jwtSecret', () => {
       const config1 = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host1');
       const config2 = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host2');
 
       expect(config1.backend.encryption.encryptionKey).toBeTruthy();
+      expect(config1.backend.encryption.jwtSecret).toBeTruthy();
       expect(config1.backend.encryption.encryptionKey).not.toBe(config2.backend.encryption.encryptionKey);
+      expect(config1.backend.encryption.jwtSecret).not.toBe(config2.backend.encryption.jwtSecret);
     });
 
     it('includes git config when request has git', () => {
@@ -161,7 +163,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
         },
@@ -191,7 +193,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
         },
@@ -207,7 +209,7 @@ describe('agent-manager.utils', () => {
       expect(script).toContain('AUTHENTICATION_METHOD');
       expect(script).not.toContain('DISABLE_SIGNUP');
       expect(script).not.toContain('HETZNER_API_TOKEN');
-      expect(script).not.toContain('JWT_SECRET');
+      expect(script).toContain('JWT_SECRET: jwt');
     });
 
     it('configures certbot webroot, letsencrypt paths and renewal for fqdn', () => {
@@ -221,7 +223,7 @@ describe('agent-manager.utils', () => {
           websocketPort: 8080,
           nodeEnv: 'production',
           authentication: { authenticationMethod: 'api-key' },
-          encryption: { encryptionKey: 'k' },
+          encryption: { encryptionKey: 'k', jwtSecret: 's' },
           smtp: { host: 'm', port: 1025, user: '', password: '', from: 'n@l' },
           cors: { origin: '' },
         },
@@ -257,7 +259,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
           git: {
@@ -297,7 +299,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
         },
@@ -327,7 +329,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
           cursorApiKey: 'sk-test-key',
@@ -357,7 +359,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
         },
@@ -387,7 +389,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
         },
@@ -417,7 +419,7 @@ describe('agent-manager.utils', () => {
             database: 'postgres',
           },
           authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
           smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
           cors: { origin: 'https://test.spirde.com' },
         },
