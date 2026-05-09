@@ -110,6 +110,14 @@ describe('ClientsGateway', () => {
   let gateway: ClientsGateway;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let statisticsService: jest.Mocked<StatisticsService>;
+
+  beforeAll(() => {
+    process.env.CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST = 'true';
+  });
+
+  afterAll(() => {
+    delete process.env.CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST;
+  });
   const mockClientsService = {
     findOne: jest.fn(),
   };

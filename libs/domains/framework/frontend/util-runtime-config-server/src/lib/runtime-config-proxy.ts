@@ -1,80 +1,17 @@
 import { promises as dnsPromises } from 'node:dns';
 import * as net from 'node:net';
 
-/** @internal exported for unit tests */
-export function parseAllowedHosts(raw: string | undefined): string[] {
-  if (!raw?.trim()) {
-    return [];
-  }
+import {
+  isDevSelfHost,
+  isPrivateOrLoopbackHost,
+  isPrivateOrLoopbackIp,
+  parseAllowedHosts,
+} from '@forepath/shared/shared/util-network-address';
 
-  return raw
-    .split(',')
-    .map((value) => value.trim().toLowerCase())
-    .filter((value) => value.length > 0);
-}
+export { parseAllowedHosts };
 
 function isAllowAllHostsConfigured(allowedHosts: string[]): boolean {
   return allowedHosts.includes('*') || allowedHosts.length === 0;
-}
-
-function isPrivateOrLoopbackHost(hostname: string): boolean {
-  const host = hostname.trim().toLowerCase();
-
-  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) {
-    return true;
-  }
-
-  if (net.isIP(host)) {
-    return isPrivateOrLoopbackIp(host);
-  }
-
-  return false;
-}
-
-function isPrivateOrLoopbackIp(ip: string): boolean {
-  if (net.isIPv4(ip)) {
-    if (ip.startsWith('10.') || ip.startsWith('127.') || ip.startsWith('169.254.') || ip.startsWith('192.168.')) {
-      return true;
-    }
-
-    if (ip.startsWith('172.')) {
-      const parts = ip.split('.');
-      const second = Number(parts[1]);
-
-      return Number.isFinite(second) && second >= 16 && second <= 31;
-    }
-
-    return false;
-  }
-
-  if (net.isIPv6(ip)) {
-    const normalized = ip.toLowerCase();
-
-    if (normalized === '::1') {
-      return true;
-    }
-
-    if (normalized.startsWith('fc') || normalized.startsWith('fd')) {
-      return true;
-    }
-
-    if (
-      normalized.startsWith('fe8') ||
-      normalized.startsWith('fe9') ||
-      normalized.startsWith('fea') ||
-      normalized.startsWith('feb')
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-const DEV_SELF_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
-function isDevSelfHost(hostname: string): boolean {
-  return DEV_SELF_HOSTS.has(hostname.trim().toLowerCase());
 }
 
 function countJsonKeys(value: unknown, depth: number, maxDepth: number): number {

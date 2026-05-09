@@ -18,6 +18,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
@@ -87,8 +88,11 @@ export class ClientAgentVcsProxyService {
     resource: 'vcs' | 'automation' = 'vcs',
   ): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+    await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildAgentManagerResourceUrl(clientEntity.endpoint, agentId, resource);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
       this.logger.debug(
@@ -103,7 +107,7 @@ export class ClientAgentVcsProxyService {
         timeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT) : 600000, // 10 minutes timeout for long-running processes
         httpsAgent: baseUrl.startsWith('https://')
           ? new (require('https').Agent)({
-              rejectUnauthorized: false, // Ignore self-signed certificates
+              rejectUnauthorized: tlsPolicy.rejectUnauthorized,
             })
           : undefined,
       });

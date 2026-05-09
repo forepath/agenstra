@@ -1,0 +1,16 @@
+{
+  "name": "shared-shared-util-network-address",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/shared/util-network-address/src",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:shared", "type:util"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/shared/util-network-address/jest.config.ts"
+      }
+    }
+  }
+}

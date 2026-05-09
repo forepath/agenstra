@@ -1,5 +1,7 @@
 import { randomBytes } from 'crypto';
 
+import { parseAllowedHosts } from '@forepath/shared/shared/util-network-address';
+
 import { buildCertbotBootstrapScript } from './certbot-bootstrap.script';
 import { formatEnvLines as formatEnv } from './env.utils';
 
@@ -73,6 +75,75 @@ export interface AgentControllerCloudInitConfig {
       ttl: number;
       limit: number;
     };
+    /**
+     * Client workspace (agent-manager) URL SSRF / TLS policy for the backend API.
+     * Billing-provisioned stacks default to strict TLS, HTTPS-only outbound, DNS validation on,
+     * and **`CLIENT_ENDPOINT_ALLOWED_HOSTS=*`** so tenants may use arbitrary agent-manager hostnames.
+     * Optional **`clientEndpointAllowedHosts`** / **`security.clientEndpointAllowedHosts`** merge the instance FQDN
+     * with listed hosts (or `*` only) for stricter allowlists.
+     */
+    clientEndpoint?: {
+      allowedHosts?: string;
+      allowInsecureHttp?: boolean;
+      tlsRejectUnauthorized?: boolean;
+    };
+  };
+}
+
+/**
+ * Client-endpoint hostname allowlist for billing-provisioned agent-controller:
+ * default `*`; when **`requestedConfig`** lists explicit hosts, merge instance FQDN first (deduped).
+ * Literal `*` in the explicit list yields allow-all.
+ */
+export function buildMergedClientEndpointAllowedHosts(provisionedFqdn: string, explicitRaw?: string): string {
+  const fq = provisionedFqdn.trim().toLowerCase();
+
+  if (!explicitRaw?.trim()) {
+    return '*';
+  }
+
+  const parsed = parseAllowedHosts(explicitRaw);
+
+  if (parsed.includes('*')) {
+    return '*';
+  }
+
+  const ordered = [fq, ...parsed.filter((h) => h !== fq)];
+  const seen = new Set<string>();
+  const unique: string[] = [];
+
+  for (const h of ordered) {
+    if (!seen.has(h)) {
+      seen.add(h);
+      unique.push(h);
+    }
+  }
+
+  return unique.join(',');
+}
+
+function resolveClientEndpointProvisioningOptions(
+  effectiveConfig: Record<string, unknown>,
+  provisionedFqdn: string,
+): {
+  allowedHosts: string;
+  allowInsecureHttp: boolean;
+  tlsRejectUnauthorized: boolean;
+} {
+  const sec = effectiveConfig.security as Record<string, unknown> | undefined;
+  const fromSec =
+    typeof sec?.clientEndpointAllowedHosts === 'string' ? (sec.clientEndpointAllowedHosts as string).trim() : '';
+  const fromTop =
+    typeof effectiveConfig.clientEndpointAllowedHosts === 'string'
+      ? (effectiveConfig.clientEndpointAllowedHosts as string).trim()
+      : '';
+  const explicitRaw = fromSec !== '' ? fromSec : fromTop !== '' ? fromTop : undefined;
+  const allowedHosts = buildMergedClientEndpointAllowedHosts(provisionedFqdn, explicitRaw);
+
+  return {
+    allowedHosts,
+    allowInsecureHttp: Boolean(sec?.clientEndpointAllowInsecureHttp),
+    tlsRejectUnauthorized: sec?.clientEndpointTlsRejectUnauthorized !== false,
   };
 }
 
@@ -150,6 +221,7 @@ export function buildAgentControllerCloudInitConfigFromRequest(
         hetznerApiToken: (effectiveConfig.hetznerApiToken as string) ?? '',
         digitaloceanApiToken: (effectiveConfig.digitaloceanApiToken as string) ?? '',
       },
+      clientEndpoint: resolveClientEndpointProvisioningOptions(effectiveConfig, fqdn),
     },
   };
 }
@@ -197,6 +269,12 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `RATE_LIMIT_ENABLED: ${config.backend?.rateLimit?.enabled ?? 'false'}`,
     `RATE_LIMIT_TTL: ${config.backend?.rateLimit?.ttl ?? '60'}`,
     `RATE_LIMIT_LIMIT: ${config.backend?.rateLimit?.limit ?? '100'}`,
+    // Client workspace (agent-manager) URL SSRF + TLS (mirrors chore/security_improvements provisioning)
+    `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: ${config.backend?.clientEndpoint?.tlsRejectUnauthorized !== false}`,
+    `CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: ${config.backend?.clientEndpoint?.allowInsecureHttp === true}`,
+    `CLIENT_ENDPOINT_ALLOWED_HOSTS: ${
+      config.backend?.clientEndpoint?.allowedHosts?.trim() ? config.backend.clientEndpoint.allowedHosts : '*'
+    }`,
   ]);
   const frontendEnv = formatEnv([
     // Frontend web server configuration

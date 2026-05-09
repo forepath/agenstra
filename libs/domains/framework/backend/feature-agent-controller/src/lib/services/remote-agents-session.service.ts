@@ -6,6 +6,7 @@ import type { Socket as ClientSocket } from 'socket.io-client';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -104,11 +105,14 @@ export class RemoteAgentsSessionService {
   async sendChatSync(params: RemoteChatSyncParams): Promise<string> {
     const client = await this.clientsRepository.findByIdOrThrow(params.clientId);
     const authHeader = await this.getAuthHeader(params.clientId);
+
+    await validateClientEndpointWithDnsOrThrow(client.endpoint);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
     const remoteUrl = this.buildAgentsWsUrl(client.endpoint, client.agentWsPort);
     const remote: ClientSocket = createCorrelationAwareSocketIoClient(remoteUrl, {
       transports: ['websocket'],
       extraHeaders: { Authorization: authHeader },
-      rejectUnauthorized: false,
+      rejectUnauthorized: tlsPolicy.rejectUnauthorized,
       reconnection: false,
     });
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);

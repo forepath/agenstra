@@ -78,6 +78,9 @@
       "@agenstra/release-integrity": ["tools/release-integrity/src/index.ts"],
       "@agenstra/sbom": ["tools/sbom/src/index.ts"],
       "@forepath/shared/backend": ["libs/domains/shared/backend/index.ts"],
+      "@forepath/shared/shared/util-network-address": [
+        "libs/domains/shared/shared/util-network-address/src/index.ts"
+      ],
       "@forepath/shared/frontend": ["libs/domains/shared/frontend/index.ts"],
       "@forepath/shared/keycloak": ["libs/domains/shared/keycloak/index.ts"],
       "@forepath/shared/shared": ["libs/domains/shared/shared/index.ts"]

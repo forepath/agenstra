@@ -54,6 +54,15 @@ Complete reference for all environment variables used in Agenstra.
 - `RATE_LIMIT_TTL` - Time window in seconds (default: `60`)
 - `RATE_LIMIT_LIMIT` - Maximum requests per window (default: `100`)
 
+### Client workspace endpoints (SSRF guardrails)
+
+These variables apply to **stored client workspace URLs** (the agent-manager base URL the controller proxies to). They mirror the semantics of frontend **`CONFIG_*`** runtime-config settings where noted.
+
+- `CLIENT_ENDPOINT_ALLOWED_HOSTS` - Comma-separated lowercase hostnames allowed in client endpoint URLs, or `*` for any host (default: unset in non-production; **required in production** — the process exits on startup if unset when `NODE_ENV=production`).
+- `CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP` - Set to `true` to allow `http:` client endpoints when `NODE_ENV=production` (default: HTTPS only in production).
+- `CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST` - Set to `true` to allow private/loopback hostnames and literal private IPs in client endpoints, and to **skip DNS rebinding checks** (mirrors `CONFIG_ALLOW_INTERNAL_HOST` for `/config`; neither side uses a dedicated skip-DNS env var). Use only in trusted lab or air-gapped deployments.
+- `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED` - Defaults to TLS certificate verification **on** for outbound HTTPS to client endpoints. Set to `false` **only in non-production** to allow self-signed certificates (disallowed when `NODE_ENV=production`).
+
 ### Server Provisioning
 
 - `HETZNER_API_TOKEN` - Hetzner Cloud API token (for server provisioning)
@@ -137,6 +146,8 @@ The Angular apps **frontend-agent-console**, **frontend-billing-console**, **fro
 
 When the billing manager generates cloud-init for a product that includes the agent-controller frontend container, it sets **`CONFIG_ALLOWED_HOSTS`** to the instance **FQDN** (so production `CONFIG` fetches stay allowlisted) and **`CSP_ENFORCE`** to **`true`** by default. Override the CSP default only if your provisioning pipeline sets `frontend.cspEnforce` in the cloud-init config.
 
+It also sets client workspace SSRF env vars on **`backend-agent-controller`**: **`CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED`** (default **`true`**), **`CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP`** (default **`false`**), and **`CLIENT_ENDPOINT_ALLOWED_HOSTS`** (default **`*`** so tenants may register arbitrary agent-manager hostnames while other SSRF layers still apply). DNS rebinding checks follow runtime rules (on by default); use **`CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST`** in non-provisioned setups when you need the same bypass as **`CONFIG_ALLOW_INTERNAL_HOST`** (billing does not set it by default). Optional **`clientEndpointAllowedHosts`** / **`security.clientEndpointAllowedHosts`** in **`requestedConfig`** **merge** the instance FQDN with listed hosts (FQDN first); a single **`*`** entry keeps allow-all. Optional **`security.clientEndpointAllowInsecureHttp`** and **`security.clientEndpointTlsRejectUnauthorized`** map to the same `CLIENT_ENDPOINT_*` variables.
+
 ### Runtime Configuration
 
 - `CONFIG` - URL to a remote JSON configuration file that will be loaded at runtime and merged with build-time defaults (optional)
@@ -148,7 +159,7 @@ When the billing manager generates cloud-init for a product that includes the ag
 
 #### Runtime config proxy hardening (`/config`)
 
-When `CONFIG` is set, the frontend server fetches and validates the remote JSON with additional controls (SSRF/DNS rebinding defense, size limits, caching policy).
+When `CONFIG` is set, the frontend server fetches and validates the remote JSON with additional controls (SSRF/DNS rebinding defense, size limits, caching policy). Hostname allowlist parsing and private/loopback detection (including **IPv6** and **IPv4-mapped IPv6** addresses) are implemented in **`@forepath/shared/shared/util-network-address`**, shared with backend **client workspace endpoint** validation (`CLIENT_ENDPOINT_*`).
 
 - `CONFIG_ALLOWED_HOSTS` - Comma-separated hostname allowlist for `CONFIG`
   - Production: **Required** when `CONFIG` is set

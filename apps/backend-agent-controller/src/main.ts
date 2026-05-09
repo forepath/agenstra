@@ -3,6 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
+import { assertProductionClientEndpointAllowlistConfigured } from '@forepath/framework/backend/feature-agent-controller';
 import {
   CorrelationAwareConsoleLogger,
   CorrelationAwareSocketIoAdapter,
@@ -20,6 +21,7 @@ import { typeormConfig } from './typeorm.config';
 
 async function bootstrap() {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
+  assertProductionClientEndpointAllowlistConfigured(new Logger('ClientEndpointAllowlist'));
 
   const appLogger = new CorrelationAwareConsoleLogger({ json: true, colors: false });
 
@@ -113,4 +115,11 @@ async function bootstrap() {
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  const stack = error instanceof Error ? error.stack : undefined;
+
+  // eslint-disable-next-line no-console -- bootstrap runs before Nest logger is reliable
+  console.error('Bootstrap failed:', message, stack ?? '');
+  process.exit(1);
+});

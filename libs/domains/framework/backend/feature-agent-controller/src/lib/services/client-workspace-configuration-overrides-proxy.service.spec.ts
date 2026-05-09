@@ -14,6 +14,14 @@ describe('ClientWorkspaceConfigurationOverridesProxyService', () => {
   let service: ClientWorkspaceConfigurationOverridesProxyService;
   let clientsRepository: jest.Mocked<ClientsRepository>;
 
+  beforeAll(() => {
+    process.env.CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST = 'true';
+  });
+
+  afterAll(() => {
+    delete process.env.CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST;
+  });
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [

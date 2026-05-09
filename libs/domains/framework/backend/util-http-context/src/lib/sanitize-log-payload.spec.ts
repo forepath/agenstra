@@ -1,6 +1,16 @@
 import { sanitizeLogPayload } from './sanitize-log-payload';
 
 describe('sanitizeLogPayload', () => {
+  it('serializes Error instances (non-enumerable message/stack)', () => {
+    const err = new Error('connection refused');
+
+    expect(sanitizeLogPayload(err)).toEqual({
+      name: 'Error',
+      message: 'connection refused',
+      stack: expect.stringContaining('Error: connection refused'),
+    });
+  });
+
   it('redacts sensitive keys deeply', () => {
     expect(sanitizeLogPayload({ password: 'x', nested: { access_token: 't' }, ok: 1 })).toEqual({
       password: '[REDACTED]',

@@ -13,6 +13,7 @@ Comprehensive checklist for deploying Agenstra to production.
 - `STATIC_API_KEY` or Keycloak credentials are configured
 - Database credentials are secure and not using defaults
 - `ENCRYPTION_KEY` is set for sensitive data encryption (agent-controller)
+- **Backend agent-controller**: `CLIENT_ENDPOINT_ALLOWED_HOSTS` is set (comma-separated hostnames or `*`); the process exits on startup in production if unset (see [Environment configuration](./environment-configuration.md))
 
 ### Security
 
