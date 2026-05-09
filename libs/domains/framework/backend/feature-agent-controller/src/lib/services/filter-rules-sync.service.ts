@@ -1,4 +1,7 @@
-import type { CreateRegexFilterRuleDto, UpdateRegexFilterRuleDto } from '@forepath/framework/backend';
+import type {
+  CreateRegexFilterRuleDto,
+  UpdateRegexFilterRuleDto,
+} from '@forepath/framework/backend/feature-agent-manager';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';

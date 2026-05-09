@@ -3,12 +3,13 @@ import type {
   CreateRegexFilterRuleDto,
   RegexFilterRuleResponseDto,
   UpdateRegexFilterRuleDto,
-} from '@forepath/framework/backend';
+} from '@forepath/framework/backend/feature-agent-manager';
 import { AuthenticationType } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
@@ -53,8 +54,11 @@ export class AgentManagerFilterRulesClientService {
 
   private async request<T>(clientId: string, config: AxiosRequestConfig): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+    await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildBaseUrl(clientEntity.endpoint);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
       this.logger.debug(`Filter rules ${config.method} ${baseUrl}${config.url || ''} for client ${clientId}`);
@@ -64,7 +68,7 @@ export class AgentManagerFilterRulesClientService {
         headers: buildClientProxyRequestHeaders(config.headers, authHeader),
         validateStatus: (status) => status < 500,
         httpsAgent: baseUrl.startsWith('https://')
-          ? new (require('https').Agent)({ rejectUnauthorized: false })
+          ? new (require('https').Agent)({ rejectUnauthorized: tlsPolicy.rejectUnauthorized })
           : undefined,
       });
 

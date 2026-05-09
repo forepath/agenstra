@@ -34,6 +34,7 @@ import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 
 interface SetClientPayload {
   clientId: string;
@@ -265,11 +266,14 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
       // establish remote socket connection to the client's agents namespace
       const authHeader = await this.getAuthHeader(clientId);
+
+      await validateClientEndpointWithDnsOrThrow(client.endpoint);
+      const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
       const remoteUrl = this.buildAgentsWsUrl(client.endpoint, client.agentWsPort);
       const remote = createCorrelationAwareSocketIoClient(remoteUrl, {
         transports: ['websocket'],
         extraHeaders: { Authorization: authHeader },
-        rejectUnauthorized: false,
+        rejectUnauthorized: tlsPolicy.rejectUnauthorized,
         reconnection: true,
         reconnectionAttempts: parseInt(process.env.SOCKET_RECONNECTION_ATTEMPTS || '5'),
         reconnectionDelay: 1000,

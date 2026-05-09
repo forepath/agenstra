@@ -304,6 +304,10 @@ CORS is configured via the `CORS_ORIGIN` environment variable:
 
 - **Development**: CORS allows **all origins** (`*`) by default
 
+## Outbound client workspace URLs (SSRF)
+
+Requests and WebSocket handshakes to each workspace’s **stored agent-manager base URL** are validated to reduce SSRF and DNS rebinding risk: URL shape, optional hostname allowlist, HTTPS in production, TLS verification (configurable in non-production), and DNS checks on resolved addresses (unless opted out). Variable names align with frontend **`CONFIG_*`** patterns where applicable. See **[Environment configuration](../deployment/environment-configuration.md)** for `CLIENT_ENDPOINT_*` settings (including production requirement for `CLIENT_ENDPOINT_ALLOWED_HOSTS`).
+
 ## Environment Variables
 
 See the application docs and environment configuration for complete environment variable documentation.
@@ -326,6 +330,13 @@ See the application docs and environment configuration for complete environment 
 - `RATE_LIMIT_ENABLED` - Enable/disable rate limiting
 - `RATE_LIMIT_TTL` - Time window in seconds (default: `60`)
 - `RATE_LIMIT_LIMIT` - Maximum requests per window (default: `100`)
+
+**Client workspace endpoints (SSRF):**
+
+- `CLIENT_ENDPOINT_ALLOWED_HOSTS` - Allowed endpoint hostnames (comma-separated or `*`); **required in production**
+- `CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP` - Allow `http:` endpoints in production when `true`
+- `CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST` - Allow private/loopback targets and skip DNS rebinding check when `true` (same pattern as `CONFIG_*`: no separate skip-DNS flag)
+- `CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED` - TLS verify outbound HTTPS (set `false` only outside production)
 
 **Authentication:**
 

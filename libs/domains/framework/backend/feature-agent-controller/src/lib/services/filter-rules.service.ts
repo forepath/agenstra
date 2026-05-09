@@ -2,7 +2,7 @@ import {
   assertReplaceContentForFilterType,
   compileRegexOrThrow,
   normalizeRegexFlags,
-} from '@forepath/framework/backend';
+} from '@forepath/framework/backend/feature-agent-manager';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

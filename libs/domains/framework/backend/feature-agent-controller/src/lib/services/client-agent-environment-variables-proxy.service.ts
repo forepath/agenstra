@@ -9,6 +9,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
@@ -75,8 +76,11 @@ export class ClientAgentEnvironmentVariablesProxyService {
    */
   private async makeRequest<T>(clientId: string, agentId: string, config: AxiosRequestConfig): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+    await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildAgentEnvironmentApiUrl(clientEntity.endpoint, agentId);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
       this.logger.debug(
@@ -90,7 +94,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
         validateStatus: (status) => status < 500, // Don't throw on 4xx errors
         httpsAgent: baseUrl.startsWith('https://')
           ? new (require('https').Agent)({
-              rejectUnauthorized: false, // Ignore self-signed certificates
+              rejectUnauthorized: tlsPolicy.rejectUnauthorized,
             })
           : undefined,
       });

@@ -4,6 +4,7 @@
   "sourceRoot": "libs/domains/framework/backend/feature-agent-controller/src",
   "projectType": "library",
   "tags": ["domain:framework", "scope:backend", "type:feature"],
+  "implicitDependencies": ["framework-backend-feature-agent-manager"],
   "targets": {
     "test": {
       "executor": "@nx/jest:jest",

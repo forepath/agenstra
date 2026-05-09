@@ -8,7 +8,7 @@ Used by `frontend-agent-console`, `frontend-billing-console`, `frontend-portal`,
 
 - **`fetchRuntimeConfigFromEnv`** – Validates URL, allowlist, HTTPS in production, timeouts, size, JSON shape; DNS rebinding guard unless `CONFIG_ALLOW_INTERNAL_HOST=true` (or test/dev self-host exceptions). See `FetchRuntimeConfigEnv` in `runtime-config-proxy.ts`.
 - **`applyRuntimeConfigResponseCacheHeaders`** – Sets `Cache-Control` on `/config` responses.
-- **`parseAllowedHosts`**, **`assertConfigHostnameResolvesToPublicIps`** – Exposed for tests and advanced callers.
+- **`parseAllowedHosts`** – Re-exported from **`@forepath/shared/shared/util-network-address`**; **`assertConfigHostnameResolvesToPublicIps`** – exposed for tests and advanced callers.
 
 Environment variables are documented in **[Environment configuration](../../../../../docs/agenstra/deployment/environment-configuration.md)** (Frontend section).
 

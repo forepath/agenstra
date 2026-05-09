@@ -54,6 +54,14 @@ export function sanitizeLogPayload(input: unknown, depth = 0): unknown {
     return sanitizeString(input);
   }
 
+  if (input instanceof Error) {
+    return {
+      name: input.name,
+      message: typeof input.message === 'string' ? sanitizeString(input.message) : String(input.message),
+      stack: typeof input.stack === 'string' ? sanitizeString(input.stack) : undefined,
+    };
+  }
+
   if (typeof input === 'number' || typeof input === 'boolean') {
     return input;
   }
