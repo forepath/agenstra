@@ -44,6 +44,8 @@ export interface AgentManagerCloudInitConfig {
     };
     encryption: {
       encryptionKey: string;
+      /** JWT signing secret for local auth features (same generation as agent-controller provisioning). */
+      jwtSecret: string;
     };
     smtp: {
       host: string;
@@ -72,7 +74,8 @@ export interface AgentManagerCloudInitConfig {
 
 /**
  * Builds AgentManagerCloudInitConfig from effectiveConfig (plan defaults + requestedConfig) and hostname.
- * Manager does not support 'users' auth: if authenticationMethod is 'users', it is coerced to 'api-key'.
+ * Generates random encryptionKey and jwtSecret. Manager does not support 'users' auth: if
+ * authenticationMethod is 'users', it is coerced to 'api-key'.
  * Does not read disableSignup or provisioning tokens (hetznerApiToken, digitaloceanApiToken).
  *
  * @param baseDomain - Base domain for FQDN (e.g. spirde.com). Defaults to spirde.com.
@@ -83,6 +86,7 @@ export function buildAgentManagerCloudInitConfigFromRequest(
   baseDomain = 'spirde.com',
 ): AgentManagerCloudInitConfig {
   const encryptionKey = randomBytes(32).toString('base64');
+  const jwtSecret = randomBytes(32).toString('hex');
   const fqdn = `${hostname}.${baseDomain}`;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
@@ -133,7 +137,7 @@ export function buildAgentManagerCloudInitConfigFromRequest(
           },
         }),
       },
-      encryption: { encryptionKey },
+      encryption: { encryptionKey, jwtSecret },
       smtp: {
         host: (smtp?.host as string) ?? 'mailhog',
         port: (smtp?.port as number) ?? 1025,
@@ -180,6 +184,7 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     `KEYCLOAK_CLIENT_ID: ${config.backend?.authentication?.keycloak?.clientId ?? ''}`,
     `KEYCLOAK_CLIENT_SECRET: ${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
     `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
+    `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
     `SMTP_HOST: ${config.backend?.smtp?.host ?? 'mailhog'}`,
     `SMTP_PORT: ${config.backend?.smtp?.port ?? '1025'}`,
     `SMTP_USER: ${config.backend?.smtp?.user ?? ''}`,
