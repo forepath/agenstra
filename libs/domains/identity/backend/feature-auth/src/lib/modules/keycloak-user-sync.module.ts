@@ -11,6 +11,7 @@ import { KeycloakRolesGuard } from '../guards/keycloak-roles.guard';
 import { UsersAuthGuard } from '../guards/users-auth.guard';
 import { UsersRepository } from '../repositories/users.repository';
 import { UsersService } from '../services/users.service';
+import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
 
 /**
  * Module that syncs Keycloak-authenticated users to the users table.
@@ -27,7 +28,7 @@ import { UsersService } from '../services/users.service';
     TypeOrmModule.forFeature([UserEntity]),
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET || 'default-secret-change-in-production',
+      secret: resolveJwtModuleSecret('keycloak'),
       signOptions: { expiresIn: '7d' },
     }),
   ],
