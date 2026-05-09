@@ -72,6 +72,7 @@
         "libs/domains/identity/frontend/index.ts"
       ],
       "@agenstra/ai": ["tools/ai/src/index.ts"],
+      "@agenstra/release-integrity": ["tools/release-integrity/src/index.ts"],
       "@agenstra/sbom": ["tools/sbom/src/index.ts"],
       "@forepath/shared/backend": ["libs/domains/shared/backend/index.ts"],
       "@forepath/shared/frontend": ["libs/domains/shared/frontend/index.ts"],

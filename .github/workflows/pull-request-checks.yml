@@ -460,6 +460,17 @@ jobs:
       - build-native-applications-linux
       - build-native-applications-windows
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set nx shas
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:
@@ -478,6 +489,18 @@ jobs:
           find artifacts -type f -name '*.msi' -exec cp {} release/ \;
           find artifacts -type f -name '*.msix' -exec cp {} release/ \;
 
+      - name: Generate desktop integrity manifests (SHA256SUMS + integrity-manifest.json)
+        run: |
+          shopt -s nullglob
+          files=(release/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No desktop binaries in release/; skipping integrity manifests."
+            exit 0
+          fi
+          npx nx run release-integrity:build
+          node tools/release-integrity/dist/src/cli.js --input release
+          node tools/release-integrity/dist/src/cli.js verify --input release
+
       - name: Upload binaries to GitHub Actions artifact
         uses: actions/upload-artifact@v4
         with:
@@ -489,5 +512,7 @@ jobs:
             release/*.exe
             release/*.msi
             release/*.msix
+            release/SHA256SUMS
+            release/integrity-manifest.json
           retention-days: 1
           compression-level: 6

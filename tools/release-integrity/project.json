@@ -1,0 +1,26 @@
+{
+  "name": "release-integrity",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "tools/release-integrity/src",
+  "tags": ["type:tool", "scope:repo"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "tools/release-integrity/dist",
+        "main": "tools/release-integrity/src/cli.ts",
+        "tsConfig": "tools/release-integrity/tsconfig.lib.json",
+        "generatePackageJson": false
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "tools/release-integrity/jest.config.ts"
+      }
+    }
+  }
+}
