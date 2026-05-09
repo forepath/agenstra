@@ -321,6 +321,8 @@ See **[Client Management](./client-management.md#per-client-permissions)** for d
 ## Related Documentation
 
 - **[Environment Configuration](../deployment/environment-configuration.md)** - Environment variable reference
+- **[Security — Accepted risks](../security/accepted-risks.md)** - **AR-004** (implicit authentication method resolution when `AUTHENTICATION_METHOD` is unset)
+- **[Security — Operational hardening](../security/operational-hardening.md)** - Backend authentication resolution behavior
 - **[Client Management](./client-management.md)** - Per-client permissions and user management
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** - Backend authentication implementation
 - **[Frontend Agent Console Application](../applications/frontend-agent-console.md)** - Frontend authentication UI

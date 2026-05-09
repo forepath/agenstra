@@ -87,7 +87,7 @@ This framework includes several built-in security features:
 
 ## Documented security deviations (accepted risks)
 
-The product intentionally departs from stricter baselines in a few places. Each item below is **accepted** with compensating measures and a **review cadence**. Full threat context, evidence paths, and backlog items live in [`thread-analysis.md`](./thread-analysis.md) (internal analysis note).
+The product intentionally departs from stricter baselines in a few places. Each item below is **accepted** with compensating measures and a **review cadence**. Expanded register entries (BSI / ISMS-style fields, operator summaries, and withdrawal paths) live in **[docs/agenstra/security/accepted-risks.md](./docs/agenstra/security/accepted-risks.md)**. Additional threat context and backlog items may appear in [`thread-analysis.md`](./thread-analysis.md) (internal analysis note).
 
 | ID         | Area                                                                                                                                             | What we accept                                                                                                                                                                                                                                                                                                                                     | Mitigations (short)                                                                                                                                                                                                                                                                                                                                         | Next review                                                                |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
@@ -118,6 +118,7 @@ We publish CycloneDX SBOM files for each release.
 ### Documentation
 
 - [Project overview and docs](./docs/agenstra/README.md) - Architecture, deployment, and setup
+- [Security documentation](./docs/agenstra/security/README.md) - CRA- and BSI-oriented transparency, accepted-risk register, hardening, SBOM, and disclosure
 
 ### External Resources
 
