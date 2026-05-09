@@ -1,7 +1,19 @@
-# framework-frontend-util-config-server
+# framework-frontend-util-runtime-config-server
 
-This library was generated with [Nx](https://nx.dev).
+Shared utilities for Angular SSR **Express** servers that expose `GET /config`: fetch and validate remote JSON from `CONFIG`, plus cache headers for success and error responses.
 
-## Running unit tests
+Used by `frontend-agent-console`, `frontend-billing-console`, `frontend-portal`, and `frontend-docs` (`src/server.ts`).
 
-Run `nx test framework-frontend-util-config-server` to execute the unit tests.
+## Public API
+
+- **`fetchRuntimeConfigFromEnv`** – Validates URL, allowlist, HTTPS in production, timeouts, size, JSON shape; DNS rebinding guard unless `CONFIG_ALLOW_INTERNAL_HOST=true` (or test/dev self-host exceptions). See `FetchRuntimeConfigEnv` in `runtime-config-proxy.ts`.
+- **`applyRuntimeConfigResponseCacheHeaders`** – Sets `Cache-Control` on `/config` responses.
+- **`parseAllowedHosts`**, **`assertConfigHostnameResolvesToPublicIps`** – Exposed for tests and advanced callers.
+
+Environment variables are documented in **[Environment configuration](../../../../../docs/agenstra/deployment/environment-configuration.md)** (Frontend section).
+
+## Tests
+
+```bash
+nx test framework-frontend-util-runtime-config-server
+```
