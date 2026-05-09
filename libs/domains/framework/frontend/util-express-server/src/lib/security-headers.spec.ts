@@ -39,6 +39,7 @@ describe('createSecurityHeadersMiddleware', () => {
     expect(headers.get('Content-Security-Policy-Report-Only')).toContain('http:');
     expect(headers.get('Content-Security-Policy-Report-Only')).toContain('ws:');
     expect(headers.get('Content-Security-Policy-Report-Only')).toContain('https://example.com');
+    expect(headers.get('Content-Security-Policy-Report-Only')).toContain("worker-src 'self' blob:");
     expect(headers.get('Content-Security-Policy')).toBeUndefined();
   });
 
