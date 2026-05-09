@@ -468,6 +468,18 @@ jobs:
     if: needs.publish.outputs.new_release_published == 'true'
     environment: production
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set nx shas
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:
@@ -485,6 +497,18 @@ jobs:
           find artifacts -type f -name '*.exe' -exec cp {} release/ \;
           find artifacts -type f -name '*.msi' -exec cp {} release/ \;
           find artifacts -type f -name '*.msix' -exec cp {} release/ \;
+
+      - name: Generate desktop integrity manifests (SHA256SUMS + integrity-manifest.json)
+        run: |
+          shopt -s nullglob
+          files=(release/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No desktop binaries in release/; skipping integrity manifests."
+            exit 0
+          fi
+          npx nx run release-integrity:build
+          node tools/release-integrity/dist/src/cli.js --input release
+          node tools/release-integrity/dist/src/cli.js verify --input release
 
       - name: Upload binaries to Cloudflare R2 bucket
         env:
