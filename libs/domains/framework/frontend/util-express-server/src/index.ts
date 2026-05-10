@@ -1,6 +1,8 @@
 export {
   createSecurityHeadersMiddleware,
   parseCspConnectSrcExtra,
+  parseCspExtraOrigins,
+  resolveCspFrameAncestorsSources,
   type SecurityHeadersEnv,
 } from './lib/security-headers';
 export {

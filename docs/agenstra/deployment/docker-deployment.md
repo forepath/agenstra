@@ -148,8 +148,14 @@ When `CONFIG` is set, the frontend server also supports the following optional h
 Frontend Express servers (agent console, billing console, portal, docs) also support:
 
 - `CSP_ENFORCE` - Set to `true` to enforce Content Security Policy (sends `Content-Security-Policy`), otherwise report-only (`Content-Security-Policy-Report-Only`).
+- `CSP_DEFAULT_SRC_EXTRA` - Extra origins appended to `default-src` (same URL list rules as `CSP_CONNECT_SRC_EXTRA`).
+- `CSP_BASE_URI_EXTRA` - Extra origins appended to `base-uri` (same URL list rules).
 - **`connect-src`** - Allows `'self'`, `https:`, and `wss:`. Non-production adds `http:` and `ws:` scheme keywords. **Production** does not; use `CSP_CONNECT_SRC_EXTRA` for specific HTTP/WebSocket origins (for example `http://host.docker.internal:3100`).
 - `CSP_CONNECT_SRC_EXTRA` - Comma- or space-separated URLs; each becomes an origin. Example: `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3100`
+- **`script-src`** - Default `'self' 'unsafe-inline' 'unsafe-eval'`. Use `CSP_SCRIPT_SRC_EXTRA` for third-party script hosts (for example `https://www.googletagmanager.com` for GTM). `CSP_CONNECT_SRC_EXTRA` does not affect `script-src`; `connect-src` already permits HTTPS connections via the `https:` keyword.
+- `CSP_SCRIPT_SRC_EXTRA` - Extra origins appended to `script-src` (same URL list rules as `CSP_CONNECT_SRC_EXTRA`).
+- `CSP_WORKER_SRC_EXTRA`, `CSP_STYLE_SRC_EXTRA`, `CSP_IMG_SRC_EXTRA`, `CSP_FONT_SRC_EXTRA` - Same pattern for `worker-src`, `style-src`, `img-src`, and `font-src` respectively.
+- `CSP_FRAME_ANCESTORS` - Optional full override of CSP `frame-ancestors` (default `'none'`). See [Environment configuration](./environment-configuration.md).
 
 Billing manager–generated agent-controller cloud-init sets `CONFIG_ALLOWED_HOSTS` to the instance FQDN and `CSP_ENFORCE` to `true` by default for the frontend container. See [Environment configuration](./environment-configuration.md).
 
