@@ -237,8 +237,14 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 #### Content Security Policy (Express)
 
 - `CSP_ENFORCE` - When `true`, sends enforcing `Content-Security-Policy`. Otherwise sends `Content-Security-Policy-Report-Only` (default).
+- `CSP_DEFAULT_SRC_EXTRA` - Optional extra origins for `default-src` (after `'self'`). Same comma- or space-separated URL list as `CSP_CONNECT_SRC_EXTRA`.
+- `CSP_BASE_URI_EXTRA` - Optional extra origins for `base-uri` (after `'self'`). Same URL list format.
 - **`connect-src`** - Includes `'self'`, `https:`, and `wss:`; non-production also includes `http:` and `ws:` scheme keywords. In **production**, plain HTTP backends need explicit origins via `CSP_CONNECT_SRC_EXTRA`.
 - `CSP_CONNECT_SRC_EXTRA` - Comma- or space-separated URLs (normalized to origins). Example: `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3100`
+- **`script-src`** - Default `'self' 'unsafe-inline' 'unsafe-eval'`. For third-party scripts (for example Google Tag Manager’s `gtm.js`), set `CSP_SCRIPT_SRC_EXTRA` with the script host origin(s). `connect-src` already allows `https:`, so this variable is for **script** loads, not network beacons alone.
+- `CSP_SCRIPT_SRC_EXTRA` - Extra `script-src` origins. Example: `CSP_SCRIPT_SRC_EXTRA=https://www.googletagmanager.com`
+- `CSP_WORKER_SRC_EXTRA`, `CSP_STYLE_SRC_EXTRA`, `CSP_IMG_SRC_EXTRA`, `CSP_FONT_SRC_EXTRA` - Optional extra origins for `worker-src` (after `'self'` and `blob:`), `style-src` (after `'self'` and `'unsafe-inline'`), `img-src` (after `'self'` and `data:`), and `font-src` (after `'self'` and `data:`). Same comma- or space-separated URL list as `CSP_CONNECT_SRC_EXTRA`.
+- `CSP_FRAME_ANCESTORS` - Optional **full override** of the CSP `frame-ancestors` directive (default `'none'` if unset). See [Environment configuration](../deployment/environment-configuration.md) (Content Security Policy section) for `X-Frame-Options` alignment.
 
 ### API Configuration
 

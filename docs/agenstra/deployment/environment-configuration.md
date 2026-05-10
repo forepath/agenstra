@@ -176,8 +176,15 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 ### Content Security Policy (Express)
 
 - `CSP_ENFORCE` - When `true`, sends enforcing `Content-Security-Policy`. Otherwise sends `Content-Security-Policy-Report-Only` (default).
+- `CSP_DEFAULT_SRC_EXTRA` - Extra origins appended to `default-src` after `'self'` (same URL list rules as `CSP_CONNECT_SRC_EXTRA`). Use when a resource type has no more specific directive and must load from another origin.
+- `CSP_BASE_URI_EXTRA` - Extra origins appended to `base-uri` after `'self'` (same URL list rules). Restricts which URLs may appear in a document’s `<base href>`.
 - **`connect-src` behavior** - The policy always allows `'self'`, `https:`, and `wss:`. Outside production it also allows the `http:` and `ws:` **scheme keywords** (any host on those schemes). In **production**, unencrypted `http` / `ws` endpoints are **not** allowed unless you add their **origins** via `CSP_CONNECT_SRC_EXTRA`.
 - `CSP_CONNECT_SRC_EXTRA` - Extra `connect-src` entries: comma- or space-separated full URLs; each is normalized to an **origin** (`http`, `https`, `ws`, and `wss` accepted). **Required in production** for APIs on plain HTTP (for example `http://host.docker.internal:3100`). Example: `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3100`
+- **`script-src` behavior** - Default is `'self' 'unsafe-inline' 'unsafe-eval'` (Monaco and similar tooling). Third-party scripts are **not** allowed unless you add origins with `CSP_SCRIPT_SRC_EXTRA`. **Note:** `connect-src` already includes the `https:` scheme keyword, so HTTPS `fetch` / XHR to analytics hosts does not require `CSP_CONNECT_SRC_EXTRA`; loading tag-manager **JavaScript** (for example `gtm.js`) does require `CSP_SCRIPT_SRC_EXTRA` when CSP is enforced.
+- `CSP_SCRIPT_SRC_EXTRA` - Same URL list format as `CSP_CONNECT_SRC_EXTRA`; each URL is normalized to an origin and appended to `script-src`. Example (Google Tag Manager): `CSP_SCRIPT_SRC_EXTRA=https://www.googletagmanager.com`
+- **`worker-src` / `style-src` / `img-src` / `font-src`** - Defaults are `worker-src 'self' blob:`, `style-src 'self' 'unsafe-inline'`, `img-src 'self' data:`, `font-src 'self' data:`. Append third-party origins with the matching `CSP_*_SRC_EXTRA` variable (same URL list rules as above).
+- `CSP_WORKER_SRC_EXTRA`, `CSP_STYLE_SRC_EXTRA`, `CSP_IMG_SRC_EXTRA`, `CSP_FONT_SRC_EXTRA` - Extra origins for those directives. Example (Google Fonts CSS + files): `CSP_STYLE_SRC_EXTRA=https://fonts.googleapis.com` and `CSP_FONT_SRC_EXTRA=https://fonts.gstatic.com`
+- **`frame-ancestors`** - Default is `'none'` (not set). **`CSP_FRAME_ANCESTORS` overrides the entire source list** (space-separated CSP sources, for example `'self'` or `https://parent.example`); it is **not** merged with `'none'`. Values containing `;` or newlines are rejected and treated as `'none'`. When the resolved list is exactly `'self'`, the middleware sends `X-Frame-Options: SAMEORIGIN`; when it is `'none'`, it sends `X-Frame-Options: DENY`; for other lists it omits `X-Frame-Options` so `frame-ancestors` alone controls embedding.
 
 ### API Configuration
 
