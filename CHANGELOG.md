@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.54.1](https://github.com/forepath/agenstra/compare/v1.54.0...v1.54.1) (2026-05-10)
+
+
+### Bug Fixes
+
+* extended content security policy config ([#329](https://github.com/forepath/agenstra/issues/329)) ([6d79f8e](https://github.com/forepath/agenstra/commit/6d79f8eaec3a23edc0f4cb7156e24be9acdad5fd))
+
 ## [1.54.0](https://github.com/forepath/agenstra/compare/v1.53.1...v1.54.0) (2026-05-10)
 
 
