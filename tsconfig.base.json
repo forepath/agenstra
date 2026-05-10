@@ -64,8 +64,8 @@
       "@forepath/framework/frontend/util-docs-parser": [
         "libs/domains/framework/frontend/util-docs-parser/src/index.ts"
       ],
-      "@forepath/framework/frontend/util-express-server": [
-        "libs/domains/framework/frontend/util-express-server/src/index.ts"
+      "@forepath/framework/frontend/util-http-context": [
+        "libs/domains/framework/frontend/util-http-context/src/index.ts"
       ],
       "@forepath/framework/frontend/util-runtime-config-server": [
         "libs/domains/framework/frontend/util-runtime-config-server/src/index.ts"
@@ -78,6 +78,9 @@
       "@agenstra/release-integrity": ["tools/release-integrity/src/index.ts"],
       "@agenstra/sbom": ["tools/sbom/src/index.ts"],
       "@forepath/shared/backend": ["libs/domains/shared/backend/index.ts"],
+      "@forepath/shared/shared/util-express-trust-proxy": [
+        "libs/domains/shared/shared/util-express-trust-proxy/src/index.ts"
+      ],
       "@forepath/shared/shared/util-network-address": [
         "libs/domains/shared/shared/util-network-address/src/index.ts"
       ],

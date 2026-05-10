@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import {
+  applyExpressServerHardeningAsync,
   createSecurityHeadersMiddleware,
   registerRuntimeConfigEndpoint,
-} from '@forepath/framework/frontend/util-express-server';
+} from '@forepath/framework/frontend/util-http-context';
 import express from 'express';
 
 import bootstrap from './main.server';
@@ -15,6 +16,9 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(serverDistFolder, 'index.server.html');
 const app = express();
+
+await applyExpressServerHardeningAsync(app);
+
 const commonEngine = new CommonEngine();
 
 app.use(createSecurityHeadersMiddleware());

@@ -6,7 +6,7 @@ For disclosure, supported versions, SBOM paths, and response-time commitments, s
 
 ## Overview
 
-Agenstra spans browsers, multiple NestJS backends, Express frontends, optional Electron distribution, and customer-controlled remote endpoints. Security is enforced through authentication modes, SSRF guardrails, sanitized logging, content security policy choices, and **documented** residual risks where product or deployment constraints apply.
+Agenstra spans browsers, multiple NestJS backends, Express frontends, optional Electron distribution, and customer-controlled remote endpoints. Security is enforced through authentication modes, SSRF guardrails, sanitized logging, Express baseline hardening and content security policy choices, and **documented** residual risks where product or deployment constraints apply.
 
 ## Documentation structure
 
@@ -20,7 +20,7 @@ Register **AR-001** through **AR-005**: provisioning SSH posture, native desktop
 
 ### [Operational hardening](./operational-hardening.md)
 
-Implemented controls: correlation IDs and access logs, client endpoint allowlists and DNS checks, runtime `/config` proxy behavior, HTTP proxy header stripping, CSP and `CSP_ENFORCE`, WebSocket CORS, and authentication resolution behavior.
+Implemented controls: correlation IDs and access logs, client endpoint allowlists and DNS checks, runtime `/config` proxy behavior, HTTP proxy header stripping, Express hardening (`X-Powered-By` off, `EXPRESS_TRUST_PROXY`, `X-DNS-Prefetch-Control`), CSP and `CSP_ENFORCE`, WebSocket CORS, and authentication resolution behavior.
 
 ### [Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)
 
@@ -28,7 +28,7 @@ Responsible disclosure (contact and process), CycloneDX **SBOM** location, and *
 
 ## Configuration reference
 
-For variable-by-variable deployment settings, including **`CLIENT_ENDPOINT_*`**, **`CONFIG_*`**, **`CSP_ENFORCE`**, and authentication variables, see **[Environment configuration](../deployment/environment-configuration.md)** and **[Production checklist](../deployment/production-checklist.md)**.
+For variable-by-variable deployment settings, including **`CLIENT_ENDPOINT_*`**, **`CONFIG_*`**, **`EXPRESS_TRUST_PROXY`**, **`CSP_ENFORCE`**, and authentication variables, see **[Environment configuration](../deployment/environment-configuration.md)** and **[Production checklist](../deployment/production-checklist.md)**.
 
 ## Related documentation
 

@@ -165,6 +165,7 @@ export function createSecurityHeadersMiddleware(env?: SecurityHeadersEnv): Expre
 
   return (_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-DNS-Prefetch-Control', 'off');
     res.setHeader('Referrer-Policy', 'no-referrer');
 
     if (frameAncestorsSources === "'none'") {

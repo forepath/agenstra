@@ -147,6 +147,13 @@ When `CONFIG` is set, the frontend server also supports the following optional h
 
 Frontend Express servers (agent console, billing console, portal, docs) also support:
 
+**Express application hardening** (see [Environment configuration — Express application hardening](./environment-configuration.md#express-application-hardening)):
+
+- Baseline: **`X-Powered-By`** disabled; **`X-DNS-Prefetch-Control: off`** with the shared security-headers middleware.
+- **`EXPRESS_TRUST_PROXY`** (optional) — Configures **`trust proxy`** behind a reverse proxy (`true` / `1` / `yes` → one hop; all-digit string → hop count; comma-separated IPs, CIDRs, named subnets `loopback` / `linklocal` / `uniquelocal`, or hostnames resolved at startup). See the [Express behind proxies](https://expressjs.com/en/guide/behind-proxies.html) guide.
+
+**Content Security Policy:**
+
 - `CSP_ENFORCE` - Set to `true` to enforce Content Security Policy (sends `Content-Security-Policy`), otherwise report-only (`Content-Security-Policy-Report-Only`).
 - `CSP_DEFAULT_SRC_EXTRA` - Extra origins appended to `default-src` (same URL list rules as `CSP_CONNECT_SRC_EXTRA`).
 - `CSP_BASE_URI_EXTRA` - Extra origins appended to `base-uri` (same URL list rules).

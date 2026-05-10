@@ -3,13 +3,16 @@ import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import {
+  applyExpressServerHardeningAsync,
   createSecurityHeadersMiddleware,
   registerRuntimeConfigEndpoint,
-} from '@forepath/framework/frontend/util-express-server';
+} from '@forepath/framework/frontend/util-http-context';
 import express from 'express';
 
 const app = express();
 const port = parseInt(process.env['PORT'] || '4200', 10);
+
+await applyExpressServerHardeningAsync(app);
 
 app.use(createSecurityHeadersMiddleware());
 registerRuntimeConfigEndpoint(app);
