@@ -49,8 +49,14 @@ export class KnowledgeService {
     return this.http.post<KnowledgeNodeDto>(`${this.apiUrl}/knowledge/${id}/duplicate`, {});
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/knowledge/${id}`);
+  delete(id: string, releaseExternalSyncMarker?: boolean): Observable<void> {
+    let params = new HttpParams();
+
+    if (releaseExternalSyncMarker === true) {
+      params = params.set('releaseExternalSyncMarker', 'true');
+    }
+
+    return this.http.delete<void>(`${this.apiUrl}/knowledge/${id}`, { params });
   }
 
   listRelations(

@@ -464,8 +464,8 @@ export class KnowledgeBoardComponent implements OnDestroy {
     this.knowledgeFacade.updateNode(event.id, { parentId: event.parentId });
   }
 
-  onDeleteNode(nodeId: string): void {
-    this.knowledgeFacade.deleteNode(nodeId);
+  onDeleteNode(event: { id: string; releaseExternalSyncMarker?: boolean }): void {
+    this.knowledgeFacade.deleteNode(event.id, event.releaseExternalSyncMarker);
   }
 
   onSavePageTitle(): void {

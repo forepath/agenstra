@@ -129,7 +129,7 @@
     </div>
   </section>
 }
-<div class="d-flex justify-content-end flex-grow-1 overflow-hidden">
+<div class="container__workspace d-flex justify-content-end flex-grow-1 overflow-hidden">
   @if (isMainMask()) {
     <aside class="sidebar bg-body-tertiary h-100">
       <a
@@ -194,6 +194,16 @@
         >
           <i class="bi bi-funnel me-1"></i>
           <span class="small" i18n="@@featureContainer-filters">Filters</span>
+        </a>
+        <a
+          routerLink="/imports/atlassian"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-importTitle"
+          title="Import"
+        >
+          <i class="bi bi-cloud-download me-1"></i>
+          <span class="small" i18n="@@featureContainer-importTitle">Import</span>
         </a>
       }
     </aside>

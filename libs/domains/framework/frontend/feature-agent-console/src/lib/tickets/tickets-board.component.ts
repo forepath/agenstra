@@ -541,6 +541,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   /** Set when opening the delete confirmation modal (stacked over detail modal). */
   ticketPendingDelete = signal<{ id: string; title: string } | null>(null);
+  /** When true, DELETE /tickets includes releaseExternalSyncMarker so Jira import can recreate the ticket. */
+  releaseExternalSyncMarkerOnTicketDelete = signal(false);
 
   /** Local description text; synced from `detail` when the open ticket id or server `updatedAt` changes. */
   readonly descriptionDraft = signal('');
@@ -2456,6 +2458,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   onRequestDeleteTicket(ticket: TicketResponseDto): void {
+    this.releaseExternalSyncMarkerOnTicketDelete.set(false);
     this.ticketPendingDelete.set({ id: ticket.id, title: ticket.title });
     this.openDeleteTicketConfirmFlow();
   }
@@ -2517,11 +2520,13 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     }
 
     const { id } = pending;
+    const releaseMarker = this.releaseExternalSyncMarkerOnTicketDelete();
 
     this.ticketDetailSuspendedForDeleteConfirm = false;
     this.hideDeleteTicketConfirmModal();
     this.ticketPendingDelete.set(null);
-    this.ticketsFacade.remove(id);
+    this.releaseExternalSyncMarkerOnTicketDelete.set(false);
+    this.ticketsFacade.remove(id, releaseMarker);
     merge(
       this.actions$.pipe(
         ofType(deleteTicketSuccess),

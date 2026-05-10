@@ -78,8 +78,8 @@ export class TicketsFacade {
     this.store.dispatch(migrateTicketAction({ id, targetClientId }));
   }
 
-  remove(id: string): void {
-    this.store.dispatch(deleteTicket({ id }));
+  remove(id: string, releaseExternalSyncMarker?: boolean): void {
+    this.store.dispatch(deleteTicket({ id, releaseExternalSyncMarker }));
   }
 
   addComment(ticketId: string, body: string): void {

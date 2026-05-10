@@ -9,6 +9,8 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -38,6 +40,7 @@ import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 
 import { KnowledgeEmbeddingIndexService } from './embeddings/knowledge-embedding-index.service';
+import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { KNOWLEDGE_BOARD_EVENTS } from './knowledge-board-realtime.constants';
 import { KnowledgeBoardRealtimeService } from './knowledge-board-realtime.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
@@ -60,6 +63,8 @@ export class KnowledgeTreeService {
     private readonly ticketBoardRealtime: TicketBoardRealtimeService,
     private readonly knowledgeBoardRealtime: KnowledgeBoardRealtimeService,
     private readonly knowledgeEmbeddingIndexService: KnowledgeEmbeddingIndexService,
+    @Inject(forwardRef(() => ExternalImportSyncMarkerService))
+    private readonly externalImportSyncMarkerService: ExternalImportSyncMarkerService,
   ) {}
 
   private async assertClientAccess(clientId: string, req?: RequestWithUser): Promise<void> {
@@ -437,7 +442,7 @@ export class KnowledgeTreeService {
     return this.mapNode(saved);
   }
 
-  async deleteNode(id: string, req?: RequestWithUser): Promise<void> {
+  async deleteNode(id: string, req?: RequestWithUser, releaseExternalSyncMarker = false): Promise<void> {
     const node = await this.assertNodeReadable(id, req);
     const childCount = await this.knowledgeNodeRepo.count({ where: { parentId: node.id } });
 
@@ -445,9 +450,200 @@ export class KnowledgeTreeService {
       throw new ConflictException('Cannot delete folder with children');
     }
 
-    await this.knowledgeNodeRepo.delete(node.id);
+    await this.knowledgeNodeRepo.manager.transaction(async (em) => {
+      await this.externalImportSyncMarkerService.applyKnowledgeNodeDeleteInTransaction(
+        em,
+        node.id,
+        releaseExternalSyncMarker,
+      );
+      await em.getRepository(KnowledgeNodeEntity).delete(node.id);
+    });
     await this.knowledgeEmbeddingIndexService.deleteForNode(node.id);
     this.emitKnowledgeTreeChanged(node.clientId);
+  }
+
+  /**
+   * Internal: create or update a knowledge page from an external import (system actor).
+   */
+  async importUpsertKnowledgePage(params: {
+    clientId: string;
+    parentFolderId: string | null;
+    title: string;
+    content: string;
+    existingNodeId?: string | null;
+    /** When updating an existing page, keep stored body (used for ancestor placeholders). */
+    preserveExistingContent?: boolean;
+  }): Promise<KnowledgeNodeResponseDto> {
+    const { clientId, parentFolderId, title, content, existingNodeId, preserveExistingContent } = params;
+
+    if (!(await this.clientsRepository.findById(clientId))) {
+      throw new NotFoundException(`Client ${clientId} not found`);
+    }
+
+    if (parentFolderId) {
+      const parent = await this.getNodeOrThrow(parentFolderId);
+
+      if (parent.clientId !== clientId) {
+        throw new BadRequestException('Parent folder must belong to the import workspace');
+      }
+
+      if (parent.nodeType !== KnowledgeNodeType.FOLDER) {
+        throw new BadRequestException('Parent must be a folder');
+      }
+    }
+
+    const reqSystem = undefined;
+
+    if (existingNodeId) {
+      const node = await this.knowledgeNodeRepo.findOne({ where: { id: existingNodeId, clientId } });
+
+      if (!node) {
+        throw new NotFoundException('Knowledge node not found for import update');
+      }
+
+      if (node.nodeType !== KnowledgeNodeType.PAGE) {
+        throw new BadRequestException('Import target must be a page');
+      }
+
+      const before = {
+        title: node.title,
+        content: node.content ?? null,
+        parentId: node.parentId ?? null,
+      };
+
+      node.title = title.trim();
+
+      if (!preserveExistingContent) {
+        node.content = content;
+      }
+
+      node.parentId = parentFolderId ?? null;
+
+      const saved = await this.knowledgeNodeRepo.save(node);
+
+      this.emitKnowledgeTreeChanged(saved.clientId);
+      await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
+
+      if (before.parentId !== (saved.parentId ?? null)) {
+        await this.appendPageActivity(
+          saved.id,
+          saved.clientId,
+          KnowledgeActionType.PARENT_CHANGED,
+          { fromParentId: before.parentId, toParentId: saved.parentId ?? null, source: 'external_import' },
+          reqSystem,
+        );
+      }
+
+      if (before.title !== saved.title) {
+        await this.appendPageActivity(
+          saved.id,
+          saved.clientId,
+          KnowledgeActionType.FIELD_UPDATED,
+          { field: 'title', from: before.title, to: saved.title, source: 'external_import' },
+          reqSystem,
+        );
+      }
+
+      if (!preserveExistingContent && before.content !== (saved.content ?? null)) {
+        await this.appendPageActivity(saved.id, saved.clientId, KnowledgeActionType.CONTENT_UPDATED, {}, reqSystem);
+      }
+
+      return this.mapNode(saved);
+    }
+
+    const sortOrder = await this.nextSortOrder(clientId, parentFolderId ?? null);
+    const created = await this.knowledgeNodeRepo.save(
+      this.knowledgeNodeRepo.create({
+        clientId,
+        nodeType: KnowledgeNodeType.PAGE,
+        parentId: parentFolderId ?? null,
+        title: title.trim(),
+        content,
+        sortOrder,
+      }),
+    );
+
+    created.longSha = KnowledgeNodeEntity.deriveLongSha(created.id);
+    const saved = await this.knowledgeNodeRepo.save(created);
+
+    this.emitKnowledgeTreeChanged(saved.clientId);
+    await this.knowledgeEmbeddingIndexService.reindexPage(saved.clientId, saved.id, saved.title, saved.content ?? '');
+    await this.appendPageActivity(
+      saved.id,
+      saved.clientId,
+      KnowledgeActionType.CREATED,
+      { title: saved.title },
+      reqSystem,
+    );
+
+    return this.mapNode(saved);
+  }
+
+  /**
+   * Internal: create or relocate a knowledge folder for external import (system actor).
+   */
+  async importEnsureKnowledgeFolder(params: {
+    clientId: string;
+    parentFolderId: string | null;
+    title: string;
+    existingFolderId?: string | null;
+  }): Promise<KnowledgeNodeResponseDto> {
+    const { clientId, parentFolderId, title, existingFolderId } = params;
+
+    if (!(await this.clientsRepository.findById(clientId))) {
+      throw new NotFoundException(`Client ${clientId} not found`);
+    }
+
+    if (parentFolderId) {
+      const parent = await this.getNodeOrThrow(parentFolderId);
+
+      if (parent.clientId !== clientId) {
+        throw new BadRequestException('Parent folder must belong to the import workspace');
+      }
+
+      if (parent.nodeType !== KnowledgeNodeType.FOLDER) {
+        throw new BadRequestException('Parent must be a folder');
+      }
+    }
+
+    if (existingFolderId) {
+      const node = await this.knowledgeNodeRepo.findOne({ where: { id: existingFolderId, clientId } });
+
+      if (!node) {
+        throw new NotFoundException('Knowledge folder not found for import update');
+      }
+
+      if (node.nodeType !== KnowledgeNodeType.FOLDER) {
+        throw new BadRequestException('Import target must be a folder');
+      }
+
+      node.title = title.trim();
+      node.parentId = parentFolderId ?? null;
+      const saved = await this.knowledgeNodeRepo.save(node);
+
+      this.emitKnowledgeTreeChanged(saved.clientId);
+
+      return this.mapNode(saved);
+    }
+
+    const sortOrder = await this.nextSortOrder(clientId, parentFolderId ?? null);
+    const created = await this.knowledgeNodeRepo.save(
+      this.knowledgeNodeRepo.create({
+        clientId,
+        nodeType: KnowledgeNodeType.FOLDER,
+        parentId: parentFolderId ?? null,
+        title: title.trim(),
+        content: null,
+        sortOrder,
+      }),
+    );
+
+    created.longSha = KnowledgeNodeEntity.deriveLongSha(created.id);
+    const saved = await this.knowledgeNodeRepo.save(created);
+
+    this.emitKnowledgeTreeChanged(saved.clientId);
+
+    return this.mapNode(saved);
   }
 
   async duplicateNode(id: string, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto> {
@@ -566,6 +762,21 @@ export class KnowledgeTreeService {
   async createRelation(dto: CreateKnowledgeRelationDto, req?: RequestWithUser): Promise<KnowledgeRelationResponseDto> {
     await this.assertClientAccess(dto.clientId, req);
 
+    return this.persistKnowledgeRelation(dto, req);
+  }
+
+  /**
+   * System-only: create a relation during external import (no end-user {@link assertClientAccess}).
+   * Workspace consistency is still enforced (e.g. target node must belong to {@link CreateKnowledgeRelationDto.clientId}).
+   */
+  async importCreateRelation(dto: CreateKnowledgeRelationDto): Promise<KnowledgeRelationResponseDto> {
+    return this.persistKnowledgeRelation(dto, undefined);
+  }
+
+  private async persistKnowledgeRelation(
+    dto: CreateKnowledgeRelationDto,
+    req?: RequestWithUser,
+  ): Promise<KnowledgeRelationResponseDto> {
     if (dto.targetType === KnowledgeRelationTargetType.TICKET && !dto.targetTicketSha) {
       throw new BadRequestException('targetTicketSha is required for ticket relations');
     }
@@ -630,6 +841,26 @@ export class KnowledgeTreeService {
     req?: RequestWithUser,
   ): Promise<KnowledgeRelationResponseDto[]> {
     await this.assertClientAccess(clientId, req);
+
+    return this.listRelationsForImport(clientId, sourceType, sourceId);
+  }
+
+  /**
+   * System-only: list relations for a source during external import (no end-user access check).
+   */
+  async importListRelations(
+    clientId: string,
+    sourceType: KnowledgeRelationSourceType,
+    sourceId: string,
+  ): Promise<KnowledgeRelationResponseDto[]> {
+    return this.listRelationsForImport(clientId, sourceType, sourceId);
+  }
+
+  private async listRelationsForImport(
+    clientId: string,
+    sourceType: KnowledgeRelationSourceType,
+    sourceId: string,
+  ): Promise<KnowledgeRelationResponseDto[]> {
     const rows = await this.knowledgeRelationRepo.find({
       where: { clientId, sourceType, sourceId },
       order: { createdAt: 'ASC' },

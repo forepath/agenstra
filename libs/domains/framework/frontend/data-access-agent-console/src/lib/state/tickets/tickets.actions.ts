@@ -57,7 +57,10 @@ export const migrateTicketSuccess = createAction(
 
 export const migrateTicketFailure = createAction('[Tickets] Migrate Failure', props<{ error: string }>());
 
-export const deleteTicket = createAction('[Tickets] Delete', props<{ id: string }>());
+export const deleteTicket = createAction(
+  '[Tickets] Delete',
+  props<{ id: string; releaseExternalSyncMarker?: boolean }>(),
+);
 
 export const deleteTicketSuccess = createAction('[Tickets] Delete Success', props<{ id: string }>());
 

@@ -46,8 +46,8 @@ import { TicketEntity } from '../entities/ticket.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { KnowledgeBoardGateway } from '../gateways/knowledge-board.gateway';
 import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
-import { DigitalOceanProvider } from '../providers/digital-ocean.provider';
-import { HetznerProvider } from '../providers/hetzner.provider';
+import { DigitalOceanProvider } from '../providers/provisioning/digital-ocean.provider';
+import { HetznerProvider } from '../providers/provisioning/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
@@ -76,6 +76,7 @@ import { TicketAutomationService } from '../services/ticket-automation.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
 
+import { ContextImportModule } from './context-import.module';
 import { FilterRulesModule } from './filter-rules.module';
 import { StatisticsModule } from './statistics.module';
 
@@ -109,6 +110,7 @@ const authMethod = getAuthenticationMethod();
     ]),
     StatisticsModule,
     forwardRef(() => FilterRulesModule),
+    forwardRef(() => ContextImportModule),
     // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
@@ -198,6 +200,8 @@ const authMethod = getAuthenticationMethod();
     ClientsGateway,
     ProvisioningService,
     ProvisioningProviderFactory,
+    TicketsService,
+    KnowledgeTreeService,
   ],
 })
 export class ClientsModule {}

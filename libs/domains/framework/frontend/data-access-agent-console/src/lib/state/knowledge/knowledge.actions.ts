@@ -46,7 +46,10 @@ export const duplicateKnowledgeNodeFailure = createAction(
   props<{ error: string }>(),
 );
 
-export const deleteKnowledgeNode = createAction('[Knowledge] Delete Node', props<{ id: string }>());
+export const deleteKnowledgeNode = createAction(
+  '[Knowledge] Delete Node',
+  props<{ id: string; releaseExternalSyncMarker?: boolean }>(),
+);
 export const deleteKnowledgeNodeSuccess = createAction('[Knowledge] Delete Node Success', props<{ id: string }>());
 export const deleteKnowledgeNodeFailure = createAction('[Knowledge] Delete Node Failure', props<{ error: string }>());
 

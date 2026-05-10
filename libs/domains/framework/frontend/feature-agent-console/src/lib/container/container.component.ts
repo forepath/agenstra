@@ -44,6 +44,7 @@ export class AgentConsoleContainerComponent implements OnInit {
               url.includes('/filters') ||
               url.includes('/audit') ||
               url.includes('/tickets') ||
+              url.includes('/imports') ||
               url.includes('/knowledge')) &&
             !url.includes('/editor') &&
             !url.includes('/config') &&
@@ -57,6 +58,7 @@ export class AgentConsoleContainerComponent implements OnInit {
           this.router.url.includes('/filters') ||
           this.router.url.includes('/audit') ||
           this.router.url.includes('/tickets') ||
+          this.router.url.includes('/imports') ||
           this.router.url.includes('/knowledge')) &&
         !this.router.url.includes('/editor') &&
         !this.router.url.includes('/config') &&

@@ -3,7 +3,9 @@ import {
   addClientUser$,
   addTicketComment$,
   AgentsFacade,
+  AtlassianContextImportFacade,
   agentsReducer,
+  atlassianContextImportReducer,
   approveTicketAutomation$,
   cancelRun$,
   cancelTicketAutomationRun$,
@@ -11,6 +13,7 @@ import {
   clientAgentAutonomyReducer,
   ClientsFacade,
   clientsReducer,
+  clearExternalImportMarkers$,
   commit$,
   connectKnowledgeBoardSocket$,
   connectSocket$,
@@ -21,6 +24,8 @@ import {
   createDeploymentConfiguration$,
   createEnvironmentVariable$,
   createFileOrDirectory$,
+  createAtlassianConnection$,
+  createExternalImportConfig$,
   createFilterRule$,
   createKnowledgeNode$,
   createKnowledgeRelation$,
@@ -32,6 +37,8 @@ import {
   deleteDeploymentConfiguration$,
   deleteEnvironmentVariable$,
   deleteFileOrDirectory$,
+  deleteAtlassianConnection$,
+  deleteExternalImportConfig$,
   deleteFilterRule$,
   deleteKnowledgeNode$,
   deleteKnowledgeRelation$,
@@ -77,6 +84,8 @@ import {
   loadEnvironmentVariables$,
   loadEnvironmentVariablesBatch$,
   loadEnvironmentVariablesCount$,
+  loadAtlassianContextImportBatch$,
+  loadAtlassianContextImport$,
   loadFilterRules$,
   loadFilterRulesBatch$,
   loadGitBranches$,
@@ -128,6 +137,7 @@ import {
   restoreClientContext$,
   restoreKnowledgeBoardSocketClient$,
   restoreTicketsBoardSocketClient$,
+  runExternalImportConfig$,
   setActiveClient$,
   SocketsFacade,
   socketsReducer,
@@ -141,6 +151,7 @@ import {
   switchBranch$,
   syncTicketAutomationRunFromClientsChat$,
   syncTicketsFromClientsChatTicketUpsert$,
+  testAtlassianConnection$,
   TicketAutomationFacade,
   ticketAutomationReducer,
   TicketsBoardSocketFacade,
@@ -154,6 +165,8 @@ import {
   updateClientAgent$,
   updateDeploymentConfiguration$,
   updateEnvironmentVariable$,
+  updateAtlassianConnection$,
+  updateExternalImportConfig$,
   updateFilterRule$,
   updateKnowledgeNode$,
   updateTicket$,
@@ -170,6 +183,7 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
+import { AtlassianImportAdminComponent } from './atlassian-import-admin/atlassian-import-admin.component';
 import { AuditComponent } from './audit/audit.component';
 import { AgentConsoleChatComponent } from './chat/chat.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
@@ -202,6 +216,12 @@ export const agentConsoleRoutes: Route[] = [
         canActivate: [authGuard, adminGuard],
         component: RuleManagerComponent,
         title: 'Filters | Agenstra',
+      },
+      {
+        path: 'imports/atlassian',
+        canActivate: [authGuard, adminGuard],
+        component: AtlassianImportAdminComponent,
+        title: 'Atlassian import | Agenstra',
       },
       {
         path: 'tickets/:clientId',
@@ -290,6 +310,7 @@ export const agentConsoleRoutes: Route[] = [
       KnowledgeFacade,
       ClientAgentAutonomyFacade,
       FilterRulesFacade,
+      AtlassianContextImportFacade,
       WorkspaceConfigFacade,
       // Feature states - registered at feature level for lazy loading
       provideState('clients', clientsReducer),
@@ -308,6 +329,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('knowledge', knowledgeReducer),
       provideState('clientAgentAutonomy', clientAgentAutonomyReducer),
       provideState('filterRules', filterRulesReducer),
+      provideState('atlassianContextImport', atlassianContextImportReducer),
       provideState('workspaceConfig', workspaceConfigReducer),
       // Effects - only active when this feature route is loaded
       provideEffects({
@@ -437,6 +459,17 @@ export const agentConsoleRoutes: Route[] = [
         createFilterRule$,
         updateFilterRule$,
         deleteFilterRule$,
+        loadAtlassianContextImport$,
+        loadAtlassianContextImportBatch$,
+        createAtlassianConnection$,
+        updateAtlassianConnection$,
+        deleteAtlassianConnection$,
+        testAtlassianConnection$,
+        createExternalImportConfig$,
+        updateExternalImportConfig$,
+        deleteExternalImportConfig$,
+        runExternalImportConfig$,
+        clearExternalImportMarkers$,
         loadWorkspaceConfigurationOverrides$,
         upsertWorkspaceConfigurationOverride$,
         deleteWorkspaceConfigurationOverride$,

@@ -61,6 +61,7 @@ import {
 
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { ClientsService } from './clients.service';
+import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { TicketAutomationService, TICKET_APPROVAL_INVALIDATION_FIELDS } from './ticket-automation.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
@@ -94,6 +95,8 @@ export class TicketsService {
     private readonly ticketAutomationService: TicketAutomationService,
     private readonly ticketBoardRealtime: TicketBoardRealtimeService,
     private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
+    @Inject(forwardRef(() => ExternalImportSyncMarkerService))
+    private readonly externalImportSyncMarkerService: ExternalImportSyncMarkerService,
   ) {}
 
   /**
@@ -732,7 +735,7 @@ export class TicketsService {
     return false;
   }
 
-  async remove(id: string, req?: RequestWithUser): Promise<void> {
+  async remove(id: string, req?: RequestWithUser, releaseExternalSyncMarker = false): Promise<void> {
     const actor = this.resolveActor(req);
     const ticket = await this.assertTicketReadable(id, req);
     const childCount = await this.ticketRepo.count({ where: { parentId: id } });
@@ -756,9 +759,154 @@ export class TicketsService {
           payload: { title: ticket.title, clientId: ticket.clientId },
         }),
       );
+      await this.externalImportSyncMarkerService.applyTicketDeleteInTransaction(em, id, releaseExternalSyncMarker);
       await tRepo.delete(id);
     });
     this.boardEmitTicketRemoved(clientId, id);
+  }
+
+  /**
+   * Internal: create or update a ticket from an external import job (system actor; `clientId` must match workspace).
+   */
+  async importUpsertTicket(params: {
+    clientId: string;
+    parentId: string | null;
+    title: string;
+    content: string | null;
+    priority: TicketPriority;
+    status: TicketStatus;
+    existingTicketId?: string | null;
+  }): Promise<TicketResponseDto> {
+    const actor: { actorType: TicketActorType; actorUserId?: string } = {
+      actorType: TicketActorType.SYSTEM,
+      actorUserId: undefined,
+    };
+    const { clientId, parentId, title, content, priority, status, existingTicketId } = params;
+
+    if (!(await this.clientsRepository.findById(clientId))) {
+      throw new NotFoundException(`Client ${clientId} not found`);
+    }
+
+    if (parentId) {
+      const p = await this.loadTicketOrThrow(parentId);
+
+      if (p.clientId !== clientId) {
+        throw new BadRequestException('Parent ticket must belong to the import workspace');
+      }
+    }
+
+    if (existingTicketId) {
+      const ticket = await this.ticketRepo.findOne({ where: { id: existingTicketId, clientId } });
+
+      if (!ticket) {
+        throw new NotFoundException('Ticket not found for import update');
+      }
+
+      const changes: Record<string, FieldChange> = {};
+
+      if (ticket.title !== title) {
+        changes.title = { old: ticket.title, new: title.trim() };
+        ticket.title = title.trim();
+      }
+
+      if (ticket.content !== content) {
+        changes.content = { old: ticket.content, new: content };
+        ticket.content = content;
+      }
+
+      if (ticket.priority !== priority) {
+        changes.priority = { old: ticket.priority, new: priority };
+        ticket.priority = priority;
+      }
+
+      if (ticket.status !== status) {
+        changes.status = { old: ticket.status, new: status };
+        ticket.status = status;
+      }
+
+      const newParent = parentId ?? null;
+
+      if (newParent !== ticket.parentId) {
+        if (newParent) {
+          const parent = await this.loadTicketOrThrow(newParent);
+
+          if (parent.clientId !== ticket.clientId) {
+            throw new BadRequestException('Parent must belong to the same workspace');
+          }
+
+          if (await this.wouldCreateCycle(ticket.id, newParent)) {
+            throw new BadRequestException('Invalid parent: would create a cycle');
+          }
+        }
+
+        changes.parentId = { old: ticket.parentId, new: newParent };
+        ticket.parentId = newParent;
+      }
+
+      if (Object.keys(changes).length === 0) {
+        return await this.mapTicketInWorkspace(ticket);
+      }
+
+      const actionType = derivePatchActionType(changes);
+
+      await this.ticketRepo.manager.transaction(async (em) => {
+        const tRepo = em.getRepository(TicketEntity);
+        const aRepo = em.getRepository(TicketActivityEntity);
+
+        await tRepo.save(ticket);
+        await aRepo.save(
+          aRepo.create({
+            ticketId: ticket.id,
+            actorType: actor.actorType,
+            actorUserId: actor.actorUserId ?? null,
+            actionType,
+            payload: { fields: changes, source: 'external_import' },
+          }),
+        );
+      });
+
+      const refreshed = await this.loadTicketOrThrow(existingTicketId);
+      const mapped = await this.mapTicketInWorkspace(refreshed);
+
+      this.boardEmitTicketUpsert(mapped.clientId, mapped);
+      const activityRows = await this.activityRepo.find({
+        where: { ticketId: existingTicketId },
+        order: { occurredAt: 'DESC' },
+        take: 1,
+      });
+
+      if (activityRows[0]) {
+        await this.boardEmitTicketActivityMapped(mapped.clientId, activityRows[0]);
+      }
+
+      return mapped;
+    }
+
+    const inserted = await this.ticketRepo.manager.transaction(async (em) =>
+      this.saveNewTicketWithCreatedActivity(em, actor, {
+        clientId,
+        parentId,
+        title: title.trim(),
+        content,
+        priority,
+        status,
+        createdByUserId: null,
+      }),
+    );
+    const mapped = await this.mapTicketInWorkspace(inserted);
+
+    this.boardEmitTicketUpsert(mapped.clientId, mapped);
+    const activityRows = await this.activityRepo.find({
+      where: { ticketId: inserted.id },
+      order: { occurredAt: 'DESC' },
+      take: 1,
+    });
+
+    if (activityRows[0]) {
+      await this.boardEmitTicketActivityMapped(mapped.clientId, activityRows[0]);
+    }
+
+    return mapped;
   }
 
   async listComments(ticketId: string, req?: RequestWithUser): Promise<TicketCommentResponseDto[]> {

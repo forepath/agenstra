@@ -127,7 +127,13 @@ export class KnowledgeTreeController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteNode(@Param('id', ParseUUIDPipe) id: string, @Req() req?: RequestWithUser) {
-    await this.knowledgeTreeService.deleteNode(id, req);
+  async deleteNode(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('releaseExternalSyncMarker') releaseExternalSyncMarkerRaw?: string,
+    @Req() req?: RequestWithUser,
+  ) {
+    const releaseExternalSyncMarker = releaseExternalSyncMarkerRaw === 'true' || releaseExternalSyncMarkerRaw === '1';
+
+    await this.knowledgeTreeService.deleteNode(id, req, releaseExternalSyncMarker);
   }
 }

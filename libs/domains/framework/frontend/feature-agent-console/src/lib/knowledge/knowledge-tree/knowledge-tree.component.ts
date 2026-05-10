@@ -19,7 +19,7 @@ export class KnowledgeTreeComponent implements OnChanges {
   @Output() selectNode = new EventEmitter<KnowledgeNodeDto>();
   @Output() createNode = new EventEmitter<{ parentId: string | null; nodeType: KnowledgeNodeType; title: string }>();
   @Output() duplicateNode = new EventEmitter<string>();
-  @Output() deleteNode = new EventEmitter<string>();
+  @Output() deleteNode = new EventEmitter<{ id: string; releaseExternalSyncMarker?: boolean }>();
   @Output() refreshTree = new EventEmitter<void>();
   @Output() renameNode = new EventEmitter<{ id: string; title: string }>();
   @Output() moveNode = new EventEmitter<{ id: string; parentId: string | null }>();
@@ -35,6 +35,7 @@ export class KnowledgeTreeComponent implements OnChanges {
   readonly moveTargetNodeId = signal<string | null>(null);
   readonly moveTargetParentId = signal<string | null>(null);
   readonly deleteTargetNodeId = signal<string | null>(null);
+  readonly releaseExternalSyncMarkerOnDelete = signal(false);
   readonly hasLoadedWorkspaceTree = signal(false);
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -143,6 +144,7 @@ export class KnowledgeTreeComponent implements OnChanges {
 
   onDelete(node: KnowledgeNodeDto, event: Event): void {
     event.stopPropagation();
+    this.releaseExternalSyncMarkerOnDelete.set(false);
     this.deleteTargetNodeId.set(node.id);
   }
 
@@ -225,12 +227,14 @@ export class KnowledgeTreeComponent implements OnChanges {
 
     if (!node) return;
 
+    this.releaseExternalSyncMarkerOnDelete.set(false);
     this.deleteTargetNodeId.set(node.id);
     this.closeContextMenu();
   }
 
   onCancelDelete(): void {
     this.deleteTargetNodeId.set(null);
+    this.releaseExternalSyncMarkerOnDelete.set(false);
   }
 
   onConfirmDelete(): void {
@@ -238,7 +242,9 @@ export class KnowledgeTreeComponent implements OnChanges {
 
     if (!id) return;
 
-    this.deleteNode.emit(id);
+    const releaseExternalSyncMarker = this.releaseExternalSyncMarkerOnDelete();
+
+    this.deleteNode.emit({ id, ...(releaseExternalSyncMarker ? { releaseExternalSyncMarker: true } : {}) });
     this.onCancelDelete();
   }
 

@@ -76,8 +76,14 @@ export class TicketsService {
     return this.http.post<MigrateTicketResultDto>(`${this.apiUrl}/tickets/${id}/migrate`, dto);
   }
 
-  deleteTicket(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/tickets/${id}`);
+  deleteTicket(id: string, releaseExternalSyncMarker?: boolean): Observable<void> {
+    let params = new HttpParams();
+
+    if (releaseExternalSyncMarker === true) {
+      params = params.set('releaseExternalSyncMarker', 'true');
+    }
+
+    return this.http.delete<void>(`${this.apiUrl}/tickets/${id}`, { params });
   }
 
   getPrototypePrompt(id: string): Observable<PrototypePromptResponseDto> {
