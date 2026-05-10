@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.54.0](https://github.com/forepath/agenstra/compare/v1.53.1...v1.54.0) (2026-05-10)
+
+
+### Features
+
+* content security policies ([#315](https://github.com/forepath/agenstra/issues/315)) ([1c816df](https://github.com/forepath/agenstra/commit/1c816dfb7e231944fea5531d88b7ad82abd9b1a9))
+* origin allowlist for unsafe http methods ([#325](https://github.com/forepath/agenstra/issues/325)) ([4f56eaa](https://github.com/forepath/agenstra/commit/4f56eaae6e397670e40688cd6e795f362a036fda))
+* proxy request header normalization ([#322](https://github.com/forepath/agenstra/issues/322)) ([137d938](https://github.com/forepath/agenstra/commit/137d938d6c83b3f82dcdd139fa14b7c8aada41b1))
+* release integrity checks ([#316](https://github.com/forepath/agenstra/issues/316)) ([858722a](https://github.com/forepath/agenstra/commit/858722aba38291794ee5eea630f0c18b1d2602e4))
+* remote config security ([#314](https://github.com/forepath/agenstra/issues/314)) ([5fc2c01](https://github.com/forepath/agenstra/commit/5fc2c01654f2f152a76c38f9d80e2a37d110a932))
+* ssrf prevention logic ([#323](https://github.com/forepath/agenstra/issues/323)) ([b64f7d8](https://github.com/forepath/agenstra/commit/b64f7d8b01ecbffb80ce0755e6aa1c7a534f97d3))
+
+
+### Bug Fixes
+
+* add missing licenses ([#317](https://github.com/forepath/agenstra/issues/317)) ([25bd76a](https://github.com/forepath/agenstra/commit/25bd76a0433bb58bb7d4b1e4cc772942a018d197))
+* jwt secret enforcement in production ([#324](https://github.com/forepath/agenstra/issues/324)) ([5a68010](https://github.com/forepath/agenstra/commit/5a68010219d2c4c34c1d8fe36607359ec6c56ec7))
+* missing http context dependencies ([#318](https://github.com/forepath/agenstra/issues/318)) ([1df3667](https://github.com/forepath/agenstra/commit/1df366709dcc603560629f43e2a8fbcf65aa99db))
+* worker content security policy ([#321](https://github.com/forepath/agenstra/issues/321)) ([324ad08](https://github.com/forepath/agenstra/commit/324ad08f5a33d7ced880729d1c5ac5738a66152b))
+
+
+### Chores
+
+* filesystem content logging regression guard ([#327](https://github.com/forepath/agenstra/issues/327)) ([e9f5634](https://github.com/forepath/agenstra/commit/e9f56344cde60586cb1b30b9c474f76c012b95ea))
+
+
+### Documentation
+
+* accepted risks and authentication method fallback clarification ([#326](https://github.com/forepath/agenstra/issues/326)) ([0136296](https://github.com/forepath/agenstra/commit/0136296135a2ccf70cbde9f74a09784a5203c565))
+* public security documentation ([#328](https://github.com/forepath/agenstra/issues/328)) ([32978ba](https://github.com/forepath/agenstra/commit/32978ba53156d98be6ae225ae87ac6a5790c5d68))
+* ticket automation details ([#319](https://github.com/forepath/agenstra/issues/319)) ([f373206](https://github.com/forepath/agenstra/commit/f373206cfa4d380492fa053033be053a62fad069))
+
+
+### Code Refactoring
+
+* extract frontend express server security config ([#320](https://github.com/forepath/agenstra/issues/320)) ([9063e1a](https://github.com/forepath/agenstra/commit/9063e1ad2139e003ab663cc1ec8b6365eecbe1a6))
+
 ## [1.53.1](https://github.com/forepath/agenstra/compare/v1.53.0...v1.53.1) (2026-05-07)
 
 
