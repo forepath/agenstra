@@ -9,10 +9,12 @@ import {
   type WorkspaceConfigurationSettingKey,
 } from '@forepath/framework/backend/feature-agent-manager';
 import {
+  applyNestExpressTrustProxyAndFingerprintAsync,
   CorrelationAwareConsoleLogger,
   CorrelationAwareSocketIoAdapter,
   createCorrelationIdMiddleware,
   registerAxiosCorrelationIdPropagation,
+  useNestApiSecurityHeadersMiddleware,
 } from '@forepath/framework/backend/util-http-context';
 import { createOriginAllowlistMiddleware } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
@@ -73,6 +75,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: appLogger,
   });
+
+  await applyNestExpressTrustProxyAndFingerprintAsync(app);
+
   const httpLogger = new Logger('HTTP');
 
   app.use(
@@ -80,6 +85,7 @@ async function bootstrap() {
       log: (message: string) => httpLogger.log(message),
     }),
   );
+  useNestApiSecurityHeadersMiddleware(app);
   app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
   // Configure CORS
   // In production: CORS is restricted by default (requires CORS_ORIGIN to be set)

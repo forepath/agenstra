@@ -218,7 +218,7 @@ See [Authentication](../features/authentication.md) for environment variables an
 
 ## Environment Configuration
 
-Configure the application via environment variables. The **Express** runtime (`/config` proxy, CSP, and related variables) is shared with **frontend-billing-console**, **frontend-portal**, and **frontend-docs**; see [Environment configuration](../deployment/environment-configuration.md) for the full list and billing-manager provisioning defaults.
+Configure the application via environment variables. The **Express** runtime (`/config` proxy, **`EXPRESS_TRUST_PROXY`**, CSP, and related variables) is shared with **frontend-billing-console**, **frontend-portal**, and **frontend-docs**; see [Environment configuration](../deployment/environment-configuration.md) for the full list and billing-manager provisioning defaults.
 
 ### Runtime Configuration (Docker Containers)
 
@@ -243,6 +243,13 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `CONFIG_FETCH_MAX_BYTES` - Maximum response size in bytes (default: `262144` = 256 KiB, min: `1024`, max: `2097152` = 2 MiB)
 - `CONFIG_JSON_MAX_DEPTH` - Maximum JSON traversal depth for key counting (default: `12`, min: `1`, max: `32`)
 - `CONFIG_JSON_MAX_KEYS` - Maximum total JSON keys across all objects/arrays up to `CONFIG_JSON_MAX_DEPTH` (default: `512`, min: `1`, max: `10000`)
+
+#### Express application hardening
+
+Shared with **frontend-billing-console**, **frontend-portal**, and **frontend-docs** (implementation: `@forepath/framework/frontend/util-http-context`).
+
+- **`X-Powered-By`** is disabled; **`X-DNS-Prefetch-Control: off`** is set with the security-headers middleware.
+- **`EXPRESS_TRUST_PROXY`** (optional) — Sets Express **`trust proxy`** when the server runs behind an ingress or load balancer. Values: `true` / `1` / `yes` → trust **one** hop; all-digit string → hop count **`n`**; or a comma-separated list of IPs, CIDRs, named subnets (`loopback`, `linklocal`, `uniquelocal`), or hostnames (resolved to an IP at startup). See [Environment configuration](../deployment/environment-configuration.md#express-application-hardening) and the [Express behind proxies](https://expressjs.com/en/guide/behind-proxies.html) guide.
 
 #### Content Security Policy (Express)
 

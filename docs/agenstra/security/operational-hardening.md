@@ -62,6 +62,15 @@ When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches 
 
 See **[Environment configuration — Frontend (all `frontend-*` apps)](../deployment/environment-configuration.md)** for variable names.
 
+## Express application hardening (frontend Express and NestJS HTTP APIs)
+
+- **`X-Powered-By`** is disabled so responses do not advertise Express.
+- **Frontends:** **`X-DNS-Prefetch-Control: off`** is set with CSP and other baseline headers on every HTML response (`util-http-context` `security-headers.ts`).
+- **NestJS APIs:** **`useNestApiSecurityHeadersMiddleware`** adds **`X-DNS-Prefetch-Control: off`**, **`X-Content-Type-Options`**, **`Referrer-Policy`**, **`Permissions-Policy`**, and (in production) HSTS + **`Cross-Origin-Resource-Policy`** — no CSP (APIs are not browser-document hosts). Install after correlation-id middleware; see **[Environment configuration — NestJS API applications](../deployment/environment-configuration.md#nestjs-api-applications)**.
+- Optional **`EXPRESS_TRUST_PROXY`** configures Express **`trust proxy`** for **both** frontend Express servers and **NestJS** apps on the default Express adapter (correct **`req.ip`** / **`req.protocol`** / **`req.hostname`**; important behind ingress and for throttlers per [NestJS — proxies](https://docs.nestjs.com/security/rate-limiting#proxies)). Values: **[Environment configuration — Express application hardening](../deployment/environment-configuration.md#express-application-hardening)**; semantics match the [Express behind proxies](https://expressjs.com/en/guide/behind-proxies.html) guide. Hostnames in the env value are resolved to IPs at startup (first OS result per name); lists otherwise use **IPs**, **CIDRs**, or named subnets **`loopback`** / **`linklocal`** / **`uniquelocal`**, as implemented by [proxy-addr](https://www.npmjs.com/package/proxy-addr).
+
+Code: **`libs/domains/framework/frontend/util-http-context`** (Express frontends: trust proxy, hardening, CSP, `/config`); **`libs/domains/framework/backend/util-http-context`** (Nest bootstrap: `nest-http-hardening.ts`).
+
 ## Content Security Policy (frontend Express)
 
 - CSP includes **`'unsafe-inline'`** and **`'unsafe-eval'`** for Monaco and tooling; default delivery is **`Content-Security-Policy-Report-Only`**.

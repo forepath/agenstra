@@ -69,6 +69,7 @@ describe('createSecurityHeadersMiddleware', () => {
       () => undefined,
     );
 
+    expect(headers.get('X-DNS-Prefetch-Control')).toBe('off');
     expect(headers.get('Content-Security-Policy-Report-Only')).toContain('connect-src');
     expect(headers.get('Content-Security-Policy-Report-Only')).toContain('http:');
     expect(headers.get('Content-Security-Policy-Report-Only')).toContain('ws:');

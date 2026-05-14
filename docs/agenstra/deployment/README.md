@@ -50,6 +50,7 @@ Complete environment variables reference:
 - Database configuration
 - Authentication configuration
 - CORS and rate limiting
+- Frontend Express hardening (`EXPRESS_TRUST_PROXY`, CSP, security headers)
 - Server provisioning
 
 ## Deployment Architecture

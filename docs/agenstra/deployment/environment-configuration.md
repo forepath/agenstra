@@ -147,6 +147,10 @@ These variables tune the **Atlassian Cloud** import scheduler and provider on th
 - `GIT_AUTHOR_NAME` - Git commit author name (default: `Agenstra`)
 - `GIT_AUTHOR_EMAIL` - Git commit author email (default: `noreply@agenstra.com`)
 
+## NestJS API applications
+
+**backend-agent-controller**, **backend-agent-manager**, and **backend-billing-manager** use the default **Express** HTTP adapter. They share the same **`EXPRESS_TRUST_PROXY`** variable and parsing rules as the frontend Express servers (see **[Express application hardening](#express-application-hardening)** below). At bootstrap, each app calls **`applyNestExpressTrustProxyAndFingerprintAsync`** immediately after `NestFactory.create` so `req.ip`, `req.protocol`, and rate limiting behind ingress match the [NestJS proxies guidance](https://docs.nestjs.com/security/rate-limiting#proxies). **`useNestApiSecurityHeadersMiddleware`** registers baseline API response headers (`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-DNS-Prefetch-Control`, and production HSTS + `Cross-Origin-Resource-Policy`) **after** correlation-id middleware. Implementation: **`@forepath/framework/backend/util-http-context`** (`nest-http-hardening.ts`); trust parsing: **`@forepath/framework/frontend/util-http-context`**.
+
 ## Frontend applications (Express SSR)
 
 The Angular apps **frontend-agent-console**, **frontend-billing-console**, **frontend-portal**, and **frontend-docs** use the same Express layer for `GET /config` (runtime JSON proxy) and security headers. The variables below are written with the agent console in mind; they apply to all four apps unless an app-specific doc says otherwise.
@@ -181,6 +185,30 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `CONFIG_FETCH_MAX_BYTES` - Maximum response size in bytes (default: `262144` = 256 KiB, min: `1024`, max: `2097152` = 2 MiB)
 - `CONFIG_JSON_MAX_DEPTH` - Maximum JSON traversal depth for key counting (default: `12`, min: `1`, max: `32`)
 - `CONFIG_JSON_MAX_KEYS` - Maximum total JSON keys across all objects/arrays up to `CONFIG_JSON_MAX_DEPTH` (default: `512`, min: `1`, max: `10000`)
+
+### Express application hardening
+
+Shared implementation: **`@forepath/framework/frontend/util-http-context`** (`applyExpressServerHardeningAsync`, `createSecurityHeadersMiddleware`, `registerRuntimeConfigEndpoint`). Trust parsing lives in **`@forepath/shared/shared/util-express-trust-proxy`** (re-exported from the frontend package; NestJS imports the shared package via **`@forepath/framework/backend/util-http-context`**). All four Express frontends call into the frontend package at startup.
+
+**Fingerprinting and transport**
+
+- **`X-Powered-By`** is disabled (`app.disable('x-powered-by')`).
+- **`X-DNS-Prefetch-Control: off`** is set with the other security headers (see Content Security Policy section below for the full middleware).
+
+**Reverse proxy: `trust proxy`**
+
+When the app sits behind a reverse proxy or ingress, Express must know how many hops to trust so **`req.ip`**, **`req.protocol`**, and **`req.hostname`** reflect the client and TLS termination correctly. Values follow the [Express behind proxies](https://expressjs.com/en/guide/behind-proxies.html) guide (see also the [German translation](https://expressjs.com/de/guide/behind-proxies.html); the English page is updated more often). Under the hood, string lists use [proxy-addr](https://www.npmjs.com/package/proxy-addr), which accepts **IP addresses**, **CIDR** / **IPv4+netmask** forms, and the named subnets **`loopback`**, **`linklocal`**, and **`uniquelocal`** — not raw DNS names. Hostnames in **`EXPRESS_TRUST_PROXY`** are **resolved to an IP once at startup** (first address the OS returns per name).
+
+- **`EXPRESS_TRUST_PROXY`** (optional) — If unset, Express keeps the default (**no** `trust proxy`). Otherwise:
+  - **`true`**, **`1`**, **`yes`** — Trust **one** proxy hop (shorthand for a single reverse proxy in front of the app). **Note:** this is **not** the same as Express **`trust proxy: true`** (trust-the-whole-chain); the env shorthand maps to hop count **`1`**. To use boolean **`true`**, set it in application code (`trustProxy: true`) only if your edge strips or overwrites `X-Forwarded-For`, `X-Forwarded-Host`, and `X-Forwarded-Proto` so clients cannot spoof them (per the Express guide).
+  - **`false`**, **`0`**, **`no`** — Same as unset.
+  - **All digits** (for example **`2`**) — Hop count **`n`** (Express number semantics).
+  - **Comma-separated list** — Each token may be a literal **IPv4/IPv6**, **CIDR** (for example `10.0.0.0/8`), **IPv4 + netmask**, a **named subnet** (`loopback`, `linklocal`, `uniquelocal`), or a **hostname** (resolved at startup). Example: `EXPRESS_TRUST_PROXY=10.0.0.1,ingress.internal`.
+
+**Operational caveats**
+
+- **One IP per hostname** after resolution; multi-homed DNS names use whichever address the OS returns first. Prefer fixed IPs or CIDRs in production when you can.
+- Use **`EXPRESS_TRUST_PROXY`** only in a topology that matches your trust model; misconfigured trust can let clients spoof forwarded headers.
 
 ### Content Security Policy (Express)
 
