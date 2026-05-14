@@ -23,18 +23,9 @@
 
       --crepe-font-title: var(
         --bs-heading-font-family,
-        var(--bs-body-font-family, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif)
+        var(--bs-body-font-family, 'Plus Jakarta Sans Variable', sans-serif)
       );
-      --crepe-font-default: var(
-        --bs-body-font-family,
-        system-ui,
-        -apple-system,
-        'Segoe UI',
-        Roboto,
-        'Helvetica Neue',
-        Arial,
-        sans-serif
-      );
+      --crepe-font-default: var(--bs-body-font-family, 'Plus Jakarta Sans Variable', sans-serif);
       --crepe-font-code: var(
         --bs-font-monospace,
         SFMono-Regular,

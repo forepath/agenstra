@@ -189,3 +189,15 @@ section {
     opacity: 1;
   }
 }
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: light;
+
+  i {
+    font-size: 1.25rem;
+  }
+}

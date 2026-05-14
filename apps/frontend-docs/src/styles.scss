@@ -79,7 +79,8 @@ $danger-border-subtle: #f5d0d2;
 $light-border-subtle: $gray-200;
 $dark-border-subtle: #b9bcc4;
 
-$font-family-base: 'Roboto', sans-serif;
+$font-family-base: 'Plus Jakarta Sans Variable', sans-serif;
+$font-size-base: 0.875rem;
 
 $badge-font-size: 0.75rem;
 $badge-font-weight: 400;
@@ -115,13 +116,5 @@ $agenstra-badge-text-bg-colors: primary, secondary, success, info, warning, dang
 
 @import 'bootstrap/scss/bootstrap-grid';
 @import 'bootstrap-icons/font/bootstrap-icons';
-@import '@fontsource/roboto/100.css';
-@import '@fontsource/roboto/200.css';
-@import '@fontsource/roboto/300.css';
-@import '@fontsource/roboto/400.css';
-@import '@fontsource/roboto/500.css';
-@import '@fontsource/roboto/600.css';
-@import '@fontsource/roboto/700.css';
-@import '@fontsource/roboto/800.css';
-@import '@fontsource/roboto/900.css';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
 @import 'libs/domains/framework/frontend/util-cookie-consent/src/lib/cookie-consent.scss';

@@ -60,7 +60,7 @@ function injectTitlebar() {
       z-index: 999999;
       -webkit-app-region: drag;
       user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Plus Jakarta Sans Variable', sans-serif;
       font-size: 12px;
       color: #ffffff;
     ">
