@@ -20,6 +20,7 @@ The Agent Controller HTTP API provides:
 - Tickets, comments, activity, migration, automation, and assisted body-generation flows (`/tickets/*`)
 - Usage statistics (`/clients/:id/statistics/*`, `/statistics/*`)
 - Global message filter rules for administrators (`/filter-rules`)
+- Atlassian site connections and import configurations for administrators (`/imports/atlassian/*`)
 - Agent autonomy configuration per workspace and per agent
 - Proxied agent operations (CRUD, models, start/stop/restart, environment variables, deployments)
 - Proxied file operations (read, write, create, delete, move)

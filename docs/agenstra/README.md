@@ -67,6 +67,7 @@ Comprehensive feature documentation:
 - [Chat Interface](./features/chat-interface.md) - AI chat functionality and message flow
 - [VNC Browser Access](./features/vnc-browser-access.md) - Graphical browser access via VNC and noVNC
 - [Authentication](./features/authentication.md) - Multiple authentication methods with configurable user registration
+- [Atlassian import](./features/atlassian-import.md) - Jira and Confluence imports into controller tickets and knowledge (admin)
 
 ### [Deployment](./deployment/README.md)
 
@@ -173,6 +174,10 @@ Monitor agent containers, view logs, and manage container lifecycle. Real-time c
 ### VNC Browser Access
 
 Access a Chromium browser running in a virtual workspace container via VNC. XFCE4 desktop environment with auto-started browser, accessible through a web-based noVNC client.
+
+### Atlassian import
+
+Administrators configure Atlassian site connections and import rules so Jira issues and Confluence pages sync into workspace **tickets** and **knowledge** on the agent controller, with optional scheduling and manual runs. See [Atlassian import](./features/atlassian-import.md).
 
 ## Related Documentation
 

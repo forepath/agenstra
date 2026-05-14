@@ -50,6 +50,7 @@ After `setClient` on namespace **`tickets`**, the socket joins room `client:{cli
 ## Related documentation
 
 - **[Ticket automation](./ticket-automation.md)** – Autonomous run scheduler and lifecycle
+- **[Atlassian import](./atlassian-import.md)** – Jira issues into workspace tickets and Confluence pages into knowledge (optional `releaseExternalSyncMarker` on delete)
 - **[WebSocket Communication](./websocket-communication.md)** – `clients` and `tickets` namespaces
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** – HTTP and WebSocket surface
 - **[Authentication](./authentication.md)** – Access modes and roles

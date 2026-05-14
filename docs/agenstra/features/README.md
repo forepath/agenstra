@@ -20,6 +20,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Tickets and Workspaces** - Ticket boards, migration, and automation on the controller
 - **Usage Statistics** - Controller-backed usage and filter metrics (distinct from container stats)
 - **Message Filter Rules** - Global and per-agent regex policies for chat traffic
+- **Atlassian import** - Admin-managed site connections and import configs (Jira and Confluence) into tickets and knowledge
 
 ## Features
 
@@ -186,6 +187,17 @@ Regex-based rules at controller (global, admin) and manager (per-agent) levels.
 - Organization-wide policies synced from the controller
 - Agent-specific tuning on each manager
 - Metrics integration with usage statistics
+
+### [Atlassian import](./atlassian-import.md)
+
+Admin-only **Atlassian Cloud** integrations: store encrypted site credentials, define Jira or Confluence import scopes per workspace, run on a scheduler or on demand, and manage sync markers for idempotent imports.
+
+**Key Capabilities**:
+
+- Site connection CRUD and live connection test against Atlassian REST
+- Import configuration CRUD with Jira or Confluence parameters and optional parent ticket or folder
+- Scheduled and manual import runs with configurable batching and budgets
+- Marker cleanup and optional marker release on ticket or knowledge delete
 
 ## Feature Relationships
 

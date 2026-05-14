@@ -20,6 +20,7 @@ Rule **priority** and matching semantics are defined in the OpenAPI schemas (`Cr
 
 - **[Chat Interface](./chat-interface.md)** – Where filtered traffic originates
 - **[Usage Statistics](./usage-statistics.md)** – Filter drops and flags metrics
+- **[Atlassian import](./atlassian-import.md)** – Another admin-only controller surface (`/imports/atlassian`) with the same API-key carve-out pattern
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** – `/filter-rules`
 - **[Backend Agent Manager](../applications/backend-agent-manager.md)** – `/agents-filters`
 
