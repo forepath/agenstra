@@ -69,6 +69,15 @@ These variables apply to **stored client workspace URLs** (the agent-manager bas
 - `DIGITALOCEAN_API_TOKEN` - DigitalOcean API token (for server provisioning)
 - `ENCRYPTION_KEY` - Encryption key for sensitive data
 
+### Atlassian import (external)
+
+These variables tune the **Atlassian Cloud** import scheduler and provider on the agent controller. Site connection API tokens are stored encrypted; **`ENCRYPTION_KEY`** (above) must be set in environments that persist connections. See [Atlassian import](../features/atlassian-import.md) for behavior, admin-only HTTP routes, and OpenAPI paths.
+
+- `CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS` - Milliseconds between scheduler ticks that run enabled import configs (default: `120000`). Set to `0` or less to **disable** the periodic scheduler (manual `POST …/configs/{id}/run` still works unless imports are disabled below).
+- `CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH` - Maximum number of enabled configs processed per scheduler tick (default: `3`).
+- `CONTEXT_IMPORT_ITEM_BUDGET` - Soft cap on import items processed **per config per run** for scheduler and on-demand runs (default: `25`).
+- `ATLASSIAN_IMPORT_DISABLED` - When set to `true`, the Atlassian import provider skips work for import runs (connections and configs remain manageable via the admin API).
+
 ## Backend Agent Manager
 
 ### Application Configuration
@@ -218,6 +227,7 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - **[Local Development](./local-development.md)** - Local setup
 - **[Docker Deployment](./docker-deployment.md)** - Containerized deployment
 - **[Production Checklist](./production-checklist.md)** - Production deployment
+- **[Atlassian import](../features/atlassian-import.md)** - Import feature, markers, and console entry points
 
 ---
 

@@ -21,6 +21,7 @@ This application provides:
 - **Deployments** - CI/CD configuration and runs per agent ([Deployment](../features/deployment.md))
 - **Usage statistics** - Controller-backed analytics slices for operators ([Usage Statistics](../features/usage-statistics.md))
 - **Message filter rules** - Global admin rule manager ([Message Filter Rules](../features/message-filter-rules.md))
+- **Atlassian import** - Admin UI for Atlassian site connections and Jira/Confluence import configs ([Atlassian import](../features/atlassian-import.md))
 - **Agent autonomy** - Configure which agents may run autonomously per workspace
 - **Server Provisioning** - Provision cloud servers (Hetzner, DigitalOcean) with automated deployment
 - **Audit** - Audit views for administrators (`/audit`)
@@ -105,6 +106,10 @@ The application uses NgRx for state management with the following state slices:
 
 - Global filter rules for administrators
 
+### Atlassian context import state (`atlassianContextImport`)
+
+- Site connections and import configurations for administrators (loads when the agent-console feature routes are active)
+
 ### Tickets board socket state (`ticketsBoardSocket`)
 
 - Connection lifecycle for the controller **`tickets`** Socket.IO namespace
@@ -128,6 +133,7 @@ Routes are defined in the framework library `libs/domains/framework/frontend/fea
 - **Identity** – `identityAuthRoutes` (login, register, password reset, email confirmation, user management) merged under the shell component
 - `/audit` – Audit (authenticated)
 - `/filters` – Global message filter rules (**admin** guard)
+- `/imports/atlassian` – Atlassian site connections and import configurations (**admin** guard; sidebar with Users/Filters)
 - `/tickets`, `/tickets/:clientId` – Ticket board (**authenticated**; requires active client context)
 - `/clients` – Default **Manager** view: client and agent chat shell
   - `/clients` – Landing list
@@ -155,6 +161,10 @@ Ticket board and detail experience for the active workspace (`/tickets`).
 ### RuleManagerComponent
 
 Administrative UI for global regex filter rules (`/filters`).
+
+### AtlassianImportAdminComponent
+
+Administrative UI for Atlassian site connections and import configurations (`/imports/atlassian`).
 
 ### AuditComponent
 
@@ -305,6 +315,7 @@ Before deploying to production:
 - **[Deployment](../features/deployment.md)** - CI/CD from the console
 - **[Usage Statistics](../features/usage-statistics.md)** - Controller analytics
 - **[Message Filter Rules](../features/message-filter-rules.md)** - Global and per-agent filters
+- **[Atlassian import](../features/atlassian-import.md)** - Atlassian site connections and import configurations (admin UI)
 - **[WebSocket Communication](../features/websocket-communication.md)** - Dual-namespace behavior
 - **[Backend Agent Controller](./backend-agent-controller.md)** - API and WebSocket surface
 

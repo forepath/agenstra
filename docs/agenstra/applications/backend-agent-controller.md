@@ -16,6 +16,7 @@ This application provides:
 - **Tickets and Automation** - Workspace tickets, migration, and automation APIs with optional ticket board WebSocket namespace
 - **Usage Statistics** - Aggregated chat, filter, and entity metrics for operators and admins
 - **Global Filter Rules** - Admin-managed regex policies synced to workspaces
+- **Atlassian import** - Admin-managed Atlassian site connections and Jira/Confluence import configurations (scheduled and on-demand)
 - **Per-Client Permissions** - Fine-grained access control with user roles per client (keycloak/users mode)
 - **Secure Authentication** - API key, Keycloak OAuth2/OIDC, or built-in users (JWT) for HTTP and WebSocket
 - **Database Support** - PostgreSQL with TypeORM for data persistence
@@ -128,6 +129,18 @@ See [Message Filter Rules](../features/message-filter-rules.md).
 
 - `GET/POST /api/filter-rules` - List (paginated) and create rules
 - `GET/PUT/DELETE /api/filter-rules/:id` - Read, update, delete a rule
+
+### Atlassian import (controller-native, admin)
+
+See [Atlassian import](../features/atlassian-import.md). All paths are under **`/api/imports/atlassian`** with the same admin authorization model as filter rules (global admin session, or API key authentication).
+
+- `GET/POST /api/imports/atlassian/connections` - List (paginated) and create site connections
+- `GET/PUT/DELETE /api/imports/atlassian/connections/{id}` - Read, update, delete a connection
+- `POST /api/imports/atlassian/connections/{id}/test` - Verify credentials against Atlassian REST
+- `GET/POST /api/imports/atlassian/configs` - List (paginated) and create import configurations
+- `GET/PUT/DELETE /api/imports/atlassian/configs/{id}` - Read, update, delete a configuration
+- `POST /api/imports/atlassian/configs/{id}/run` - Run one import (accepted asynchronously)
+- `DELETE /api/imports/atlassian/configs/{id}/markers` - Clear sync markers for a configuration
 
 ### Agent autonomy (workspace configuration)
 
@@ -413,6 +426,7 @@ Before deploying to production, ensure:
 - **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** - Tickets, migration, automation
 - **[Usage Statistics](../features/usage-statistics.md)** - Controller usage metrics
 - **[Message Filter Rules](../features/message-filter-rules.md)** - Global and per-agent filters
+- **[Atlassian import](../features/atlassian-import.md)** - Atlassian site connections and Jira/Confluence import configurations
 - **[Deployment Feature](../features/deployment.md)** - CI/CD configuration (invoked via controller proxy from the console)
 - **[Deployment Guide](../deployment/production-checklist.md)** - Production deployment guide
 
