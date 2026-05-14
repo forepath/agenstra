@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.55.1](https://github.com/forepath/agenstra/compare/v1.55.0...v1.55.1) (2026-05-14)
+
+
+### Chores
+
+* apply professional typography concept ([#333](https://github.com/forepath/agenstra/issues/333)) ([7f7e797](https://github.com/forepath/agenstra/commit/7f7e7973749f37091ef23dab12ebb34db53b5d77))
+
 ## [1.55.0](https://github.com/forepath/agenstra/compare/v1.54.1...v1.55.0) (2026-05-14)
 
 
