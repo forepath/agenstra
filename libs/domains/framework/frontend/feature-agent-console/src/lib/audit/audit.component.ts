@@ -147,18 +147,21 @@ export class AuditComponent implements OnInit {
       xaxis: {
         categories,
         labels: {
-          style: { colors: 'var(--bs-body-color)' },
+          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
           formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
         },
         axisBorder: { color: 'var(--bs-border-color)' },
       },
       yaxis: {
-        labels: { style: { colors: 'var(--bs-body-color)' } },
+        labels: { style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' } },
       },
       grid: {
         borderColor: 'var(--bs-border-color)',
       },
-      title: { text: 'Messages over time', style: { color: 'var(--bs-body-color)' } },
+      title: {
+        text: 'Messages over time',
+        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
+      },
     };
   });
 
@@ -167,8 +170,9 @@ export class AuditComponent implements OnInit {
     chart: ApexChart;
     colors: string[];
     labels: string[];
-    legend: { labels: { colors: string } };
+    legend: { labels: { colors: string }; fontFamily: string };
     title: ApexTitleSubtitle;
+    dataLabels: { style: { colors: string; fontFamily: string } };
   } | null>(() => {
     const s = this.summary();
 
@@ -200,10 +204,14 @@ export class AuditComponent implements OnInit {
       labels,
       legend: {
         labels: { colors: 'var(--bs-body-color)' },
+        fontFamily: 'var(--bs-body-font-family)',
+      },
+      dataLabels: {
+        style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
       },
       title: {
         text: $localize`:@@featureAudit-chartFilterBreakdownTitle:Filter drops and flags by type`,
-        style: { color: 'var(--bs-body-color)' },
+        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
       },
     };
   });

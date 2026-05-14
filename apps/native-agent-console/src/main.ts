@@ -398,7 +398,7 @@ async function showConfigUrlDialog(): Promise<void> {
           padding: 20px;
           background: #1e1e1e;
           color: #ffffff;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-family: 'Plus Jakarta Sans Variable', sans-serif;
           display: flex;
           flex-direction: column;
           gap: 15px;
