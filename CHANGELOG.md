@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.55.0](https://github.com/forepath/agenstra/compare/v1.54.1...v1.55.0) (2026-05-14)
+
+
+### Features
+
+* atlassian page and ticket import concept ([#331](https://github.com/forepath/agenstra/issues/331)) ([8fa3d33](https://github.com/forepath/agenstra/commit/8fa3d33d0691adb9544d9b43dcb6edea02a510f5))
+
+
+### Documentation
+
+* context import usage ([#332](https://github.com/forepath/agenstra/issues/332)) ([fa56017](https://github.com/forepath/agenstra/commit/fa5601720391a45882f165e147e0d88089e4820a))
+
 ## [1.54.1](https://github.com/forepath/agenstra/compare/v1.54.0...v1.54.1) (2026-05-10)
 
 
