@@ -14,6 +14,7 @@ import { ClientsRepository } from '../repositories/clients.repository';
 
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { ClientsService } from './clients.service';
+import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { TicketAutomationService } from './ticket-automation.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { TicketsService } from './tickets.service';
@@ -139,6 +140,10 @@ describe('TicketsService', () => {
         { provide: TicketAutomationService, useValue: ticketAutomationService },
         { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
         { provide: ClientAutomationChatRealtimeService, useValue: { emitTicketChatUpsert: jest.fn() } },
+        {
+          provide: ExternalImportSyncMarkerService,
+          useValue: { applyTicketDeleteInTransaction: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 

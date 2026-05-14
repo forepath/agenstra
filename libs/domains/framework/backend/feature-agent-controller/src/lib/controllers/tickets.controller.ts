@@ -125,7 +125,13 @@ export class TicketsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseUUIDPipe) id: string, @Req() req?: RequestWithUser) {
-    await this.ticketsService.remove(id, req);
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('releaseExternalSyncMarker') releaseExternalSyncMarkerRaw?: string,
+    @Req() req?: RequestWithUser,
+  ) {
+    const releaseExternalSyncMarker = releaseExternalSyncMarkerRaw === 'true' || releaseExternalSyncMarkerRaw === '1';
+
+    await this.ticketsService.remove(id, req, releaseExternalSyncMarker);
   }
 }

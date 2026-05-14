@@ -29,10 +29,31 @@
   }
 }
 
+/* Fills remaining viewport under the header; min-height:0 so nested scroll areas can shrink */
+.container__workspace {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+}
+
 .section__container {
-  flex-grow: 1;
-  min-height: 0; // Critical for flex scrolling
-  overflow: hidden; // Prevent page-level overflow
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Routed component host sits after <router-outlet> */
+.section__container > router-outlet + * {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .brand-icon {

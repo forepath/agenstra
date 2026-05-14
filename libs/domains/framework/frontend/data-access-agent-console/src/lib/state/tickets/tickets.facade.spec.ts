@@ -209,6 +209,11 @@ describe('TicketsFacade', () => {
       expect(store.dispatch).toHaveBeenCalledWith(deleteTicket({ id: 'ticket-1' }));
     });
 
+    it('dispatches deleteTicket with releaseExternalSyncMarker', () => {
+      facade.remove('ticket-1', true);
+      expect(store.dispatch).toHaveBeenCalledWith(deleteTicket({ id: 'ticket-1', releaseExternalSyncMarker: true }));
+    });
+
     it('dispatches addTicketComment', () => {
       facade.addComment('ticket-1', 'hello');
       expect(store.dispatch).toHaveBeenCalledWith(addTicketComment({ ticketId: 'ticket-1', body: 'hello' }));

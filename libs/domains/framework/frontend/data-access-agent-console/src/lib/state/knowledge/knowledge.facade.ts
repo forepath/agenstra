@@ -54,8 +54,8 @@ export class KnowledgeFacade {
     this.store.dispatch(KnowledgeActions.duplicateKnowledgeNode({ id }));
   }
 
-  deleteNode(id: string): void {
-    this.store.dispatch(KnowledgeActions.deleteKnowledgeNode({ id }));
+  deleteNode(id: string, releaseExternalSyncMarker?: boolean): void {
+    this.store.dispatch(KnowledgeActions.deleteKnowledgeNode({ id, releaseExternalSyncMarker }));
   }
 
   loadRelations(clientId: string, sourceType: KnowledgeRelationSourceType, sourceId: string): void {

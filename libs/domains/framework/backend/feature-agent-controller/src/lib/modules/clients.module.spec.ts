@@ -45,13 +45,29 @@ import { AutonomousTicketScheduler } from '../services/autonomous-ticket.schedul
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
 import { KnowledgeEmbeddingIndexScheduler } from '../services/knowledge-embedding-index.scheduler';
 
 import { ClientsModule } from './clients.module';
+import { ContextImportModule } from './context-import.module';
 import { FilterRulesModule } from './filter-rules.module';
 
 @Module({})
 class StubFilterRulesModule {}
+
+@Module({
+  providers: [
+    {
+      provide: ExternalImportSyncMarkerService,
+      useValue: {
+        applyTicketDeleteInTransaction: jest.fn().mockResolvedValue(undefined),
+        applyKnowledgeNodeDeleteInTransaction: jest.fn().mockResolvedValue(undefined),
+      },
+    },
+  ],
+  exports: [ExternalImportSyncMarkerService],
+})
+class StubContextImportModule {}
 
 describe('ClientsModule', () => {
   let module: TestingModule;
@@ -105,6 +121,8 @@ describe('ClientsModule', () => {
     })
       .overrideModule(FilterRulesModule)
       .useModule(StubFilterRulesModule)
+      .overrideModule(ContextImportModule)
+      .useModule(StubContextImportModule)
       .overrideProvider(getRepositoryToken(ClientEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ClientAgentCredentialEntity))

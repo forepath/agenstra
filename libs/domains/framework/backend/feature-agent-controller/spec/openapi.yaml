@@ -398,6 +398,266 @@ paths:
           description: Forbidden
         '404':
           description: Not found
+  /imports/atlassian/connections:
+    get:
+      summary: List Atlassian site connections (admin only)
+      operationId: listAtlassianSiteConnections
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Maximum number of connections to return
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of connections to skip (pagination)
+      responses:
+        '200':
+          description: Connections (API tokens never returned)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AtlassianSiteConnectionResponseDto'
+        '403':
+          description: Forbidden
+    post:
+      summary: Create Atlassian site connection (admin only)
+      operationId: createAtlassianSiteConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAtlassianSiteConnectionDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtlassianSiteConnectionResponseDto'
+        '400':
+          description: Validation error
+        '403':
+          description: Forbidden
+  /imports/atlassian/connections/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get Atlassian site connection (admin only)
+      operationId: getAtlassianSiteConnection
+      responses:
+        '200':
+          description: Connection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtlassianSiteConnectionResponseDto'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    put:
+      summary: Update Atlassian site connection (admin only)
+      operationId: updateAtlassianSiteConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAtlassianSiteConnectionDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtlassianSiteConnectionResponseDto'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    delete:
+      summary: Delete Atlassian site connection (admin only)
+      operationId: deleteAtlassianSiteConnection
+      responses:
+        '204':
+          description: Deleted
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+  /imports/atlassian/connections/{id}/test:
+    post:
+      summary: Test Atlassian connection (admin only)
+      operationId: testAtlassianSiteConnection
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtlassianConnectionTestResultDto'
+        '403':
+          description: Forbidden
+  /imports/atlassian/configs:
+    get:
+      summary: List external import configs (admin only)
+      operationId: listExternalImportConfigs
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Maximum number of configs to return
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of configs to skip (pagination)
+      responses:
+        '200':
+          description: Configs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalImportConfigResponseDto'
+        '403':
+          description: Forbidden
+    post:
+      summary: Create import config (admin only)
+      operationId: createExternalImportConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExternalImportConfigDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalImportConfigResponseDto'
+        '400':
+          description: Validation error
+        '403':
+          description: Forbidden
+  /imports/atlassian/configs/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get import config (admin only)
+      operationId: getExternalImportConfig
+      responses:
+        '200':
+          description: Config
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalImportConfigResponseDto'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    put:
+      summary: Update import config (admin only)
+      operationId: updateExternalImportConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExternalImportConfigDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalImportConfigResponseDto'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    delete:
+      summary: Delete import config (admin only)
+      operationId: deleteExternalImportConfig
+      responses:
+        '204':
+          description: Deleted
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+  /imports/atlassian/configs/{id}/run:
+    post:
+      summary: Run import once for config (admin only)
+      operationId: runExternalImportConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Accepted
+        '403':
+          description: Forbidden
+  /imports/atlassian/configs/{id}/markers:
+    delete:
+      summary: Clear sync markers for config (admin only)
+      operationId: clearExternalImportMarkers
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Cleared
+        '403':
+          description: Forbidden
   /tickets:
     get:
       summary: List project tickets
@@ -495,6 +755,16 @@ paths:
     delete:
       summary: Delete ticket
       operationId: deleteTicket
+      parameters:
+        - in: query
+          name: releaseExternalSyncMarker
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: >
+            When true, deletes external import sync markers tied to this ticket so the same remote item may be imported again.
+            When false (default), markers are kept with a null local id so scheduled import skips re-creating the row until markers are cleared.
       responses:
         '204':
           description: Deleted
@@ -5567,3 +5837,174 @@ components:
           items:
             type: string
             format: uuid
+    AtlassianSiteConnectionResponseDto:
+      type: object
+      description: Connection metadata only; API tokens are stored encrypted at rest and are never returned.
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        baseUrl:
+          type: string
+        accountEmail:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateAtlassianSiteConnectionDto:
+      type: object
+      required: [baseUrl, accountEmail, apiToken]
+      properties:
+        label:
+          type: string
+        baseUrl:
+          type: string
+          format: uri
+        accountEmail:
+          type: string
+          format: email
+        apiToken:
+          type: string
+          description: Atlassian API token; persisted with AES-256-GCM encryption (never returned on GET list/get connection).
+    UpdateAtlassianSiteConnectionDto:
+      type: object
+      properties:
+        label:
+          type: string
+        baseUrl:
+          type: string
+          format: uri
+        accountEmail:
+          type: string
+          format: email
+        apiToken:
+          type: string
+          description: When omitted, token is unchanged. If set, stored with AES-256-GCM encryption.
+    AtlassianConnectionTestResultDto:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+    ExternalImportProviderId:
+      type: string
+      enum: [atlassian]
+    ExternalImportKind:
+      type: string
+      enum: [jira, confluence]
+    ExternalImportConfigResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider:
+          $ref: '#/components/schemas/ExternalImportProviderId'
+        importKind:
+          $ref: '#/components/schemas/ExternalImportKind'
+        atlassianConnectionId:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        enabled:
+          type: boolean
+        jiraBoardId:
+          type: integer
+        jql:
+          type: string
+        importTargetTicketStatus:
+          $ref: '#/components/schemas/TicketStatus'
+        confluenceSpaceKey:
+          type: string
+        confluenceRootPageId:
+          type: string
+        cql:
+          type: string
+        agenstraParentTicketId:
+          type: string
+          format: uuid
+        agenstraParentFolderId:
+          type: string
+          format: uuid
+        lastRunAt:
+          type: string
+          format: date-time
+        lastError:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateExternalImportConfigDto:
+      type: object
+      required: [provider, importKind, atlassianConnectionId, clientId]
+      properties:
+        provider:
+          $ref: '#/components/schemas/ExternalImportProviderId'
+        importKind:
+          $ref: '#/components/schemas/ExternalImportKind'
+        atlassianConnectionId:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        enabled:
+          type: boolean
+        jiraBoardId:
+          type: integer
+        jql:
+          type: string
+        importTargetTicketStatus:
+          $ref: '#/components/schemas/TicketStatus'
+        confluenceSpaceKey:
+          type: string
+        confluenceRootPageId:
+          type: string
+        cql:
+          type: string
+        agenstraParentTicketId:
+          type: string
+          format: uuid
+        agenstraParentFolderId:
+          type: string
+          format: uuid
+    UpdateExternalImportConfigDto:
+      type: object
+      properties:
+        atlassianConnectionId:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        enabled:
+          type: boolean
+        jiraBoardId:
+          type: integer
+        jql:
+          type: string
+        importTargetTicketStatus:
+          $ref: '#/components/schemas/TicketStatus'
+        confluenceSpaceKey:
+          type: string
+        confluenceRootPageId:
+          type: string
+        cql:
+          type: string
+        agenstraParentTicketId:
+          type: string
+          format: uuid
+        agenstraParentFolderId:
+          type: string
+          format: uuid

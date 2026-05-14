@@ -204,6 +204,18 @@ describe('TicketsEffects', () => {
       ticketsService.deleteTicket.mockReturnValue(of(undefined));
       deleteTicket$(actions$, ticketsService).subscribe((result) => {
         expect(result).toEqual(outcome);
+        expect(ticketsService.deleteTicket).toHaveBeenCalledWith('ticket-1', undefined);
+        done();
+      });
+    });
+
+    it('should pass releaseExternalSyncMarker to the service', (done) => {
+      const action = deleteTicket({ id: 'ticket-1', releaseExternalSyncMarker: true });
+
+      actions$ = of(action);
+      ticketsService.deleteTicket.mockReturnValue(of(undefined));
+      deleteTicket$(actions$, ticketsService).subscribe(() => {
+        expect(ticketsService.deleteTicket).toHaveBeenCalledWith('ticket-1', true);
         done();
       });
     });

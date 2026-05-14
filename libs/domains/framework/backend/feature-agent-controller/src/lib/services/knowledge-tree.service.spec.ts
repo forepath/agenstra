@@ -8,6 +8,7 @@ import {
   KnowledgeRelationTargetType,
 } from '../entities/knowledge-node.enums';
 
+import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
 
 describe('KnowledgeTreeService', () => {
@@ -19,6 +20,17 @@ describe('KnowledgeTreeService', () => {
     delete: jest.fn(),
     count: jest.fn(),
     createQueryBuilder: jest.fn(),
+    manager: {
+      transaction: jest.fn(async (fn: (em: unknown) => Promise<unknown>) => {
+        const em = {
+          getRepository: jest.fn(() => ({
+            delete: jest.fn().mockResolvedValue(undefined),
+          })),
+        };
+
+        return fn(em);
+      }),
+    },
   };
   const relationRepo: any = {
     find: jest.fn(),
@@ -48,6 +60,9 @@ describe('KnowledgeTreeService', () => {
     reindexPage: jest.fn(),
     deleteForNode: jest.fn(),
   };
+  const externalImportSyncMarkerService: Partial<ExternalImportSyncMarkerService> = {
+    applyKnowledgeNodeDeleteInTransaction: jest.fn().mockResolvedValue(undefined),
+  };
   const service = new KnowledgeTreeService(
     nodeRepo,
     relationRepo,
@@ -59,6 +74,7 @@ describe('KnowledgeTreeService', () => {
     ticketBoardRealtime,
     knowledgeBoardRealtime,
     knowledgeEmbeddingIndexService,
+    externalImportSyncMarkerService as ExternalImportSyncMarkerService,
   );
 
   beforeEach(() => {
@@ -117,6 +133,24 @@ describe('KnowledgeTreeService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('importCreateRelation rejects mismatched workspace target without user context', async () => {
+    (service as any).getNodeOrThrow = jest.fn().mockResolvedValue({
+      id: 'page-1',
+      clientId: 'other',
+      nodeType: KnowledgeNodeType.PAGE,
+    });
+
+    await expect(
+      service.importCreateRelation({
+        clientId: 'c1',
+        sourceType: KnowledgeRelationSourceType.PAGE,
+        sourceId: 's1',
+        targetType: KnowledgeRelationTargetType.PAGE,
+        targetNodeId: 'page-1',
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
   it('creates page-source relation and emits relation + activity events', async () => {
     (service as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
     (service as any).getNodeOrThrow = jest.fn().mockResolvedValue({
@@ -145,6 +179,70 @@ describe('KnowledgeTreeService', () => {
     });
 
     await service.createRelation({
+      clientId: 'c1',
+      sourceType: KnowledgeRelationSourceType.PAGE,
+      sourceId: 'page-source',
+      targetType: KnowledgeRelationTargetType.PAGE,
+      targetNodeId: 'page-target',
+    });
+
+    expect(ticketBoardRealtime.emitToClient).toHaveBeenCalledWith(
+      'c1',
+      'knowledgeRelationChanged',
+      expect.objectContaining({
+        clientId: 'c1',
+        sourceType: KnowledgeRelationSourceType.PAGE,
+        sourceId: 'page-source',
+      }),
+    );
+    expect(knowledgeBoardRealtime.emitToClient).toHaveBeenCalledWith(
+      'c1',
+      'knowledgeRelationChanged',
+      expect.objectContaining({
+        clientId: 'c1',
+        sourceType: KnowledgeRelationSourceType.PAGE,
+        sourceId: 'page-source',
+      }),
+    );
+    expect(pageActivityRepo.save).toHaveBeenCalled();
+    expect(knowledgeBoardRealtime.emitToClient).toHaveBeenCalledWith(
+      'c1',
+      'knowledgePageActivityCreated',
+      expect.objectContaining({
+        id: 'act-1',
+        pageId: 'page-source',
+        actionType: KnowledgeActionType.RELATION_ADDED,
+      }),
+    );
+  });
+
+  it('importCreateRelation persists when target is valid (no user request)', async () => {
+    (service as any).getNodeOrThrow = jest.fn().mockResolvedValue({
+      id: 'page-target',
+      clientId: 'c1',
+      nodeType: KnowledgeNodeType.PAGE,
+    });
+    relationRepo.save.mockResolvedValue({
+      id: 'rel-1',
+      clientId: 'c1',
+      sourceType: KnowledgeRelationSourceType.PAGE,
+      sourceId: 'page-source',
+      targetType: KnowledgeRelationTargetType.PAGE,
+      targetNodeId: 'page-target',
+      targetTicketLongSha: null,
+      createdAt: '2024-01-01T00:00:00Z',
+    });
+    pageActivityRepo.save.mockResolvedValue({
+      id: 'act-1',
+      pageId: 'page-source',
+      occurredAt: '2024-01-01T00:00:00Z',
+      actorType: KnowledgeActorType.SYSTEM,
+      actorUserId: null,
+      actionType: KnowledgeActionType.RELATION_ADDED,
+      payload: {},
+    });
+
+    await service.importCreateRelation({
       clientId: 'c1',
       sourceType: KnowledgeRelationSourceType.PAGE,
       sourceId: 'page-source',

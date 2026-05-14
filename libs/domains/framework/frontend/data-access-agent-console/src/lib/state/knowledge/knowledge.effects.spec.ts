@@ -124,6 +124,17 @@ describe('knowledge effects', () => {
 
     deleteKnowledgeNode$(actions$, knowledgeService).subscribe((result) => {
       expect(result).toEqual(KnowledgeActions.deleteKnowledgeNodeSuccess({ id: 'node-1' }));
+      expect(knowledgeService.delete).toHaveBeenCalledWith('node-1', undefined);
+      done();
+    });
+  });
+
+  it('deleteKnowledgeNode$ passes releaseExternalSyncMarker', (done) => {
+    actions$ = of(KnowledgeActions.deleteKnowledgeNode({ id: 'node-1', releaseExternalSyncMarker: true }));
+    knowledgeService.delete.mockReturnValue(of(undefined));
+
+    deleteKnowledgeNode$(actions$, knowledgeService).subscribe(() => {
+      expect(knowledgeService.delete).toHaveBeenCalledWith('node-1', true);
       done();
     });
   });

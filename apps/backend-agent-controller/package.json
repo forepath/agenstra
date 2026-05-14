@@ -24,7 +24,9 @@
     "pg": "8.16.3",
     "socket.io-client": "4.8.1",
     "ssh2": "1.17.0",
-    "sshpk": "1.18.0"
+    "sshpk": "1.18.0",
+    "turndown": "7.2.4",
+    "turndown-plugin-gfm": "1.0.2"
   },
   "devDependencies": {
     "ts-node": "10.9.1",

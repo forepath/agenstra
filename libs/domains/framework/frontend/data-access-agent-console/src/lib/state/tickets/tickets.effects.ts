@@ -159,8 +159,8 @@ export const deleteTicket$ = createEffect(
   (actions$ = inject(Actions), ticketsService = inject(TicketsService)) => {
     return actions$.pipe(
       ofType(deleteTicket),
-      switchMap(({ id }) =>
-        ticketsService.deleteTicket(id).pipe(
+      switchMap(({ id, releaseExternalSyncMarker }) =>
+        ticketsService.deleteTicket(id, releaseExternalSyncMarker).pipe(
           map(() => deleteTicketSuccess({ id })),
           catchError((error) => of(deleteTicketFailure({ error: normalizeError(error) }))),
         ),

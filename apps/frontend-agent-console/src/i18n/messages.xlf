@@ -2,6 +2,303 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureAtlassianImportAdmin-pageTitle" datatype="html">
+        <source> Atlassian import (Jira &amp; Confluence) </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-refresh" datatype="html">
+        <source> Refresh </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
+        <source> Dismiss </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionTestLabel" datatype="html">
+        <source>Connection test:</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionTestOk" datatype="html">
+        <source>OK</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionTestFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-add" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConnectionsLabel" datatype="html">
+        <source>Search site connections</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConnectionsPlaceholder" datatype="html">
+        <source>Search connections</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-loadingConnections" datatype="html">
+        <source>Loading connections…</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConnectionsYet" datatype="html">
+        <source> No connections yet. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConnectionsMatchSearch" datatype="html">
+        <source> No connections match your search. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionActionsAria" datatype="html">
+        <source>Connection actions</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-testConnectionTitle" datatype="html">
+        <source>Test connection</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnectionTitle" datatype="html">
+        <source>Edit connection</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionTitle" datatype="html">
+        <source>Delete connection</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConfigsLabel" datatype="html">
+        <source>Search import configs</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConfigsPlaceholder" datatype="html">
+        <source>Search import configs</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-loadingConfigs" datatype="html">
+        <source>Loading configs…</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConfigsYet" datatype="html">
+        <source> No import configs yet. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConfigsMatchSearch" datatype="html">
+        <source> No import configs match your search. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-badgeOn" datatype="html">
+        <source>On</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-badgeOff" datatype="html">
+        <source>Off</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionToWorkspace" datatype="html">
+        <source>to</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-neverRun" datatype="html">
+        <source>Never run</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-configActionsAria" datatype="html">
+        <source>Import config actions</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-runImportTitle" datatype="html">
+        <source>Run import now</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-runningImport" datatype="html">
+        <source>Running import…</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersTitle" datatype="html">
+        <source>Clear sync markers</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConfigTitle" datatype="html">
+        <source>Edit import config</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigTitle" datatype="html">
+        <source>Delete import config</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnectionTitle" datatype="html">
+        <source> New connection </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-closeAria" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnLabel" datatype="html">
+        <source>Label (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnBaseUrl" datatype="html">
+        <source>Base URL</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnBaseUrlPlaceholder" datatype="html">
+        <source>https://your-site.atlassian.net</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnAccountEmail" datatype="html">
+        <source>Account email</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnApiToken" datatype="html">
+        <source>API token</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
+        <source> New import config </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldConnection" datatype="html">
+        <source>Connection</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectPlaceholder" datatype="html">
+        <source>Select…</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldWorkspace" datatype="html">
+        <source>Workspace</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldKind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-importKindJira" datatype="html">
+        <source>Jira</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-importKindConfluence" datatype="html">
+        <source>Confluence</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldEnabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newBoardIdOptional" datatype="html">
+        <source>Board ID (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-boardIdExamplePlaceholder" datatype="html">
+        <source>e.g. 123</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldJql" datatype="html">
+        <source>JQL</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-jqlHelp" datatype="html">
+        <source> Required. Imported issues are not capped per run. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldImportSwimlane" datatype="html">
+        <source>Import swimlane</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newParentTicketOptional" datatype="html">
+        <source> Parent ticket (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchParentTicketPlaceholder" datatype="html">
+        <source>Search by title or ID</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentTicket" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearSelection" datatype="html">
+        <source> Clear </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newSpaceKeyOptional" datatype="html">
+        <source>Space key (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newRootPageIdOptional" datatype="html">
+        <source>Root page ID (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldCql" datatype="html">
+        <source>CQL</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-cqlHelp" datatype="html">
+        <source> Required. Matching pages are fetched in full (paginated against Confluence). </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newParentFolderOptional" datatype="html">
+        <source> Parent folder (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchParentFolderPlaceholder" datatype="html">
+        <source>Search folder title or SHA</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-folderSuggestRow" datatype="html">
+        <source> Folder · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentFolder" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnectionTitleHeading" datatype="html">
+        <source> Edit connection </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnLabel" datatype="html">
+        <source>Label</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnBaseUrl" datatype="html">
+        <source>Base URL</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnAccountEmail" datatype="html">
+        <source>Account email</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnNewApiTokenOptional" datatype="html">
+        <source> New API token (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
+        <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editBoardId" datatype="html">
+        <source>Board ID</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editParentTicketOptional" datatype="html">
+        <source> Parent ticket (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentTicketEdit" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editSpaceKey" datatype="html">
+        <source>Space key</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editRootPageId" datatype="html">
+        <source>Root page ID</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editParentFolderOptional" datatype="html">
+        <source> Parent folder (optional) </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentFolderEdit" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionHeading" datatype="html">
+        <source> Delete connection </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionBody" datatype="html">
+        <source> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot;? Related import configs may stop working. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionConfirm" datatype="html">
+        <source> Delete connection </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigHeading" datatype="html">
+        <source> Delete import config </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigBody" datatype="html">
+        <source> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/>? </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigConfirm" datatype="html">
+        <source> Delete config </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersHeading" datatype="html">
+        <source> Clear sync markers </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersBody" datatype="html">
+        <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/> config? External items may be re-imported as duplicates. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersConfirm" datatype="html">
+        <source> Clear markers </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneDraft" datatype="html">
+        <source>Draft</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneTodo" datatype="html">
+        <source>To do</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneInProgress" datatype="html">
+        <source>In progress</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlanePrototype" datatype="html">
+        <source>Prototype</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneDone" datatype="html">
+        <source>Done</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneClosed" datatype="html">
+        <source>Closed</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-laneConnections" datatype="html">
+        <source>Site connections</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-laneConfigs" datatype="html">
+        <source>Import configs</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-unnamedConnection" datatype="html">
+        <source>Unnamed connection</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-emptyField" datatype="html">
+        <source>—</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-ticketPick" datatype="html">
+        <source><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-folderPick" datatype="html">
+        <source><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></source>
+        </trans-unit>
       <trans-unit id="featureAudit-filtersTitle" datatype="html">
         <source>Filters</source>
         </trans-unit>
@@ -514,6 +811,24 @@
       <trans-unit id="featureChat-agentImagePlaceholder" datatype="html">
         <source>ghcr.io/forepath/agenstra-manager-worker:latest</source>
         </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichLabel" datatype="html">
+        <source>Prompt auto-enrichment</source>
+        </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichEnabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichDisabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichHint" datatype="html">
+        <source>Sets AUTO_ENRICH_ENABLED_GLOBAL on the new workspace agent-manager.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-provisionVectorMaxCosLabel" datatype="html">
+        <source>Vector auto-enrichment max cosine distance</source>
+        </trans-unit>
+      <trans-unit id="featureChat-provisionVectorMaxCosHint" datatype="html">
+        <source>0–2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</source>
+        </trans-unit>
       <trans-unit id="featureChat-gitRepoPlaceholder" datatype="html">
         <source>https://github.com/user/repo.git</source>
         </trans-unit>
@@ -557,6 +872,12 @@
         </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationSettings" datatype="html">
         <source>Workspace Configuration Settings</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceAutoEnrichEnabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceAutoEnrichDisabled" datatype="html">
+        <source>Disabled</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationValuePlaceholder" datatype="html">
         <source>Enter override value</source>
@@ -735,6 +1056,33 @@
       <trans-unit id="featureChat-openDeploymentManager" datatype="html">
         <source>Open Deployment Manager</source>
         </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitRepo" datatype="html">
+        <source>Git repository URL</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitUsername" datatype="html">
+        <source>Git username</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitToken" datatype="html">
+        <source>Git token</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitPassword" datatype="html">
+        <source>Git password</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitPrivateKey" datatype="html">
+        <source>Git private key (SSH)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleCursorApiKey" datatype="html">
+        <source>Cursor API key</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleAgentImage" datatype="html">
+        <source>Agent default image</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleAutoEnrichGlobal" datatype="html">
+        <source>Prompt auto-enrichment (workspace)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleVectorMaxCosineDistance" datatype="html">
+        <source>Vector auto-enrichment max cosine distance</source>
+        </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationSourceLabel" datatype="html">
         <source>Override</source>
         </trans-unit>
@@ -794,6 +1142,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-filters" datatype="html">
         <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-importTitle" datatype="html">
+        <source>Import</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>

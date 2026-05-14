@@ -89,6 +89,13 @@ describe('KnowledgeFacade', () => {
     expect(store.dispatch).toHaveBeenCalledWith(KnowledgeActions.deleteKnowledgeNode({ id: 'node-1' }));
   });
 
+  it('dispatches deleteNode with releaseExternalSyncMarker', () => {
+    facade.deleteNode('node-1', true);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      KnowledgeActions.deleteKnowledgeNode({ id: 'node-1', releaseExternalSyncMarker: true }),
+    );
+  });
+
   it('dispatches loadRelations', () => {
     facade.loadRelations('client-1', 'page', 'node-1');
     expect(store.dispatch).toHaveBeenCalledWith(

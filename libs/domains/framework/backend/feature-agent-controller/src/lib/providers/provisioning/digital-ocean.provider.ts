@@ -7,7 +7,7 @@ import {
   ProvisionServerOptions,
   ServerInfo,
   ServerType,
-} from './provisioning-provider.interface';
+} from '../provisioning-provider.interface';
 
 /**
  * DigitalOcean provider implementation.

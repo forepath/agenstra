@@ -128,8 +128,8 @@ export const deleteKnowledgeNode$ = createEffect(
   (actions$ = inject(Actions), knowledgeService = inject(KnowledgeService)) => {
     return actions$.pipe(
       ofType(deleteKnowledgeNode),
-      switchMap(({ id }) =>
-        knowledgeService.delete(id).pipe(
+      switchMap(({ id, releaseExternalSyncMarker }) =>
+        knowledgeService.delete(id, releaseExternalSyncMarker).pipe(
           map(() => deleteKnowledgeNodeSuccess({ id })),
           catchError((error) => of(deleteKnowledgeNodeFailure({ error: normalizeError(error) }))),
         ),
