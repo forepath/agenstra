@@ -3,7 +3,11 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 3
     open-pull-requests-limit: 1
     groups:
       npm-dependencies:
@@ -20,7 +24,11 @@ updates:
   - package-ecosystem: 'docker'
     directory: '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 3
     open-pull-requests-limit: 1
     groups:
       docker-dependencies:
@@ -37,7 +45,11 @@ updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 3
     open-pull-requests-limit: 1
     groups:
       github-actions-dependencies:
