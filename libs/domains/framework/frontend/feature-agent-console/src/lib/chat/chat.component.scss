@@ -92,6 +92,19 @@
   padding: 0.625rem 0.75rem; // Slightly more compact than p-2 (0.5rem) but still readable
 }
 
+// In-flight streaming agent bubble: spinner; separator only when content sits above it
+.chat-message-pending-footer {
+  margin-left: -0.75rem;
+  width: calc(100% + 1.5rem);
+  padding-left: 0.75rem;
+
+  &--with-separator {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--bs-border-color-translucent);
+  }
+}
+
 // Chat message text - optimized for longer content
 .chat-message-text {
   font-size: 0.875rem; // 14px - smaller for longer prompts

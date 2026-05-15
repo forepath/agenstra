@@ -65,7 +65,13 @@ function strProp(obj: AgentResponseObject, key: string): string | undefined {
 export function extractThinkingPreviewText(response: AgentResponseObject): string {
   const o = response as Record<string, unknown>;
   const pick = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
-  const direct = pick(o['text']) || pick(o['thinking']) || pick(o['phase']) || pick(o['summary']) || pick(o['message']);
+  const direct =
+    pick(o['text']) ||
+    pick(o['thinking']) ||
+    pick(o['phase']) ||
+    pick(o['summary']) ||
+    pick(o['message']) ||
+    pick(o['delta']);
 
   if (direct) {
     return direct;
@@ -96,6 +102,25 @@ export function extractThinkingPreviewText(response: AgentResponseObject): strin
   }
 
   return '';
+}
+
+/**
+ * Best-effort text from `interaction_query` / provider clarification frames.
+ */
+export function extractInteractionQueryPreviewText(response: AgentResponseObject): string {
+  const o = response as Record<string, unknown>;
+  const pick = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+
+  return (
+    pick(o['query']) ||
+    pick(o['prompt']) ||
+    pick(o['question']) ||
+    pick(o['text']) ||
+    pick(o['message']) ||
+    pick(o['summary']) ||
+    pick(o['delta']) ||
+    ''
+  );
 }
 
 function unknownProp(obj: AgentResponseObject, key: string): unknown {
@@ -215,6 +240,12 @@ function formatError(response: AgentResponseObject): string {
   return lines.join('\n');
 }
 
+function formatInteractionQuery(response: AgentResponseObject): string {
+  const preview = extractInteractionQueryPreviewText(response);
+
+  return preview ? truncate(preview.replace(/\s+/g, ' ')) : '_Query…_';
+}
+
 function formatGenericResult(response: AgentResponseObject): string {
   const result = response['result'];
 
@@ -289,6 +320,10 @@ export function formatAgentResponseForChatMarkdown(response: AgentResponseObject
 
   if (type === 'delta') {
     return formatDelta(response);
+  }
+
+  if (type === 'interaction_query' || type === 'interactionQuery') {
+    return formatInteractionQuery(response);
   }
 
   if (type === 'thinking') {

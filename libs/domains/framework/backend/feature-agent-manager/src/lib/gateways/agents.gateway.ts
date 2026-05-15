@@ -11,7 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { AgentEventEnvelope, AgentResponseMode } from '../providers/agent-events.types';
+import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentResponseObject } from '../providers/agent-provider.interface';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
@@ -445,6 +445,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       'toolResult',
       'question',
       'thinking',
+      'interaction_query',
+      'interactionQuery',
       // Final NDJSON `result` frame must count as structured so delta+result turns become agenstra_turn
       // instead of collapsing to a lone `result` blob that drops tool history.
       'result',
@@ -764,6 +766,16 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           ...base,
           kind: 'thinking',
           payload: phase ? { phase } : {},
+        },
+      ];
+    }
+
+    if (response.type === 'interaction_query' || response.type === 'interactionQuery') {
+      return [
+        {
+          ...base,
+          kind: 'interactionQuery',
+          payload: { ...(response as Record<string, unknown>) } as AgentInteractionQueryPayload,
         },
       ];
     }

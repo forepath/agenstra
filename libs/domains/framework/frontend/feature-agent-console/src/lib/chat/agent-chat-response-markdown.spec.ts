@@ -96,13 +96,23 @@ describe('formatAgentResponseForChatMarkdown', () => {
     expect(md).not.toMatch(/^\s*-\s+\*\*/m);
   });
 
-  it('extractThinkingPreviewText reads nested Cursor-style message content', () => {
+  it('extractThinkingPreviewText reads string delta when other fields absent', () => {
     const thinking = {
       type: 'thinking',
-      message: { content: [{ type: 'text', text: 'Step one' }] },
+      delta: 'Step-by-step reasoning line',
     } as AgentResponseObject;
 
-    expect(extractThinkingPreviewText(thinking)).toBe('Step one');
+    expect(extractThinkingPreviewText(thinking)).toBe('Step-by-step reasoning line');
+  });
+
+  it('formats interaction_query as plain preview without generic type bullets', () => {
+    const md = formatAgentResponseForChatMarkdown({
+      type: 'interaction_query',
+      query: 'Pick one option',
+    } as AgentResponseObject);
+
+    expect(md).toContain('Pick one option');
+    expect(md).not.toContain('**interaction_query**');
   });
 });
 
