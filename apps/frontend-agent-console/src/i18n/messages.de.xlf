@@ -442,6 +442,118 @@
         <source>Agent is thinking...</source>
         <target>Agent denkt nach...</target>
       </trans-unit>
+      <trans-unit id="featureChat-agentEventDetailPopover" datatype="html">
+        <source>Show event details</source>
+        <target>Ereignisdetails anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolInvocationPopover" datatype="html">
+        <source>Tool invocation</source>
+        <target>Tool-Aufruf</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolInvocationPopoverAria" datatype="html">
+        <source>Show tool invocation details</source>
+        <target>Details zum Tool-Aufruf anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolResultPopover" datatype="html">
+        <source>Tool result</source>
+        <target>Tool-Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolResultPopoverAria" datatype="html">
+        <source>Show tool result details</source>
+        <target>Details zum Tool-Ergebnis anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingResultTitle" datatype="html">
+        <source>Awaiting tool result</source>
+        <target>Warte auf Tool-Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingResultBody" datatype="html">
+        <source>The tool has not returned a result yet.</source>
+        <target>Das Tool hat noch kein Ergebnis geliefert.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingAria" datatype="html">
+        <source>Tool result not received yet</source>
+        <target>Tool-Ergebnis steht noch aus</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindThinking" datatype="html">
+        <source>Thinking</source>
+        <target>Denken</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindInteractionQuery" datatype="html">
+        <source>Interaction</source>
+        <target>Interaktion</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindDelta" datatype="html">
+        <source>Delta</source>
+        <target>Delta</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindAssistant" datatype="html">
+        <source>Assistant</source>
+        <target>Assistent</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindTool" datatype="html">
+        <source>Tool</source>
+        <target>Tool</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindResult" datatype="html">
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindQuestion" datatype="html">
+        <source>Question</source>
+        <target>Frage</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindError" datatype="html">
+        <source>Error</source>
+        <target>Fehler</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryUserMessage" datatype="html">
+        <source>User message</source>
+        <target>Benutzernachricht</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryThinking" datatype="html">
+        <source>Agent is thinking</source>
+        <target>Agent denkt nach</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryInteractionQuery" datatype="html">
+        <source>Query</source>
+        <target>Abfrage</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryAssistantStreaming" datatype="html">
+        <source>Assistant (streaming)</source>
+        <target>Assistent (Streaming)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryAssistantMessage" datatype="html">
+        <source>Assistant message</source>
+        <target>Assistentennachricht</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryEnrichment" datatype="html">
+        <source>Enrichment</source>
+        <target>Anreicherung</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryToolCall" datatype="html">
+        <source>Tool call · <x id="toolName" equiv-text="name"/></source>
+        <target>Tool-Aufruf · <x id="toolName" equiv-text="name"/></target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryEnrichmentResult" datatype="html">
+        <source>Enrichment result</source>
+        <target>Anreicherungsergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryToolResult" datatype="html">
+        <source>Tool result · <x id="toolName" equiv-text="name"/></source>
+        <target>Tool-Ergebnis · <x id="toolName" equiv-text="name"/></target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryErrorWithCode" datatype="html">
+        <source>Error (<x id="errorCode" equiv-text="code"/>)</source>
+        <target>Fehler (<x id="errorCode" equiv-text="code"/>)</target>
+      </trans-unit>
       <trans-unit id="featureChat-reconnectingToServer" datatype="html">
         <source>Reconnecting to server...</source>
         <target>Verbinde erneut mit Server...</target>

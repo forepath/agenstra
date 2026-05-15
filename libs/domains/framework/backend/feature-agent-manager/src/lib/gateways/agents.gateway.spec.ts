@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import type { AgentEventEnvelope } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentResponseObject } from '../providers/agent-provider.interface';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
@@ -2305,6 +2306,51 @@ describe('AgentsGateway', () => {
           { type: 'result', subtype: 'success', result: 'world' },
         ]);
         expect(built.parts.some((p) => p.type === 'tool_call')).toBe(true);
+      });
+
+      it('agentResponseToChatEvents maps interaction_query to interactionQuery envelope with payload', () => {
+        const events = (gateway as any).agentResponseToChatEvents(mockAgent.id, 'corr-iq', 2, {
+          type: 'interaction_query',
+          query: 'Which option?',
+        }) as AgentEventEnvelope[];
+
+        expect(events).toHaveLength(1);
+        expect(events[0]?.kind).toBe('interactionQuery');
+        expect(events[0]?.payload).toEqual(
+          expect.objectContaining({ type: 'interaction_query', query: 'Which option?' }),
+        );
+        expect(events[0]?.correlationId).toBe('corr-iq');
+        expect(events[0]?.sequence).toBe(2);
+      });
+
+      it('agentResponseToChatEvents maps interactionQuery camelCase type to interactionQuery envelope', () => {
+        const events = (gateway as any).agentResponseToChatEvents(mockAgent.id, 'corr-iq2', 0, {
+          type: 'interactionQuery',
+          prompt: 'Pick one',
+        }) as AgentEventEnvelope[];
+
+        expect(events).toHaveLength(1);
+        expect(events[0]?.kind).toBe('interactionQuery');
+        expect(events[0]?.payload).toEqual(expect.objectContaining({ type: 'interactionQuery', prompt: 'Pick one' }));
+      });
+
+      it('buildFinalStreamingResponse keeps interaction_query in agenstra_turn when paired with result', () => {
+        const streamedUnified = [
+          { type: 'interaction_query', query: 'Confirm?' },
+          { type: 'result', subtype: 'success', result: 'Yes.' },
+        ];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const built = (gateway as any).buildFinalStreamingResponse(streamedUnified, '') as {
+          type: string;
+          parts: Array<{ type?: string; query?: string }>;
+        };
+
+        expect(built).not.toBeNull();
+        expect(built.type).toBe('agenstra_turn');
+        expect(built.parts.some((p) => p.type === 'interaction_query')).toBe(true);
+        expect(built.parts.filter((p) => p.type === 'result')).toEqual([
+          { type: 'result', subtype: 'success', result: 'Yes.' },
+        ]);
       });
 
       it('persists deduped agenstra_turn when handleChat uses sendMessageStream with doubled Cursor result text', async () => {

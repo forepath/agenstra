@@ -1,5 +1,5 @@
 import { mapForwardedChatEventToDisplayRow, tryParseChatEventEnvelope } from './agent-chat-event-display';
-import { consolidateThinkingInSegments, type AgentTurnSegment } from './chat-thread-display';
+import { consolidateAgentTurnSegments, type AgentTurnSegment } from './chat-thread-display';
 
 export interface StreamingTurnAccumulated {
   segments: AgentTurnSegment[];
@@ -76,6 +76,16 @@ export function accumulateStreamingTurnFromEvents(
         break;
       }
 
+      case 'interactionQuery': {
+        const row = mapForwardedChatEventToDisplayRow(ev);
+
+        if (row) {
+          segments.push({ kind: 'row', row });
+        }
+
+        break;
+      }
+
       case 'assistantDelta': {
         const delta =
           typeof (envelope.payload as { delta?: unknown }).delta === 'string'
@@ -108,5 +118,5 @@ export function accumulateStreamingTurnFromEvents(
     }
   }
 
-  return { segments: consolidateThinkingInSegments(segments) };
+  return { segments: consolidateAgentTurnSegments(segments) };
 }

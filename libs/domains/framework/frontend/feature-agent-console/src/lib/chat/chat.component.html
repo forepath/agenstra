@@ -859,15 +859,7 @@
                             }
                             @for (seg of item.view.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
                               @if (seg.kind === 'row') {
-                                <div class="small mb-2 d-flex align-items-start gap-2">
-                                  <span class="badge rounded-pill" [ngClass]="seg.row.badgeClass">{{
-                                    seg.row.kindLabel
-                                  }}</span>
-                                  <div class="flex-grow-1 min-w-0">
-                                    <div class="fw-semibold">{{ seg.row.summaryTitle }}</div>
-                                    <div class="text-body-secondary text-break">{{ seg.row.summaryBody }}</div>
-                                  </div>
-                                </div>
+                                <framework-agent-chat-event-row [row]="seg.row" />
                               } @else if (seg.kind === 'markdown') {
                                 @if (parseMarkdownFromString(seg.markdown); as turnMarkdownHtml) {
                                   <div
@@ -928,52 +920,37 @@
                     </div>
                   }
                 }
-                <!-- Live stream preview (chatEvent) until final chatMessage arrives -->
+                <!-- In-flight agent response (chatEvent) until final chatMessage arrives -->
                 @if (chatPendingUi$ | async; as pending) {
-                  @if (pending.showStreaming && pending.stream) {
+                  @if (pending.isPendingAgentResponse) {
                     <div class="d-flex justify-content-start">
                       <div class="card bg-body chat-message-card border border-info border-opacity-25">
                         <div class="card-body chat-message-body">
-                          @for (
-                            seg of pending.stream.segments;
-                            track seg.kind === 'row' ? seg.row.trackId : seg.trackId
-                          ) {
-                            @if (seg.kind === 'row') {
-                              <div class="small mb-2 d-flex align-items-start gap-2">
-                                <span class="badge rounded-pill" [ngClass]="seg.row.badgeClass">{{
-                                  seg.row.kindLabel
-                                }}</span>
-                                <div class="flex-grow-1 min-w-0">
-                                  <div class="fw-semibold">{{ seg.row.summaryTitle }}</div>
-                                  <div class="text-body-secondary text-break">{{ seg.row.summaryBody }}</div>
-                                </div>
-                              </div>
-                            } @else if (seg.kind === 'markdown') {
-                              @if (parseMarkdownFromString(seg.markdown); as streamHtml) {
-                                <div
-                                  class="card-text chat-message-text markdown-content mt-1"
-                                  [innerHTML]="streamHtml"
-                                ></div>
+                          @if (pending.stream; as stream) {
+                            @for (seg of stream.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
+                              @if (seg.kind === 'row') {
+                                <framework-agent-chat-event-row [row]="seg.row" />
+                              } @else if (seg.kind === 'markdown') {
+                                @if (parseMarkdownFromString(seg.markdown); as streamHtml) {
+                                  <div
+                                    class="card-text chat-message-text markdown-content mt-1"
+                                    [innerHTML]="streamHtml"
+                                  ></div>
+                                }
                               }
                             }
                           }
-                        </div>
-                      </div>
-                    </div>
-                  }
-                  @if (pending.showThinking) {
-                    <div class="d-flex justify-content-start">
-                      <div class="card bg-body chat-message-card">
-                        <div class="card-body chat-message-body">
-                          <div class="d-flex align-items-center gap-2">
+                          <div
+                            class="chat-message-pending-footer d-flex align-items-center"
+                            [class.chat-message-pending-footer--with-separator]="
+                              pending.stream && pending.stream.segments.length > 0
+                            "
+                          >
                             <div class="spinner-border spinner-border-sm text-primary" role="status">
                               <span class="visually-hidden" i18n="@@featureChat-waitingForResponse"
                                 >Waiting for response...</span
                               >
                             </div>
-                            <small class="chat-message-text text-muted mb-0" i18n="@@featureChat-agentThinking"
-                              >Agent is thinking...</small
-                            >
                           </div>
                         </div>
                       </div>

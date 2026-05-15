@@ -3,6 +3,7 @@ export type AgentResponseMode = 'single' | 'stream' | 'sync';
 export type AgentEventKind =
   | 'userMessage'
   | 'thinking'
+  | 'interactionQuery'
   | 'assistantDelta'
   | 'assistantMessage'
   | 'toolCall'
@@ -47,6 +48,9 @@ export interface AgentThinkingPayload {
   /** Optional lifecycle hint for richer UIs (e.g. queued, running). */
   phase?: string;
 }
+
+/** Provider-native interaction / clarification request (e.g. `interaction_query` NDJSON lines). */
+export type AgentInteractionQueryPayload = Record<string, unknown>;
 
 export interface AgentAssistantDeltaPayload {
   delta: string;
@@ -97,6 +101,7 @@ export interface AgentErrorPayload {
 export type AgentEventEnvelope =
   | (AgentEventEnvelopeBase & { kind: 'userMessage'; payload: AgentUserMessagePayload })
   | (AgentEventEnvelopeBase & { kind: 'thinking'; payload: AgentThinkingPayload })
+  | (AgentEventEnvelopeBase & { kind: 'interactionQuery'; payload: AgentInteractionQueryPayload })
   | (AgentEventEnvelopeBase & { kind: 'assistantDelta'; payload: AgentAssistantDeltaPayload })
   | (AgentEventEnvelopeBase & { kind: 'assistantMessage'; payload: AgentAssistantMessagePayload })
   | (AgentEventEnvelopeBase & { kind: 'toolCall'; payload: AgentToolCallPayload })

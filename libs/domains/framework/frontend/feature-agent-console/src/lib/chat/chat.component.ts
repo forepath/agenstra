@@ -97,6 +97,7 @@ import {
 import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
 
 import { mapForwardedChatEventsToDisplayRows } from './agent-chat-event-display';
+import { AgentChatEventRowComponent } from './agent-chat-event-row.component';
 import { formatAgentResponseForChatMarkdown, formatUnknownAsMarkdown } from './agent-chat-response-markdown';
 import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
 import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
@@ -140,6 +141,7 @@ type ChatMessageWithFilter = {
     FileEditorComponent,
     DeploymentManagerComponent,
     ContainerStatsStatusBarComponent,
+    AgentChatEventRowComponent,
   ],
   styleUrls: ['./chat.component.scss'],
   templateUrl: './chat.component.html',
@@ -852,17 +854,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }),
   );
 
-  /** Bottom-of-thread: spinner only until first stream frame, then live markdown + tool/status rows. */
+  /** Bottom-of-thread: in-flight agent bubble (empty or streamed content) until final `chatMessage`. */
   readonly chatPendingUi$ = combineLatest([this.waitingForResponse$, this.streamingAssistantState$]).pipe(
-    map(([waiting, stream]) => {
-      const hasStream = stream !== null && stream.segments.length > 0;
-
-      return {
-        showThinking: waiting && !hasStream,
-        showStreaming: waiting && hasStream,
-        stream,
-      };
-    }),
+    map(([waiting, stream]) => ({
+      isPendingAgentResponse: waiting,
+      stream: waiting ? stream : null,
+    })),
   );
 
   private activeClientId: string | null = null;
@@ -1226,7 +1223,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(([clientId, agent]) => {
-        this.agentsFacade.loadClientAgentModels(clientId!, agent!.id);
+        if (!clientId || !agent) {
+          return;
+        }
+
+        this.agentsFacade.loadClientAgentModels(clientId, agent.id);
       });
 
     // If the API model list does not include the current selection, fall back to Auto.
@@ -1677,7 +1678,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         distinctUntilChanged((a, b) => {
-          if (a.showThinking !== b.showThinking || a.showStreaming !== b.showStreaming) {
+          if (a.isPendingAgentResponse !== b.isPendingAgentResponse) {
             return false;
           }
 
@@ -1717,7 +1718,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         }),
       )
       .subscribe((pending) => {
-        if (pending.showThinking || pending.showStreaming) {
+        if (pending.isPendingAgentResponse) {
           this.shouldScrollToBottom = true;
           this.cdr.detectChanges();
         }
@@ -4747,9 +4748,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return { lastUserTs: null, hasAgentMessageAfter: false };
     }
 
-    const hasAgentMessageAfter = chatMessages.some(
-      (msg) => this.isAgentMessage(msg.payload) && msg.timestamp > lastUserTs!,
-    );
+    const lastTs = lastUserTs;
+    const hasAgentMessageAfter = chatMessages.some((msg) => this.isAgentMessage(msg.payload) && msg.timestamp > lastTs);
 
     return { lastUserTs, hasAgentMessageAfter };
   }

@@ -15,8 +15,22 @@ export interface ChatTimelineOrderedRowLike {
 
 const TICKET_AUTOMATION_RUN_CHAT_UPSERT = 'ticketAutomationRunChatUpsert';
 
-import { mergeAdjacentThinkingDisplayRows, type AgentChatEventDisplayRow } from './agent-chat-event-display';
-import { extractThinkingPreviewText, formatAgentResponseForChatMarkdown } from './agent-chat-response-markdown';
+import {
+  AGENT_CHAT_EVENT_KIND_LABELS,
+  computeToolPairMergePlanFromIndices,
+  isConcreteToolCallId,
+  mergeAdjacentInteractionQueryDisplayRows,
+  mergeAdjacentThinkingDisplayRows,
+  mergeToolPairDisplayRows,
+  toolPairOutcomeFromCallStatus,
+  toolPairOutcomeToBadgeClass,
+  type AgentChatEventDisplayRow,
+} from './agent-chat-event-display';
+import {
+  extractInteractionQueryPreviewText,
+  extractThinkingPreviewText,
+  formatAgentResponseForChatMarkdown,
+} from './agent-chat-response-markdown';
 
 /** Mirrors chat.component `ChatMessageWithFilter` without importing the component. */
 export type ChatMessageWithFilter = {
@@ -75,6 +89,107 @@ export function consolidateThinkingInSegments(segments: AgentTurnSegment[]): Age
   }
 
   return out;
+}
+
+/** Merges consecutive `interactionQuery` row segments (chunked stream / history parts). */
+export function consolidateInteractionQueriesInSegments(segments: AgentTurnSegment[]): AgentTurnSegment[] {
+  const out: AgentTurnSegment[] = [];
+
+  for (const seg of segments) {
+    if (seg.kind !== 'row') {
+      out.push(seg);
+      continue;
+    }
+
+    const prev = out[out.length - 1];
+
+    if (seg.row.kind === 'interactionQuery' && prev?.kind === 'row' && prev.row.kind === 'interactionQuery') {
+      out[out.length - 1] = {
+        kind: 'row',
+        row: mergeAdjacentInteractionQueryDisplayRows(prev.row, seg.row),
+      };
+    } else {
+      out.push(seg);
+    }
+  }
+
+  return out;
+}
+
+export function consolidateToolPairsInSegments(segments: AgentTurnSegment[]): AgentTurnSegment[] {
+  const { skip, mergedAt } = computeToolPairMergePlanFromIndices({
+    length: segments.length,
+    describe: (i) => {
+      const s = segments[i];
+
+      if (s === undefined) {
+        return null;
+      }
+
+      if (s.kind !== 'row') {
+        return null;
+      }
+
+      const r = s.row;
+
+      if (!isConcreteToolCallId(r.toolCallId)) {
+        return null;
+      }
+
+      const id = r.toolCallId;
+
+      if (r.kind === 'toolCall') {
+        return { id, role: 'call' as const };
+      }
+
+      if (r.kind === 'toolResult') {
+        return { id, role: 'result' as const };
+      }
+
+      return null;
+    },
+    mergeAt: (callIndex, resultIndex) => {
+      const callSeg = segments[callIndex];
+      const resultSeg = segments[resultIndex];
+
+      if (callSeg === undefined || resultSeg === undefined) {
+        throw new Error('tool pair merge: missing segment');
+      }
+
+      if (callSeg.kind !== 'row' || resultSeg.kind !== 'row') {
+        throw new Error('tool pair merge: expected row segments');
+      }
+
+      return mergeToolPairDisplayRows(callSeg.row, resultSeg.row);
+    },
+  });
+  const out: AgentTurnSegment[] = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    if (skip.has(i)) {
+      const row = mergedAt.get(i);
+
+      if (row) {
+        out.push({ kind: 'row', row });
+      }
+
+      continue;
+    }
+
+    const seg = segments[i];
+
+    if (seg !== undefined) {
+      out.push(seg);
+    }
+  }
+
+  return out;
+}
+
+export function consolidateAgentTurnSegments(segments: AgentTurnSegment[]): AgentTurnSegment[] {
+  return consolidateToolPairsInSegments(
+    consolidateInteractionQueriesInSegments(consolidateThinkingInSegments(segments)),
+  );
 }
 
 function appendMarkdownToSegments(segments: AgentTurnSegment[], md: string, trackId: string): void {
@@ -164,42 +279,59 @@ export function mapAgentResponseObjectToDisplayRow(
 
   if (t === 'tool' || t === 'tool_call' || t === 'toolCall') {
     const name = typeof r['name'] === 'string' ? r['name'] : 'tool';
-    const toolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : '—';
+    const rawToolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : undefined;
+    const toolCallIdDisplay = rawToolCallId ?? '—';
     const status = typeof r['status'] === 'string' ? r['status'] : 'unknown';
-    let summaryBody = `${status} · ${toolCallId}`;
+    let summaryBody = `${status} · ${toolCallIdDisplay}`;
     const summaryTitle = name === 'enrichment' ? 'Enrichment' : `Tool call · ${name}`;
 
     if (r['args'] !== undefined) {
       summaryBody += ` · ${previewUnknown(r['args'], 160)}`;
     }
 
+    const detailJson = JSON.stringify(r, null, 2);
+    const outcome = toolPairOutcomeFromCallStatus(status);
+
     return {
       trackId,
       kind: 'toolCall',
-      kindLabel: 'Tool',
+      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.toolCall,
       summaryTitle,
       summaryBody,
-      badgeClass: 'bg-warning text-dark',
-      detailJson: JSON.stringify(r, null, 2),
+      badgeClass: toolPairOutcomeToBadgeClass(outcome),
+      detailJson,
       displayTimestampMs,
+      ...(isConcreteToolCallId(rawToolCallId) ? { toolCallId: rawToolCallId } : {}),
+      toolPair: {
+        outcome,
+        callDetailJson: detailJson,
+      },
     };
   }
 
   if (t === 'tool_result' || t === 'toolResult') {
     const name = typeof r['name'] === 'string' ? r['name'] : 'tool';
-    const toolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : '—';
+    const rawToolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : undefined;
+    const toolCallIdDisplay = rawToolCallId ?? '—';
     const isError = Boolean(r['isError'] ?? r['is_error']);
     const summaryTitle = name === 'enrichment' ? 'Enrichment result' : `Tool result · ${name}`;
+    const detailJson = JSON.stringify(r, null, 2);
+    const outcome = isError ? 'error' : 'success';
 
     return {
       trackId,
       kind: 'toolResult',
-      kindLabel: 'Result',
+      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.toolResult,
       summaryTitle,
-      summaryBody: `${isError ? 'Failed' : 'Success'} · ${toolCallId} · ${previewUnknown(r['result'], 200)}`,
-      badgeClass: isError ? 'bg-danger' : 'bg-success',
-      detailJson: JSON.stringify(r, null, 2),
+      summaryBody: `${isError ? 'Failed' : 'Success'} · ${toolCallIdDisplay} · ${previewUnknown(r['result'], 200)}`,
+      badgeClass: toolPairOutcomeToBadgeClass(outcome),
+      detailJson,
       displayTimestampMs,
+      ...(isConcreteToolCallId(rawToolCallId) ? { toolCallId: rawToolCallId } : {}),
+      toolPair: {
+        outcome,
+        resultDetailJson: detailJson,
+      },
     };
   }
 
@@ -210,7 +342,7 @@ export function mapAgentResponseObjectToDisplayRow(
     return {
       trackId,
       kind: 'question',
-      kindLabel: 'Question',
+      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.question,
       summaryTitle: 'Question',
       summaryBody: [qid ? `#${qid}` : '', previewString(prompt, 200)].filter(Boolean).join(' · '),
       badgeClass: 'bg-primary',
@@ -226,7 +358,7 @@ export function mapAgentResponseObjectToDisplayRow(
     return {
       trackId,
       kind: 'error',
-      kindLabel: 'Error',
+      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.error,
       summaryTitle: code ? `Error (${code})` : 'Error',
       summaryBody: previewString(message, 200),
       badgeClass: 'bg-danger',
@@ -241,11 +373,28 @@ export function mapAgentResponseObjectToDisplayRow(
     return {
       trackId,
       kind: 'thinking',
-      kindLabel: 'Thinking',
+      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.thinking,
       summaryTitle: 'Thinking',
       summaryBody: preview ? previewString(preview, 220) : '…',
       badgeClass: 'bg-light text-dark border',
       detailJson: JSON.stringify(r, null, 2),
+      ...(preview.trim().length > 0 ? { popoverPlainDetail: preview } : {}),
+      displayTimestampMs,
+    };
+  }
+
+  if (t === 'interaction_query' || t === 'interactionQuery') {
+    const preview = extractInteractionQueryPreviewText(r);
+
+    return {
+      trackId,
+      kind: 'interactionQuery',
+      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.interactionQuery,
+      summaryTitle: $localize`:@@featureChat-agentEventSummaryInteractionQuery:Query`,
+      summaryBody: preview ? previewString(preview, 220) : '…',
+      badgeClass: 'bg-light text-dark border',
+      detailJson: JSON.stringify(r, null, 2),
+      ...(preview.trim().length > 0 ? { popoverPlainDetail: preview } : {}),
       displayTimestampMs,
     };
   }
@@ -295,7 +444,7 @@ function buildViewFromParts(parts: AgentResponseObject[], baseTimestamp: number)
   }
 
   return {
-    segments: consolidateThinkingInSegments(segments),
+    segments: consolidateAgentTurnSegments(segments),
     displayTimestamp: baseTimestamp,
     hasFiltered: false,
     hasDropped: false,
@@ -367,7 +516,7 @@ export function buildAgentTurnView(msgs: ChatMessageWithFilter[]): AgentTurnView
   const displayTimestamp = msgs[msgs.length - 1]?.timestamp ?? Date.now();
 
   return {
-    segments: consolidateThinkingInSegments(segments),
+    segments: consolidateAgentTurnSegments(segments),
     displayTimestamp,
     hasFiltered,
     hasDropped,

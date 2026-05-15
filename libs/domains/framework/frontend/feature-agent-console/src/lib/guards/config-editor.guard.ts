@@ -25,8 +25,14 @@ export const configEditorGuard: CanActivateFn = (route: ActivatedRouteSnapshot) 
   return clientsFacade.getClientById$(clientId).pipe(
     filter((client) => client !== null),
     take(1),
-    map((client) =>
-      client!.canManageWorkspaceConfiguration ? true : router.createUrlTree(['clients', clientId, 'agents', agentId]),
-    ),
+    map((client) => {
+      if (client === null) {
+        return router.createUrlTree(['clients', clientId, 'agents', agentId]);
+      }
+
+      return client.canManageWorkspaceConfiguration
+        ? true
+        : router.createUrlTree(['clients', clientId, 'agents', agentId]);
+    }),
   );
 };

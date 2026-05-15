@@ -90,6 +90,25 @@ describe('buildAgentTurnView', () => {
     }
   });
 
+  it('maps interaction_query parts in agenstra_turn to structured timeline rows', () => {
+    const view = buildAgentTurnView([
+      chatMsg(
+        'agent',
+        {
+          type: 'agenstra_turn',
+          subtype: 'success',
+          parts: [
+            { type: 'interaction_query', query: 'Confirm scope?' },
+            { type: 'result', subtype: 'success', result: 'Done.' },
+          ],
+        },
+        10,
+      ),
+    ]);
+
+    expect(view.segments.some((s) => s.kind === 'row' && s.row.kind === 'interactionQuery')).toBe(true);
+  });
+
   it('consolidates consecutive thinking parts in agenstra_turn into one row', () => {
     const view = buildAgentTurnView([
       chatMsg(
@@ -119,6 +138,35 @@ describe('buildAgentTurnView', () => {
     }
   });
 
+  it('consolidates consecutive interaction_query parts in agenstra_turn into one row', () => {
+    const view = buildAgentTurnView([
+      chatMsg(
+        'agent',
+        {
+          type: 'agenstra_turn',
+          subtype: 'success',
+          parts: [
+            { type: 'interaction_query', query: 'Part one' },
+            { type: 'interaction_query', prompt: 'Part two' },
+            { type: 'result', subtype: 'success', result: 'OK' },
+          ],
+        },
+        10,
+      ),
+    ]);
+    const rows = view.segments.filter((s) => s.kind === 'row' && s.row.kind === 'interactionQuery');
+
+    expect(rows).toHaveLength(1);
+    const first = rows[0];
+
+    expect(first?.kind).toBe('row');
+
+    if (first?.kind === 'row') {
+      expect(first.row.summaryBody).toContain('Part one');
+      expect(first.row.summaryBody).toContain('Part two');
+    }
+  });
+
   it('preserves interleaved structured rows and prose in agenstra_turn part order', () => {
     const view = buildAgentTurnView([
       chatMsg(
@@ -128,6 +176,7 @@ describe('buildAgentTurnView', () => {
           subtype: 'success',
           parts: [
             { type: 'tool_call', toolCallId: 't1', name: 'read', status: 'pending' },
+            { type: 'tool_result', toolCallId: 't1', name: 'read', result: 'pre', isError: false },
             { type: 'result', subtype: 'success', result: 'Middle reply' },
             { type: 'tool_result', toolCallId: 't2', name: 'bash', result: 'exit 0', isError: false },
           ],
@@ -143,6 +192,61 @@ describe('buildAgentTurnView', () => {
 
     if (mid?.kind === 'markdown') {
       expect(mid.markdown).toContain('Middle reply');
+    }
+  });
+
+  it('merges adjacent tool_call and matching tool_result in agenstra_turn', () => {
+    const view = buildAgentTurnView([
+      chatMsg(
+        'agent',
+        {
+          type: 'agenstra_turn',
+          subtype: 'success',
+          parts: [
+            { type: 'tool_call', toolCallId: 't1', name: 'read', status: 'pending' },
+            { type: 'tool_result', toolCallId: 't1', name: 'read', result: 'file', isError: false },
+          ],
+        },
+        10,
+      ),
+    ]);
+
+    expect(view.segments.filter((s) => s.kind === 'row')).toHaveLength(1);
+    const first = view.segments[0];
+
+    expect(first?.kind).toBe('row');
+
+    if (first?.kind === 'row') {
+      expect(first.row.kind).toBe('toolCall');
+      expect(first.row.toolPair?.callDetailJson).toBeDefined();
+      expect(first.row.toolPair?.resultDetailJson).toBeDefined();
+    }
+  });
+
+  it('merges tool_result before tool_call in agenstra_turn when toolCallId matches', () => {
+    const view = buildAgentTurnView([
+      chatMsg(
+        'agent',
+        {
+          type: 'agenstra_turn',
+          subtype: 'success',
+          parts: [
+            { type: 'tool_result', toolCallId: 't1', name: 'read', result: 'first', isError: false },
+            { type: 'tool_call', toolCallId: 't1', name: 'read', status: 'pending' },
+          ],
+        },
+        10,
+      ),
+    ]);
+
+    expect(view.segments.filter((s) => s.kind === 'row')).toHaveLength(1);
+    const first = view.segments[0];
+
+    expect(first?.kind).toBe('row');
+
+    if (first?.kind === 'row') {
+      expect(first.row.toolPair?.callDetailJson).toBeDefined();
+      expect(first.row.toolPair?.resultDetailJson).toBeDefined();
     }
   });
 });

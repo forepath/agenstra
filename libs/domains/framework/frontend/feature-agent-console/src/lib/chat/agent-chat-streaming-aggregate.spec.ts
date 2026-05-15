@@ -82,7 +82,50 @@ describe('accumulateStreamingTurnFromEvents', () => {
       0,
     );
 
-    expect(result.segments.map((s) => s.kind)).toEqual(['row', 'markdown', 'row']);
+    expect(result.segments.map((s) => s.kind)).toEqual(['row', 'markdown']);
+  });
+
+  it('merges toolCall and toolResult with matching id when result arrives before call', () => {
+    const result = accumulateStreamingTurnFromEvents(
+      [
+        {
+          payload: env('toolResult', { toolCallId: 't1', name: 'read', isError: false, result: 'early' }, 'r1'),
+          timestamp: 1,
+        },
+        { payload: env('toolCall', { name: 'read', toolCallId: 't1', status: 'pending' }, 't1'), timestamp: 2 },
+      ],
+      0,
+    );
+
+    expect(result.segments).toHaveLength(1);
+    expect(result.segments[0]?.kind).toBe('row');
+
+    if (result.segments[0]?.kind === 'row') {
+      expect(result.segments[0].row.kind).toBe('toolCall');
+      expect(result.segments[0].row.toolPair?.callDetailJson).toBeDefined();
+      expect(result.segments[0].row.toolPair?.resultDetailJson).toBeDefined();
+    }
+  });
+
+  it('merges consecutive toolCall and toolResult when toolCallId matches', () => {
+    const result = accumulateStreamingTurnFromEvents(
+      [
+        { payload: env('toolCall', { name: 'read', toolCallId: 't1', status: 'pending' }, 't1'), timestamp: 1 },
+        {
+          payload: env('toolResult', { toolCallId: 't1', name: 'read', isError: false, result: 'ok' }, 'r1'),
+          timestamp: 2,
+        },
+      ],
+      0,
+    );
+
+    expect(result.segments).toHaveLength(1);
+    expect(result.segments[0]?.kind).toBe('row');
+
+    if (result.segments[0]?.kind === 'row') {
+      expect(result.segments[0].row.kind).toBe('toolCall');
+      expect(result.segments[0].row.toolPair?.resultDetailJson).toContain('toolResult');
+    }
   });
 
   it('adds thinking row to timeline before assistant output', () => {
