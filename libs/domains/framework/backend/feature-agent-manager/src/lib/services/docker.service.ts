@@ -90,6 +90,10 @@ export class DockerService {
           return `${key}=${quoted}`;
         })
       : undefined;
+
+    // Ensure the Docker image exists
+    await this.ensureImageExists(resolvedImage);
+
     // Create container
     const container = await this.docker.createContainer({
       Image: resolvedImage,
@@ -251,6 +255,9 @@ export class DockerService {
       if (!hasWorkspaceContextBind) {
         binds.push(`${DockerService.WORKSPACE_CONTEXT_BIND_SOURCE}:${DockerService.WORKSPACE_CONTEXT_BIND_TARGET}:ro`);
       }
+
+      // Ensure the Docker image exists
+      await this.ensureImageExists(image);
 
       // Recreate container with updated environment variables
       const newContainer = await this.docker.createContainer({
@@ -1360,7 +1367,7 @@ export class DockerService {
   /**
    * Resolve the container user's home directory (for tilde expansion in provider config paths).
    * @param containerId - Docker container ID
-   * @returns Trimmed HOME path, or `/root` when empty
+   * @returns Trimmed HOME path, or `/home/agenstra` when empty
    */
   async getContainerHomeDirectory(containerId: string): Promise<string> {
     try {
@@ -1379,7 +1386,7 @@ export class DockerService {
       }
 
       const exec = await container.exec({
-        Cmd: ['sh', '-c', 'printf %s "${HOME:-/root}"'],
+        Cmd: ['sh', '-c', 'printf %s "${HOME:-/home/agenstra}"'],
         AttachStdin: false,
         AttachStdout: true,
         AttachStderr: true,
@@ -1438,7 +1445,7 @@ export class DockerService {
           }
         }, 60000);
       });
-      const home = output.trim() || '/root';
+      const home = output.trim() || '/home/agenstra';
 
       return home;
     } catch (error: unknown) {
@@ -1835,6 +1842,23 @@ export class DockerService {
 
       this.logger.error(`Error getting container stats: ${err.message}`, err.stack);
       throw error;
+    }
+  }
+
+  /**
+   * Ensure a Docker image exists.
+   * @param image - The image name (including tag)
+   * @throws NotFoundException if image is not found
+   */
+  async ensureImageExists(image: string): Promise<void> {
+    try {
+      await this.docker.getImage(image).inspect();
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number };
+
+      if (err.statusCode === 404) {
+        await this.docker.pull(image);
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 services:
   frontend-portal-server:
     image: ghcr.io/forepath/agenstra-portal-server:latest
+    pull_policy: never
     container_name: portal-server
     environment:
       # Frontend server configuration

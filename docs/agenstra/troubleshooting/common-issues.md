@@ -75,6 +75,17 @@ Common problems and their solutions in the Agenstra system.
 - Verify agent image is available
 - Check container resource limits
 
+### Agent workspace permission errors
+
+**Symptoms**: `git clone` fails in the worker container; permission denied writing under `/app`, `/openclaw`, or `/home/agenstra/environment`; entrypoint `chown` failures
+
+**Solutions**:
+
+- Ensure host `/opt/agents` exists and is writable by UID **10001**, or allow the image entrypoint to `chown` the bind mount (rebuild worker/VNC/SSH/agi images from a current release)
+- Confirm manager API, worker, VNC, SSH, and agi images are on the **same release tag**
+- Inspect ownership on the host: `ls -la /opt/agents/<volume-uuid>`
+- See **[Container image security](../security/container-images.md#host-directory-ownership)**
+
 ## Database Issues
 
 ### Database Connection Fails

@@ -27,7 +27,7 @@ Setting up Agenstra for local development:
 Containerized deployment using Docker:
 
 - Docker Compose setup
-- Container configuration
+- Container configuration and image hardening (non-root users, runtime secrets, Docker socket GID)
 - Volume management
 - Network configuration
 - Multi-container orchestration

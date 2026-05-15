@@ -112,6 +112,7 @@
       },
       "configurations": {
         "test": {
+          "load": true,
           "tags": ["ghcr.io/forepath/agenstra-billing-api:latest"]
         },
         "release": {

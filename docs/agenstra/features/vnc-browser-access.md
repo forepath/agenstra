@@ -34,7 +34,8 @@ The VNC feature uses a multi-container architecture:
 │  │  - File Operations                                │  │
 │  │  - Git Operations                                 │  │
 │  └───────────────────────────────────────────────────┘  │
-│  Volume: /opt/agents/{uuid} → /app                       │
+│  Volume: /opt/agents/{uuid} → /app (cursor/opencode)     │
+│  RO: /opt/agents → /opt/workspace                        │
 └──────────────────────┬──────────────────────────────────┘
                         │
                         │ Docker Network
@@ -58,7 +59,8 @@ The VNC feature uses a multi-container architecture:
 │  │  - File Manager                                  │  │
 │  │  - Terminal                                      │  │
 │  └───────────────────────────────────────────────────┘  │
-│  Volume: /opt/agents/{uuid} → /app (shared)            │
+│  Volume: /opt/agents/{uuid} → /home/agenstra/environment     │
+│  RO: /opt/agents → /opt/workspace                        │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -73,7 +75,8 @@ When an agent is created with VNC support:
    - Container name: `{agent-name}-virtual-workspace`
    - Environment variables: VNC password, agent name, Git credentials
    - Port mapping: Random host port → Container port 6080
-   - Volume mount: Shared workspace volume at `/app`
+   - Volume mount: Shared agent data at **`/home/agenstra/environment`** (same host path as the worker’s `/app` mount); read-only **`/opt/agents` → `/opt/workspace`**
+   - Runtime **`VNC_PASSWORD`** required (no default in the image); container runs as **`agenstra`** (UID **10001**)
 
 2. **Network Setup**
    - Creates a dedicated Docker network

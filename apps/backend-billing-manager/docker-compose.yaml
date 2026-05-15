@@ -19,6 +19,7 @@ services:
 
   backend-billing-manager:
     image: ghcr.io/forepath/agenstra-billing-api:latest
+    pull_policy: never
     container_name: billing-manager-api
     environment:
       # Backend API configuration

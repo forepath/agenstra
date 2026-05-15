@@ -406,6 +406,8 @@ docker run \
   backend-agent-controller:api
 ```
 
+The API image uses the same **non-root `agenstra`** user, **restricted `sudo`**, and optional Docker socket hardening as the agent manager when the socket is mounted. See **[Container image security](../security/container-images.md)** and **[Docker deployment](../deployment/docker-deployment.md#container-security-images)**.
+
 ## Production Deployment Checklist
 
 Before deploying to production, ensure:

@@ -156,6 +156,7 @@
       },
       "configurations": {
         "test": {
+          "load": true,
           "tags": ["ghcr.io/forepath/agenstra-portal-server:latest"]
         },
         "release": {

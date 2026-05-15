@@ -37,6 +37,9 @@ describe('DockerService', () => {
     remove: jest.Mock;
     id: string;
   };
+  let mockImage: {
+    inspect: jest.Mock;
+  };
 
   beforeEach(async () => {
     // Create mock stream
@@ -105,11 +108,17 @@ describe('DockerService', () => {
       id: 'test-network-id',
     };
 
+    mockImage = {
+      inspect: jest.fn().mockResolvedValue({ Id: 'image-id' }),
+    };
+
     // Create mock Docker instance
     mockDocker = {
       getContainer: jest.fn().mockReturnValue(mockContainer),
+      getImage: jest.fn().mockReturnValue(mockImage),
       getNetwork: jest.fn().mockReturnValue(mockNetwork),
       createNetwork: jest.fn().mockResolvedValue(mockNetwork),
+      pull: jest.fn().mockResolvedValue(undefined),
     } as any;
 
     // Mock Docker constructor
@@ -212,6 +221,15 @@ describe('DockerService', () => {
       expect(result).toBe('abc123');
     });
 
+    it('should call ensureImageExists before creating container', async () => {
+      const ensureSpy = jest.spyOn(service, 'ensureImageExists').mockResolvedValue(undefined);
+
+      await service.createContainer({ image: 'node:22-alpine' });
+
+      expect(ensureSpy).toHaveBeenCalledWith('node:22-alpine');
+      ensureSpy.mockRestore();
+    });
+
     it('should quote env values that contain whitespace', async () => {
       await service.createContainer({
         image: 'node:22-alpine',
@@ -290,10 +308,13 @@ describe('DockerService', () => {
     });
 
     it('should recreate container with updated env variables and return new container ID', async () => {
+      const ensureSpy = jest.spyOn(service, 'ensureImageExists').mockResolvedValue(undefined);
       const result = await service.updateContainer(containerId, {
         env: { FOO: 'bar', BAZ: 'qux' },
       });
 
+      expect(ensureSpy).toHaveBeenCalledWith('test-image:latest');
+      ensureSpy.mockRestore();
       expect(result).toBe(newContainerId);
       expect(mockDocker.getContainer).toHaveBeenCalledWith(containerId);
       expect(mockContainer.inspect).toHaveBeenCalled();
@@ -1902,6 +1923,60 @@ describe('DockerService', () => {
     });
   });
 
+  describe('getContainerHomeDirectory', () => {
+    const containerId = 'test-container-id';
+
+    beforeEach(() => {
+      mockContainer.inspect.mockResolvedValue({});
+      mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
+        setTimeout(() => {
+          stdout.write(Buffer.from(''));
+          stdout.end();
+        }, 5);
+      });
+    });
+
+    it('should return trimmed HOME from container exec output', async () => {
+      mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
+        setTimeout(() => {
+          stdout.write(Buffer.from('  /custom/home  '));
+          stdout.end();
+        }, 5);
+      });
+
+      const home = await service.getContainerHomeDirectory(containerId);
+
+      expect(home).toBe('/custom/home');
+      expect(mockContainer.exec).toHaveBeenCalledWith({
+        Cmd: ['sh', '-c', 'printf %s "${HOME:-/home/agenstra}"'],
+        AttachStdin: false,
+        AttachStdout: true,
+        AttachStderr: true,
+        Tty: false,
+      });
+    });
+
+    it('should fall back to /home/agenstra when exec output is empty', async () => {
+      mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
+        setTimeout(() => {
+          stdout.write(Buffer.from('   '));
+          stdout.end();
+        }, 5);
+      });
+
+      const home = await service.getContainerHomeDirectory(containerId);
+
+      expect(home).toBe('/home/agenstra');
+    });
+
+    it('should throw NotFoundException when container does not exist', async () => {
+      mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
+
+      await expect(service.getContainerHomeDirectory(containerId)).rejects.toThrow(NotFoundException);
+      expect(mockContainer.inspect).toHaveBeenCalled();
+    });
+  });
+
   describe('createTerminalSession', () => {
     const containerId = 'test-container-id';
     const sessionId = 'test-session-id';
@@ -2443,6 +2518,35 @@ describe('DockerService', () => {
       await service.getContainerStats(containerId);
 
       expect(mockDocker.getContainer).toHaveBeenCalledWith(containerId);
+    });
+  });
+
+  describe('ensureImageExists', () => {
+    it('should not pull when image inspect succeeds', async () => {
+      mockImage.inspect.mockResolvedValue({ Id: 'sha256:abc' });
+
+      await service.ensureImageExists('node:22-alpine');
+
+      expect(mockDocker.getImage).toHaveBeenCalledWith('node:22-alpine');
+      expect(mockImage.inspect).toHaveBeenCalled();
+      expect((mockDocker as any).pull).not.toHaveBeenCalled();
+    });
+
+    it('should pull when image inspect returns 404', async () => {
+      mockImage.inspect.mockRejectedValue({ statusCode: 404 });
+
+      await service.ensureImageExists('missing:image');
+
+      expect(mockDocker.getImage).toHaveBeenCalledWith('missing:image');
+      expect((mockDocker as any).pull).toHaveBeenCalledWith('missing:image');
+    });
+
+    it('should not pull when image inspect fails with a non-404 error', async () => {
+      mockImage.inspect.mockRejectedValue({ statusCode: 500, message: 'server error' });
+
+      await service.ensureImageExists('node:22-alpine');
+
+      expect((mockDocker as any).pull).not.toHaveBeenCalled();
     });
   });
 });

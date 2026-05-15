@@ -6,7 +6,7 @@ For disclosure, supported versions, SBOM paths, and response-time commitments, s
 
 ## Overview
 
-Agenstra spans browsers, multiple NestJS backends, Express frontends, optional Electron distribution, and customer-controlled remote endpoints. Security is enforced through authentication modes, SSRF guardrails, sanitized logging, content security policy choices, and **documented** residual risks where product or deployment constraints apply.
+Agenstra spans browsers, multiple NestJS backends, Express frontends, optional Electron distribution, and customer-controlled remote endpoints. Security is enforced through authentication modes, SSRF guardrails, sanitized logging, content security policy choices, **hardened container images** (non-root users, no default secrets in images, least-privilege Docker socket access), and **documented** residual risks where product or deployment constraints apply.
 
 ## Documentation structure
 
@@ -18,9 +18,13 @@ How public documentation relates to **CRA** (Regulation (EU) 2024/2847) and **BS
 
 Register **AR-001** through **AR-005**: provisioning SSH posture, native desktop signing and update posture, frontend CSP, backend authentication method resolution, and Electron window-open policy. Includes acceptance dates, review cadence, mitigations, and withdrawal paths.
 
+### [Container image security](./container-images.md)
+
+Runtime users (`agenstra` / `node`), agent bind mounts under `/opt/agents`, entrypoint layout, and **restricted passwordless `sudo`** (no membership in the `sudo` group).
+
 ### [Operational hardening](./operational-hardening.md)
 
-Implemented controls: correlation IDs and access logs, client endpoint allowlists and DNS checks, runtime `/config` proxy behavior, HTTP proxy header stripping, CSP and `CSP_ENFORCE`, WebSocket CORS, and authentication resolution behavior.
+Implemented controls: **container image hardening**, correlation IDs and access logs, client endpoint allowlists and DNS checks, runtime `/config` proxy behavior, HTTP proxy header stripping, CSP and `CSP_ENFORCE`, WebSocket CORS, and authentication resolution behavior.
 
 ### [Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)
 

@@ -108,6 +108,7 @@
       },
       "configurations": {
         "test": {
+          "load": true,
           "tags": ["ghcr.io/forepath/agenstra-manager-api:latest"]
         },
         "release": {
@@ -131,7 +132,10 @@
       },
       "configurations": {
         "test": {
-          "tags": ["ghcr.io/forepath/agenstra-manager-worker:latest"]
+          "load": true,
+          "tags": [
+            "registry.forenet.internal/forepath/agenstra-manager-worker:test"
+          ]
         },
         "release": {
           "push": true,
@@ -154,7 +158,10 @@
       },
       "configurations": {
         "test": {
-          "tags": ["ghcr.io/forepath/agenstra-manager-vnc:latest"]
+          "load": true,
+          "tags": [
+            "registry.forenet.internal/forepath/agenstra-manager-vnc:test"
+          ]
         },
         "release": {
           "push": true,
@@ -177,7 +184,10 @@
       },
       "configurations": {
         "test": {
-          "tags": ["ghcr.io/forepath/agenstra-manager-ssh:latest"]
+          "load": true,
+          "tags": [
+            "registry.forenet.internal/forepath/agenstra-manager-ssh:test"
+          ]
         },
         "release": {
           "push": true,
@@ -200,7 +210,10 @@
       },
       "configurations": {
         "test": {
-          "tags": ["ghcr.io/forepath/agenstra-manager-agi:latest"]
+          "load": true,
+          "tags": [
+            "registry.forenet.internal/forepath/agenstra-manager-agi:test"
+          ]
         },
         "release": {
           "push": true,

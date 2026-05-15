@@ -28,6 +28,8 @@ export class AgentsService implements OnApplicationBootstrap {
   private readonly PASSWORD_LENGTH = 16;
   private static readonly WORKSPACE_CONTEXT_HOST_PATH = '/opt/agents';
   private static readonly WORKSPACE_CONTEXT_CONTAINER_PATH = '/opt/workspace';
+  private static readonly CONTAINER_RUNTIME_USER = 'agenstra';
+  private static readonly CONTAINER_RUNTIME_GROUP = 'agenstra';
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
@@ -105,6 +107,12 @@ export class AgentsService implements OnApplicationBootstrap {
     const escaped = this.escapeForShell(expanded);
 
     await this.dockerService.sendCommandToContainer(containerId, `sh -c "mkdir -p -- ${escaped}"`, undefined, true);
+    await this.dockerService.sendCommandToContainer(
+      containerId,
+      `sh -c "sudo chown -R ${AgentsService.CONTAINER_RUNTIME_USER}:${AgentsService.CONTAINER_RUNTIME_GROUP} -- ${escaped}"`,
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -209,19 +217,24 @@ export class AgentsService implements OnApplicationBootstrap {
   ): Promise<{ publicKey: string; privateKey?: string }> {
     const keyPair = this.prepareSshKeyPair(providedPrivateKey);
     const { host, port } = this.getSshHostInfo(repositoryUrl);
-    const keyPath = `/root/.ssh/${keyPair.keyFilename}`;
+    const home = await this.dockerService.getContainerHomeDirectory(containerId);
+    const sshDir = `${home}/.ssh`;
+    const keyPath = `${sshDir}/${keyPair.keyFilename}`;
+    const escapedSshDir = this.escapeForShell(sshDir);
+    const escapedKeyPath = this.escapeForShell(keyPath);
+    const escapedKnownHosts = this.escapeForShell(`${sshDir}/known_hosts`);
 
-    await this.dockerService.sendCommandToContainer(containerId, 'mkdir -p /root/.ssh');
-    await this.dockerService.sendCommandToContainer(containerId, 'chmod 700 /root/.ssh');
+    await this.dockerService.sendCommandToContainer(containerId, `mkdir -p ${escapedSshDir}`);
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 700 ${escapedSshDir}`);
     await this.writeFileToContainer(containerId, keyPath, keyPair.privateKey);
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${keyPath}`);
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKeyPath}`);
 
-    const sshKeyscanCommand = ['ssh-keyscan', port ? `-p ${port}` : '', host, '>> /root/.ssh/known_hosts', '|| true']
+    const sshKeyscanCommand = ['ssh-keyscan', port ? `-p ${port}` : '', host, `>> ${escapedKnownHosts}`, '|| true']
       .filter(Boolean)
       .join(' ');
 
     await this.dockerService.sendCommandToContainer(containerId, sshKeyscanCommand);
-    await this.dockerService.sendCommandToContainer(containerId, 'chmod 600 /root/.ssh/known_hosts || true');
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKnownHosts} || true`);
 
     return {
       publicKey: keyPair.publicKey,
@@ -253,7 +266,9 @@ export class AgentsService implements OnApplicationBootstrap {
 `;
     // Encode content to base64
     const base64Content = Buffer.from(netrcContent, 'utf-8').toString('base64');
-    const escapedPath = this.escapeForShell('/root/.netrc');
+    const home = await this.dockerService.getContainerHomeDirectory(containerId);
+    const netrcPath = `${home}/.netrc`;
+    const escapedPath = this.escapeForShell(netrcPath);
 
     // Write file using base64 decode with stdin input (same approach as agent-file-system.service)
     // Use sh -c to run the command in a shell so redirection works
@@ -261,7 +276,7 @@ export class AgentsService implements OnApplicationBootstrap {
     await this.dockerService.sendCommandToContainer(containerId, `sh -c "base64 -d > ${escapedPath}"`, base64Content);
 
     // Set proper permissions
-    await this.dockerService.sendCommandToContainer(containerId, 'chmod 600 /root/.netrc');
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedPath}`);
   }
 
   /**
@@ -301,6 +316,10 @@ export class AgentsService implements OnApplicationBootstrap {
     const virtualWorkspaceDockerImage = provider.getVirtualWorkspaceDockerImage();
     const sshConnectionDockerImage = provider.getSshConnectionDockerImage();
     const basePath = provider.getBasePath?.() || '/app';
+
+    // Ensure the Docker image exists
+    await this.dockerService.ensureImageExists(dockerImage);
+
     // Create a docker container
     const containerId = await this.dockerService.createContainer({
       image: dockerImage,
@@ -360,6 +379,9 @@ export class AgentsService implements OnApplicationBootstrap {
       if (createAgentDto.createSshConnection && sshConnectionDockerImage) {
         const sshConnectionHostPort = await this.generateRandomSSHPort();
         const sshConnectionPassword = this.generateRandomPassword();
+
+        await this.dockerService.ensureImageExists(sshConnectionDockerImage);
+
         const sshConnectionContainerId = await this.dockerService.createContainer({
           image: sshConnectionDockerImage,
           env: {
@@ -405,6 +427,9 @@ export class AgentsService implements OnApplicationBootstrap {
       if (createAgentDto.createVirtualWorkspace && virtualWorkspaceDockerImage) {
         const virtualWorkspaceHostPort = await this.generateRandomVNCPort();
         const virtualWorkspacePassword = this.generateRandomPassword();
+
+        await this.dockerService.ensureImageExists(virtualWorkspaceDockerImage);
+
         const virtualWorkspaceContainerId = await this.dockerService.createContainer({
           image: virtualWorkspaceDockerImage,
           env: {
@@ -420,7 +445,7 @@ export class AgentsService implements OnApplicationBootstrap {
           volumes: [
             {
               hostPath: agentVolumePath,
-              containerPath: '/root/context',
+              containerPath: '/home/agenstra/environment',
               readOnly: false,
             },
             {

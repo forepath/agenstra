@@ -264,6 +264,7 @@ services:
 
   backend-agent-manager:
     image: ghcr.io/forepath/agenstra-manager-api:latest
+    pull_policy: always
     container_name: agent-manager-api
     environment:
       # Backend API configuration

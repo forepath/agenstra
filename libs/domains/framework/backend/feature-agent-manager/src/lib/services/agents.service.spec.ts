@@ -53,7 +53,8 @@ describe('AgentsService', () => {
     createNetwork: jest.fn(),
     deleteNetwork: jest.fn(),
     sendCommandToContainer: jest.fn(),
-    getContainerHomeDirectory: jest.fn().mockResolvedValue('/root'),
+    getContainerHomeDirectory: jest.fn().mockResolvedValue('/home/agenstra'),
+    ensureImageExists: jest.fn().mockResolvedValue(undefined),
     startContainer: jest.fn(),
     stopContainer: jest.fn(),
     restartContainer: jest.fn(),
@@ -191,6 +192,8 @@ describe('AgentsService', () => {
       expect(passwordService.hashPassword).toHaveBeenCalled();
       expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
+      expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(1);
+      expect(dockerService.ensureImageExists).toHaveBeenCalledWith('ghcr.io/forepath/agenstra-manager-worker:latest');
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
@@ -215,25 +218,36 @@ describe('AgentsService', () => {
           },
         ],
       });
-      // Verify .netrc file creation commands were called (2 commands: base64 write + chmod), then config dir, then git clone
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4); // 2 for .netrc + 1 for config mkdir + 1 for git clone
+      // Verify .netrc file creation commands were called (2 commands: base64 write + chmod), then config dir, chown, then git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(5); // 2 for .netrc + config mkdir + config chown + git clone
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         1,
         containerId,
-        expect.stringMatching(/sh -c "base64 -d > '\/root\/\.netrc'"/),
+        expect.stringMatching(/sh -c "base64 -d > '\/home\/agenstra\/\.netrc'"/),
         expect.any(String), // base64 content
       );
-      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(2, containerId, 'chmod 600 /root/.netrc');
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        2,
+        containerId,
+        "chmod 600 '/home/agenstra/.netrc'",
+      );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
-        `sh -c "mkdir -p -- '/root/.cursor'"`,
+        `sh -c "mkdir -p -- '/home/agenstra/.cursor'"`,
+        undefined,
+        true,
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        4,
+        containerId,
+        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.cursor'"`,
         undefined,
         true,
       );
       expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        4,
+        5,
         containerId,
         expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
       );
@@ -247,6 +261,141 @@ describe('AgentsService', () => {
         containerType: ContainerType.GENERIC,
         gitRepositoryUrl: undefined,
       });
+    });
+
+    it('should mount agent workspace at /home/agenstra/environment on VNC container', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'VNC Agent',
+        createVirtualWorkspace: true,
+        createSshConnection: false,
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const workerContainerId = 'worker-container-id';
+      const vncContainerId = 'vnc-container-id';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        hashedPassword,
+        containerId: workerContainerId,
+        volumePath: '/opt/agents/test-volume-uuid',
+        vncContainerId,
+        vncHostPort: 50000,
+        vncNetworkId: 'network-id',
+        vncPassword: 'vnc-password',
+      };
+
+      repository.findByName.mockResolvedValue(null);
+      repository.findPortInUse.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValueOnce(workerContainerId).mockResolvedValueOnce(vncContainerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      dockerService.createNetwork.mockResolvedValue('network-id');
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(2);
+      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
+        1,
+        'ghcr.io/forepath/agenstra-manager-worker:latest',
+      );
+      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
+        2,
+        'ghcr.io/forepath/agenstra-manager-vnc:latest',
+      );
+      expect(dockerService.createContainer).toHaveBeenCalledTimes(2);
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          image: 'ghcr.io/forepath/agenstra-manager-vnc:latest',
+          env: expect.objectContaining({
+            AGENT_NAME: createDto.name,
+            VNC_PASSWORD: expect.any(String),
+          }),
+          volumes: [
+            {
+              hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+              containerPath: '/home/agenstra/environment',
+              readOnly: false,
+            },
+            {
+              hostPath: '/opt/agents',
+              containerPath: '/opt/workspace',
+              readOnly: true,
+            },
+          ],
+          ports: [
+            {
+              containerPort: 6080,
+              hostPort: expect.any(Number),
+            },
+          ],
+        }),
+      );
+      expect(dockerService.createNetwork).toHaveBeenCalledWith(
+        expect.objectContaining({
+          containerIds: [workerContainerId, vncContainerId],
+        }),
+      );
+    });
+
+    it('should ensure docker images exist before creating SSH connection container', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'SSH Agent',
+        createSshConnection: true,
+        createVirtualWorkspace: false,
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const workerContainerId = 'worker-container-id';
+      const sshContainerId = 'ssh-container-id';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        hashedPassword,
+        containerId: workerContainerId,
+        volumePath: '/opt/agents/test-volume-uuid',
+        sshContainerId,
+        sshHostPort: 40000,
+        sshPassword: 'ssh-password',
+      };
+
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      mockRepository.findPortInUse.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValueOnce(workerContainerId).mockResolvedValueOnce(sshContainerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      await service.create(createDto);
+
+      expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(2);
+      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
+        1,
+        'ghcr.io/forepath/agenstra-manager-worker:latest',
+      );
+      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
+        2,
+        'ghcr.io/forepath/agenstra-manager-ssh:latest',
+      );
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          image: 'ghcr.io/forepath/agenstra-manager-ssh:latest',
+          env: expect.objectContaining({
+            AGENT_NAME: createDto.name,
+            SSH_PASSWORD: expect.any(String),
+          }),
+          ports: [
+            {
+              containerPort: 22,
+              hostPort: expect.any(Number),
+            },
+          ],
+        }),
+      );
     });
 
     it('should create agent without description', async () => {
@@ -309,7 +458,7 @@ describe('AgentsService', () => {
         ],
       });
       // Verify .netrc file creation was called
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4); // 2 for .netrc + 1 for config mkdir + 1 for git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(5); // 2 for .netrc + config mkdir + config chown + git clone
       expect(repository.create).toHaveBeenCalledWith({
         name: createDto.name,
         description: undefined,
@@ -404,7 +553,7 @@ describe('AgentsService', () => {
       await service.create(createDto);
 
       // Verify .netrc creation was called (should use GIT_PASSWORD)
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4); // 2 for .netrc + 1 for config mkdir + 1 for git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(5); // 2 for .netrc + config mkdir + config chown + git clone
     });
 
     it('should throw BadRequestException when agent name already exists', async () => {
@@ -457,6 +606,7 @@ describe('AgentsService', () => {
         .mockResolvedValueOnce(undefined) // First call for .netrc base64 write succeeds
         .mockResolvedValueOnce(undefined) // Second call for chmod succeeds
         .mockResolvedValueOnce(undefined) // mkdir provider config dir
+        .mockResolvedValueOnce(undefined) // chown provider config dir
         .mockRejectedValueOnce(gitCloneError); // Git clone fails
       dockerService.deleteContainer.mockResolvedValue(undefined);
 
@@ -464,8 +614,8 @@ describe('AgentsService', () => {
 
       // Verify container was created
       expect(dockerService.createContainer).toHaveBeenCalled();
-      // Verify .netrc creation (2 commands), config mkdir, and git clone (1 attempt) were called
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4);
+      // Verify .netrc creation (2 commands), config mkdir, config chown, and git clone (1 attempt) were called
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(5);
       // Verify container cleanup was attempted
       expect(dockerService.deleteContainer).toHaveBeenCalledWith(containerId);
       // Verify repository.create was never called
@@ -490,8 +640,8 @@ describe('AgentsService', () => {
 
       // Verify container was created
       expect(dockerService.createContainer).toHaveBeenCalled();
-      // Verify .netrc creation (2 commands), config mkdir, and git clone (1 command) were attempted
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4);
+      // Verify .netrc creation (2 commands), config mkdir, config chown, and git clone (1 command) were attempted
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(5);
       // Verify repository.create was attempted
       expect(repository.create).toHaveBeenCalled();
       // Verify container cleanup was attempted
@@ -513,6 +663,7 @@ describe('AgentsService', () => {
         .mockResolvedValueOnce(undefined) // First call for .netrc base64 write succeeds
         .mockResolvedValueOnce(undefined) // Second call for chmod succeeds
         .mockResolvedValueOnce(undefined) // mkdir provider config dir
+        .mockResolvedValueOnce(undefined) // chown provider config dir
         .mockRejectedValueOnce(originalError); // Git clone fails
       dockerService.deleteContainer.mockRejectedValue(cleanupError);
 
@@ -587,39 +738,54 @@ describe('AgentsService', () => {
           },
         ],
       });
-      // Verify SSH setup commands, provider config mkdir, then git clone
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(8);
-      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(1, containerId, 'mkdir -p /root/.ssh');
-      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(2, containerId, 'chmod 700 /root/.ssh');
+      // Verify SSH setup commands, provider config mkdir, config chown, then git clone
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(9);
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        1,
+        containerId,
+        "mkdir -p '/home/agenstra/.ssh'",
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        2,
+        containerId,
+        "chmod 700 '/home/agenstra/.ssh'",
+      );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
-        expect.stringMatching(/echo .* \| base64 -d > \/root\/\.ssh\/id_ed25519/),
+        expect.stringMatching(/echo .* \| base64 -d > \/home\/agenstra\/\.ssh\/id_ed25519/),
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
-        'chmod 600 /root/.ssh/id_ed25519',
+        "chmod 600 '/home/agenstra/.ssh/id_ed25519'",
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/ssh-keyscan.*github\.com.*>> \/root\/\.ssh\/known_hosts/),
+        expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/home\/agenstra\/\.ssh\/known_hosts'/),
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         6,
         containerId,
-        'chmod 600 /root/.ssh/known_hosts || true',
+        "chmod 600 '/home/agenstra/.ssh/known_hosts' || true",
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         7,
         containerId,
-        `sh -c "mkdir -p -- '/root/.cursor'"`,
+        `sh -c "mkdir -p -- '/home/agenstra/.cursor'"`,
         undefined,
         true,
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         8,
+        containerId,
+        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.cursor'"`,
+        undefined,
+        true,
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        9,
         containerId,
         expect.stringMatching(/sh -c "git clone .*git@github\.com:user\/repo\.git.*'\/app'"/),
       );
@@ -670,7 +836,7 @@ describe('AgentsService', () => {
       const expectedPath = basePath + repositoryPath;
 
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        8,
+        9,
         containerId,
         expect.stringMatching(
           new RegExp(`sh -c "git clone .*git@github\\.com:user/repo\\.git.*'${expectedPath.replace(/'/g, "'\\''")}'"`),
@@ -865,7 +1031,7 @@ describe('AgentsService', () => {
       // Verify git clone uses the custom base path (escaped for shell)
       // Since getRepositoryPath is not defined, it should use just basePath
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        4,
+        5,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -909,7 +1075,7 @@ describe('AgentsService', () => {
       const expectedPath = basePath + repositoryPath;
 
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        4,
+        5,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -978,7 +1144,7 @@ describe('AgentsService', () => {
       const expectedPath = customBasePath + repositoryPath;
 
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        4,
+        5,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -1019,7 +1185,7 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
       // Verify git clone uses only basePath when getRepositoryPath is not defined
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        4,
+        5,
         containerId,
         expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
       );
@@ -1083,7 +1249,7 @@ describe('AgentsService', () => {
       });
       // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        4,
+        5,
         containerId,
         expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
       );
@@ -1147,7 +1313,7 @@ describe('AgentsService', () => {
       });
       // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
-        4,
+        5,
         containerId,
         expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
       );
@@ -1433,10 +1599,11 @@ describe('AgentsService', () => {
       await service.create(createDto);
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(3);
-      expect(dockerService.getContainerHomeDirectory).not.toHaveBeenCalled();
+      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledTimes(1);
+      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);
     });
 
-    it('should mkdir absolute provider config path without calling getContainerHomeDirectory', async () => {
+    it('should mkdir absolute provider config path without calling getContainerHomeDirectory for tilde expansion', async () => {
       const createDto: CreateAgentDto = {
         name: 'Agent Abs Config',
         containerType: ContainerType.GENERIC,
@@ -1462,11 +1629,18 @@ describe('AgentsService', () => {
 
       await service.create(createDto);
 
-      expect(dockerService.getContainerHomeDirectory).not.toHaveBeenCalled();
+      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledTimes(1);
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
         `sh -c "mkdir -p -- '/var/my-agent-config'"`,
+        undefined,
+        true,
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        4,
+        containerId,
+        `sh -c "sudo chown -R agenstra:agenstra -- '/var/my-agent-config'"`,
         undefined,
         true,
       );
@@ -1993,11 +2167,15 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         1,
         containerId,
-        expect.stringMatching(/sh -c "base64 -d > '\/root\/\.netrc'"/),
+        expect.stringMatching(/sh -c "base64 -d > '\/home\/agenstra\/\.netrc'"/),
         expect.any(String), // base64 content
       );
       // Verify second command sets permissions
-      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(2, containerId, 'chmod 600 /root/.netrc');
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        2,
+        containerId,
+        "chmod 600 '/home/agenstra/.netrc'",
+      );
 
       // Verify base64 content contains expected .netrc content
       const base64Call = dockerService.sendCommandToContainer.mock.calls[0];
@@ -2032,7 +2210,7 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         1,
         containerId,
-        expect.stringMatching(/sh -c "base64 -d > '\/root\/\.netrc'"/),
+        expect.stringMatching(/sh -c "base64 -d > '\/home\/agenstra\/\.netrc'"/),
         expect.any(String),
       );
     });
@@ -2083,6 +2261,30 @@ describe('AgentsService', () => {
       const decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');
 
       expect(decodedContent).toContain('password test-password');
+    });
+
+    it('should resolve .netrc path from container home directory', async () => {
+      const containerId = 'container-id-123';
+      const customHome = '/custom/home';
+
+      dockerService.getContainerHomeDirectory.mockResolvedValueOnce(customHome);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (service as any).createNetrcFile(containerId, process.env.GIT_REPOSITORY_URL);
+
+      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        1,
+        containerId,
+        expect.stringMatching(/sh -c "base64 -d > '\/custom\/home\/\.netrc'"/),
+        expect.any(String),
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        2,
+        containerId,
+        "chmod 600 '/custom/home/.netrc'",
+      );
     });
   });
 
@@ -2299,7 +2501,7 @@ describe('AgentsService', () => {
   describe('writeFileToContainer', () => {
     it('should write file content to container using base64 encoding', async () => {
       const containerId = 'container-id-123';
-      const filePath = '/root/.ssh/id_rsa';
+      const filePath = '/home/agenstra/.ssh/id_rsa';
       const contents = 'test file content\nwith newlines';
 
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
@@ -2322,7 +2524,7 @@ describe('AgentsService', () => {
 
     it('should escape base64 content for shell', async () => {
       const containerId = 'container-id-123';
-      const filePath = '/root/test';
+      const filePath = '/home/agenstra/test';
       const contents = "content with 'quotes'";
 
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
@@ -2340,6 +2542,7 @@ describe('AgentsService', () => {
   describe('configureSshAccess', () => {
     beforeEach(() => {
       process.env.GIT_REPOSITORY_URL = 'git@github.com:user/repo.git';
+      dockerService.getContainerHomeDirectory.mockResolvedValue('/home/agenstra');
     });
 
     it('should configure SSH access with Ed25519 key', async () => {
@@ -2361,27 +2564,35 @@ describe('AgentsService', () => {
       expect(result.publicKey.split(' ').slice(0, 2).join(' ')).toBe(publicKey.split(' ').slice(0, 2).join(' '));
       expect(result.privateKey).toBeUndefined(); // generated is false, so privateKey is not returned
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(6);
-      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(1, containerId, 'mkdir -p /root/.ssh');
-      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(2, containerId, 'chmod 700 /root/.ssh');
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        1,
+        containerId,
+        "mkdir -p '/home/agenstra/.ssh'",
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        2,
+        containerId,
+        "chmod 700 '/home/agenstra/.ssh'",
+      );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
-        expect.stringMatching(/echo .* \| base64 -d > \/root\/\.ssh\/id_ed25519/),
+        expect.stringMatching(/echo .* \| base64 -d > \/home\/agenstra\/\.ssh\/id_ed25519/),
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
-        'chmod 600 /root/.ssh/id_ed25519',
+        "chmod 600 '/home/agenstra/.ssh/id_ed25519'",
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/ssh-keyscan.*github\.com.*>> \/root\/\.ssh\/known_hosts/),
+        expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/home\/agenstra\/\.ssh\/known_hosts'/),
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         6,
         containerId,
-        'chmod 600 /root/.ssh/known_hosts || true',
+        "chmod 600 '/home/agenstra/.ssh/known_hosts' || true",
       );
     });
 
@@ -2409,6 +2620,36 @@ describe('AgentsService', () => {
       await expect(
         serviceAny.configureSshAccess(containerId, 'git@github.com:user/repo.git', 'invalid-key'),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should resolve SSH paths from container home directory', async () => {
+      const containerId = 'container-id-123';
+      const customHome = '/custom/home';
+      const key = sshpk.generatePrivateKey('ed25519');
+      const privateKeyPem = key.toString('openssh');
+
+      dockerService.getContainerHomeDirectory.mockResolvedValueOnce(customHome);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (service as any).configureSshAccess(containerId, 'git@github.com:user/repo.git', privateKeyPem);
+
+      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        1,
+        containerId,
+        "mkdir -p '/custom/home/.ssh'",
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        5,
+        containerId,
+        expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/custom\/home\/\.ssh\/known_hosts'/),
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        6,
+        containerId,
+        "chmod 600 '/custom/home/.ssh/known_hosts' || true",
+      );
     });
   });
 });

@@ -187,6 +187,7 @@
       },
       "configurations": {
         "test": {
+          "load": true,
           "tags": ["ghcr.io/forepath/agenstra-docs-server:latest"]
         },
         "release": {

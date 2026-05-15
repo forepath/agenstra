@@ -519,7 +519,7 @@
         [class.mobile-overlay]="editorOpen() && chatVisible()"
       >
         <div class="p-3 border-bottom bg-body-tertiary">
-          <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-2">
               <!-- Back button (mobile only) -->
               <button
@@ -755,7 +755,7 @@
                       <div class="code-block border mb-3">
                         Host remote-workspace<br />
                         &nbsp;&nbsp;&nbsp;&nbsp;HostName {{ getHostname(activeClient?.endpoint || '', false) }}<br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;User ssh<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;User agenstra<br />
                         &nbsp;&nbsp;&nbsp;&nbsp;Port {{ selectedAgent.ssh?.port }}<br />
                         &nbsp;&nbsp;&nbsp;&nbsp;StrictHostKeyChecking no
                       </div>
@@ -763,8 +763,8 @@
                         <i class="bi bi-info-circle"></i>
                         <span
                           >The password for the
-                          <code class="text-primary d-inline-block border border-primary rounded px-1">ssh</code> user
-                          is
+                          <code class="text-primary d-inline-block border border-primary rounded px-1">agenstra</code>
+                          user is
                           <code class="text-primary d-inline-block border border-primary rounded px-1">{{
                             selectedAgent.ssh?.password
                           }}</code
@@ -1242,7 +1242,7 @@
         [class.mobile-overlay]="editorOpen() && chatVisible()"
       >
         <div class="p-3 border-bottom bg-body-tertiary">
-          <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-2">
               <!-- Back button (mobile only) -->
               <button
@@ -1478,7 +1478,7 @@
                       <div class="code-block border mb-3">
                         Host remote-workspace<br />
                         &nbsp;&nbsp;&nbsp;&nbsp;HostName {{ getHostname(activeClient?.endpoint || '', false) }}<br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;User ssh<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;User agenstra<br />
                         &nbsp;&nbsp;&nbsp;&nbsp;Port {{ selectedAgent.ssh?.port }}<br />
                         &nbsp;&nbsp;&nbsp;&nbsp;StrictHostKeyChecking no
                       </div>
@@ -1486,8 +1486,8 @@
                         <i class="bi bi-info-circle"></i>
                         <span
                           >The password for the
-                          <code class="text-primary d-inline-block border border-primary rounded px-1">ssh</code> user
-                          is
+                          <code class="text-primary d-inline-block border border-primary rounded px-1">agenstra</code>
+                          user is
                           <code class="text-primary d-inline-block border border-primary rounded px-1">{{
                             selectedAgent.ssh?.password
                           }}</code
@@ -2637,8 +2637,8 @@
           <div class="p-3 border border-warning rounded">
             <label class="form-label mb-2 text-warning">Danger Zone</label>
             <p class="small text-warning mb-3" i18n="@@featureChat-dangerZoneDescription">
-              These features partially ignore the internal permissions and will allow users to modify the agent
-              container files without any restrictions.
+              These features partially ignore the internal permissions and may allow users to modify the agent container
+              files without any restrictions.
             </p>
             <div class="mb-3">
               <div class="form-check">
@@ -2653,8 +2653,8 @@
                 />
                 <label class="form-check-label" for="createVirtualWorkspace"> Create Virtual Workspace (VNC) </label>
               </div>
-              <small class="form-text text-muted d-block mt-1"
-                >Enable VNC access to the environment's virtual workspace. Defaults to enabled.</small
+              <small class="form-text text-muted d-block mt-1" i18n="@@featureChat-createVirtualWorkspaceHint"
+                >Enable VNC access to the environment's virtual workspace. Defaults to disabled.</small
               >
             </div>
             <div>
@@ -2670,8 +2670,8 @@
                 />
                 <label class="form-check-label" for="createSshConnection"> Create SSH Connection </label>
               </div>
-              <small class="form-text text-muted d-block mt-1"
-                >Enable SSH access to the environment container. Defaults to enabled.</small
+              <small class="form-text text-muted d-block mt-1" i18n="@@featureChat-createSshConnectionHint"
+                >Enable SSH access to the environment container. Defaults to disabled.</small
               >
             </div>
           </div>

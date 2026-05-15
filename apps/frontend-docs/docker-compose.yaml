@@ -1,6 +1,7 @@
 services:
   frontend-docs-server:
     image: ghcr.io/forepath/agenstra-docs-server:latest
+    pull_policy: never
     container_name: docs-server
     environment:
       # Frontend server configuration

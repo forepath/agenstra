@@ -689,6 +689,8 @@ nx test framework-backend-feature-agent-manager --coverage
 - **WebSocket Authentication**: WebSocket authentication validates credentials against the database
 - **Error Messages**: Generic error messages are used to prevent information disclosure
 - **Session Management**: WebSocket sessions are stored in memory and cleaned up on disconnect
+- **Container credentials**: Git HTTPS (`.netrc`) and SSH keys are written under the worker container’s **`$HOME`** (resolved via `DockerService.getContainerHomeDirectory`), not as root. On current worker images that is typically **`/home/agenstra`**. Shell paths are quoted and permissions are set with `chmod` before use.
+- **VNC context volume**: Browser workspace context is mounted at **`/home/agenstra/environment`** in the VNC image; deploy manager API and VNC images together when upgrading paths.
 
 ## Environment Variables
 
@@ -718,13 +720,13 @@ These environment variables are required for git repository cloning when creatin
 **HTTPS repositories**
 
 1. Create a Docker container with `GIT_REPOSITORY_URL`, `GIT_USERNAME`, and `GIT_TOKEN` (or `GIT_PASSWORD`) environment variables
-2. Create a `.netrc` file in the container for git authentication
+2. Create a `.netrc` file under the worker’s `$HOME` (typically `/home/agenstra/.netrc`) for git authentication
 3. Clone the repository directly into the container's base path directory (defaults to `/app`, configurable via provider's `getBasePath()` method)
 
 **SSH repositories**
 
 1. Set the `GIT_PRIVATE_KEY` environment variable with a valid SSH private key (PEM or OpenSSH format, no passphrase)
-2. The service detects the key type (RSA, Ed25519, ECDSA, etc.) and writes the key to the appropriate filename in `/root/.ssh/` (e.g., `id_rsa`, `id_ed25519`, `id_ecdsa`) and bootstraps `known_hosts` using `ssh-keyscan`
+2. The service detects the key type (RSA, Ed25519, ECDSA, etc.) and writes the key under **`$HOME/.ssh/`** in the worker container (e.g., `id_rsa`, `id_ed25519`, `id_ecdsa` — typically `/home/agenstra/.ssh/` on current images) and bootstraps `known_hosts` using `ssh-keyscan`
 3. If `GIT_PRIVATE_KEY` is not set or invalid, agent creation will fail with a `BadRequestException`
 4. The SSH private key must be registered with your git provider (GitHub, GitLab, etc.) as a deploy key or user SSH key
 

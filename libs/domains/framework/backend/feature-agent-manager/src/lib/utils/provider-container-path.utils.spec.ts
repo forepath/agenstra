@@ -4,16 +4,18 @@ describe('expandProviderPathTildeInContainer', () => {
   const containerId = 'abc123';
 
   it('returns HOME when path is exactly ~', async () => {
-    const getHome = jest.fn().mockResolvedValue('/root');
+    const getHome = jest.fn().mockResolvedValue('/home/agenstra');
 
-    await expect(expandProviderPathTildeInContainer('~', containerId, getHome)).resolves.toBe('/root');
+    await expect(expandProviderPathTildeInContainer('~', containerId, getHome)).resolves.toBe('/home/agenstra');
     expect(getHome).toHaveBeenCalledWith(containerId);
   });
 
   it('expands ~/suffix', async () => {
-    const getHome = jest.fn().mockResolvedValue('/root');
+    const getHome = jest.fn().mockResolvedValue('/home/agenstra');
 
-    await expect(expandProviderPathTildeInContainer('~/.cursor', containerId, getHome)).resolves.toBe('/root/.cursor');
+    await expect(expandProviderPathTildeInContainer('~/.cursor', containerId, getHome)).resolves.toBe(
+      '/home/agenstra/.cursor',
+    );
   });
 
   it('returns absolute paths unchanged', async () => {
