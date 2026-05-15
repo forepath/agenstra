@@ -4684,11 +4684,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return null;
     }
 
+    const sshUser = username ?? 'agenstra';
+
     if (!password) {
-      return `ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${username ?? 'ssh'}@${hostname}`;
+      return `ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${sshUser}@${hostname}`;
     }
 
-    return `SSHPASS='${password}' sshpass -e ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${username ?? 'ssh'}@${hostname}`;
+    return `SSHPASS='${password}' sshpass -e ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${sshUser}@${hostname}`;
   }
 
   /**

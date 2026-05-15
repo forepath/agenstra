@@ -709,8 +709,16 @@
         <target>Arbeitsbereich erstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-dangerZoneDescription" datatype="html">
-        <source> These features partially ignore the internal permissions and will allow users to modify the agent container files without any restrictions. </source>
-        <target>Diese Funktionen ignorieren teilweise die internen Berechtigungen und ermöglichen es Benutzern, die Dateien des Agenten-Containers ohne Einschränkungen zu ändern.</target>
+        <source> These features partially ignore the internal permissions and may allow users to modify the agent container files without any restrictions. </source>
+        <target>Diese Funktionen ignorieren teilweise die internen Berechtigungen und können es Benutzern erlauben, die Dateien des Agenten-Containers ohne Einschränkungen zu ändern.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-createVirtualWorkspaceHint" datatype="html">
+        <source>Enable VNC access to the environment&apos;s virtual workspace. Defaults to disabled.</source>
+        <target>VNC-Zugang zum virtuellen Arbeitsbereich der Umgebung aktivieren. Standardmäßig deaktiviert.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-createSshConnectionHint" datatype="html">
+        <source>Enable SSH access to the environment container. Defaults to disabled.</source>
+        <target>SSH-Zugang zum Umgebungscontainer aktivieren. Standardmäßig deaktiviert.</target>
       </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
         <source>Create Environment</source>

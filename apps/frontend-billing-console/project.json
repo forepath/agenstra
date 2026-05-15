@@ -193,6 +193,7 @@
       },
       "configurations": {
         "test": {
+          "load": true,
           "tags": ["ghcr.io/forepath/agenstra-billing-console-server:latest"]
         },
         "release": {

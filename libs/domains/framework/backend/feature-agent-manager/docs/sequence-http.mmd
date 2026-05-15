@@ -21,7 +21,7 @@ sequenceDiagram
             Note over Docker: Container created with:<br/>- GIT_REPOSITORY_URL<br/>- GIT_USERNAME<br/>- GIT_TOKEN/GIT_PASSWORD<br/>- CURSOR_API_KEY<br/>- Volume mounted at /app
             Docker-->>Service: containerId
             Service->>Docker: createNetrcFile(containerId)
-            Note over Docker: Creates /root/.netrc<br/>for git authentication
+            Note over Docker: Creates $HOME/.netrc<br/>(worker: /home/agenstra/.netrc)
             Docker-->>Service: .netrc created
         else SSH Repository
             Service->>Service: prepareSshKeyPair(GIT_PRIVATE_KEY)
@@ -33,7 +33,7 @@ sequenceDiagram
                 Note over Docker: Container created with:<br/>- GIT_REPOSITORY_URL<br/>- GIT_PRIVATE_KEY<br/>- CURSOR_API_KEY<br/>- Volume mounted at /app
                 Docker-->>Service: containerId
                 Service->>Docker: configureSshAccess(containerId, url, GIT_PRIVATE_KEY)
-                Note over Docker: Detects key type and creates<br/>/root/.ssh/{id_rsa|id_ed25519|id_ecdsa}<br/>and configures known_hosts
+                Note over Docker: Detects key type and creates<br/>$HOME/.ssh/{id_rsa|id_ed25519|id_ecdsa}<br/>and configures known_hosts
                 Docker-->>Service: SSH configured
             end
         end

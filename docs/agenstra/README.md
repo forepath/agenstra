@@ -84,7 +84,8 @@ Public security and compliance-oriented documentation:
 
 - [Compliance and standards](./security/compliance-and-standards.md) - EU CRA and BSI IT-Grundschutz documentation themes (informative)
 - [Accepted risks](./security/accepted-risks.md) - Register AR-001 through AR-005 with mitigations and review dates
-- [Operational hardening](./security/operational-hardening.md) - Implemented controls and operator notes
+- [Container image security](./security/container-images.md) - Non-root users, bind mounts, restricted sudo
+- [Operational hardening](./security/operational-hardening.md) - Implemented controls (including container image hardening) and operator notes
 - [Vulnerability reporting and artifacts](./security/vulnerability-reporting-and-artifacts.md) - Disclosure process, SBOM paths, desktop integrity
 
 The repository root file `SECURITY.md` duplicates the vulnerability contact and supported-version summary for viewers on hosts that promote that file; the documentation copy lives under [Security](./security/README.md) above.

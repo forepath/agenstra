@@ -119,6 +119,7 @@
       },
       "configurations": {
         "test": {
+          "load": true,
           "tags": ["ghcr.io/forepath/agenstra-controller-api:latest"]
         },
         "release": {

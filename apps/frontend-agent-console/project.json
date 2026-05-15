@@ -192,6 +192,7 @@
       },
       "configurations": {
         "test": {
+          "load": true,
           "tags": ["ghcr.io/forepath/agenstra-console-server:latest"]
         },
         "release": {

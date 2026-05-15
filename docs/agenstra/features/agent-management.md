@@ -11,7 +11,7 @@ Agents are AI-powered entities that run in Docker containers. Each agent has:
 - **Agent Type** (e.g., `cursor` for cursor-agent)
 - **Container** - Docker container for agent execution
 - **Credentials** - Password for WebSocket authentication
-- **Workspace** - Git repository cloned into the container
+- **Workspace** - Git repository cloned into the container (bind-mounted from host `/opt/agents/{uuid}`; path depends on agent type — see [Container image security](../security/container-images.md))
 - **VNC Container** (optional) - Virtual workspace with XFCE4 desktop and Chromium browser
 
 ## Creating an Agent

@@ -19,6 +19,7 @@ services:
 
   backend-agent-controller:
     image: ghcr.io/forepath/agenstra-controller-api:latest
+    pull_policy: never
     container_name: agent-controller-api
     environment:
       # Backend API configuration

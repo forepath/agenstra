@@ -46,7 +46,7 @@ describe('AgentFileSystemService', () => {
     sendCommandToContainer: jest.fn(),
     readFileFromContainer: jest.fn(),
     copyFileFromContainer: jest.fn(),
-    getContainerHomeDirectory: jest.fn().mockResolvedValue('/root'),
+    getContainerHomeDirectory: jest.fn().mockResolvedValue('/home/agenstra'),
   };
   const mockProvider = {
     getBasePath: jest.fn().mockReturnValue('/app'),
@@ -91,7 +91,7 @@ describe('AgentFileSystemService', () => {
     jest.restoreAllMocks();
     mockProvider.getBasePath.mockReturnValue('/app');
     mockProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.cursor');
-    mockDockerService.getContainerHomeDirectory.mockResolvedValue('/root');
+    mockDockerService.getContainerHomeDirectory.mockResolvedValue('/home/agenstra');
     mockAgentProviderFactory.getProvider.mockReturnValue(mockProvider);
   });
 
@@ -766,7 +766,7 @@ file|file2.txt|2048|1704067200`;
       expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(mockContainerId);
       expect(dockerService.copyFileFromContainer).toHaveBeenCalledWith(
         mockContainerId,
-        '/root/.cursor/settings.json',
+        '/home/agenstra/.cursor/settings.json',
         expect.any(String),
       );
     });

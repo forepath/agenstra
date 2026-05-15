@@ -264,6 +264,22 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock \
 
 The `/var/run/docker.sock` mount is required for the application to manage agent containers. Without this mount, the Docker CLI installed in the container will not be able to communicate with the host Docker daemon.
 
+Treat socket access as **high privilege** on the host. The API image runs as **`agenstra`** (not root); at startup the entrypoint aligns the container `docker` group with the socket GID, then starts Node. Rebuild with `DOCKER_GID` matching your host if the default does not match `stat -c '%g' /var/run/docker.sock`.
+
+### Container images and security
+
+| Image                            | User               | Registry (default)                         | Notes                                                                                 |
+| -------------------------------- | ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; restricted `sudo` for GID sync           |
+| **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | Cursor/OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`       |
+| **agi** (`Dockerfile.agi`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-agi`    | OpenClaw gateway; workspace at `/openclaw`                                            |
+| **VNC** (`Dockerfile.vnc`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-vnc`    | Desktop browser; shared repo at `/home/agenstra/environment`; `VNC_PASSWORD` required |
+| **SSH** (`Dockerfile.ssh`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-ssh`    | Optional shell; `SSH_PASSWORD` required; workspace at provider `basePath`             |
+
+Per-agent bind mounts (host `/opt/agents/{uuid}`) and read-only `/opt/agents` → `/opt/workspace` are documented in **[Container image security](../security/container-images.md)**.
+
+Configuration secrets belong in the environment at deploy time, not in image defaults. Override images per provider via `CURSOR_AGENT_*`, `OPENCODE_AGENT_*`, and `OPENCLAW_AGENT_*` variables (see [Environment configuration](../deployment/environment-configuration.md)). When upgrading, deploy API, worker, VNC, SSH, and **agi** tags from the **same release**.
+
 ## Production Deployment Checklist
 
 Before deploying to production, ensure:
@@ -275,6 +291,9 @@ Before deploying to production, ensure:
 - `STATIC_API_KEY` or Keycloak credentials are configured
 - Database credentials are secure
 - Docker socket is properly mounted for container management
+- Manager API, worker, VNC, SSH, and agi images are on matching release tags
+- Host `/opt/agents` permissions are suitable for UID **10001** (see [Container image security](../security/container-images.md))
+- Host `docker` group GID matches image `DOCKER_GID` (or image rebuilt with correct `--build-arg`)
 
 ## Related Documentation
 

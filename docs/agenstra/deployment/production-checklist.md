@@ -24,7 +24,11 @@ Comprehensive checklist for deploying Agenstra to production.
 - CORS is restricted to specific origins
 - Rate limiting is enabled
 - Database connections use SSL/TLS
-- Docker socket permissions are restricted (if applicable)
+- Docker socket permissions are restricted (if applicable); API images run as non-root `agenstra` with socket GID sync at startup
+- `agenstra` has **no** full `sudo` access (only allowlisted commands in `/etc/sudoers.d/agenstra`; see [Container image security](../security/container-images.md#restricted-sudo))
+- Host `/opt/agents` exists and is writable by container UID **10001** (or relies on entrypoint `chown` after bind mount)
+- Manager **API, worker, VNC, SSH, and agi (OpenClaw)** images are upgraded together on the same release tag
+- Image `DOCKER_GID` matches host `docker` group GID when building manager/controller API images (see [Docker deployment](./docker-deployment.md#container-security-images))
 
 ### Database
 
@@ -37,7 +41,8 @@ Comprehensive checklist for deploying Agenstra to production.
 ### Infrastructure
 
 - Docker is properly configured
-- Docker socket is securely mounted (agent-manager)
+- Docker socket is securely mounted (agent-manager); understand host-level privilege implications
+- Container images use non-root users; secrets supplied at deploy time, not baked into images
 - Container resource limits are set
 - Logging is configured
 - Monitoring is set up

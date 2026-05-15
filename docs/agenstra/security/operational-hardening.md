@@ -2,6 +2,23 @@
 
 This page describes **implemented** security controls that operators and security reviewers should know about. For **environment variable names and defaults**, see **[Environment configuration](../deployment/environment-configuration.md)**.
 
+## Container images (Docker)
+
+First-party images are hardened for production use. Full detail (bind mounts, entrypoints, per-image `sudo` allowlists): **[Container image security](./container-images.md)**.
+
+| Practice                      | Detail                                                                                                                                                                                                                                                                                          |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Non-root runtime**          | Debian-based backends and worker/VNC/SSH/agi images run as **`agenstra`** (UID/GID **10001** by default); Alpine frontend servers run as **`node`** (**1000**).                                                                                                                                 |
+| **No baked-in secrets**       | Database, Keycloak, VNC/SSH passwords, and API keys are **not** defaulted in image `ENV`; operators supply them at deploy time.                                                                                                                                                                 |
+| **Restricted `sudo`**         | `agenstra` is **not** in the `sudo` group. Only commands listed in `/etc/sudoers.d/agenstra` run passwordless (typically `chown` on workspace mounts; API images add `groupmod` / `groupadd` / `usermod` for Docker socket GID sync). No other `sudo` is permitted, with or without a password. |
+| **Workspace mount ownership** | Worker, VNC, SSH, and agi entrypoints `chown` bind-mounted agent data to `agenstra` when the host directory is root-owned.                                                                                                                                                                      |
+| **Least privilege on socket** | Manager and controller API images mount the host Docker socket only when required. The entrypoint syncs the in-container `docker` group GID to the socket’s GID (`DOCKER_GID` build arg, default **995**), then starts Node with **`sg docker`**.                                               |
+| **Worker credential paths**   | When cloning private Git repos, the manager writes `.netrc` and SSH keys under the worker’s **`$HOME`** (`/home/agenstra`), not `/root`.                                                                                                                                                        |
+| **SSH access image**          | Optional SSH sidecar: runtime **`SSH_PASSWORD`** required; login as **`agenstra`**; `sshd` started only via allowed `sudo` in the entrypoint.                                                                                                                                                   |
+| **Image scanning**            | Repository `trivy.yaml` configures filesystem/config/image scans; wire CI to fail on HIGH/CRITICAL findings in your pipeline.                                                                                                                                                                   |
+
+Deploy **manager API, worker, VNC, SSH, and agi images from the same release** when paths or users change. See **[Docker deployment](../deployment/docker-deployment.md)** and **[Backend Agent Manager](../applications/backend-agent-manager.md)**.
+
 ## Authentication mode (backends)
 
 Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identity/backend/util-auth/src/lib/hybrid-auth.guard.ts`):

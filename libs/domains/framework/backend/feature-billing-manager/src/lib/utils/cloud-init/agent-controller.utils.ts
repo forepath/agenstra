@@ -337,6 +337,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
 
   backend-agent-controller:
     image: ghcr.io/forepath/agenstra-controller-api:latest
+    pull_policy: always
     container_name: agent-controller-api
     environment:
 ${backendEnv}
@@ -352,6 +353,7 @@ ${backendEnv}
 
   frontend-agent-console-server:
     image: ghcr.io/forepath/agenstra-console-server:latest
+    pull_policy: always
     container_name: agent-console-server
     command: ['/bin/sh', '-c', 'CONFIG=https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/config.json node server.cjs']
     environment:

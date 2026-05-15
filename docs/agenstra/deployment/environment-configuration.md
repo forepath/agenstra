@@ -140,7 +140,30 @@ These variables tune the **Atlassian Cloud** import scheduler and provider on th
 ### Cursor Agent Configuration
 
 - `CURSOR_API_KEY` - Cursor API key for agent communication
-- `CURSOR_AGENT_DOCKER_IMAGE` - Docker image for cursor-agent containers (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
+- `CURSOR_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
+- `CURSOR_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
+- `CURSOR_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image (default: `ghcr.io/forepath/agenstra-manager-ssh:latest`)
+
+### OpenCode Agent Configuration
+
+- `OPENCODE_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
+- `OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
+- `OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image (default: `ghcr.io/forepath/agenstra-manager-ssh:latest`)
+
+### OpenClaw Agent Configuration
+
+- `OPENCLAW_AGENT_DOCKER_IMAGE` - Primary gateway image (default: `ghcr.io/forepath/agenstra-manager-agi:latest`)
+- `OPENCLAW_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
+- `OPENCLAW_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image (default: `ghcr.io/forepath/agenstra-manager-ssh:latest`)
+
+Sidecar containers require runtime passwords where applicable: **`VNC_PASSWORD`** and **`SSH_PASSWORD`** (set by the manager when creating agents; not image defaults). See **[Container image security](../security/container-images.md)**.
+
+### API image build arguments (manager / controller)
+
+When building `Dockerfile.api` images that mount `/var/run/docker.sock`:
+
+- `APP_UID` / `APP_GID` - Runtime user `agenstra` (default **10001**)
+- `DOCKER_GID` - GID of the in-container `docker` group; should match `stat -c '%g' /var/run/docker.sock` on the host (default **995**)
 
 ### Git Author Configuration
 
