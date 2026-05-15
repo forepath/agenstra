@@ -30,6 +30,10 @@ Implemented controls: **container image hardening**, correlation IDs and access 
 
 Responsible disclosure (contact and process), CycloneDX **SBOM** location, and **desktop release integrity** (`SHA256SUMS`, `integrity-manifest.json`).
 
+### [CI security scanning (Trivy)](./ci-security-scanning.md)
+
+Automated **Trivy** scans on pull requests (filesystem, IaC/config, container images); SARIF upload to GitHub Security; CRITICAL fail gate (fixable issues only — see **[AR-006](./accepted-risks.md#ar-006--ci--local-trivy-unfixed-vulnerabilities-not-gated)**). Pre-commit runs filesystem/config scans locally.
+
 ## Configuration reference
 
 For variable-by-variable deployment settings, including **`CLIENT_ENDPOINT_*`**, **`CONFIG_*`**, **`CSP_ENFORCE`**, and authentication variables, see **[Environment configuration](../deployment/environment-configuration.md)** and **[Production checklist](../deployment/production-checklist.md)**.

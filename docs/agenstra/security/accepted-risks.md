@@ -116,6 +116,28 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 
 ---
 
+## AR-006 — CI / local Trivy: unfixed vulnerabilities not gated
+
+| Field                                 | Recorded value                                                                                                                                                                                                                                                                                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**                                | AR-006                                                                                                                                                                                                                                                                                               |
+| **Area**                              | **Trivy** vulnerability scanning ([`trivy.yaml`](../../../trivy.yaml), pull-request CI, pre-commit, local image scans—not the release workflow)                                                                                                                                                      |
+| **Configuration**                     | **`vulnerability.ignore-unfixed: true`** — findings **without a Fixed Version** (no vendor/upstream fix published yet) are **excluded from the fail gate**. Only **CRITICAL** severities with an available fix fail CI and local hooks (see [`ci-security-scanning.md`](./ci-security-scanning.md)). |
+| **Residual risk**                     | Known **CRITICAL** issues may remain in dependencies, base images, or OS packages until upstream publishes a fix; they are visible in SARIF/report output but do not block merge or release.                                                                                                         |
+| **Mitigations in scope of this repo** | Trivy still scans for **vuln**, **secret**, and **misconfig**; **HIGH** and below are report-only; per-CVE exceptions use [`.trivyignore`](../../../.trivyignore) with traceability. SBOM publication and Dependency Track on release provide ongoing visibility.                                    |
+| **Compensating controls (deployer)**  | Monitor GitHub Security / SARIF artifacts; patch when fixes ship; track accepted CVEs in `.trivyignore` only when a fix exists but cannot be applied yet (not for permanently unfixed issues).                                                                                                       |
+| **Risk owner**                        | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                                                                                 |
+| **Acceptor**                          | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                                                                                |
+| **Acceptance date**                   | **2026-05-16**                                                                                                                                                                                                                                                                                       |
+| **Next review date**                  | **2027-05-06**                                                                                                                                                                                                                                                                                       |
+| **Rationale (business / technical)**  | Blocking on unfixed CVEs creates **false failures** with no remediation path and delays delivery without reducing exploitable risk. Gating on **fixable CRITICAL** issues keeps CI actionable while acknowledging vendor lag.                                                                        |
+
+#### Operator summary (AR-006)
+
+**Unfixed vulnerabilities are acceptable for pipeline gating** — Trivy will not fail because a CVE has an empty **Fixed Version**. Address **CRITICAL** findings that have a published fix; track anything else via SARIF and release SBOMs. Do not add unfixed CVEs to `.trivyignore` solely to silence the gate (they are already ignored). See **[CI security scanning](./ci-security-scanning.md)** and **[`config/trivy/README.md`](../../../config/trivy/README.md)**.
+
+---
+
 ## Hardening paths (if an acceptance is withdrawn)
 
 - **AR-001:** Prefer a non-root admin user, **`PermitRootLogin no`**, least-privilege `sudo`, and cloud-init-native `ssh_authorized_keys` where possible; reduce secrets in user-data.
@@ -123,6 +145,7 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 - **AR-003:** Tighten CSP after automated and manual verification so core UI (including Monaco) still functions.
 - **AR-004:** Require **`AUTHENTICATION_METHOD`** in all environments if auditors demand explicit configuration, or add startup validation that fails when **`STATIC_API_KEY`** is set without an explicit mode.
 - **AR-005:** Tighten **`setWindowOpenHandler`** (for example URL allowlist or **`action: 'deny'`**) if the product loads untrusted origins or adds browser-like navigation.
+- **AR-006:** Set **`vulnerability.ignore-unfixed: false`** (and optionally add **HIGH** to `severity`) if policy requires failing on all CRITICAL findings regardless of fix availability; expect more `.trivyignore` churn until dependencies catch up.
 
 ---
 
@@ -131,6 +154,7 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 - **[Compliance and standards](./compliance-and-standards.md)**
 - **[Operational hardening](./operational-hardening.md)**
 - **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**
+- **[CI security scanning (Trivy)](./ci-security-scanning.md)**
 
 ---
 

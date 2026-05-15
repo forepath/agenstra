@@ -13,7 +13,17 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# 2. Run linting on affected projects
+# 2. Security scan with Trivy (filesystem + config; CRITICAL gate per trivy.yaml)
+echo "🔒 Running Trivy security scans..."
+chmod +x tools/ci/trivy-pre-commit.sh
+tools/ci/trivy-pre-commit.sh
+if [ $? -ne 0 ]; then
+  echo "❌ Trivy scan failed. Fix CRITICAL findings or document them in .trivyignore."
+  echo "   See config/trivy/README.md and docs/agenstra/security/ci-security-scanning.md"
+  exit 1
+fi
+
+# 3. Run linting on affected projects
 echo "🔧 Running ESLint on affected projects..."
 nx affected -t lint
 if [ $? -ne 0 ]; then
@@ -21,7 +31,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# 3. Run tests on affected projects
+# 4. Run tests on affected projects
 echo "🧪 Running tests on affected projects..."
 nx affected -t test
 if [ $? -ne 0 ]; then
@@ -29,7 +39,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# 4. Build affected projects to ensure they compile
+# 5. Build affected projects to ensure they compile
 echo "🏗️  Building affected projects..."
 nx affected -t build
 if [ $? -ne 0 ]; then
