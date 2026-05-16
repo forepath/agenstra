@@ -791,8 +791,12 @@ jobs:
         run: |
           chmod +x tools/ci/container-image-sbom-upload-matrix.sh
           matrix="$(tools/ci/container-image-sbom-upload-matrix.sh dist/sboms "$PROJECT_VERSION")"
-          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
-          count="$(echo "$matrix" | jq '.include | length')"
+          {
+            echo 'matrix<<EOF'
+            printf '%s\n' "$matrix"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+          count="$(printf '%s' "$matrix" | jq '.include | length')"
           if [ "$count" -gt 0 ]; then
             echo "has_entries=true" >> "$GITHUB_OUTPUT"
           else
