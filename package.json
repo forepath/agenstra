@@ -127,7 +127,7 @@
     "@popperjs/core": "2.11.8",
     "@xterm/xterm": "5.5.0",
     "apexcharts": "5.10.4",
-    "axios": "1.12.2",
+    "axios": "1.15.2",
     "bcrypt": "6.0.0",
     "bootstrap": "5.3.8",
     "bootstrap-icons": "1.13.1",
