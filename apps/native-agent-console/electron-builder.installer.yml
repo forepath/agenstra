@@ -6,12 +6,16 @@ extraMetadata:
   name: Agenstra
 directories:
   output: installer-out
+  buildResources: public/assets/images
 win:
   target:
     - nsis
   artifactName: 'agenstra_${version}_amd64.${ext}'
   executableName: native-agent-console
+  icon: icon.ico
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   shortcutName: Agenstra Agent Console
+  installerIcon: icon.ico
+  uninstallerIcon: icon.ico

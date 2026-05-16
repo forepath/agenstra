@@ -193,8 +193,17 @@ function startSSRServer(): Promise<void> {
   });
 }
 
+function resolveAppIconPath(): string | undefined {
+  const candidates =
+    process.platform === 'win32'
+      ? [path.join(__dirname, 'icon.ico'), path.join(__dirname, 'icon.png')]
+      : [path.join(__dirname, 'icon.png'), path.join(__dirname, 'icon.ico')];
+  return candidates.find((iconPath) => fs.existsSync(iconPath));
+}
+
 function getWindowOptions(): BrowserWindowConstructorOptions {
   const preloadPath = path.join(__dirname, 'preload.js');
+  const icon = resolveAppIconPath();
   return {
     width: 1400,
     height: 900,
@@ -203,6 +212,7 @@ function getWindowOptions(): BrowserWindowConstructorOptions {
     autoHideMenuBar: true,
     frame: false,
     title: 'Agenstra Agent Console',
+    ...(icon ? { icon } : {}),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -232,29 +242,15 @@ function createWindow(): BrowserWindow {
 app.on('browser-window-created', (_event, window) => {
   window.once('ready-to-show', () => window?.show());
 
-  // Set window icon (handle errors gracefully)
-  // On Linux, prefer PNG; on Windows, prefer ICO
-  try {
-    const iconPath = process.platform === 'win32' ? path.join(__dirname, 'icon.ico') : path.join(__dirname, 'icon.png');
-
-    if (fs.existsSync(iconPath)) {
+  const iconPath = resolveAppIconPath();
+  if (iconPath) {
+    try {
       window.setIcon(iconPath);
-    } else {
-      // Fallback to other format
-      const fallbackPath =
-        process.platform === 'win32' ? path.join(__dirname, 'icon.png') : path.join(__dirname, 'icon.ico');
-
-      if (fs.existsSync(fallbackPath)) {
-        window.setIcon(fallbackPath);
-      } else {
-        console.warn('[Main Process] No icon file found in:', __dirname);
-      }
+    } catch (error) {
+      console.warn('[Main Process] Failed to set window icon:', error instanceof Error ? error.message : String(error));
     }
-  } catch (error) {
-    console.warn('[Main Process] Failed to set window icon:', error instanceof Error ? error.message : String(error));
   }
 
-  // Set window open handler for this window
   window.webContents.setWindowOpenHandler(() => {
     const options = getWindowOptions();
 
@@ -268,6 +264,7 @@ app.on('browser-window-created', (_event, window) => {
         autoHideMenuBar: options.autoHideMenuBar,
         frame: options.frame,
         title: options.title,
+        icon: options.icon,
         webPreferences: options.webPreferences,
       },
     };
