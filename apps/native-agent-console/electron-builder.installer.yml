@@ -1,0 +1,17 @@
+# CI-only: build NSIS installer from a pre-packaged Electron app (see tools/ci/build-windows-installer.ps1).
+# Artifact naming matches Linux .deb from @electron-forge/maker-deb (name: agenstra) → agenstra_<version>_amd64.deb
+appId: io.forepath.agenstra.native-agent-console
+productName: Agenstra Agent Console
+extraMetadata:
+  name: Agenstra
+directories:
+  output: installer-out
+win:
+  target:
+    - nsis
+  artifactName: 'agenstra_${version}_amd64.${ext}'
+  executableName: native-agent-console
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: Agenstra Agent Console
