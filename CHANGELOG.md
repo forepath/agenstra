@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2](https://github.com/forepath/agenstra/compare/v2.0.1...v2.0.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* sbom dependencytrack upload matrix file paths ([#357](https://github.com/forepath/agenstra/issues/357)) ([4bf2654](https://github.com/forepath/agenstra/commit/4bf2654a6b164bdd70c8c7b463c56eccd222b37a))
+
 ## [2.0.1](https://github.com/forepath/agenstra/compare/v2.0.0...v2.0.1) (2026-05-16)
 
 
