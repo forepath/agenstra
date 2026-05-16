@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/forepath/agenstra/compare/v1.55.1...v2.0.0) (2026-05-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* user rights are no longer automatically elevated
+
+### Features
+
+* docker image sboms ([#355](https://github.com/forepath/agenstra/issues/355)) ([5cab999](https://github.com/forepath/agenstra/commit/5cab999b5b9e828c70580c88a27516e2e5caa80b))
+* trivy security scan ([#339](https://github.com/forepath/agenstra/issues/339)) ([acff5fd](https://github.com/forepath/agenstra/commit/acff5fdf166b1c7cb3597eb74516318598ffff20))
+
+
+### Bug Fixes
+
+* docker image process users ([#335](https://github.com/forepath/agenstra/issues/335)) ([2d6f395](https://github.com/forepath/agenstra/commit/2d6f3953606e983a4e5695325849665d5d4c4617))
+
+
+### Chores
+
+* set minimum release age for npm and dependabot ([#334](https://github.com/forepath/agenstra/issues/334)) ([508d6e2](https://github.com/forepath/agenstra/commit/508d6e2e75020cc61378dc034ed8bfb9ef5c790e))
+* visual chat cleanup ([#338](https://github.com/forepath/agenstra/issues/338)) ([262fc97](https://github.com/forepath/agenstra/commit/262fc9760ca933a01bc298b6a99cbda41c2ff812))
+
+
+### Continuous Integration
+
+* pull request linting ([#336](https://github.com/forepath/agenstra/issues/336)) ([b80a203](https://github.com/forepath/agenstra/commit/b80a203bb6490740a62a7657a7650f8687fb9780))
+
 ## [1.55.1](https://github.com/forepath/agenstra/compare/v1.55.0...v1.55.1) (2026-05-14)
 
 
