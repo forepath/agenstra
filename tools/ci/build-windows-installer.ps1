@@ -23,14 +23,19 @@ $appDirectory = $exe.Directory.FullName
 $packageJsonPath = Join-Path $appDirectory 'package.json'
 
 if (Test-Path -LiteralPath $packageJsonPath) {
-    # Install dir under …\Programs\<name> uses package.json name; Forge leaves "native-agent-console".
+    # Install dir uses package.json name; artifactName uses version (electron-builder reads project package.json).
+    $releaseVersion = $env:RELEASE_VERSION
     node -e @"
 const fs = require('fs');
 const path = process.argv[1];
+const releaseVersion = process.argv[2] || '';
 const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
 pkg.name = 'Agenstra';
+if (releaseVersion) {
+  pkg.version = releaseVersion;
+}
 fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');
-"@ $packageJsonPath
+"@ $packageJsonPath $releaseVersion
 }
 
 $configPath = Join-Path $ProjectDir 'electron-builder.installer.yml'
@@ -44,9 +49,21 @@ Write-Host "Building NSIS installer from prepackaged app: $appDirectory"
 # Pin version: matches apps/native-agent-console devDependency; avoids npx pulling latest (e.g. 26.x).
 $electronBuilderVersion = '25.1.8'
 
+$electronBuilderArgs = @(
+    '--prepackaged', $appDirectory,
+    '--config', 'electron-builder.installer.yml',
+    '--win', 'nsis',
+    '--publish', 'never'
+)
+if ($env:RELEASE_VERSION) {
+    Write-Host "Using RELEASE_VERSION=$($env:RELEASE_VERSION) for installer artifact name."
+    # Project package.json stays 0.0.0 in git; electron-builder reads version from config, not prepackaged app.
+    $electronBuilderArgs += "--config.version=$($env:RELEASE_VERSION)"
+}
+
 Push-Location $ProjectDir
 try {
-    npx --yes "electron-builder@$electronBuilderVersion" --prepackaged $appDirectory --config electron-builder.installer.yml --win nsis --publish never
+    npx --yes "electron-builder@$electronBuilderVersion" @electronBuilderArgs
 }
 finally {
     Pop-Location
