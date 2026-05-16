@@ -4,10 +4,14 @@
 
 We provide security updates for the following versions of this framework:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.x.x   | :white_check_mark: |
-| < 0.x   | :x:                |
+| Version             | Supported |
+| ------------------- | --------- |
+| 2.x.x               | Yes       |
+| 1.x.x               | No        |
+| 0.x.x               | No        |
+| Earlier major lines | No        |
+
+Security updates are intended for supported **2.x.x** releases. Full disclosure and CRA-oriented context: **[Supported versions and security updates](./docs/agenstra/security/vulnerability-reporting-and-artifacts.md#supported-versions-and-security-updates)**.
 
 ## Reporting a Vulnerability
 
@@ -112,11 +116,13 @@ The product intentionally departs from stricter baselines in a few places. Each 
 
 ## Software Bill of Materials (SBOM)
 
-We publish CycloneDX SBOM files for each release.
+We publish CycloneDX SBOM files for each release (Nx service SBOMs and Trivy container image SBOMs).
 
 - **Path**: `releases/<version>/sboms/`
-- **Example**: `releases/0.1.0/sboms/`
+- **Example**: `releases/2.0.0/sboms/`
 - **How to find your version**: Check the release version in [Downloads](https://downloads.agenstra.com/), then replace `<version>` in the path above.
+
+Details: **[Software Bill of Materials (SBOM)](./docs/agenstra/security/vulnerability-reporting-and-artifacts.md#software-bill-of-materials-sbom)**.
 
 ### Documentation
 
