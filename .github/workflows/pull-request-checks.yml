@@ -631,19 +631,57 @@ jobs:
       - name: Build binaries
         env:
           ELECTRON_FORGE_PLATFORM: win32
-          DEBUG: electron-windows-installer*
         run: |
           xvfb-run -a npx nx affected --target=package --configuration=development-windows --parallel=3 || echo "No projects for native applications build"
 
-      - name: Upload build artifacts
+      - name: Upload Windows Electron bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-electron-bundle
+          path: dist/apps/native-agent-console/out/native-agent-console-win32-x64
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Upload Windows zip artifacts
         uses: actions/upload-artifact@v4
         with:
           name: binary-artifacts-windows
-          path: |
-            dist/**/out/make/**/*.zip
-            dist/**/out/make/**/*.exe
-            dist/**/out/make/**/*.msi
-            dist/**/out/make/**/*.msix
+          path: dist/**/out/make/**/win32/**/*.zip
+          if-no-files-found: ignore
+          retention-days: 1
+          compression-level: 6
+
+  build-native-applications-windows-installer:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    needs: build-native-applications-windows
+    if: ${{ needs.build-native-applications-windows.result == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Download Windows Electron bundle
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: windows-electron-bundle
+          path: windows-electron-bundle
+
+      - name: Build NSIS installer from prepackaged bundle
+        shell: pwsh
+        run: ./tools/ci/build-windows-installer.ps1
+
+      - name: Upload Windows installer artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-artifacts-windows-installer
+          path: apps/native-agent-console/installer-out/*.exe
+          if-no-files-found: ignore
           retention-days: 1
           compression-level: 6
 
@@ -653,6 +691,7 @@ jobs:
     needs:
       - build-native-applications-linux
       - build-native-applications-windows
+      - build-native-applications-windows-installer
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -667,6 +706,7 @@ jobs:
 
       - name: Download binaries
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           path: artifacts
           pattern: binary-artifacts-*
