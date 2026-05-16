@@ -46,17 +46,12 @@ for bom_path in "${SBOM_DIR}"/container-*.cdx.json; do
   fi
 
   include+=("$(
-    jq -n \
+    jq -cn \
       --arg bomfilename "$bom_path" \
       --arg projectname "$projectname" \
       --arg projectversion "$PROJECT_VERSION" \
       --arg parent "$CONTAINER_IMAGE_SBOM_PARENT" \
-      '{
-        bomfilename: $bomfilename,
-        projectname: $projectname,
-        projectversion: $projectversion,
-        parent: $parent
-      }'
+      '{bomfilename: $bomfilename, projectname: $projectname, projectversion: $projectversion, parent: $parent}'
   )")
 done
 
@@ -65,4 +60,4 @@ if [ "${#include[@]}" -eq 0 ]; then
   exit 0
 fi
 
-printf '%s' "$(printf '%s\n' "${include[@]}" | jq -s '{include: .}')"
+printf '%s' "$(printf '%s\n' "${include[@]}" | jq -sc '{include: .}')"
