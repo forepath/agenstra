@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.3](https://github.com/forepath/agenstra/compare/v2.0.2...v2.0.3) (2026-05-16)
+
+
+### Chores
+
+* update supported versions after breaking change ([#358](https://github.com/forepath/agenstra/issues/358)) ([1be2066](https://github.com/forepath/agenstra/commit/1be20663bfbaed0e554f91df80520cfa40662917))
+
 ## [2.0.2](https://github.com/forepath/agenstra/compare/v2.0.1...v2.0.2) (2026-05-16)
 
 
