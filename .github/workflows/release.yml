@@ -524,6 +524,8 @@ jobs:
 
       - name: Build NSIS installer from prepackaged bundle
         shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: ./tools/ci/build-windows-installer.ps1
 
       - name: Upload Windows installer artifacts
