@@ -1,0 +1,79 @@
+name: Trivy scan
+description: Run Trivy with repo trivy.yaml, upload SARIF, and fail on CRITICAL findings.
+
+inputs:
+  scan-type:
+    description: Trivy scan type (fs, config, or image)
+    required: true
+  scan-ref:
+    description: Scan target path for fs or config scans
+    required: false
+    default: .
+  image-ref:
+    description: Image reference for image scans
+    required: false
+    default: ''
+  sarif-category:
+    description: SARIF category for upload-sarif (must be unique per job)
+    required: true
+  skip-setup-trivy:
+    description: Skip Trivy installation on subsequent invocations in the same job
+    required: false
+    default: 'false'
+  upload-github-security:
+    description: Upload SARIF to GitHub Code Scanning when available
+    required: false
+    default: 'true'
+
+outputs:
+  sarif-file:
+    description: Path to the generated SARIF file
+    value: ${{ steps.sarif-path.outputs.file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve SARIF output path
+      id: sarif-path
+      shell: bash
+      run: |
+        echo "file=trivy-results-${{ inputs.sarif-category }}.sarif" >> "$GITHUB_OUTPUT"
+
+    - name: Run Trivy (SARIF report)
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        scan-type: ${{ inputs.scan-type }}
+        scan-ref: ${{ inputs.scan-ref }}
+        image-ref: ${{ inputs.image-ref }}
+        trivy-config: trivy.yaml
+        format: sarif
+        output: ${{ steps.sarif-path.outputs.file }}
+        exit-code: '0'
+        skip-setup-trivy: ${{ inputs.skip-setup-trivy }}
+
+    - name: Upload SARIF to GitHub Security
+      id: upload-sarif
+      if: inputs.upload-github-security == 'true'
+      continue-on-error: true
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: ${{ steps.sarif-path.outputs.file }}
+        category: ${{ inputs.sarif-category }}
+
+    - name: Upload SARIF artifact (fallback)
+      if: inputs.upload-github-security == 'true' && steps.upload-sarif.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: trivy-sarif-${{ inputs.sarif-category }}
+        path: ${{ steps.sarif-path.outputs.file }}
+        retention-days: 30
+
+    - name: Run Trivy (severity gate)
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        scan-type: ${{ inputs.scan-type }}
+        scan-ref: ${{ inputs.scan-ref }}
+        image-ref: ${{ inputs.image-ref }}
+        trivy-config: trivy.yaml
+        format: table
+        skip-setup-trivy: true

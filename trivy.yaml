@@ -1,0 +1,34 @@
+# Agenstra Trivy defaults — used by CI and local runs: trivy fs . --config trivy.yaml
+# Severity gate: CRITICAL fail CI (exit-code: 1)
+
+severity:
+  - CRITICAL
+
+exit-code: 1
+timeout: 15m
+
+scan:
+  scanners:
+    - vuln
+    - secret
+    - misconfig
+  skip-dirs:
+    - .git
+    - node_modules
+    - dist
+    - coverage
+    - .nx
+    - .angular
+  skip-files:
+    - apps/**/.start-containers.env
+
+pkg:
+  types:
+    - os
+    - library
+
+vulnerability:
+  ignore-unfixed: true
+
+misconfiguration:
+  include-non-failures: false

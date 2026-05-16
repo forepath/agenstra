@@ -1,0 +1,51 @@
+name: Trivy scan local container images
+description: Scan ghcr.io/forepath/* and registry.forenet.internal/forepath/* images on the runner Docker daemon and upload SARIF.
+
+inputs:
+  sarif-category:
+    description: SARIF category for upload-sarif
+    required: true
+  upload-github-security:
+    description: Upload SARIF to GitHub Code Scanning when available
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Trivy
+      uses: aquasecurity/setup-trivy@v0.2.6
+      with:
+        cache: true
+
+    - name: Scan built container images
+      id: scan
+      shell: bash
+      env:
+        TRIVY_SARIF_CATEGORY: ${{ inputs.sarif-category }}
+        TRIVY_SARIF_FILE: trivy-results-${{ inputs.sarif-category }}.sarif
+      run: |
+        chmod +x tools/ci/trivy-scan-local-images.sh
+        tools/ci/trivy-scan-local-images.sh
+        if [ -f "trivy-results-${{ inputs.sarif-category }}.sarif" ]; then
+          echo "sarif_exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "sarif_exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Upload SARIF to GitHub Security
+      id: upload-sarif
+      if: inputs.upload-github-security == 'true' && steps.scan.outputs.sarif_exists == 'true'
+      continue-on-error: true
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: trivy-results-${{ inputs.sarif-category }}.sarif
+        category: ${{ inputs.sarif-category }}
+
+    - name: Upload SARIF artifact (fallback)
+      if: inputs.upload-github-security == 'true' && steps.scan.outputs.sarif_exists == 'true' && steps.upload-sarif.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: trivy-sarif-${{ inputs.sarif-category }}
+        path: trivy-results-${{ inputs.sarif-category }}.sarif
+        retention-days: 30
