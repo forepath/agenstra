@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.3](https://github.com/forepath/agenstra/compare/v2.1.2...v2.1.3) (2026-05-16)
+
+
+### Bug Fixes
+
+* unified sbom upload names ([#363](https://github.com/forepath/agenstra/issues/363)) ([75fa7e5](https://github.com/forepath/agenstra/commit/75fa7e5752fe4b52caa2f169b98c2eaefc518a42))
+
 ## [2.1.2](https://github.com/forepath/agenstra/compare/v2.1.1...v2.1.2) (2026-05-16)
 
 
