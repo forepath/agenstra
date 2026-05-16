@@ -19,7 +19,7 @@ chmod +x tools/ci/trivy-pre-commit.sh
 tools/ci/trivy-pre-commit.sh
 if [ $? -ne 0 ]; then
   echo "❌ Trivy scan failed. Fix CRITICAL findings or document them in .trivyignore."
-  echo "   See config/trivy/README.md and docs/agenstra/security/ci-security-scanning.md"
+  echo "   See docs/agenstra/security/ci-security-scanning.md"
   exit 1
 fi
 

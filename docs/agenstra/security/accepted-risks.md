@@ -134,7 +134,7 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 
 #### Operator summary (AR-006)
 
-**Unfixed vulnerabilities are acceptable for pipeline gating** — Trivy will not fail because a CVE has an empty **Fixed Version**. Address **CRITICAL** findings that have a published fix; track anything else via SARIF and release SBOMs. Do not add unfixed CVEs to `.trivyignore` solely to silence the gate (they are already ignored). See **[CI security scanning](./ci-security-scanning.md)** and **[`config/trivy/README.md`](../../../config/trivy/README.md)**.
+**Unfixed vulnerabilities are acceptable for pipeline gating** — Trivy will not fail because a CVE has an empty **Fixed Version**. Address **CRITICAL** findings that have a published fix; track anything else via SARIF and release SBOMs. Do not add unfixed CVEs to `.trivyignore` solely to silence the gate (they are already ignored). See **[CI security scanning](./ci-security-scanning.md)**.
 
 ---
 

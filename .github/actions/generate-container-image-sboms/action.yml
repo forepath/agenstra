@@ -1,0 +1,40 @@
+name: Generate container image SBOMs (Trivy)
+description: Generate CycloneDX SBOMs for local ghcr.io/forepath and registry.forenet.internal/forepath images.
+
+inputs:
+  project-version:
+    description: >-
+      Release semver (e.g. 2.0.0) — only images with this Docker tag are scanned.
+      Use 0.0.0-SNAPSHOT for PR CI (scans :latest and :test tags only).
+    required: false
+    default: '0.0.0-SNAPSHOT'
+  artifact-name:
+    description: Artifact name for dist/sboms container outputs (empty skips upload)
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Trivy
+      uses: aquasecurity/setup-trivy@v0.2.6
+      with:
+        cache: true
+
+    - name: Generate container image CycloneDX SBOMs
+      shell: bash
+      env:
+        PROJECT_VERSION: ${{ inputs.project-version }}
+      run: |
+        chmod +x tools/ci/trivy-generate-image-sboms.sh
+        tools/ci/trivy-generate-image-sboms.sh
+
+    - name: Upload container image SBOM artifact
+      if: inputs.artifact-name != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: dist/sboms/container-*.cdx.json
+        retention-days: 1
+        compression-level: 6
+        if-no-files-found: ignore

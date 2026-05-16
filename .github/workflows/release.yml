@@ -112,6 +112,12 @@ jobs:
         run: |
           npx nx run-many --target=api-container-image --configuration=release --parallel=3 || echo "No projects for api container image build"
 
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: ${{ needs.publish.outputs.new_release_version }}
+          artifact-name: sbom-container-images-api
+
   build-worker-container-images:
     name: Build Worker Container Images
     runs-on: ubuntu-latest
@@ -152,6 +158,12 @@ jobs:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
           npx nx run-many --target=worker-container-image --configuration=release --parallel=3 || echo "No projects for worker container image build"
+
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: ${{ needs.publish.outputs.new_release_version }}
+          artifact-name: sbom-container-images-worker
 
   build-vnc-container-images:
     name: Build VNC Container Images
@@ -194,6 +206,12 @@ jobs:
         run: |
           npx nx run-many --target=vnc-container-image --configuration=release --parallel=3 || echo "No projects for vnc container image build"
 
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: ${{ needs.publish.outputs.new_release_version }}
+          artifact-name: sbom-container-images-vnc
+
   build-ssh-container-images:
     name: Build SSH Container Images
     runs-on: ubuntu-latest
@@ -234,6 +252,12 @@ jobs:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
           npx nx run-many --target=ssh-container-image --configuration=release --parallel=3 || echo "No projects for ssh container image build"
+
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: ${{ needs.publish.outputs.new_release_version }}
+          artifact-name: sbom-container-images-ssh
 
   build-agi-container-images:
     name: Build AGI Container Images
@@ -276,6 +300,12 @@ jobs:
         run: |
           npx nx run-many --target=agi-container-image --configuration=release --parallel=3 || echo "No projects for agi container image build"
 
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: ${{ needs.publish.outputs.new_release_version }}
+          artifact-name: sbom-container-images-agi
+
   build-server-container-images:
     name: Build Server Container Images
     runs-on: ubuntu-latest
@@ -316,6 +346,12 @@ jobs:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
           npx nx run-many --target=server-container-image --configuration=release --parallel=3 || echo "No projects for server container image build"
+
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: ${{ needs.publish.outputs.new_release_version }}
+          artifact-name: sbom-container-images-server
 
   publish-openapi-clients-js:
     name: Publish OpenAPI JavaScript/TypeScript Clients
@@ -547,15 +583,40 @@ jobs:
   publish-sboms:
     name: Publish SBOMs to DependencyTrack
     runs-on: ubuntu-latest
-    needs: publish
+    needs:
+      - publish
+      - build-api-container-images
+      - build-worker-container-images
+      - build-vnc-container-images
+      - build-ssh-container-images
+      - build-agi-container-images
+      - build-server-container-images
     if: needs.publish.outputs.new_release_published == 'true'
     environment: production
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: .
+
+      - name: Download container image SBOM artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: sbom-container-images-*
+          merge-multiple: true
+          path: container-sbom-download
+
+      - name: Merge container image SBOM files
+        run: |
+          mkdir -p dist/sboms
+          if [ -d container-sbom-download ]; then
+            find container-sbom-download -type f -name 'container-*.cdx.json' -exec cp -n {} dist/sboms/ \;
+          fi
 
       - name: Upload agent-console SBOM
         uses: DependencyTrack/gh-upload-sbom@v3
@@ -686,3 +747,95 @@ jobs:
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
         run: |
           aws s3 cp dist/sboms/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/sboms/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+
+  prepare-container-image-sbom-uploads:
+    name: Prepare container image SBOM uploads
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+      - build-api-container-images
+      - build-worker-container-images
+      - build-vnc-container-images
+      - build-ssh-container-images
+      - build-agi-container-images
+      - build-server-container-images
+    if: needs.publish.outputs.new_release_published == 'true'
+    env:
+      CONTAINER_IMAGE_SBOM_PARENT: '91975f2d-c1cc-4f83-a7fd-07088430423c'
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_entries: ${{ steps.set-matrix.outputs.has_entries }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Download container image SBOM artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: sbom-container-images-*
+          merge-multiple: true
+          path: container-sbom-download
+
+      - name: Collect container image SBOM files
+        run: |
+          mkdir -p dist/sboms
+          if [ -d container-sbom-download ]; then
+            find container-sbom-download -type f -name 'container-*.cdx.json' -exec cp -n {} dist/sboms/ \;
+          fi
+
+      - name: Build upload matrix
+        id: set-matrix
+        env:
+          PROJECT_VERSION: ${{ needs.publish.outputs.new_release_version }}
+        run: |
+          chmod +x tools/ci/container-image-sbom-upload-matrix.sh
+          matrix="$(tools/ci/container-image-sbom-upload-matrix.sh dist/sboms "$PROJECT_VERSION")"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          count="$(echo "$matrix" | jq '.include | length')"
+          if [ "$count" -gt 0 ]; then
+            echo "has_entries=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_entries=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload container image SBOM artifact
+        if: steps.set-matrix.outputs.has_entries == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-image-sboms-for-dt
+          path: dist/sboms/container-*.cdx.json
+          retention-days: 1
+          if-no-files-found: error
+
+  publish-container-image-sboms:
+    name: Publish container image SBOM (${{ matrix.projectname }})
+    runs-on: ubuntu-latest
+    needs:
+      - prepare-container-image-sbom-uploads
+      - publish
+    if: >-
+      needs.publish.outputs.new_release_published == 'true' &&
+      needs.prepare-container-image-sbom-uploads.outputs.has_entries == 'true'
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-container-image-sbom-uploads.outputs.matrix) }}
+    steps:
+      - name: Download container image SBOMs
+        uses: actions/download-artifact@v4
+        with:
+          name: container-image-sboms-for-dt
+          path: .
+
+      - name: Upload container image SBOM
+        uses: DependencyTrack/gh-upload-sbom@v3
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: ${{ matrix.parent }}
+          projectname: ${{ matrix.projectname }}
+          projectversion: ${{ matrix.projectversion }}
+          autocreate: true
+          bomfilename: ${{ matrix.bomfilename }}

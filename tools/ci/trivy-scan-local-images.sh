@@ -48,6 +48,7 @@ for image in "${images[@]}"; do
   # SARIF report (non-blocking exit code so upload can run when findings exist)
   trivy image "$image" \
     --config trivy.yaml \
+    --quiet \
     --format sarif \
     --output "$sarif_part" \
     --exit-code 0
@@ -57,6 +58,7 @@ for image in "${images[@]}"; do
   # Severity gate (CRITICAL per trivy.yaml) — one image per invocation
   trivy image "$image" \
     --config trivy.yaml \
+    --quiet \
     --format table
 done
 
