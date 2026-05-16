@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1](https://github.com/forepath/agenstra/compare/v2.0.0...v2.0.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* sbom upload matrix multiline issue ([#356](https://github.com/forepath/agenstra/issues/356)) ([f3b69bd](https://github.com/forepath/agenstra/commit/f3b69bd5fb53f176fc087f2a4bda5d1a94c16626))
+
 ## [2.0.0](https://github.com/forepath/agenstra/compare/v1.55.1...v2.0.0) (2026-05-16)
 
 
