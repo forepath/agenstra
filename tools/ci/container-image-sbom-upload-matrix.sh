@@ -45,9 +45,11 @@ for bom_path in "${SBOM_DIR}"/container-*.cdx.json; do
     projectname="container-${image_part}"
   fi
 
+  # Basename only: publish-container-image-sboms downloads the artifact flat to workspace root.
+  bom_basename="$(basename "$bom_path")"
   include+=("$(
     jq -cn \
-      --arg bomfilename "$bom_path" \
+      --arg bomfilename "$bom_basename" \
       --arg projectname "$projectname" \
       --arg projectversion "$PROJECT_VERSION" \
       --arg parent "$CONTAINER_IMAGE_SBOM_PARENT" \
