@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0](https://github.com/forepath/agenstra/compare/v2.0.3...v2.1.0) (2026-05-16)
+
+
+### Features
+
+* electron windows installer build ([#359](https://github.com/forepath/agenstra/issues/359)) ([5d9448a](https://github.com/forepath/agenstra/commit/5d9448aaac7c04bf69bbd047eb0128ecf139ea29))
+
 ## [2.0.3](https://github.com/forepath/agenstra/compare/v2.0.2...v2.0.3) (2026-05-16)
 
 
