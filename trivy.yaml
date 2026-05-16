@@ -1,4 +1,4 @@
-# Agenstra Trivy defaults — used by CI and local runs: trivy fs . --config trivy.yaml
+# Agenstra Trivy defaults — used by CI and local runs: trivy fs . --config trivy.yaml --quiet
 # Severity gate: CRITICAL fail CI (exit-code: 1)
 
 severity:

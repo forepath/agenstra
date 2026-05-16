@@ -247,6 +247,12 @@ jobs:
         with:
           sarif-category: trivy-images-api
 
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: 0.0.0-SNAPSHOT
+          artifact-name: sbom-container-images-api
+
   build-worker-container-images:
     name: Build Worker Container Images
     runs-on: ubuntu-latest
@@ -282,6 +288,12 @@ jobs:
         uses: ./.github/actions/trivy-scan-local-images
         with:
           sarif-category: trivy-images-worker
+
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: 0.0.0-SNAPSHOT
+          artifact-name: sbom-container-images-worker
 
   build-vnc-container-images:
     name: Build VNC Container Images
@@ -319,6 +331,12 @@ jobs:
         with:
           sarif-category: trivy-images-vnc
 
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: 0.0.0-SNAPSHOT
+          artifact-name: sbom-container-images-vnc
+
   build-ssh-container-images:
     name: Build SSH Container Images
     runs-on: ubuntu-latest
@@ -354,6 +372,12 @@ jobs:
         uses: ./.github/actions/trivy-scan-local-images
         with:
           sarif-category: trivy-images-ssh
+
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: 0.0.0-SNAPSHOT
+          artifact-name: sbom-container-images-ssh
 
   build-agi-container-images:
     name: Build AGI Container Images
@@ -391,6 +415,12 @@ jobs:
         with:
           sarif-category: trivy-images-agi
 
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: 0.0.0-SNAPSHOT
+          artifact-name: sbom-container-images-agi
+
   build-server-container-images:
     name: Build Server Container Images
     runs-on: ubuntu-latest
@@ -426,6 +456,57 @@ jobs:
         uses: ./.github/actions/trivy-scan-local-images
         with:
           sarif-category: trivy-images-server
+
+      - name: Generate container image SBOMs
+        uses: ./.github/actions/generate-container-image-sboms
+        with:
+          project-version: 0.0.0-SNAPSHOT
+          artifact-name: sbom-container-images-server
+
+  collect-sbom-artifacts:
+    name: Collect SBOM artifacts
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - build-api-container-images
+      - build-worker-container-images
+      - build-vnc-container-images
+      - build-ssh-container-images
+      - build-agi-container-images
+      - build-server-container-images
+    if: always()
+    steps:
+      - name: Download service SBOMs from build
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Download container image SBOM artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: sbom-container-images-*
+          merge-multiple: true
+          path: container-sbom-download
+
+      - name: Merge SBOM artifacts
+        run: |
+          mkdir -p dist/sboms
+          if [ -d container-sbom-download ]; then
+            find container-sbom-download -type f -name 'container-*.cdx.json' -exec cp -n {} dist/sboms/ \;
+          fi
+          ls -la dist/sboms/ 2>/dev/null || true
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-artifacts
+          path: dist/sboms/
+          retention-days: 7
+          compression-level: 6
+          if-no-files-found: ignore
 
   build-scripts-binary:
     name: Build Scripts Binaries

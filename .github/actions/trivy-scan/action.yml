@@ -49,6 +49,7 @@ runs:
         format: sarif
         output: ${{ steps.sarif-path.outputs.file }}
         exit-code: '0'
+        hide-progress: true
         skip-setup-trivy: ${{ inputs.skip-setup-trivy }}
 
     - name: Upload SARIF to GitHub Security
@@ -76,4 +77,5 @@ runs:
         image-ref: ${{ inputs.image-ref }}
         trivy-config: trivy.yaml
         format: table
+        hide-progress: true
         skip-setup-trivy: true

@@ -14,9 +14,9 @@ if ! command -v trivy >/dev/null 2>&1; then
 fi
 
 echo "🔒 Running Trivy filesystem scan (vuln, secret, misconfig)..."
-trivy fs . --config trivy.yaml
+trivy fs . --config trivy.yaml --quiet
 
 echo "🔒 Running Trivy config scan (Dockerfiles, IaC, workflows)..."
-trivy config . --config trivy.yaml
+trivy config . --config trivy.yaml --quiet
 
 echo "✅ Trivy pre-commit scans passed."
