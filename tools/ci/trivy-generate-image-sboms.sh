@@ -60,11 +60,8 @@ echo "Generating CycloneDX SBOMs for ${#filtered_images[@]} image(s): ${filtered
 
 for image in "${filtered_images[@]}"; do
   repo="${image%%:*}"
-  tag="${image#*:}"
   repo_name="${repo##*/}"
-  safe_tag="${tag//./-}"
-  safe_tag="${safe_tag//:/-}"
-  bom_path="${SBOM_OUTPUT_DIR}/container-${repo_name}-${safe_tag}.cdx.json"
+  bom_path="${SBOM_OUTPUT_DIR}/container-${repo_name}.cdx.json"
 
   echo "SBOM for ${image} -> ${bom_path}"
 
