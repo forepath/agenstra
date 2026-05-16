@@ -44,26 +44,28 @@ if (-not (Test-Path -LiteralPath $configPath)) {
     throw "electron-builder config not found: $configPath"
 }
 
+$projectPackageJsonPath = Join-Path $ProjectDir 'package.json'
+if ($env:RELEASE_VERSION -and (Test-Path -LiteralPath $projectPackageJsonPath)) {
+    # electron-builder ${version} in artifactName comes from project package.json (not prepackaged).
+    Write-Host "Using RELEASE_VERSION=$($env:RELEASE_VERSION) for installer artifact name."
+    node -e @"
+const fs = require('fs');
+const pkgPath = process.argv[1];
+const version = process.argv[2];
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+pkg.version = version;
+fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+"@ $projectPackageJsonPath $env:RELEASE_VERSION
+}
+
 Write-Host "Building NSIS installer from prepackaged app: $appDirectory"
 
 # Pin version: matches apps/native-agent-console devDependency; avoids npx pulling latest (e.g. 26.x).
 $electronBuilderVersion = '25.1.8'
 
-$electronBuilderArgs = @(
-    '--prepackaged', $appDirectory,
-    '--config', 'electron-builder.installer.yml',
-    '--win', 'nsis',
-    '--publish', 'never'
-)
-if ($env:RELEASE_VERSION) {
-    Write-Host "Using RELEASE_VERSION=$($env:RELEASE_VERSION) for installer artifact name."
-    # Project package.json stays 0.0.0 in git; electron-builder reads version from config, not prepackaged app.
-    $electronBuilderArgs += "--config.version=$($env:RELEASE_VERSION)"
-}
-
 Push-Location $ProjectDir
 try {
-    npx --yes "electron-builder@$electronBuilderVersion" @electronBuilderArgs
+    npx --yes "electron-builder@$electronBuilderVersion" --prepackaged $appDirectory --config electron-builder.installer.yml --win nsis --publish never
 }
 finally {
     Pop-Location
