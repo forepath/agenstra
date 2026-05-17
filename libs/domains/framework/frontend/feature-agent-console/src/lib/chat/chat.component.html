@@ -340,6 +340,41 @@
                           <div class="d-flex align-items-center mb-1">
                             <strong class="text-truncate me-2">{{ agent.name }}</strong>
                             @if (activeClient$ | async; as activeClient) {
+                              @if (getEnvironmentGitIndicator$(activeClient.id, agent.id) | async; as gitIndicator) {
+                                @if (gitIndicator) {
+                                  <span
+                                    class="git-status-indicator rounded-circle me-1"
+                                    [class.status-clean]="gitIndicator === 'clean'"
+                                    [class.status-changes]="gitIndicator === 'changes'"
+                                    [class.status-conflict]="gitIndicator === 'conflict'"
+                                    [title]="gitIndicatorTitle(gitIndicator)"
+                                  ></span>
+                                }
+                              }
+                              @if (getEnvironmentGitBranch$(activeClient.id, agent.id) | async; as branch) {
+                                @if (branch) {
+                                  <small class="text-muted text-truncate me-1" [title]="branch">
+                                    <i class="bi bi-diagram-3" aria-hidden="true"></i>
+                                    {{ branch }}
+                                  </small>
+                                }
+                              }
+                              @if (getEnvironmentActivityDisplay$(activeClient.id, agent.id) | async; as activity) {
+                                @if (activity === 'waiting' || activity === 'streaming') {
+                                  <span
+                                    class="spinner-border spinner-border-sm text-primary flex-shrink-0 me-1"
+                                    role="status"
+                                    i18n-title="@@featureChat-environmentGenerating"
+                                    title="Generating response"
+                                  ></span>
+                                } @else if (activity === 'unread') {
+                                  <span
+                                    class="badge rounded-pill bg-primary flex-shrink-0 me-1"
+                                    i18n="@@featureChat-environmentUnread"
+                                    >New</span
+                                  >
+                                }
+                              }
                               @if (getAgentDeploymentStatus$(activeClient.id, agent.id) | async; as deploymentStatus) {
                                 @if (deploymentStatus) {
                                   <small class="flex-shrink-0">
@@ -3681,3 +3716,39 @@
     </div>
   </div>
 </div>
+
+@if (showPushOptInModal()) {
+  <div
+    class="modal fade show d-block"
+    tabindex="-1"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pushOptInModalLabel"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="pushOptInModalLabel" i18n="@@featureChat-pushOptInTitle">
+            Desktop notifications
+          </h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="onDeclinePushNotifications()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0" i18n="@@featureChat-pushOptInBody">
+            Get notified about new chat messages and automation runs in workspaces you can access, even when this tab is
+            in the background.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="onDeclinePushNotifications()">
+            <span i18n="@@featureChat-pushOptInNotNow">Not now</span>
+          </button>
+          <button type="button" class="btn btn-primary" (click)="onEnablePushNotifications()">
+            <span i18n="@@featureChat-pushOptInEnable">Enable notifications</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

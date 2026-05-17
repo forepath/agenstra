@@ -79,6 +79,13 @@ STATIC_API_KEY=dev-api-key-123
 PORT=3100
 WEBSOCKET_PORT=8081
 
+# Optional: Web Push for agent console desktop notifications
+# npx web-push generate-vapid-keys
+# VAPID_PUBLIC_KEY=
+# VAPID_PRIVATE_KEY=
+# VAPID_SUBJECT=mailto:admin@localhost
+# AGENT_CONSOLE_FRONTEND_URL=http://localhost:4200
+
 # CORS (for development)
 CORS_ORIGIN=*
 

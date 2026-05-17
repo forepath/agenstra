@@ -14,6 +14,8 @@ This application provides:
 - **WebSocket Gateway** - Real-time bidirectional event forwarding to remote agent-manager services
 - **Server Provisioning** - Automated cloud server provisioning (Hetzner Cloud, DigitalOcean) with Docker and agent-manager deployment
 - **Tickets and Automation** - Workspace tickets, migration, and automation APIs with optional ticket board WebSocket namespace
+- **Console live state** - Per-environment git/chat indicators over the `console` WebSocket namespace
+- **Web Push** - Optional desktop notifications for chat and automation (VAPID-configured)
 - **Usage Statistics** - Aggregated chat, filter, and entity metrics for operators and admins
 - **Global Filter Rules** - Admin-managed regex policies synced to workspaces
 - **Atlassian import** - Admin-managed Atlassian site connections and Jira/Confluence import configurations (scheduled and on-demand)
@@ -191,12 +193,14 @@ For complete API endpoint documentation, request/response schemas, and authentic
 
 ## WebSocket Gateway
 
-Socket.IO listens on **`WEBSOCKET_PORT`** (default `8081`). Two namespaces share the same port and CORS settings (`WEBSOCKET_CORS_ORIGIN`):
+Socket.IO listens on **`WEBSOCKET_PORT`** (default `8081`). Namespaces share the same port and CORS settings (`WEBSOCKET_CORS_ORIGIN`):
 
 - **`clients`** (default `WEBSOCKET_NAMESPACE` = `clients`) – proxy to the selected workspace’s agent-manager; chat, terminals, stats, and controller-originated ticket hints for the chat UI
+- **`console`** (default `CONSOLE_WEBSOCKET_NAMESPACE` = `console`) – per-environment live state (git indicator, branch, chat activity) for the agent console environment list
 - **`tickets`** (default `TICKETS_WEBSOCKET_NAMESPACE` = `tickets`) – ticket board and automation realtime (see [Tickets and Workspaces](../features/tickets-and-workspaces.md))
+- **`pages`** (default `KNOWLEDGE_WEBSOCKET_NAMESPACE` = `pages`) – knowledge board realtime
 
-Connect to each namespace explicitly in the client library (e.g. `io(url + '/clients', options)` and `io(url + '/tickets', options)`).
+Connect to each namespace explicitly in the client library (e.g. `io(url + '/clients', options)`, `io(url + '/console', options)`, and `io(url + '/tickets', options)`).
 
 ### Authentication
 
@@ -238,6 +242,31 @@ Same handshake auth as `clients`. After `setClient` with a workspace id, the soc
 - `ticketUpsert`, `ticketRemoved`, `ticketCommentCreated`, `ticketActivityCreated`
 - `ticketAutomationUpsert`, `ticketAutomationRunUpsert`, `ticketAutomationRunStepAppended`
 - `error` - Tickets namespace errors
+
+### Namespace `console` – events
+
+Same handshake auth and `setClient` access rules as `clients`. After `setClient`, the socket joins room `client:{clientId}`.
+
+#### Client → Server
+
+- `setClient` - Select workspace for environment live state
+
+#### Server → Client
+
+- `setClientSuccess` - Workspace context set; optional `snapshot` array of current environment states
+- `environmentStateUpsert` - Git/chat (and optional automation) snapshot for one agent
+- `environmentStateRemoved` - Agent no longer observed
+- `error` - Console namespace errors
+
+See `libs/domains/framework/backend/feature-agent-controller/spec/asyncapi.yaml` and `docs/console-live-realtime.mmd` in the framework library.
+
+### Web Push API
+
+Optional desktop notifications for workspaces the user can access (requires VAPID keys on the controller; see **[Web Push (VAPID)](../deployment/environment-configuration.md#web-push-vapid)**).
+
+- `GET /api/push/vapid-public-key` - Public key and `enabled` flag
+- `POST /api/push/subscriptions` - Register a browser push subscription (Keycloak or users auth only)
+- `DELETE /api/push/subscriptions` - Remove a subscription by endpoint
 
 For complete WebSocket event specifications and usage examples, see the application and API reference docs linked below.
 
@@ -328,10 +357,14 @@ See the application docs and environment configuration for complete environment 
 **Application-specific:**
 
 - `PORT` - HTTP API port (default: `3100`)
-- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8081`; shared by `clients` and `tickets` namespaces)
+- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8081`; shared by all controller namespaces)
 - `WEBSOCKET_NAMESPACE` - Socket.IO namespace for agent proxying (default: `clients`)
+- `CONSOLE_WEBSOCKET_NAMESPACE` - Socket.IO namespace for console live state (default: `console`)
 - `TICKETS_WEBSOCKET_NAMESPACE` - Socket.IO namespace for ticket board realtime (default: `tickets`)
+- `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Socket.IO namespace for knowledge board realtime (default: `pages`)
 - `WEBSOCKET_CORS_ORIGIN` - CORS origin(s) for WebSocket (see framework docs)
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` - Web Push signing (optional; see [environment configuration](../deployment/environment-configuration.md#web-push-vapid))
+- `AGENT_CONSOLE_FRONTEND_URL` - Public agent console origin for notification click URLs (optional)
 - `NODE_ENV` - Environment mode (`development` or `production`)
 
 **CORS Configuration:**

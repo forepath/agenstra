@@ -26,6 +26,7 @@ import { ClientsDeploymentsController } from '../controllers/clients-deployments
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
 import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
+import { PushSubscriptionsController } from '../controllers/push-subscriptions.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
 import { TicketsController } from '../controllers/tickets.controller';
@@ -35,6 +36,7 @@ import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
+import { PushSubscriptionEntity } from '../entities/push-subscription.entity';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease.entity';
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
@@ -44,6 +46,7 @@ import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-gener
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
+import { ConsoleLiveGateway } from '../gateways/console-live.gateway';
 import { KnowledgeBoardGateway } from '../gateways/knowledge-board.gateway';
 import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
 import { DigitalOceanProvider } from '../providers/provisioning/digital-ocean.provider';
@@ -51,6 +54,7 @@ import { HetznerProvider } from '../providers/provisioning/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
+import { PushSubscriptionsRepository } from '../repositories/push-subscriptions.repository';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
 import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
@@ -63,6 +67,9 @@ import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.s
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { ConsoleLiveObserverService } from '../services/console-live-observer.service';
+import { ConsoleLivePushBridgeService } from '../services/console-live-push-bridge.service';
+import { ConsoleLiveRealtimeService } from '../services/console-live-realtime.service';
 import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge-embedding-index.service';
 import { LocalEmbeddingProvider } from '../services/embeddings/local-embedding.provider';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
@@ -75,6 +82,7 @@ import { TicketAutomationChatSyncService } from '../services/ticket-automation-c
 import { TicketAutomationService } from '../services/ticket-automation.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
+import { WebPushNotificationService } from '../services/web-push-notification.service';
 
 import { ContextImportModule } from './context-import.module';
 import { FilterRulesModule } from './filter-rules.module';
@@ -107,6 +115,7 @@ const authMethod = getAuthenticationMethod();
       KnowledgeNodeEmbeddingEntity,
       KnowledgePageActivityEntity,
       KnowledgeRelationEntity,
+      PushSubscriptionEntity,
     ]),
     StatisticsModule,
     forwardRef(() => FilterRulesModule),
@@ -127,6 +136,7 @@ const authMethod = getAuthenticationMethod();
     ClientAgentAutonomyController,
     ClientAgentAutonomyDirectoryController,
     ClientsAgentAutomationProxyController,
+    PushSubscriptionsController,
   ],
   providers: [
     ClientsService,
@@ -162,6 +172,12 @@ const authMethod = getAuthenticationMethod();
     TicketAutomationChatSyncService,
     TicketsBoardGateway,
     KnowledgeBoardGateway,
+    ConsoleLiveGateway,
+    ConsoleLiveRealtimeService,
+    ConsoleLiveObserverService,
+    ConsoleLivePushBridgeService,
+    WebPushNotificationService,
+    PushSubscriptionsRepository,
     ProvisioningService,
     ProvisioningProviderFactory,
     ProvisioningReferencesRepository,

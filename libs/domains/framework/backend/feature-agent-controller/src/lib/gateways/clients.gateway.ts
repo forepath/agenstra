@@ -29,6 +29,7 @@ import { AutoContextResolverService } from '../services/auto-context-resolver.se
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { ConsoleLiveObserverService } from '../services/console-live-observer.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
@@ -113,6 +114,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly statisticsService: StatisticsService,
     private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
+    private readonly consoleLiveObserver: ConsoleLiveObserverService,
     private readonly ticketsService: TicketsService,
     private readonly knowledgeTreeService: KnowledgeTreeService,
     private readonly autoContextResolverService: AutoContextResolverService,
@@ -373,6 +375,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               )
               .catch(() => undefined);
           }
+        } else if (event === 'fileUpdateNotification' && currentClientId && lastAgentId) {
+          this.consoleLiveObserver.invalidateVcs(currentClientId, lastAgentId);
         } else if (event === 'chatMessage' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;
@@ -1050,6 +1054,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.statisticsService
           .recordChatInput(clientId, agentId, wordCount, charCount, userInfo?.userId)
           .catch(() => undefined);
+        this.consoleLiveObserver.notePendingUserChatOrigin(clientId, agentId, userInfo?.userId);
         this.lastAgentIdBySocket.set(socket.id, agentId);
         this.lastChatMessageBySocket.set(socket.id, message);
       } else if (event === 'enhanceChat' && agentId) {

@@ -41,6 +41,7 @@ import {
 import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
 import { parseAndValidateVerifierProfile } from '../utils/verifier-profile.validation';
 
+import { ConsoleLiveObserverService } from './console-live-observer.service';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
@@ -100,6 +101,7 @@ export class TicketAutomationService {
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly ticketBoardRealtime: TicketBoardRealtimeService,
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
+    private readonly consoleLiveObserver: ConsoleLiveObserverService,
     @Inject(forwardRef(() => TicketsService))
     private readonly ticketsService: TicketsService,
   ) {}
@@ -601,11 +603,10 @@ export class TicketAutomationService {
 
     await this.appendActivity(ticketId, TicketActionType.AUTOMATION_CANCELLED, { runId, reason }, req);
 
-    this.ticketBoardRealtime.emitToClient(
-      ticket.clientId,
-      TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
-      this.mapRun(run),
-    );
+    const runDto = this.mapRun(run);
+
+    this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert, runDto);
+    this.consoleLiveObserver.notifyAutomationRunFromDto(runDto);
     this.ticketAutomationChatSync.emitLiveRunUpdateFromEntity(run);
     const autoFresh = await this.automationRepo.findOne({ where: { ticketId } });
 

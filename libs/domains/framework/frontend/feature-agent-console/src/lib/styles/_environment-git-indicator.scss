@@ -1,0 +1,20 @@
+.git-status-indicator {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  flex-shrink: 0;
+  min-width: 8px;
+  min-height: 8px;
+
+  &.status-clean {
+    background-color: #28a745;
+  }
+
+  &.status-changes {
+    background-color: #ffc107;
+  }
+
+  &.status-conflict {
+    background-color: #dc3545;
+  }
+}

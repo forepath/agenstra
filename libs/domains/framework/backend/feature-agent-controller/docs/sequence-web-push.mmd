@@ -1,0 +1,10 @@
+sequenceDiagram
+  participant UI as Agent Console
+  participant API as agent-controller REST
+  participant Push as WebPushNotificationService
+  participant Browser as OS notification
+
+  UI->>API: POST /push/subscriptions
+  Note over Observer: chat or automation event
+  Observer->>Push: sendToUserIds
+  Push->>Browser: web-push encrypted payload

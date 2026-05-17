@@ -62,6 +62,7 @@
             }
           ],
           "outputHashing": "all",
+          "serviceWorker": "apps/frontend-agent-console/ngsw-config.json",
           "fileReplacements": [
             {
               "replace": "libs/domains/framework/frontend/util-configuration/src/lib/environment.ts",

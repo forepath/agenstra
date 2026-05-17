@@ -22,6 +22,7 @@ import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
+import { PushSubscriptionEntity } from '../entities/push-subscription.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
@@ -176,6 +177,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(KnowledgeRelationEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(KnowledgePageActivityEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(PushSubscriptionEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
       .useValue(mockRepository)

@@ -78,6 +78,65 @@ These variables tune the **Atlassian Cloud** import scheduler and provider on th
 - `CONTEXT_IMPORT_ITEM_BUDGET` - Soft cap on import items processed **per config per run** for scheduler and on-demand runs (default: `25`).
 - `ATLASSIAN_IMPORT_DISABLED` - When set to `true`, the Atlassian import provider skips work for import runs (connections and configs remain manageable via the admin API).
 
+### WebSocket namespaces (agent controller)
+
+All namespaces share **`WEBSOCKET_PORT`** and **`WEBSOCKET_CORS_ORIGIN`**.
+
+- `WEBSOCKET_NAMESPACE` - Agent proxy namespace (default: `clients`)
+- `TICKETS_WEBSOCKET_NAMESPACE` - Ticket board realtime (default: `tickets`)
+- `CONSOLE_WEBSOCKET_NAMESPACE` - Environment live state for the agent console (default: `console`)
+- `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board realtime (default: `pages`)
+
+See [WebSocket communication](../features/websocket-communication.md) and [Backend Agent Controller](../applications/backend-agent-controller.md).
+
+### Web Push (VAPID)
+
+Desktop notifications for the **agent console** use the [Web Push](https://www.w3.org/TR/push-api/) protocol. The controller signs outbound messages with **VAPID** keys and stores browser subscriptions in PostgreSQL (`push_subscriptions` table; run agent-controller migrations before enabling push in production).
+
+Push is **optional**. If either key is missing, the controller logs a startup warning, `GET /api/push/vapid-public-key` returns `enabled: false`, and no notifications are sent. Live environment indicators still work over the **`console`** WebSocket namespace without VAPID.
+
+#### Variables
+
+| Variable                     | Required             | Description                                                                                                                                                                                                                    |
+| ---------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `VAPID_PUBLIC_KEY`           | Yes (to enable push) | URL-safe base64 public key shown to browsers during subscription                                                                                                                                                               |
+| `VAPID_PRIVATE_KEY`          | Yes (to enable push) | Matching private key; **server-only**, never expose to clients or commit to git                                                                                                                                                |
+| `VAPID_SUBJECT`              | No                   | Contact URI for the push application (default: `mailto:admin@localhost`). Use `mailto:your-team@example.com` or an `https://` site URL                                                                                         |
+| `AGENT_CONSOLE_FRONTEND_URL` | No                   | Public origin of the agent console (no trailing slash), e.g. `https://console.example.com`. Used as the base for notification click URLs (`/clients/{clientId}/agents/{agentId}`). If unset, click payloads use relative paths |
+
+#### Generate keys
+
+From the repository root (requires `web-push` in the workspace):
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Copy the **public** and **private** lines into your environment. Use a **new** key pair per environment (development, staging, production).
+
+#### Where to set them
+
+**Docker / `start-containers` (recommended for local stacks):**
+
+1. Copy `apps/backend-agent-controller/.start-containers.env.example` to `.start-containers.env` if you do not have one yet.
+2. Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` under the “Push notifications” section.
+3. Set `AGENT_CONSOLE_FRONTEND_URL` to the URL users open in the browser (for local Docker, often `http://localhost:4200`).
+4. Start the stack: `nx start-containers backend-agent-controller` (or your usual compose command). `docker-compose.yaml` passes these variables into the controller container.
+
+**Bare-metal / custom deploy:** export the same variables in the process environment for `backend-agent-controller` (systemd, Kubernetes secrets, etc.).
+
+#### Frontend behavior
+
+- Production builds register the Angular service worker; users opt in from the console UI.
+- The console fetches the public key from `GET /api/push/vapid-public-key` unless runtime config sets `push.vapidPublicKey` in the merged **`CONFIG`** JSON (see [Frontend applications](#frontend-applications-express-ssr)).
+- **API key authentication** cannot register push subscriptions (`POST /api/push/subscriptions` requires a user id). Use **Keycloak** or **users** auth for push.
+- Browsers require a **secure context** (HTTPS or `localhost`) for notification permission and service workers.
+
+#### Security notes
+
+- Treat `VAPID_PRIVATE_KEY` like any signing secret: store in a secret manager, rotate on compromise, and restrict who can read deployment config.
+- Do not log subscription endpoints or keys at INFO level in production.
+
 ## Backend Agent Manager
 
 ### Application Configuration
@@ -221,7 +280,13 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 ### API Configuration
 
 - `API_URL` - Backend API endpoint (default: `http://localhost:3100`)
-- `WEBSOCKET_URL` - WebSocket endpoint (default: `http://localhost:8081`)
+- `WEBSOCKET_URL` - WebSocket endpoint (default: `http://localhost:8081`). The agent console also connects to derived **`/console`** and **`/tickets`** namespaces on the same origin unless overridden in runtime `CONFIG` (`controller.consoleWebsocketUrl`, `controller.ticketsWebsocketUrl`).
+
+### Web Push (agent console runtime config)
+
+Optional keys in remote **`CONFIG`** JSON (merged at `/config`); usually the public key is loaded from the controller API instead.
+
+- `push.vapidPublicKey` - VAPID public key (same value as controller `VAPID_PUBLIC_KEY`). When set, the console skips `GET /api/push/vapid-public-key` for subscription.
 
 ### Keycloak Configuration
 

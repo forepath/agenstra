@@ -11,7 +11,7 @@ Agenstra uses WebSocket (Socket.IO) for real-time bidirectional communication. T
 - **Controller ↔ Manager**: Event forwarding to remote agent-managers
 - **Manager ↔ Agent Containers**: Real-time chat and container communication
 
-On the controller, **`clients`** and **`tickets`** share the same TCP port (`WEBSOCKET_PORT`); namespaces are selected in the Socket.IO client path.
+On the controller, **`clients`**, **`console`**, **`tickets`**, and **`pages`** share the same TCP port (`WEBSOCKET_PORT`); namespaces are selected in the Socket.IO client path.
 
 ## Authentication
 

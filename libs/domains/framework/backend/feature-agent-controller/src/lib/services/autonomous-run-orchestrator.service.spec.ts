@@ -10,6 +10,7 @@ import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketAutomationFailureCode } from '../entities/ticket-automation.enums';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketStatus } from '../entities/ticket.enums';
+import { provideConsoleLiveObserverServiceMock } from '../testing/console-live-observer.service.mock';
 import { AGENSTRA_AUTOMATION_COMPLETE } from '../utils/automation-completion.constants';
 import {
   ephemeralAutomationBranchNameForRun,
@@ -26,6 +27,7 @@ import { TicketsService } from './tickets.service';
 
 function realtimeSideProviders(ticketIdForBoard: string) {
   return [
+    provideConsoleLiveObserverServiceMock(),
     { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
     { provide: TicketAutomationChatSyncService, useValue: { emitLiveRunUpdateFromEntity: jest.fn() } },
     { provide: TicketsService, useValue: { emitBoardTicketSnapshotInternal: jest.fn().mockResolvedValue(undefined) } },

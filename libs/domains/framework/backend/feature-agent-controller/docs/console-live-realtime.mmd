@@ -1,0 +1,12 @@
+sequenceDiagram
+  participant UI as Agent Console
+  participant ConsoleGW as console namespace
+  participant Observer as ConsoleLiveObserverService
+  participant AM as agent-manager agents
+
+  UI->>ConsoleGW: setClient clientId
+  ConsoleGW->>Observer: ensureObserving
+  Observer->>AM: headless login per environment
+  AM-->>Observer: chatMessage / chatEvent
+  Observer->>ConsoleGW: environmentStateUpsert
+  ConsoleGW-->>UI: environmentStateUpsert

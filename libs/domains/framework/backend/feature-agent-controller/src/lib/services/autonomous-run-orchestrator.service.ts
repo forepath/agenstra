@@ -40,6 +40,7 @@ import {
 import { buildAutonomousTicketRunPreamble } from '../utils/tickets-prototype-prompt.utils';
 
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
+import { ConsoleLiveObserverService } from './console-live-observer.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TicketAutomationService } from './ticket-automation.service';
@@ -80,6 +81,7 @@ export class AutonomousRunOrchestratorService {
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
     private readonly ticketsService: TicketsService,
     private readonly ticketAutomationService: TicketAutomationService,
+    private readonly consoleLiveObserver: ConsoleLiveObserverService,
   ) {}
 
   async processBatch(batchSize: number): Promise<void> {
@@ -594,11 +596,10 @@ export class AutonomousRunOrchestratorService {
     const refreshedRun = await this.safeFindRunById(runId);
 
     if (refreshedRun) {
-      this.ticketBoardRealtime.emitToClient(
-        ticket.clientId,
-        TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
-        ticketAutomationRunEntityToDto(refreshedRun),
-      );
+      const runDto = ticketAutomationRunEntityToDto(refreshedRun);
+
+      this.ticketBoardRealtime.emitToClient(ticket.clientId, TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert, runDto);
+      this.consoleLiveObserver.notifyAutomationRunFromDto(runDto);
       this.ticketAutomationChatSync.emitLiveRunUpdateFromEntity(refreshedRun);
     }
 
@@ -687,11 +688,10 @@ export class AutonomousRunOrchestratorService {
     const r = await this.safeFindRunById(runId);
 
     if (r) {
-      this.ticketBoardRealtime.emitToClient(
-        clientId,
-        TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert,
-        ticketAutomationRunEntityToDto(r),
-      );
+      const runDto = ticketAutomationRunEntityToDto(r);
+
+      this.ticketBoardRealtime.emitToClient(clientId, TICKETS_BOARD_EVENTS.ticketAutomationRunUpsert, runDto);
+      this.consoleLiveObserver.notifyAutomationRunFromDto(runDto);
       this.ticketAutomationChatSync.emitLiveRunUpdateFromEntity(r);
     }
   }

@@ -190,10 +190,11 @@ Monaco Editor integration for code editing with:
 
 ## WebSocket Communication
 
-The application opens **two** Socket.IO connections to the controller **`WEBSOCKET_URL`** when needed:
+The application opens Socket.IO connections to the controller **`WEBSOCKET_URL`** when needed:
 
 1. **`clients` namespace** – Same port as today’s `WEBSOCKET_URL`; `setClient` selects the workspace, then `forward` sends agent-manager events (chat, login, terminals, etc.). Manager responses arrive as their native event names on this socket.
-2. **`tickets` namespace** – Optional second connection for ticket board realtime (`setClient` per workspace, then ticket and automation events). Chat-centric UIs may rely on controller events on `clients` instead; see [WebSocket Communication](../features/websocket-communication.md).
+2. **`console` namespace** – Environment list live state (git indicator, branch, chat activity, unread badges). Derived as `/console` on the same host as `WEBSOCKET_URL` unless `controller.consoleWebsocketUrl` is set in runtime config.
+3. **`tickets` namespace** – Optional connection for ticket board realtime (`setClient` per workspace, then ticket and automation events). Chat-centric UIs may rely on controller events on `clients` instead; see [WebSocket Communication](../features/websocket-communication.md).
 
 Reconnection flows restore client context, agent login when applicable, and tickets board context.
 
@@ -215,6 +216,20 @@ Behavior depends on controller configuration:
 - **Users (JWT)** – Email/password login and registration routes from `identityAuthRoutes`; tokens are stored and sent as `Bearer` on HTTP and on WebSocket handshakes.
 
 See [Authentication](../features/authentication.md) for environment variables and operational notes.
+
+## Desktop notifications (Web Push)
+
+Production builds enable the Angular service worker. Users can opt in from the chat UI to receive notifications for new chat messages and completed automation runs in workspaces they can access.
+
+**Controller requirements:**
+
+- Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and optionally `VAPID_SUBJECT` on **backend-agent-controller** (see **[Web Push (VAPID)](../deployment/environment-configuration.md#web-push-vapid)** for key generation and `.start-containers.env`).
+- Run database migrations so `push_subscriptions` exists.
+- Use **Keycloak** or **users** authentication (API key mode cannot register subscriptions).
+
+**Browser requirements:** HTTPS (or `localhost`), notification permission, and a production build with the service worker registered.
+
+Optional: set `push.vapidPublicKey` in remote **`CONFIG`** JSON instead of calling `GET /api/push/vapid-public-key`.
 
 ## Environment Configuration
 
@@ -299,11 +314,12 @@ Before deploying to production:
 
 1. Configure environment variables
 2. Set `API_URL` to production **agent controller** HTTP endpoint
-3. Set `WEBSOCKET_URL` to production controller WebSocket base (namespaces `clients` and `tickets` share this origin)
-4. Configure Keycloak client (or users auth) for the production domain
-5. (Optional) Set `CONFIG` environment variable to a remote JSON configuration URL for runtime configuration
-6. Build the application: `nx build frontend-agent-console --configuration=production`
-7. Serve the built files using a web server (nginx, Apache, etc.)
+3. Set `WEBSOCKET_URL` to production controller WebSocket base (namespaces `clients`, `console`, and `tickets` share this origin)
+4. Configure controller **VAPID** keys if desktop notifications are required (see [Web Push (VAPID)](../deployment/environment-configuration.md#web-push-vapid))
+5. Configure Keycloak client (or users auth) for the production domain
+6. (Optional) Set `CONFIG` environment variable to a remote JSON configuration URL for runtime configuration
+7. Build the application: `nx build frontend-agent-console --configuration=production`
+8. Serve the built files using a web server (nginx, Apache, etc.)
 
 ## Related Documentation
 
