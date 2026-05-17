@@ -22,7 +22,11 @@ import {
   AuthenticationFacade,
   ClientAgentAutonomyFacade,
   ClientsFacade,
+  ConsoleLiveSocketFacade,
   ContainerType,
+  gitIndicatorTitle,
+  PushNotificationsService,
+  resolveEnvironmentActivityDisplay,
   DeploymentsService,
   EnvFacade,
   FilesFacade,
@@ -159,6 +163,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly socketsFacade = inject(SocketsFacade);
+  private readonly consoleLiveSocketFacade = inject(ConsoleLiveSocketFacade);
+  private readonly pushNotificationsService = inject(PushNotificationsService);
   private readonly statsFacade = inject(StatsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
@@ -251,6 +257,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   // Search state
   readonly searchClientQuery = signal<string>('');
   readonly searchAgentQuery = signal<string>('');
+  readonly showPushOptInModal = signal(false);
 
   // Client list observables
   readonly searchClientQuery$ = toObservable(this.searchClientQuery);
@@ -1215,6 +1222,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Load clients on init
     this.clientsFacade.loadClients();
 
+    if (this.pushNotificationsService.shouldShowOptInPrompt()) {
+      this.showPushOptInModal.set(true);
+    }
+
+    this.consoleLiveSocketFacade.connect();
+
+    this.activeClientId$
+      .pipe(
+        filter((clientId): clientId is string => !!clientId),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((clientId) => {
+        this.ensureConsoleLiveConnectedAndSetClient(clientId);
+      });
+
     // Load provider model catalog when client + selected agent are set (includes deep-link and reducer-driven selection).
     combineLatest([this.activeClientId$, this.selectedAgent$])
       .pipe(
@@ -1978,6 +2001,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.socketsFacade.disconnect();
         }
       });
+      this.consoleLiveSocketFacade.disconnect();
 
       // Navigate to base route
       if (navigate) {
@@ -2019,6 +2043,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.agentsFacade.loadClientAgents(clientId);
         // Ensure socket is connected before setting client
         this.ensureSocketConnectedAndSetClient(clientId);
+        this.ensureConsoleLiveConnectedAndSetClient(clientId);
       }
 
       // Reset message count when switching clients
@@ -2053,6 +2078,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       const clientId = this.activeClientId;
 
       if (clientId) {
+        this.consoleLiveSocketFacade.clearUnread(clientId, agentId);
         this.agentsFacade.loadClientAgent(clientId, agentId);
         // Load commands for the selected agent
         this.filesFacade.listDirectory(clientId, agentId, { path: '.cursor/commands' });
@@ -5181,6 +5207,47 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * Ensure socket is connected, then set the client
    * @param clientId - The client UUID
    */
+  getEnvironmentGitIndicator$(clientId: string, agentId: string) {
+    return this.consoleLiveSocketFacade.getGitIndicator$(clientId, agentId);
+  }
+
+  getEnvironmentGitBranch$(clientId: string, agentId: string) {
+    return this.consoleLiveSocketFacade.getGitBranch$(clientId, agentId);
+  }
+
+  getEnvironmentActivityDisplay$(clientId: string, agentId: string) {
+    return combineLatest([
+      this.consoleLiveSocketFacade.getChatPhase$(clientId, agentId),
+      this.consoleLiveSocketFacade.getUnreadCount$(clientId, agentId),
+    ]).pipe(map(([phase, unread]) => resolveEnvironmentActivityDisplay(phase, unread)));
+  }
+
+  gitIndicatorTitle(indicator: 'clean' | 'changes' | 'conflict' | null): string {
+    return gitIndicatorTitle(indicator);
+  }
+
+  async onEnablePushNotifications(): Promise<void> {
+    const ok = await this.pushNotificationsService.subscribeFromUserGesture();
+
+    this.showPushOptInModal.set(false);
+
+    if (!ok) {
+      this.pushNotificationsService.declineOptIn();
+    }
+  }
+
+  onDeclinePushNotifications(): void {
+    this.pushNotificationsService.declineOptIn();
+    this.showPushOptInModal.set(false);
+  }
+
+  private ensureConsoleLiveConnectedAndSetClient(clientId: string): void {
+    this.consoleLiveSocketFacade
+      .ensureConnectedAndSetClient(clientId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+  }
+
   private ensureSocketConnectedAndSetClient(clientId: string): void {
     // Check if socket is already connected
     this.socketConnected$

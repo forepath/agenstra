@@ -5,6 +5,7 @@ export const environment: Environment = {
   controller: {
     restApiUrl: 'http://localhost:3100/api',
     websocketUrl: 'http://localhost:8081/clients',
+    consoleWebsocketUrl: 'http://localhost:8081/console',
   },
   billing: {
     restApiUrl: 'http://localhost:3200/api',
@@ -38,5 +39,8 @@ export const environment: Environment = {
     domain: '.agenstra.com',
     privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
     termsUrl: 'https://www.agenstra.com/legal/terms',
+  },
+  push: {
+    vapidPublicKey: 'BMa_ht_jE1T-DnD0nsr5ehbgptLvB0MyWrIiDupAkfU2EcZ5BkSw8vo2vsKO1V4FWTZF5_xqghUP0LJRRhTs4HY',
   },
 };

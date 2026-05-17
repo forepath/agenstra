@@ -16,6 +16,7 @@ import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketsService } from '../services/tickets.service';
+import { provideConsoleLiveObserverServiceMock } from '../testing/console-live-observer.service.mock';
 
 import { ClientsGateway } from './clients.gateway';
 
@@ -198,6 +199,7 @@ describe('ClientsGateway', () => {
           provide: ClientWorkspaceConfigurationOverridesProxyService,
           useValue: mockWorkspaceConfigurationOverridesProxy,
         },
+        provideConsoleLiveObserverServiceMock(),
       ],
     }).compile();
 

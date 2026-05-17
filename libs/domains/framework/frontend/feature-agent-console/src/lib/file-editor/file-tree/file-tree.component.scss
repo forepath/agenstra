@@ -1,3 +1,5 @@
+@use '../../styles/environment-git-indicator';
+
 :host {
   display: flex;
   flex-direction: column;
@@ -228,25 +230,6 @@
 }
 
 .git-status-indicator {
-  width: 8px;
-  height: 8px;
-  display: inline-block;
-  flex-shrink: 0;
-  min-width: 8px;
-  min-height: 8px;
-
-  &.status-clean {
-    background-color: #28a745; // green - in sync with remote
-  }
-
-  &.status-changes {
-    background-color: #ffc107; // yellow - local changes (staged, unstaged, or unpushed)
-  }
-
-  &.status-conflict {
-    background-color: #dc3545; // red - merge conflicts detected
-  }
-
   // When spinner is shown, make indicator slightly larger to accommodate it
   &.has-spinner {
     width: 12px;

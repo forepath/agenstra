@@ -20,6 +20,12 @@ export interface Environment {
     websocketUrl: string;
     /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/tickets`. */
     ticketsWebsocketUrl?: string;
+    /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/console`. */
+    consoleWebsocketUrl?: string;
+  };
+  /** Web Push (optional; VAPID public key from controller or build-time config). */
+  push?: {
+    vapidPublicKey?: string;
   };
   billing: {
     restApiUrl: string;

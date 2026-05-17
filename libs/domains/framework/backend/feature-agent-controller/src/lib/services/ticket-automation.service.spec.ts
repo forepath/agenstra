@@ -12,6 +12,7 @@ import { TicketAutomationLeaseStatus, TicketAutomationRunStatus } from '../entit
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { provideConsoleLiveObserverServiceMock } from '../testing/console-live-observer.service.mock';
 
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TicketAutomationService } from './ticket-automation.service';
@@ -65,6 +66,7 @@ describe('TicketAutomationService', () => {
         { provide: ClientUsersRepository, useValue: {} },
         { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
         { provide: TicketAutomationChatSyncService, useValue: { emitLiveRunUpdateFromEntity: jest.fn() } },
+        provideConsoleLiveObserverServiceMock(),
         {
           provide: TicketsService,
           useValue: {

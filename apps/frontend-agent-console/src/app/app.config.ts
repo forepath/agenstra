@@ -1,6 +1,7 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, isDevMode, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, RouteReuseStrategy, withRouterConfig } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import {
   getAuthInterceptor,
   getUsersSessionInvalidationInterceptor,
@@ -73,5 +74,9 @@ export const appConfig: ApplicationConfig = {
     // Custom RouteReuseStrategy to reuse component instances when navigating between routes with the same component
     { provide: RouteReuseStrategy, useClass: ComponentReuseStrategy },
     provideLocale(),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };
