@@ -16,7 +16,21 @@ describe('console-live-environment-display', () => {
   });
 
   it('gitIndicatorTitle returns human-readable labels', () => {
+    expect(gitIndicatorTitle('clean')).toContain('clean');
     expect(gitIndicatorTitle('changes')).toContain('changes');
+    expect(gitIndicatorTitle('conflict')).toContain('conflict');
+    expect(gitIndicatorTitle(null)).toContain('unknown');
+  });
+
+  it('shouldIncrementUnreadOnLiveUpsert returns false without lastMessageAt', () => {
+    const next = {
+      clientId: 'c1',
+      agentId: 'a1',
+      git: { indicator: null },
+      chat: { phase: 'idle' as const },
+    };
+
+    expect(shouldIncrementUnreadOnLiveUpsert(undefined, next)).toBe(false);
   });
 
   it('shouldIncrementUnreadOnLiveUpsert ignores git-only updates', () => {
