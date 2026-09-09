@@ -50,9 +50,13 @@
                     one-hour clock. We process notices in a timely, diligent, non-arbitrary, and objective manner.
                   </p>
                   <p class="cr-panel__footer mb-0">
-                    <a routerLink="." fragment="report-form" class="text-primary text-decoration-none"
+                    <a
+                      routerLink="."
+                      [queryParams]="{ type: 'dsa' }"
+                      fragment="report-form"
+                      class="small fw-semibold text-primary text-decoration-none"
                       ><span i18n="@@featureForepathLegalContentReport-whichDsaLink">Use the DSA form</span>
-                      <i class="bi bi-arrow-down" aria-hidden="true"></i
+                      <i class="bi bi-arrow-down ms-1" aria-hidden="true"></i
                     ></a>
                   </p>
                 </div>
@@ -68,9 +72,13 @@
                     removed or disabled within one hour of receipt, subject to the Regulation.
                   </p>
                   <p class="cr-panel__footer mb-0">
-                    <a routerLink="." fragment="report-form" class="text-primary text-decoration-none"
+                    <a
+                      routerLink="."
+                      [queryParams]="{ type: 'tco' }"
+                      fragment="report-form"
+                      class="small fw-semibold text-primary text-decoration-none"
                       ><span i18n="@@featureForepathLegalContentReport-whichTcoLink">Use the TCO form</span>
-                      <i class="bi bi-arrow-down" aria-hidden="true"></i
+                      <i class="bi bi-arrow-down ms-1" aria-hidden="true"></i
                     ></a>
                   </p>
                 </div>
@@ -148,8 +156,8 @@
             </p>
 
             @if (submitted$ | async) {
-              <div class="text-center py-4" role="status">
-                <i class="bi bi-check-circle-fill text-success icon-lg mb-3" aria-hidden="true"></i>
+              <div class="text-center py-4 bg-body-tertiary rounded-3" role="status">
+                <i class="bi bi-check-circle-fill text-success icon-lg mb-3 d-inline-block" aria-hidden="true"></i>
                 <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathLegalContentReport-formSuccessTitle">
                   Report submitted
                 </h3>
@@ -221,7 +229,7 @@
                     }
                   </div>
 
-                  @if (isDsa) {
+                  @if (selectedReportType() === 'dsa') {
                     <div class="col-12">
                       <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="cr-csam" formControlName="csamAnonymous" />
@@ -281,7 +289,7 @@
                     }
                   </div>
 
-                  @if (isDsa) {
+                  @if (selectedReportType() === 'dsa') {
                     <div class="col-12">
                       <label
                         class="form-label"
@@ -356,7 +364,7 @@
                     </div>
                   }
 
-                  @if (isTco) {
+                  @if (selectedReportType() === 'tco') {
                     <div class="col-md-6">
                       <label
                         class="form-label"
@@ -443,10 +451,9 @@
                       >
                       <input
                         id="cr-order-issued"
-                        type="text"
+                        type="datetime-local"
                         class="form-control bg-white"
                         formControlName="orderIssuedAt"
-                        placeholder="YYYY-MM-DDTHH:MM:SSZ"
                         [class.is-invalid]="form.controls.orderIssuedAt.touched && form.controls.orderIssuedAt.invalid"
                       />
                     </div>
