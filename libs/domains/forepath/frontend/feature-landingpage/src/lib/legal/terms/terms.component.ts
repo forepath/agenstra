@@ -22,7 +22,7 @@ export class ForepathLegalTermsComponent implements OnInit {
 
   ngOnInit(): void {
     const metaTitle = $localize`:@@featureForepathLegalTerms-metaTitle:Terms of Service :: ForePath`;
-    const metaDescription = $localize`:@@featureForepathLegalTerms-metaDescription:Terms governing use of ForePath websites, consulting services, and related offerings including Agenstra software and managed cloud services.`;
+    const metaDescription = $localize`:@@featureForepathLegalTerms-metaDescription:Terms governing use of ForePath websites, consulting services, and related professional offerings from IPvX UG (haftungsbeschränkt).`;
 
     this.titleService.setTitle(metaTitle);
     this.destroyRef.onDestroy(
@@ -30,7 +30,7 @@ export class ForepathLegalTermsComponent implements OnInit {
         this.metaService,
         buildPageMetaTags({
           description: metaDescription,
-          keywords: $localize`:@@featureForepathLegalTerms-metaKeywords:ForePath, terms of service, Agenstra, IPvX`,
+          keywords: $localize`:@@featureForepathLegalTerms-metaKeywords:ForePath, terms of service, consulting, IPvX`,
           author: 'IPvX UG (haftungsbeschränkt)',
           robots: 'index, follow',
           canonicalUrl: 'https://forepath.io/legal/terms',
