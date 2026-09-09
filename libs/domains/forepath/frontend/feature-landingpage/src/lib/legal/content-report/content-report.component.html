@@ -1,0 +1,619 @@
+<!-- Hero Section -->
+<section id="hero" class="py-10 py-lg-6 bg-body-tertiary position-relative overflow-hidden grid-section">
+  <div class="container grid-section__container">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathLegalContentReport-title">
+          Content Report
+        </h1>
+        <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featureForepathLegalContentReport-subtitle">
+          Illegal content notices under the DSA and official terrorist-content removal orders under the TCO Regulation
+        </p>
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+          <a
+            routerLink="."
+            fragment="report-form"
+            class="btn btn-primary"
+            i18n="@@featureForepathLegalContentReport-reportCta"
+          >
+            Report illegal content
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="policy" class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-3">
+      <!-- Which mechanism -->
+      <div class="col-md-12">
+        <div class="card border shadow-sm h-100 rounded-3">
+          <div class="card-body p-5">
+            <h2 class="h5 fw-bold mb-3" i18n="@@featureForepathLegalContentReport-whichTitle">
+              Which mechanism to use
+            </h2>
+            <p class="text-muted mb-4" i18n="@@featureForepathLegalContentReport-whichIntro">
+              Choose the mechanism that matches your role and the nature of your submission. Public reporters of alleged
+              illegal content use the DSA notice. Competent authorities issuing a binding terrorist-content removal
+              order use the TCO contact point.
+            </p>
+            <div class="row g-4">
+              <div class="col-md-6">
+                <div class="cr-panel bg-body-tertiary rounded-3 p-4 h-100">
+                  <h3 class="h6 fw-semibold mb-3" i18n="@@featureForepathLegalContentReport-whichDsaTitle">
+                    DSA notice (public)
+                  </h3>
+                  <p class="cr-panel__body text-muted mb-2" i18n="@@featureForepathLegalContentReport-whichDsaBody">
+                    Any individual or entity may notify us of specific content they consider illegal. There is no fixed
+                    one-hour clock. We process notices in a timely, diligent, non-arbitrary, and objective manner.
+                  </p>
+                  <p class="cr-panel__footer mb-0">
+                    <a routerLink="." fragment="report-form" class="text-primary text-decoration-none"
+                      ><span i18n="@@featureForepathLegalContentReport-whichDsaLink">Use the DSA form</span>
+                      <i class="bi bi-arrow-down" aria-hidden="true"></i
+                    ></a>
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="cr-panel bg-body-tertiary rounded-3 p-4 h-100">
+                  <h3 class="h6 fw-semibold mb-3" i18n="@@featureForepathLegalContentReport-whichTcoTitle">
+                    TCO removal order (authorities)
+                  </h3>
+                  <p class="cr-panel__body text-muted mb-2" i18n="@@featureForepathLegalContentReport-whichTcoBody">
+                    Only EU Member State competent authorities may submit binding removal orders for terrorist content.
+                    This contact point is staffed for 24/7 electronic receipt. Content identified in a valid order is
+                    removed or disabled within one hour of receipt, subject to the Regulation.
+                  </p>
+                  <p class="cr-panel__footer mb-0">
+                    <a routerLink="." fragment="report-form" class="text-primary text-decoration-none"
+                      ><span i18n="@@featureForepathLegalContentReport-whichTcoLink">Use the TCO form</span>
+                      <i class="bi bi-arrow-down" aria-hidden="true"></i
+                    ></a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DSA commitments -->
+      <div class="col-md-12">
+        <div class="card border shadow-sm h-100 rounded-3">
+          <div class="card-body p-5">
+            <h2 class="h5 fw-bold mb-3" i18n="@@featureForepathLegalContentReport-dsaTitle">
+              DSA notice-and-action commitments
+            </h2>
+            <p class="text-muted mb-3" i18n="@@featureForepathLegalContentReport-dsaP1">
+              We provide an easy electronic mechanism so any individual or entity can notify us of specific illegal
+              content. Where your notice includes an email address, we send a confirmation of receipt without undue
+              delay. We then notify you of our decision regarding the reported content and of the redress possibilities
+              available against that decision, including internal complaint handling where offered, out-of-court dispute
+              settlement where applicable, and judicial redress.
+            </p>
+            <p class="text-muted mb-3" i18n="@@featureForepathLegalContentReport-dsaP2">
+              We do not currently use automated means to decide DSA notices. If that changes, we will disclose the use
+              of automation in the decision notification. Abusive, bad-faith, or repeatedly unfounded notices may be
+              deprioritized or rejected without further engagement.
+            </p>
+            <p class="text-muted mb-0" i18n="@@featureForepathLegalContentReport-dsaP3">
+              You may also email
+              <a href="mailto:report+dsa&#64;forepath.io">report+dsa&#64;forepath.io</a>. Prefer the form so mandatory
+              Article 16 elements are complete at submission. Competent authorities with a binding TCO removal order
+              should use the TCO mechanism instead.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TCO commitments -->
+      <div class="col-md-12">
+        <div class="card border shadow-sm h-100 rounded-3">
+          <div class="card-body p-5">
+            <h2 class="h5 fw-bold mb-3" i18n="@@featureForepathLegalContentReport-tcoTitle">
+              TCO removal-order contact point
+            </h2>
+            <p class="text-muted mb-3" i18n="@@featureForepathLegalContentReport-tcoP1">
+              Our TCO contact point receives electronic removal orders from competent authorities only. It is available
+              24/7. Supported languages are English and German. Our main establishment is in Germany (IPvX UG
+              (haftungsbeschränkt)).
+            </p>
+            <p class="text-muted mb-3" i18n="@@featureForepathLegalContentReport-tcoP2">
+              Submit the signed removal-order PDF through the form below, or email
+              <a href="mailto:report+tco&#64;forepath.io">report+tco&#64;forepath.io</a>
+              with the same information. Public reports of alleged illegal content that are not binding TCO removal
+              orders must use the DSA mechanism.
+            </p>
+            <p class="text-muted mb-0" i18n="@@featureForepathLegalContentReport-tcoP3">
+              If we apply specific proactive measures against terrorist content, content providers whose content was
+              removed or disabled may contest that decision through a separate complaint channel. That Article 5 channel
+              is distinct from this authority-facing intake.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report form -->
+      <div class="col-md-12">
+        <div class="card border shadow-sm h-100 rounded-3">
+          <div class="card-body p-5">
+            <h2 class="h5 fw-bold mb-2" id="report-form" i18n="@@featureForepathLegalContentReport-formTitle">
+              Submit a content report
+            </h2>
+            <p class="text-muted mb-4" i18n="@@featureForepathLegalContentReport-formLead">
+              Select the report type that matches your submission, then complete the fields for that mechanism.
+            </p>
+
+            @if (submitted$ | async) {
+              <div class="text-center py-4" role="status">
+                <i class="bi bi-check-circle-fill text-success icon-lg mb-3" aria-hidden="true"></i>
+                <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathLegalContentReport-formSuccessTitle">
+                  Report submitted
+                </h3>
+                <p class="text-muted mb-0" i18n="@@featureForepathLegalContentReport-formSuccessLead">
+                  Thank you. We received your report and will process it according to the selected mechanism.
+                </p>
+              </div>
+            } @else {
+              <form class="content-report-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+                <div class="mb-4">
+                  <p class="form-label fw-semibold mb-2" i18n="@@featureForepathLegalContentReport-formTypeLabel">
+                    Report type
+                  </p>
+                  <div class="row g-3 cr-report-type" role="radiogroup" aria-label="Report type">
+                    <div class="col-md-6">
+                      <label class="cr-report-type__option h-100">
+                        <input class="form-check-input mt-1" type="radio" formControlName="reportType" value="dsa" />
+                        <span class="cr-report-type__copy">
+                          <span
+                            class="cr-report-type__title d-block"
+                            i18n="@@featureForepathLegalContentReport-formTypeDsaTitle"
+                            >Illegal content under the Digital Services Act (DSA)</span
+                          >
+                          <span
+                            class="cr-report-type__help small d-block"
+                            i18n="@@featureForepathLegalContentReport-formTypeDsaHelp"
+                            >For individuals or entities reporting content they believe is illegal.</span
+                          >
+                        </span>
+                      </label>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="cr-report-type__option h-100">
+                        <input class="form-check-input mt-1" type="radio" formControlName="reportType" value="tco" />
+                        <span class="cr-report-type__copy">
+                          <span
+                            class="cr-report-type__title d-block"
+                            i18n="@@featureForepathLegalContentReport-formTypeTcoTitle"
+                            >Official terrorist-content removal order under the TCO Regulation</span
+                          >
+                          <span
+                            class="cr-report-type__help small d-block"
+                            i18n="@@featureForepathLegalContentReport-formTypeTcoHelp"
+                            >For competent authorities submitting a binding TCO removal order.</span
+                          >
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label" for="cr-urls" i18n="@@featureForepathLegalContentReport-formUrlsLabel"
+                      >Exact URL(s) / electronic location</label
+                    >
+                    <textarea
+                      id="cr-urls"
+                      class="form-control bg-white"
+                      formControlName="contentUrls"
+                      rows="3"
+                      required
+                      [class.is-invalid]="form.controls.contentUrls.touched && form.controls.contentUrls.invalid"
+                    ></textarea>
+                    @if (form.controls.contentUrls.touched && form.controls.contentUrls.hasError('required')) {
+                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formUrlsRequired">
+                        Exact URL(s) are required.
+                      </div>
+                    }
+                  </div>
+
+                  @if (isDsa) {
+                    <div class="col-12">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cr-csam" formControlName="csamAnonymous" />
+                        <label
+                          class="form-check-label"
+                          for="cr-csam"
+                          i18n="@@featureForepathLegalContentReport-formCsamLabel"
+                        >
+                          This notice concerns child sexual abuse offences under Articles 3 to 7 of Directive 2011/93/EU
+                          and I request anonymity (name and email waived).
+                        </label>
+                      </div>
+                    </div>
+                  }
+
+                  <div class="col-md-6">
+                    <label class="form-label" for="cr-name" i18n="@@featureForepathLegalContentReport-formNameLabel"
+                      >Name</label
+                    >
+                    <input
+                      id="cr-name"
+                      type="text"
+                      class="form-control bg-white"
+                      formControlName="name"
+                      autocomplete="name"
+                      [attr.placeholder]="isAnonymousDsa ? anonymousNamePlaceholder : null"
+                      [class.is-invalid]="form.controls.name.touched && form.controls.name.invalid"
+                    />
+                    @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formNameRequired">
+                        Name is required.
+                      </div>
+                    }
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="cr-email" i18n="@@featureForepathLegalContentReport-formEmailLabel"
+                      >Email</label
+                    >
+                    <input
+                      id="cr-email"
+                      type="email"
+                      class="form-control bg-white"
+                      formControlName="email"
+                      autocomplete="email"
+                      [attr.placeholder]="isAnonymousDsa ? anonymousEmailPlaceholder : null"
+                      [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid"
+                    />
+                    @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formEmailRequired">
+                        Email is required.
+                      </div>
+                    }
+                    @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formEmailInvalid">
+                        Enter a valid email address.
+                      </div>
+                    }
+                  </div>
+
+                  @if (isDsa) {
+                    <div class="col-12">
+                      <label
+                        class="form-label"
+                        for="cr-explanation"
+                        i18n="@@featureForepathLegalContentReport-formExplanationLabel"
+                        >Explanation of alleged illegality</label
+                      >
+                      <textarea
+                        id="cr-explanation"
+                        class="form-control bg-white"
+                        formControlName="explanation"
+                        rows="4"
+                        [class.is-invalid]="form.controls.explanation.touched && form.controls.explanation.invalid"
+                      ></textarea>
+                      @if (form.controls.explanation.touched && form.controls.explanation.hasError('required')) {
+                        <div
+                          class="invalid-feedback"
+                          i18n="@@featureForepathLegalContentReport-formExplanationRequired"
+                        >
+                          A sufficiently substantiated explanation is required.
+                        </div>
+                      }
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-category"
+                        i18n="@@featureForepathLegalContentReport-formCategoryLabel"
+                        >Category of illegal content (optional)</label
+                      >
+                      <input
+                        id="cr-category"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="illegalContentCategory"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-additional"
+                        i18n="@@featureForepathLegalContentReport-formAdditionalLabel"
+                        >Additional identifying information (optional)</label
+                      >
+                      <input
+                        id="cr-additional"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="additionalIdentifiers"
+                      />
+                    </div>
+                    <div class="col-12">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="cr-good-faith"
+                          formControlName="goodFaithConfirmed"
+                          [class.is-invalid]="
+                            form.controls.goodFaithConfirmed.touched && form.controls.goodFaithConfirmed.invalid
+                          "
+                        />
+                        <label
+                          class="form-check-label"
+                          for="cr-good-faith"
+                          i18n="@@featureForepathLegalContentReport-formGoodFaithLabel"
+                        >
+                          I confirm in good faith that the information and allegations in this notice are accurate and
+                          complete.
+                        </label>
+                      </div>
+                    </div>
+                  }
+
+                  @if (isTco) {
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-authority"
+                        i18n="@@featureForepathLegalContentReport-formAuthorityLabel"
+                        >Issuing competent authority</label
+                      >
+                      <input
+                        id="cr-authority"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="authorityName"
+                        [class.is-invalid]="form.controls.authorityName.touched && form.controls.authorityName.invalid"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-member-state"
+                        i18n="@@featureForepathLegalContentReport-formMemberStateLabel"
+                        >Member State</label
+                      >
+                      <input
+                        id="cr-member-state"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="memberState"
+                        [class.is-invalid]="form.controls.memberState.touched && form.controls.memberState.invalid"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-official-name"
+                        i18n="@@featureForepathLegalContentReport-formOfficialNameLabel"
+                        >Authorized official's name</label
+                      >
+                      <input
+                        id="cr-official-name"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="officialName"
+                        [class.is-invalid]="form.controls.officialName.touched && form.controls.officialName.invalid"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-official-role"
+                        i18n="@@featureForepathLegalContentReport-formOfficialRoleLabel"
+                        >Official's role</label
+                      >
+                      <input
+                        id="cr-official-role"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="officialRole"
+                        [class.is-invalid]="form.controls.officialRole.touched && form.controls.officialRole.invalid"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-order-ref"
+                        i18n="@@featureForepathLegalContentReport-formOrderRefLabel"
+                        >Removal order reference number</label
+                      >
+                      <input
+                        id="cr-order-ref"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="orderReference"
+                        [class.is-invalid]="
+                          form.controls.orderReference.touched && form.controls.orderReference.invalid
+                        "
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-order-issued"
+                        i18n="@@featureForepathLegalContentReport-formOrderIssuedLabel"
+                        >Date and time of issuance</label
+                      >
+                      <input
+                        id="cr-order-issued"
+                        type="text"
+                        class="form-control bg-white"
+                        formControlName="orderIssuedAt"
+                        placeholder="YYYY-MM-DDTHH:MM:SSZ"
+                        [class.is-invalid]="form.controls.orderIssuedAt.touched && form.controls.orderIssuedAt.invalid"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label"
+                        for="cr-language"
+                        i18n="@@featureForepathLegalContentReport-formLanguageLabel"
+                        >Preferred language of exchange</label
+                      >
+                      <select
+                        id="cr-language"
+                        class="form-select bg-white"
+                        formControlName="preferredLanguage"
+                        [class.is-invalid]="
+                          form.controls.preferredLanguage.touched && form.controls.preferredLanguage.invalid
+                        "
+                      >
+                        <option value="" disabled i18n="@@featureForepathLegalContentReport-formLanguagePlaceholder">
+                          Select a language
+                        </option>
+                        <option value="en" i18n="@@featureForepathLegalContentReport-formLanguageEn">English</option>
+                        <option value="de" i18n="@@featureForepathLegalContentReport-formLanguageDe">German</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                      <div class="form-check mb-2">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="cr-emergency"
+                          formControlName="emergencyCase"
+                        />
+                        <label
+                          class="form-check-label"
+                          for="cr-emergency"
+                          i18n="@@featureForepathLegalContentReport-formEmergencyLabel"
+                        >
+                          Emergency case (12-hour pre-notification exception)
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <label
+                        class="form-label"
+                        for="cr-reasons"
+                        i18n="@@featureForepathLegalContentReport-formReasonsLabel"
+                        >Statement of reasons / legal basis</label
+                      >
+                      <textarea
+                        id="cr-reasons"
+                        class="form-control bg-white"
+                        formControlName="statementOfReasons"
+                        rows="4"
+                        [class.is-invalid]="
+                          form.controls.statementOfReasons.touched && form.controls.statementOfReasons.invalid
+                        "
+                      ></textarea>
+                    </div>
+                    <div class="col-12">
+                      <label
+                        class="form-label"
+                        for="cr-redress"
+                        i18n="@@featureForepathLegalContentReport-formRedressLabel"
+                        >Redress information provided to the host and content provider</label
+                      >
+                      <textarea
+                        id="cr-redress"
+                        class="form-control bg-white"
+                        formControlName="redressInformation"
+                        rows="3"
+                        [class.is-invalid]="
+                          form.controls.redressInformation.touched && form.controls.redressInformation.invalid
+                        "
+                      ></textarea>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="cr-pdf" i18n="@@featureForepathLegalContentReport-formPdfLabel"
+                        >Signed removal-order PDF</label
+                      >
+                      <input
+                        id="cr-pdf"
+                        type="file"
+                        class="form-control bg-white"
+                        accept="application/pdf,.pdf"
+                        (change)="onPdfSelected($event)"
+                      />
+                      @if (selectedPdfName()) {
+                        <p class="small text-muted mt-2 mb-0">{{ selectedPdfName() }}</p>
+                      }
+                      @if (selectedPdfError()) {
+                        <div class="text-danger small mt-2">{{ selectedPdfError() }}</div>
+                      }
+                    </div>
+                    <div class="col-12">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="cr-attestation"
+                          formControlName="authorityAttestation"
+                          [class.is-invalid]="
+                            form.controls.authorityAttestation.touched && form.controls.authorityAttestation.invalid
+                          "
+                        />
+                        <label
+                          class="form-check-label"
+                          for="cr-attestation"
+                          i18n="@@featureForepathLegalContentReport-formAttestationLabel"
+                        >
+                          I confirm that I am submitting on behalf of an EU Member State competent authority and that
+                          this is a binding terrorist-content removal order under Regulation (EU) 2021/784.
+                        </label>
+                      </div>
+                    </div>
+                  }
+
+                  <div class="col-12">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="cr-privacy"
+                        formControlName="privacyPolicyAccepted"
+                        [class.is-invalid]="
+                          form.controls.privacyPolicyAccepted.touched && form.controls.privacyPolicyAccepted.invalid
+                        "
+                      />
+                      <label class="form-check-label" for="cr-privacy">
+                        <span i18n="@@featureForepathLegalContentReport-formPrivacyPrefix">I agree to the </span>
+                        <a routerLink="/legal/privacy" target="_blank" rel="noopener noreferrer"
+                          ><span i18n="@@featureForepathLegalContentReport-formPrivacyLink">Privacy Policy</span></a
+                        >.
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <ngx-turnstile
+                      [siteKey]="turnstileSiteKey"
+                      (resolved)="onTurnstileResolved($event)"
+                      theme="auto"
+                    ></ngx-turnstile>
+                  </div>
+
+                  @if (error$ | async; as error) {
+                    <div class="col-12">
+                      <div class="alert alert-danger mb-0" role="alert">{{ error }}</div>
+                    </div>
+                  }
+
+                  <div class="col-12">
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      [disabled]="(submitting$ | async) === true"
+                      i18n="@@featureForepathLegalContentReport-formSubmit"
+                    >
+                      Submit report
+                    </button>
+                  </div>
+                </div>
+              </form>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

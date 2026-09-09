@@ -98,7 +98,7 @@
             <h2 class="h5 fw-bold mb-3" i18n="@@featureForepathDisclosure-liabilityContentTitle">
               Liability for Content
             </h2>
-            <p class="text-muted mb-0" i18n="@@featureForepathDisclosure-liabilityContentDesc">
+            <p class="text-muted mb-4" i18n="@@featureForepathDisclosure-liabilityContentDesc">
               As a service provider, we are responsible for our own content on these pages in accordance with general
               laws. However, according to Article 8 of the Digital Services Act (DSA), as a service provider, we are not
               obligated to monitor transmitted or stored third-party information or to investigate circumstances that
@@ -107,6 +107,22 @@
               knowledge of a specific legal violation. Upon becoming aware of such legal violations, we will remove this
               content immediately.
             </p>
+            <div class="d-flex flex-wrap gap-2">
+              <a
+                routerLink="/legal/content-report"
+                [queryParams]="{ type: 'dsa' }"
+                class="btn btn-primary"
+                i18n="@@featureForepathDisclosure-contentReportDsaLink"
+                >Report illegal content (DSA)</a
+              >
+              <a
+                routerLink="/legal/content-report"
+                [queryParams]="{ type: 'tco' }"
+                class="btn btn-primary"
+                i18n="@@featureForepathDisclosure-contentReportTcoLink"
+                >Report removal order (TCO-VO)</a
+              >
+            </div>
           </div>
         </div>
       </div>

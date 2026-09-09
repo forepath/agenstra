@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { incrementCounter, recordHistogram } from '@forepath/shared/backend/util-otel/metrics';
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import FormData = require('form-data');
 
 import { CHATWOOT_API_TIMEOUT_MS } from '../constants/chatwoot-api.constants';
 import {
@@ -12,6 +14,8 @@ import {
   ChatwootCreateContactInboxResponse,
   ChatwootCreateConversationPayload,
   ChatwootCreateConversationResponse,
+  ChatwootCreateMessagePayload,
+  ChatwootCreateMessageResponse,
   ChatwootContactListItem,
 } from '../types/chatwoot.types';
 import { resolveCreatedContact } from '../utils/chatwoot-contact-resolver.utils';
@@ -121,6 +125,87 @@ export class ChatwootApiService {
     return response.id;
   }
 
+  async createMessage(conversationId: number, payload: ChatwootCreateMessagePayload): Promise<number> {
+    const path = `/api/v1/accounts/${this.accountId}/conversations/${conversationId}/messages`;
+    const hasAttachments = Boolean(payload.attachments?.length);
+
+    if (!hasAttachments) {
+      const response = await this.request<ChatwootCreateMessageResponse>('POST', path, {
+        content: payload.content,
+        message_type: payload.message_type ?? 'incoming',
+        private: payload.private ?? false,
+      });
+
+      if (!response.id) {
+        throw new ChatwootApiError('Chatwoot create message response did not include a message id');
+      }
+
+      return response.id;
+    }
+
+    if (!this.isConfigured()) {
+      throw new ChatwootApiError('Chatwoot API is not configured');
+    }
+
+    const form = new FormData();
+    form.append('content', payload.content);
+    form.append('message_type', payload.message_type ?? 'incoming');
+    form.append('private', String(payload.private ?? false));
+
+    for (const attachment of payload.attachments ?? []) {
+      form.append('attachments[]', attachment.buffer, {
+        filename: attachment.filename,
+        contentType: attachment.contentType,
+      });
+    }
+
+    const operation = 'create_message';
+    const startedAt = Date.now();
+
+    try {
+      const response = await axios.request<ChatwootCreateMessageResponse>({
+        method: 'POST',
+        url: `${this.baseUrl}${path}`,
+        data: form,
+        timeout: CHATWOOT_API_TIMEOUT_MS,
+        headers: {
+          api_access_token: this.apiToken,
+          ...form.getHeaders(),
+        },
+        validateStatus: (status) => status < 500,
+      });
+
+      this.recordChatwootRequestMetrics(operation, response.status, Date.now() - startedAt);
+
+      if (response.status >= 400) {
+        this.logger.error(`Chatwoot API POST ${path} failed with status ${response.status}`);
+        throw new ChatwootApiError('Chatwoot API request failed', response.status);
+      }
+
+      if (!response.data?.id) {
+        throw new ChatwootApiError('Chatwoot create message response did not include a message id');
+      }
+
+      return response.data.id;
+    } catch (error) {
+      if (error instanceof ChatwootApiError) {
+        if (error.statusCode != null) {
+          this.recordChatwootRequestMetrics(operation, error.statusCode, Date.now() - startedAt);
+        } else {
+          this.recordChatwootRequestMetrics(operation, undefined, Date.now() - startedAt);
+        }
+
+        throw error;
+      }
+
+      const axiosError = error as AxiosError;
+
+      this.recordChatwootRequestMetrics(operation, undefined, Date.now() - startedAt);
+      this.logger.error(`Chatwoot API POST ${path} error: ${axiosError.message}`);
+      throw new ChatwootApiError('Chatwoot API request failed');
+    }
+  }
+
   private async request<T>(
     method: 'GET' | 'POST',
     path: string,
@@ -196,6 +281,10 @@ function resolveChatwootOperation(path: string): string {
 
   if (path.includes('/contact_inboxes')) {
     return 'create_contact_inbox';
+  }
+
+  if (path.includes('/messages')) {
+    return 'create_message';
   }
 
   if (path.includes('/conversations')) {

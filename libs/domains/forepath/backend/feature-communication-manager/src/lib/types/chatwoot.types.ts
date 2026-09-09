@@ -61,3 +61,22 @@ export interface ChatwootCreateConversationResponse {
   account_id: number;
   inbox_id: number;
 }
+
+export interface ChatwootMessageAttachmentInput {
+  buffer: Buffer;
+  filename: string;
+  contentType: string;
+}
+
+export interface ChatwootCreateMessagePayload {
+  content: string;
+  message_type?: 'incoming' | 'outgoing';
+  private?: boolean;
+  attachments?: ChatwootMessageAttachmentInput[];
+}
+
+export interface ChatwootCreateMessageResponse {
+  id: number;
+  content: string | null;
+  conversation_id?: number;
+}

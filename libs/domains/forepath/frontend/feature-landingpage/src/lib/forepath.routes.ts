@@ -20,6 +20,10 @@ import { provideState } from '@ngrx/store';
 import { createForepathLocalLlmWorker } from './workers/create-forepath-local-llm-worker';
 
 import {
+  CONTENT_REPORT_FEATURE_KEY,
+  ContentReportFacade,
+  submitContentReport$,
+  contentReportReducer,
   VULNERABILITY_REPORT_FEATURE_KEY,
   VulnerabilityReportFacade,
   submitVulnerabilityReport$,
@@ -33,6 +37,7 @@ import { ForepathConsultingComponent } from './consulting/consulting.component';
 import { ForepathContainerComponent } from './container/container.component';
 import { ForepathHomeComponent } from './home/home.component';
 import { ForepathItSystemsComponent } from './it-systems/it-systems.component';
+import { ForepathLegalContentReportComponent } from './legal/content-report/content-report.component';
 import { ForepathLegalDisclosureComponent } from './legal/disclosure/disclosure.component';
 import { ForepathLegalPrivacyComponent } from './legal/privacy/privacy.component';
 import { ForepathLegalTermsComponent } from './legal/terms/terms.component';
@@ -114,6 +119,15 @@ export const forepathRoutes: Route[] = [
           VulnerabilityReportFacade,
           provideState(VULNERABILITY_REPORT_FEATURE_KEY, vulnerabilityReportReducer),
           provideEffects({ submitVulnerabilityReport$ }),
+        ],
+      },
+      {
+        path: 'legal/content-report',
+        component: ForepathLegalContentReportComponent,
+        providers: [
+          ContentReportFacade,
+          provideState(CONTENT_REPORT_FEATURE_KEY, contentReportReducer),
+          provideEffects({ submitContentReport$ }),
         ],
       },
       createSharedContactRoute({

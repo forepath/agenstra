@@ -111,6 +111,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /public/content-reports:
+    post:
+      summary: Submit a public DSA or TCO content report
+      description: |
+        Accepts a multipart content report protected by Cloudflare Turnstile.
+        `reportType=dsa` is the public DSA Article 16 notice mechanism.
+        `reportType=tco` is the TCO-VO Article 15 authority removal-order intake and requires a PDF attachment.
+      operationId: submitPublicContentReport
+      security: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateContentReport'
+      responses:
+        '201':
+          description: Content report accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReportResponse'
+        '400':
+          description: Validation, PDF, or captcha failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Upstream Chatwoot error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /otel/metrics:
     get:
       summary: Prometheus metrics scrape
@@ -223,6 +263,93 @@ components:
           type: string
           description: Cloudflare Turnstile response token
     VulnerabilityReportResponse:
+      type: object
+      required:
+        - accepted
+        - referenceId
+      properties:
+        accepted:
+          type: boolean
+          enum: [true]
+        referenceId:
+          type: string
+          description: Opaque conversation reference id
+    CreateContentReport:
+      type: object
+      required:
+        - reportType
+        - turnstileToken
+        - contentUrls
+      properties:
+        reportType:
+          type: string
+          enum: [dsa, tco]
+        turnstileToken:
+          type: string
+        name:
+          type: string
+          maxLength: 200
+          description: Required for DSA unless csamAnonymous=true; required for TCO (official name also captured separately)
+        email:
+          type: string
+          format: email
+          maxLength: 320
+          description: Required for DSA unless csamAnonymous=true; authority contact email for TCO
+        contentUrls:
+          type: string
+          maxLength: 5000
+        explanation:
+          type: string
+          maxLength: 5000
+          description: Required for DSA
+        additionalIdentifiers:
+          type: string
+          maxLength: 2000
+        illegalContentCategory:
+          type: string
+          maxLength: 200
+        csamAnonymous:
+          type: boolean
+        goodFaithConfirmed:
+          type: boolean
+          description: Required true for DSA
+        authorityName:
+          type: string
+          maxLength: 500
+        memberState:
+          type: string
+          maxLength: 100
+        officialName:
+          type: string
+          maxLength: 200
+        officialRole:
+          type: string
+          maxLength: 200
+        orderReference:
+          type: string
+          maxLength: 200
+        orderIssuedAt:
+          type: string
+          maxLength: 100
+        statementOfReasons:
+          type: string
+          maxLength: 5000
+        redressInformation:
+          type: string
+          maxLength: 5000
+        preferredLanguage:
+          type: string
+          enum: [en, de]
+        emergencyCase:
+          type: boolean
+        authorityAttestation:
+          type: boolean
+          description: Required true for TCO
+        removalOrderPdf:
+          type: string
+          format: binary
+          description: Required PDF for TCO reports only
+    ContentReportResponse:
       type: object
       required:
         - accepted
