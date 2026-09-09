@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.29.0](https://github.com/forepath/one/compare/v2.28.4...v2.29.0) (2026-09-09)
+
+
+### Features
+
+* **shared:** content reports ([#602](https://github.com/forepath/one/issues/602)) ([0704445](https://github.com/forepath/one/commit/07044452cd809eff8fe9c7e88c622c97fff5c299))
+* **shared:** vulnerability disclosure ([#601](https://github.com/forepath/one/issues/601)) ([9617cbe](https://github.com/forepath/one/commit/9617cbe529158f563814ee4b898937bf5061410e))
+
+
+### Bug Fixes
+
+* **shared:** form submission validity checks ([#606](https://github.com/forepath/one/issues/606)) ([5f4282e](https://github.com/forepath/one/commit/5f4282ede39792893942c26592a36da85c4b0c12))
+* **shared:** legal document product-name mixups ([#604](https://github.com/forepath/one/issues/604)) ([9b4a6a5](https://github.com/forepath/one/commit/9b4a6a5f78a8554ab1b1b7684adad69a00d265ed))
+* **shared:** legal page navigation targets ([#605](https://github.com/forepath/one/issues/605)) ([46c2cb7](https://github.com/forepath/one/commit/46c2cb727c0f5b2dcc55826ca87c90b624c21c89))
+
 ## [2.28.4](https://github.com/forepath/one/compare/v2.28.3...v2.28.4) (2026-09-07)
 
 
