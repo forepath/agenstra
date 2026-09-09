@@ -1,0 +1,54 @@
+@import '../../page.component.scss';
+
+.cr-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.cr-panel__body {
+  flex: 1 1 auto;
+}
+
+.cr-panel__footer {
+  margin-top: auto;
+}
+
+.cr-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.cr-report-type__option {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg, 0.5rem);
+  background: transparent;
+  cursor: pointer;
+}
+
+.cr-report-type__option:has(input:checked) {
+  border-color: var(--bs-primary);
+  background: var(--bs-primary-bg-subtle);
+}
+
+.cr-report-type__copy {
+  min-width: 0;
+}
+
+.cr-report-type__title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.cr-report-type__help {
+  color: var(--bs-secondary-color);
+  margin-bottom: 0;
+}
+
+.content-report-form .form-control:disabled,
+.content-report-form .form-select:disabled {
+  background-color: color-mix(in srgb, var(--bs-secondary-bg) 55%, transparent) !important;
+  opacity: 1 !important;
+}

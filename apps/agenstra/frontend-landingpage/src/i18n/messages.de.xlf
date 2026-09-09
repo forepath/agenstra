@@ -1390,6 +1390,10 @@
         <source>Vulnerability Disclosure</source>
         <target>Schwachstellenmeldung</target>
       </trans-unit>
+      <trans-unit id="featurePortal-contentReportLink" datatype="html">
+        <source>Content Report</source>
+        <target>Inhaltsmeldung</target>
+      </trans-unit>
       <trans-unit id="featurePortal-withdrawalLink" datatype="html">
         <source>Right of Withdrawal</source>
         <target> Widerruf </target>
@@ -2413,6 +2417,14 @@
       <trans-unit id="featurePortalDisclosure-liabilityContentDesc" datatype="html">
         <source>As a service provider, we are responsible for our own content on these pages in accordance with general laws. However, according to Article 8 of the Digital Services Act (DSA), as a service provider, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this regard is only possible from the time of knowledge of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately.</source>
         <target> Als Diensteanbieter sind wir gemäß den allgemeinen Gesetzen für unsere eigenen Inhalte auf diesen Seiten verantwortlich. Gemäß Artikel 8 des Digitale-Dienste-Gesetzes (DSA) sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen. Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen. </target>
+      </trans-unit>
+      <trans-unit id="featurePortalDisclosure-contentReportDsaLink" datatype="html">
+        <source>Report illegal content (DSA)</source>
+        <target>Illegale Inhalte melden (DSA)</target>
+      </trans-unit>
+      <trans-unit id="featurePortalDisclosure-contentReportTcoLink" datatype="html">
+        <source>Report removal order (TCO-VO)</source>
+        <target>Löschungsanordnung melden (TCO-VO)</target>
       </trans-unit>
       <trans-unit id="featurePortalDisclosure-liabilityLinksTitle" datatype="html">
         <source>Liability for Links</source>

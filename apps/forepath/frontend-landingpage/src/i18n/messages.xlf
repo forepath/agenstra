@@ -410,6 +410,9 @@
       <trans-unit id="featureForepath-vulnerabilityDisclosureLink" datatype="html">
         <source>Vulnerability Disclosure</source>
         </trans-unit>
+      <trans-unit id="featureForepath-contentReportLink" datatype="html">
+        <source>Content Report</source>
+        </trans-unit>
       <trans-unit id="featureForepath-withdrawalLink" datatype="html">
         <source>Right of Withdrawal</source>
         </trans-unit>
@@ -763,6 +766,199 @@
       <trans-unit id="featureForepathItSystems-metaKeywords" datatype="html">
         <source>ForePath Managed IT, network operations, workplace IT, server management, endpoint security, backup</source>
         </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-title" datatype="html">
+        <source> Content Report </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-subtitle" datatype="html">
+        <source> Illegal content notices under the DSA and official terrorist-content removal orders under the TCO Regulation </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-reportCta" datatype="html">
+        <source> Report illegal content </source>
+        </trans-unit>
+
+      <trans-unit id="featureForepathLegalContentReport-whichTitle" datatype="html">
+        <source>Which mechanism to use</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-whichIntro" datatype="html">
+        <source> Choose the mechanism that matches your role and the nature of your submission. Public reporters of alleged illegal content use the DSA notice. Competent authorities issuing a binding terrorist-content removal order use the TCO contact point. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-whichDsaTitle" datatype="html">
+        <source> DSA notice (public) </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-whichDsaBody" datatype="html">
+        <source> Any individual or entity may notify us of specific content they consider illegal. There is no fixed one-hour clock. We process notices in a timely, diligent, non-arbitrary, and objective manner. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-whichDsaLink" datatype="html">
+        <source>Use the DSA form</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-whichTcoTitle" datatype="html">
+        <source> TCO removal order (authorities) </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-whichTcoBody" datatype="html">
+        <source> Only EU Member State competent authorities may submit binding removal orders for terrorist content. This contact point is staffed for 24/7 electronic receipt. Content identified in a valid order is removed or disabled within one hour of receipt, subject to the Regulation. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-whichTcoLink" datatype="html">
+        <source>Use the TCO form</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-dsaTitle" datatype="html">
+        <source> DSA notice-and-action commitments </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-dsaP1" datatype="html">
+        <source> We provide an easy electronic mechanism so any individual or entity can notify us of specific illegal content. Where your notice includes an email address, we send a confirmation of receipt without undue delay. We then notify you of our decision regarding the reported content and of the redress possibilities available against that decision, including internal complaint handling where offered, out-of-court dispute settlement where applicable, and judicial redress. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-dsaP2" datatype="html">
+        <source> We do not currently use automated means to decide DSA notices. If that changes, we will disclose the use of automation in the decision notification. Abusive, bad-faith, or repeatedly unfounded notices may be deprioritized or rejected without further engagement. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-dsaP3" datatype="html">
+        <source> You may also email <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:report+dsa&amp;#64;forepath.io&quot;&gt;"/>report+dsa@forepath.io<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. Prefer the form so mandatory Article 16 elements are complete at submission. Competent authorities with a binding TCO removal order should use the TCO mechanism instead. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-tcoTitle" datatype="html">
+        <source> TCO removal-order contact point </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-tcoP1" datatype="html">
+        <source> Our TCO contact point receives electronic removal orders from competent authorities only. It is available 24/7. Supported languages are English and German. Our main establishment is in Germany (IPvX UG (haftungsbeschränkt)). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-tcoP2" datatype="html">
+        <source> Submit the signed removal-order PDF through the form below, or email <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:report+tco&amp;#64;forepath.io&quot;&gt;"/>report+tco@forepath.io<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> with the same information. Public reports of alleged illegal content that are not binding TCO removal orders must use the DSA mechanism. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-tcoP3" datatype="html">
+        <source> If we apply specific proactive measures against terrorist content, content providers whose content was removed or disabled may contest that decision through a separate complaint channel. That Article 5 channel is distinct from this authority-facing intake. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formTitle" datatype="html">
+        <source> Submit a content report </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formLead" datatype="html">
+        <source> Select the report type that matches your submission, then complete the fields for that mechanism. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formSuccessTitle" datatype="html">
+        <source> Report submitted </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formSuccessLead" datatype="html">
+        <source> Thank you. We received your report and will process it according to the selected mechanism. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formTypeLabel" datatype="html">
+        <source> Report type </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formTypeDsaTitle" datatype="html">
+        <source>Illegal content under the Digital Services Act (DSA)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formTypeDsaHelp" datatype="html">
+        <source>For individuals or entities reporting content they believe is illegal.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formTypeTcoTitle" datatype="html">
+        <source>Official terrorist-content removal order under the TCO Regulation</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formTypeTcoHelp" datatype="html">
+        <source>For competent authorities submitting a binding TCO removal order.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formUrlsLabel" datatype="html">
+        <source>Exact URL(s) / electronic location</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formUrlsRequired" datatype="html">
+        <source> Exact URL(s) are required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formCsamLabel" datatype="html">
+        <source> This notice concerns child sexual abuse offences under Articles 3 to 7 of Directive 2011/93/EU and I request anonymity (name and email waived). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formNameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formNameRequired" datatype="html">
+        <source> Name is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formNameAnonymousPlaceholder" datatype="html">
+        <source>Waived</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formEmailAnonymousPlaceholder" datatype="html">
+        <source>Waived</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formEmailRequired" datatype="html">
+        <source> Email is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formEmailInvalid" datatype="html">
+        <source> Enter a valid email address. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formExplanationLabel" datatype="html">
+        <source>Explanation of alleged illegality</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formExplanationRequired" datatype="html">
+        <source> A sufficiently substantiated explanation is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formCategoryLabel" datatype="html">
+        <source>Category of illegal content (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formAdditionalLabel" datatype="html">
+        <source>Additional identifying information (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formGoodFaithLabel" datatype="html">
+        <source> I confirm in good faith that the information and allegations in this notice are accurate and complete. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formAuthorityLabel" datatype="html">
+        <source>Issuing competent authority</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formMemberStateLabel" datatype="html">
+        <source>Member State</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formOfficialNameLabel" datatype="html">
+        <source>Authorized official&apos;s name</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formOfficialRoleLabel" datatype="html">
+        <source>Official&apos;s role</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formOrderRefLabel" datatype="html">
+        <source>Removal order reference number</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formOrderIssuedLabel" datatype="html">
+        <source>Date and time of issuance</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formLanguageLabel" datatype="html">
+        <source>Preferred language of exchange</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formLanguagePlaceholder" datatype="html">
+        <source> Select a language </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formLanguageEn" datatype="html">
+        <source>English</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formLanguageDe" datatype="html">
+        <source>German</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formEmergencyLabel" datatype="html">
+        <source> Emergency case (12-hour pre-notification exception) </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formReasonsLabel" datatype="html">
+        <source>Statement of reasons / legal basis</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formRedressLabel" datatype="html">
+        <source>Redress information provided to the host and content provider</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formPdfLabel" datatype="html">
+        <source>Signed removal-order PDF</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formAttestationLabel" datatype="html">
+        <source> I confirm that I am submitting on behalf of an EU Member State competent authority and that this is a binding terrorist-content removal order under Regulation (EU) 2021/784. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formPrivacyPrefix" datatype="html">
+        <source>I agree to the </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formPrivacyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formSubmit" datatype="html">
+        <source> Submit report </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-metaTitle" datatype="html">
+        <source>Content Report :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-metaDescription" datatype="html">
+        <source>Report illegal content under the Digital Services Act or submit an official TCO removal order to IPvX UG (haftungsbeschränkt).</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-metaKeywords" datatype="html">
+        <source>ForePath, DSA, TCO, content report, illegal content</source>
+        </trans-unit>
       <trans-unit id="featureForepathDisclosure-title" datatype="html">
         <source>Legal Disclosure</source>
         </trans-unit>
@@ -831,6 +1027,12 @@
         </trans-unit>
       <trans-unit id="featureForepathDisclosure-liabilityContentDesc" datatype="html">
         <source> As a service provider, we are responsible for our own content on these pages in accordance with general laws. However, according to Article 8 of the Digital Services Act (DSA), as a service provider, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this regard is only possible from the time of knowledge of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-contentReportDsaLink" datatype="html">
+        <source>Report illegal content (DSA)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-contentReportTcoLink" datatype="html">
+        <source>Report removal order (TCO-VO)</source>
         </trans-unit>
       <trans-unit id="featureForepathDisclosure-liabilityLinksTitle" datatype="html">
         <source>Liability for Links</source>
@@ -1275,7 +1477,7 @@
         <source>Purpose</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-purposeP1" datatype="html">
-        <source> This Vulnerability Disclosure Policy ("Policy") applies to coordinated vulnerability disclosure between IPvX UG (haftungsbeschränkt) ("we", "us") and you regarding any published software product of ours, including ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com), and software made available in the <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> monorepo, and defines our coordinated vulnerability disclosure ("CVD") policy under Annex I, Part II(5) of Regulation (EU) 2024/2847 (the EU Cyber Resilience Act). </source>
+        <source> This Vulnerability Disclosure Policy (&quot;Policy&quot;) applies to coordinated vulnerability disclosure between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding any published software product of ours, including ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com), and software made available in the <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> monorepo, and defines our coordinated vulnerability disclosure (&quot;CVD&quot;) policy under Annex I, Part II(5) of Regulation (EU) 2024/2847 (the EU Cyber Resilience Act). </source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-scopeTitle" datatype="html">
         <source>Scope</source>
@@ -1319,7 +1521,7 @@
         <source> If you have found a security vulnerability, please use one of the private channels below. <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Do not<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> file security vulnerabilities as public GitHub issues. </source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howEmailLabel" datatype="html">
-        <source>Email</source>
+        <source> Email </source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howEmailHint" datatype="html">
         <source>Subject prefix <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>[SECURITY]<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
@@ -1393,7 +1595,7 @@
         <source>30 days</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaMedium" datatype="html">
-        <source>Medium</source>
+        <source> Medium </source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage1w" datatype="html">
         <source>1 week</source>
@@ -1459,7 +1661,10 @@
                 &gt;"/></source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSecurityMd" datatype="html">
-        <source> The repository policy is in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+        <source> The repository policy is in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                  href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot;
+                  target=&quot;_blank&quot;
+                  rel=&quot;noopener noreferrer&quot;
                   &gt;"/>SECURITY.md<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
                 &gt;"/></source>
         </trans-unit>
