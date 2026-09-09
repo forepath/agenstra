@@ -1654,8 +1654,8 @@
         <target state="translated">Regelungen zur Nutzung der Software Decabill, Lizenzen und unseres verwalteten Cloud-Angebots nach deutschem Recht und Recht der Europäischen Union.</target>
       </trans-unit>
       <trans-unit id="featureDecabillLegalTerms-lastUpdated" datatype="html">
-        <source> Last updated: March 23, 2026 </source>
-        <target state="translated">Stand: 23. März 2026</target>
+        <source> Last updated: September 9, 2026 </source>
+        <target state="translated">Zuletzt aktualisiert: 9. September 2026</target>
       </trans-unit>
       <trans-unit id="featurePortalPrivacy-generalInfo" datatype="html">
         <source>General Information</source>
@@ -1798,8 +1798,8 @@
         <target state="translated">Sie haben alle anwendbaren Lizenzbedingungen einzuhalten, einschließlich der Pflichten aus AGPL-3.0 und BUSL-1.1 wie Bereitstellung von Quellcode, Netzwerknutzung und Grenzen des Additional Use Grant, soweit einschlägig. Sie dürfen keine technischen Schutzmaßnahmen umgehen, keine Schutz- oder Rechtehinweise entfernen und nicht weiterlizenzieren, soweit die Lizenz dies nicht erlaubt.</target>
       </trans-unit>
       <trans-unit id="featureDecabillLegalTerms-selfHostedDesc3" datatype="html">
-        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party models, APIs, or data you connect to Decabill. </source>
-        <target state="translated">Sie betreiben die Infrastruktur und sind für Sicherungen, Absicherung (Hardening), die Einhaltung regulatorischer Vorschriften in Ihrer Umgebung sowie die rechtmäßige Nutzung von Drittanbieter-APIs, Zahlungsdienstleistern oder Daten verantwortlich, die Sie mit Decabill verbinden.</target>
+        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party systems, payment processors, APIs, or data you connect to Decabill. </source>
+        <target state="translated">Sie betreiben die Infrastruktur und sind für Sicherungen, Absicherung (Hardening), die Einhaltung regulatorischer Vorschriften in Ihrer Umgebung sowie die rechtmäßige Nutzung von Drittsystemen, Zahlungsdienstleistern, APIs oder Daten verantwortlich, die Sie mit Decabill verbinden.</target>
       </trans-unit>
       <trans-unit id="featureDecabillLegalTerms-cloudTitle" datatype="html">
         <source> Cloud Service, Hosting, and Subprocessors </source>

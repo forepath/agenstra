@@ -950,8 +950,8 @@
         <target state="translated">Zuletzt aktualisiert: 1. Januar 2026</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalTerms-lastUpdated" datatype="html">
-        <source> Last updated: March 23, 2026 </source>
-        <target state="translated">Stand: 23. März 2026</target>
+        <source> Last updated: September 9, 2026 </source>
+        <target state="translated">Zuletzt aktualisiert: 9. September 2026</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-generalInfo" datatype="html">
         <source>General Information</source>
@@ -1214,16 +1214,16 @@
         <target state="translated">ForePath, Datenschutzerklärung, DSGVO, IPvX</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-heroLead" datatype="html">
-        <source> Terms governing ForePath websites, consulting services, and Agenstra software licenses under German and European Union law. </source>
-        <target state="translated">Regelungen zur Nutzung der ForePath-Websites, Beratungsleistungen und Softwarelizenzen für Agenstra nach deutschem Recht und Recht der Europäischen Union.</target>
+        <source> Terms governing ForePath websites and consulting services under German and European Union law. </source>
+        <target state="translated">Regelungen zur Nutzung der ForePath-Websites und Beratungsleistungen nach deutschem Recht und Recht der Europäischen Union.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-scopeTitle" datatype="html">
         <source>Scope and Definitions</source>
         <target state="translated">Geltungsbereich und Begriffsbestimmungen</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-scopeDesc1" datatype="html">
-        <source> These Terms of Service (&quot;Terms&quot;) apply to all contracts and legal relationships between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding the Agenstra software, related documentation, self-hosted license offerings, professional and support services, and our managed cloud offering including provision of the software on infrastructure operated or procured by us (&quot;Cloud Service&quot;), unless expressly agreed otherwise in writing (including individual enterprise agreements or separate order forms). </source>
-        <target state="translated">Diese Nutzungsbedingungen („Bedingungen“) gelten für alle Verträge und Rechtsbeziehungen zwischen der IPvX UG (haftungsbeschränkt) („wir“, „uns“) und Ihnen in Bezug auf die Software Agenstra, zugehörige Dokumentation, Selbst-Hosting-Lizenzangebote, professionelle Dienstleistungen und Supportleistungen sowie unser verwaltetes Cloud-Angebot einschließlich der Bereitstellung der Software auf von uns betriebener oder beschaffter Infrastruktur („Cloud-Dienst“), sofern nicht ausdrücklich schriftlich etwas anderes vereinbart wurde (einschließlich individueller Enterprise-Vereinbarungen oder separater Bestellformulare).</target>
+        <source> These Terms of Service (&quot;Terms&quot;) apply to all contracts and legal relationships between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding the ForePath websites (including forepath.io and related pages we operate under the ForePath brand), consulting and professional services we provide under the ForePath brand, and related online content, contact forms, and informational materials, unless expressly agreed otherwise in writing (including individual enterprise agreements or separate statements of work). Separate product terms apply to Agenstra, Decabill, and other ForePath One software products and are published on the respective product websites. </source>
+        <target state="translated">Diese Nutzungsbedingungen („Bedingungen“) gelten für alle Verträge und Rechtsbeziehungen zwischen der IPvX UG (haftungsbeschränkt) („wir“, „uns“) und Ihnen in Bezug auf die ForePath-Websites (einschließlich forepath.io und verwandter Seiten, die wir unter der Marke ForePath betreiben), Beratungs- und Professional Services unter der Marke ForePath sowie zugehörige Online-Inhalte, Kontaktformulare und Informationsmaterialien, sofern nicht ausdrücklich schriftlich etwas anderes vereinbart wurde (einschließlich individueller Enterprise-Vereinbarungen oder separater Leistungsbeschreibungen). Für Agenstra, Decabill und andere Softwareprodukte von ForePath One gelten gesonderte Produktbedingungen, die auf den jeweiligen Produktwebsites veröffentlicht sind.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-scopeDesc2" datatype="html">
         <source> &quot;Consumer&quot; means any natural person who enters into a legal transaction for purposes that are predominantly outside their trade, business, or profession (Section 13 of the German Civil Code, Bürgerliches Gesetzbuch - BGB). &quot;Entrepreneur&quot; means a natural or legal person or a partnership with legal personality who or which acts in exercise of their trade, business, or profession when entering into a legal transaction (Section 14 BGB). </source>
@@ -1234,36 +1234,36 @@
         <target state="translated">Abweichende oder entgegenstehende Bedingungen von Ihnen finden keine Anwendung, sofern wir ihrer Geltung nicht ausdrücklich schriftlich zugestimmt haben. Individuelle Vereinbarungen gehen diesen Bedingungen vor (§ 305b BGB).</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-offeringsTitle" datatype="html">
-        <source> Product Types, License Models, and Services </source>
-        <target state="translated">Produktarten, Lizenzmodelle und Leistungen</target>
+        <source> Websites, Consulting, and Related Services </source>
+        <target state="translated">Websites, Beratung und zugehörige Leistungen</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-offeringsDesc1" datatype="html">
-        <source> We offer (a) self-hosted software under open-source and source-available license terms (including editions made available under the GNU Affero General Public License version 3 (&quot;AGPL-3.0&quot;) and under the Business Source License 1.1 with Additional Use Grant (&quot;BUSL-1.1&quot;)), (b) paid self-hosted subscriptions and commercial license arrangements (including the &quot;Business&quot; and &quot;Enterprise&quot; tiers described on our pricing pages), (c) ancillary services such as onboarding, support, training, and custom development agreed separately, and (d) the Cloud Service: operation of Agenstra on our or our subprocessors&apos; infrastructure, including server hosting, maintenance, scaling, and backup or monitoring measures as specified in the applicable service description or order. </source>
-        <target state="translated">Wir bieten (a) Selbst-Hosting-Software unter Open-Source- und Source-Available-Lizenzbedingungen (einschließlich unter der GNU Affero General Public License Version 3 („AGPL-3.0“) und der Business Source License 1.1 mit Additional Use Grant („BUSL-1.1“) bereitgestellter Editionen), (b) kostenpflichtige Selbst-Hosting-Abonnements und kommerzielle Lizenzvereinbarungen (einschließlich der auf unseren Preisseiten beschriebenen Stufen „Business“ und „Enterprise“), (c) ergänzende Leistungen wie Onboarding, Support, Schulungen und individuelle Entwicklung, die gesondert vereinbart werden, sowie (d) den Cloud-Dienst: Betrieb von Agenstra auf unserer Infrastruktur oder der unserer Unterauftragsverarbeiter, einschließlich Server-Hosting, Wartung, Skalierung sowie Sicherungs- oder Überwachungsmaßnahmen gemäß der jeweiligen Leistungsbeschreibung oder Bestellung.</target>
+        <source> We offer (a) publicly accessible websites and online content under the ForePath brand for information, marketing, and communication, (b) consulting and professional services such as architecture advice, platform engineering support, training, workshops, assessments, and related project work as described in a written offer, statement of work, or order form, and (c) ancillary services such as onboarding support or custom deliverables agreed separately. </source>
+        <target state="translated">Wir bieten (a) öffentlich zugängliche Websites und Online-Inhalte unter der Marke ForePath zu Informations-, Marketing- und Kommunikationszwecken, (b) Beratungs- und Professional Services wie Architekturberatung, Unterstützung im Platform Engineering, Schulungen, Workshops, Assessments und verwandte Projektarbeit gemäß schriftlichem Angebot, Leistungsbeschreibung oder Bestellformular sowie (c) ergänzende Leistungen wie Onboarding-Unterstützung oder gesondert vereinbarte Liefergegenstände.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-offeringsDesc2" datatype="html">
-        <source> The respective open-source or source-available license text supplied with the software governs your rights and obligations for the corresponding edition to the extent it is mandatory law or expressly designated as prevailing. Where you obtain a commercial license, subscription, or Cloud Service from us, these Terms supplement and, in case of conflict on commercial and operational matters, prevail over generic source-available terms only to the extent permitted by law and as expressly stated in your order or license grant. </source>
-        <target state="translated">Die jeweils der Software beigefügte Open-Source- oder Source-Available-Lizenz regelt Ihre Rechte und Pflichten für die entsprechende Edition, soweit zwingendes Recht dies vorsieht oder sie ausdrücklich als vorrangig bezeichnet ist. Wenn Sie von uns eine kommerzielle Lizenz, ein Abonnement oder den Cloud-Dienst erwerben, ergänzen diese Bedingungen die Lizenz und gehen im Falle eines Widerspruchs bei kommerziellen und betrieblichen Fragen den allgemeinen Source-Available-Bedingungen nur insoweit vor, wie dies gesetzlich zulässig ist und in Ihrer Bestellung oder Lizenzgewährung ausdrücklich festgelegt wurde.</target>
+        <source> Descriptions on our websites, in demos, or in marketing materials are informational unless expressly incorporated into a written offer or order. Scope, deliverables, timelines, fees, and acceptance criteria for consulting engagements are as set out in the applicable order or statement of work. </source>
+        <target state="translated">Beschreibungen auf unseren Websites, in Demos oder Marketingmaterialien sind informativ, sofern sie nicht ausdrücklich in ein schriftliches Angebot oder eine Bestellung einbezogen werden. Umfang, Liefergegenstände, Zeitpläne, Vergütung und Abnahmekriterien für Beratungsaufträge ergeben sich aus der maßgeblichen Bestellung oder Leistungsbeschreibung.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-offeringsDesc3" datatype="html">
-        <source> Features, limits, support channels, and eligibility criteria (such as financial thresholds for specific self-hosted tiers) are as described on our website at the time of order unless otherwise agreed in writing. </source>
-        <target state="translated">Funktionen, Beschränkungen, Supportkanäle und Zugangsvoraussetzungen (z. B. finanzielle Schwellenwerte für bestimmte Selbst-Hosting-Stufen) entsprechen der Darstellung auf unserer Website zum Zeitpunkt der Bestellung, sofern nicht schriftlich etwas anderes vereinbart wurde.</target>
+        <source> Features, limits, support channels, and eligibility criteria for specific offerings are as described on our website or in your order at the time of conclusion unless otherwise agreed in writing. </source>
+        <target state="translated">Funktionen, Grenzen, Supportkanäle und Zugangsvoraussetzungen für konkrete Angebote sind wie zum Zeitpunkt des Vertragsschlusses auf unserer Website oder in Ihrer Bestellung beschrieben, sofern nicht schriftlich etwas anderes vereinbart wurde.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-contractFormationTitle" datatype="html">
         <source> Conclusion of Contract and Pre-Contractual Information </source>
         <target state="translated">Vertragsschluss und vorvertragliche Informationen</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-contractFormationDesc1" datatype="html">
-        <source> Presentations on our website, in demos, or in marketing materials constitute an invitation to treat (invitatio ad offerendum) and not a binding offer under Sections 145, 146 BGB, unless explicitly marked as binding. A contract is formed when we accept your order, when you accept our written or electronic offer, or when we grant access to paid or Cloud resources, whichever occurs first. </source>
-        <target state="translated">Darstellungen auf unserer Website, in Demos oder in Marketingmaterialien stellen eine Aufforderung zur Abgabe eines Angebots (invitatio ad offerendum) und kein bindendes Angebot im Sinne der §§ 145, 146 BGB dar, sofern nicht ausdrücklich als bindend gekennzeichnet. Ein Vertrag kommt zustande, wenn wir Ihre Bestellung annehmen, wenn Sie unser schriftliches oder elektronisches Angebot annehmen oder wenn wir Zugang zu kostenpflichtigen oder Cloud-Ressourcen gewähren - je nachdem, welches Ereignis zuerst eintritt.</target>
+        <source> Presentations on our website, in demos, or in marketing materials constitute an invitation to treat (invitatio ad offerendum) and not a binding offer under Sections 145, 146 BGB, unless explicitly marked as binding. A contract for consulting or professional services is formed when we accept your order, when you accept our written or electronic offer, or when we begin performing the agreed services with your consent, whichever occurs first. </source>
+        <target state="translated">Darstellungen auf unserer Website, in Demos oder Marketingmaterialien stellen eine Aufforderung zur Abgabe von Angeboten (invitatio ad offerendum) und kein verbindliches Angebot nach §§ 145, 146 BGB dar, sofern sie nicht ausdrücklich als verbindlich gekennzeichnet sind. Ein Vertrag über Beratungs- oder Professional Services kommt zustande, wenn wir Ihre Bestellung annehmen, wenn Sie unser schriftliches oder elektronisches Angebot annehmen oder wenn wir mit Ihrer Zustimmung mit der vereinbarten Leistung beginnen, je nachdem, was zuerst eintritt.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-contractFormationDesc2" datatype="html">
-        <source> For consumers and distance contracts, we comply with the statutory information duties for digital products and services under the BGB and the EU Directives implemented therein (including Articles 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB as applicable). You will receive confirmation of the contract on a durable medium where required by law. </source>
-        <target state="translated">Gegenüber Verbrauchern und bei Fernabsatzverträgen erfüllen wir die gesetzlichen Informationspflichten für digitale Produkte und Dienstleistungen nach dem BGB und den darin umgesetzten EU-Richtlinien (einschließlich der Art. 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB, soweit einschlägig). Sie erhalten die Vertragsbestätigung auf einem dauerhaften Datenträger, soweit dies gesetzlich vorgeschrieben ist.</target>
+        <source> For consumers and distance contracts, we comply with the statutory information duties under the BGB and the EU Directives implemented therein (including Articles 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB as applicable). You will receive confirmation of the contract on a durable medium where required by law. </source>
+        <target state="translated">Gegenüber Verbrauchern und bei Fernabsatzverträgen erfüllen wir die gesetzlichen Informationspflichten nach dem BGB und den darin umgesetzten EU-Richtlinien (einschließlich Art. 246a, 246b, 246c EGBGB, soweit einschlägig). Sie erhalten eine Vertragsbestätigung auf einem dauerhaften Datenträger, soweit gesetzlich erforderlich.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-contractFormationDesc3" datatype="html">
-        <source> You are responsible for the accuracy of registration and billing data. Automated technical steps (e.g., provisioning of a tenant or license key) may constitute acceptance without a separate declaration if this is customary and you have been informed accordingly. </source>
-        <target state="translated">Sie sind für die Richtigkeit Ihrer Registrierungs- und Abrechnungsdaten verantwortlich. Automatisierte technische Schritte (z. B. Bereitstellung eines Mandanten oder eines Lizenzschlüssels) können unter den üblichen Gegebenheiten als Annahme ohne gesonderte Willenserklärung gelten, wenn Sie entsprechend informiert wurden.</target>
+        <source> You are responsible for the accuracy of contact and billing data you provide. Mere use of our public websites does not by itself create a paid services contract. </source>
+        <target state="translated">Sie sind für die Richtigkeit der von Ihnen angegebenen Kontakt- und Rechnungsdaten verantwortlich. Die bloße Nutzung unserer öffentlichen Websites begründet für sich genommen keinen entgeltlichen Dienstleistungsvertrag.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-pricingTitle" datatype="html">
         <source>Prices, Taxes, and Payment</source>
@@ -1274,8 +1274,8 @@
         <target state="translated">Die Preise ergeben sich aus der Bestellung, dem Checkout-Prozess oder dem schriftlichen Angebot in Euro, sofern nicht anders angegeben. Die gesetzliche Umsatzsteuer oder sonstige anfallende Steuern werden berechnet, soweit gesetzlich erforderlich.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-pricingDesc2" datatype="html">
-        <source> Payment methods may include payment cards, direct debit where offered, bank transfer (e.g., for annual commitments or purchase orders), and other means we communicate at checkout. Recurring fees for subscriptions and Cloud Service are due in advance for each billing period unless agreed otherwise. </source>
-        <target state="translated">Zahlungsmittel können Zahlungskarten, Lastschrift (sofern angeboten), Banküberweisung (z. B. bei Jahresverträgen oder Bestellungen auf Rechnung) und andere im Checkout mitgeteilte Mittel umfassen. Wiederkehrende Entgelte für Abonnements und den Cloud-Dienst sind jeweils im Voraus für die Abrechnungsperiode fällig, sofern nicht anders vereinbart.</target>
+        <source> Payment methods may include payment cards, bank transfer (e.g., against invoice or purchase order), and other means we communicate in the offer or at checkout. Fees for consulting and professional services are due as agreed in the order, typically upon invoice or according to milestones, unless agreed otherwise. </source>
+        <target state="translated">Zahlungsmethoden können Zahlungskarten, Banküberweisung (z. B. gegen Rechnung oder Bestellung) und andere Mittel umfassen, die wir im Angebot oder beim Checkout mitteilen. Vergütungen für Beratungs- und Professional Services sind wie in der Bestellung vereinbart fällig, typischerweise nach Rechnung oder gemäß Meilensteinen, sofern nicht anders vereinbart.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-pricingDesc3" datatype="html">
         <source> If you default on payment, we may charge statutory default interest (Section 288 BGB) and suspend or terminate services in accordance with law and these Terms. Offsetting against our claims is permitted only with undisputed or legally established counterclaims. </source>
@@ -1290,52 +1290,52 @@
         <target state="translated">Sind Sie Verbraucher und liegt ein Fern- oder Außerhaussgeschäft vor, steht Ihnen in der Regel ein Widerrufsrecht von vierzehn (14) Tagen ohne Angabe von Gründen zu, gemäß §§ 355 ff. BGB und der Richtlinie 2011/83/EU (Verbraucherrechterichtlinie) in deutsches Recht umgesetzt.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-withdrawalDesc2" datatype="html">
-        <source> For contracts concerning digital content not supplied on a tangible medium, the right of withdrawal expires if we have begun performance with your prior express consent and you have acknowledged that you thereby lose your right of withdrawal once performance has begun (Section 356(5) BGB). Similar consequences may apply where you request immediate commencement of a service. We will provide the statutory withdrawal information and, where required, a model withdrawal form in a durable medium before or at contract conclusion. </source>
-        <target state="translated">Bei Verträgen über digitale Inhalte, die nicht auf einem körperlichen Datenträger bereitgestellt werden, erlischt das Widerrufsrecht, wenn wir mit Ihrer ausdrücklichen Zustimmung vor Ablauf der Widerrufsfrist mit der Ausführung begonnen haben und Sie bestätigt haben, dass Sie mit Beginn der Ausführung Ihr Widerrufsrecht verlieren (§ 356 Abs. 5 BGB). Ähnliche Folgen können gelten, wenn Sie die unverzügliche Ausführung einer Dienstleistung verlangen. Wir stellen Ihnen die gesetzlichen Widerrufsbelehrungen und - soweit erforderlich - ein Muster-Widerrufsformular auf einem dauerhaften Datenträger vor oder bei Vertragsschluss zur Verfügung.</target>
+        <source> For contracts concerning services, the right of withdrawal may expire if we have begun performance with your prior express consent and you have acknowledged that you thereby lose your right of withdrawal once performance has been fully completed (Section 356(4) BGB). Similar consequences may apply where you request immediate commencement of a service. We will provide the statutory withdrawal information and, where required, a model withdrawal form in a durable medium before or at contract conclusion. </source>
+        <target state="translated">Bei Verträgen über Dienstleistungen kann das Widerrufsrecht erlöschen, wenn wir mit Ihrer vorherigen ausdrücklichen Zustimmung mit der Ausführung begonnen haben und Sie zur Kenntnis genommen haben, dass Sie Ihr Widerrufsrecht mit vollständiger Vertragserfüllung verlieren (§ 356 Abs. 4 BGB). Ähnliche Folgen können gelten, wenn Sie den sofortigen Beginn einer Dienstleistung verlangen. Wir stellen die gesetzliche Widerrufsbelehrung und, soweit erforderlich, ein Muster-Widerrufsformular auf einem dauerhaften Datenträger vor oder bei Vertragsschluss bereit.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-withdrawalDesc3" datatype="html">
         <source> Entrepreneurs are not entitled to a statutory withdrawal right unless individually agreed. </source>
         <target state="translated">Unternehmer steht kein gesetzliches Widerrufsrecht zu, sofern nicht individuell vereinbart.</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-selfHostedTitle" datatype="html">
-        <source> Self-Hosted Software: Rights of Use and Compliance </source>
-        <target state="translated">Selbst gehostete Software: Nutzungsrechte und Compliance</target>
+      <trans-unit id="featureForepathLegal-websiteTitle" datatype="html">
+        <source> Use of ForePath Websites </source>
+        <target state="translated">Nutzung der ForePath-Websites</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-selfHostedDesc1" datatype="html">
-        <source> Subject to payment (if applicable) and the applicable license text, we grant you a non-exclusive, non-transferable right to install and run the licensed software in your own environment within the agreed scope (e.g., number of instances, production vs. non-production, or organizational limits in enterprise agreements). </source>
-        <target state="translated">Vorbehaltlich der Zahlung (sofern erforderlich) und des maßgeblichen Lizenztexts gewähren wir Ihnen ein einfaches, nicht übertragbares Recht, die lizenzierte Software in Ihrer eigenen Umgebung im vereinbarten Umfang zu installieren und auszuführen (z. B. Anzahl der Instanzen, Produktiv- vs. Nicht-Produktivsysteme oder organisatorische Grenzen in Enterprise-Vereinbarungen).</target>
+      <trans-unit id="featureForepathLegal-websiteDesc1" datatype="html">
+        <source> You may access and use our public websites for lawful informational and communication purposes. You must not disrupt the websites, attempt unauthorized access to our systems, scrape or overload infrastructure without authorization, or misuse contact and reporting forms. </source>
+        <target state="translated">Sie dürfen unsere öffentlichen Websites zu rechtmäßigen Informations- und Kommunikationszwecken nutzen. Sie dürfen die Websites nicht stören, keinen unbefugten Zugriff auf unsere Systeme versuchen, Infrastruktur ohne Berechtigung nicht scrapen oder überlasten und Kontakt- sowie Meldeformulare nicht missbrauchen.</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-selfHostedDesc2" datatype="html">
-        <source> You must comply with all applicable license conditions, including AGPL-3.0 and BUSL-1.1 obligations such as source-sharing, network-use, and additional-use-grant limits where they apply. You may not circumvent technical protection measures, remove proprietary notices, or sublicense beyond what the license permits. </source>
-        <target state="translated">Sie haben alle anwendbaren Lizenzbedingungen einzuhalten, einschließlich der Pflichten aus AGPL-3.0 und BUSL-1.1 wie Bereitstellung von Quellcode, Netzwerknutzung und Grenzen des Additional Use Grant, soweit einschlägig. Sie dürfen keine technischen Schutzmaßnahmen umgehen, keine Schutz- oder Rechtehinweise entfernen und nicht weiterlizenzieren, soweit die Lizenz dies nicht erlaubt.</target>
+      <trans-unit id="featureForepathLegal-websiteDesc2" datatype="html">
+        <source> Content on the websites is provided for general information. It does not constitute legal, tax, or other professional advice unless we expressly agree otherwise in a consulting engagement. </source>
+        <target state="translated">Inhalte auf den Websites dienen der allgemeinen Information. Sie stellen keine Rechts-, Steuer- oder sonstige Fachberatung dar, sofern wir in einem Beratungsauftrag nichts anderes ausdrücklich vereinbaren.</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-selfHostedDesc3" datatype="html">
-        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party models, APIs, or data you connect to Agenstra. </source>
-        <target state="translated">Sie betreiben die Infrastruktur und sind für Sicherungen, Absicherung (Hardening), die Einhaltung regulatorischer Vorschriften in Ihrer Umgebung sowie die rechtmäßige Nutzung von Drittmodellen, APIs oder Daten verantwortlich, die Sie mit Agenstra verbinden.</target>
+      <trans-unit id="featureForepathLegal-websiteDesc3" datatype="html">
+        <source> We may modify, suspend, or discontinue website features for technical, security, or legal reasons. We do not guarantee uninterrupted availability of public websites unless expressly agreed in writing. </source>
+        <target state="translated">Wir können Website-Funktionen aus technischen, sicherheitsbezogenen oder rechtlichen Gründen ändern, aussetzen oder einstellen. Eine ununterbrochene Verfügbarkeit öffentlicher Websites garantieren wir nur, wenn dies ausdrücklich schriftlich vereinbart ist.</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-cloudTitle" datatype="html">
-        <source> Cloud Service, Hosting, and Subprocessors </source>
-        <target state="translated">Cloud-Dienst, Hosting und Unterauftragsverarbeiter</target>
+      <trans-unit id="featureForepathLegal-consultingTitle" datatype="html">
+        <source> Consulting and Professional Services </source>
+        <target state="translated">Beratung und Professional Services</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-cloudDesc1" datatype="html">
-        <source> For the Cloud Service we provide access to a managed instance of Agenstra, including hosting on servers operated by us or by qualified infrastructure providers (subprocessors). The primary place of processing, data residency options, and security measures will be described in the applicable order, product documentation, and our Privacy Policy. Processing of personal data is governed by Regulation (EU) 2016/679 (GDPR) and, where applicable, a data processing agreement (Art. 28 GDPR) concluded with you. </source>
-        <target state="translated">Im Rahmen des Cloud-Dienstes gewähren wir Zugang zu einer verwalteten Instanz von Agenstra, einschließlich Hosting auf Servern, die von uns oder qualifizierten Infrastrukturanbietern (Unterauftragsverarbeiter) betrieben werden. Der Hauptsitz der Verarbeitung, Optionen zur Datenresidenz und Sicherheitsmaßnahmen werden in der maßgeblichen Bestellung, der Produktdokumentation und unserer Datenschutzerklärung beschrieben. Die Verarbeitung personenbezogener Daten richtet sich nach der Verordnung (EU) 2016/679 (DSGVO) und - soweit einschlägig - einem mit Ihnen geschlossenen Auftragsverarbeitungsvertrag (Art. 28 DSGVO).</target>
+      <trans-unit id="featureForepathLegal-consultingDesc1" datatype="html">
+        <source> Consulting and professional services are provided with reasonable professional care according to the agreed scope. Unless expressly agreed otherwise in writing, advice and deliverables are recommendations and work product for your internal use; you remain responsible for decisions you take and for implementing recommendations in your environment. </source>
+        <target state="translated">Beratungs- und Professional Services erbringen wir mit angemessener fachlicher Sorgfalt nach dem vereinbarten Umfang. Sofern nicht ausdrücklich schriftlich anders vereinbart, sind Ratschläge und Arbeitsergebnisse Empfehlungen und Arbeitsprodukte zu Ihrer internen Nutzung; Sie bleiben für Ihre Entscheidungen und die Umsetzung von Empfehlungen in Ihrer Umgebung verantwortlich.</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-cloudDesc2" datatype="html">
-        <source> We strive to maintain service availability in line with any SLA expressly agreed in your contract. Unless otherwise stated, planned maintenance will, where reasonably practicable, be announced in advance. Temporary interruptions may occur for security, capacity, or legal reasons. </source>
-        <target state="translated">Wir bemühen uns, die Verfügbarkeit des Dienstes im Einklang mit einem ausdrücklich in Ihrem Vertrag vereinbarten SLA aufrechtzuerhalten. Vorbehaltlich anderweitiger Regelungen kündigen wir geplante Wartungen, soweit zumutbar, im Voraus an. Vorübergehende Unterbrechungen können aus Gründen der Sicherheit, Kapazität oder aufgrund gesetzlicher Anforderungen auftreten.</target>
+      <trans-unit id="featureForepathLegal-consultingDesc2" datatype="html">
+        <source> You will provide timely access to information, systems, and personnel reasonably required for performance. Delays or incomplete information on your side may affect timelines and fees as set out in the order or under statutory rules. </source>
+        <target state="translated">Sie stellen rechtzeitig Zugang zu Informationen, Systemen und Personal bereit, der für die Leistung vernünftigerweise erforderlich ist. Verzögerungen oder unvollständige Informationen Ihrerseits können Zeitpläne und Vergütung gemäß Bestellung oder gesetzlichen Regelungen beeinflussen.</target>
       </trans-unit>
-      <trans-unit id="featureForepathLegal-cloudDesc3" datatype="html">
-        <source> You retain responsibility for the content and lawfulness of data and workloads you upload or configure, for user management within your organization, and for credentials and API keys you control. </source>
-        <target state="translated">Sie bleiben verantwortlich für Inhalt und Rechtmäßigkeit der von Ihnen hochgeladenen oder konfigurierten Daten und Workloads, für die Benutzerverwaltung innerhalb Ihrer Organisation sowie für Zugangsdaten und API-Schlüssel, die Sie kontrollieren.</target>
+      <trans-unit id="featureForepathLegal-consultingDesc3" datatype="html">
+        <source> Where we create work product under an engagement, we grant you the rights of use required for the intended contractual purpose unless the order states a different license. We retain our pre-existing tools, methods, know-how, and materials. </source>
+        <target state="translated">Soweit wir im Rahmen eines Auftrags Arbeitsergebnisse erstellen, räumen wir Ihnen die für den vertraglichen Zweck erforderlichen Nutzungsrechte ein, sofern die Bestellung keine andere Lizenz vorsieht. Wir behalten unsere vorbestehenden Werkzeuge, Methoden, Know-how und Materialien.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-supportTitle" datatype="html">
-        <source> Support, Service Levels, and Individual Services </source>
-        <target state="translated">Support, Service-Levels und individuelle Leistungen</target>
+        <source> Support and Individual Services </source>
+        <target state="translated">Support und individuelle Leistungen</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-supportDesc1" datatype="html">
-        <source> Support channels (e.g., community, email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased tier or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
-        <target state="translated">Supportkanäle (z. B. Community, E-Mail, Telefon, Chat oder Microsoft Teams) und Reaktionsziele richten sich nach der erworbenen Stufe oder der Enterprise-Vereinbarung. Verfügbarkeitsprozentsätze oder ein SLA gelten nur, wenn und soweit ausdrücklich schriftlich vereinbart; im Übrigen bleiben gesetzliche Rechte unberührt.</target>
+        <source> Support channels (e.g., email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased engagement or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
+        <target state="translated">Supportkanäle (z. B. E-Mail, Telefon, Chat oder Microsoft Teams) und Reaktionsziele hängen vom gebuchten Auftrag oder der Enterprise-Vereinbarung ab. Ein Verfügbarkeitsprozentsatz oder SLA gilt nur, wenn und soweit ausdrücklich schriftlich vereinbart; gesetzliche Rechte bleiben im Übrigen unberührt.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-supportDesc2" datatype="html">
         <source> Professional services such as onboarding, training, customization, or development are provided on the basis of separate written specifications, statements of work, or order forms. Unless agreed otherwise, we grant you the rights of use to deliverables as required for the intended use under the contract. </source>
@@ -1350,12 +1350,12 @@
         <target state="translated">Ihre Pflichten und zulässige Nutzung</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-conductDesc1" datatype="html">
-        <source> You will use Agenstra and related services only in compliance with applicable law, including export control, sanctions, telecommunications, and AI-related regulations where relevant. You must not misuse the services (e.g., to distribute malware, infringe third-party rights, conduct illegal surveillance, or overload systems without authorization). </source>
-        <target state="translated">Sie nutzen Agenstra und zugehörige Leistungen nur im Einklang mit geltendem Recht, einschließlich Exportkontrolle, Sanktionen, Telekommunikationsrecht und - soweit einschlägig - KI-bezogener Vorschriften. Sie dürfen die Leistungen nicht missbräuchlich nutzen (z. B. zur Verbreitung von Schadsoftware, zur Verletzung von Rechten Dritter, zur rechtswidrigen Überwachung oder zur unbefugten Überlastung von Systemen).</target>
+        <source> You will use ForePath websites and related services only in compliance with applicable law, including export control and sanctions where relevant. You must not misuse the services (e.g., to distribute malware, infringe third-party rights, submit false reports, or overload systems without authorization). </source>
+        <target state="translated">Sie nutzen ForePath-Websites und zugehörige Leistungen nur im Einklang mit geltendem Recht, einschließlich Exportkontrolle und Sanktionen, soweit einschlägig. Sie dürfen die Leistungen nicht missbräuchlich nutzen (z. B. zur Verbreitung von Schadsoftware, zur Verletzung von Rechten Dritter, zur Abgabe falscher Meldungen oder zur unbefugten Überlastung von Systemen).</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-conductDesc2" datatype="html">
-        <source> You are obliged to keep access credentials confidential, to inform us without undue delay of security incidents that may affect our systems, and to cooperate reasonably in troubleshooting. </source>
-        <target state="translated">Sie sind verpflichtet, Zugangsdaten vertraulich zu behandeln, uns unverzüglich über Sicherheitsvorfälle zu informieren, die unsere Systeme betreffen können, und bei der Fehleranalyse angemessen mitzuwirken.</target>
+        <source> You are obliged to keep access credentials confidential where provided, to inform us without undue delay of security incidents that may affect our systems, and to cooperate reasonably in troubleshooting. </source>
+        <target state="translated">Sie sind verpflichtet, Zugangskennungen, soweit bereitgestellt, vertraulich zu halten, uns unverzüglich über Sicherheitsvorfälle zu informieren, die unsere Systeme betreffen können, und bei der Fehlerbehebung angemessen mitzuwirken.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-conductDesc3" datatype="html">
         <source> We may take proportionate countermeasures, including suspension of access, if you materially breach these obligations or if continued provision would expose us to undue legal or security risk. </source>
@@ -1366,28 +1366,28 @@
         <target state="translated">Updates, Wartung und Änderungen</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-updatesDesc1" datatype="html">
-        <source> We may provide updates, patches, and new versions of the software or Cloud Service. For self-hosted deployments, you decide when to apply updates unless security-critical measures are required by law or expressly mandated under your enterprise agreement. </source>
-        <target state="translated">Wir können Updates, Patches und neue Versionen der Software oder des Cloud-Dienstes bereitstellen. Bei Selbst-Hosting entscheiden Sie über den Zeitpunkt der Einspielung von Updates, sofern nicht gesetzlich sicherheitskritische Maßnahmen erforderlich sind oder Ihre Enterprise-Vereinbarung etwas anderes vorschreibt.</target>
+        <source> We may update website content, tools, and service descriptions for technical, security, legal, or business reasons. Material changes to an ongoing consulting engagement require agreement or follow the change process in your order. </source>
+        <target state="translated">Wir können Website-Inhalte, Tools und Leistungsbeschreibungen aus technischen, sicherheitsbezogenen, rechtlichen oder geschäftlichen Gründen aktualisieren. Wesentliche Änderungen an einem laufenden Beratungsauftrag bedürfen der Vereinbarung oder folgen dem Änderungsverfahren in Ihrer Bestellung.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-updatesDesc2" datatype="html">
-        <source> We may modify the Cloud Service for technical, security, or legal reasons if the contractual purpose remains substantially preserved. Material adverse changes will be communicated with reasonable notice where required by law; your statutory rights remain unaffected. </source>
-        <target state="translated">Wir können den Cloud-Dienst aus technischen, sicherheits- oder rechtlichen Gründen ändern, wenn der Vertragszweck im Wesentlichen gewahrt bleibt. Wesentliche nachteilige Änderungen teilen wir mit angemessener Vorankündigung mit, soweit gesetzlich erforderlich; Ihre gesetzlichen Rechte bleiben unberührt.</target>
+        <source> We may modify public website features if the overall purpose of informational access remains substantially preserved. Material adverse changes to paid services will be communicated with reasonable notice where required by law; your statutory rights remain unaffected. </source>
+        <target state="translated">Wir können Funktionen öffentlicher Websites ändern, sofern der Gesamtzweck des Informationszugangs im Wesentlichen erhalten bleibt. Wesentliche nachteilige Änderungen an entgeltlichen Leistungen teilen wir mit angemessener Frist mit, soweit gesetzlich erforderlich; Ihre gesetzlichen Rechte bleiben unberührt.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-updatesDesc3" datatype="html">
-        <source> Beta or preview features may be offered &quot;as is&quot; without warranty of any particular fitness until generally released. </source>
-        <target state="translated">Beta- oder Vorschaufunktionen können „wie besehen“ ohne Gewähr für eine bestimmte Eignung bis zur allgemeinen Freigabe angeboten werden.</target>
+        <source> Preview or experimental website features may be offered &quot;as is&quot; without warranty of any particular fitness until generally released. </source>
+        <target state="translated">Vorschau- oder experimentelle Website-Funktionen können „wie besehen“ ohne Gewähr für eine bestimmte Eignung angeboten werden, bis sie allgemein freigegeben sind.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-ipTitle" datatype="html">
         <source> Intellectual Property and Third-Party Components </source>
         <target state="translated">Geistiges Eigentum und Drittkomponenten</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-ipDesc1" datatype="html">
-        <source> We or our licensors retain all rights to Agenstra not expressly granted to you. The provisions of the German Act on Copyright and Related Rights (Urheberrechtsgesetz - UrhG) and EU copyright law remain unaffected. </source>
-        <target state="translated">Wir oder unsere Lizenzgeber behalten uns alle Rechte an Agenstra vor, die Ihnen nicht ausdrücklich eingeräumt wurden. Die Vorschriften des Urheberrechtsgesetzes (UrhG) und des EU-Urheberrechts bleiben unberührt.</target>
+        <source> We or our licensors retain all rights to ForePath websites, brands, materials, and service methodologies not expressly granted to you. The provisions of the German Act on Copyright and Related Rights (Urheberrechtsgesetz - UrhG) and EU copyright law remain unaffected. </source>
+        <target state="translated">Wir oder unsere Lizenzgeber behalten uns alle Rechte an ForePath-Websites, Marken, Materialien und Leistungsmethoden vor, die Ihnen nicht ausdrücklich eingeräumt wurden. Die Vorschriften des Urheberrechtsgesetzes (UrhG) und des EU-Urheberrechts bleiben unberührt.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-ipDesc2" datatype="html">
-        <source> The software may include third-party open-source components under their respective licenses. Corresponding notices and license texts are supplied with the software or in documentation. </source>
-        <target state="translated">Die Software kann Drittkomponenten unter Open-Source-Lizenzen enthalten. Entsprechende Hinweise und Lizenztexte werden der Software oder der Dokumentation beigefügt.</target>
+        <source> Our websites and deliverables may include third-party components, references, or open-source software under their respective licenses. Corresponding notices are supplied where required. </source>
+        <target state="translated">Unsere Websites und Liefergegenstände können Drittkomponenten, Verweise oder Open-Source-Software unter deren jeweiligen Lizenzen enthalten. Entsprechende Hinweise werden bereitgestellt, soweit erforderlich.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-ipDesc3" datatype="html">
         <source> Feedback you provide may be used by us without restriction or royalty, subject to applicable personal data rules. </source>
@@ -1398,16 +1398,16 @@
         <target state="translated">Datenschutz</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-dataDesc" datatype="html">
-        <source> Processing of personal data in connection with our website, contractual relationship, and Cloud Service is described in our Privacy Policy. That policy explains categories of data, purposes, legal bases under the GDPR (including Art. 6 and, where relevant, Art. 28 GDPR for processing on your instructions), retention, and your data subject rights under Chapter III GDPR. In case of conflict between these Terms and the Privacy Policy on data-protection matters, the Privacy Policy prevails. </source>
-        <target state="translated">Die Verarbeitung personenbezogener Daten im Zusammenhang mit unserer Website, dem Vertragsverhältnis und dem Cloud-Dienst ist in unserer Datenschutzerklärung beschrieben. Dort werden Kategorien von Daten, Zwecke, Rechtsgrundlagen nach der DSGVO (einschließlich Art. 6 und - soweit einschlägig - Art. 28 DSGVO bei Verarbeitung auf Ihre Weisung), Aufbewahrung sowie Ihre Betroffenenrechte nach Kapitel III DSGVO erläutert. Im Falle eines Widerspruchs zwischen diesen Bedingungen und der Datenschutzerklärung zu datenschutzrechtlichen Fragen geht die Datenschutzerklärung vor.</target>
+        <source> Processing of personal data in connection with our websites and contractual relationship is described in our Privacy Policy. That policy explains categories of data, purposes, legal bases under the GDPR (including Art. 6 and, where relevant, Art. 28 GDPR for processing on your instructions), retention, and your data subject rights under Chapter III GDPR. In case of conflict between these Terms and the Privacy Policy on data-protection matters, the Privacy Policy prevails. </source>
+        <target state="translated">Die Verarbeitung personenbezogener Daten im Zusammenhang mit unseren Websites und dem Vertragsverhältnis ist in unserer Datenschutzerklärung beschrieben. Diese erläutert Datenkategorien, Zwecke, Rechtsgrundlagen nach der DSGVO (einschließlich Art. 6 und, soweit einschlägig, Art. 28 DSGVO bei Verarbeitung nach Ihren Weisungen), Speicherdauer und Ihre Betroffenenrechte nach Kapitel III DSGVO. Bei Widersprüchen zwischen diesen Bedingungen und der Datenschutzerklärung in datenschutzrechtlichen Fragen geht die Datenschutzerklärung vor.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-liabilityTitle" datatype="html">
         <source>Defects, Warranty, and Liability</source>
         <target state="translated">Mängel, Gewährleistung und Haftung</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-liabilityDesc1" datatype="html">
-        <source> For contracts with Consumers, statutory rights regarding defects in digital products or services (including Sections 327 et seq. BGB and the remedies thereunder) apply without restriction, except where mandatory law permits limitation. For Entrepreneurs, warranty for defects is governed by Sections 434 et seq. BGB unless stricter individual agreements exist. </source>
-        <target state="translated">Bei Verträgen mit Verbrauchern gelten die gesetzlichen Rechte bei Mängeln digitaler Produkte oder Dienstleistungen (einschließlich §§ 327 ff. BGB und der dortigen Rechtsbehelfe) uneingeschränkt, außer soweit zwingendes Recht eine Beschränkung zulässt. Bei Unternehmern richtet sich die Gewährleistung für Mängel nach §§ 434 ff. BGB, sofern keine strengeren individuellen Vereinbarungen bestehen.</target>
+        <source> For contracts with Consumers, statutory rights regarding defects in services (including the remedies under the BGB) apply without restriction, except where mandatory law permits limitation. For Entrepreneurs, warranty for defects is governed by Sections 434 et seq. BGB and related provisions unless stricter individual agreements exist. </source>
+        <target state="translated">Gegenüber Verbrauchern gelten die gesetzlichen Mängelrechte bei Dienstleistungen (einschließlich der Rechtsbehelfe nach dem BGB) ohne Einschränkung, soweit zwingendes Recht keine Beschränkung zulässt. Gegenüber Unternehmern richtet sich die Mängelhaftung nach §§ 434 ff. BGB und verwandten Vorschriften, sofern nicht strengere Individualvereinbarungen bestehen.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-liabilityDesc2" datatype="html">
         <source> We are liable without limitation for intent (Vorsatz) and gross negligence (grobe Fahrlässigkeit), for injury to life, body, or health, under the German Product Liability Act (Produkthaftungsgesetz - ProdHaftG) where applicable, and under a guarantee (Garantie) if assumed. For simple negligence we are liable only for breach of material contractual obligations (Kardinalpflichten), limited to typical, foreseeable damage, except in the cases in the preceding sentence. The above does not imply a reversal of the burden of proof to your disadvantage. </source>
@@ -1422,16 +1422,16 @@
         <target state="translated">Laufzeit, Kündigung und Fristen</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-termDesc1" datatype="html">
-        <source> Subscriptions and Cloud Service run for the term selected at order (e.g., monthly or annual) and renew for equivalent periods unless terminated with notice. Unless otherwise agreed in your order, ordinary termination of recurring plans may require fourteen (14) days&apos; notice to the end of the current billing period, in line with the arrangements published on our pricing pages. </source>
-        <target state="translated">Abonnements und der Cloud-Dienst laufen für die bei der Bestellung gewählte Laufzeit (z. B. monatlich oder jährlich) und verlängern sich um gleiche Zeiträume, sofern nicht gekündigt wird. Sofern in Ihrer Bestellung nichts anderes vereinbart ist, kann die ordentliche Kündigung wiederkehrender Pläne eine Frist von vierzehn (14) Tagen zum Ende der laufenden Abrechnungsperiode erfordern, entsprechend den auf unseren Preisseiten veröffentlichten Regelungen.</target>
+        <source> Consulting and professional service engagements run for the term or until completion of the scope selected in the order. Recurring or retainer arrangements renew as stated in your order unless terminated with the notice period set out there or, if none is stated, with fourteen (14) days&apos; notice to the end of the current period. </source>
+        <target state="translated">Beratungs- und Professional-Service-Aufträge laufen für die in der Bestellung gewählte Laufzeit oder bis zur Erfüllung des vereinbarten Umfangs. Wiederkehrende oder Retainer-Vereinbarungen verlängern sich wie in Ihrer Bestellung angegeben, sofern nicht mit der dort genannten Frist oder, falls keine genannt ist, mit einer Frist von vierzehn (14) Tagen zum Ende des laufenden Zeitraums gekündigt wird.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-termDesc2" datatype="html">
         <source> Either party may terminate for cause (außerordentliche Kündigung) where good cause exists under Section 314 BGB or applicable special provisions. Good cause for us includes persistent payment default, serious acceptable-use violations, or legally required shutdown. </source>
         <target state="translated">Jede Vertragspartei kann aus wichtigem Grund kündigen, wenn ein wichtiger Grund im Sinne des § 314 BGB oder besonderer gesetzlicher Vorschriften vorliegt. Ein wichtiger Grund für uns umfasst insbesondere anhaltenden Zahlungsverzug, schwerwiegende Verstöße gegen die zulässige Nutzung oder eine gesetzlich erforderliche Abschaltung.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-termDesc3" datatype="html">
-        <source> Upon termination, your right to use the affected software or Cloud Service ceases; we may delete tenant data after any statutory or agreed retention period. Sections that by nature should survive (e.g., liability, confidentiality, applicable law) remain in effect. </source>
-        <target state="translated">Mit Beendigung endet Ihr Recht zur Nutzung der betroffenen Software oder des Cloud-Dienstes; wir können Mandantendaten nach Ablauf gesetzlicher oder vereinbarter Aufbewahrungsfristen löschen. Bestimmungen, die ihrer Natur nach fortgelten sollen (z. B. Haftung, Vertraulichkeit, anwendbares Recht), bleiben wirksam.</target>
+        <source> Upon termination, your right to receive further unpaid services under the affected engagement ceases. Sections that by nature should survive (e.g., liability, confidentiality, intellectual property, applicable law) remain in effect. </source>
+        <target state="translated">Mit Beendigung endet Ihr Anspruch auf weitere noch nicht vergütete Leistungen aus dem betroffenen Auftrag. Bestimmungen, die ihrer Natur nach fortgelten sollen (z. B. Haftung, Vertraulichkeit, geistiges Eigentum, anwendbares Recht), bleiben in Kraft.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-finalTitle" datatype="html">
         <source> Amendments, Governing Law, Venue, and Dispute Resolution </source>
@@ -1462,20 +1462,20 @@
         <target state="translated">Sollten einzelne Bestimmungen dieser Bedingungen unwirksam oder undurchsetzbar sein oder werden, bleiben die übrigen Bestimmungen wirksam. Die unwirksame oder undurchsetzbare Bestimmung ist durch eine wirksame Bestimmung zu ersetzen, die dem wirtschaftlichen Zweck der ursprünglichen Bestimmung am nächsten kommt, soweit gesetzlich zulässig (einschließlich §§ 306, 307 BGB für Allgemeine Geschäftsbedingungen).</target>
       </trans-unit>
       <trans-unit id="featureForepathTerms-ctaLead" datatype="html">
-        <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
-        <target>Wenn Sie Klärungsbedarf zu Lizenzen, dem Cloud-Dienst oder vertraglichen Bedingungen haben, kontaktieren Sie uns bitte über die oben genannten Kontaktdaten.</target>
+        <source> If you need clarification on websites, consulting engagements, or contractual conditions, please contact us using the details above. </source>
+        <target>Wenn Sie Klärungsbedarf zu Websites, Beratungsaufträgen oder Vertragsbedingungen haben, kontaktieren Sie uns bitte über die oben genannten Angaben.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalTerms-metaTitle" datatype="html">
         <source>Terms of Service :: ForePath</source>
         <target state="translated">Nutzungsbedingungen :: ForePath</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalTerms-metaDescription" datatype="html">
-        <source>Terms governing use of ForePath websites, consulting services, and related offerings including Agenstra software and managed cloud services.</source>
-        <target state="translated">Bedingungen für die Nutzung der ForePath-Websites, Beratungsleistungen und zugehöriger Angebote einschließlich Agenstra-Software und Cloud-Dienste.</target>
+        <source> Terms governing use of ForePath websites, consulting services, and related professional offerings from IPvX UG (haftungsbeschränkt). </source>
+        <target state="translated">Bedingungen für die Nutzung der ForePath-Websites, Beratungsleistungen und zugehöriger Professional Services der IPvX UG (haftungsbeschränkt).</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalTerms-metaKeywords" datatype="html">
-        <source>ForePath, terms of service, Agenstra, IPvX</source>
-        <target state="translated">ForePath, Nutzungsbedingungen, AGB, Agenstra, IPvX</target>
+        <source> ForePath, terms of service, consulting, IPvX </source>
+        <target state="translated">ForePath, Nutzungsbedingungen, AGB, Beratung, IPvX</target>
       </trans-unit>
       <trans-unit id="featureForepathOneTeaser-title" datatype="html">
         <source>Connect the dots</source>
@@ -2890,8 +2890,8 @@
         <target> Bug Bounty und Vergütung </target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP1" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Forepath does not operate an official bug bounty program.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> There are no published reward tiers, third-party bounty platforms, or guaranteed payouts for Agenstra, Decabill, or other products in this repository. Please do not submit reports expecting a bounty. </source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Forepath betreibt kein offizielles Bug-Bounty-Programm.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Es gibt keine veröffentlichten Belohnungsstufen, Drittanbieter-Bounty-Plattformen oder garantierten Auszahlungen für Agenstra, Decabill oder andere Produkte in diesem Repository. Bitte reichen Sie keine Meldungen in Erwartung einer Belohnung ein. </target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>ForePath does not operate an official bug bounty program.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> There are no published reward tiers, third-party bounty platforms, or guaranteed payouts for Agenstra, Decabill, or other products in this repository. Please do not submit reports expecting a bounty. </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>ForePath betreibt kein offizielles Bug-Bounty-Programm.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Es gibt keine veröffentlichten Belohnungsstufen, Drittanbieter-Bounty-Plattformen oder garantierten Auszahlungen für Agenstra, Decabill oder andere Produkte in diesem Repository. Bitte reichen Sie keine Meldungen in Erwartung einer Belohnung ein. </target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP2" datatype="html">
         <source> We still welcome <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>valid, responsibly disclosed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> vulnerabilities with a clear description, demonstrated impact, and reproducible steps. We may, at our <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>sole discretion<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, offer recognition or compensation for especially valuable findings, but <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>no reward is promised or owed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, and any past payment does not establish a precedent. </source>
