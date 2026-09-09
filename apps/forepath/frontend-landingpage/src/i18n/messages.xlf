@@ -2,6 +2,81 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureForepathBlog-heroTitle" datatype="html">
+        <source>Blog</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-heroLead" datatype="html">
+        <source> Practical notes on consulting, engineering, and operating modern IT. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-searchLabel" datatype="html">
+        <source>Search posts</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-searchPlaceholder" datatype="html">
+        <source>Search posts</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-loading" datatype="html">
+        <source>Loading posts…</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-empty" datatype="html">
+        <source>No posts found. Check back soon.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-aiGeneratedAlt" datatype="html">
+        <source>AI Generated</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-aiModifiedAlt" datatype="html">
+        <source>AI Modified</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-readMore" datatype="html">
+        <source>Read more</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-loadingMore" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-loadMore" datatype="html">
+        <source>Load more</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-loadError" datatype="html">
+        <source>We could not load blog posts right now. Please try again later.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-metaTitle" datatype="html">
+        <source>Blog :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-metaDescription" datatype="html">
+        <source>Insights from ForePath on consulting, software engineering, IT systems, and shipping reliable platforms.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlog-metaKeywords" datatype="html">
+        <source>ForePath blog, consulting, software engineering, IT systems, cloud, DevOps</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-loading" datatype="html">
+        <source>Loading post…</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-notFoundTitle" datatype="html">
+        <source>Post not found</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-notFoundBody" datatype="html">
+        <source> This article may have been moved or is no longer published. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-notFoundCta" datatype="html">
+        <source>Browse all posts</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-backToBlog" datatype="html">
+        <source>Back to blog</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-readingTimeUnit" datatype="html">
+        <source>min read</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-loadError" datatype="html">
+        <source>We could not load this post right now. Please try again later.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-fallbackDescription" datatype="html">
+        <source>Article from the ForePath blog.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-notFoundMetaTitle" datatype="html">
+        <source>Post not found :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathBlogPost-notFoundMetaDescription" datatype="html">
+        <source>The requested ForePath blog post could not be found.</source>
+        </trans-unit>
       <trans-unit id="featureForepathConsulting-heroTitle" datatype="html">
         <source> Consulting that turns <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>strategy into systems<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         </trans-unit>
@@ -9,7 +84,7 @@
         <source> We help tech leads design platforms, improve delivery, and adopt AI with architecture your teams can implement and operate. </source>
         </trans-unit>
       <trans-unit id="featureForepathConsulting-valueTitle" datatype="html">
-        <source>Good consulting pays off</source>
+        <source> Good consulting pays off </source>
         </trans-unit>
       <trans-unit id="featureForepathConsulting-valueLead" datatype="html">
         <source> Good consulting turns uncertainty into decisions your teams can act on. We help you choose direction before budget and momentum lock in the wrong path. </source>
@@ -213,7 +288,7 @@
         <source> If you want strategy and architecture guidance without delivery or operations on the same thread, tell us about your goals and timeline. We will propose an engagement scoped to consulting alone. </source>
         </trans-unit>
       <trans-unit id="featureForepathConsulting-ctaButton" datatype="html">
-        <source>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathConsulting-metaTitle" datatype="html">
         <source>IT and platform consulting :: ForePath</source>
@@ -254,6 +329,12 @@
       <trans-unit id="featureForepath-navSoftwareDevelopmentCaption" datatype="html">
         <source>Ship and own software in production</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navProjectEstimate" datatype="html">
+        <source>Instant quote</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navProjectEstimateCaption" datatype="html">
+        <source>From your project description, in seconds</source>
+        </trans-unit>
       <trans-unit id="featureForepath-navProducts" datatype="html">
         <source>Products</source>
         </trans-unit>
@@ -271,9 +352,6 @@
         </trans-unit>
       <trans-unit id="featureForepath-navOne" datatype="html">
         <source>One</source>
-        </trans-unit>
-      <trans-unit id="featureForepath-navBlog" datatype="html">
-        <source>Blog</source>
         </trans-unit>
       <trans-unit id="featureForepath-contactUsButton" datatype="html">
         <source>Contact us</source>
@@ -311,6 +389,12 @@
       <trans-unit id="featureForepath-navPricing" datatype="html">
         <source>Pricing</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navBlog" datatype="html">
+        <source>Blog</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
       <trans-unit id="featureForepath-footerLegal" datatype="html">
         <source>Legal</source>
         </trans-unit>
@@ -322,6 +406,9 @@
         </trans-unit>
       <trans-unit id="featureForepath-privacyPolicyLink" datatype="html">
         <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-vulnerabilityDisclosureLink" datatype="html">
+        <source>Vulnerability Disclosure</source>
         </trans-unit>
       <trans-unit id="featureForepath-withdrawalLink" datatype="html">
         <source>Right of Withdrawal</source>
@@ -370,10 +457,59 @@
         <source> From cloud foundations to product delivery, we work alongside your teams with transparent methods, open standards, and outcomes you can sustain after the engagement ends. </source>
         </trans-unit>
       <trans-unit id="featureForepathHome-heroContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Start a conversation </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Start a conversation</source>
         </trans-unit>
-      <trans-unit id="featureForepathHome-heroExplore" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> See our experience </source>
+      <trans-unit id="featureForepathHome-heroEstimate" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-blogTeaserLabel" datatype="html">
+        <source>Latest from the blog</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processRegionLabel" datatype="html">
+        <source>How a ForePath engagement comes together</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep1Verb" datatype="html">
+        <source>Advise</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep1Caption" datatype="html">
+        <source> Direction, architecture, and constraints your team can execute </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep1Link" datatype="html">
+        <source>View consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep2Verb" datatype="html">
+        <source>Build</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep2Caption" datatype="html">
+        <source> Ship software on stacks your engineers can own after handover </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep2Link" datatype="html">
+        <source>View development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep3Verb" datatype="html">
+        <source>Operate</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep3Caption" datatype="html">
+        <source> Steady-state ownership with monitoring, SLAs, and on-call reality </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep3Link" datatype="html">
+        <source>View IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep4Verb" datatype="html">
+        <source>Extend</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep4Caption" datatype="html">
+        <source> Production tooling that stays on the same standards as the services </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processStep4Link" datatype="html">
+        <source>View ForePath One <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-processFaviconAlt" datatype="html">
+        <source>ForePath</source>
         </trans-unit>
       <trans-unit id="featureForepathHome-proofStat" datatype="html">
         <source>10+</source>
@@ -418,16 +554,16 @@
         <source> We advise, build, and operate the systems organizations depend on. That spans cloud foundations, software delivery, and day-to-day IT operations. </source>
         </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsItem1" datatype="html">
-        <source>Consulting spans infrastructure, cloud, DevOps, security, and AI adoption. Architecture is shaped so your teams can implement it.</source>
+        <source> Consulting spans infrastructure, cloud, DevOps, security, and AI adoption. Architecture is shaped so your teams can implement it. </source>
         </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsItem2" datatype="html">
-        <source>Software is delivered on modern stacks your engineers can own after handover. Pairing and clear documentation keep ownership with your team.</source>
+        <source> Software is delivered on modern stacks your engineers can own after handover. Pairing and clear documentation keep ownership with your team. </source>
         </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsItem3" datatype="html">
-        <source>IT systems and managed operations are built for on-call reality. Monitoring and runbooks stay practical for the people who run production.</source>
+        <source> IT systems and managed operations are built for on-call reality. Monitoring and runbooks stay practical for the people who run production. </source>
         </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsItem4" datatype="html">
-        <source>Automation, CI/CD, and agent workflows remove toil where machines excel. Judgment stays with your team on every critical decision.</source>
+        <source> Automation, CI/CD, and agent workflows remove toil where machines excel. Judgment stays with your team on every critical decision. </source>
         </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsClosing" datatype="html">
         <source> Human review, pairing, and explicit guardrails are part of every engagement. The goal is more capability with the same control. You get faster delivery, clearer operations, and technology your team still understands. </source>
@@ -466,7 +602,7 @@
         <source> Tell us where you are stuck. That might be migration, delivery, AI adoption, or all three. We will propose a practical path and the team to execute it. </source>
         </trans-unit>
       <trans-unit id="featureForepathHome-ctaButton" datatype="html">
-        <source>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathHome-metaTitle" datatype="html">
         <source>Consulting and engineering for modern IT :: ForePath</source>
@@ -493,10 +629,10 @@
         <source> Reliable infrastructure comes from open technologies, clear processes, and partners who treat operations and security as one discipline. We run the systems your business depends on, from the office floor to the data centre, so your teams stay productive without constant firefighting. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainNetworkTitle" datatype="html">
-        <source>Network and connectivity</source>
+        <source> Network and connectivity </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainNetworkDesc" datatype="html">
-        <source>We design and operate LAN, WAN, Wi-Fi, firewalls, and unified communications so connectivity stays reliable from the office floor to remote sites.</source>
+        <source> We design and operate LAN, WAN, Wi-Fi, firewalls, and unified communications so connectivity stays reliable from the office floor to remote sites. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainNetworkItem1" datatype="html">
         <source>Firewall and WAN changes with scheduled windows and failover testing</source>
@@ -508,10 +644,10 @@
         <source>Voice, Teams, and dial plan support with call quality monitoring</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainComputeTitle" datatype="html">
-        <source>Compute and platforms</source>
+        <source> Compute and platforms </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainComputeDesc" datatype="html">
-        <source>Physical and virtual servers plus hypervisors stay patched, monitored, and rightsized across their full lifecycle.</source>
+        <source> Physical and virtual servers plus hypervisors stay patched, monitored, and rightsized across their full lifecycle. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainComputeItem1" datatype="html">
         <source>Operating system patching and vulnerability remediation</source>
@@ -523,10 +659,10 @@
         <source>Capacity planning for seasonal and project driven peaks</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainEndpointsTitle" datatype="html">
-        <source>Endpoints and workplace</source>
+        <source> Endpoints and workplace </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainEndpointsDesc" datatype="html">
-        <source>Workstations and collaboration platforms are provisioned consistently so employees can work without daily IT friction.</source>
+        <source> Workstations and collaboration platforms are provisioned consistently so employees can work without daily IT friction. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainEndpointsItem1" datatype="html">
         <source>Standardized imaging with approved software baselines</source>
@@ -541,7 +677,7 @@
         <source>Identity and access</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainIdentityDesc" datatype="html">
-        <source>Digital and physical access policies are enforced so the right people reach the right resources at the right time.</source>
+        <source> Digital and physical access policies are enforced so the right people reach the right resources at the right time. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainIdentityItem1" datatype="html">
         <source>Identity reviews and role based access administration</source>
@@ -553,10 +689,10 @@
         <source>Privileged account monitoring and periodic recertification</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainSecurityTitle" datatype="html">
-        <source>Security and protection</source>
+        <source> Security and protection </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainSecurityDesc" datatype="html">
-        <source>Endpoints and users are protected through layered controls and a documented response process.</source>
+        <source> Endpoints and users are protected through layered controls and a documented response process. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainSecurityItem1" datatype="html">
         <source>Endpoint detection and antivirus policy management</source>
@@ -568,10 +704,10 @@
         <source>Phishing triage and incident response runbooks</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainResilienceTitle" datatype="html">
-        <source>Resilience and operations</source>
+        <source> Resilience and operations </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainResilienceDesc" datatype="html">
-        <source>Backup, recovery, and monitoring are tuned so issues surface early and recovery targets stay achievable.</source>
+        <source> Backup, recovery, and monitoring are tuned so issues surface early and recovery targets stay achievable. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainResilienceItem1" datatype="html">
         <source>Backup monitoring with scheduled restore drills</source>
@@ -582,6 +718,9 @@
       <trans-unit id="featureForepathItSystems-domainResilienceItem3" datatype="html">
         <source>SLA aligned ticket routing with monthly operational health reports</source>
         </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiLogoAlt" datatype="html">
+        <source>topi</source>
+        </trans-unit>
       <trans-unit id="featureForepathItSystems-topiTitle" datatype="html">
         <source> Rent the hardware you need, month by month </source>
         </trans-unit>
@@ -589,22 +728,19 @@
         <source> Through our partnership with topi, you can rent laptops, servers, network gear, and accessories instead of buying them upfront. When hardware ships with ForePath managed services, the service costs can even be part of the same monthly rental. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-topiItem1" datatype="html">
-        <source>Predictable monthly rates keep capital free for other priorities. You pay for the hardware you need without locking budget into large upfront purchases.</source>
+        <source> Predictable monthly rates keep capital free for other priorities. You pay for the hardware you need without locking budget into large upfront purchases. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-topiItem2" datatype="html">
-        <source>A digital rental flow covers procurement end to end. Warranty coverage is included on every device so support stays straightforward.</source>
+        <source> A digital rental flow covers procurement end to end. Warranty coverage is included on every device so support stays straightforward. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-topiItem3" datatype="html">
-        <source>Optional topi Care packages cover repair and faster device exchange. When something breaks, your team gets a clear path back to productive hardware.</source>
+        <source> Optional topi Care packages cover repair and faster device exchange. When something breaks, your team gets a clear path back to productive hardware. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-topiItem4" datatype="html">
-        <source>Scale up or refresh equipment as your team and projects evolve. Add devices for new hires or replace aging kits without restarting a capital cycle.</source>
+        <source> Scale up or refresh equipment as your team and projects evolve. Add devices for new hires or replace aging kits without restarting a capital cycle. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-topiClosing" datatype="html">
         <source> From first deployments to refresh cycles, we help you choose hardware that fits your environment and wrap it in an operating model your teams can rely on. </source>
-        </trans-unit>
-      <trans-unit id="featureForepathItSystems-topiLogoAlt" datatype="html">
-        <source>topi</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-oneTeaserLead" datatype="html">
         <source> We keep your environment stable. ForePath One connects that operations work with consulting, software delivery, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
@@ -616,7 +752,7 @@
         <source> Operational coverage does not have to come as part of a wider ForePath One engagement. If managed IT is what you need right now, tell us about your environment and gaps. We will outline a service scope and SLA proposal for IT systems alone. </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-ctaButton" datatype="html">
-        <source>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-metaTitle" datatype="html">
         <source>Managed IT systems :: ForePath</source>
@@ -715,7 +851,7 @@
         <source> If you have questions about our company information, registration details, or any other legal matters, we&apos;re happy to help. </source>
         </trans-unit>
       <trans-unit id="featureForepathDisclosure-ctaContact" datatype="html">
-        <source> Contact us </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathDisclosure-metaTitle" datatype="html">
         <source>Legal Disclosure :: ForePath</source>
@@ -905,7 +1041,7 @@
         <source> We take data protection seriously. If you have questions about how we handle your data, want to exercise your rights, or need clarification on any aspect of our privacy policy, please reach out. </source>
         </trans-unit>
       <trans-unit id="featureForepathLegal-ctaContact" datatype="html">
-        <source> Contact us </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalPrivacy-metaTitle" datatype="html">
         <source>Privacy Policy :: ForePath</source>
@@ -1123,6 +1259,321 @@
       <trans-unit id="featureForepathLegalTerms-metaKeywords" datatype="html">
         <source>ForePath, terms of service, Agenstra, IPvX</source>
         </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-title" datatype="html">
+        <source> Vulnerability Disclosure Policy </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-subtitle" datatype="html">
+        <source> Coordinated vulnerability disclosure for ForePath, Agenstra, and Decabill </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-reportCta" datatype="html">
+        <source> Report a vulnerability </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-lastUpdated" datatype="html">
+        <source> Last updated: September 9, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-purposeTitle" datatype="html">
+        <source>Purpose</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-purposeP1" datatype="html">
+        <source> This Vulnerability Disclosure Policy ("Policy") applies to coordinated vulnerability disclosure between IPvX UG (haftungsbeschränkt) ("we", "us") and you regarding any published software product of ours, including ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com), and software made available in the <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> monorepo, and defines our coordinated vulnerability disclosure ("CVD") policy under Annex I, Part II(5) of Regulation (EU) 2024/2847 (the EU Cyber Resilience Act). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-scopeTitle" datatype="html">
+        <source>Scope</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-scopeIntro" datatype="html">
+        <source> We offer coordinated vulnerability disclosure for the products, services, and research activities listed below. This Policy distinguishes what you may test from what you should not. Limit testing to in-scope targets and methods. If you find an issue in something we do not operate, report it to that vendor instead. Activities listed as out of scope are not authorized under this Policy. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScopeTitle" datatype="html">
+        <source> In scope </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScope1" datatype="html">
+        <source>ForePath (forepath.io), Agenstra (agenstra.com), and Decabill (decabill.com)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScope2" datatype="html">
+        <source> Applications and libraries in the <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                          &gt;"/>forepath/one<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                        &gt;"/> GitHub repository </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScope3" datatype="html">
+        <source>Publicly reachable services we operate for those products</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScopeTitle" datatype="html">
+        <source> Out of scope </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope1" datatype="html">
+        <source>Third-party SaaS or infrastructure we do not operate (report those issues upstream to the vendor)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope2" datatype="html">
+        <source>Physical attacks, social engineering, and phishing of employees or customers</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope3" datatype="html">
+        <source>Denial-of-service, volumetric flooding, or resource-exhaustion testing against production</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope4" datatype="html">
+        <source>Already known, duplicate, or publicly disclosed issues without new impact</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howTitle" datatype="html">
+        <source>How to report</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howP1" datatype="html">
+        <source> If you have found a security vulnerability, please use one of the private channels below. <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Do not<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> file security vulnerabilities as public GitHub issues. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howEmailHint" datatype="html">
+        <source>Subject prefix <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>[SECURITY]<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howFormLabel" datatype="html">
+        <source> Web form </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howForm" datatype="html">
+        <source> Please use the <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;.&quot; fragment=&quot;report-form&quot; class=&quot;text-primary text-decoration-none&quot;
+                      &gt;"/>report form <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                    &gt;"/><x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> further down on this page. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howSecurityTxt" datatype="html">
+        <source> You can also find our contact details for automated discovery at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/security.txt&quot;&gt;"/>/.well-known/security.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (RFC 9116). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howPgp" datatype="html">
+        <source> If you prefer encrypted email, please use our OpenPGP public key at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/pgp-key.txt&quot;&gt;"/>/.well-known/pgp-key.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (fingerprint 5B20 C75D E760 91CE FE8B 3CA5 2926 E9F2 4F3D 9191). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeTitle" datatype="html">
+        <source> What to include </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeIntro" datatype="html">
+        <source> To help us assess and fix the issue quickly, please include as much of the following as you can. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include1" datatype="html">
+        <source> A clear description of the vulnerability </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include2" datatype="html">
+        <source> The potential impact and your severity assessment </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include3" datatype="html">
+        <source> Detailed steps so we can reproduce the issue </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include4" datatype="html">
+        <source> Which products and versions are affected </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include5" datatype="html">
+        <source> Remediation ideas, if you have them </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include6" datatype="html">
+        <source> How we can reach you for follow-up </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTitle" datatype="html">
+        <source> Our commitments </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaIntro" datatype="html">
+        <source> When you send a report, we aim to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>acknowledge<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> receipt within <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>48 hours<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. After acknowledgment, we work toward the following remediation targets. These are best-effort goals, and complex issues may take longer. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaCritical" datatype="html">
+        <source> Critical </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage" datatype="html">
+        <source>Initial triage</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage24h" datatype="html">
+        <source>24 hours</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix" datatype="html">
+        <source>Fix target</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix7d" datatype="html">
+        <source>7 days</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaHigh" datatype="html">
+        <source>High</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage48h" datatype="html">
+        <source>48 hours</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix30d" datatype="html">
+        <source>30 days</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaMedium" datatype="html">
+        <source>Medium</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage1w" datatype="html">
+        <source>1 week</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix90d" datatype="html">
+        <source>90 days</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaLow" datatype="html">
+        <source>Low</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage2w" datatype="html">
+        <source>2 weeks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaBestEffort" datatype="html">
+        <source>Best effort</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaDisclosure" datatype="html">
+        <source> We generally aim for a <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>90-day<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> coordinated disclosure window once a fix is available and acknowledged. We may delay public disclosure when the risk of active exploitation or incomplete patch adoption outweighs the benefit of immediate publication. That narrow delay is consistent with Annex I, Part II(4) of the CRA. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-safeHarborTitle" datatype="html">
+        <source> Safe harbor </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-safeHarborBody" datatype="html">
+        <source> If you conduct security research in good faith, follow this policy, avoid privacy violations, service disruption, and data destruction, and report your findings privately before any public disclosure, we will not pursue legal action against you for that research. This safe harbor does not authorize access beyond what is necessary to demonstrate a vulnerability. It also does not waive claims for conduct outside this policy. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyTitle" datatype="html">
+        <source> Bug bounty and compensation </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Forepath does not operate an official bug bounty program.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> There are no published reward tiers, third-party bounty platforms, or guaranteed payouts for Agenstra, Decabill, or other products in this repository. Please do not submit reports expecting a bounty. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP2" datatype="html">
+        <source> We still welcome <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>valid, responsibly disclosed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> vulnerabilities with a clear description, demonstrated impact, and reproducible steps. We may, at our <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>sole discretion<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, offer recognition or compensation for especially valuable findings, but <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>no reward is promised or owed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, and any past payment does not establish a precedent. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Automated and low-effort reports are discarded without review.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Mass scanner output, duplicated template submissions, and reports that are clearly <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>AI-generated<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> without manual verification and original analysis are rejected immediately. Please invest time in one verified finding before contacting us. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-craTitle" datatype="html">
+        <source> Regulatory context (EU CRA) </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-craBody" datatype="html">
+        <source> By providing this Policy, we meet the coordinated vulnerability disclosure obligation in Annex I, Part II(5) of Regulation (EU) 2024/2847. Actively exploited vulnerabilities and severe incidents are escalated internally so we can meet Article 14 reporting to the competent CSIRT and ENISA. That includes the early warning, notification, and final report cadence. Our operator runbook covers internal escalation. We do not publish those operational details here. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesTitle" datatype="html">
+        <source> Public advisories and SBOM </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesIntro" datatype="html">
+        <source> Once a fix ships, we publish public advisories and release Software Bills of Materials so you can see what changed and what is included in each build. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesGhsa" datatype="html">
+        <source> Public advisories appear on <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/security/advisories&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>GitHub Security Advisories<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/> for this repository </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSbomAgenstra" datatype="html">
+        <source> Agenstra SBOMs are published on <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://downloads.agenstra.com/releases/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>downloads.agenstra.com<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSbomDecabill" datatype="html">
+        <source> Decabill SBOMs are published on <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://downloads.decabill.com/releases/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>downloads.decabill.com<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSecurityMd" datatype="html">
+        <source> The repository policy is in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>SECURITY.md<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formTitle" datatype="html">
+        <source> Submit a vulnerability report </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formLead" datatype="html">
+        <source> Please use this form to send a private report to our security team. We aim to acknowledge any report within 48 hours. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSuccessTitle" datatype="html">
+        <source> Report submitted </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSuccessLead" datatype="html">
+        <source> Thank you. We received your vulnerability report and will acknowledge it as soon as possible. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formNameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formNameRequired" datatype="html">
+        <source> Name is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formEmailRequired" datatype="html">
+        <source> Email is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formEmailInvalid" datatype="html">
+        <source> Enter a valid email address. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductLabel" datatype="html">
+        <source>Product</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductPlaceholder" datatype="html">
+        <source> Select a product or platform </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductAgenstra" datatype="html">
+        <source> Agenstra </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductDecabill" datatype="html">
+        <source> Decabill </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductForepath" datatype="html">
+        <source> ForePath </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductShared" datatype="html">
+        <source> Shared infrastructure </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductOther" datatype="html">
+        <source> Other </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductRequired" datatype="html">
+        <source> Product is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVersionsLabel" datatype="html">
+        <source>Affected versions</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVersionsRequired" datatype="html">
+        <source> Affected versions are required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formDescriptionLabel" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formDescriptionRequired" datatype="html">
+        <source> Description is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formImpactLabel" datatype="html">
+        <source>Impact</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formImpactRequired" datatype="html">
+        <source> Impact is required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formStepsLabel" datatype="html">
+        <source>Steps to reproduce</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formStepsRequired" datatype="html">
+        <source> Steps to reproduce are required. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formFixLabel" datatype="html">
+        <source>Suggested fix <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVdpPrefix" datatype="html">
+        <source>I accept the</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVdpLink" datatype="html">
+        <source>Vulnerability Disclosure Policy</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVdpRequired" datatype="html">
+        <source> You must accept the Vulnerability Disclosure Policy to submit your report. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formPrivacyPrefix" datatype="html">
+        <source>I accept the</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formPrivacyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formPrivacyRequired" datatype="html">
+        <source> You must accept the Privacy Policy to submit your report. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSubmitting" datatype="html">
+        <source>Submitting…</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSubmit" datatype="html">
+        <source>Submit report</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-metaTitle" datatype="html">
+        <source>Vulnerability Disclosure Policy :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-metaDescription" datatype="html">
+        <source>Coordinated vulnerability disclosure policy for ForePath, Agenstra, and Decabill under the EU Cyber Resilience Act. Report security issues securely.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-metaKeywords" datatype="html">
+        <source>ForePath, vulnerability disclosure, security, CRA, CVD</source>
+        </trans-unit>
       <trans-unit id="featureForepathOne-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ForePath One<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> connects services and products into one thread </source>
         </trans-unit>
@@ -1293,10 +1744,10 @@
         <source> Tell us where you are today and where you want to be. We will map which services and products make sense, and in what order. </source>
         </trans-unit>
       <trans-unit id="featureForepathOne-ctaEstimateButton" datatype="html">
-        <source>Get an instant quote</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepathOne-ctaButton" datatype="html">
-        <source>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathOne-metaTitle" datatype="html">
         <source>ForePath One services and products :: ForePath</source>
@@ -1307,11 +1758,212 @@
       <trans-unit id="featureForepathOne-metaKeywords" datatype="html">
         <source>ForePath One, consulting, IT systems, software development, Agenstra, platform services</source>
         </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-checkingDevice" datatype="html">
+        <source> Checking whether we can prepare your quote... </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupTitle" datatype="html">
+        <source>Preparing to quote</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingTitle" datatype="html">
+        <source> Building your quote </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimerAriaLabel" datatype="html">
+        <source>First visit load time notice</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimer" datatype="html">
+        <source> The first visit can take a minute or longer. Later visits start much faster. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupProgressLabel" datatype="html">
+        <source>Progress:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingHint" datatype="html">
+        <source> Your project details stay private. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupOverlayAriaLabel" datatype="html">
+        <source>Preparing to quote</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingOverlayAriaLabel" datatype="html">
+        <source>Generating your instant quote</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg1" datatype="html">
+        <source>Getting ready to build your quote...</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg2" datatype="html">
+        <source>First visit can take a minute. Later visits are much faster.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg3" datatype="html">
+        <source>Your project details stay private and secure.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg4" datatype="html">
+        <source>We are preparing ForePath services so we can map your project accurately.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg5" datatype="html">
+        <source>Almost there. Thanks for your patience.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg6" datatype="html">
+        <source>Still faster than scheduling a call. We promise!</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg7" datatype="html">
+        <source>Your information stays with you. No unwanted follow-up calls.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg8" datatype="html">
+        <source>Loading once so your next quote loads faster.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg1" datatype="html">
+        <source>Reading your request...</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg2" datatype="html">
+        <source>Matching your needs to ForePath services...</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg3" datatype="html">
+        <source>Calculating indicative line items...</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg4" datatype="html">
+        <source>Preparing your instant quote...</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg5" datatype="html">
+        <source>This can take a moment. Hang tight.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg6" datatype="html">
+        <source>It&apos;s faster than a call. We promise!</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg7" datatype="html">
+        <source>Working on your quote without sharing your project details.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg8" datatype="html">
+        <source>Preparing for take-off...</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-heroTitle" datatype="html">
+        <source> Describe your project, get an <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>instant quote<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-heroDescription" datatype="html">
+        <source> Tell us what you want to build or improve. We match your brief to ForePath services and show an indicative price range. Your details stay private and are not sent to our servers. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-gpuPermissionTitle" datatype="html">
+        <source> One more step to continue </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-gpuPermissionDescription" datatype="html">
+        <source> Allow the permission below to generate your quote. Your project details stay private and are not sent to our servers. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-gpuPermissionButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-shield-lock&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Continue securely </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-unsupportedTitle" datatype="html">
+        <source> Instant quote is not available here </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-unsupportedHelp" datatype="html">
+        <source> We can still review your project manually and provide a tailored quote. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-resultTitle" datatype="html">
+        <source> Indicative quote </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-colService" datatype="html">
+        <source>Service</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-colDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-colAmount" datatype="html">
+        <source> Amount </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-subtotal" datatype="html">
+        <source>Subtotal (net):</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-assumptions" datatype="html">
+        <source> Assumptions </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-disclaimerAriaLabel" datatype="html">
+        <source>Estimate disclaimer</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactAboutQuoteButton" datatype="html">
+        <source> Contact us about this quote </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-startOverButton" datatype="html">
+        <source> Start over </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-activeModelProfileLabel" datatype="html">
+        <source> Analysis effort </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel" datatype="html">
+        <source>Analysis effort profile</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-liteProfileWarningAriaLabel" datatype="html">
+        <source>Lite analysis effort warning</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-liteProfileWarning" datatype="html">
+        <source> Lite analysis may significantly underestimate your project and rely heavily on baseline assumptions. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-liteProfileUpgradeHint" datatype="html">
+        <source> Choose Balanced or Standard above if available for more realistic results. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-inputPlaceholder" datatype="html">
+        <source>Tell us about the scope, systems, timeline, and support needs for your project.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-sendAriaLabel" datatype="html">
+        <source>Send project description</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-sendButton" datatype="html">
+        <source>Send</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-keyboardHint" datatype="html">
+        <source> Press Enter to send. Use Ctrl+Enter for a new line. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-ctaTitle" datatype="html">
+        <source>Need a confirmed quote?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-ctaLead" datatype="html">
+        <source> The quote above is indicative. We are happy to refine scope and provide a formal proposal. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-ctaButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-metaTitle" datatype="html">
+        <source>Instant quote :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-metaDescription" datatype="html">
+        <source>Describe your project and get an instant indicative quote from ForePath. Your project details stay private and are not sent to our servers.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-metaKeywords" datatype="html">
+        <source>ForePath instant quote, IT pricing calculator, software development quote, consulting quote</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillIntro" datatype="html">
+        <source>I would like to discuss the following instant quote from ForePath.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillProjectDescription" datatype="html">
+        <source>Project description</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillSummary" datatype="html">
+        <source>Summary</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillLineItems" datatype="html">
+        <source>Line items</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillSubtotal" datatype="html">
+        <source>Subtotal (net):</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillAssumptions" datatype="html">
+        <source>Assumptions</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-profileLite" datatype="html">
+        <source>Lite</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-profileBalanced" datatype="html">
+        <source>Balanced</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-profileStandard" datatype="html">
+        <source>Standard</source>
+        </trans-unit>
       <trans-unit id="featureForepathPricing-heroTitle" datatype="html">
         <source> Transparent <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>service pricing<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for predictable IT investment </source>
         </trans-unit>
       <trans-unit id="featureForepathPricing-heroDescription" datatype="html">
         <source> Clear structures build trust. See exactly what IT systems and software development cost before you commit. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-heroEstimateCta" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepathPricing-itSystemsTitle" datatype="html">
         <source>IT systems</source>
@@ -1412,8 +2064,11 @@
       <trans-unit id="featureForepathPricing-ctaLead" datatype="html">
         <source> We are happy to walk through your scenario and recommend the right engagement model before work begins. </source>
         </trans-unit>
+      <trans-unit id="featureForepathPricing-ctaEstimateButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote</source>
+        </trans-unit>
       <trans-unit id="featureForepathPricing-ctaButton" datatype="html">
-        <source>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathPricing-metaTitle" datatype="html">
         <source>Service pricing :: ForePath</source>
@@ -1464,7 +2119,7 @@
         <source> You can work with us on delivery alone without pulling in consulting or managed operations. Share your product goals and constraints, and we will propose a team shape and timeline scoped to development. </source>
         </trans-unit>
       <trans-unit id="featureForepathSoftwareDevelopment-ctaButton" datatype="html">
-        <source>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathSoftwareDevelopment-cap1Title" datatype="html">
         <source>Internal platforms</source>
@@ -1511,287 +2166,89 @@
       <trans-unit id="featureForepathSoftwareDevelopment-metaKeywords" datatype="html">
         <source>ForePath software development, platform engineering, integrations, custom applications</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-metaTitle" datatype="html">
-        <source>Instant quote :: ForePath</source>
+      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-metaDescription" datatype="html">
-        <source>Describe your project and get an instant indicative quote from ForePath. Your project details stay private and are not sent to our servers.</source>
+      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
+        <source> Tell us about your project or question. We typically reply within one business day. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-metaKeywords" datatype="html">
-        <source>ForePath instant quote, IT pricing calculator, software development quote, consulting quote</source>
+      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
+        <source>Message sent</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-heroTitle" datatype="html">
-        <source>Describe your project, get an <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>instant quote<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
+        <source> Thank you for reaching out. We received your message and will get back to you soon. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-heroDescription" datatype="html">
-        <source>Tell us what you want to build or improve. We match your brief to ForePath services and show an indicative price range. Your details stay private and are not sent to our servers.</source>
+      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
+        <source>Name</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-checkingDevice" datatype="html">
-        <source>Checking whether we can prepare your quote...</source>
+      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
+        <source> Name is required. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-unsupportedTitle" datatype="html">
-        <source>Instant quote is not available here</source>
+      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
+        <source>Email</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-gpuPermissionTitle" datatype="html">
-        <source>One more step to continue</source>
+      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
+        <source> Email is required. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-gpuPermissionDescription" datatype="html">
-        <source>Allow the permission below to generate your quote. Your project details stay private and are not sent to our servers.</source>
+      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
+        <source> Enter a valid email address. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-gpuPermissionButton" datatype="html">
-        <source>Continue securely</source>
+      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
+        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-unsupportedHelp" datatype="html">
-        <source>We can still review your project manually and provide a tailored quote.</source>
+      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
+        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactButton" datatype="html">
-        <source>Contact us</source>
+      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
+        <source>Message</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-chatTitle" datatype="html">
-        <source>Instant quote</source>
+      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
+        <source> Message is required. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-chatHint" datatype="html">
-        <source>Example: “We need a customer portal, API integration, and managed hosting support for 3 months.”</source>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
+        <source>I accept the</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-modelLoading" datatype="html">
-        <source>Almost ready...</source>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-emptyState" datatype="html">
-        <source>Share your goals, timeline, and systems involved to receive an indicative quote.</source>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
+        <source> You must accept the Privacy Policy to send your message. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-resultTitle" datatype="html">
-        <source>Indicative quote</source>
+      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
+        <source>Sending…</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-colService" datatype="html">
-        <source>Service</source>
+      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
+        <source>Send message</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-colDescription" datatype="html">
-        <source>Description</source>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
+        <source>Contact information</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-colAmount" datatype="html">
-        <source>Amount</source>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
+        <source> Contact information </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-subtotal" datatype="html">
-        <source>Subtotal (net):</source>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
+        <source> Prefer to reach us directly? Use the details below. </source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-assumptions" datatype="html">
-        <source>Assumptions</source>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
+        <source>Email</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-disclaimerAriaLabel" datatype="html">
-        <source>Quote disclaimer</source>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
+        <source>Phone</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generating" datatype="html">
-        <source>Generating your quote...</source>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
+        <source>Fax</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupTitle" datatype="html">
-        <source>Preparing to quote</source>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
+        <source>Web</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingTitle" datatype="html">
-        <source>Building your quote</source>
+      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
+        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg1" datatype="html">
-        <source>Getting ready to build your quote...</source>
+      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
+        <source>Send us a message. We typically reply within one business day.</source>
         </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg2" datatype="html">
-        <source>First visit can take a minute. Later visits are much faster.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg3" datatype="html">
-        <source>Your project details stay private and secure.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg4" datatype="html">
-        <source>We are preparing ForePath services so we can map your project accurately.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg5" datatype="html">
-        <source>Almost there. Thanks for your patience.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg6" datatype="html">
-        <source>Still faster than scheduling a call. We promise!</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg7" datatype="html">
-        <source>Your information stays with you. No unwanted follow-up calls.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupMsg8" datatype="html">
-        <source>Loading once so your next quote loads faster.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupProgressLabel" datatype="html">
-        <source>Progress:</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimer" datatype="html">
-        <source> The first visit can take a minute or longer. Later visits start much faster. </source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimerAriaLabel" datatype="html">
-        <source>First visit load time notice</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-warmupOverlayAriaLabel" datatype="html">
-        <source>Preparing to quote</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg1" datatype="html">
-        <source>Reading your request...</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg2" datatype="html">
-        <source>Matching your needs to ForePath services...</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg3" datatype="html">
-        <source>Calculating indicative line items...</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg4" datatype="html">
-        <source>Preparing your instant quote...</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg5" datatype="html">
-        <source>This can take a moment. Hang tight.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg6" datatype="html">
-        <source>It's faster than a call. We promise!</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg7" datatype="html">
-        <source>Working on your quote without sharing your project details.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingMsg8" datatype="html">
-        <source>Preparing for take-off...</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingHint" datatype="html">
-        <source>Your project details stay private.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generatingOverlayAriaLabel" datatype="html">
-        <source>Generating your instant quote</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-inputLabel" datatype="html">
-        <source>Describe your project</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-inputPlaceholder" datatype="html">
-        <source>Tell us about the scope, systems, timeline, and support needs for your project.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-sendAriaLabel" datatype="html">
-        <source>Send project description</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-sendButton" datatype="html">
-        <source>Send</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-keyboardHint" datatype="html">
-        <source>Press Enter to send. Use Ctrl+Enter for a new line.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-activeModelProfileLabel" datatype="html">
-        <source>Analysis effort</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel" datatype="html">
-        <source>Analysis effort profile</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-liteProfileWarningAriaLabel" datatype="html">
-        <source>Lite analysis effort warning</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-liteProfileWarning" datatype="html">
-        <source>Lite analysis may significantly underestimate your project and rely heavily on baseline assumptions.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-liteProfileUpgradeHint" datatype="html">
-        <source>Choose Balanced or Standard above if available for more realistic results.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-profileLite" datatype="html">
-        <source>Lite</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-profileBalanced" datatype="html">
-        <source>Balanced</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-profileStandard" datatype="html">
-        <source>Standard</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-switchToLighter" datatype="html">
-        <source>Use quicker analysis:</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-startOverButton" datatype="html">
-        <source>Start over</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactAboutQuoteButton" datatype="html">
-        <source>Contact us about this quote</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactPrefillIntro" datatype="html">
-        <source>I would like to discuss the following instant quote from ForePath.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactPrefillProjectDescription" datatype="html">
-        <source>Project description</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactPrefillSummary" datatype="html">
-        <source>Summary</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactPrefillLineItems" datatype="html">
-        <source>Line items</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactPrefillSubtotal" datatype="html">
-        <source>Subtotal (net):</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-contactPrefillAssumptions" datatype="html">
-        <source>Assumptions</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-startOverHint" datatype="html">
-        <source>Clear this quote and describe a new project.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-ctaTitle" datatype="html">
-        <source>Need a confirmed quote?</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-ctaLead" datatype="html">
-        <source>The quote above is indicative. We are happy to refine scope and provide a formal proposal.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-ctaButton" datatype="html">
-        <source>Contact us</source>
-        </trans-unit>
-      <trans-unit id="featureForepath-navProjectEstimate" datatype="html">
-        <source>Instant quote</source>
-        </trans-unit>
-      <trans-unit id="featureForepath-navProjectEstimateCaption" datatype="html">
-        <source>From your project description, in seconds</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-heroEstimate" datatype="html">
-        <source>Get an instant quote</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-blogTeaserLabel" datatype="html">
-        <source>Latest from the blog</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processRegionLabel" datatype="html">
-        <source>How a ForePath engagement comes together</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processFaviconAlt" datatype="html">
-        <source>ForePath</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep1Verb" datatype="html">
-        <source>Advise</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep1Caption" datatype="html">
-        <source>Direction, architecture, and constraints your team can execute</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep1Link" datatype="html">
-        <source>View consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep2Verb" datatype="html">
-        <source>Build</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep2Caption" datatype="html">
-        <source>Ship software on stacks your engineers can own after handover</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep2Link" datatype="html">
-        <source>View development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep3Verb" datatype="html">
-        <source>Operate</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep3Caption" datatype="html">
-        <source>Steady-state ownership with monitoring, SLAs, and on-call reality</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep3Link" datatype="html">
-        <source>View IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep4Verb" datatype="html">
-        <source>Extend</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep4Caption" datatype="html">
-        <source>Production tooling that stays on the same standards as the services</source>
-        </trans-unit>
-      <trans-unit id="featureForepathHome-processStep4Link" datatype="html">
-        <source>View ForePath One <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="featureForepathPricing-heroEstimateCta" datatype="html">
-        <source>Get an instant quote</source>
-        </trans-unit>
-      <trans-unit id="featureForepathPricing-ctaEstimateButton" datatype="html">
-        <source>Get an instant quote</source>
+      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
+        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
         </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
@@ -1810,174 +2267,6 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
-        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
-        <source>Send us a message. We typically reply within one business day.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
-        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
-        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
-        <source>Tell us about your project or question. We typically reply within one business day.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
-        <source>Message sent</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
-        <source>Thank you for reaching out. We received your message and will get back to you soon.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-referenceLabel" datatype="html">
-        <source>Reference:</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-sendAnother" datatype="html">
-        <source>Send another message</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
-        <source>Name</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
-        <source>Email</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
-        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
-        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
-        <source>Message</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
-        <source>Name is required.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
-        <source>Email is required.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
-        <source>Enter a valid email address.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
-        <source>Message is required.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
-        <source>I accept the</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
-        <source>Privacy Policy</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
-        <source>You must accept the Privacy Policy to send your message.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
-        <source>Sending…</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
-        <source>Send message</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
-        <source>Contact</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
-        <source>Contact information</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
-        <source>Contact information</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
-        <source>Prefer to reach us directly? Use the details below.</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
-        <source>Email</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
-        <source>Phone</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
-        <source>Fax</source>
-        </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
-        <source>Web</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-metaTitle" datatype="html">
-        <source>Blog :: ForePath</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-metaDescription" datatype="html">
-        <source>Insights from ForePath on consulting, software engineering, IT systems, and shipping reliable platforms.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-metaKeywords" datatype="html">
-        <source>ForePath blog, consulting, software engineering, IT systems, cloud, DevOps</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-heroTitle" datatype="html">
-        <source>Blog</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-heroLead" datatype="html">
-        <source> Practical notes on consulting, engineering, and operating modern IT. </source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-searchLabel" datatype="html">
-        <source>Search posts</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-searchPlaceholder" datatype="html">
-        <source>Search posts</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-loading" datatype="html">
-        <source>Loading posts…</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-loadError" datatype="html">
-        <source>We could not load blog posts right now. Please try again later.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-empty" datatype="html">
-        <source> No posts found. Check back soon. </source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-loadingMore" datatype="html">
-        <source>Loading…</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-loadMore" datatype="html">
-        <source>Load more</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-readMore" datatype="html">
-        <source>Read more</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-aiGeneratedAlt" datatype="html">
-        <source>AI Generated</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlog-aiModifiedAlt" datatype="html">
-        <source>AI Modified</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-backToBlog" datatype="html">
-        <source>Back to blog</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-loading" datatype="html">
-        <source>Loading post…</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-notFoundTitle" datatype="html">
-        <source>Post not found</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-notFoundBody" datatype="html">
-        <source> This article may have been moved or is no longer published. </source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-notFoundCta" datatype="html">
-        <source>Browse all posts</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-loadError" datatype="html">
-        <source>We could not load this post right now. Please try again later.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-fallbackDescription" datatype="html">
-        <source>Article from the ForePath blog.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-notFoundMetaTitle" datatype="html">
-        <source>Post not found :: ForePath</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-notFoundMetaDescription" datatype="html">
-        <source>The requested ForePath blog post could not be found.</source>
-        </trans-unit>
-      <trans-unit id="featureForepathBlogPost-readingTimeUnit" datatype="html">
-        <source>min read</source>
         </trans-unit>
     </body>
   </file>

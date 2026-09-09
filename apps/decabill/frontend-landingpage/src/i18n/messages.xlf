@@ -72,10 +72,10 @@
         <source> Build with technology that fits your needs </source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-ctaDemo" datatype="html">
-        <source> Book a demo </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-ctaPricing" datatype="html">
-        <source> View pricing </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-tags&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View pricing</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-moreHeading" datatype="html">
         <source> More comparisons </source>
@@ -533,6 +533,9 @@
       <trans-unit id="featureDecabillPortal-privacyPolicyLink" datatype="html">
         <source>Privacy Policy</source>
         </trans-unit>
+      <trans-unit id="featureDecabillPortal-vulnerabilityDisclosureLink" datatype="html">
+        <source>Vulnerability Disclosure</source>
+        </trans-unit>
       <trans-unit id="featureDecabillPortal-withdrawalLink" datatype="html">
         <source>Right of Withdrawal</source>
         </trans-unit>
@@ -564,10 +567,10 @@
         <source>Multi-tenant</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-getStartedHero" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-productTour" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-trophy me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> View product tour </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View product tour</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-heroSlideOverview" datatype="html">
         <source>Decabill overview dashboard with cloud instances</source>
@@ -580,6 +583,9 @@
         </trans-unit>
       <trans-unit id="featureDecabillHome-heroSlideAdmin" datatype="html">
         <source>Decabill admin billing and revenue statistics</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroSlideIndicatorsAriaLabel" datatype="html">
+        <source>Hero screenshot slides</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-solutionTitle" datatype="html">
         <source> Turn revenue complexity into billing you can trust </source>
@@ -909,10 +915,10 @@
         <source> Book a demo to see how Decabill fits your agency or product stack. We can also help with managed hosting for your tenants. </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-ctaBookDemo" datatype="html">
-        <source>Book a demo</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-ctaDocs" datatype="html">
-        <source>Read the docs</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Read the docs</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-howIntegrationApi" datatype="html">
         <source>REST API</source>
@@ -1026,7 +1032,7 @@
         <source> If you have questions about our company information, registration details, or any other legal matters, we&apos;re happy to help. </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-ctaContact" datatype="html">
-        <source> Contact us </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-metaTitlePage" datatype="html">
         <source>Legal Disclosure</source>
@@ -1216,7 +1222,7 @@
         <source> We take data protection seriously. If you have questions about how we handle your data, want to exercise your rights, or need clarification on any aspect of our privacy policy, please reach out. </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalPrivacy-ctaContact" datatype="html">
-        <source> Contact us </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalPrivacy-metaTitlePage" datatype="html">
         <source>Privacy Policy</source>
@@ -1462,7 +1468,7 @@
         <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalTerms-ctaContact" datatype="html">
-        <source> Contact us </source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalTerms-metaTitlePage" datatype="html">
         <source>Terms of Service</source>
@@ -1671,10 +1677,10 @@
         <source> Whether you are starting with our open source version or need enterprise features, we are here to help you run reliable billing for agencies and digital products. </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-ctaGetStarted" datatype="html">
-        <source>Get Started Free</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get Started Free</source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-ctaTalkToSales" datatype="html">
-        <source>Talk to Sales</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to Sales</source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-metaTitlePage" datatype="html">
         <source>Licensing from open source to enterprise</source>

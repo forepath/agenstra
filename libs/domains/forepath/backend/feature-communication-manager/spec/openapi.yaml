@@ -3,7 +3,7 @@ info:
   title: Forepath Communication API
   version: 1.0.0
   description: |
-    Stateless HTTP API that proxies public contact requests to Chatwoot.
+    Stateless HTTP API that proxies public contact requests and vulnerability reports to Chatwoot.
 
     Submissions require a valid Cloudflare Turnstile token. The service finds or creates a
     Chatwoot contact and opens a new conversation in the configured API channel inbox.
@@ -54,6 +54,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContactRequestResponse'
+        '400':
+          description: Validation or captcha failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Upstream Chatwoot error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /public/vulnerability-reports:
+    post:
+      summary: Submit a public vulnerability report
+      description: |
+        Accepts a vulnerability disclosure form submission protected by Cloudflare Turnstile.
+        Creates or reuses a Chatwoot contact and opens a new conversation with the formatted report body.
+      operationId: submitPublicVulnerabilityReport
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVulnerabilityReport'
+      responses:
+        '201':
+          description: Vulnerability report accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityReportResponse'
         '400':
           description: Validation or captcha failure
           content:
@@ -128,6 +167,62 @@ components:
           type: string
           description: Cloudflare Turnstile response token
     ContactRequestResponse:
+      type: object
+      required:
+        - accepted
+        - referenceId
+      properties:
+        accepted:
+          type: boolean
+          enum: [true]
+        referenceId:
+          type: string
+          description: Opaque conversation reference id
+    CreateVulnerabilityReport:
+      type: object
+      required:
+        - name
+        - email
+        - product
+        - description
+        - impact
+        - stepsToReproduce
+        - affectedVersions
+        - turnstileToken
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        product:
+          type: string
+          enum: [agenstra, decabill, forepath, shared, other]
+        description:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        impact:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        stepsToReproduce:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        affectedVersions:
+          type: string
+          minLength: 1
+          maxLength: 500
+        suggestedFix:
+          type: string
+          maxLength: 5000
+        turnstileToken:
+          type: string
+          description: Cloudflare Turnstile response token
+    VulnerabilityReportResponse:
       type: object
       required:
         - accepted

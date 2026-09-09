@@ -119,6 +119,7 @@ Identity libraries under [`libs/domains/identity`](./libs/domains/identity/) pro
 ### ForePath and workspace
 
 - [Contributing Guide](./CONTRIBUTING.md) applies to the whole monorepo.
+- [Security Policy](./SECURITY.md) and public [Vulnerability Disclosure Policy](https://forepath.io/legal/vulnerability-disclosure)
 
 ### Agenstra
 
@@ -129,6 +130,8 @@ Identity libraries under [`libs/domains/identity`](./libs/domains/identity/) pro
 - [Docker Deployment](./docs/agenstra/deployment/docker-deployment.md)
 - [Environment Configuration](./docs/agenstra/deployment/environment-configuration.md)
 - [API Reference](./docs/agenstra/api-reference/README.md)
+- [Security documentation](./docs/agenstra/security/README.md)
+- [Vulnerability Disclosure Policy](https://forepath.io/legal/vulnerability-disclosure) (canonical public CVD policy)
 - [Common Issues](./docs/agenstra/troubleshooting/common-issues.md)
 - [Debugging Guide](./docs/agenstra/troubleshooting/debugging-guide.md)
 
@@ -142,6 +145,7 @@ Feature guides (client management, agent management, server provisioning, WebSoc
 - [Environment Configuration](./docs/decabill/deployment/environment-configuration.md)
 - [API Reference](./docs/decabill/api-reference/README.md)
 - [Security documentation](./docs/decabill/security/README.md)
+- [Vulnerability Disclosure Policy](https://forepath.io/legal/vulnerability-disclosure) (canonical public CVD policy)
 
 Feature guides (subscriptions, invoices, billing administration, multi-tenancy, payments, server provisioning) live under [`docs/decabill/features/`](./docs/decabill/features/).
 

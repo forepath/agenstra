@@ -2653,6 +2653,438 @@
         <source>Cookie Policy</source>
         <target>Cookie-Richtlinie</target>
       </trans-unit>
+      <trans-unit id="featureForepath-vulnerabilityDisclosureLink" datatype="html">
+        <source>Vulnerability Disclosure</source>
+        <target>Schwachstellenmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-title" datatype="html">
+        <source> Vulnerability Disclosure Policy </source>
+        <target> Richtlinie zur Meldung von Schwachstellen </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-subtitle" datatype="html">
+        <source> Coordinated vulnerability disclosure for ForePath, Agenstra, and Decabill </source>
+        <target> Koordinierte Schwachstellenmeldung für ForePath, Agenstra und Decabill </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-reportCta" datatype="html">
+        <source> Report a vulnerability </source>
+        <target> Schwachstelle melden </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-lastUpdated" datatype="html">
+        <source> Last updated: September 9, 2026 </source>
+        <target> Zuletzt aktualisiert: 9. September 2026 </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-purposeTitle" datatype="html">
+        <source>Purpose</source>
+        <target>Zweck</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-purposeP1" datatype="html">
+        <source> This Vulnerability Disclosure Policy ("Policy") applies to coordinated vulnerability disclosure between IPvX UG (haftungsbeschränkt) ("we", "us") and you regarding any published software product of ours, including ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com), and software made available in the <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> monorepo, and defines our coordinated vulnerability disclosure ("CVD") policy under Annex I, Part II(5) of Regulation (EU) 2024/2847 (the EU Cyber Resilience Act). </source>
+        <target> Diese Richtlinie zur Meldung von Schwachstellen ("Richtlinie") gilt für die koordinierte Schwachstellenmeldung zwischen IPvX UG (haftungsbeschränkt) ("wir", "uns") und Ihnen in Bezug auf jedes von uns veröffentlichte Softwareprodukt, einschließlich ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com) sowie Software, die im Monorepo <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> bereitgestellt wird, und definiert unsere Richtlinie zur koordinierten Schwachstellenmeldung ("CVD") gemäß Anhang I Teil II Nr. 5 der Verordnung (EU) 2024/2847 (Cyber Resilience Act). </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-scopeTitle" datatype="html">
+        <source>Scope</source>
+        <target>Geltungsbereich</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-scopeIntro" datatype="html">
+        <source> We offer coordinated vulnerability disclosure for the products, services, and research activities listed below. This Policy distinguishes what you may test from what you should not. Limit testing to in-scope targets and methods. If you find an issue in something we do not operate, report it to that vendor instead. Activities listed as out of scope are not authorized under this Policy. </source>
+        <target> Wir bieten eine koordinierte Schwachstellenmeldung für die unten aufgeführten Produkte, Dienste und Forschungsaktivitäten. Diese Richtlinie unterscheidet, was Sie testen dürfen und was nicht. Beschränken Sie Tests auf Ziele und Methoden innerhalb des Geltungsbereichs. Wenn Sie ein Problem in etwas finden, das wir nicht betreiben, melden Sie es stattdessen bei dem jeweiligen Anbieter. Aktivitäten außerhalb des Geltungsbereichs sind nach dieser Richtlinie nicht autorisiert. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScopeTitle" datatype="html">
+        <source> In scope </source>
+        <target> Im Geltungsbereich </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScope1" datatype="html">
+        <source>ForePath (forepath.io), Agenstra (agenstra.com), and Decabill (decabill.com)</source>
+        <target>ForePath (forepath.io), Agenstra (agenstra.com) und Decabill (decabill.com)</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScope2" datatype="html">
+        <source> Applications and libraries in the <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                          &gt;"/>forepath/one<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                        &gt;"/> GitHub repository </source>
+        <target> Anwendungen und Bibliotheken im GitHub-Repository <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                        &gt;"/>forepath/one<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                      &gt;"/></target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-inScope3" datatype="html">
+        <source>Publicly reachable services we operate for those products</source>
+        <target>Öffentlich erreichbare Dienste, die wir für diese Produkte betreiben</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScopeTitle" datatype="html">
+        <source> Out of scope </source>
+        <target> Außerhalb des Geltungsbereichs </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope1" datatype="html">
+        <source>Third-party SaaS or infrastructure we do not operate (report those issues upstream to the vendor)</source>
+        <target>Drittanbieter-SaaS oder Infrastruktur, die wir nicht betreiben (solche Probleme beim jeweiligen Anbieter melden)</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope2" datatype="html">
+        <source>Physical attacks, social engineering, and phishing of employees or customers</source>
+        <target>Physische Angriffe, Social Engineering und Phishing von Mitarbeitenden oder Kundinnen und Kunden</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope3" datatype="html">
+        <source>Denial-of-service, volumetric flooding, or resource-exhaustion testing against production</source>
+        <target>Denial-of-Service-, volumetrische Flooding- oder Ressourcenerschöpfungs-Tests gegen Produktionssysteme</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-outOfScope4" datatype="html">
+        <source>Already known, duplicate, or publicly disclosed issues without new impact</source>
+        <target>Bereits bekannte, doppelte oder öffentlich offenbarte Probleme ohne neue Auswirkungen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howTitle" datatype="html">
+        <source>How to report</source>
+        <target>Wie melden</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howP1" datatype="html">
+        <source> If you have found a security vulnerability, please use one of the private channels below. <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Do not<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> file security vulnerabilities as public GitHub issues. </source>
+        <target> Wenn Sie eine Sicherheitslücke gefunden haben, nutzen Sie bitte einen der privaten Kanäle unten. <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Melden Sie keine<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Sicherheitslücken als öffentliche GitHub-Issues. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howEmailLabel" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howEmailHint" datatype="html">
+        <source>Subject prefix <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>[SECURITY]<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        <target>Betreffpräfix <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>[SECURITY]<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howFormLabel" datatype="html">
+        <source> Web form </source>
+        <target>Webformular</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howForm" datatype="html">
+        <source> Please use the <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;.&quot; fragment=&quot;report-form&quot; class=&quot;text-primary text-decoration-none&quot;
+                      &gt;"/>report form <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                    &gt;"/><x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> further down on this page. </source>
+        <target> Bitte nutzen Sie das <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;.&quot; fragment=&quot;report-form&quot; class=&quot;text-primary text-decoration-none&quot;
+                      &gt;"/>Meldeformular <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                    &gt;"/><x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> weiter unten auf dieser Seite. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howSecurityTxt" datatype="html">
+        <source> You can also find our contact details for automated discovery at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/security.txt&quot;&gt;"/>/.well-known/security.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (RFC 9116). </source>
+        <target> Unsere Kontaktdaten zur automatisierten Auffindung finden Sie auch unter <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/security.txt&quot;&gt;"/>/.well-known/security.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (RFC 9116). </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-howPgp" datatype="html">
+        <source> If you prefer encrypted email, please use our OpenPGP public key at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/pgp-key.txt&quot;&gt;"/>/.well-known/pgp-key.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (fingerprint 5B20 C75D E760 91CE FE8B 3CA5 2926 E9F2 4F3D 9191). </source>
+        <target> Wenn Sie verschlüsselte E-Mails bevorzugen, nutzen Sie bitte unseren öffentlichen OpenPGP-Schlüssel unter <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/pgp-key.txt&quot;&gt;"/>/.well-known/pgp-key.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (Fingerprint 5B20 C75D E760 91CE FE8B 3CA5 2926 E9F2 4F3D 9191). </target>
+      </trans-unit>
+            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeIntro" datatype="html">
+        <source> To help us assess and fix the issue quickly, please include as much of the following as you can. </source>
+        <target> Damit wir das Problem schnell bewerten und beheben können, geben Sie bitte möglichst viel von dem Folgenden an. </target>
+      </trans-unit>
+<trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeTitle" datatype="html">
+        <source> What to include </source>
+        <target> Was enthalten sein sollte </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include1" datatype="html">
+        <source> A clear description of the vulnerability </source>
+        <target> Eine klare Beschreibung der Schwachstelle </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include2" datatype="html">
+        <source> The potential impact and your severity assessment </source>
+        <target> Den potenziellen Impact und Ihre Einschätzung des Schweregrads </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include3" datatype="html">
+        <source> Detailed steps so we can reproduce the issue </source>
+        <target> Detaillierte Schritte, damit wir das Problem reproduzieren können </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include4" datatype="html">
+        <source> Which products and versions are affected </source>
+        <target> Welche Produkte und Versionen betroffen sind </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include5" datatype="html">
+        <source> Remediation ideas, if you have them </source>
+        <target> Remediation-Ideen, falls Sie welche haben </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-include6" datatype="html">
+        <source> How we can reach you for follow-up </source>
+        <target> Wie wir Sie für Rückfragen erreichen können </target>
+      </trans-unit>
+            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaIntro" datatype="html">
+        <source> When you send a report, we aim to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>acknowledge<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> receipt within <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>48 hours<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. After acknowledgment, we work toward the following remediation targets. These are best-effort goals, and complex issues may take longer. </source>
+        <target> Wenn Sie eine Meldung senden, streben wir an, den Eingang innerhalb von <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>48 Stunden<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> zu <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>bestätigen<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. Nach der Bestätigung arbeiten wir auf die folgenden Ziele zur Behebung hin. Das sind Ziele nach bestem Bemühen, und komplexe Fälle können länger dauern. </target>
+      </trans-unit>
+<trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTitle" datatype="html">
+        <source> Our commitments </source>
+        <target> Unsere Verpflichtungen </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaCritical" datatype="html">
+        <source> Critical </source>
+        <target>Kritisch</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage" datatype="html">
+        <source>Initial triage</source>
+        <target>Erste Triage</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix" datatype="html">
+        <source>Fix target</source>
+        <target>Fix-Ziel</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaHigh" datatype="html">
+        <source>High</source>
+        <target>Hoch</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaMedium" datatype="html">
+        <source>Medium</source>
+        <target>Mittel</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaLow" datatype="html">
+        <source>Low</source>
+        <target>Niedrig</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaBestEffort" datatype="html">
+        <source>Best effort</source>
+        <target>Best effort</target>
+      </trans-unit>
+            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage24h" datatype="html">
+        <source>24 hours</source>
+        <target>24 Stunden</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage48h" datatype="html">
+        <source>48 hours</source>
+        <target>48 Stunden</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage1w" datatype="html">
+        <source>1 week</source>
+        <target>1 Woche</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage2w" datatype="html">
+        <source>2 weeks</source>
+        <target>2 Wochen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix7d" datatype="html">
+        <source>7 days</source>
+        <target>7 Tage</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix30d" datatype="html">
+        <source>30 days</source>
+        <target>30 Tage</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaFix90d" datatype="html">
+        <source>90 days</source>
+        <target>90 Tage</target>
+      </trans-unit>
+<trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaDisclosure" datatype="html">
+        <source> We generally aim for a <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>90-day<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> coordinated disclosure window once a fix is available and acknowledged. We may delay public disclosure when the risk of active exploitation or incomplete patch adoption outweighs the benefit of immediate publication. That narrow delay is consistent with Annex I, Part II(4) of the CRA. </source>
+        <target> Wir streben in der Regel ein koordiniertes Offenlegungsfenster von <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>90 Tagen<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> an, sobald ein Fix verfügbar ist und bestätigt wurde. Wir können die öffentliche Offenlegung verzögern, wenn das Risiko aktiver Ausnutzung oder unvollständiger Patch-Adoption den Nutzen einer sofortigen Veröffentlichung überwiegt. Diese enge Verzögerung entspricht Anhang I Teil II Nr. 4 der CRA. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-safeHarborTitle" datatype="html">
+        <source> Safe harbor </source>
+        <target> Safe Harbor </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-safeHarborBody" datatype="html">
+        <source> If you conduct security research in good faith, follow this policy, avoid privacy violations, service disruption, and data destruction, and report your findings privately before any public disclosure, we will not pursue legal action against you for that research. This safe harbor does not authorize access beyond what is necessary to demonstrate a vulnerability. It also does not waive claims for conduct outside this policy. </source>
+        <target> Wenn Sie Sicherheitsforschung in gutem Glauben durchführen, diese Richtlinie befolgen, Datenschutzverletzungen, Dienststörungen und Datenzerstörung vermeiden und Ihre Funde privat melden, bevor Sie sie öffentlich machen, werden wir wegen dieser Forschung keine rechtlichen Schritte gegen Sie einleiten. Dieser Safe Harbor berechtigt nicht zu Zugriffen über das hinaus, was zur Demonstration einer Schwachstelle erforderlich ist. Er verzichtet auch nicht auf Ansprüche wegen Verhaltens außerhalb dieser Richtlinie. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyTitle" datatype="html">
+        <source> Bug bounty and compensation </source>
+        <target> Bug Bounty und Vergütung </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Forepath does not operate an official bug bounty program.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> There are no published reward tiers, third-party bounty platforms, or guaranteed payouts for Agenstra, Decabill, or other products in this repository. Please do not submit reports expecting a bounty. </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Forepath betreibt kein offizielles Bug-Bounty-Programm.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Es gibt keine veröffentlichten Belohnungsstufen, Drittanbieter-Bounty-Plattformen oder garantierten Auszahlungen für Agenstra, Decabill oder andere Produkte in diesem Repository. Bitte reichen Sie keine Meldungen in Erwartung einer Belohnung ein. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP2" datatype="html">
+        <source> We still welcome <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>valid, responsibly disclosed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> vulnerabilities with a clear description, demonstrated impact, and reproducible steps. We may, at our <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>sole discretion<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, offer recognition or compensation for especially valuable findings, but <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>no reward is promised or owed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, and any past payment does not establish a precedent. </source>
+        <target> Wir begrüßen weiterhin <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>gültige, verantwortungsvoll gemeldete<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Schwachstellen mit klarer Beschreibung, nachgewiesenem Impact und reproduzierbaren Schritten. Wir können nach unserem <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>alleinigen Ermessen<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Anerkennung oder Vergütung für besonders wertvolle Funde anbieten, aber <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>keine Belohnung ist zugesichert oder geschuldet<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, und frühere Zahlungen begründen keinen Präzedenzfall. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-bountyP3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Automated and low-effort reports are discarded without review.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Mass scanner output, duplicated template submissions, and reports that are clearly <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>AI-generated<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> without manual verification and original analysis are rejected immediately. Please invest time in one verified finding before contacting us. </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Automatisierte und wenig aufwendige Meldungen werden ohne Prüfung verworfen.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Ausgabe von Massenscannern, doppelte Vorlagenmeldungen und klar <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>KI-generierte<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Berichte ohne manuelle Verifikation und eigene Analyse werden sofort abgelehnt. Bitte investieren Sie Zeit in einen verifizierten Fund, bevor Sie uns kontaktieren. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-craTitle" datatype="html">
+        <source> Regulatory context (EU CRA) </source>
+        <target> Regulatorischer Kontext (EU CRA) </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-craBody" datatype="html">
+        <source> By providing this Policy, we meet the coordinated vulnerability disclosure obligation in Annex I, Part II(5) of Regulation (EU) 2024/2847. Actively exploited vulnerabilities and severe incidents are escalated internally so we can meet Article 14 reporting to the competent CSIRT and ENISA. That includes the early warning, notification, and final report cadence. Our operator runbook covers internal escalation. We do not publish those operational details here. </source>
+        <target> Indem wir diese Richtlinie bereitstellen, erfüllen wir die Verpflichtung zur koordinierten Schwachstellenmeldung in Anhang I Teil II Nr. 5 der Verordnung (EU) 2024/2847. Aktiv ausgenutzte Schwachstellen und schwere Vorfälle werden intern eskaliert, damit wir die Meldung nach Artikel 14 an das zuständige CSIRT und ENISA erfüllen können. Das umfasst die Frühwarnung, die Meldung und den Abschlussbericht. Unser Operator-Runbook regelt die interne Eskalation. Diese betrieblichen Details veröffentlichen wir hier nicht. </target>
+      </trans-unit>
+            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesIntro" datatype="html">
+        <source> Once a fix ships, we publish public advisories and release Software Bills of Materials so you can see what changed and what is included in each build. </source>
+        <target> Sobald ein Fix veröffentlicht ist, stellen wir öffentliche Advisories und Software Bills of Materials bereit, damit Sie nachvollziehen können, was sich geändert hat und was in jedem Build enthalten ist. </target>
+      </trans-unit>
+<trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesTitle" datatype="html">
+        <source> Public advisories and SBOM </source>
+        <target> Öffentliche Advisories und SBOM </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesGhsa" datatype="html">
+        <source> Public advisories appear on <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/security/advisories&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>GitHub Security Advisories<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/> for this repository </source>
+        <target> Öffentliche Advisories erscheinen unter <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/security/advisories&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>GitHub Security Advisories<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/> für dieses Repository </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSbomAgenstra" datatype="html">
+        <source> Agenstra SBOMs are published on <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://downloads.agenstra.com/releases/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>downloads.agenstra.com<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/></source>
+        <target> Agenstra-SBOMs werden auf <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://downloads.agenstra.com/releases/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>downloads.agenstra.com<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/> veröffentlicht </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSbomDecabill" datatype="html">
+        <source> Decabill SBOMs are published on <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://downloads.decabill.com/releases/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>downloads.decabill.com<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/></source>
+        <target> Decabill-SBOMs werden auf <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://downloads.decabill.com/releases/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>downloads.decabill.com<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/> veröffentlicht </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSecurityMd" datatype="html">
+        <source> The repository policy is in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>SECURITY.md<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/></source>
+        <target> Die Repository-Richtlinie finden Sie in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+                  &gt;"/>SECURITY.md<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+                &gt;"/> </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formTitle" datatype="html">
+        <source> Submit a vulnerability report </source>
+        <target> Schwachstelle melden </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formLead" datatype="html">
+        <source> Please use this form to send a private report to our security team. We aim to acknowledge any report within 48 hours. </source>
+        <target> Bitte nutzen Sie dieses Formular, um eine private Meldung an unser Sicherheitsteam zu senden. Wir streben an, jede Meldung innerhalb von 48 Stunden zu bestätigen. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSuccessTitle" datatype="html">
+        <source> Report submitted </source>
+        <target> Meldung übermittelt </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSuccessLead" datatype="html">
+        <source> Thank you. We received your vulnerability report and will acknowledge it as soon as possible. </source>
+        <target> Vielen Dank. Wir haben Ihre Schwachstellenmeldung erhalten und werden sie so schnell wie möglich bestätigen. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formNameLabel" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formNameRequired" datatype="html">
+        <source> Name is required. </source>
+        <target> Name ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formEmailLabel" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formEmailRequired" datatype="html">
+        <source> Email is required. </source>
+        <target> E-Mail ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formEmailInvalid" datatype="html">
+        <source> Enter a valid email address. </source>
+        <target> Bitte geben Sie eine gültige E-Mail-Adresse ein. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductLabel" datatype="html">
+        <source>Product</source>
+        <target>Produkt</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductPlaceholder" datatype="html">
+        <source> Select a product or platform </source>
+        <target> Produkt oder Plattform auswählen </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductAgenstra" datatype="html">
+        <source> Agenstra </source>
+        <target> Agenstra </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductDecabill" datatype="html">
+        <source> Decabill </source>
+        <target> Decabill </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductForepath" datatype="html">
+        <source> ForePath </source>
+        <target> ForePath </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductShared" datatype="html">
+        <source> Shared infrastructure </source>
+        <target> Gemeinsame Infrastruktur </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductOther" datatype="html">
+        <source> Other </source>
+        <target> Sonstiges </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formProductRequired" datatype="html">
+        <source> Product is required. </source>
+        <target> Produkt ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVersionsLabel" datatype="html">
+        <source>Affected versions</source>
+        <target>Betroffene Versionen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVersionsRequired" datatype="html">
+        <source> Affected versions are required. </source>
+        <target> Betroffene Versionen sind erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formDescriptionLabel" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formDescriptionRequired" datatype="html">
+        <source> Description is required. </source>
+        <target> Beschreibung ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formImpactLabel" datatype="html">
+        <source>Impact</source>
+        <target>Auswirkung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formImpactRequired" datatype="html">
+        <source> Impact is required. </source>
+        <target> Auswirkung ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formStepsLabel" datatype="html">
+        <source>Steps to reproduce</source>
+        <target>Schritte zur Reproduktion</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formStepsRequired" datatype="html">
+        <source> Steps to reproduce are required. </source>
+        <target> Schritte zur Reproduktion sind erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formFixLabel" datatype="html">
+        <source>Suggested fix <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Vorgeschlagener Fix <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVdpPrefix" datatype="html">
+        <source>I accept the</source>
+        <target>Ich akzeptiere die</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVdpLink" datatype="html">
+        <source>Vulnerability Disclosure Policy</source>
+        <target>Richtlinie zur Meldung von Schwachstellen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVdpRequired" datatype="html">
+        <source> You must accept the Vulnerability Disclosure Policy to submit your report. </source>
+        <target> Sie müssen die Richtlinie zur Meldung von Schwachstellen akzeptieren, um Ihre Meldung zu senden. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formPrivacyPrefix" datatype="html">
+        <source>I accept the</source>
+        <target>Ich akzeptiere die</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formPrivacyLink" datatype="html">
+        <source>Privacy Policy</source>
+        <target>Datenschutzerklärung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formPrivacyRequired" datatype="html">
+        <source> You must accept the Privacy Policy to submit your report. </source>
+        <target> Sie müssen die Datenschutzerklärung akzeptieren, um Ihre Meldung zu senden. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSubmitting" datatype="html">
+        <source>Submitting…</source>
+        <target>Wird gesendet…</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSubmit" datatype="html">
+        <source>Submit report</source>
+        <target>Meldung absenden</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-metaTitle" datatype="html">
+        <source>Vulnerability Disclosure Policy :: ForePath</source>
+        <target>Richtlinie zur Meldung von Schwachstellen :: ForePath</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-metaDescription" datatype="html">
+        <source>Coordinated vulnerability disclosure policy for ForePath, Agenstra, and Decabill under the EU Cyber Resilience Act. Report security issues securely.</source>
+        <target>Koordinierte Schwachstellenmeldung für ForePath, Agenstra und Decabill gemäß dem EU Cyber Resilience Act. Melden Sie Sicherheitsprobleme sicher.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-metaKeywords" datatype="html">
+        <source>ForePath, vulnerability disclosure, security, CRA, CVD</source>
+        <target>ForePath, Schwachstellenmeldung, Sicherheit, CRA, CVD</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
