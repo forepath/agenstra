@@ -89,7 +89,7 @@ describe('ContentReportService', () => {
     await expect(service.submitContentReport(dsaDto, validPdf)).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('requires a valid PDF for TCO reports and attaches it', async () => {
+  it('requires a valid PDF for TCO reports and attaches it on the incoming user message', async () => {
     chatwootApiService.createContact.mockResolvedValue({
       id: 11,
       name: 'Officer',
@@ -101,9 +101,19 @@ describe('ContentReportService', () => {
 
     const result = await service.submitContentReport(tcoDto, validPdf);
 
+    expect(chatwootApiService.createConversation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contact_id: 11,
+        status: 'open',
+      }),
+    );
+    expect(chatwootApiService.createConversation.mock.calls[0]?.[0]).not.toHaveProperty('message');
     expect(chatwootApiService.createMessage).toHaveBeenCalledWith(
       123,
       expect.objectContaining({
+        message_type: 'incoming',
+        private: false,
+        content: expect.stringContaining('TCO'),
         attachments: [
           expect.objectContaining({
             filename: 'order.pdf',

@@ -541,9 +541,6 @@
                         accept="application/pdf,.pdf"
                         (change)="onPdfSelected($event)"
                       />
-                      @if (selectedPdfName()) {
-                        <p class="small text-muted mt-2 mb-0">{{ selectedPdfName() }}</p>
-                      }
                       @if (selectedPdfError()) {
                         <div class="text-danger small mt-2">{{ selectedPdfError() }}</div>
                       }
@@ -605,11 +602,16 @@
                     </div>
                   }
 
-                  <div class="col-12">
+                  <div class="col-12 d-grid d-md-flex justify-content-md-end">
                     <button
                       type="submit"
                       class="btn btn-primary"
-                      [disabled]="(submitting$ | async) === true"
+                      [disabled]="
+                        form.invalid ||
+                        !turnstileToken() ||
+                        (selectedReportType() === 'tco' && !hasSelectedPdf()) ||
+                        (submitting$ | async)
+                      "
                       i18n="@@featureForepathLegalContentReport-formSubmit"
                     >
                       Submit report

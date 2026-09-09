@@ -51,7 +51,7 @@ export interface ChatwootCreateConversationPayload {
   inbox_id: number;
   contact_id: number;
   status: 'open' | 'resolved' | 'pending';
-  message: {
+  message?: {
     content: string;
   };
 }

@@ -38,17 +38,18 @@ export class ContentReportService {
       const inboxId = this.chatwootApiService.getInboxId();
       const sourceId = await this.resolveOrCreateSourceId(contact, inboxId);
       const messageContent = formatContentReportMessage(dto);
+      const attachPdfToIncomingMessage = dto.reportType === 'tco' && Boolean(removalOrderPdf);
 
       const conversationId = await this.chatwootApiService.createConversation({
         source_id: sourceId,
         contact_id: contact.id,
         status: 'open',
-        message: { content: messageContent },
+        ...(attachPdfToIncomingMessage ? {} : { message: { content: messageContent } }),
       });
 
-      if (dto.reportType === 'tco' && removalOrderPdf) {
+      if (attachPdfToIncomingMessage && removalOrderPdf) {
         await this.chatwootApiService.createMessage(conversationId, {
-          content: 'Signed TCO removal-order PDF',
+          content: messageContent,
           message_type: 'incoming',
           private: false,
           attachments: [

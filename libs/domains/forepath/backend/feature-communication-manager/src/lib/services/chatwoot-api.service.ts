@@ -150,7 +150,12 @@ export class ChatwootApiService {
     const form = new FormData();
     form.append('content', payload.content);
     form.append('message_type', payload.message_type ?? 'incoming');
-    form.append('private', String(payload.private ?? false));
+
+    // Chatwoot's MessageBuilder uses `params[:private] || false`. The string "false"
+    // is truthy in Ruby and would mark the message as a private agent note.
+    if (payload.private) {
+      form.append('private', 'true');
+    }
 
     for (const attachment of payload.attachments ?? []) {
       form.append('attachments[]', attachment.buffer, {
