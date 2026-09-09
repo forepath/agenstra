@@ -57,6 +57,7 @@ export class ForepathLegalContentReportComponent implements OnInit {
   readonly turnstileToken = signal<string | null>(null);
   readonly selectedPdfName = signal<string | null>(null);
   readonly selectedPdfError = signal<string | null>(null);
+  readonly selectedReportType = signal<ContentReportType>('dsa');
   private selectedPdf: File | null = null;
 
   readonly anonymousNamePlaceholder = $localize`:@@featureForepathLegalContentReport-formNameAnonymousPlaceholder:Waived`;
@@ -116,7 +117,8 @@ export class ForepathLegalContentReportComponent implements OnInit {
       ),
     );
 
-    this.form.controls.reportType.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.form.controls.reportType.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((reportType) => {
+      this.selectedReportType.set(reportType);
       this.applyConditionalValidators();
       this.clearPdf();
     });
@@ -124,7 +126,11 @@ export class ForepathLegalContentReportComponent implements OnInit {
       this.applyConditionalValidators();
     });
     this.applyConditionalValidators();
-    this.applyTypeQueryParam();
+    this.selectedReportType.set(this.form.controls.reportType.value);
+
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      this.applyTypeQueryParam(params.get('type'), true);
+    });
 
     this.error$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((error) => {
       if (error) {
@@ -133,15 +139,21 @@ export class ForepathLegalContentReportComponent implements OnInit {
     });
   }
 
-  private applyTypeQueryParam(): void {
-    const type = this.route.snapshot.queryParamMap.get('type');
-
+  private applyTypeQueryParam(type: string | null, scrollToForm: boolean): void {
     if (type !== 'dsa' && type !== 'tco') {
       return;
     }
 
-    this.form.controls.reportType.setValue(type);
-    this.applyConditionalValidators();
+    if (this.form.controls.reportType.value !== type) {
+      this.form.controls.reportType.setValue(type);
+    } else {
+      this.selectedReportType.set(type);
+      this.applyConditionalValidators();
+    }
+
+    if (!scrollToForm) {
+      return;
+    }
 
     afterNextRender(
       () => {
@@ -152,11 +164,11 @@ export class ForepathLegalContentReportComponent implements OnInit {
   }
 
   get isDsa(): boolean {
-    return this.form.controls.reportType.value === 'dsa';
+    return this.selectedReportType() === 'dsa';
   }
 
   get isTco(): boolean {
-    return this.form.controls.reportType.value === 'tco';
+    return this.selectedReportType() === 'tco';
   }
 
   get isAnonymousDsa(): boolean {
