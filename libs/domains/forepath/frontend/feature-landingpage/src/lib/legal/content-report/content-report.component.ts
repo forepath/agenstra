@@ -55,8 +55,8 @@ export class ForepathLegalContentReportComponent implements OnInit {
 
   readonly turnstileSiteKey: string;
   readonly turnstileToken = signal<string | null>(null);
-  readonly selectedPdfName = signal<string | null>(null);
   readonly selectedPdfError = signal<string | null>(null);
+  readonly hasSelectedPdf = signal(false);
   readonly selectedReportType = signal<ContentReportType>('dsa');
   private selectedPdf: File | null = null;
 
@@ -205,7 +205,7 @@ export class ForepathLegalContentReportComponent implements OnInit {
     }
 
     this.selectedPdf = file;
-    this.selectedPdfName.set(file.name);
+    this.hasSelectedPdf.set(true);
   }
 
   onSubmit(): void {
@@ -398,7 +398,7 @@ export class ForepathLegalContentReportComponent implements OnInit {
 
   private clearPdf(): void {
     this.selectedPdf = null;
-    this.selectedPdfName.set(null);
+    this.hasSelectedPdf.set(false);
   }
 
   private resetTurnstile(): void {
