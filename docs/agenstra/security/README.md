@@ -2,7 +2,7 @@
 
 This section collects **security, compliance-oriented transparency, and hardening** information for Agenstra: mapping to **EU Cyber Resilience Act (CRA)** and **BSI IT-Grundschutz** documentation themes, a formal **accepted-risk register**, **vulnerability reporting**, **SBOM** and **desktop integrity** artifacts, and pointers to **environment variables** for production.
 
-For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. **There is no official bug bounty program**; discretionary rewards may apply only to valid, manually verified reports. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**. The same reporting policy is also published at the repository root as the file `SECURITY.md` (for example on GitHub’s Security tab).
+For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. Canonical public CVD policy and report form: **[Vulnerability Disclosure Policy](https://forepath.io/legal/vulnerability-disclosure)**. **There is no official bug bounty program**; discretionary rewards may apply only to valid, manually verified reports. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**. The same reporting policy is also published at the repository root as the file `SECURITY.md` (for example on GitHub’s Security tab).
 
 ## Overview
 

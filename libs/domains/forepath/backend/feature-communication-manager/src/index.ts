@@ -2,5 +2,8 @@ export * from './lib/communication.module';
 export * from './lib/modules/forepath-otel.module';
 export * from './lib/dto/contact-request-response.dto';
 export * from './lib/dto/create-contact-request.dto';
+export * from './lib/dto/create-vulnerability-report.dto';
+export * from './lib/dto/vulnerability-report-response.dto';
 export * from './lib/services/chatwoot-api.service';
 export * from './lib/services/contact-request.service';
+export * from './lib/services/vulnerability-report.service';

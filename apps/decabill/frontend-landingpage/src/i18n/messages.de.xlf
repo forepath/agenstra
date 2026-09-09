@@ -706,6 +706,10 @@
         <source>Privacy Policy</source>
         <target state="translated">Datenschutzerklärung</target>
       </trans-unit>
+      <trans-unit id="featureDecabillPortal-vulnerabilityDisclosureLink" datatype="html">
+        <source>Vulnerability Disclosure</source>
+        <target state="translated">Schwachstellenmeldung</target>
+      </trans-unit>
       <trans-unit id="featureDecabillPortal-withdrawalLink" datatype="html">
         <source>Right of Withdrawal</source>
         <target state="translated">Widerruf</target>

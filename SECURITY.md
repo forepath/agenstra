@@ -6,14 +6,16 @@ This policy applies to the **ForePath One** monorepo, which contains multiple pr
 
 We provide security updates for the following versions of this framework:
 
-| Version             | Supported |
-| ------------------- | --------- |
-| 2.x.x               | Yes       |
-| 1.x.x               | No        |
-| 0.x.x               | No        |
-| Earlier major lines | No        |
+| Version             | Supported | Support period (manufacturer statement)                         |
+| ------------------- | --------- | --------------------------------------------------------------- |
+| 2.x.x               | Yes       | Through **May 2031** (5 years from `v2.0.0`, released May 2026) |
+| 1.x.x               | No        | Ended                                                           |
+| 0.x.x               | No        | Ended                                                           |
+| Earlier major lines | No        | Ended                                                           |
 
-Security updates are intended for supported **2.x.x** releases. Full disclosure and CRA-oriented context:
+Security updates are intended for supported **2.x.x** releases and are provided **free of charge** during the stated support period. Security-update artifacts remain available for at least **10 years** or the support period, whichever is longer.
+
+Full disclosure and CRA-oriented context:
 
 - **Agenstra:** [Supported versions and security updates](./docs/agenstra/security/vulnerability-reporting-and-artifacts.md#supported-versions-and-security-updates)
 - **Decabill:** [Supported versions and security updates](./docs/decabill/security/vulnerability-reporting-and-artifacts.md#supported-versions-and-security-updates)
@@ -21,6 +23,26 @@ Security updates are intended for supported **2.x.x** releases. Full disclosure 
 ## Reporting a Vulnerability
 
 We take security seriously and appreciate your help in keeping this framework and its users safe.
+
+### Coordinated Vulnerability Disclosure Policy
+
+This document, together with the public page at **[https://forepath.io/legal/vulnerability-disclosure](https://forepath.io/legal/vulnerability-disclosure)**, is our **coordinated vulnerability disclosure (CVD) policy** as required by Annex I, Part II(5) of Regulation (EU) 2024/2847 (EU Cyber Resilience Act). The ForePath website page is the **canonical public** version (not GitHub-gated). Product docs trees mirror the same commitments.
+
+Contact files for automated discovery (RFC 9116) are published at:
+
+- https://forepath.io/.well-known/security.txt
+- https://agenstra.com/.well-known/security.txt
+- https://decabill.com/.well-known/security.txt
+
+Each domain also serves a `/security.txt` fallback. Renew the `Expires:` field at least annually.
+
+**Encrypted email:** OpenPGP public key for `soc@forepath.io`: [https://forepath.io/.well-known/pgp-key.txt](https://forepath.io/.well-known/pgp-key.txt) (fingerprint `5B20 C75D E760 91CE FE8B 3CA5 2926 E9F2 4F3D 9191`).
+
+### Scope
+
+**In scope:** Agenstra (console, controller, manager, desktop), Decabill (billing manager, console), ForePath website and communication services, and all applications and libraries in this monorepo (including shared auth and MCP infrastructure), plus publicly reachable services we operate for those products.
+
+**Out of scope:** Third-party SaaS or infrastructure we do not operate. Physical attacks, social engineering, and phishing. Denial-of-service or volumetric testing against production. Already known or duplicate findings without new impact.
 
 ### Bug bounty and compensation
 
@@ -36,8 +58,9 @@ We still welcome **valid, responsibly disclosed** vulnerabilities with a clear d
 
 Instead, please report security vulnerabilities to our security team:
 
+- **Web form**: [Vulnerability Disclosure Policy](https://forepath.io/legal/vulnerability-disclosure#report-form)
 - **Email**: soc@forepath.io
-- **Subject**: `[SECURITY] Framework Vulnerability Report` (you may add the product name, for example `Agenstra` or `Decabill`, in the body)
+- **Subject**: `[SECURITY]` plus the product name when known (for example `[SECURITY] Agenstra Vulnerability Report`)
 - **Response Time**: We aim to respond within 48 hours
 
 ### What to Include in Your Report
@@ -47,7 +70,7 @@ When reporting a security vulnerability, please include:
 1. **Description** - Clear description of the vulnerability
 2. **Impact** - Potential impact and severity assessment
 3. **Steps to Reproduce** - Detailed steps to reproduce the issue
-4. **Affected Versions** - Which versions of this framework are affected
+4. **Affected Versions** - Which products and versions are affected
 5. **Suggested Fix** - If you have ideas for how to fix the issue
 6. **Contact Information** - How we can reach you for follow-up
 
@@ -59,6 +82,39 @@ When reporting a security vulnerability, please include:
 4. **Fix Development** - We'll develop and test a fix
 5. **Coordination** - We'll coordinate disclosure with you
 6. **Release** - We'll release the fix and security advisory
+
+### Remediation targets
+
+These are best-effort triage and fix targets after acknowledgment:
+
+| Severity | Initial triage | Fix target  |
+| -------- | -------------- | ----------- |
+| Critical | 24 hours       | 7 days      |
+| High     | 48 hours       | 30 days     |
+| Medium   | 1 week         | 90 days     |
+| Low      | 2 weeks        | Best effort |
+
+We generally aim for a **90-day** coordinated disclosure window once a fix is available and acknowledged. We may delay public disclosure when the risk of active exploitation or incomplete patch adoption outweighs the benefit of immediate publication. That narrow delay is consistent with Annex I, Part II(4) of the CRA.
+
+### Safe harbor
+
+If you conduct security research in good faith, follow this policy, avoid privacy violations, service disruption, and data destruction, and report findings privately before any public disclosure, we will not pursue legal action against you for that research. This safe harbor does not authorize access beyond what is necessary to demonstrate a vulnerability. It also does not waive claims for conduct outside this policy.
+
+### Third-party and open-source components
+
+When we discover vulnerabilities in third-party or open-source dependencies used in our products, we report them upstream to the responsible maintainers, as required by CRA Article 13(6). We also remediate or mitigate them in our own releases where that is feasible.
+
+### Public disclosure and advisories
+
+Once a fix ships, we publish a public advisory that describes the issue, affected products and versions, impact, severity, and remediation guidance. Advisories typically appear via [GitHub Security Advisories](https://github.com/forepath/one/security/advisories) for this repository. We may delay disclosure when justified by active exploitation risk or incomplete patch adoption.
+
+### Secure and free-of-charge updates
+
+Security updates for supported versions are provided **free of charge** during the support period. Release artifacts are distributed through verified channels. Desktop builds include SHA-256 checksum manifests (see Agenstra release-integrity documentation). Prefer downloading from official product download sites and verifying checksums where they are published.
+
+### Regulatory reporting (EU CRA)
+
+Actively exploited vulnerabilities and severe incidents are escalated internally so we can meet Article 14 reporting to the competent CSIRT for our main establishment (Germany) and to ENISA via the CRA Single Reporting Platform. That includes the 24-hour early warning, 72-hour notification, and final report cadence. Detailed operator procedures are maintained internally and are not published in this repository.
 
 ### Recognition
 
@@ -154,9 +210,10 @@ We publish CycloneDX SBOM files for each release (Nx service SBOMs and Trivy con
 
 ### External resources
 
+- [Vulnerability Disclosure Policy](https://forepath.io/legal/vulnerability-disclosure) - Canonical public CVD policy and report form
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/) - Common security risks
 - [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework) - Cybersecurity best practices
-- [GitHub Security Advisories](https://github.com/advisories) - Security vulnerability database
+- [GitHub Security Advisories](https://github.com/forepath/one/security/advisories) - Advisories for this repository
 
 ## Incident Response
 
@@ -164,7 +221,7 @@ We publish CycloneDX SBOM files for each release (Nx service SBOMs and Trivy con
 
 1. **Do NOT** create a public issue or discussion
 2. **Do NOT** share details on social media or public forums
-3. **Do** email soc@forepath.io immediately
+3. **Do** report via the [Vulnerability Disclosure Policy form](https://forepath.io/legal/vulnerability-disclosure#report-form) or email soc@forepath.io immediately
 4. **Do** provide as much detail as possible
 5. **Do** allow us time to investigate and fix the issue
 
@@ -186,10 +243,14 @@ We publish CycloneDX SBOM files for each release (Nx service SBOMs and Trivy con
 
 ### Response Times
 
+**Triage** (after acknowledgment):
+
 - **Critical Issues**: 24 hours
 - **High Priority**: 48 hours
 - **Medium Priority**: 1 week
 - **Low Priority**: 2 weeks
+
+**Remediation targets** (after acknowledgment): Critical 7 days; High 30 days; Medium 90 days; Low best effort. See **Remediation targets** above.
 
 ## Thank You
 
@@ -199,4 +260,4 @@ Thank you for helping keep this framework and its users secure. Your responsible
 
 **Remember**: Security is everyone's responsibility. Together, we can build and maintain secure software that protects users and their data.
 
-_Last updated: July 2026_
+_Last updated: September 2026_
